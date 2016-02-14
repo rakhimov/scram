@@ -420,14 +420,14 @@ class Settings(object):
         root_name: The name of the root gate of the fault tree.
         seed: The seed for the pseudo-random number generator.
         output: The output destination.
-        nested: A flag for the nested Boolean formula.
+        nest: A nesting factor for the Boolean formulae.
     """
 
     ft_name = None
     root_name = None
     seed = None
     output = None
-    nested = None
+    nest = None
 
 
 def init_gates(gates_queue, common_basics, common_gates, fault_tree):
@@ -740,7 +740,7 @@ def write_results(fault_tree):
 
     sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
-        t_file.write(gate.to_xml(Settings.nested))
+        t_file.write(gate.to_xml(Settings.nest))
 
     # Proceed with ccf groups
     for ccf_group in fault_tree.ccf_groups:
@@ -770,101 +770,9 @@ def write_shorthand(fault_tree):
     t_file = open(Settings.output, "w")
     t_file.write(fault_tree.name + "\n\n")
 
-    nested_gates = set()
-
-    def write_gate(gate, o_file):
-        """Print arguments for the gate.
-
-        Args:
-            gate: The gate to be printed.
-            o_file: The output file stream.
-        """
-        def write_formula(gate, line):
-            """Prints the formula of a gate in the shorthand format.
-
-            Args:
-                gate: The gate to be printed.
-                line: The array containing strings to be joined for printing.
-            """
-            div = ""
-            line_end = ""
-            if gate.operator == "and":
-                line.append("(")
-                line_end = ")"
-                div = " & "
-            elif gate.operator == "or":
-                line.append("(")
-                line_end = ")"
-                div = " | "
-            elif gate.operator == "atleast":
-                line.append("@(" + str(gate.k_num) + ", [")
-                line_end = "])"
-                div = ", "
-            elif gate.operator == "not":
-                line.append("~")
-                line_end = ""
-                div = ""
-            elif gate.operator == "xor":
-                line.append("(")
-                line_end = ")"
-                div = " ^ "
-
-            first_child = True
-            # Print arguments that are house events.
-            for h_child in gate.h_arguments:
-                if first_child:
-                    line.append(h_child.name)
-                    first_child = False
-                else:
-                    line.append(div + h_child.name)
-
-            # Print arguments that are basic events.
-            for b_child in gate.b_arguments:
-                if first_child:
-                    line.append(b_child.name)
-                    first_child = False
-                else:
-                    line.append(div + b_child.name)
-
-            # Print arguments that are gates.
-            if not Settings.nested:
-                for g_child in gate.g_arguments:
-                    if first_child:
-                        line.append(g_child.name)
-                        first_child = False
-                    else:
-                        line.append(div + g_child.name)
-            else:
-                to_nest = [x for x in gate.g_arguments if not x.is_common()]
-                not_nest = [x for x in gate.g_arguments if x.is_common()]
-                for g_child in not_nest:
-                    if first_child:
-                        line.append(g_child.name)
-                        first_child = False
-                    else:
-                        line.append(div + g_child.name)
-                for g_child in to_nest:
-                    if first_child:
-                        write_formula(g_child, line)
-                        first_child = False
-                    else:
-                        line.append(div)
-                        write_formula(g_child, line)
-                nested_gates.update(to_nest)
-
-            line.append(line_end)
-
-        line = [gate.name]
-        line.append(" := ")
-        write_formula(gate, line)
-        o_file.write("".join(line))
-        o_file.write("\n")
-
     sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
-        if Settings.nested and gate in nested_gates:
-            continue
-        write_gate(gate, t_file)
+        t_file.write(gate.to_shorthand())
 
     # Write basic events
     t_file.write("\n")
@@ -1001,8 +909,8 @@ def manage_cmd_args():
     shorthand = "apply the shorthand format to the output"
     parser.add_argument("--shorthand", action="store_true", help=shorthand)
 
-    nested = "join gates into a nested Boolean formula in the output"
-    parser.add_argument("--nested", action="store_true", help=nested)
+    nest = "nestedness for Boolean formulae in the XML output"
+    parser.add_argument("--nest", type=int, help=nest, default=0, metavar="int")
 
     args = parser.parse_args()
 
@@ -1018,6 +926,7 @@ def manage_cmd_args():
     check_if_positive(gates, args.gates)
     check_if_positive(house, args.house)
     check_if_positive(ccf, args.ccf)
+    check_if_positive(nest, args.nest)
 
     check_if_less(common_b, args.common_b, 0.9)
     check_if_less(common_g, args.common_g, 0.9)
@@ -1066,8 +975,12 @@ def validate_setup(args):
         if len(weights_float) > 3 and not sum(weights_float[:3]):
             raise ap.ArgumentTypeError("cannot work with only XOR or NOT gates")
 
-    if args.shorthand and args.out == "fault_tree.xml":
-        args.out = "fault_tree.txt"
+    if args.shorthand:
+        if args.out == "fault_tree.xml":
+            args.out = "fault_tree.txt"
+        if args.nest > 0:
+            raise ap.ArgumentTypeError("no support for nested formulae "
+                                       "in the shorthand format")
 
     if args.gates:
         # Check if there are enough gates for the basic events.
@@ -1091,7 +1004,7 @@ def setup_factors(args):
     Settings.ft_name = args.ft_name
     Settings.root_name = args.root
     Settings.output = args.out
-    Settings.nested = args.nested
+    Settings.nest = args.nest
     FaultTree.min_prob = args.minprob  # TODO: Eliminate.
     FaultTree.max_prob = args.maxprob  # TODO: Eliminate.
     Factors.num_basics = args.basics

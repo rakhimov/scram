@@ -226,6 +226,36 @@ class Gate(Node):
         mef_xml += "</define-gate>\n"
         return mef_xml
 
+    def to_shorthand(self):
+        """Produces the shorthand definition of the gate.
+
+        Raises:
+            KeyError: The gate operator is not supported.
+        """
+        line = [self.name, " := "]
+        line_start, div, line_end = {
+                "and" : ("(", " & ", ")"),
+                "or" : ("(", " | ", ")"),
+                "xor" : ("(", " ^ ", ")"),
+                "not" : ("~", "", ""),
+                "null" : ("", "", ""),
+                "atleast" : ("@(" + str(self.k_num) + ", [", ", ", "])")
+                }[self.operator]
+        line.append(line_start)
+
+        args = []
+        for h_arg in self.h_arguments:
+            args.append(h_arg.name)
+
+        for b_arg in self.b_arguments:
+            args.append(b_arg.name)
+
+        for g_arg in self.g_arguments:
+            args.append(g_arg.name)
+        line.append(div.join(args))
+        line.append(line_end)
+        return "".join(line) + "\n"
+
 
 class CcfGroup(object):
     """Representation of CCF groups in a fault tree.

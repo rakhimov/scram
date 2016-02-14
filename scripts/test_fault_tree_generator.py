@@ -59,7 +59,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.num_house = 10
         Factors.num_ccf = 10
         Factors.calculate()
-        Settings.nested = True
+        Settings.nest = 1
         fault_tree = generate_fault_tree()
         assert_is_not_none(fault_tree)
         write_results(fault_tree)
