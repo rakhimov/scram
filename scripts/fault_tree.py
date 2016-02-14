@@ -17,6 +17,9 @@
 
 """Fault tree classes and common facilities."""
 
+from collections import deque
+
+
 class Node(object):
     """Representation of a base class for a node in a fault tree.
 
@@ -114,6 +117,116 @@ class HouseEvent(Node):
         return "s(" + self.name + ") = " + str(self.state) + "\n"
 
 
+class Gate(Node):
+    """Representation of a fault tree gate.
+
+    Attributes:
+        operator: Logical operator of this formula.
+        k_num: Min number for the combination operator.
+        g_arguments: arguments that are gates.
+        b_arguments: arguments that are basic events.
+        h_arguments: arguments that are house events.
+        u_arguments: arguments that are undefined.
+        mark: Marking for various algorithms like toposort.
+    """
+
+    def __init__(self, name, operator, k_num=None):
+        """Initializes a gate.
+
+        Args:
+            name: Identifier of the node.
+            operator: Boolean operator of this formula.
+            k_num: Min number for the combination operator.
+        """
+        super(Gate, self).__init__(name)
+        self.mark = None
+        self.operator = operator
+        self.k_num = k_num
+        self.g_arguments = set()
+        self.b_arguments = set()
+        self.h_arguments = set()
+        self.u_arguments = set()
+
+    def num_arguments(self):
+        """Returns the number of arguments."""
+        return (len(self.b_arguments) + len(self.h_arguments) +
+                len(self.g_arguments) + len(self.u_arguments))
+
+    def add_argument(self, argument):
+        """Adds argument into a collection of gate arguments.
+
+        Note that this function also updates the parent set of the argument.
+
+        Args:
+            argument: Gate, HouseEvent, BasicEvent, or Node argument.
+        """
+        argument.parents.add(self)
+        if isinstance(argument, Gate):
+            self.g_arguments.add(argument)
+        elif isinstance(argument, BasicEvent):
+            self.b_arguments.add(argument)
+        elif isinstance(argument, HouseEvent):
+            self.h_arguments.add(argument)
+        else:
+            assert isinstance(argument, Node)
+            self.u_arguments.add(argument)
+
+    def get_ancestors(self):
+        """Collects ancestors from this gate.
+
+        Returns:
+            A set of ancestors.
+        """
+        ancestors = set([self])
+        parents = deque(self.parents)
+        while parents:
+            parent = parents.popleft()
+            if parent not in ancestors:
+                ancestors.add(parent)
+                parents.extend(parent.parents)
+        return ancestors
+
+    def to_xml(self, nest=0):
+        """Produces OpenPSA MEF XML definition of the gate.
+
+        Args:
+            nest: The level for nesting formulas of argument gates.
+        """
+        def convert_formula(gate, nest):
+            """Converts the formula of a gate into XML representation."""
+            mef_xml = ""
+            if gate.operator != "null":
+                mef_xml += "<" + gate.operator
+                if gate.operator == "atleast":
+                    mef_xml += " min=\"" + str(gate.k_num) + "\""
+                mef_xml += ">\n"
+            for h_arg in gate.h_arguments:
+                mef_xml += "<house-event name=\"" + h_arg.name + "\"/>\n"
+
+            for b_arg in gate.b_arguments:
+                mef_xml += "<basic-event name=\"" + b_arg.name + "\"/>\n"
+
+            for u_arg in gate.u_arguments:
+                mef_xml += "<event name=\"" + u_arg.name + "\"/>\n"
+
+            if nest > 0:
+                for g_arg in gate.g_arguments:
+                    mef_xml += convert_formula(g_arg, nest - 1)
+
+            else:
+                for g_arg in gate.g_arguments:
+                    mef_xml += "<gate name=\"" + g_arg.name + "\"/>\n"
+
+            if gate.operator != "null":
+                mef_xml += "</" + gate.operator + ">\n"
+            return mef_xml
+
+        mef_xml = "<define-gate name=\"" + self.name + "\">\n"
+        mef_xml += convert_formula(self, nest)
+        mef_xml += "</define-gate>\n"
+        return mef_xml
+
+
 class CcfGroup(object):
     """Representation of CCF groups in a fault tree.
 
@@ -155,3 +268,43 @@ class CcfGroup(object):
 
         mef_xml += "</factors>\n</define-CCF-group>\n"
         return mef_xml
+
+
+def toposort_gates(root_gates, gates):
+    """Sorts gates topologically starting from the root gate.
+
+    The gate marks are used for the algorithm.
+    After this sorting the marks are reset to None.
+
+    Args:
+        root_gates: The root gates of the graph.
+        gates: Gates to be sorted.
+
+    Returns:
+        A deque of sorted gates.
+    """
+    for gate in gates:
+        gate.mark = ""
+
+    def visit(gate, final_list):
+        """Recursively visits the given gate sub-tree to include into the list.
+
+        Args:
+            gate: The current gate.
+            final_list: A deque of sorted gates.
+        """
+        assert gate.mark != "temp"
+        if not gate.mark:
+            gate.mark = "temp"
+            for arg in gate.g_arguments:
+                visit(arg, final_list)
+            gate.mark = "perm"
+            final_list.appendleft(gate)
+
+    sorted_gates = deque()
+    for root_gate in root_gates:
+        visit(root_gate, sorted_gates)
+    assert len(sorted_gates) == len(gates)
+    for gate in gates:
+        gate.mark = None
+    return sorted_gates

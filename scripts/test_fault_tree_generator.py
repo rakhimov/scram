@@ -28,8 +28,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
     assert_less
 
 from fault_tree_generator import Settings, Factors, generate_fault_tree, \
-    write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
-    CcfGroup
+    write_results, write_shorthand, FaultTree
 
 
 class FaultTreeGeneratorTestCase(TestCase):
@@ -37,15 +36,6 @@ class FaultTreeGeneratorTestCase(TestCase):
 
     def setUp(self):
         """Initializes the generator factors for default complexity."""
-        Gate.gates = []
-        Gate.num_gates = 0
-        BasicEvent.num_basic = 0
-        BasicEvent.basic_events = []
-        BasicEvent.non_ccf_events = []
-        HouseEvent.num_house = 0
-        HouseEvent.house_events = []
-        CcfGroup.num_ccf = 0
-        CcfGroup.ccf_groups = []
         self.output = NamedTemporaryFile()
         Settings.output = self.output.name
         Settings.ft_name = "TestingTree"
@@ -59,8 +49,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.parents_b = 2
         Factors.parents_g = 2
         Factors.set_weights([1, 1, 0, 0, 0])
-        BasicEvent.min_prob = 0.01
-        BasicEvent.max_prob = 0.1
+        FaultTree.min_prob = 0.01
+        FaultTree.max_prob = 0.1
         Factors.calculate()
 
     def test_xml_output(self):
@@ -70,9 +60,9 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.num_ccf = 10
         Factors.calculate()
         Settings.nested = True
-        top_node = generate_fault_tree()
-        assert_is_not_none(top_node)
-        write_results(top_node)
+        fault_tree = generate_fault_tree()
+        assert_is_not_none(fault_tree)
+        write_results(fault_tree)
         relaxng_doc = etree.parse("../share/input.rng")
         relaxng = etree.RelaxNG(relaxng_doc)
         doc = etree.parse(self.output)
@@ -84,9 +74,9 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.num_house = 10
         Factors.num_ccf = 10
         Factors.calculate()
-        top_node = generate_fault_tree()
-        assert_is_not_none(top_node)
-        write_shorthand(top_node)
+        fault_tree = generate_fault_tree()
+        assert_is_not_none(fault_tree)
+        write_shorthand(fault_tree)
         tmp = NamedTemporaryFile()
         cmd = ["./shorthand_to_xml.py", self.output.name, "-o", tmp.name]
         assert_equal(0, call(cmd))
@@ -97,6 +87,6 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.num_basics = 200
         Factors.constrain_num_gates(200)
         Factors.calculate()
-        top_node = generate_fault_tree()
-        assert_is_not_none(top_node)
-        assert_less(abs(1 - len(Gate.gates) / 200), 0.1)
+        fault_tree = generate_fault_tree()
+        assert_is_not_none(fault_tree)
+        assert_less(abs(1 - len(fault_tree.gates) / 200), 0.1)

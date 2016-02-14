@@ -55,7 +55,7 @@ import re
 
 import argparse as ap
 
-from fault_tree import Node, BasicEvent, HouseEvent
+from fault_tree import Node, BasicEvent, HouseEvent, Gate, toposort_gates
 
 
 class ParsingError(Exception):
@@ -76,18 +76,11 @@ class FaultTreeError(Exception):
     pass
 
 
-class Gate(Node):
-    """Representation of a fault tree gate.
+class LateBindingGate(Gate):
+    """Representation of a gate with arguments defined late or not at all.
 
     Attributes:
-        operator: Logical operator of this formula.
-        k_num: Min number for the combination operator.
         node_arguments: String names of non-formula arguments like basic events.
-        g_arguments: arguments that are gates.
-        b_arguments: arguments that are basic events.
-        h_arguments: arguments that are house events.
-        u_arguments: arguments that are undefined from the input.
-        mark: Marking for various algorithms like toposort.
     """
 
     def __init__(self, name, operator=None, k_num=None):
@@ -98,15 +91,8 @@ class Gate(Node):
             operator: Boolean operator of this formula.
             k_num: Min number for the combination operator.
         """
-        super(Gate, self).__init__(name)
-        self.mark = None
-        self.operator = operator
-        self.k_num = k_num
+        super(LateBindingGate, self).__init__(name, operator, k_num)
         self.node_arguments = []
-        self.g_arguments = []
-        self.b_arguments = []
-        self.h_arguments = []
-        self.u_arguments = []
 
     def num_arguments(self):
         """Returns the number of arguments."""
@@ -273,7 +259,7 @@ class FaultTree(object):
             FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
-        gate = Gate(name, operator, k_num)
+        gate = LateBindingGate(name, operator, k_num)
         gate.node_arguments = arguments
         self.gates.update({name.lower(): gate})
 
@@ -286,32 +272,26 @@ class FaultTree(object):
         for gate in self.gates.values():
             assert gate.num_arguments() > 0
             for child in gate.node_arguments:
-                child_node = None
                 if child.lower() in self.gates:
-                    child_node = self.gates[child.lower()]
-                    gate.g_arguments.append(child_node)
+                    gate.add_argument(self.gates[child.lower()])
                 elif child.lower() in self.basic_events:
-                    child_node = self.basic_events[child.lower()]
-                    gate.b_arguments.append(child_node)
+                    gate.add_argument(self.basic_events[child.lower()])
                 elif child.lower() in self.house_events:
-                    child_node = self.house_events[child.lower()]
-                    gate.h_arguments.append(child_node)
+                    gate.add_argument(self.house_events[child.lower()])
                 elif child.lower() in self.undef_nodes:
-                    child_node = self.undef_nodes[child.lower()]
-                    gate.u_arguments.append(child_node)
+                    gate.add_argument(self.undef_nodes[child.lower()])
                 else:
                     print("Warning. Unidentified node: " + child)
                     child_node = Node(child)
                     self.undef_nodes.update({child.lower(): child_node})
-                    gate.u_arguments.append(child_node)
-                child_node.add_parent(gate)
+                    gate.add_argument(child_node)
 
-        for basic in self.basic_events.values():
-            if basic.is_orphan():
-                print("Warning. Orphan basic event: " + basic.name)
-        for house in self.house_events.values():
-            if house.is_orphan():
-                print("Warning. Orphan house event: " + house.name)
+        for basic_event in self.basic_events.values():
+            if basic_event.is_orphan():
+                print("Warning. Orphan basic event: " + basic_event.name)
+        for house_event in self.house_events.values():
+            if house_event.is_orphan():
+                print("Warning. Orphan house event: " + house_event.name)
         self.__detect_top()
         self.__detect_cycle()
 
@@ -470,41 +450,6 @@ def parse_input_file(input_file, multi_top=False):
     return fault_tree
 
 
-def toposort_gates(top_gates, gates):
-    """Sorts gates topologically starting from the root gate.
-
-    Args:
-        top_gates: The top gates of the fault tree.
-        gates: Gates to be sorted.
-
-    Returns:
-        A deque of sorted gates.
-    """
-    for gate in gates:
-        gate.mark = ""
-
-    def visit(gate, final_list):
-        """Recursively visits the given gate sub-tree to include into the list.
-
-        Args:
-            gate: The current gate.
-            final_list: A deque of sorted gates.
-        """
-        assert gate.mark != "temp"
-        if not gate.mark:
-            gate.mark = "temp"
-            for arg in gate.g_arguments:
-                visit(arg, final_list)
-            gate.mark = "perm"
-            final_list.appendleft(gate)
-
-    sorted_gates = deque()
-    for top_gate in top_gates:
-        visit(top_gate, sorted_gates)
-    assert len(sorted_gates) == len(gates)
-    return sorted_gates
-
-
 def write_to_xml_file(fault_tree, output_file):
     """Writes the fault tree into an XML file.
 
@@ -519,44 +464,10 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("<?xml version=\"1.0\"?>\n")
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
-
-    def write_gate(gate, o_file):
-        """Write the gate in the OpenPSA MEF XML.
-
-        Args:
-            gate: The gate to be printed.
-            o_file: The output file stream.
-        """
-        o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        if gate.operator != "null":
-            o_file.write("<" + gate.operator)
-            if gate.operator == "atleast":
-                o_file.write(" min=\"" + gate.k_num + "\"")
-            o_file.write(">\n")
-        # Print house events
-        for h_child in gate.h_arguments:
-            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
-        # Print basic events
-        for b_child in gate.b_arguments:
-            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
-
-        # Print undefined events
-        for u_child in gate.u_arguments:
-            o_file.write("<event name=\"" + u_child.name + "\"/>\n")
-
-        # Print gates
-        for g_child in gate.g_arguments:
-            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-
-        if gate.operator != "null":
-            o_file.write("</" + gate.operator + ">\n")
-        o_file.write("</define-gate>\n")
-
     sorted_gates = toposort_gates(fault_tree.top_gates,
                                   fault_tree.gates.values())
     for gate in sorted_gates:
-        write_gate(gate, t_file)
+        t_file.write(gate.to_xml())
 
     t_file.write("</define-fault-tree>\n")
 

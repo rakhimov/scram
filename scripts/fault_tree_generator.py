@@ -47,114 +47,7 @@ import random
 
 import argparse as ap
 
-from fault_tree import BasicEvent, HouseEvent, CcfGroup
-
-
-class Node(object):
-    """Representation of a base class for a node in a fault tree.
-
-    Attributes:
-        name: A specific name that identifies this node.
-        parents: A set of parents of this node.
-    """
-
-    def __init__(self, name, parent=None):
-        """Constructs a node and adds it as a child for the parent.
-
-        Note that the tracking of parents introduces a cyclic reference.
-
-        Args:
-            name: Identifier for the node.
-            parent: Optional initial parent of this node.
-        """
-        self.name = name
-        self.parents = set()
-        if parent:
-            parent.add_child(self)
-
-    def is_common(self):
-        """Indicates if this node appears in several places."""
-        return len(self.parents) > 1
-
-    def num_parents(self):
-        """Returns the number of unique parents."""
-        return len(self.parents)
-
-
-class Gate(Node):
-    """Representation of a fault tree gate.
-
-        Names are assigned sequentially starting from G0.
-        G0 is assumed to be the root gate.
-
-    Attributes:
-        num_gates: Total number of gates created.
-        gates: A set of all gates that are created for the fault tree.
-        b_children: Children of this gate that are basic events.
-        h_children: Children of this gate that are house events.
-        g_children: Children of this gate that are gates.
-        gate_type: Type of the gate. Chosen randomly.
-        k_num: K number for a K/N combination gate. Chosen randomly.
-        mark: Marking for various algorithms.
-    """
-
-    num_gates = 0  # to keep track of gates and to name them
-    gates = []  # container for all created gates
-
-    def __init__(self, parent=None):
-        """Initializes a new gate.
-
-        The unique identifier is created with the static variables.
-
-        Args:
-            parent: Optional initial parent of this node.
-        """
-        super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
-        Gate.num_gates += 1  # post-decrement to account for the root gate
-        self.b_children = set()  # children that are basic events
-        self.h_children = set()  # children that are house events
-        self.g_children = set()  # children that are gates
-        self.k_num = None
-        self.gate_type = Factors.get_random_type()
-        Gate.gates.append(self)  # keep track of all gates
-        self.mark = None
-
-    def num_children(self):
-        """Returns the number of children."""
-        return (len(self.b_children) + len(self.h_children) +
-                len(self.g_children))
-
-    def add_child(self, child):
-        """Adds child into a collection of gate or primary event children.
-
-        Note that this function also updates the parent set of the child.
-
-        Args:
-            child: Gate, HouseEvent, or BasicEvent child.
-        """
-        child.parents.add(self)
-        if isinstance(child, Gate):
-            self.g_children.add(child)
-        elif isinstance(child, BasicEvent):
-            self.b_children.add(child)
-        else:
-            assert isinstance(child, HouseEvent)
-            self.h_children.add(child)
-
-    def get_ancestors(self):
-        """Collects ancestors from this gate.
-
-        Returns:
-            A set of ancestors.
-        """
-        ancestors = set([self])
-        parents = deque(self.parents)
-        while parents:
-            parent = parents.popleft()
-            if parent not in ancestors:
-                ancestors.add(parent)
-                parents.extend(parent.parents)
-        return ancestors
+from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, toposort_gates
 
 
 class FaultTree(object):
@@ -170,7 +63,7 @@ class FaultTree(object):
         basic_events: A list of all basic events created for the fault tree.
         house_events: A list of all house events created for the fault tree.
         ccf_groups: A collection of created CCF groups.
-        non_ccf_events: A list of basic events that not in CCF groups.
+        non_ccf_events: A list of basic events that are not in CCF groups.
     """
 
     min_prob = 0  # TODO: move to factors.
@@ -188,7 +81,16 @@ class FaultTree(object):
         self.basic_events = []
         self.house_events = []
         self.ccf_groups = []
-        non_ccf_events = None  # must be assigned directly.
+        self.non_ccf_events = None  # must be assigned directly.
+
+    def construct_gate(self):
+        """Constructs a new gate.
+
+        """
+        gate = Gate("G" + str(len(self.gates) + 1),
+                    Factors.get_random_operator())
+        self.gates.append(gate)
+        return gate
 
     def construct_basic_event(self):
         """Constructs a basic event with a unique identifier.
@@ -262,7 +164,7 @@ class Factors(object):
     __weights_g = None  # should not be set directly
 
     # Constant configurations
-    __gate_types = ["and", "or", "atleast", "not", "xor"]
+    __operators = ["and", "or", "atleast", "not", "xor"]
 
     # Calculated factors
     __norm_weights = []  # normalized weights
@@ -336,7 +238,7 @@ class Factors(object):
         Args:
             weights: Weights of gate types.
         """
-        assert len(weights) == len(Factors.__gate_types)
+        assert len(weights) == len(Factors.__operators)
         assert sum(weights) > 0
         Factors.__weights_g = weights[:]
         Factors.__norm_weights = [x / sum(Factors.__weights_g)
@@ -347,17 +249,17 @@ class Factors(object):
             Factors.__cum_dist[i] += Factors.__cum_dist[i - 1]
 
     @staticmethod
-    def get_random_type():
-        """Samples the gate type.
+    def get_random_operator():
+        """Samples the gate operator.
 
         Returns:
-            A randomly chosen gate type.
+            A randomly chosen gate operator.
         """
         r_num = random.random()
         bin_num = 1
         while Factors.__cum_dist[bin_num] <= r_num:
             bin_num += 1
-        return Factors.__gate_types[bin_num - 1]
+        return Factors.__operators[bin_num - 1]
 
     @staticmethod
     def get_num_children(gate):
@@ -373,9 +275,9 @@ class Factors(object):
         Returns:
             Random number of children.
         """
-        if gate.gate_type == "not":
+        if gate.operator == "not":
             return 1
-        elif gate.gate_type == "xor":
+        elif gate.operator == "xor":
             return 2
 
         max_children = int(Factors.__max_children)
@@ -383,7 +285,7 @@ class Factors(object):
         if random.random() < (Factors.__max_children - max_children):
             max_children += 1
 
-        if gate.gate_type == "atleast":
+        if gate.operator == "atleast":
             if max_children < 3:
                 max_children = 3
             num_children = random.randint(3, max_children)
@@ -540,7 +442,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     # Get an intermediate gate to initialize breadth-first
     gate = gates_queue.popleft()
 
-    num_children = Factors.get_num_children(gate)
+    num_arguments = Factors.get_num_children(gate)
 
     ancestors = None  # needed for cycle prevention
     max_tries = len(common_gates)  # the number of maximum tries
@@ -567,7 +469,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
         for i in multi_parent:
             yield i
 
-    while gate.num_children() < num_children:
+    while gate.num_arguments() < num_arguments:
         s_percent = random.random()  # sample percentage of gates
         s_common = random.random()  # sample the reuse frequency
 
@@ -575,7 +477,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
         if len(fault_tree.basic_events) == Factors.num_basics:
             if not Factors.common_g and not Factors.common_b:
                 # Reuse already initialized basic events
-                gate.add_child(random.choice(fault_tree.basic_events))
+                gate.add_argument(random.choice(fault_tree.basic_events))
                 continue
             else:
                 s_common = 0  # use only common nodes
@@ -591,32 +493,34 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
                     num_trials += 1
                     if num_trials >= max_tries:
                         break
-                    if random_gate in gate.g_children or random_gate is gate:
+                    if random_gate in gate.g_arguments or random_gate is gate:
                         continue
-                    if (not random_gate.g_children or
+                    if (not random_gate.g_arguments or
                             random_gate not in ancestors):
                         if not random_gate.parents:
                             gates_queue.append(random_gate)
-                        gate.add_child(random_gate)
+                        gate.add_argument(random_gate)
                         break
             else:
-                gates_queue.append(Gate(gate))
+                new_gate = fault_tree.construct_gate()
+                gate.add_argument(new_gate)
+                gates_queue.append(new_gate)
         else:
             # Create a new basic event or use a common one
             if s_common < Factors.common_b and common_basics:
                 orphans = [x for x in common_basics if not x.parents]
                 if orphans:
-                    gate.add_child(random.choice(orphans))
+                    gate.add_argument(random.choice(orphans))
                     continue
 
                 single_parent = [x for x in common_basics
                                  if len(x.parents) == 1]
                 if single_parent:
-                    gate.add_child(random.choice(single_parent))
+                    gate.add_argument(random.choice(single_parent))
                 else:
-                    gate.add_child(random.choice(common_basics))
+                    gate.add_argument(random.choice(common_basics))
             else:
-                gate.add_child(fault_tree.construct_basic_event())
+                gate.add_argument(fault_tree.construct_basic_event())
 
     # Corner case when not enough new basic events initialized, but
     # there are no more intermediate gates to use due to a big ratio
@@ -624,12 +528,14 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     if not gates_queue and len(fault_tree.basic_events) < Factors.num_basics:
         # Initialize more gates by randomly choosing places in the
         # fault tree.
-        random_gate = random.choice(Gate.gates)
-        while (random_gate.gate_type == "not" or
-               random_gate.gate_type == "xor" or
+        random_gate = random.choice(fault_tree.gates)
+        while (random_gate.operator == "not" or
+               random_gate.operator == "xor" or
                random_gate in common_gates):
-            random_gate = random.choice(Gate.gates)
-        gates_queue.append(Gate(random_gate))
+            random_gate = random.choice(fault_tree.gates)
+        new_gate = fault_tree.construct_gate()
+        random_gate.add_argument(new_gate)
+        gates_queue.append(new_gate)
 
 
 def generate_fault_tree():
@@ -642,10 +548,10 @@ def generate_fault_tree():
     """
     fault_tree = FaultTree(Settings.ft_name)
     # Start with a top event
-    top_event = Gate()
+    top_event = fault_tree.construct_gate()
     fault_tree.top_gate = top_event
-    while top_event.gate_type == "xor" or top_event.gate_type == "not":
-        top_event.gate_type = Factors.get_random_type()
+    while top_event.operator == "xor" or top_event.operator == "not":
+        top_event.operator = Factors.get_random_operator()
     top_event.name = Settings.root_name
 
     # Estimating the parameters
@@ -654,27 +560,29 @@ def generate_fault_tree():
     num_common_gates = Factors.get_num_common_gates(num_gates)
     common_basics = [fault_tree.construct_basic_event()
                      for _ in range(num_common_basics)]
-    common_gates = [Gate() for _ in range(num_common_gates)]
+    common_gates = [fault_tree.construct_gate()
+                    for _ in range(num_common_gates)]
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
     gates_queue = deque()
     gates_queue.append(top_event)
 
-    # Proceed with children gates
+    # Proceed with argument gates
     while gates_queue:
         init_gates(gates_queue, common_basics, common_gates, fault_tree)
 
     assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
-    assert(not [x for x in Gate.gates if not x.parents and x is not top_event])
+    assert(not [x for x in fault_tree.gates
+                if x.is_orphan() and x is not top_event])
 
     # Distribute house events
     while len(fault_tree.house_events) < Factors.num_house:
-        target_gate = random.choice(Gate.gates)
+        target_gate = random.choice(fault_tree.gates)
         if (target_gate is not top_event and
-                target_gate.gate_type != "xor" and
-                target_gate.gate_type != "not"):
-            target_gate.add_child(fault_tree.construct_house_event())
+                target_gate.operator != "xor" and
+                target_gate.operator != "not"):
+            target_gate.add_argument(fault_tree.construct_house_event())
 
     # Create CCF groups from the existing basic events.
     if Factors.num_ccf:
@@ -694,40 +602,6 @@ def generate_fault_tree():
     return fault_tree
 
 
-def toposort_gates(top_gate, gates):
-    """Sorts gates topologically starting from the root gate.
-
-    Args:
-        top_gate: The root gate of the fault tree.
-        gates: Gates to be sorted.
-
-    Returns:
-        A deque of sorted gates.
-    """
-    for gate in gates:
-        gate.mark = ""
-
-    def visit(gate, final_list):
-        """Recursively visits the given gate sub-tree to include into the list.
-
-        Args:
-            gate: The current gate.
-            final_list: A deque of sorted gates.
-        """
-        assert gate.mark != "temp"
-        if not gate.mark:
-            gate.mark = "temp"
-            for child in gate.g_children:
-                visit(child, final_list)
-            gate.mark = "perm"
-            final_list.appendleft(gate)
-
-    sorted_gates = deque()
-    visit(top_gate, sorted_gates)
-    assert len(sorted_gates) == len(gates)
-    return sorted_gates
-
-
 def write_info(fault_tree):
     """Writes the information about the setup and generated fault tree.
 
@@ -742,14 +616,14 @@ def write_info(fault_tree):
         "<!--\nThis is a description of the auto-generated fault tree\n"
         "with the following parameters:\n\n"
         "The output file name: " + Settings.output + "\n"
-        "The fault tree name: " + Settings.ft_name + "\n"
+        "The fault tree name: " + fault_tree.name + "\n"
         "The root gate name: " + Settings.root_name + "\n\n"
         "The seed of the random number generator: " +
         str(Settings.seed) + "\n"
         "The number of basic events: " + str(Factors.num_basics) + "\n"
         "The number of house events: " + str(Factors.num_house) + "\n"
         "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
-        "The average number of children for gates: " +
+        "The average number of gate arguments: " +
         str(Factors.avg_children) + "\n"
         "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
         str(Factors.get_weights()) + "\n"
@@ -768,29 +642,29 @@ def write_info(fault_tree):
         "-->\n")
 
     shared_b = [x for x in fault_tree.basic_events if x.is_common()]
-    shared_g = [x for x in Gate.gates if x.is_common()]
-    and_gates = [x for x in Gate.gates if x.gate_type == "and"]
-    or_gates = [x for x in Gate.gates if x.gate_type == "or"]
-    atleast_gates = [x for x in Gate.gates if x.gate_type == "atleast"]
-    not_gates = [x for x in Gate.gates if x.gate_type == "not"]
-    xor_gates = [x for x in Gate.gates if x.gate_type == "xor"]
+    shared_g = [x for x in fault_tree.gates if x.is_common()]
+    and_gates = [x for x in fault_tree.gates if x.operator == "and"]
+    or_gates = [x for x in fault_tree.gates if x.operator == "or"]
+    atleast_gates = [x for x in fault_tree.gates if x.operator == "atleast"]
+    not_gates = [x for x in fault_tree.gates if x.operator == "not"]
+    xor_gates = [x for x in fault_tree.gates if x.operator == "xor"]
 
-    frac_b = 0  # fraction of basic events in children per gate
+    frac_b = 0  # fraction of basic events in arguments per gate
     common_b = 0  # fraction of common basic events in basic events per gate
     common_g = 0  # fraction of common gates in gates per gate
-    for gate in Gate.gates:
-        num_b_children = len(gate.b_children)
-        num_g_children = len(gate.g_children)
-        frac_b += num_b_children / (num_g_children + num_b_children)
-        if gate.b_children:
-            num_common_b = len([x for x in gate.b_children if x.is_common()])
-            common_b += num_common_b / num_b_children
-        if gate.g_children:
-            num_common_g = len([x for x in gate.g_children if x.is_common()])
-            common_g += num_common_g / num_g_children
-    num_gates = len(Gate.gates)
-    common_b /= len([x for x in Gate.gates if x.b_children])
-    common_g /= len([x for x in Gate.gates if x.g_children])
+    for gate in fault_tree.gates:
+        num_b_arguments = len(gate.b_arguments)
+        num_g_arguments = len(gate.g_arguments)
+        frac_b += num_b_arguments / (num_g_arguments + num_b_arguments)
+        if gate.b_arguments:
+            num_common_b = len([x for x in gate.b_arguments if x.is_common()])
+            common_b += num_common_b / num_b_arguments
+        if gate.g_arguments:
+            num_common_g = len([x for x in gate.g_arguments if x.is_common()])
+            common_g += num_common_g / num_g_arguments
+    num_gates = len(fault_tree.gates)
+    common_b /= len([x for x in fault_tree.gates if x.b_arguments])
+    common_g /= len([x for x in fault_tree.gates if x.g_arguments])
     frac_b /= num_gates
 
     t_file.write(
@@ -798,21 +672,22 @@ def write_info(fault_tree):
         "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
         "The number of house events: %d" % len(fault_tree.house_events) + "\n"
         "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
-        "The number of gates: %d" % Gate.num_gates + "\n"
+        "The number of gates: %d" % len(fault_tree.gates) + "\n"
         "    AND gates: %d" % len(and_gates) + "\n"
         "    OR gates: %d" % len(or_gates) + "\n"
         "    K/N gates: %d" % len(atleast_gates) + "\n"
         "    NOT gates: %d" % len(not_gates) + "\n"
         "    XOR gates: %d" % len(xor_gates) + "\n"
         "Basic events to gates ratio: %f" %
-        (len(fault_tree.basic_events) / Gate.num_gates) + "\n"
-        "The average number of children for gates: %f" %
-        (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
+        (len(fault_tree.basic_events) / len(fault_tree.gates)) + "\n"
+        "The average number of gate arguments: %f" %
+        (sum(x.num_arguments() for x in fault_tree.gates) /
+            len(fault_tree.gates)) + "\n"
         "The number of common basic events: %d" % len(shared_b) + "\n"
         "The number of common gates: %d" % len(shared_g) + "\n"
         "Percentage of common basic events per gate: %f" % common_b + "\n"
         "Percentage of common gates per gate: %f" % common_g + "\n"
-        "Percentage of children that are basic events per gate: %f" %
+        "Percentage of arguments that are basic events per gate: %f" %
         frac_b + "\n")
     if shared_b:
         t_file.write(
@@ -863,58 +738,9 @@ def write_results(fault_tree):
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
-    nested_gates = set()  # collection of gates that got nested
-
-    def write_gate(gate, o_file):
-        """Print children for the gate.
-
-        Args:
-            gate: The gate to be printed.
-            o_file: The output file stream.
-        """
-        def write_formula(gate, o_file):
-            """Prints the formula of a gate.
-
-            Args:
-                gate: The gate to be printed.
-                o_file: The output file stream.
-            """
-            o_file.write("<" + gate.gate_type)
-            if gate.gate_type == "atleast":
-                o_file.write(" min=\"" + str(gate.k_num) + "\"")
-            o_file.write(">\n")
-            # Print children that are house events.
-            for h_child in gate.h_children:
-                o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
-            # Print children that are basic events.
-            for b_child in gate.b_children:
-                o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
-
-            # Print children that are gates.
-            if not Settings.nested:
-                for g_child in gate.g_children:
-                    o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-            else:
-                to_nest = [x for x in gate.g_children if not x.is_common()]
-                not_nest = [x for x in gate.g_children if x.is_common()]
-                for g_child in not_nest:
-                    o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-                for g_child in to_nest:
-                    write_formula(g_child, o_file)
-                nested_gates.update(to_nest)
-
-            o_file.write("</" + gate.gate_type + ">\n")
-
-        o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        write_formula(gate, o_file)
-        o_file.write("</define-gate>\n")
-
-    sorted_gates = toposort_gates(fault_tree.top_gate, Gate.gates)
+    sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
-        if Settings.nested and gate in nested_gates:
-            continue
-        write_gate(gate, t_file)
+        t_file.write(gate.to_xml(Settings.nested))
 
     # Proceed with ccf groups
     for ccf_group in fault_tree.ccf_groups:
@@ -947,7 +773,7 @@ def write_shorthand(fault_tree):
     nested_gates = set()
 
     def write_gate(gate, o_file):
-        """Print children for the gate.
+        """Print arguments for the gate.
 
         Args:
             gate: The gate to be printed.
@@ -962,55 +788,55 @@ def write_shorthand(fault_tree):
             """
             div = ""
             line_end = ""
-            if gate.gate_type == "and":
+            if gate.operator == "and":
                 line.append("(")
                 line_end = ")"
                 div = " & "
-            elif gate.gate_type == "or":
+            elif gate.operator == "or":
                 line.append("(")
                 line_end = ")"
                 div = " | "
-            elif gate.gate_type == "atleast":
+            elif gate.operator == "atleast":
                 line.append("@(" + str(gate.k_num) + ", [")
                 line_end = "])"
                 div = ", "
-            elif gate.gate_type == "not":
+            elif gate.operator == "not":
                 line.append("~")
                 line_end = ""
                 div = ""
-            elif gate.gate_type == "xor":
+            elif gate.operator == "xor":
                 line.append("(")
                 line_end = ")"
                 div = " ^ "
 
             first_child = True
-            # Print children that are house events.
-            for h_child in gate.h_children:
+            # Print arguments that are house events.
+            for h_child in gate.h_arguments:
                 if first_child:
                     line.append(h_child.name)
                     first_child = False
                 else:
                     line.append(div + h_child.name)
 
-            # Print children that are basic events.
-            for b_child in gate.b_children:
+            # Print arguments that are basic events.
+            for b_child in gate.b_arguments:
                 if first_child:
                     line.append(b_child.name)
                     first_child = False
                 else:
                     line.append(div + b_child.name)
 
-            # Print children that are gates.
+            # Print arguments that are gates.
             if not Settings.nested:
-                for g_child in gate.g_children:
+                for g_child in gate.g_arguments:
                     if first_child:
                         line.append(g_child.name)
                         first_child = False
                     else:
                         line.append(div + g_child.name)
             else:
-                to_nest = [x for x in gate.g_children if not x.is_common()]
-                not_nest = [x for x in gate.g_children if x.is_common()]
+                to_nest = [x for x in gate.g_arguments if not x.is_common()]
+                not_nest = [x for x in gate.g_arguments if x.is_common()]
                 for g_child in not_nest:
                     if first_child:
                         line.append(g_child.name)
@@ -1034,7 +860,7 @@ def write_shorthand(fault_tree):
         o_file.write("".join(line))
         o_file.write("\n")
 
-    sorted_gates = toposort_gates(fault_tree.top_gate, Gate.gates)
+    sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
         if Settings.nested and gate in nested_gates:
             continue
