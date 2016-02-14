@@ -35,8 +35,8 @@ Some requirements and additions to the shorthand format:
    and must be formatted according to 'XML NCNAME datatype'
    without double dashes('--'), period('.'), and trailing '-'.
 2. Arguments can be complemented with '~'.
-3. Undefined nodes are processed as 'events' to the final XML output.
-   Only warnings are emitted in the case of undefined nodes.
+3. Undefined arguments are processed as 'events' to the final XML output.
+   Only warnings are emitted in the case of undefined events.
 4. Name clashes or redefinitions are errors.
 5. Cycles in the graph are detected by the script as errors.
 6. The top gate is detected by the script.
@@ -49,13 +49,12 @@ Some requirements and additions to the shorthand format:
 
 from __future__ import print_function
 
-from collections import deque
 import os
 import re
 
 import argparse as ap
 
-from fault_tree import Node, BasicEvent, HouseEvent, Gate, toposort_gates
+from fault_tree import Event, BasicEvent, HouseEvent, Gate, FaultTree
 
 
 class ParsingError(Exception):
@@ -80,36 +79,29 @@ class LateBindingGate(Gate):
     """Representation of a gate with arguments defined late or not at all.
 
     Attributes:
-        node_arguments: String names of non-formula arguments like basic events.
+        event_arguments: String names of arguments.
     """
 
     def __init__(self, name, operator=None, k_num=None):
         """Initializes a gate.
 
         Args:
-            name: Identifier of the node.
+            name: Identifier of the event.
             operator: Boolean operator of this formula.
             k_num: Min number for the combination operator.
         """
         super(LateBindingGate, self).__init__(name, operator, k_num)
-        self.node_arguments = []
+        self.event_arguments = []
 
     def num_arguments(self):
         """Returns the number of arguments."""
-        return len(self.node_arguments)
+        return len(self.event_arguments)
 
 
-class FaultTree(object):
+class LateBindingFaultTree(FaultTree):
     """Representation of a fault tree for shorthand to XML purposes.
 
     Attributes:
-        name: The name of a fault tree.
-        gates: A collection of gates of a fault tree.
-        basic_events: A collection of basic events of a fault tree.
-        house_events: A collection of house events of a fault tree.
-        undef_nodes: Nodes that are not explicitly defined as gates or
-            basic events.
-        top_gates: The top gates of a fault tree. Single one is the default.
         multi_top: A flag to indicate to allow multiple top gates.
     """
 
@@ -120,16 +112,15 @@ class FaultTree(object):
             name: The name of the system described by the fault tree container.
             multi_top: A flag to indicate multi-rooted container.
         """
-        self.name = name
-        self.gates = {}
-        self.basic_events = {}
-        self.house_events = {}
-        self.undef_nodes = {}
-        self.top_gates = None
+        super(LateBindingFaultTree, self).__init__(name)
         self.multi_top = multi_top
+        self.__gates = {}
+        self.__basic_events = {}
+        self.__house_events = {}
+        self.__undef_events = {}
 
     def __check_redefinition(self, name):
-        """Checks if a node is being redefined.
+        """Checks if an event is being redefined.
 
         Args:
             name: The name under investigation.
@@ -137,10 +128,10 @@ class FaultTree(object):
         Raises:
             FaultTreeError: The given name already exists.
         """
-        if (name.lower() in self.basic_events or
-                name.lower() in self.gates or
-                name.lower() in self.house_events):
-            raise FaultTreeError("Redefinition of a node: " + name)
+        if (name.lower() in self.__basic_events or
+                name.lower() in self.__gates or
+                name.lower() in self.__house_events):
+            raise FaultTreeError("Redefinition of an event: " + name)
 
     def __detect_cycle(self):
         """Checks if the fault tree has a cycle.
@@ -159,7 +150,7 @@ class FaultTree(object):
 
             Returns:
                 None if no cycle is found.
-                A list of node names in a detected cycle path in reverse order.
+                A list of event names in a detected cycle path in reverse order.
             """
             if not gate.mark:
                 gate.mark = "temp"
@@ -193,7 +184,7 @@ class FaultTree(object):
             if cycle:
                 print_cycle(cycle)
 
-        detached_gates = [x for x in self.gates.values() if not x.mark]
+        detached_gates = [x for x in self.gates if not x.mark]
         if detached_gates:
             error_msg = "Detected detached gates that may be in a cycle\n"
             error_msg += str([x.name for x in detached_gates])
@@ -212,7 +203,7 @@ class FaultTree(object):
         Raises:
             FaultTreeError: Multiple or no top gates are detected.
         """
-        top_gates = [x for x in self.gates.values() if x.is_orphan()]
+        top_gates = [x for x in self.gates if x.is_orphan()]
         if len(top_gates) > 1 and not self.multi_top:
             names = [x.name for x in top_gates]
             raise FaultTreeError("Detected multiple top gates:\n" + str(names))
@@ -220,7 +211,7 @@ class FaultTree(object):
             raise FaultTreeError("No top gate is detected")
         self.top_gates = top_gates
 
-    def add_basic(self, name, prob):
+    def add_basic_event(self, name, prob):
         """Creates and adds a new basic event into the fault tree.
 
         Args:
@@ -231,9 +222,11 @@ class FaultTree(object):
             FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
-        self.basic_events.update({name.lower(): BasicEvent(name, prob)})
+        event = BasicEvent(name, prob)
+        self.__basic_events.update({name.lower(): event})
+        self.basic_events.append(event)
 
-    def add_house(self, name, state):
+    def add_house_event(self, name, state):
         """Creates and adds a new house event into the fault tree.
 
         Args:
@@ -244,7 +237,9 @@ class FaultTree(object):
             FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
-        self.house_events.update({name.lower(): HouseEvent(name, state)})
+        event = HouseEvent(name, state)
+        self.__house_events.update({name.lower(): event})
+        self.house_events.append(event)
 
     def add_gate(self, name, operator, arguments, k_num=None):
         """Creates and adds a new gate into the fault tree.
@@ -252,7 +247,7 @@ class FaultTree(object):
         Args:
             name: A name for the new gate.
             operator: A gate operator for the new gate.
-            arguments: Collection of argument node names of the new gate.
+            arguments: Collection of argument event names of the new gate.
             k_num: K number is required for a combination type of a gate.
 
         Raises:
@@ -260,8 +255,9 @@ class FaultTree(object):
         """
         self.__check_redefinition(name)
         gate = LateBindingGate(name, operator, k_num)
-        gate.node_arguments = arguments
-        self.gates.update({name.lower(): gate})
+        gate.event_arguments = arguments
+        self.__gates.update({name.lower(): gate})
+        self.gates.append(gate)
 
     def populate(self):
         """Assigns arguments to gates and parents to arguments.
@@ -269,31 +265,35 @@ class FaultTree(object):
         Raises:
             FaultTreeError: There are problems with the fault tree.
         """
-        for gate in self.gates.values():
+        for gate in self.gates:
             assert gate.num_arguments() > 0
-            for child in gate.node_arguments:
-                if child.lower() in self.gates:
-                    gate.add_argument(self.gates[child.lower()])
-                elif child.lower() in self.basic_events:
-                    gate.add_argument(self.basic_events[child.lower()])
-                elif child.lower() in self.house_events:
-                    gate.add_argument(self.house_events[child.lower()])
-                elif child.lower() in self.undef_nodes:
-                    gate.add_argument(self.undef_nodes[child.lower()])
+            for event_name in gate.event_arguments:
+                if event_name.lower() in self.__gates:
+                    gate.add_argument(self.__gates[event_name.lower()])
+                elif event_name.lower() in self.__basic_events:
+                    gate.add_argument(self.__basic_events[event_name.lower()])
+                elif event_name.lower() in self.__house_events:
+                    gate.add_argument(self.__house_events[event_name.lower()])
+                elif event_name.lower() in self.__undef_events:
+                    gate.add_argument(self.__undef_events[event_name.lower()])
                 else:
-                    print("Warning. Unidentified node: " + child)
-                    child_node = Node(child)
-                    self.undef_nodes.update({child.lower(): child_node})
-                    gate.add_argument(child_node)
+                    print("Warning. Unidentified event: " + event_name)
+                    event_node = Event(event_name)
+                    self.__undef_events.update({event_name.lower(): event_node})
+                    gate.add_argument(event_node)
 
-        for basic_event in self.basic_events.values():
+        for basic_event in self.basic_events:
             if basic_event.is_orphan():
                 print("Warning. Orphan basic event: " + basic_event.name)
-        for house_event in self.house_events.values():
+        for house_event in self.house_events:
             if house_event.is_orphan():
                 print("Warning. Orphan house event: " + house_event.name)
         self.__detect_top()
         self.__detect_cycle()
+
+    def undefined_events(self):
+        """Returns list of undefined events."""
+        return self.__undef_events.values()
 
 
 def parse_input_file(input_file, multi_top=False):
@@ -337,7 +337,7 @@ def parse_input_file(input_file, multi_top=False):
     null_re = re.compile(r"(" + name_sig + r")$")
 
     ft_name = None
-    fault_tree = FaultTree()
+    fault_tree = LateBindingFaultTree()
 
     def get_arguments(arguments_string, splitter):
         """Splits the input string into arguments of a formula.
@@ -350,7 +350,7 @@ def parse_input_file(input_file, multi_top=False):
             arguments list from the input string.
 
         Raises:
-            FaultTreeError: Repeated arguments for the node.
+            FaultTreeError: Repeated arguments for the formula.
         """
         arguments = arguments_string.strip().split(splitter)
         arguments = [x.strip() for x in arguments]
@@ -424,10 +424,10 @@ def parse_input_file(input_file, multi_top=False):
                 fault_tree.add_gate(gate_name, operator, arguments, k_num)
             elif prob_re.match(line):
                 event_name, prob = prob_re.match(line).group("name", "prob")
-                fault_tree.add_basic(event_name, prob)
+                fault_tree.add_basic_event(event_name, prob)
             elif state_re.match(line):
                 event_name, state = state_re.match(line).group("name", "state")
-                fault_tree.add_house(event_name, state)
+                fault_tree.add_house_event(event_name, state)
             elif ft_name_re.match(line):
                 if ft_name:
                     raise FormatError(
@@ -450,38 +450,6 @@ def parse_input_file(input_file, multi_top=False):
     return fault_tree
 
 
-def write_xml(fault_tree, tree_file):
-    """Writes the fault tree into an XML file.
-
-    The file is formatted according to OpenPSA MEF
-    but without indentations for human readability.
-
-    Args:
-        fault_tree: A full fault tree.
-        tree_file: A file open for writing.
-    """
-    tree_file.write("<?xml version=\"1.0\"?>\n")
-    tree_file.write("<opsa-mef>\n")
-    tree_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
-    sorted_gates = toposort_gates(fault_tree.top_gates,
-                                  fault_tree.gates.values())
-    for gate in sorted_gates:
-        tree_file.write(gate.to_xml())
-
-    tree_file.write("</define-fault-tree>\n")
-
-    if fault_tree.basic_events or fault_tree.house_events:
-        tree_file.write("<model-data>\n")
-        for basic_event in fault_tree.basic_events.values():
-            tree_file.write(basic_event.to_xml())
-
-        for house_event in fault_tree.house_events.values():
-            tree_file.write(house_event.to_xml())
-        tree_file.write("</model-data>\n")
-
-    tree_file.write("</opsa-mef>")
-
-
 def main():
     """Verifies arguments and calls parser and writer.
 
@@ -489,18 +457,13 @@ def main():
         ArgumentTypeError: There are problemns with the arguments.
     """
     description = "Shorthand => OpenPSA MEF XML Converter"
-
     parser = ap.ArgumentParser(description=description)
-
-    input_file = "input file with the shorthand notation"
-    parser.add_argument("input_file", type=str, nargs="?", help=input_file)
-
-    multi_top = "multiple top events"
-    parser.add_argument("--multi-top", help=multi_top, action="store_true")
-
-    out = "output file to write the converted input"
-    parser.add_argument("-o", "--out", help=out)
-
+    parser.add_argument("input_file", type=str, nargs="?",
+                        help="input file with the shorthand notation")
+    parser.add_argument("--multi-top", help="multiple top events",
+                        action="store_true")
+    parser.add_argument("-o", "--out",
+                        help="output file to write the converted input")
     args = parser.parse_args()
 
     if not args.input_file:
@@ -513,7 +476,8 @@ def main():
         out = out[:out.rfind(".")] + ".xml"
 
     with open(out, "w") as tree_file:
-        write_xml(fault_tree, tree_file)
+        tree_file.write("<?xml version=\"1.0\"?>\n")
+        tree_file.write(fault_tree.to_xml())
 
 if __name__ == "__main__":
     try:

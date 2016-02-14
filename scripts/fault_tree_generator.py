@@ -47,23 +47,14 @@ import random
 
 import argparse as ap
 
-from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, toposort_gates
+from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, FaultTree
 
 
-class FaultTree(object):
-    """Representation of a fault tree for generation purposes.
+class GeneratorFaultTree(FaultTree):
+    """Specialization of a fault tree for generation purposes.
 
     The construction of fault tree members are handled through this object.
     It is assumed that no removal is going to happen after construction.
-
-    Attributes:
-        name: The name of a fault tree.
-        top_gate: The root gate of the fault tree.
-        gates: A set of all gates that are created for the fault tree.
-        basic_events: A list of all basic events created for the fault tree.
-        house_events: A list of all house events created for the fault tree.
-        ccf_groups: A collection of created CCF groups.
-        non_ccf_events: A list of basic events that are not in CCF groups.
     """
 
     min_prob = 0  # TODO: move to factors.
@@ -75,13 +66,7 @@ class FaultTree(object):
         Args:
             name: The name of the system described by the fault tree container.
         """
-        self.name = name
-        self.top_gate = None
-        self.gates = []
-        self.basic_events = []
-        self.house_events = []
-        self.ccf_groups = []
-        self.non_ccf_events = None  # must be assigned directly.
+        super(GeneratorFaultTree, self).__init__(name)
 
     def construct_gate(self):
         """Constructs a new gate.
@@ -99,8 +84,8 @@ class FaultTree(object):
             A fully initialized basic event with a random probability.
         """
         basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
-                                 random.uniform(FaultTree.min_prob,
-                                                FaultTree.max_prob))
+                                 random.uniform(GeneratorFaultTree.min_prob,
+                                                GeneratorFaultTree.max_prob))
         self.basic_events.append(basic_event)
         return basic_event
 
@@ -128,7 +113,8 @@ class FaultTree(object):
         ccf_group = CcfGroup("CCF" + str(len(self.ccf_groups) + 1))
         self.ccf_groups.append(ccf_group)
         ccf_group.members = members
-        ccf_group.prob = random.uniform(FaultTree.min_prob, FaultTree.max_prob)
+        ccf_group.prob = random.uniform(GeneratorFaultTree.min_prob,
+                                        GeneratorFaultTree.max_prob)
         ccf_group.model = "MGL"
         levels = random.randint(2, len(members))
         ccf_group.factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
@@ -527,7 +513,7 @@ def generate_fault_tree(ft_name, root_name):
     Returns:
         Top gate of the created fault tree.
     """
-    fault_tree = FaultTree(ft_name)
+    fault_tree = GeneratorFaultTree(ft_name)
     # Start with a top event
     top_event = fault_tree.construct_gate()
     fault_tree.top_gate = top_event
@@ -686,85 +672,6 @@ def write_summary(fault_tree, tree_file):
             (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
 
     tree_file.write("-->\n\n")
-
-
-def write_model_data(basic_events, house_events, tree_file):
-    """Appends model data with primary event descriptions.
-
-    Args:
-        basic_events: A set of basic events.
-        house_events: A set of house events.
-        tree_file: A file open for writing.
-    """
-    tree_file.write("<model-data>\n")
-    for basic_event in basic_events:
-        tree_file.write(basic_event.to_xml())
-
-    for house_event in house_events:
-        tree_file.write(house_event.to_xml())
-    tree_file.write("</model-data>\n")
-
-
-def write_xml(fault_tree, tree_file, nest=0):
-    """Writes results of a generated fault tree into an XML file.
-
-    Writes the information about the fault tree in an XML file.
-    The fault tree is printed breadth-first.
-    The output XML file is not formatted for human readability.
-
-    Args:
-        fault_tree: A full, valid, well-formed fault tree.
-        tree_file: A file open for writing.
-        nest: A nesting factor for the Boolean formulae.
-    """
-    # Plain text is used instead of any XML tools for performance reasons.
-    tree_file.write("<opsa-mef>\n")
-    tree_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
-
-    sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
-    for gate in sorted_gates:
-        tree_file.write(gate.to_xml(nest))
-
-    # Proceed with ccf groups
-    for ccf_group in fault_tree.ccf_groups:
-        tree_file.write(ccf_group.to_xml())
-
-    tree_file.write("</define-fault-tree>\n")
-
-    if Factors.num_ccf:
-        write_model_data(fault_tree.non_ccf_events, fault_tree.house_events,
-                         tree_file)
-    else:
-        write_model_data(fault_tree.basic_events, fault_tree.house_events,
-                         tree_file)
-
-    tree_file.write("</opsa-mef>")
-
-
-def write_shorthand(fault_tree, tree_file):
-    """Writes the results into the shorthand format file.
-
-    Note that the shorthand format does not support advanced gates or groups.
-
-    Args:
-        fault_tree: A full, valid, well-formed fault tree.
-        tree_file: A file open for writing.
-    """
-    tree_file.write(fault_tree.name + "\n\n")
-
-    sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
-    for gate in sorted_gates:
-        tree_file.write(gate.to_shorthand())
-
-    # Write basic events
-    tree_file.write("\n")
-    for basic_event in fault_tree.basic_events:
-        tree_file.write(basic_event.to_shorthand())
-
-    # Write house events
-    tree_file.write("\n")
-    for house_event in fault_tree.house_events:
-        tree_file.write(house_event.to_shorthand())
 
 
 def check_if_positive(desc, val):
@@ -982,8 +889,8 @@ def setup_factors(args):
     """
     validate_setup(args)
     random.seed(args.seed)
-    FaultTree.min_prob = args.minprob  # TODO: Eliminate.
-    FaultTree.max_prob = args.maxprob  # TODO: Eliminate.
+    GeneratorFaultTree.min_prob = args.minprob  # TODO: Eliminate.
+    GeneratorFaultTree.max_prob = args.maxprob  # TODO: Eliminate.
     Factors.num_basics = args.basics
     Factors.num_house = args.house
     Factors.num_ccf = args.ccf
@@ -1000,7 +907,6 @@ def setup_factors(args):
 
     if args.gates:
         Factors.constrain_num_gates(args.gates)
-
     Factors.calculate()
 
 
@@ -1017,11 +923,11 @@ def main():
 
     with open(args.out, "w") as tree_file:
         if args.shorthand:
-            write_shorthand(fault_tree, tree_file)
+            tree_file.write(fault_tree.to_shorthand())
         else:
             write_info(fault_tree, tree_file, args.seed)
             write_summary(fault_tree, tree_file)
-            write_xml(fault_tree, tree_file, args.nest)
+            tree_file.write(fault_tree.to_xml(args.nest))
 
 if __name__ == "__main__":
     try:

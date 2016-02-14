@@ -29,7 +29,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
     assert_less
 
 from fault_tree_generator import Factors, generate_fault_tree, write_info, \
-    write_summary, write_xml, write_shorthand, FaultTree
+    write_summary, GeneratorFaultTree
 
 
 class FaultTreeGeneratorTestCase(TestCase):
@@ -48,8 +48,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.parents_b = 2
         Factors.parents_g = 2
         Factors.set_weights([1, 1, 0, 0, 0])
-        FaultTree.min_prob = 0.01
-        FaultTree.max_prob = 0.1
+        GeneratorFaultTree.min_prob = 0.01
+        GeneratorFaultTree.max_prob = 0.1
         Factors.calculate()
 
     def test_xml_output(self):
@@ -62,7 +62,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         assert_is_not_none(fault_tree)
         write_info(fault_tree, self.output, 123)
         write_summary(fault_tree, self.output)
-        write_xml(fault_tree, self.output, 1)
+        self.output.write(fault_tree.to_xml(1))
         self.output.flush()
         relaxng_doc = etree.parse("../share/input.rng")
         relaxng = etree.RelaxNG(relaxng_doc)
@@ -78,7 +78,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root")
         assert_is_not_none(fault_tree)
-        write_shorthand(fault_tree, self.output)
+        self.output.write(fault_tree.to_shorthand())
         self.output.file.flush()
         tmp = NamedTemporaryFile()
         cmd = ["./shorthand_to_xml.py", self.output.name, "-o", tmp.name]

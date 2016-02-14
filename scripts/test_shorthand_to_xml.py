@@ -25,7 +25,7 @@ from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
     assert_true
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
-    parse_input_file, write_xml
+    parse_input_file
 
 
 def test_correct():
@@ -51,9 +51,10 @@ def test_correct():
     yield assert_equal, 8, len(fault_tree.gates)
     yield assert_equal, 3, len(fault_tree.basic_events)
     yield assert_equal, 2, len(fault_tree.house_events)
-    yield assert_equal, 1, len(fault_tree.undef_nodes)
+    yield assert_equal, 1, len(fault_tree.undefined_events())
     out = NamedTemporaryFile()
-    write_xml(fault_tree, out)
+    out.write("<?xml version=\"1.0\"?>\n")
+    out.write(fault_tree.to_xml())
     out.flush()
     relaxng_doc = etree.parse("../share/input.rng")
     relaxng = etree.RelaxNG(relaxng_doc)
@@ -190,9 +191,9 @@ def test_null_gate():
     fault_tree = parse_input_file(tmp.name)
     assert_is_not_none(fault_tree)
     yield assert_equal, 1, len(fault_tree.gates)
-    yield assert_true, "g1" in fault_tree.gates
-    yield assert_true, "a" in fault_tree.gates["g1"].node_arguments
-    yield assert_equal, "null", fault_tree.gates["g1"].operator
+    yield assert_equal, "g1", fault_tree.gates[0].name
+    yield assert_true, "a" in fault_tree.gates[0].event_arguments
+    yield assert_equal, "null", fault_tree.gates[0].operator
 
 
 def test_no_top_event():
@@ -209,7 +210,7 @@ def test_no_top_event():
 
 
 def test_multi_top():
-    """Multiple root nodes without the flag causes a problem by default."""
+    """Multiple root events without the flag causes a problem by default."""
     tmp = NamedTemporaryFile()
     tmp.write("FT\n")
     tmp.write("g1 := e2 & e1\n")
@@ -220,18 +221,18 @@ def test_multi_top():
 
 
 def test_redefinition():
-    """Tests name collision detection of nodes."""
+    """Tests name collision detection of events."""
     tmp = NamedTemporaryFile()
     tmp.write("FT\n")
     tmp.write("g1 := g2 & e1\n")
     tmp.write("g2 := h1 & e1\n")
-    tmp.write("g2 := e2 & e1\n")  # redefining a node
+    tmp.write("g2 := e2 & e1\n")  # redefining an event
     tmp.flush()
     assert_raises(FaultTreeError, parse_input_file, tmp.name)
 
 
-def test_orphan_nodes():
-    """Tests cases with orphan house and basic event nodes."""
+def test_orphan_events():
+    """Tests cases with orphan house and basic event events."""
     tmp = NamedTemporaryFile()
     tmp.write("FT\n")
     tmp.write("g1 := g2 & e1\n")

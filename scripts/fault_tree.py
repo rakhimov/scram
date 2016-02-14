@@ -20,8 +20,8 @@
 from collections import deque
 
 
-class Node(object):
-    """Representation of a base class for a node in a fault tree.
+class Event(object):
+    """Representation of a base class for an event in a fault tree.
 
     Attributes:
         name: A specific name that identifies this node.
@@ -61,7 +61,7 @@ class Node(object):
         self.parents.add(gate)
 
 
-class BasicEvent(Node):
+class BasicEvent(Event):
     """Representation of a basic event in a fault tree.
 
     Attributes:
@@ -89,7 +89,7 @@ class BasicEvent(Node):
         return "p(" + self.name + ") = " + str(self.prob) + "\n"
 
 
-class HouseEvent(Node):
+class HouseEvent(Event):
     """Representation of a house event in a fault tree.
 
     Attributes:
@@ -117,7 +117,7 @@ class HouseEvent(Node):
         return "s(" + self.name + ") = " + str(self.state) + "\n"
 
 
-class Gate(Node):
+class Gate(Event):
     """Representation of a fault tree gate.
 
     Attributes:
@@ -158,7 +158,7 @@ class Gate(Node):
         Note that this function also updates the parent set of the argument.
 
         Args:
-            argument: Gate, HouseEvent, BasicEvent, or Node argument.
+            argument: Gate, HouseEvent, BasicEvent, or Event argument.
         """
         argument.parents.add(self)
         if isinstance(argument, Gate):
@@ -168,7 +168,7 @@ class Gate(Node):
         elif isinstance(argument, HouseEvent):
             self.h_arguments.add(argument)
         else:
-            assert isinstance(argument, Node)
+            assert isinstance(argument, Event)
             self.u_arguments.add(argument)
 
     def get_ancestors(self):
@@ -299,6 +299,99 @@ class CcfGroup(object):
 
         mef_xml += "</factors>\n</define-CCF-group>\n"
         return mef_xml
+
+
+class FaultTree(object):
+    """Representation of a fault tree for general purposes.
+
+    Attributes:
+        name: The name of a fault tree.
+        top_gate: The root gate of the fault tree.
+        top_gates: Container of top gates. Single one is the default.
+        gates: A set of all gates that are created for the fault tree.
+        basic_events: A list of all basic events created for the fault tree.
+        house_events: A list of all house events created for the fault tree.
+        ccf_groups: A collection of created CCF groups.
+        non_ccf_events: A list of basic events that are not in CCF groups.
+    """
+
+    def __init__(self, name=None):
+        """Initializes an empty fault tree.
+
+        Args:
+            name: The name of the system described by the fault tree container.
+        """
+        self.name = name
+        self.top_gate = None
+        self.top_gates = None
+        self.gates = []
+        self.basic_events = []
+        self.house_events = []
+        self.ccf_groups = []
+        self.non_ccf_events = []  # must be assigned directly.
+
+    def to_xml(self, nest=0):
+        """Produces OpenPSA MEF XML definition of the fault tree.
+
+        The fault tree is produces breadth-first.
+        The output XML representation is not formatted for human readability.
+        The fault tree must be valid and well-formed.
+
+        Args:
+            nest: A nesting factor for the Boolean formulae.
+
+        Returns:
+            XML snippet representing the fault tree container.
+        """
+        mef_xml = "<opsa-mef>\n"
+        mef_xml += "<define-fault-tree name=\"%s\">\n" % self.name
+
+        sorted_gates = toposort_gates(self.top_gates or [self.top_gate],
+                                      self.gates)
+        for gate in sorted_gates:
+            mef_xml += gate.to_xml(nest)
+
+        for ccf_group in self.ccf_groups:
+            mef_xml += ccf_group.to_xml()
+        mef_xml += "</define-fault-tree>\n"
+
+        mef_xml += "<model-data>\n"
+        if self.ccf_groups:
+            for basic_event in self.non_ccf_events:
+                mef_xml += basic_event.to_xml()
+        else:
+            for basic_event in self.basic_events:
+                mef_xml += basic_event.to_xml()
+
+        for house_event in self.house_events:
+            mef_xml += house_event.to_xml()
+        mef_xml += "</model-data>\n"
+        mef_xml += "</opsa-mef>\n"
+        return mef_xml
+
+    def to_shorthand(self):
+        """Produces the shorthand definition of the fault tree.
+
+        Note that the shorthand format does not support advanced features.
+        The fault tree must be valid and well formed for printing.
+
+        Returns:
+            A text snippet representing the fault tree.
+
+        Raises:
+            KeyError: Some gate operator is not supported.
+        """
+        out_txt = self.name + "\n\n"
+        sorted_gates = toposort_gates([self.top_gate], self.gates)
+        for gate in sorted_gates:
+            out_txt += gate.to_shorthand()
+        out_txt += "\n"
+        for basic_event in self.basic_events:
+            out_txt += basic_event.to_shorthand()
+        out_txt += "\n"
+        for house_event in self.house_events:
+            out_txt += house_event.to_shorthand()
+        return out_txt
 
 
 def toposort_gates(root_gates, gates):
