@@ -47,7 +47,7 @@ import random
 
 import argparse as ap
 
-from fault_tree import CcfGroup
+from fault_tree import HouseEvent, CcfGroup
 
 
 class Node(object):
@@ -190,32 +190,6 @@ class BasicEvent(Node):
         BasicEvent.basic_events.append(self)
 
 
-class HouseEvent(Node):
-    """Representation of a house event in a fault tree.
-
-    Names are assigned sequentially starting from H1.
-
-    Attributes:
-        num_house: Total number of house events created.
-        state: The state of the house event.
-        house_events: A list of all house events created for the fault tree.
-    """
-
-    num_house = 0
-    house_events = []  # container for created house events
-
-    def __init__(self, parent=None):
-        """Initializes a house event with a unique identifier.
-
-        Args:
-            parent: Optional initial parent of this node.
-        """
-        HouseEvent.num_house += 1
-        super(HouseEvent, self).__init__("H" + str(HouseEvent.num_house),
-                                         parent)
-        self.state = random.choice(["true", "false"])
-        HouseEvent.house_events.append(self)
-
 class FaultTree(object):
     """Representation of a fault tree for generation purposes.
 
@@ -246,6 +220,17 @@ class FaultTree(object):
         self.basic_events = []
         self.house_events = []
         self.ccf_groups = []
+
+    def construct_house_event(self):
+        """Constructs a house event with a unique identifier.
+
+        Returns:
+            A fully initialized house event with random state.
+        """
+        house_event = HouseEvent("H" + str(len(self.house_events) + 1),
+                                 random.choice(["true", "false"]))
+        self.house_events.append(house_event)
+        return house_event
 
     def construct_ccf_group(self, members):
         """Constructs a unique CCF group with factors.
@@ -701,12 +686,12 @@ def generate_fault_tree():
     assert(not [x for x in Gate.gates if not x.parents and x is not top_event])
 
     # Distribute house events
-    while len(HouseEvent.house_events) < Factors.num_house:
+    while len(fault_tree.house_events) < Factors.num_house:
         target_gate = random.choice(Gate.gates)
         if (target_gate is not top_event and
                 target_gate.gate_type != "xor" and
                 target_gate.gate_type != "not"):
-            HouseEvent(target_gate)
+            target_gate.add_child(fault_tree.construct_house_event())
 
     # Create CCF groups from the existing basic events.
     if Factors.num_ccf:
@@ -828,7 +813,7 @@ def write_info(fault_tree):
     t_file.write(
         "<!--\nThe generated fault tree has the following metrics:\n\n"
         "The number of basic events: %d" % BasicEvent.num_basic + "\n"
-        "The number of house events: %d" % HouseEvent.num_house + "\n"
+        "The number of house events: %d" % len(fault_tree.house_events) + "\n"
         "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
         "The number of gates: %d" % Gate.num_gates + "\n"
         "    AND gates: %d" % len(and_gates) + "\n"
@@ -858,12 +843,13 @@ def write_info(fault_tree):
     t_file.write("-->\n\n")
 
 
-def write_model_data(t_file, basic_events):
+def write_model_data(t_file, basic_events, house_events):
     """Appends model data with primary event descriptions.
 
     Args:
         t_file: The output stream.
         basic_events: A set of basic events.
+        basic_events: A set of house events.
     """
     # Print probabilities of basic events
     t_file.write("<model-data>\n")
@@ -873,10 +859,8 @@ def write_model_data(t_file, basic_events):
                      "<float value=\"" + str(basic.prob) + "\"/>\n"
                      "</define-basic-event>\n")
 
-    for house in HouseEvent.house_events:
-        t_file.write("<define-house-event name=\"" + house.name + "\">\n"
-                     "<constant value=\"" + house.state + "\"/>\n"
-                     "</define-house-event>\n")
+    for house_event in house_events:
+        t_file.write(house_event.to_xml())
 
     t_file.write("</model-data>\n")
 
@@ -958,9 +942,11 @@ def write_results(fault_tree):
     t_file.write("</define-fault-tree>\n")
 
     if Factors.num_ccf:
-        write_model_data(t_file, BasicEvent.non_ccf_events)
+        write_model_data(t_file, BasicEvent.non_ccf_events,
+                         fault_tree.house_events)
     else:
-        write_model_data(t_file, BasicEvent.basic_events)
+        write_model_data(t_file, BasicEvent.basic_events,
+                         fault_tree.house_events)
 
     t_file.write("</opsa-mef>")
     t_file.close()
@@ -1080,8 +1066,8 @@ def write_shorthand(fault_tree):
 
     # Write house events
     t_file.write("\n")
-    for house in HouseEvent.house_events:
-        t_file.write("s(" + house.name + ") = " + str(house.state) + "\n")
+    for house_event in fault_tree.house_events:
+        t_file.write(house_event.to_shorthand())
 
 
 def check_if_positive(desc, val):

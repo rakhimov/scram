@@ -17,6 +17,75 @@
 
 """Fault tree classes and common facilities."""
 
+class Node(object):
+    """Representation of a base class for a node in a fault tree.
+
+    Attributes:
+        name: A specific name that identifies this node.
+        parents: A set of parents of this node.
+    """
+
+    def __init__(self, name):
+        """Constructs a new node with a unique name.
+
+        Note that the tracking of parents introduces a cyclic reference.
+
+        Args:
+            name: Identifier for the node.
+        """
+        self.name = name
+        self.parents = set()
+
+    def is_common(self):
+        """Indicates if this node appears in several places."""
+        return len(self.parents) > 1
+
+    def is_orphan(self):
+        """Determines if the node is parentless."""
+        return not self.parents
+
+    def num_parents(self):
+        """Returns the number of unique parents."""
+        return len(self.parents)
+
+    def add_parent(self, gate):
+        """Adds a gate as a parent of the node.
+
+        Args:
+            gate: The gate where this node appears.
+        """
+        assert gate not in self.parents
+        self.parents.add(gate)
+
+
+class HouseEvent(Node):
+    """Representation of a house event in a fault tree.
+
+    Attributes:
+        state: State of the house event ("true" or "false").
+    """
+
+    def __init__(self, name, state):
+        """Initializes a house event node.
+
+        Args:
+            name: Identifier of the node.
+            state: Boolean state string of the constant.
+        """
+        super(HouseEvent, self).__init__(name)
+        self.state = state
+
+    def to_xml(self):
+        """Produces OpenPSA MEF XML definition of the house event."""
+        return ("<define-house-event name=\"" + self.name + "\">\n"
+                "<constant value=\"" + self.state + "\"/>\n"
+                "</define-house-event>\n")
+
+    def to_shorthand(self):
+        """Produces the shorthand definition of the house event."""
+        return "s(" + self.name + ") = " + str(self.state) + "\n"
+
+
 class CcfGroup(object):
     """Representation of CCF groups in a fault tree.
 
@@ -41,7 +110,7 @@ class CcfGroup(object):
         self.factors = None
 
     def to_xml(self):
-        """Produces OpenPSA MEF XML representation of the CCF group."""
+        """Produces OpenPSA MEF XML definition of the CCF group."""
         mef_xml = ("<define-CCF-group name=\"" + self.name + "\""
                    " model=\"" + self.model + "\">\n<members>\n")
         for member in self.members:

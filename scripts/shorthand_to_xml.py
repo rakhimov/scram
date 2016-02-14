@@ -55,6 +55,8 @@ import re
 
 import argparse as ap
 
+from fault_tree import Node, HouseEvent
+
 
 class ParsingError(Exception):
     """General parsing errors."""
@@ -74,37 +76,6 @@ class FaultTreeError(Exception):
     pass
 
 
-class Node(object):
-    """Representation of a base class for a node in a fault tree.
-
-    Attributes:
-        name: A specific name that identifies this node.
-    """
-
-    def __init__(self, name):
-        """Initializes a node with an identifier.
-
-        Args:
-            name: Identifier of the node.
-        """
-        self.name = name
-        self.__parents = set()
-
-    def add_parent(self, gate):
-        """Adds a gate as a parent of the node.
-
-        Args:
-            gate: The gate where this node appears.
-        """
-        assert gate not in self.__parents
-        assert isinstance(gate, Gate)
-        self.__parents.add(gate)
-
-    def is_orphan(self):
-        """Determines if the node is parentless."""
-        return not self.__parents
-
-
 class BasicEvent(Node):
     """Representation of a basic event in a fault tree.
 
@@ -121,24 +92,6 @@ class BasicEvent(Node):
         """
         super(BasicEvent, self).__init__(name)
         self.prob = prob
-
-
-class HouseEvent(Node):
-    """Representation of a house event in a fault tree.
-
-    Attributes:
-        state: State of the house event ("true" or "false").
-    """
-
-    def __init__(self, name, state):
-        """Initializes a house event node.
-
-        Args:
-            name: Identifier of the node.
-            state: Boolean state of the constant.
-        """
-        super(HouseEvent, self).__init__(name)
-        self.state = state
 
 
 class Gate(Node):
@@ -632,10 +585,8 @@ def write_to_xml_file(fault_tree, output_file):
                          "<float value=\"" + str(basic.prob) + "\"/>\n"
                          "</define-basic-event>\n")
 
-        for house in fault_tree.house_events.values():
-            t_file.write("<define-house-event name=\"" + house.name + "\">\n"
-                         "<constant value=\"" + str(house.state) + "\"/>\n"
-                         "</define-house-event>\n")
+        for house_event in fault_tree.house_events.values():
+            t_file.write(house_event.to_xml())
         t_file.write("</model-data>\n")
 
     t_file.write("</opsa-mef>")
