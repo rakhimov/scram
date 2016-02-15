@@ -132,9 +132,9 @@ def test_logging():
     """Tests invokation with logging."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
     cmd = ["scram", fta_input, "--verbosity", "-1"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
     cmd = ["scram", fta_input, "--verbosity", "8"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
     cmd = ["scram", fta_input, "--verbosity", "7"]
     yield assert_equal, 0, call(cmd)
 
