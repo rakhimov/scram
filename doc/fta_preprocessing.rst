@@ -43,8 +43,8 @@ After this operation,
 the graph is in normal form.
 
 
-Propagating Complements
-=======================
+Complement Propagation
+======================
 
 Complements or negations of gates are pushed down to basic events
 according to the De Morgan's law [Rau03]_.

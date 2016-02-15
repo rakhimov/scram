@@ -62,7 +62,7 @@ Core C++ Code
 - Consider creating a typedef (using declaration/alias)
   for common smart pointers.
 
-    * ``ClassNamePtr`` for shared and unique pointers
+    * ``ClassNamePtr`` for shared, unique, and intrusive pointers
     * ``ClassNameWeakPtr`` for weak pointers
 
 - Prefer "modern C++" (C++11).
@@ -74,6 +74,7 @@ Core C++ Code
       with the corresponding class names, i.e., ``ClassName::Foo()``.
     * Qualify virtual functions to be overridden by design as ``this->Foo()``.
     * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
+    * Unqualified calls relying on the ADL must state the intent in the documentation.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
@@ -166,10 +167,16 @@ Metric                 Before Release       On Release
 C++ Code Coverage      80%                  95%
 C++ Defect Density     0.5 per 1000 SLOC    0.35 per 1000 SLOC
 CCN                    15                   15
-Python Code Coverage   80%                  90%
+Python Code Coverage   80%                  95%
 Pylint Score           9.0                  9.5
 Documentation          Full                 Full
 ====================   ==================   ==================
+
+.. note:: C++ defects that count towards the defect density
+          include analysis errors, Coverity report, memory leaks,
+          and *known* critical bugs.
+
+.. note:: Utility scripts written in Python are exempt from the test coverage requirement.
 
 
 Testing and Continuous Integration
