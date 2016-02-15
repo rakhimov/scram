@@ -68,6 +68,8 @@ class GeneratorFaultTree(FaultTree):
     def construct_gate(self):
         """Constructs a new gate.
 
+        Returns:
+            A fully initialized gate with random attributes.
         """
         gate = Gate("G" + str(len(self.gates) + 1),
                     Factors.get_random_operator())
@@ -607,24 +609,46 @@ def write_info(fault_tree, tree_file, seed):
         "-->\n")
 
 
-def write_summary(fault_tree, tree_file):
-    """Writes the summary of the generated fault tree.
+def get_size_summary(fault_tree):
+    """Gathers information about the size of the fault tree.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
-        tree_file: A file open for writing.
+
+    Returns:
+        A text snippet to be embedded in a XML summary.
     """
-    shared_b = [x for x in fault_tree.basic_events if x.is_common()]
-    shared_g = [x for x in fault_tree.gates if x.is_common()]
     and_gates = [x for x in fault_tree.gates if x.operator == "and"]
     or_gates = [x for x in fault_tree.gates if x.operator == "or"]
     atleast_gates = [x for x in fault_tree.gates if x.operator == "atleast"]
     not_gates = [x for x in fault_tree.gates if x.operator == "not"]
     xor_gates = [x for x in fault_tree.gates if x.operator == "xor"]
+    return (
+        "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
+        "The number of house events: %d" % len(fault_tree.house_events) + "\n"
+        "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
+        "The number of gates: %d" % len(fault_tree.gates) + "\n"
+        "    AND gates: %d" % len(and_gates) + "\n"
+        "    OR gates: %d" % len(or_gates) + "\n"
+        "    K/N gates: %d" % len(atleast_gates) + "\n"
+        "    NOT gates: %d" % len(not_gates) + "\n"
+        "    XOR gates: %d" % len(xor_gates) + "\n")
 
-    frac_b = 0  # fraction of basic events in arguments per gate
-    common_b = 0  # fraction of common basic events in basic events per gate
-    common_g = 0  # fraction of common gates in gates per gate
+
+def calculate_complexity_factors(fault_tree):
+    """Computes complexity factors of the generated fault tree.
+
+    Args:
+        fault_tree: A full, valid, well-formed fault tree.
+
+    Returns:
+        frac_b: fraction of basic events in arguments per gate
+        common_b: fraction of common basic events in basic events per gate
+        common_g: fraction of common gates in gates per gate
+    """
+    frac_b = 0
+    common_b = 0
+    common_g = 0
     for gate in fault_tree.gates:
         num_b_arguments = len(gate.b_arguments)
         num_g_arguments = len(gate.g_arguments)
@@ -635,22 +659,25 @@ def write_summary(fault_tree, tree_file):
         if gate.g_arguments:
             num_common_g = len([x for x in gate.g_arguments if x.is_common()])
             common_g += num_common_g / num_g_arguments
-    num_gates = len(fault_tree.gates)
     common_b /= len([x for x in fault_tree.gates if x.b_arguments])
     common_g /= len([x for x in fault_tree.gates if x.g_arguments])
-    frac_b /= num_gates
+    frac_b /= len(fault_tree.gates)
+    return frac_b, common_b, common_g
 
-    tree_file.write(
-        "<!--\nThe generated fault tree has the following metrics:\n\n"
-        "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
-        "The number of house events: %d" % len(fault_tree.house_events) + "\n"
-        "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
-        "The number of gates: %d" % len(fault_tree.gates) + "\n"
-        "    AND gates: %d" % len(and_gates) + "\n"
-        "    OR gates: %d" % len(or_gates) + "\n"
-        "    K/N gates: %d" % len(atleast_gates) + "\n"
-        "    NOT gates: %d" % len(not_gates) + "\n"
-        "    XOR gates: %d" % len(xor_gates) + "\n"
+
+def get_complexity_summary(fault_tree):
+    """Gathers information about the complexity factors of the fault tree.
+
+    Args:
+        fault_tree: A full, valid, well-formed fault tree.
+
+    Returns:
+        A text snippet to be embedded in a XML summary.
+    """
+    frac_b, common_b, common_g = calculate_complexity_factors(fault_tree)
+    shared_b = [x for x in fault_tree.basic_events if x.is_common()]
+    shared_g = [x for x in fault_tree.gates if x.is_common()]
+    summary_txt = (
         "Basic events to gates ratio: %f" %
         (len(fault_tree.basic_events) / len(fault_tree.gates)) + "\n"
         "The average number of gate arguments: %f" %
@@ -663,14 +690,27 @@ def write_summary(fault_tree, tree_file):
         "Percentage of arguments that are basic events per gate: %f" %
         frac_b + "\n")
     if shared_b:
-        tree_file.write(
+        summary_txt += (
             "The avg. number of parents for common basic events: %f" %
             (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
     if shared_g:
-        tree_file.write(
+        summary_txt += (
             "The avg. number of parents for common gates: %f" %
             (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
+    return summary_txt
 
+
+def write_summary(fault_tree, tree_file):
+    """Writes the summary of the generated fault tree.
+
+    Args:
+        fault_tree: A full, valid, well-formed fault tree.
+        tree_file: A file open for writing.
+    """
+    tree_file.write(
+        "<!--\nThe generated fault tree has the following metrics:\n\n")
+    tree_file.write(get_size_summary(fault_tree))
+    tree_file.write(get_complexity_summary(fault_tree))
     tree_file.write("-->\n\n")
 
 
