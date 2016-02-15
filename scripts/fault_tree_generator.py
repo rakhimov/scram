@@ -458,6 +458,31 @@ def correct_for_exhaustion(gates_queue, common_gates, fault_tree):
         gates_queue.append(new_gate)
 
 
+def choose_basic_event(s_common, common_basics, fault_tree):
+    """Creates a new basic event or uses a common one for gate arguments.
+
+    Args:
+        s_common: Sampled factor to choose common basic events.
+        common_basics: A list of common basic events to choose from.
+        fault_tree: The fault tree container of all events and constructs.
+
+    Returns:
+        Basic event argument for a gate.
+    """
+    if s_common < Factors.common_b and common_basics:
+        orphans = [x for x in common_basics if not x.parents]
+        if orphans:
+            return random.choice(orphans)
+
+        single_parent = [x for x in common_basics if len(x.parents) == 1]
+        if single_parent:
+            return random.choice(single_parent)
+
+        return random.choice(common_basics)
+    else:
+        return fault_tree.construct_basic_event()
+
+
 def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     """Initializes gates and other basic events.
 
@@ -508,21 +533,8 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
                 gate.add_argument(new_gate)
                 gates_queue.append(new_gate)
         else:
-            # Create a new basic event or use a common one
-            if s_common < Factors.common_b and common_basics:
-                orphans = [x for x in common_basics if not x.parents]
-                if orphans:
-                    gate.add_argument(random.choice(orphans))
-                    continue
-
-                single_parent = [x for x in common_basics
-                                 if len(x.parents) == 1]
-                if single_parent:
-                    gate.add_argument(random.choice(single_parent))
-                else:
-                    gate.add_argument(random.choice(common_basics))
-            else:
-                gate.add_argument(fault_tree.construct_basic_event())
+            gate.add_argument(choose_basic_event(s_common, common_basics,
+                                                 fault_tree))
 
     correct_for_exhaustion(gates_queue, common_gates, fault_tree)
 
