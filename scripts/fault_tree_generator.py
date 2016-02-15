@@ -987,7 +987,7 @@ def setup_factors(args):
     Factors.avg_children = args.children
 
     weights_float = [float(i) for i in args.weights_g]
-    for i in range(5 - len(weights_float)):
+    for _ in range(5 - len(weights_float)):
         weights_float.append(0)
     Factors.set_weights(weights_float)
 

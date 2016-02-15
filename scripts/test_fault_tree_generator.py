@@ -29,7 +29,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
     assert_less
 
 from fault_tree_generator import Factors, generate_fault_tree, write_info, \
-    write_summary, GeneratorFaultTree
+    write_summary
 
 
 class FaultTreeGeneratorTestCase(TestCase):

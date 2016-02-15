@@ -6,6 +6,10 @@ pep257:
     disable: [D203, D401]
 pep8:
     full: true
+mccabe:
+    options: {max-complexity: 15}
+pylint:
+    enable: [bad-continuation, fixme]
 python-targets:
     - 2
     - 3
