@@ -25,7 +25,13 @@ from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
     assert_true
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
-    parse_input_file
+    parse_input
+
+
+def parse_input_file(name, multi_top=False):
+    """Calls the input file parser to get the fault tree."""
+    with open(name) as shorthand_file:
+        return parse_input(shorthand_file, multi_top)
 
 
 def test_correct():

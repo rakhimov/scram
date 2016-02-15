@@ -296,11 +296,142 @@ class LateBindingFaultTree(FaultTree):
         return self.__undef_events.values()
 
 
-def parse_input_file(input_file, multi_top=False):
+# Pattern for names and references
+_NAME_SIG = r"[a-zA-Z]\w*(-\w+)*"
+_LITERAL = r"~?" + _NAME_SIG
+_RE_FT_NAME = re.compile(r"^(" + _NAME_SIG + r")$")  # Fault tree name
+# Probability description for a basic event
+_RE_PROB = re.compile(r"^p\(\s*(?P<name>" + _NAME_SIG +
+                      r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)$")
+# State description for a house event
+_RE_STATE = re.compile(r"^s\(\s*(?P<name>" + _NAME_SIG +
+                       r")\s*\)\s*=\s*(?P<state>true|false)$")
+# General gate name and pattern
+_GATE_SIG = r"^(?P<name>" + _NAME_SIG + r")\s*:=\s*"
+_RE_GATE = re.compile(_GATE_SIG + r"(?P<formula>.+)$")
+# Optional parentheses for formulas
+_RE_PAREN = re.compile(r"\(([^()]+)\)$")
+# Gate type identifications
+_RE_AND = re.compile(r"(" + _LITERAL + r"(\s*&\s*" + _LITERAL + r"\s*)+)$")
+_RE_OR = re.compile(r"(" + _LITERAL + r"(\s*\|\s*" + _LITERAL + r"\s*)+)$")
+_VOTE_ARGS = r"\[(\s*" + _LITERAL + r"(\s*,\s*" + _LITERAL + r"\s*){2,})\]"
+_RE_VOTE = re.compile(r"@\(\s*([2-9])\s*,\s*" + _VOTE_ARGS + r"\s*\)\s*$")
+_RE_XOR = re.compile(r"(" + _LITERAL + r"\s*\^\s*" + _LITERAL + r")$")
+_RE_NOT = re.compile(r"~(" + _NAME_SIG + r")$")
+_RE_NULL = re.compile(r"(" + _NAME_SIG + r")$")
+
+
+def get_arguments(arguments_string, splitter):
+    """Splits the input string into arguments of a formula.
+
+    Args:
+        arguments_string: String contaning arguments.
+        splitter: Splitter specific to the operator, i.e. "&", "|", ','.
+
+    Returns:
+        arguments list from the input string.
+
+    Raises:
+        FaultTreeError: Repeated arguments for the formula.
+    """
+    arguments = arguments_string.strip().split(splitter)
+    arguments = [x.strip() for x in arguments]
+    if len(arguments) > len(set([x.lower() for x in arguments])):
+        raise FaultTreeError("Repeated arguments:\n" + arguments_string)
+    return arguments
+
+
+def get_formula(line):
+    """Constructs formula from the given line.
+
+    Args:
+        line: A string containing a Boolean equation.
+
+    Returns:
+        A formula operator, arguments, and k_num.
+
+    Raises:
+        ParsingError: Parsing is unsuccessful.
+        FormatError: Formatting problems in the input.
+        FaultTreeError: Problems in the structure of the formula.
+    """
+    line = line.strip()
+    if _RE_PAREN.match(line):
+        line = _RE_PAREN.match(line).group(1).strip()
+    arguments = None
+    operator = None
+    k_num = None
+    if _RE_OR.match(line):
+        arguments = _RE_OR.match(line).group(1)
+        arguments = get_arguments(arguments, "|")
+        operator = "or"
+    elif _RE_XOR.match(line):
+        arguments = _RE_XOR.match(line).group(1)
+        arguments = get_arguments(arguments, "^")
+        operator = "xor"
+    elif _RE_AND.match(line):
+        arguments = _RE_AND.match(line).group(1)
+        arguments = get_arguments(arguments, "&")
+        operator = "and"
+    elif _RE_VOTE.match(line):
+        k_num, arguments = _RE_VOTE.match(line).group(1, 2)
+        arguments = get_arguments(arguments, ",")
+        if int(k_num) >= len(arguments):
+            raise FaultTreeError(
+                "Invalid k/n for the combination formula:\n" + line)
+        operator = "atleast"
+    elif _RE_NOT.match(line):
+        arguments = _RE_NOT.match(line).group(1)
+        arguments = get_arguments(arguments, "~")
+        operator = "not"
+    elif _RE_NULL.match(line):
+        arguments = _RE_NULL.match(line).group(1)
+        arguments = [arguments.strip()]
+        operator = "null"  # pass-through
+    else:
+        raise ParsingError("Cannot interpret the formula:\n" + line)
+    return operator, arguments, k_num
+
+
+def interpret_line(line, fault_tree):
+    """Interprets a line from the shorthand format input.
+
+    Args:
+        line: The line in the shorthand format.
+        fault_tree: The fault tree container to update.
+
+    Raises:
+        ParsingError: Parsing is unsuccessful.
+        FormatError: Formatting problems in the input.
+        FaultTreeError: Problems in the structure of the fault tree.
+    """
+    line = line.strip()
+    if not line:
+        return
+    if _RE_GATE.match(line):
+        gate_name, formula_line = _RE_GATE.match(line).group("name", "formula")
+        operator, arguments, k_num = get_formula(formula_line)
+        fault_tree.add_gate(gate_name, operator, arguments, k_num)
+    elif _RE_PROB.match(line):
+        event_name, prob = _RE_PROB.match(line).group("name", "prob")
+        fault_tree.add_basic_event(event_name, prob)
+    elif _RE_STATE.match(line):
+        event_name, state = _RE_STATE.match(line).group("name", "state")
+        fault_tree.add_house_event(event_name, state)
+    elif _RE_FT_NAME.match(line):
+        if fault_tree.name:
+            raise FormatError("Redefinition of the fault tree name:\n%s to %s" %
+                              (fault_tree.name, line))
+        fault_tree.name = _RE_FT_NAME.match(line).group(1)
+    else:
+        raise ParsingError("Cannot interpret the line.")
+
+
+def parse_input(shorthand_file, multi_top=False):
     """Parses an input file with a shorthand description of a fault tree.
 
     Args:
-        input_file: The path to the input file.
+        shorthand_file: The input file open for reads.
         multi_top: If the input contains a fault tree with multiple top gates.
 
     Returns:
@@ -311,140 +442,21 @@ def parse_input_file(input_file, multi_top=False):
         FormatError: Formatting problems in the input.
         FaultTreeError: Problems in the structure of the fault tree.
     """
-    # Pattern for names and references
-    name_sig = r"[a-zA-Z]\w*(-\w+)*"
-    literal = r"~?" + name_sig
-    # Fault tree name
-    ft_name_re = re.compile(r"^(" + name_sig + r")$")
-    # Probability description for a basic event
-    prob_re = re.compile(r"^p\(\s*(?P<name>" + name_sig +
-                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)$")
-    # State description for a house event
-    state_re = re.compile(r"^s\(\s*(?P<name>" + name_sig +
-                          r")\s*\)\s*=\s*(?P<state>true|false)$")
-    # General gate name and pattern
-    gate_sig = r"^(?P<name>" + name_sig + r")\s*:=\s*"
-    gate_re = re.compile(gate_sig + r"(?P<formula>.+)$")
-    # Optional parentheses for formulas
-    paren_re = re.compile(r"\(([^()]+)\)$")
-    # Gate type identification
-    and_re = re.compile(r"(" + literal + r"(\s*&\s*" + literal + r"\s*)+)$")
-    or_re = re.compile(r"(" + literal + r"(\s*\|\s*" + literal + r"\s*)+)$")
-    vote_args = r"\[(\s*" + literal + r"(\s*,\s*" + literal + r"\s*){2,})\]"
-    vote_re = re.compile(r"@\(\s*([2-9])\s*,\s*" + vote_args + r"\s*\)\s*$")
-    xor_re = re.compile(r"(" + literal + r"\s*\^\s*" + literal + r")$")
-    not_re = re.compile(r"~(" + name_sig + r")$")
-    null_re = re.compile(r"(" + name_sig + r")$")
-
-    ft_name = None
     fault_tree = LateBindingFaultTree()
-
-    def get_arguments(arguments_string, splitter):
-        """Splits the input string into arguments of a formula.
-
-        Args:
-            arguments_string: String contaning arguments.
-            splitter: Splitter specific to the operator, i.e. "&", "|", ','.
-
-        Returns:
-            arguments list from the input string.
-
-        Raises:
-            FaultTreeError: Repeated arguments for the formula.
-        """
-        arguments = arguments_string.strip().split(splitter)
-        arguments = [x.strip() for x in arguments]
-        if len(arguments) > len(set([x.lower() for x in arguments])):
-            raise FaultTreeError("Repeated arguments:\n" + arguments_string)
-        return arguments
-
-    def get_formula(line):
-        """Constructs formula from the given line.
-
-        Args:
-            line: A string containing a Boolean equation.
-
-        Returns:
-            A formula operator, arguments, and k_num.
-
-        Raises:
-            ParsingError: Parsing is unsuccessful.
-            FormatError: Formatting problems in the input.
-            FaultTreeError: Problems in the structure of the formula.
-        """
-        line = line.strip()
-        if paren_re.match(line):
-            line = paren_re.match(line).group(1).strip()
-        arguments = None
-        operator = None
-        k_num = None
-        if or_re.match(line):
-            arguments = or_re.match(line).group(1)
-            arguments = get_arguments(arguments, "|")
-            operator = "or"
-        elif xor_re.match(line):
-            arguments = xor_re.match(line).group(1)
-            arguments = get_arguments(arguments, "^")
-            operator = "xor"
-        elif and_re.match(line):
-            arguments = and_re.match(line).group(1)
-            arguments = get_arguments(arguments, "&")
-            operator = "and"
-        elif vote_re.match(line):
-            k_num, arguments = vote_re.match(line).group(1, 2)
-            arguments = get_arguments(arguments, ",")
-            if int(k_num) >= len(arguments):
-                raise FaultTreeError(
-                    "Invalid k/n for the combination formula:\n" + line)
-            operator = "atleast"
-        elif not_re.match(line):
-            arguments = not_re.match(line).group(1)
-            arguments = get_arguments(arguments, "~")
-            operator = "not"
-        elif null_re.match(line):
-            arguments = null_re.match(line).group(1)
-            arguments = [arguments.strip()]
-            operator = "null"  # pass-through
-        else:
-            raise ParsingError("Cannot interpret the formula:\n" + line)
-        return operator, arguments, k_num
-
+    assert fault_tree.name is None
     line_num = 0
-    shorthand_file = open(input_file, "r")
     for line in shorthand_file:
         line_num += 1
-        line = line.strip()
-        if not line:
-            continue
         try:
-            if gate_re.match(line):
-                gate_name, formula_line = gate_re.match(line).group("name",
-                                                                    "formula")
-                operator, arguments, k_num = get_formula(formula_line)
-                fault_tree.add_gate(gate_name, operator, arguments, k_num)
-            elif prob_re.match(line):
-                event_name, prob = prob_re.match(line).group("name", "prob")
-                fault_tree.add_basic_event(event_name, prob)
-            elif state_re.match(line):
-                event_name, state = state_re.match(line).group("name", "state")
-                fault_tree.add_house_event(event_name, state)
-            elif ft_name_re.match(line):
-                if ft_name:
-                    raise FormatError(
-                        "Redefinition of the fault tree name:\n%s to %s" %
-                        (ft_name, line))
-                ft_name = ft_name_re.match(line).group(1)
-            else:
-                raise ParsingError("Cannot interpret the line.")
+            interpret_line(line, fault_tree)
         except ParsingError as err:
             raise ParsingError(str(err) + "\nIn line %d:\n" % line_num + line)
         except FormatError as err:
             raise FormatError(str(err) + "\nIn line %d:\n" % line_num + line)
         except FaultTreeError as err:
             raise FaultTreeError(str(err) + "\nIn line %d:\n" % line_num + line)
-    if ft_name is None:
+    if fault_tree.name is None:
         raise FormatError("The fault tree name is not given.")
-    fault_tree.name = ft_name
     fault_tree.multi_top = multi_top
     fault_tree.populate()
     return fault_tree
@@ -469,7 +481,10 @@ def main():
     if not args.input_file:
         raise ap.ArgumentTypeError("No input file is provided.")
 
-    fault_tree = parse_input_file(args.input_file, args.multi_top)
+    fault_tree = None
+    with open(args.input_file, "r") as shorthand_file:
+        fault_tree = parse_input(shorthand_file, args.multi_top)
+
     out = args.out
     if not out:
         out = os.path.basename(args.input_file)
