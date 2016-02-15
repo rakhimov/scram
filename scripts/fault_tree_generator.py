@@ -65,6 +65,19 @@ class GeneratorFaultTree(FaultTree):
         """
         super(GeneratorFaultTree, self).__init__(name)
 
+    def construct_top_gate(self, root_name):
+        """Constructs and assigns a new gate suitable for being a root.
+
+        Args:
+            root_name: Unique name for the root gate.
+        """
+        assert not self.top_gate and not self.top_gates
+        operator = Factors.get_random_operator()
+        while operator == "xor" or operator == "not":
+            operator = Factors.get_random_operator()
+        self.top_gate = Gate(root_name, operator)
+        self.gates.append(self.top_gate)
+
     def construct_gate(self):
         """Constructs a new gate.
 
@@ -503,57 +516,26 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
         gates_queue.append(new_gate)
 
 
-def generate_fault_tree(ft_name, root_name):
-    """Generates a fault tree of specified complexity.
-
-    The Factors class attributes are used as parameters for complexity.
+def distribute_house_events(fault_tree):
+    """Distributes house events to already initialized gates.
 
     Args:
-        ft_name: The name of the fault tree.
-        root_name: The name for the root gate of the fault tree.
-
-    Returns:
-        Top gate of the created fault tree.
+        fault_tree: The fault tree container of all events and constructs.
     """
-    fault_tree = GeneratorFaultTree(ft_name)
-    # Start with a top event
-    top_event = fault_tree.construct_gate()
-    fault_tree.top_gate = top_event
-    while top_event.operator == "xor" or top_event.operator == "not":
-        top_event.operator = Factors.get_random_operator()
-    top_event.name = root_name
-
-    # Estimating the parameters
-    num_gates = Factors.get_num_gates()
-    num_common_basics = Factors.get_num_common_basics(num_gates)
-    num_common_gates = Factors.get_num_common_gates(num_gates)
-    common_basics = [fault_tree.construct_basic_event()
-                     for _ in range(num_common_basics)]
-    common_gates = [fault_tree.construct_gate()
-                    for _ in range(num_common_gates)]
-
-    # Container for not yet initialized gates
-    # A deque is used to traverse the tree breadth-first
-    gates_queue = deque()
-    gates_queue.append(top_event)
-
-    # Proceed with argument gates
-    while gates_queue:
-        init_gates(gates_queue, common_basics, common_gates, fault_tree)
-
-    assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
-    assert(not [x for x in fault_tree.gates
-                if x.is_orphan() and x is not top_event])
-
-    # Distribute house events
     while len(fault_tree.house_events) < Factors.num_house:
         target_gate = random.choice(fault_tree.gates)
-        if (target_gate is not top_event and
+        if (target_gate is not fault_tree.top_gate and
                 target_gate.operator != "xor" and
                 target_gate.operator != "not"):
             target_gate.add_argument(fault_tree.construct_house_event())
 
-    # Create CCF groups from the existing basic events.
+
+def generate_ccf_groups(fault_tree):
+    """Creates CCF groups from the existing basic events.
+
+    Args:
+        fault_tree: The fault tree container of all events and constructs.
+    """
     if Factors.num_ccf:
         members = fault_tree.basic_events[:]
         random.shuffle(members)
@@ -568,6 +550,44 @@ def generate_fault_tree(ft_name, root_name):
             first_mem = last_mem
         fault_tree.non_ccf_events = members[first_mem:]
 
+
+def generate_fault_tree(ft_name, root_name):
+    """Generates a fault tree of specified complexity.
+
+    The Factors class attributes are used as parameters for complexity.
+
+    Args:
+        ft_name: The name of the fault tree.
+        root_name: The name for the root gate of the fault tree.
+
+    Returns:
+        Top gate of the created fault tree.
+    """
+    fault_tree = GeneratorFaultTree(ft_name)
+    fault_tree.construct_top_gate(root_name)
+
+    # Estimating the parameters
+    num_gates = Factors.get_num_gates()
+    num_common_basics = Factors.get_num_common_basics(num_gates)
+    num_common_gates = Factors.get_num_common_gates(num_gates)
+    common_basics = [fault_tree.construct_basic_event()
+                     for _ in range(num_common_basics)]
+    common_gates = [fault_tree.construct_gate()
+                    for _ in range(num_common_gates)]
+
+    # Container for not yet initialized gates
+    # A deque is used to traverse the tree breadth-first
+    gates_queue = deque()
+    gates_queue.append(fault_tree.top_gate)
+    while gates_queue:
+        init_gates(gates_queue, common_basics, common_gates, fault_tree)
+
+    assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
+    assert(not [x for x in fault_tree.gates
+                if x.is_orphan() and x is not fault_tree.top_gate])
+
+    distribute_house_events(fault_tree)
+    generate_ccf_groups(fault_tree)
     return fault_tree
 
 
