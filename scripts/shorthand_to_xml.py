@@ -133,56 +133,56 @@ class LateBindingFaultTree(FaultTree):
                 name.lower() in self.__house_events):
             raise FaultTreeError("Redefinition of an event: " + name)
 
+    def __visit(self, gate):
+        """Recursively visits the given gate sub-tree to detect a cycle.
+
+        Upon visiting the descendant gates,
+        their marks are changed from temporary to permanent.
+
+        Args:
+            gate: The current gate.
+
+        Returns:
+            None if no cycle is found.
+            A list of event names in a detected cycle path in reverse order.
+        """
+        if not gate.mark:
+            gate.mark = "temp"
+            for child in gate.g_arguments:
+                cycle = self.__visit(child)
+                if cycle:
+                    cycle.append(gate.name)
+                    return cycle
+            gate.mark = "perm"
+        elif gate.mark == "temp":
+            return [gate.name]  # a cycle is detected
+        return None  # the permanent mark
+
+    def __raise_cycle(self, cycle):
+        """Prints the detected cycle with the error.
+
+        Args:
+            cycle: A list of gate names in the cycle path in reverse order.
+
+        Raises:
+            FaultTreeError: Error with a message containing the cycle.
+        """
+        start = cycle[0]
+        cycle.reverse()  # print top-down
+        raise FaultTreeError("Detected a cycle: " +
+                             "->".join(cycle[cycle.index(start):]))
+
     def __detect_cycle(self):
         """Checks if the fault tree has a cycle.
 
         Raises:
             FaultTreeError: There is a cycle in the fault tree.
         """
-        def visit(gate):
-            """Recursively visits the given gate sub-tree to detect a cycle.
-
-            Upon visiting the descendant gates,
-            their marks are changed from temporary to permanent.
-
-            Args:
-                gate: The current gate.
-
-            Returns:
-                None if no cycle is found.
-                A list of event names in a detected cycle path in reverse order.
-            """
-            if not gate.mark:
-                gate.mark = "temp"
-                for child in gate.g_arguments:
-                    cycle = visit(child)
-                    if cycle:
-                        cycle.append(gate.name)
-                        return cycle
-                gate.mark = "perm"
-            elif gate.mark == "temp":
-                return [gate.name]  # a cycle is detected
-            return None  # the permanent mark
-
-        def print_cycle(cycle):
-            """Prints the detected cycle to the error.
-
-            Args:
-                cycle: A list of gate names in the cycle path in reverse order.
-
-            Raises:
-                FaultTreeError: There is a cycle in the fault tree.
-            """
-            start = cycle[0]
-            cycle.reverse()  # print top-down
-            raise FaultTreeError("Detected a cycle: " +
-                                 "->".join(cycle[cycle.index(start):]))
-
         assert self.top_gates is not None
         for top_gate in self.top_gates:
-            cycle = visit(top_gate)
+            cycle = self.__visit(top_gate)
             if cycle:
-                print_cycle(cycle)
+                self.__raise_cycle(cycle)
 
         detached_gates = [x for x in self.gates if not x.mark]
         if detached_gates:
@@ -190,9 +190,9 @@ class LateBindingFaultTree(FaultTree):
             error_msg += str([x.name for x in detached_gates])
             try:
                 for gate in detached_gates:
-                    cycle = visit(gate)
+                    cycle = self.__visit(gate)
                     if cycle:
-                        print_cycle(cycle)
+                        self.__raise_cycle(cycle)
             except FaultTreeError as error:
                 error_msg += "\n" + str(error)
                 raise FaultTreeError(error_msg)
@@ -445,16 +445,17 @@ def parse_input(shorthand_file, multi_top=False):
     fault_tree = LateBindingFaultTree()
     assert fault_tree.name is None
     line_num = 0
-    for line in shorthand_file:
-        line_num += 1
-        try:
+    line = None
+    try:
+        for line in shorthand_file:
+            line_num += 1
             interpret_line(line, fault_tree)
-        except ParsingError as err:
-            raise ParsingError(str(err) + "\nIn line %d:\n" % line_num + line)
-        except FormatError as err:
-            raise FormatError(str(err) + "\nIn line %d:\n" % line_num + line)
-        except FaultTreeError as err:
-            raise FaultTreeError(str(err) + "\nIn line %d:\n" % line_num + line)
+    except ParsingError as err:
+        raise ParsingError(str(err) + "\nIn line %d:\n" % line_num + line)
+    except FormatError as err:
+        raise FormatError(str(err) + "\nIn line %d:\n" % line_num + line)
+    except FaultTreeError as err:
+        raise FaultTreeError(str(err) + "\nIn line %d:\n" % line_num + line)
     if fault_tree.name is None:
         raise FormatError("The fault tree name is not given.")
     fault_tree.multi_top = multi_top
