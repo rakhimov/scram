@@ -482,12 +482,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
 
         # Case when the number of basic events is already satisfied
         if len(fault_tree.basic_events) == Factors.num_basics:
-            if not Factors.common_g and not Factors.common_b:
-                # Reuse already initialized basic events
-                gate.add_argument(random.choice(fault_tree.basic_events))
-                continue
-            else:
-                s_common = 0  # use only common nodes
+            s_common = 0  # use only common nodes
 
         if s_percent < Factors.get_percent_gates():
             # Create a new gate or use a common one
@@ -926,31 +921,34 @@ def validate_setup(args):
     if args.ccf > args.basics / args.children:
         raise ap.ArgumentTypeError("Too many ccf groups")
 
+    if args.common_g == 0 and args.common_b == 0:
+        raise ap.ArgumentTypeError("Missing common events for generation")
+
     if args.weights_g:
         if [i for i in args.weights_g if float(i) < 0]:
-            raise ap.ArgumentTypeError("weights cannot be negative")
+            raise ap.ArgumentTypeError("Weights cannot be negative")
 
         if len(args.weights_g) > 5:
-            raise ap.ArgumentTypeError("too many weights are provided")
+            raise ap.ArgumentTypeError("Too many weights are provided")
 
         weights_float = [float(i) for i in args.weights_g]
         if sum(weights_float) == 0:
-            raise ap.ArgumentTypeError("atleast one non-zero weight is needed")
+            raise ap.ArgumentTypeError("At least one non-zero weight is needed")
 
         if len(weights_float) > 3 and not sum(weights_float[:3]):
-            raise ap.ArgumentTypeError("cannot work with only XOR or NOT gates")
+            raise ap.ArgumentTypeError("Cannot work with only XOR or NOT gates")
 
     if args.shorthand:
         if args.out == "fault_tree.xml":
             args.out = "fault_tree.txt"
         if args.nest > 0:
-            raise ap.ArgumentTypeError("no support for nested formulae "
+            raise ap.ArgumentTypeError("No support for nested formulae "
                                        "in the shorthand format")
 
     if args.gates:
         # Check if there are enough gates for the basic events.
         if args.gates * args.children <= args.basics:
-            raise ap.ArgumentTypeError("not enough gates and average children "
+            raise ap.ArgumentTypeError("Not enough gates and average children "
                                        "to achieve the number of basic events")
 
 
