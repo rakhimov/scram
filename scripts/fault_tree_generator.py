@@ -408,6 +408,56 @@ class Factors(object):
         Factors.parents_b = parents
 
 
+def candidate_gates(common_gates):
+    """Lazy generator of candidates for common gates.
+
+    Args:
+        common_gates: A list of common gates.
+
+    Yields:
+        A next gate candidate from common gates container.
+    """
+    orphans = [x for x in common_gates if not x.parents]
+    random.shuffle(orphans)
+    for i in orphans:
+        yield i
+
+    single_parent = [x for x in common_gates if len(x.parents) == 1]
+    random.shuffle(single_parent)
+    for i in single_parent:
+        yield i
+
+    multi_parent = [x for x in common_gates if len(x.parents) > 1]
+    random.shuffle(multi_parent)
+    for i in multi_parent:
+        yield i
+
+
+def correct_for_exhaustion(gates_queue, common_gates, fault_tree):
+    """Corrects the generation for queue exhaustion.
+
+    Corner case when not enough new basic events initialized,
+    but there are no more intermediate gates to use
+    due to a big ratio or just random accident.
+
+    Args:
+        gates_queue: A deque of gates to be initialized.
+        common_gates: A list of common gates.
+        fault_tree: The fault tree container of all events and constructs.
+    """
+    if not gates_queue and len(fault_tree.basic_events) < Factors.num_basics:
+        # Initialize one more gate
+        # by randomly choosing places in the fault tree.
+        random_gate = random.choice(fault_tree.gates)
+        while (random_gate.operator == "not" or
+               random_gate.operator == "xor" or
+               random_gate in common_gates):
+            random_gate = random.choice(fault_tree.gates)
+        new_gate = fault_tree.construct_gate()
+        random_gate.add_argument(new_gate)
+        gates_queue.append(new_gate)
+
+
 def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     """Initializes gates and other basic events.
 
@@ -424,28 +474,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
 
     ancestors = None  # needed for cycle prevention
     max_tries = len(common_gates)  # the number of maximum tries
-    num_trials = 0  # the number of trials to get common gate
-
-    def candidate_gates():
-        """Lazy generator of candidates for common gates.
-
-        Yields:
-            A next gate candidate from common gates container.
-        """
-        orphans = [x for x in common_gates if not x.parents]
-        random.shuffle(orphans)
-        for i in orphans:
-            yield i
-
-        single_parent = [x for x in common_gates if len(x.parents) == 1]
-        random.shuffle(single_parent)
-        for i in single_parent:
-            yield i
-
-        multi_parent = [x for x in common_gates if len(x.parents) > 1]
-        random.shuffle(multi_parent)
-        for i in multi_parent:
-            yield i
+    num_trials = 0  # the number of trials to get a common gate
 
     while gate.num_arguments() < num_arguments:
         s_percent = random.random()  # sample percentage of gates
@@ -467,7 +496,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
                 if not ancestors:
                     ancestors = gate.get_ancestors()
 
-                for random_gate in candidate_gates():
+                for random_gate in candidate_gates(common_gates):
                     num_trials += 1
                     if num_trials >= max_tries:
                         break
@@ -500,20 +529,7 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
             else:
                 gate.add_argument(fault_tree.construct_basic_event())
 
-    # Corner case when not enough new basic events initialized, but
-    # there are no more intermediate gates to use due to a big ratio
-    # or just random accident.
-    if not gates_queue and len(fault_tree.basic_events) < Factors.num_basics:
-        # Initialize more gates by randomly choosing places in the
-        # fault tree.
-        random_gate = random.choice(fault_tree.gates)
-        while (random_gate.operator == "not" or
-               random_gate.operator == "xor" or
-               random_gate in common_gates):
-            random_gate = random.choice(fault_tree.gates)
-        new_gate = fault_tree.construct_gate()
-        random_gate.add_argument(new_gate)
-        gates_queue.append(new_gate)
+    correct_for_exhaustion(gates_queue, common_gates, fault_tree)
 
 
 def distribute_house_events(fault_tree):
