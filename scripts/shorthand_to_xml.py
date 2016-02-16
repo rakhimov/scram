@@ -51,6 +51,7 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 import argparse as ap
 
@@ -463,24 +464,28 @@ def parse_input(shorthand_file, multi_top=False):
     return fault_tree
 
 
-def main():
+def main(argv=None):
     """Verifies arguments and calls parser and writer.
 
+    Args:
+        argv: An optional list containing the command-line arguments.
+
     Raises:
-        ArgumentTypeError: There are problemns with the arguments.
+        ArgumentTypeError: Problemns with the arguments.
+        IOError: Input or output files are not accessible.
+        ParsingError: Problems parsing the input file.
+        FormatError: Formatting issues in the input.
+        FaultTreeError: The input fault tree is malformed.
     """
     description = "Shorthand => OpenPSA MEF XML Converter"
     parser = ap.ArgumentParser(description=description)
-    parser.add_argument("input_file", type=str, nargs="?",
+    parser.add_argument("input_file", type=str,
                         help="input file with the shorthand notation")
     parser.add_argument("--multi-top", help="multiple top events",
                         action="store_true")
     parser.add_argument("-o", "--out",
                         help="output file to write the converted input")
-    args = parser.parse_args()
-
-    if not args.input_file:
-        raise ap.ArgumentTypeError("No input file is provided.")
+    args = parser.parse_args(argv)
 
     fault_tree = None
     with open(args.input_file, "r") as shorthand_file:
@@ -498,15 +503,18 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except ap.ArgumentTypeError as arg_error:
-        print("Argument Error:")
-        print(arg_error)
-    except ParsingError as parsing_error:
-        print("Parsing Error:")
-        print(parsing_error)
-    except FormatError as format_error:
-        print("Format Error:")
-        print(format_error)
-    except FaultTreeError as fault_tree_error:
-        print("Error in the fault tree:")
-        print(fault_tree_error)
+    except ap.ArgumentTypeError as err:
+        print("Argument Error:\n" + str(err))
+        sys.exit(2)
+    except IOError as err:
+        print("IO Error:\n" + str(err))
+        sys.exit(1)
+    except ParsingError as err:
+        print("Parsing Error:\n" + str(err))
+        sys.exit(1)
+    except FormatError as err:
+        print("Format Error:\n" + str(err))
+        sys.exit(1)
+    except FaultTreeError as err:
+        print("Error in the fault tree:\n" + str(err))
+        sys.exit(1)
