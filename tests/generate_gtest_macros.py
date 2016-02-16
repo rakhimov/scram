@@ -6,8 +6,6 @@ The macros are generated only for non-disabled tests
 in a google-test-based executable.
 """
 
-from __future__ import print_function
-
 import os
 import subprocess
 import sys
@@ -39,55 +37,48 @@ def parse_tests(test_lines):
     return tests
 
 
-def write_macros_to_output(tests, executable, output=None):
+def write_macros(tests, executable, output):
     """Writes a list of test names as ADD_TEST cmake macros to an output file.
 
     Args:
         tests: A list of all test names to be added as ADD_TEST macros
             to the output file.
         exectuable: The name of the test executable.
-        output: The output file to write to, if output is not
-            specified, the list of ADD_TEST macros will be written to stdout.
+        output: The output file to write to.
     """
     lines = []
     for test in tests:
         lines.append("ADD_TEST(" + test + " " +
                      executable + " " + "--gtest_filter=" + test + ")")
-    if output is None:
+    with open(output, "a") as out_file:
         for line in lines:
-            print(line)
-    else:
-        with open(output, 'a') as f:
-            for line in lines:
-                f.write(line + '\n')
+            out_file.write(line + "\n")
 
 
 def main():
     """Writes a list of macros to a given output file."""
-    description = "A simple script to add CTest ADD_TEST macros to a " + \
-                  "file for every test in a google-test executable."
-    parser = ap.ArgumentParser(description=description)
-
-    executable = 'the path to the test exectuable to call'
-    parser.add_argument('--executable', help=executable, required=True)
-
-    output = "the file to write the ADD_TEST macros to " + \
-             "(nominally CTestTestfile.cmake)"
-    parser.add_argument('--output', help=output, required=True)
-
+    parser = ap.ArgumentParser(
+        description="A simple script to add CTest ADD_TEST macros to a "
+                    "file for every test in a google-test executable.")
+    parser.add_argument("--executable",
+                        help="the path to the test executable to call",
+                        required=True)
+    parser.add_argument("--output",
+                        help="the file to write the ADD_TEST macros to "
+                             "(nominally CTestTestfile.cmake)",
+                        required=True)
     args = parser.parse_args()
 
     assert os.path.exists(args.executable)
     assert os.path.exists(args.output)
 
     rtn = subprocess.Popen([args.executable, "--gtest_list_tests"],
-                           stdout=subprocess.PIPE, shell=(os.name == 'nt'))
+                           stdout=subprocess.PIPE, shell=(os.name == "nt"))
 
     tests = parse_tests(rtn.stdout.readlines())
     rtn.stdout.close()
 
-    write_macros_to_output(tests, args.executable, args.output)
-
+    write_macros(tests, args.executable, args.output)
     return 0
 
 if __name__ == "__main__":
