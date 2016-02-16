@@ -60,21 +60,8 @@ def gate(i, j=None):
     return "G" + row(i) + (col(j) if j else "")
 
 
-def main():
-    """Prints the the N Queens fault tree representation to standard output."""
-    description = "Fault tree representation of the N Queens problem"
-    parser = ap.ArgumentParser(description=description)
-    parser.add_argument("n", type=int, nargs="?", help="the number of queens",
-                        default=8)
-    args = parser.parse_args()
-
-    if args.n < 1:
-        raise ap.ArgumentTypeError("Illegal number of queens.")
-
-    n = args.n
-    print("NQueens" + str(n))
-
-    # Getting the main setup constraints.
+def print_constraints(n):  # pylint: disable=invalid-name
+    """Prints the main setup constraints for n queens."""
     for i in range(1, n + 1):
         for j in range(1, n + 1):
             logic = [position(i, j, False)]
@@ -91,7 +78,9 @@ def main():
                         logic.append(position(k, diag_two, True))
             print(gate(i, j) + " := " + " & ".join(logic))
 
-    # Getting the setup requirements.
+
+def print_requirements(n):  # pylint: disable=invalid-name
+    """Prints the setup requirements for n queens."""
     board = []  # top logic
     for i in range(1, n + 1):
         board.append(gate(i))
@@ -99,14 +88,29 @@ def main():
         for j in range(1, n + 1):
             single_row.append(gate(i, j))
         print(gate(i) + " := " + " | ".join(single_row))
-
     print(gate(0) + " := " + " & ".join(board))
 
-    # Provide probabilities for events.
+
+def print_probabilities(n):  # pylint: disable=invalid-name
+    """Provides probabilities for n queens."""
     for i in range(1, n + 1):
         for j in range(1, n + 1):
             print("p(" + position(i, j, False) + ") = 1")
 
+
+def main():
+    """Prints the the N Queens fault tree representation to standard output."""
+    description = "Fault tree representation of the N Queens problem"
+    parser = ap.ArgumentParser(description=description)
+    parser.add_argument("n", type=int, nargs="?", help="the number of queens",
+                        default=8)
+    args = parser.parse_args()
+    if args.n < 1:
+        raise ap.ArgumentTypeError("Illegal number of queens.")
+    print("NQueens" + str(args.n))
+    print_constraints(args.n)
+    print_requirements(args.n)
+    print_probabilities(args.n)
 
 if __name__ == "__main__":
     try:
