@@ -60,6 +60,28 @@ class Config(object):
         Config.approximation = [""]
         Config.additional.append("--preprocessor")
 
+    @staticmethod
+    def configure(args):
+        """Adjusts configurations with the cmd-line arguments."""
+        if args.prime_implicants:
+            print("Focusing on Prime Implicants")
+            Config.analysis = ["--bdd"]
+            Config.approximation = [""]
+            Config.additional.append("--prime-implicants")
+        elif args.mocus:
+            print("Focusing on MOCUS")
+            Config.analysis = ["--mocus"]
+        elif args.bdd:
+            print("Focusing on BDD")
+            Config.analysis = ["--bdd"]
+        elif args.zbdd:
+            print("Focusing on ZBDD")
+            Config.analysis = ["--zbdd"]
+
+        if args.preprocessor:
+            print("Focusing on Preprocessor")
+            Config.restrict()
+
 
 def generate_input(normal, coherent):
     """Calls fault tree generator.
@@ -100,8 +122,7 @@ def call_scram():
     Returns:
         0 for successful runs.
     """
-    cmd = ["scram", "fault_tree.xml"] + \
-          ["--limit-order", str(get_limit_order())]
+    cmd = ["scram", "fault_tree.xml", "--limit-order", str(get_limit_order())]
 
     if Config.switch:
         cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
@@ -124,61 +145,26 @@ def main():
         0 if tests finished without failures.
         1 for failures.
     """
-    description = "SCRAM Fuzz Tester"
-
-    parser = ap.ArgumentParser(description=description)
-
-    num_runs = "number of SCRAM calls"
-    parser.add_argument("-n", "--num-runs", type=int, help=num_runs, default=10,
-                        metavar="int")
-
-    preprocessor = "focus on Preprocessor"
+    parser = ap.ArgumentParser(description="SCRAM Fuzz Tester")
+    parser.add_argument("-n", "--num-runs", type=int, help="# of SCRAM runs",
+                        default=10, metavar="int")
     parser.add_argument("--preprocessor", action="store_true",
-                        help=preprocessor)
-
-    mocus = "focus on MOCUS"
-    parser.add_argument("--mocus", action="store_true", help=mocus)
-
-    bdd = "focus on BDD"
-    parser.add_argument("--bdd", action="store_true", help=bdd)
-
-    zbdd = "focus on ZBDD"
-    parser.add_argument("--zbdd", action="store_true", help=zbdd)
-
-    coherent = "focus on coherent models"
-    parser.add_argument("--coherent", action="store_true", help=coherent)
-
-    normal = "focus on models only with AND/OR gates"
-    parser.add_argument("--normal", action="store_true", help=normal)
-
-    pi = "focus on Prime Implicants"
-    parser.add_argument("--prime-implicants", action="store_true", help=pi)
-
+                        help="focus on Preprocessor")
+    parser.add_argument("--mocus", action="store_true", help="focus on MOCUS")
+    parser.add_argument("--bdd", action="store_true", help="focus on BDD")
+    parser.add_argument("--zbdd", action="store_true", help="focus on ZBDD")
+    parser.add_argument("--coherent", action="store_true",
+                        help="focus on coherent models")
+    parser.add_argument("--normal", action="store_true",
+                        help="focus on models only with AND/OR gates")
+    parser.add_argument("--prime-implicants", action="store_true",
+                        help="focus on Prime Implicants")
     args = parser.parse_args()
 
     if call(["which", "scram"]):
         print("SCRAM is not found in the PATH.")
         return 1
-
-    if args.prime_implicants:
-        print("Focusing on Prime Implicants")
-        Config.analysis = ["--bdd"]
-        Config.approximation = [""]
-        Config.additional.append("--prime-implicants")
-    elif args.mocus:
-        print("Focusing on MOCUS")
-        Config.analysis = ["--mocus"]
-    elif args.bdd:
-        print("Focusing on BDD")
-        Config.analysis = ["--bdd"]
-    elif args.zbdd:
-        print("Focusing on ZBDD")
-        Config.analysis = ["--zbdd"]
-
-    if args.preprocessor:
-        print("Focusing on Preprocessor")
-        Config.restrict()
-
+    Config.configure(args)
     for i in range(args.num_runs):
         generate_input(args.normal, args.coherent)
         if call_scram():
@@ -186,7 +172,6 @@ def main():
             return 1
         if not (i + 1) % 100:
             print("Finished run #" + str(i + 1))
-
     return 0
 
 if __name__ == "__main__":
