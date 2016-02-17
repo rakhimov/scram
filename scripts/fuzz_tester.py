@@ -94,10 +94,10 @@ def generate_input(normal, coherent):
         coherent: Flag for generation of coherent models.
     """
     cmd = ["./fault_tree_generator.py",
-           "-b", "100", "--common-b", "0.4", "--parents-b", "5",
-           "--common-g", "0.2", "--parents-g", "3", "--children", "2.5",
+           "--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
+           "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5",
            "--seed", str(random.randint(1, 1e8)),
-           "--maxprob", "0.5", "--minprob", "0.1"]
+           "--max-prob", "0.5", "--min-prob", "0.1"]
     weights = ["--weights-g", "1", "1"]
     if not normal:
         weights += ["1"]

@@ -120,21 +120,16 @@ ZBDD Time: 0.35
 ==================== Uncertainty Analysis =================
 
 
-==================== Fault Tree Generation ================
+==================== SCRAM Model Validation ===============
 
----| -b 100000 -c 3 --common-g 0.1 --common-b 0.1 |---
+---| Fault tree generator flags to get the model |---
 
-- Generation Time  8.7  |  15
-
-
-==================== Fault Tree Validation ================
-
----| -b 10000 -c 3 --common-g 0.1 --common-b 0.1 |---
+---| -b 10000 -a 3 --common-g 0.1 --common-b 0.1 |---
 
 - Memory:   70
 
 
----| -b 300000 -c 3 --common-g 0.1 --common-b 0.1 |---
+---| -b 300000 -a 3 --common-g 0.1 --common-b 0.1 |---
 Debug build:
 ---------------
 - Initialization and Validation    37  |  40
@@ -144,3 +139,10 @@ Release build:
 - Initialization and Validation    21  |
 
 - Memory:   1130
+
+
+=============== Fault Tree Generator Script ================
+
+---| -b 100000 -a 3 --common-g 0.1 --common-b 0.1 |---
+
+- Generation Time  8.7  |  15
