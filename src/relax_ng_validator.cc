@@ -28,8 +28,6 @@
 
 #include "relax_ng_validator.h"
 
-#include <libxml/xmlerror.h>
-
 #include "error.h"
 
 namespace scram {
@@ -51,13 +49,8 @@ void RelaxNGValidator::Validate(const xmlpp::Document* doc) {
   if (!valid_context_) valid_context_ = xmlRelaxNGNewValidCtxt(schema_);
   if (!valid_context_) throw Error("Couldn't create validating context");
 
-  int error_state = 0;  // Validation result.
-  try {
-    error_state = xmlRelaxNGValidateDoc(valid_context_,
-                                        const_cast<xmlDocPtr>(doc->cobj()));
-  } catch (xmlError& e) {
-    throw ValidationError(e.message);
-  }
+  int error_state = xmlRelaxNGValidateDoc(valid_context_,
+                                          const_cast<xmlDocPtr>(doc->cobj()));
   if (error_state) throw ValidationError("Document failed schema validation");
 }
 
