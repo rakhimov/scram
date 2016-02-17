@@ -469,6 +469,7 @@ def main(argv=None):
 
     Args:
         argv: An optional list containing the command-line arguments.
+            If None, the command-line arguments from sys will be used.
 
     Raises:
         ArgumentTypeError: Problemns with the arguments.

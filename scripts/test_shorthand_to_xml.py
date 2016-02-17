@@ -15,6 +15,7 @@
 
 """Tests for the shorthand-to-XML converter."""
 
+import os
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
@@ -23,7 +24,7 @@ from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
     assert_true
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
-    parse_input
+    parse_input, main
 
 
 def parse_input_file(name, multi_top=False):
@@ -356,3 +357,18 @@ class NestedFormulaTestCase(TestCase):
         tmp.write("g1 := ~e1~a\n")
         tmp.flush()
         assert_raises(ParsingError, parse_input_file, tmp.name)
+
+
+def test_main():
+    """Tests the main function."""
+    tmp = NamedTemporaryFile()
+    tmp.write("FT\n")
+    tmp.write("g1 := g2 & e1\n")
+    tmp.write("g2 := g3 & e1\n")
+    tmp.write("g3 := e2 & e1\n")
+    tmp.flush()
+    main([tmp.name])
+    out = os.path.basename(tmp.name)
+    out = out[:out.rfind(".")] + ".xml"
+    assert_true(os.path.exists(out))
+    os.remove(out)
