@@ -51,95 +51,13 @@ import argparse as ap
 from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, FaultTree
 
 
-class GeneratorFaultTree(FaultTree):
-    """Specialization of a fault tree for generation purposes.
-
-    The construction of fault tree members are handled through this object.
-    It is assumed that no removal is going to happen after construction.
-    """
-
-    def __init__(self, name=None):
-        """Initializes an empty fault tree.
-
-        Args:
-            name: The name of the system described by the fault tree container.
-        """
-        super(GeneratorFaultTree, self).__init__(name)
-
-    def construct_top_gate(self, root_name):
-        """Constructs and assigns a new gate suitable for being a root.
-
-        Args:
-            root_name: Unique name for the root gate.
-        """
-        assert not self.top_gate and not self.top_gates
-        operator = Factors.get_random_operator()
-        while operator == "xor" or operator == "not":
-            operator = Factors.get_random_operator()
-        self.top_gate = Gate(root_name, operator)
-        self.gates.append(self.top_gate)
-
-    def construct_gate(self):
-        """Constructs a new gate.
-
-        Returns:
-            A fully initialized gate with random attributes.
-        """
-        gate = Gate("G" + str(len(self.gates) + 1),
-                    Factors.get_random_operator())
-        self.gates.append(gate)
-        return gate
-
-    def construct_basic_event(self):
-        """Constructs a basic event with a unique identifier.
-
-        Returns:
-            A fully initialized basic event with a random probability.
-        """
-        basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
-                                 random.uniform(Factors.min_prob,
-                                                Factors.max_prob))
-        self.basic_events.append(basic_event)
-        return basic_event
-
-    def construct_house_event(self):
-        """Constructs a house event with a unique identifier.
-
-        Returns:
-            A fully initialized house event with a random state.
-        """
-        house_event = HouseEvent("H" + str(len(self.house_events) + 1),
-                                 random.choice(["true", "false"]))
-        self.house_events.append(house_event)
-        return house_event
-
-    def construct_ccf_group(self, members):
-        """Constructs a unique CCF group with factors.
-
-        Args:
-            members: A list of member basic events.
-
-        Returns:
-            A fully initialized CCF group with random factors.
-        """
-        assert len(members) > 1
-        ccf_group = CcfGroup("CCF" + str(len(self.ccf_groups) + 1))
-        self.ccf_groups.append(ccf_group)
-        ccf_group.members = members
-        ccf_group.prob = random.uniform(Factors.min_prob, Factors.max_prob)
-        ccf_group.model = "MGL"
-        levels = random.randint(2, len(members))
-        ccf_group.factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
-        return ccf_group
-
-
 class FactorError(Exception):
     """Errors in configuring factors for the fault tree generation."""
 
     pass
 
 
-class Factors(object):
+class Factors(object):  # pylint: disable=too-many-instance-attributes
     """Collection of factors that determine the complexity of the fault tree.
 
     This collection must be setup and updated
@@ -156,37 +74,38 @@ class Factors(object):
         parents_g: The average number of parents for common gates.
     """
 
-    # Probabilistic factors
-    min_prob = 0
-    max_prob = 1
-
-    # Configurable graph factors
-    num_basic = None
-    num_house = None
-    num_ccf = None
-    common_b = None
-    common_g = None
-    num_args = None
-    parents_b = None
-    parents_g = None
-    __weights_g = None  # should not be set directly
-
     # Constant configurations
     __OPERATORS = ["and", "or", "atleast", "not", "xor"]  # the order matters
 
-    # Calculated factors
-    __norm_weights = []  # normalized weights
-    __cum_dist = []  # CDF from the weights of the gate types
-    __max_args = None  # the upper bound for the number of arguments
-    __ratio = None  # basic events to gates ratio per gate
-    __percent_basic = None  # percentage of basic events in gate arguments
-    __percent_gate = None  # percentage of gates in gate arguments
+    def __init__(self):
+        """Partial constructor."""
+        # Probabilistic factors
+        self.min_prob = 0
+        self.max_prob = 1
 
-    # Special case with the constrained number of gates
-    __num_gate = None  # If set, all other factors get affected.
+        # Configurable graph factors
+        self.num_basic = None
+        self.num_house = None
+        self.num_ccf = None
+        self.common_b = None
+        self.common_g = None
+        self.num_args = None
+        self.parents_b = None
+        self.parents_g = None
+        self.__weights_g = None  # should not be set directly
 
-    @staticmethod
-    def set_min_max_prob(min_value, max_value):
+        # Calculated factors
+        self.__norm_weights = []  # normalized weights
+        self.__cum_dist = []  # CDF from the weights of the gate types
+        self.__max_args = None  # the upper bound for the number of arguments
+        self.__ratio = None  # basic events to gates ratio per gate
+        self.__percent_basic = None  # % of basic events in gate arguments
+        self.__percent_gate = None  # % of gates in gate arguments
+
+        # Special case with the constrained number of gates
+        self.__num_gate = None  # If set, all other factors get affected.
+
+    def set_min_max_prob(self, min_value, max_value):
         """Sets the probability boundaries for basic events.
 
         Args:
@@ -202,11 +121,11 @@ class Factors(object):
             raise FactorError("Max probability must be in [0, 1] range.")
         if min_value > max_value:
             raise FactorError("Min probability > Max probability.")
-        Factors.min_prob = min_value
-        Factors.max_prob = max_value
+        self.min_prob = min_value
+        self.max_prob = max_value
 
-    @staticmethod
-    def set_common_event_factors(common_b, common_g, parents_b, parents_g):
+    def set_common_event_factors(self, common_b, common_g, parents_b,
+                                 parents_g):
         """Sets the factors for the number of common events.
 
         Args:
@@ -228,13 +147,12 @@ class Factors(object):
             raise FactorError("parents_b not in [2, " + str(max_parent) + "].")
         if parents_g < 2 or parents_g > max_parent:
             raise FactorError("parents_g not in [2, " + str(max_parent) + "].")
-        Factors.common_b = common_b
-        Factors.common_g = common_g
-        Factors.parents_b = parents_b
-        Factors.parents_g = parents_g
+        self.common_b = common_b
+        self.common_g = common_g
+        self.parents_b = parents_b
+        self.parents_g = parents_g
 
-    @staticmethod
-    def set_num_factors(num_args, num_basic, num_house=0, num_ccf=0):
+    def set_num_factors(self, num_args, num_basic, num_house=0, num_ccf=0):
         """Sets the size factors.
 
         Args:
@@ -258,10 +176,10 @@ class Factors(object):
             raise FactorError("Too many house events.")
         if num_ccf > num_basic / num_args:
             raise FactorError("Too many CCF groups.")
-        Factors.num_args = num_args
-        Factors.num_basic = num_basic
-        Factors.num_house = num_house
-        Factors.num_ccf = num_ccf
+        self.num_args = num_args
+        self.num_basic = num_basic
+        self.num_house = num_house
+        self.num_ccf = num_ccf
 
     @staticmethod
     def __calculate_max_args(num_args, weights):
@@ -293,32 +211,28 @@ class Factors(object):
         return ((2 * num_args - sum(var_contrib) - 2 * sum(const_contrib)) /
                 sum(var_weights))
 
-    @staticmethod
-    def calculate():
+    def calculate(self):
         """Calculates any derived factors from the setup.
 
         This function must be called after all public factors are initialized.
         """
-        Factors.__max_args = Factors.__calculate_max_args(
-            Factors.num_args,
-            Factors.__norm_weights)
-        g_factor = 1 - Factors.common_g + Factors.common_g / Factors.parents_g
-        Factors.__ratio = Factors.num_args * g_factor - 1
-        Factors.__percent_basic = Factors.__ratio / (1 + Factors.__ratio)
-        Factors.__percent_gate = 1 / (1 + Factors.__ratio)
+        self.__max_args = Factors.__calculate_max_args(self.num_args,
+                                                       self.__norm_weights)
+        g_factor = 1 - self.common_g + self.common_g / self.parents_g
+        self.__ratio = self.num_args * g_factor - 1
+        self.__percent_basic = self.__ratio / (1 + self.__ratio)
+        self.__percent_gate = 1 / (1 + self.__ratio)
 
-    @staticmethod
-    def get_gate_weights():
+    def get_gate_weights(self):
         """Provides weights for gate types.
 
         Returns:
             Expected to return weights from the arguments.
         """
-        assert Factors.__weights_g is not None
-        return Factors.__weights_g
+        assert self.__weights_g is not None
+        return self.__weights_g
 
-    @staticmethod
-    def set_gate_weights(weights):
+    def set_gate_weights(self, weights):
         """Updates gate type weights.
 
         Args:
@@ -341,18 +255,17 @@ class Factors(object):
         if len(weights) > 3 and not sum(weights[:3]):
             raise FactorError("Cannot work with only XOR or NOT gates")
 
-        Factors.__weights_g = weights[:]
+        self.__weights_g = weights[:]
         for _ in range(len(Factors.__OPERATORS) - len(weights)):
-            Factors.__weights_g.append(0)  # padding for missing weights
-        Factors.__norm_weights = [x / sum(Factors.__weights_g)
-                                  for x in Factors.__weights_g]
-        Factors.__cum_dist = Factors.__norm_weights[:]
-        Factors.__cum_dist.insert(0, 0)
-        for i in range(1, len(Factors.__cum_dist)):
-            Factors.__cum_dist[i] += Factors.__cum_dist[i - 1]
+            self.__weights_g.append(0)  # padding for missing weights
+        self.__norm_weights = [x / sum(self.__weights_g)
+                               for x in self.__weights_g]
+        self.__cum_dist = self.__norm_weights[:]
+        self.__cum_dist.insert(0, 0)
+        for i in range(1, len(self.__cum_dist)):
+            self.__cum_dist[i] += self.__cum_dist[i - 1]
 
-    @staticmethod
-    def get_random_operator():
+    def get_random_operator(self):
         """Samples the gate operator.
 
         Returns:
@@ -360,12 +273,11 @@ class Factors(object):
         """
         r_num = random.random()
         bin_num = 1
-        while Factors.__cum_dist[bin_num] <= r_num:
+        while self.__cum_dist[bin_num] <= r_num:
             bin_num += 1
         return Factors.__OPERATORS[bin_num - 1]
 
-    @staticmethod
-    def get_num_args(gate):
+    def get_num_args(self, gate):
         """Randomly selects the number of arguments for the given gate type.
 
         This function has a side effect.
@@ -383,9 +295,9 @@ class Factors(object):
         elif gate.operator == "xor":
             return 2
 
-        max_args = int(Factors.__max_args)
+        max_args = int(self.__max_args)
         # Dealing with the fractional part.
-        if random.random() < (Factors.__max_args - max_args):
+        if random.random() < (self.__max_args - max_args):
             max_args += 1
 
         if gate.operator == "atleast":
@@ -397,13 +309,11 @@ class Factors(object):
 
         return random.randint(2, max_args)
 
-    @staticmethod
-    def get_percent_gate():
+    def get_percent_gate(self):
         """Returns the percentage of gates that should be in arguments."""
-        return Factors.__percent_gate
+        return self.__percent_gate
 
-    @staticmethod
-    def get_num_gate():
+    def get_num_gate(self):
         """Approximates the number of gates in the resulting fault tree.
 
         This is an estimate of the number of gates
@@ -415,14 +325,13 @@ class Factors(object):
             The number of gates needed for the given basic events.
         """
         # Special case of constrained gates
-        if Factors.__num_gate:
-            return Factors.__num_gate
-        b_factor = 1 - Factors.common_b + Factors.common_b / Factors.parents_b
-        return int(Factors.num_basic /
-                   (Factors.__percent_basic * Factors.num_args * b_factor))
+        if self.__num_gate:
+            return self.__num_gate
+        b_factor = 1 - self.common_b + self.common_b / self.parents_b
+        return int(self.num_basic /
+                   (self.__percent_basic * self.num_args * b_factor))
 
-    @staticmethod
-    def get_num_common_basics(num_gate):
+    def get_num_common_basic(self, num_gate):
         """Estimates the number of common basic events.
 
         These common basic events must be chosen
@@ -435,11 +344,10 @@ class Factors(object):
         Returns:
             The estimated number of common basic events.
         """
-        return int(Factors.common_b * Factors.__percent_basic *
-                   Factors.num_args * num_gate / Factors.parents_b)
+        return int(self.common_b * self.__percent_basic *
+                   self.num_args * num_gate / self.parents_b)
 
-    @staticmethod
-    def get_num_common_gates(num_gate):
+    def get_num_common_gate(self, num_gate):
         """Estimates the number of common gates.
 
         These common gates must be chosen
@@ -452,11 +360,10 @@ class Factors(object):
         Returns:
             The estimated number of common gates.
         """
-        return int(Factors.common_g * Factors.__percent_gate *
-                   Factors.num_args * num_gate / Factors.parents_g)
+        return int(self.common_g * self.__percent_gate *
+                   self.num_args * num_gate / self.parents_g)
 
-    @staticmethod
-    def constrain_num_gate(num_gate):
+    def constrain_num_gate(self, num_gate):
         """Constrains the number of gates.
 
         The number of parents and the ratios for common nodes are manipulated.
@@ -466,54 +373,142 @@ class Factors(object):
         """
         if num_gate < 1:
             raise FactorError("# of gates can't be less than 1.")
-        if num_gate * Factors.num_args <= Factors.num_basic:
+        if num_gate * self.num_args <= self.num_basic:
             raise FactorError("Not enough gates and avg. # of args "
                               "to achieve the # of basic events")
-        Factors.__num_gate = num_gate
+        self.__num_gate = num_gate
         # Calculate the ratios
-        alpha = Factors.__num_gate / Factors.num_basic
-        common = max(Factors.common_g, Factors.common_b)
-        min_common = 1 - (1 + alpha) / Factors.num_args / alpha
+        alpha = self.__num_gate / self.num_basic
+        common = max(self.common_g, self.common_b)
+        min_common = 1 - (1 + alpha) / self.num_args / alpha
         if common < min_common:
             common = round(min_common + 0.05, 1)
         elif common > 2 * min_common:  # Really hope it does not happen
             common = 2 * min_common
         assert common < 1  # Very brittle configuration here
 
-        Factors.common_g = common
-        Factors.common_b = common
+        self.common_g = common
+        self.common_b = common
         parents = 1 / (1 - min_common / common)
         assert parents > 2  # This is brittle as well
-        Factors.parents_g = parents
-        Factors.parents_b = parents
+        self.parents_g = parents
+        self.parents_b = parents
 
 
-def candidate_gates(common_gates):
+class GeneratorFaultTree(FaultTree):
+    """Specialization of a fault tree for generation purposes.
+
+    The construction of fault tree members are handled through this object.
+    It is assumed that no removal is going to happen after construction.
+
+    Args:
+        factors: The fault tree generation factors.
+    """
+
+    def __init__(self, name, factors):
+        """Initializes an empty fault tree.
+
+        Args:
+            name: The name of the system described by the fault tree container.
+            factors: Fully configured generation factors.
+        """
+        super(GeneratorFaultTree, self).__init__(name)
+        self.factors = factors
+
+    def construct_top_gate(self, root_name):
+        """Constructs and assigns a new gate suitable for being a root.
+
+        Args:
+            root_name: Unique name for the root gate.
+        """
+        assert not self.top_gate and not self.top_gates
+        operator = self.factors.get_random_operator()
+        while operator == "xor" or operator == "not":
+            operator = self.factors.get_random_operator()
+        self.top_gate = Gate(root_name, operator)
+        self.gates.append(self.top_gate)
+
+    def construct_gate(self):
+        """Constructs a new gate.
+
+        Returns:
+            A fully initialized gate with random attributes.
+        """
+        gate = Gate("G" + str(len(self.gates) + 1),
+                    self.factors.get_random_operator())
+        self.gates.append(gate)
+        return gate
+
+    def construct_basic_event(self):
+        """Constructs a basic event with a unique identifier.
+
+        Returns:
+            A fully initialized basic event with a random probability.
+        """
+        basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
+                                 random.uniform(self.factors.min_prob,
+                                                self.factors.max_prob))
+        self.basic_events.append(basic_event)
+        return basic_event
+
+    def construct_house_event(self):
+        """Constructs a house event with a unique identifier.
+
+        Returns:
+            A fully initialized house event with a random state.
+        """
+        house_event = HouseEvent("H" + str(len(self.house_events) + 1),
+                                 random.choice(["true", "false"]))
+        self.house_events.append(house_event)
+        return house_event
+
+    def construct_ccf_group(self, members):
+        """Constructs a unique CCF group with factors.
+
+        Args:
+            members: A list of member basic events.
+
+        Returns:
+            A fully initialized CCF group with random factors.
+        """
+        assert len(members) > 1
+        ccf_group = CcfGroup("CCF" + str(len(self.ccf_groups) + 1))
+        self.ccf_groups.append(ccf_group)
+        ccf_group.members = members
+        ccf_group.prob = random.uniform(self.factors.min_prob,
+                                        self.factors.max_prob)
+        ccf_group.model = "MGL"
+        levels = random.randint(2, len(members))
+        ccf_group.factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
+        return ccf_group
+
+
+def candidate_gates(common_gate):
     """Lazy generator of candidates for common gates.
 
     Args:
-        common_gates: A list of common gates.
+        common_gate: A list of common gates.
 
     Yields:
         A next gate candidate from common gates container.
     """
-    orphans = [x for x in common_gates if not x.parents]
+    orphans = [x for x in common_gate if not x.parents]
     random.shuffle(orphans)
     for i in orphans:
         yield i
 
-    single_parent = [x for x in common_gates if len(x.parents) == 1]
+    single_parent = [x for x in common_gate if len(x.parents) == 1]
     random.shuffle(single_parent)
     for i in single_parent:
         yield i
 
-    multi_parent = [x for x in common_gates if len(x.parents) > 1]
+    multi_parent = [x for x in common_gate if len(x.parents) > 1]
     random.shuffle(multi_parent)
     for i in multi_parent:
         yield i
 
 
-def correct_for_exhaustion(gates_queue, common_gates, fault_tree):
+def correct_for_exhaustion(gates_queue, common_gate, fault_tree):
     """Corrects the generation for queue exhaustion.
 
     Corner case when not enough new basic events initialized,
@@ -522,83 +517,85 @@ def correct_for_exhaustion(gates_queue, common_gates, fault_tree):
 
     Args:
         gates_queue: A deque of gates to be initialized.
-        common_gates: A list of common gates.
+        common_gate: A list of common gates.
         fault_tree: The fault tree container of all events and constructs.
     """
-    if not gates_queue and len(fault_tree.basic_events) < Factors.num_basic:
+    if gates_queue:
+        return
+    if len(fault_tree.basic_events) < fault_tree.factors.num_basic:
         # Initialize one more gate
         # by randomly choosing places in the fault tree.
         random_gate = random.choice(fault_tree.gates)
         while (random_gate.operator == "not" or
                random_gate.operator == "xor" or
-               random_gate in common_gates):
+               random_gate in common_gate):
             random_gate = random.choice(fault_tree.gates)
         new_gate = fault_tree.construct_gate()
         random_gate.add_argument(new_gate)
         gates_queue.append(new_gate)
 
 
-def choose_basic_event(s_common, common_basics, fault_tree):
+def choose_basic_event(s_common, common_basic, fault_tree):
     """Creates a new basic event or uses a common one for gate arguments.
 
     Args:
         s_common: Sampled factor to choose common basic events.
-        common_basics: A list of common basic events to choose from.
+        common_basic: A list of common basic events to choose from.
         fault_tree: The fault tree container of all events and constructs.
 
     Returns:
         Basic event argument for a gate.
     """
-    if s_common < Factors.common_b and common_basics:
-        orphans = [x for x in common_basics if not x.parents]
+    if s_common < fault_tree.factors.common_b and common_basic:
+        orphans = [x for x in common_basic if not x.parents]
         if orphans:
             return random.choice(orphans)
 
-        single_parent = [x for x in common_basics if len(x.parents) == 1]
+        single_parent = [x for x in common_basic if len(x.parents) == 1]
         if single_parent:
             return random.choice(single_parent)
 
-        return random.choice(common_basics)
+        return random.choice(common_basic)
     else:
         return fault_tree.construct_basic_event()
 
 
-def init_gates(gates_queue, common_basics, common_gates, fault_tree):
+def init_gates(gates_queue, common_basic, common_gate, fault_tree):
     """Initializes gates and other basic events.
 
     Args:
         gates_queue: A deque of gates to be initialized.
-        common_basics: A list of common basic events.
-        common_gates: A list of common gates.
+        common_basic: A list of common basic events.
+        common_gate: A list of common gates.
         fault_tree: The fault tree container of all events and constructs.
     """
     # Get an intermediate gate to initialize breadth-first
     gate = gates_queue.popleft()
 
-    num_arguments = Factors.get_num_args(gate)
+    num_arguments = fault_tree.factors.get_num_args(gate)
 
     ancestors = None  # needed for cycle prevention
-    max_tries = len(common_gates)  # the number of maximum tries
-    num_trials = 0  # the number of trials to get a common gate
+    max_tries = len(common_gate)  # the number of maximum tries
+    num_tries = 0  # the number of tries to get a common gate
 
     while gate.num_arguments() < num_arguments:
         s_percent = random.random()  # sample percentage of gates
         s_common = random.random()  # sample the reuse frequency
 
         # Case when the number of basic events is already satisfied
-        if len(fault_tree.basic_events) == Factors.num_basic:
+        if len(fault_tree.basic_events) == fault_tree.factors.num_basic:
             s_common = 0  # use only common nodes
 
-        if s_percent < Factors.get_percent_gate():
+        if s_percent < fault_tree.factors.get_percent_gate():
             # Create a new gate or use a common one
-            if s_common < Factors.common_g and num_trials < max_tries:
+            if s_common < fault_tree.factors.common_g and num_tries < max_tries:
                 # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
 
-                for random_gate in candidate_gates(common_gates):
-                    num_trials += 1
-                    if num_trials >= max_tries:
+                for random_gate in candidate_gates(common_gate):
+                    num_tries += 1
+                    if num_tries >= max_tries:
                         break
                     if random_gate in gate.g_arguments or random_gate is gate:
                         continue
@@ -613,10 +610,10 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
                 gate.add_argument(new_gate)
                 gates_queue.append(new_gate)
         else:
-            gate.add_argument(choose_basic_event(s_common, common_basics,
+            gate.add_argument(choose_basic_event(s_common, common_basic,
                                                  fault_tree))
 
-    correct_for_exhaustion(gates_queue, common_gates, fault_tree)
+    correct_for_exhaustion(gates_queue, common_gate, fault_tree)
 
 
 def distribute_house_events(fault_tree):
@@ -625,7 +622,7 @@ def distribute_house_events(fault_tree):
     Args:
         fault_tree: The fault tree container of all events and constructs.
     """
-    while len(fault_tree.house_events) < Factors.num_house:
+    while len(fault_tree.house_events) < fault_tree.factors.num_house:
         target_gate = random.choice(fault_tree.gates)
         if (target_gate is not fault_tree.top_gate and
                 target_gate.operator != "xor" and
@@ -639,13 +636,14 @@ def generate_ccf_groups(fault_tree):
     Args:
         fault_tree: The fault tree container of all events and constructs.
     """
-    if Factors.num_ccf:
+    if fault_tree.factors.num_ccf:
         members = fault_tree.basic_events[:]
         random.shuffle(members)
         first_mem = 0
         last_mem = 0
-        while len(fault_tree.ccf_groups) < Factors.num_ccf:
-            group_size = random.randint(2, int(2 * Factors.num_args - 2))
+        while len(fault_tree.ccf_groups) < fault_tree.factors.num_ccf:
+            max_args = int(2 * fault_tree.factors.num_args - 2)
+            group_size = random.randint(2, max_args)
             last_mem = first_mem + group_size
             if last_mem > len(members):
                 break
@@ -654,7 +652,7 @@ def generate_ccf_groups(fault_tree):
         fault_tree.non_ccf_events = members[first_mem:]
 
 
-def generate_fault_tree(ft_name, root_name):
+def generate_fault_tree(ft_name, root_name, factors):
     """Generates a fault tree of specified complexity.
 
     The Factors class attributes are used as parameters for complexity.
@@ -662,28 +660,29 @@ def generate_fault_tree(ft_name, root_name):
     Args:
         ft_name: The name of the fault tree.
         root_name: The name for the root gate of the fault tree.
+        factors: Factors for fault tree generation.
 
     Returns:
         Top gate of the created fault tree.
     """
-    fault_tree = GeneratorFaultTree(ft_name)
+    fault_tree = GeneratorFaultTree(ft_name, factors)
     fault_tree.construct_top_gate(root_name)
 
     # Estimating the parameters
-    num_gate = Factors.get_num_gate()
-    num_common_basics = Factors.get_num_common_basics(num_gate)
-    num_common_gates = Factors.get_num_common_gates(num_gate)
-    common_basics = [fault_tree.construct_basic_event()
-                     for _ in range(num_common_basics)]
-    common_gates = [fault_tree.construct_gate()
-                    for _ in range(num_common_gates)]
+    num_gate = factors.get_num_gate()
+    num_common_basic = factors.get_num_common_basic(num_gate)
+    num_common_gate = factors.get_num_common_gate(num_gate)
+    common_basic = [fault_tree.construct_basic_event()
+                    for _ in range(num_common_basic)]
+    common_gate = [fault_tree.construct_gate()
+                   for _ in range(num_common_gate)]
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
     gates_queue = deque()
     gates_queue.append(fault_tree.top_gate)
     while gates_queue:
-        init_gates(gates_queue, common_basics, common_gates, fault_tree)
+        init_gates(gates_queue, common_basic, common_gate, fault_tree)
 
     assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
     assert(not [x for x in fault_tree.gates
@@ -702,6 +701,7 @@ def write_info(fault_tree, tree_file, seed):
         tree_file: A file open for writing.
         seed: The seed of the pseudo-random number generator.
     """
+    factors = fault_tree.factors
     tree_file.write("<?xml version=\"1.0\"?>\n")
     tree_file.write(
         "<!--\nThis is a description of the auto-generated fault tree\n"
@@ -710,25 +710,25 @@ def write_info(fault_tree, tree_file, seed):
         "The fault tree name: " + fault_tree.name + "\n"
         "The root gate name: " + fault_tree.top_gate.name + "\n\n"
         "The seed of the random number generator: " + str(seed) + "\n"
-        "The number of basic events: " + str(Factors.num_basic) + "\n"
-        "The number of house events: " + str(Factors.num_house) + "\n"
-        "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
+        "The number of basic events: " + str(factors.num_basic) + "\n"
+        "The number of house events: " + str(factors.num_house) + "\n"
+        "The number of CCF groups: " + str(factors.num_ccf) + "\n"
         "The average number of gate arguments: " +
-        str(Factors.num_args) + "\n"
+        str(factors.num_args) + "\n"
         "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
-        str(Factors.get_gate_weights()) + "\n"
+        str(factors.get_gate_weights()) + "\n"
         "Percentage of common basic events per gate: " +
-        str(Factors.common_b) + "\n"
+        str(factors.common_b) + "\n"
         "Percentage of common gates per gate: " +
-        str(Factors.common_g) + "\n"
+        str(factors.common_g) + "\n"
         "The avg. number of parents for common basic events: " +
-        str(Factors.parents_b) + "\n"
+        str(factors.parents_b) + "\n"
         "The avg. number of parents for common gates: " +
-        str(Factors.parents_g) + "\n"
+        str(factors.parents_g) + "\n"
         "Maximum probability for basic events: " +
-        str(Factors.max_prob) + "\n"
+        str(factors.max_prob) + "\n"
         "Minimum probability for basic events: " +
-        str(Factors.min_prob) + "\n"
+        str(factors.min_prob) + "\n"
         "-->\n")
 
 
@@ -904,20 +904,25 @@ def setup_factors(args):
     Args:
         args: Command-line arguments with values for factors.
 
+    Returns:
+        Fully initialized Factors object.
+
     Raises:
         ArgumentTypeError: Problems with the arguments.
         FactorError: Invalid setup for factors.
     """
     random.seed(args.seed)
-    Factors.set_min_max_prob(args.min_prob, args.max_prob)
-    Factors.set_common_event_factors(args.common_b, args.common_g,
+    factors = Factors()
+    factors.set_min_max_prob(args.min_prob, args.max_prob)
+    factors.set_common_event_factors(args.common_b, args.common_g,
                                      args.parents_b, args.parents_g)
-    Factors.set_num_factors(args.num_args, args.num_basic, args.num_house,
+    factors.set_num_factors(args.num_args, args.num_basic, args.num_house,
                             args.num_ccf)
-    Factors.set_gate_weights([float(i) for i in args.weights_g])
+    factors.set_gate_weights([float(i) for i in args.weights_g])
     if args.num_gate:
-        Factors.constrain_num_gate(args.num_gate)
-    Factors.calculate()
+        factors.constrain_num_gate(args.num_gate)
+    factors.calculate()
+    return factors
 
 
 def main(argv=None):
@@ -932,8 +937,8 @@ def main(argv=None):
         FactorError: Invalid setup for factors.
     """
     args = manage_cmd_args(argv)
-    setup_factors(args)
-    fault_tree = generate_fault_tree(args.ft_name, args.root)
+    factors = setup_factors(args)
+    fault_tree = generate_fault_tree(args.ft_name, args.root, factors)
     with open(args.out, "w") as tree_file:
         if args.shorthand:
             tree_file.write(fault_tree.to_shorthand())
