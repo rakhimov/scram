@@ -326,14 +326,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  const Operator& type() const { return type_; }
+  Operator type() const { return type_; }
 
   /// Changes the gate type information.
   /// This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
   ///
   /// @param[in] t  The type for this gate.
-  void type(const Operator& t) {
+  void type(Operator t) {
     assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
     type_ = t;
   }
@@ -354,7 +354,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
-  const State& state() const { return state_; }
+  State state() const { return state_; }
 
   /// @returns true if this gate has become constant.
   bool IsConstant() const { return state_ != kNormalState; }

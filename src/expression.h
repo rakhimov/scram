@@ -183,12 +183,12 @@ class Parameter : public Expression, public Element, public Role {
   const std::string& id() const { return id_; }
 
   /// @returns The unit of this parameter.
-  const Units& unit() const { return unit_; }
+  Units unit() const { return unit_; }
 
   /// Sets the unit of this parameter.
   ///
   /// @param[in] unit  A valid unit.
-  void unit(const Units& unit) { unit_ = unit; }
+  void unit(Units unit) { unit_ = unit; }
 
   /// @returns The usage state of this parameter.
   bool unused() { return unused_; }
@@ -242,12 +242,12 @@ class MissionTime : public Expression {
   }
 
   /// @returns The unit of the system mission time.
-  const Units& unit() const { return unit_; }
+  Units unit() const { return unit_; }
 
   /// Sets the unit of this parameter.
   ///
   /// @param[in] unit  A valid unit.
-  void unit(const Units& unit) { unit_ = unit; }
+  void unit(Units unit) { unit_ = unit; }
 
   double Mean() noexcept { return mission_time_; }
   bool IsConstant() noexcept { return true; }

@@ -1155,7 +1155,7 @@ bool Preprocessor::MergeCommonArgs() noexcept {
   return changed;
 }
 
-bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
+bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
   assert(op == kAndGate || op == kOrGate);
   graph_->ClearNodeCounts();
   graph_->ClearGateMarks();
@@ -1200,8 +1200,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   return changed;
 }
 
-void Preprocessor::MarkCommonArgs(const IGatePtr& gate,
-                                  const Operator& op) noexcept {
+void Preprocessor::MarkCommonArgs(const IGatePtr& gate, Operator op) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
@@ -1222,7 +1221,7 @@ void Preprocessor::MarkCommonArgs(const IGatePtr& gate,
   assert(gate->constant_args().empty());
 }
 
-void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
+void Preprocessor::GatherCommonArgs(const IGatePtr& gate, Operator op,
                                     MergeTable::Candidates* group) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
@@ -1587,7 +1586,7 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
 
 bool Preprocessor::HandleDistributiveArgs(
     const IGatePtr& gate,
-    const Operator& distr_type,
+    Operator distr_type,
     std::vector<IGatePtr>* candidates) noexcept {
   if (candidates->empty()) return false;
   assert(gate->args().size() > 1 && "Malformed parent gate.");
@@ -1745,7 +1744,7 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
 
 void Preprocessor::TransformDistributiveArgs(
     const IGatePtr& gate,
-    const Operator& distr_type,
+    Operator distr_type,
     MergeTable::MergeGroup* group) noexcept {
   if (group->empty()) return;
   const MergeTable::Option& base_option = group->front();

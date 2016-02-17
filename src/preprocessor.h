@@ -518,7 +518,7 @@ class Preprocessor {
   ///
   /// @warning Gate marks are used for traversal.
   /// @warning Node counts are used for common node detection.
-  bool MergeCommonArgs(const Operator& op) noexcept;
+  bool MergeCommonArgs(Operator op) noexcept;
 
   /// Marks common arguments of gates with a specific operator.
   ///
@@ -529,7 +529,7 @@ class Preprocessor {
   /// @note Node count information is used to mark the common arguments.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void MarkCommonArgs(const IGatePtr& gate, const Operator& op) noexcept;
+  void MarkCommonArgs(const IGatePtr& gate, Operator op) noexcept;
 
   /// @struct MergeTable
   /// Helper struct for algorithms
@@ -568,7 +568,7 @@ class Preprocessor {
   ///       because they don't have common args with the supermodule.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void GatherCommonArgs(const IGatePtr& gate, const Operator& op,
+  void GatherCommonArgs(const IGatePtr& gate, Operator op,
                         MergeTable::Candidates* group) noexcept;
 
   /// Filters merge candidates and their shared arguments
@@ -704,7 +704,7 @@ class Preprocessor {
   ///
   /// @returns true if transformations are performed.
   bool HandleDistributiveArgs(const IGatePtr& gate,
-                              const Operator& distr_type,
+                              Operator distr_type,
                               std::vector<IGatePtr>* candidates) noexcept;
 
   /// Detects relationships between the gate and its distributive arguments
@@ -740,8 +740,7 @@ class Preprocessor {
   /// @param[in,out] gate  The parent gate of all the distributive arguments.
   /// @param[in] distr_type  The type of distributive arguments.
   /// @param[in,out] group  Group of distributive args options for manipulation.
-  void TransformDistributiveArgs(const IGatePtr& gate,
-                                 const Operator& distr_type,
+  void TransformDistributiveArgs(const IGatePtr& gate, Operator distr_type,
                                  MergeTable::MergeGroup* group) noexcept;
 
   /// Propagates failures of common nodes to detect redundancy.
