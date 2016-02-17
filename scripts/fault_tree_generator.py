@@ -456,32 +456,6 @@ class Factors(object):
                    Factors.num_args * num_gate / Factors.parents_g)
 
     @staticmethod
-    def calculate_parents_g(num_gate):
-        """Estimates the average number of parents for gates.
-
-        This function makes possible to generate a fault tree
-        with the user specified number of gates.
-        All other parameters
-        except for the number of parents
-        must be set for use in calculations.
-
-        Args:
-            num_gate: The total number of gates in the future fault tree
-
-        Returns:
-            The estimated average number of parents of gates.
-        """
-        b_factor = 1 - Factors.common_b + Factors.common_b / Factors.parents_b
-        ratio = 1 / (num_gate / Factors.num_basic *
-                     Factors.num_args * b_factor - 1)
-        assert ratio > 0
-        parents = Factors.common_g / (Factors.common_g - 1 +
-                                      (1 + ratio) / Factors.num_args)
-        if parents < 2:
-            parents = 2
-        return parents
-
-    @staticmethod
     def constrain_num_gate(num_gate):
         """Constrains the number of gates.
 
@@ -863,8 +837,12 @@ def write_summary(fault_tree, tree_file):
     tree_file.write("-->\n\n")
 
 
-def manage_cmd_args():
+def manage_cmd_args(argv=None):
     """Manages command-line description and arguments.
+
+    Args:
+        argv: An optional list containing the command-line arguments.
+            If None, the command-line arguments from sys will be used.
 
     Returns:
         Arguments that are collected from the command line.
@@ -911,15 +889,12 @@ def manage_cmd_args():
                         help="apply the shorthand format to the output")
     parser.add_argument("--nest", type=int, default=0, metavar="int",
                         help="nestedness of Boolean formulae in the XML output")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.nest < 0:
         raise ap.ArgumentTypeError("The nesting factor cannot be negative")
     if args.shorthand:
         if args.out == "fault_tree.xml":
             args.out = "fault_tree.txt"
-        if args.nest > 0:
-            raise ap.ArgumentTypeError("No support for nested formulae "
-                                       "in the shorthand format")
     return args
 
 
@@ -945,14 +920,18 @@ def setup_factors(args):
     Factors.calculate()
 
 
-def main():
+def main(argv=None):
     """The main function of the fault tree generator.
+
+    Args:
+        argv: An optional list containing the command-line arguments.
+            If None, the command-line arguments from sys will be used.
 
     Raises:
         ArgumentTypeError: There are problems with the arguments.
         FactorError: Invalid setup for factors.
     """
-    args = manage_cmd_args()
+    args = manage_cmd_args(argv)
     setup_factors(args)
     fault_tree = generate_fault_tree(args.ft_name, args.root)
     with open(args.out, "w") as tree_file:

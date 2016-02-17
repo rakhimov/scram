@@ -27,7 +27,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
     assert_less, assert_raises
 
 from fault_tree_generator import FactorError, Factors, generate_fault_tree, \
-    write_info, write_summary
+    write_info, write_summary, main
 
 
 class FactorsTestCase(TestCase):
@@ -171,3 +171,18 @@ class FaultTreeGeneratorTestCase(TestCase):
         fault_tree = generate_fault_tree("TestingTree", "root")
         assert_is_not_none(fault_tree)
         assert_less(abs(1 - len(fault_tree.gates) / 200), 0.1)
+
+
+def test_main():
+    """Tests the main() of the generator."""
+    tmp = NamedTemporaryFile()
+    main(["-b", "200", "-g", "200", "-o", tmp.name])
+    relaxng_doc = etree.parse("../share/input.rng")
+    relaxng = etree.RelaxNG(relaxng_doc)
+    with open(tmp.name, "r") as test_file:
+        doc = etree.parse(test_file)
+        assert_true(relaxng.validate(doc))
+
+    main(["-b", "200", "-g", "200", "-o", tmp.name, "--shorthand"])
+    cmd = ["./shorthand_to_xml.py", tmp.name, "-o", NamedTemporaryFile().name]
+    assert_equal(0, call(cmd))
