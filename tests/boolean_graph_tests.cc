@@ -67,10 +67,10 @@ class IGateTest : public ::testing::Test {
   /// @note For K/N gates, K is set to 2 by default.
   void DefineGate(Operator type, int num_vars) {
     assert(num_vars < 6);
-    assert(!(type == kAtleastGate && num_vars < 2));
+    assert(!(type == kAtleast && num_vars < 2));
 
     g = std::make_shared<IGate>(type);
-    if (type == kAtleastGate) g->vote_number(2);
+    if (type == kAtleast) g->vote_number(2);
     for (int i = 0; i < num_vars; ++i) g->AddArg(vars_[i]->index(), vars_[i]);
 
     assert(g->state() == kNormalState);
@@ -93,20 +93,20 @@ class IGateTest : public ::testing::Test {
 
 #ifndef NDEBUG
 TEST_F(IGateTest, AddArgDeathTests) {
-  DefineGate(kNullGate, 1);
+  DefineGate(kNull, 1);
   EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");
-  DefineGate(kNotGate, 1);
+  DefineGate(kNot, 1);
   EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");
-  DefineGate(kXorGate, 2);
+  DefineGate(kXor, 2);
   EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
-  DefineGate(kAndGate, 1);
+  DefineGate(kAnd, 1);
   EXPECT_DEATH(g->AddArg(1, var_two), "");  // Wrong index.
-  DefineGate(kAndGate, 1);
+  DefineGate(kAnd, 1);
   EXPECT_DEATH(g->AddArg(0, var_two), "");  // Wrong index.
-  DefineGate(kAndGate, 2);
+  DefineGate(kAnd, 2);
   g->Nullify();  // Constant state.
   EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");  // Wrong index.
-  DefineGate(kAtleastGate, 3);
+  DefineGate(kAtleast, 3);
   g->vote_number(-1);  // Negative vote number.
   EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
 }
@@ -116,10 +116,10 @@ TEST_F(IGateTest, AddArgDeathTests) {
 /// for addition of an existing argument to a gate.
 ///
 /// @param short_type  Short name of the gate, i.e., 'And'.
-///                    It must have the same root in Operator, i.e., 'kAndGate'.
+///                    It must have the same root in Operator, i.e., 'kAnd'.
 /// @param num_vars  The number of variables to initialize the gate.
 #define ADD_ARG_IGNORE_TEST(short_type, num_vars) \
-  DefineGate(k##short_type##Gate, num_vars);      \
+  DefineGate(k##short_type, num_vars);            \
   g->AddArg(var_one->index(), var_one);           \
   ASSERT_EQ(kNormalState, g->state());            \
   EXPECT_EQ(num_vars, g->args().size());          \
@@ -134,7 +134,7 @@ TEST_F(IGateTest, AddArgDeathTests) {
 #define TEST_DUP_ARG_IGNORE(short_type)               \
   TEST_F(IGateTest, DuplicateArgIgnore##short_type) { \
     ADD_ARG_IGNORE_TEST(short_type, 2);               \
-    EXPECT_EQ(k##short_type##Gate, g->type());        \
+    EXPECT_EQ(k##short_type, g->type());              \
   }
 
 TEST_DUP_ARG_IGNORE(And)
@@ -152,7 +152,7 @@ TEST_DUP_ARG_IGNORE(Nor)
 #define TEST_DUP_ARG_TYPE_CHANGE(init_type, final_type)    \
   TEST_F(IGateTest, DuplicateArgChange##init_type##Type) { \
     ADD_ARG_IGNORE_TEST(init_type, 1);                     \
-    EXPECT_EQ(k##final_type##Gate, g->type());             \
+    EXPECT_EQ(k##final_type, g->type());                   \
   }
 
 TEST_DUP_ARG_TYPE_CHANGE(Or, Null)
@@ -164,34 +164,34 @@ TEST_DUP_ARG_TYPE_CHANGE(Nand, Not)
 #undef ADD_ARG_IGNORE_TEST
 
 TEST_F(IGateTest, DuplicateArgXor) {
-  DefineGate(kXorGate, 1);
+  DefineGate(kXor, 1);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNullState, g->state());
   EXPECT_TRUE(g->args().empty());
 }
 
 TEST_F(IGateTest, DuplicateArgAtleastToNull) {
-  DefineGate(kAtleastGate, 2);
+  DefineGate(kAtleast, 2);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
-  EXPECT_EQ(kNullGate, g->type());
+  EXPECT_EQ(kNull, g->type());
   EXPECT_EQ(1, g->args().size());
   EXPECT_EQ(var_two->index(), g->variable_args().begin()->first);
 }
 
 TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
-  DefineGate(kAtleastGate, 3);
+  DefineGate(kAtleast, 3);
   g->vote_number(3);  // K equals to the number of input arguments.
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
-  EXPECT_EQ(kAndGate, g->type());
+  EXPECT_EQ(kAnd, g->type());
   EXPECT_EQ(2, g->args().size());
   ASSERT_EQ(1, g->variable_args().size());
   EXPECT_EQ(var_one->index(), g->variable_args().begin()->first);
   ASSERT_EQ(1, g->gate_args().size());
 
   IGatePtr sub = g->gate_args().begin()->second;
-  EXPECT_EQ(kOrGate, sub->type());  // Special case. K/N is in general.
+  EXPECT_EQ(kOr, sub->type());  // Special case. K/N is in general.
   EXPECT_EQ(1, sub->vote_number());  // This is the reason.
   std::set<int> vars = {var_two->index(), var_three->index()};
   EXPECT_EQ(vars, sub->args());
@@ -199,18 +199,18 @@ TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
 }
 
 TEST_F(IGateTest, DuplicateArgAtleastToOrWithOneClone) {
-  DefineGate(kAtleastGate, 3);
+  DefineGate(kAtleast, 3);
   g->vote_number(2);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
-  EXPECT_EQ(kOrGate, g->type());
+  EXPECT_EQ(kOr, g->type());
   EXPECT_EQ(2, g->args().size());
   ASSERT_EQ(1, g->variable_args().size());
   EXPECT_EQ(var_one->index(), g->variable_args().begin()->first);
   ASSERT_EQ(1, g->gate_args().size());
 
   IGatePtr sub = g->gate_args().begin()->second;
-  EXPECT_EQ(kAndGate, sub->type());  // Special case. K/N is in general.
+  EXPECT_EQ(kAnd, sub->type());  // Special case. K/N is in general.
   EXPECT_EQ(2, sub->vote_number());
   EXPECT_EQ(2, sub->args().size());  // This is the reason.
   std::set<int> vars = {var_two->index(), var_three->index()};
@@ -219,11 +219,11 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithOneClone) {
 }
 
 TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
-  DefineGate(kAtleastGate, 5);
+  DefineGate(kAtleast, 5);
   g->vote_number(3);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
-  EXPECT_EQ(kOrGate, g->type());
+  EXPECT_EQ(kOr, g->type());
   EXPECT_EQ(2, g->args().size());
   EXPECT_TRUE(g->variable_args().empty());
   ASSERT_EQ(2, g->gate_args().size());
@@ -232,9 +232,9 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
   ++it;
   IGatePtr clone_one = it->second;  // Guessing.
   // Correcting the guess.
-  if (and_gate->type() != kAndGate) std::swap(and_gate, clone_one);
-  ASSERT_EQ(kAndGate, and_gate->type());
-  ASSERT_EQ(kAtleastGate, clone_one->type());
+  if (and_gate->type() != kAnd) std::swap(and_gate, clone_one);
+  ASSERT_EQ(kAnd, and_gate->type());
+  ASSERT_EQ(kAtleast, clone_one->type());
 
   EXPECT_EQ(kNormalState, clone_one->state());
   EXPECT_EQ(3, clone_one->vote_number());
@@ -249,7 +249,7 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
 
   IGatePtr clone_two = and_gate->gate_args().begin()->second;
   EXPECT_EQ(kNormalState, clone_two->state());
-  EXPECT_EQ(kOrGate, clone_two->type());  // Special case. K/N is in general.
+  EXPECT_EQ(kOr, clone_two->type());  // Special case. K/N is in general.
   EXPECT_EQ(1, clone_two->vote_number());  // This is the reason.
   EXPECT_EQ(4, clone_two->args().size());
   EXPECT_EQ(4, clone_two->variable_args().size());
@@ -259,11 +259,11 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
 /// for addition of the complement of an existing argument to a gate.
 ///
 /// @param short_type  Short name of the gate, i.e., 'And'.
-///                    It must have the same root in Operator, i.e., 'kAndGate'.
+///                    It must have the same root in Operator, i.e., 'kAnd'.
 /// @param const_set  The notion of constant set (Null, Unity).
 #define TEST_ADD_COMPLEMENT_ARG(short_type, const_set) \
   TEST_F(IGateTest, ComplementArg##short_type) {       \
-    DefineGate(k##short_type##Gate, 1);                \
+    DefineGate(k##short_type, 1);                      \
     g->AddArg(-var_one->index(), var_one);             \
     ASSERT_EQ(k##const_set##State, g->state());        \
     EXPECT_TRUE(g->args().empty());                    \
@@ -288,11 +288,11 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity)
 /// @param final_type  Short name of the final type of the gate, i.e., 'And'.
 #define TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, final_type) \
   TEST_F(IGateTest, ComplementArgAtleastTo##final_type) {       \
-    DefineGate(kAtleastGate, num_vars);                         \
+    DefineGate(kAtleast, num_vars);                             \
     g->vote_number(v_num);                                      \
     g->AddArg(-var_one->index(), var_one);                      \
     ASSERT_EQ(kNormalState, g->state());                        \
-    EXPECT_EQ(k##final_type##Gate, g->type());                  \
+    EXPECT_EQ(k##final_type, g->type());                        \
     EXPECT_EQ(num_vars - 1, g->args().size());                  \
     EXPECT_EQ(num_vars - 1, g->variable_args().size());         \
     EXPECT_EQ(v_num - 1, g->vote_number());                     \
@@ -315,7 +315,7 @@ TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And)  // Join operation.
 /// @param const_set  The notion of constant set (Null, Unity) as gate's state.
 #define TEST_CONSTANT_ARG_STATE(arg_state, num_vars, init_type, const_set) \
   TEST_F(IGateTest, arg_state##ConstantArg##init_type) {                   \
-    DefineGate(k##init_type##Gate, num_vars);                              \
+    DefineGate(k##init_type, num_vars);                                    \
     g->ProcessConstantArg(var_one, arg_state);                             \
     EXPECT_EQ(k##const_set##State, g->state());                            \
     EXPECT_TRUE(g->args().empty());                                        \
@@ -346,11 +346,11 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity)
 #define TEST_CONSTANT_ARG_VNUM(arg_state, num_vars, v_num, init_type,    \
                                final_type)                               \
   TEST_F(IGateTest, arg_state##ConstantArg##init_type##To##final_type) { \
-    DefineGate(k##init_type##Gate, num_vars);                            \
+    DefineGate(k##init_type, num_vars);                                  \
     if (v_num) g->vote_number(v_num);                                    \
     g->ProcessConstantArg(var_one, arg_state);                           \
     ASSERT_EQ(kNormalState, g->state());                                 \
-    EXPECT_EQ(k##final_type##Gate, g->type());                           \
+    EXPECT_EQ(k##final_type, g->type());                                 \
     EXPECT_EQ(num_vars - 1, g->args().size());                           \
     EXPECT_EQ(num_vars - 1, g->variable_args().size());                  \
     EXPECT_TRUE(g->gate_args().empty());                                 \

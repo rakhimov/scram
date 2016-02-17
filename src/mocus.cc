@@ -36,7 +36,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
         graph_(fault_tree),
         kSettings_(settings) {
   IGatePtr top = fault_tree->root();
-  if (top->IsConstant() || top->type() == kNullGate) {
+  if (top->IsConstant() || top->type() == kNull) {
     constant_graph_ = true;
     zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(fault_tree, settings));
     zbdd_->Analyze();

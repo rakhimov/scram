@@ -705,7 +705,7 @@ class CutSetContainer : public Zbdd {
   ///      by removing the vertex with the index of the gate.
   VertexPtr ExpandGate(const VertexPtr& gate_zbdd,
                        const VertexPtr& cut_sets) noexcept {
-    return Zbdd::Apply(kAndGate, gate_zbdd, cut_sets,
+    return Zbdd::Apply(kAnd, gate_zbdd, cut_sets,
                        Zbdd::settings().limit_order());
   }
 
@@ -715,7 +715,7 @@ class CutSetContainer : public Zbdd {
   ///
   /// @pre The argument ZBDD cut sets are managed by this container.
   void Merge(const VertexPtr& vertex) noexcept {
-    Zbdd::root(Zbdd::Apply(kOrGate, Zbdd::root(), vertex,
+    Zbdd::root(Zbdd::Apply(kOr, Zbdd::root(), vertex,
                            Zbdd::settings().limit_order()));
     Zbdd::ClearTables();
   }

@@ -267,14 +267,14 @@ using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 ///          for performance and simplicity reasons
 ///          that these are the only kinds of operators possible.
 enum Operator {
-  kAndGate = 0,  ///< Simple AND gate.
-  kOrGate,  ///< Simple OR gate.
-  kAtleastGate,  ///< Combination, K/N, or Vote gate representation.
-  kXorGate,  ///< Exclusive OR gate with two inputs.
-  kNotGate,  ///< Boolean negation.
-  kNandGate,  ///< NAND gate.
-  kNorGate,  ///< NOR gate.
-  kNullGate  ///< Special pass-through or NULL gate. This is not NULL set.
+  kAnd = 0,  ///< Simple AND gate.
+  kOr,  ///< Simple OR gate.
+  kAtleast,  ///< Combination, K/N, or Vote gate representation.
+  kXor,  ///< Exclusive OR gate with two inputs.
+  kNot,  ///< Boolean negation.
+  kNand,  ///< NAND gate.
+  kNor,  ///< NOR gate.
+  kNull  ///< Special pass-through or NULL gate. This is not NULL set.
 };
 
 /// The number of operators in the enum.
@@ -334,7 +334,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @param[in] t  The type for this gate.
   void type(Operator t) {
-    assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
+    assert(t == kAnd || t == kOr || t == kNot || t == kNull);
     type_ = t;
   }
 
@@ -621,8 +621,8 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
     assert(index != 0);
     assert(std::abs(index) == arg->index());
     assert(state_ == kNormalState);
-    assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty()));
-    assert(!(type_ == kXorGate && args_.size() > 1));
+    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
+    assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
 
     if (args_.count(index)) return IGate::ProcessDuplicateArg(index);
@@ -762,7 +762,7 @@ class GateSet {
     /// @returns true if the gate arguments are equal.
     bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
       if (lhs->args() != rhs->args()) return false;
-      if (lhs->type() == kAtleastGate &&
+      if (lhs->type() == kAtleast &&
           lhs->vote_number() != rhs->vote_number()) return false;
       return true;
     }
