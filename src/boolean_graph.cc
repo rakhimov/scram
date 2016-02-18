@@ -157,7 +157,7 @@ void IGate::InvertArg(int existing_arg) noexcept {
   }
 }
 
-void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
+void IGate::CoalesceGate(const IGatePtr& arg_gate) noexcept {
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
   assert(arg_gate->state() == kNormalState && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");

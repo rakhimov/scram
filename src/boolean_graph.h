@@ -552,7 +552,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @warning This function does not test
   ///          if the parent and argument logics are
   ///          correct for coalescing.
-  void JoinGate(const IGatePtr& arg_gate) noexcept;
+  void CoalesceGate(const IGatePtr& arg_gate) noexcept;
 
   /// Swaps a single argument of a NULL type argument gate.
   /// This is separate from other coalescing functions

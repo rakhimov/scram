@@ -362,7 +362,7 @@ class Preprocessor {
   /// @note Module gates are omitted from coalescing to preserve them.
   ///
   /// @warning Gate marks are used.
-  bool JoinGates(const IGatePtr& gate, bool common) noexcept;
+  bool CoalesceGates(const IGatePtr& gate, bool common) noexcept;
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
