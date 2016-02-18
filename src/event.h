@@ -313,12 +313,12 @@ class Formula {
   /// @throws LogicError  The gate is not yet assigned.
   const std::string& type() const { return type_; }
 
-  /// @returns The vote number if and only if the operator is ATLEAST.
+  /// @returns The vote number if and only if the formula is "atleast".
   ///
   /// @throws LogicError  The vote number is not yet assigned.
   int vote_number() const;
 
-  /// Sets the vote number only for an ATLEAST formula.
+  /// Sets the vote number only for an "atleast" formula.
   ///
   /// @param[in] number  The vote number.
   ///
@@ -414,7 +414,7 @@ class Formula {
   void GatherNodesAndConnectors();
 
   std::string type_;  ///< Logical operator.
-  int vote_number_;  ///< Vote number for ATLEAST operator.
+  int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
   std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.

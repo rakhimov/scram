@@ -37,7 +37,7 @@ Gate Normalization
 ==================
 
 The fault tree is simplified to contain only *AND* and *OR* gates
-by rewriting complex gates like *ATLEAST* and *XOR* with *AND* and *OR* gates
+by rewriting complex gates like *VOTE* and *XOR* with *AND* and *OR* gates
 [Nie94]_ [Rau03]_.
 After this operation,
 the graph is in normal form.

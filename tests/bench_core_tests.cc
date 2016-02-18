@@ -83,9 +83,9 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
   }
 }
 
-// Simple verification tests for Atleast gate fault tree.
+// Simple verification tests for K/N gate fault tree.
 // Test Minimal cut sets and total probability.
-TEST_P(RiskAnalysisTest, Atleast) {
+TEST_P(RiskAnalysisTest, Vote) {
   std::string tree_input = "./share/scram/input/core/atleast.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));

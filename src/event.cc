@@ -96,7 +96,7 @@ int Formula::vote_number() const {
 
 void Formula::vote_number(int number) {
   if (type_ != "atleast") {
-    std::string msg = "Vote number can only be defined for ATLEAST operator. "
+    std::string msg = "Vote number can only be defined for 'atleast' formulas. "
                       "The operator of this formula is " + type_ + ".";
     throw LogicError(msg);
   } else if (number < 2) {

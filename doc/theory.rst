@@ -110,7 +110,7 @@ GATES
     (the enabling condition is represented by a Conditioning Event drawn to the right of the gate.).
     This gate restricts input events to only two events.
 
-#. Combination/VOTE/Atleast :
+#. Combination/Voting/VOTE/Atleast/K-out-of-N(K/N) :
     Output fault occurs if **m** out of the **n** input events occurs.
     The **m** input events need not to occur simultaneously.
     The output occurs if at least **m** events occur.

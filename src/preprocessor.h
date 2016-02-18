@@ -289,9 +289,9 @@ class Preprocessor {
   /// @note This is a helper function for NormalizeGate.
   void NormalizeXorGate(const IGatePtr& gate) noexcept;
 
-  /// Normalizes an ATLEAST gate with a vote number.
+  /// Normalizes a VOTE gate with a vote number.
   /// The gate is turned into an OR gate of
-  /// recursively normalized ATLEAST and AND arg gates
+  /// recursively normalized VOTE and AND arg gates
   /// according to the formula
   /// K/N(x, y_i) = OR(AND(x, K-1/N-1(y_i)), K/N-1(y_i)))
   /// with y_i being the rest of formula arguments,
@@ -302,11 +302,11 @@ class Preprocessor {
   /// which is OR of AND gates of combinations.
   /// Normalization of K/N gates is aware of variable ordering.
   ///
-  /// @param[in,out] gate  The ATLEAST gate to normalize.
+  /// @param[in,out] gate  The VOTE gate to normalize.
   ///
   /// @pre Variable ordering is assigned to arguments.
   /// @pre This helper function is called from NormalizeGate.
-  void NormalizeAtleastGate(const IGatePtr& gate) noexcept;
+  void NormalizeVoteGate(const IGatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
   /// according to the De Morgan's law

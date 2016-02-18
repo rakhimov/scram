@@ -157,7 +157,7 @@ class TestGateStructure {
       case kXor:
         assert(gate->args().size() == 2 && "Malformed XOR gate!");
         break;
-      case kAtleast:
+      case kVote:
         assert(gate->vote_number() > 1 && "K/N has wrong K!");
         assert(gate->args().size() > gate->vote_number() && "K/N has wrong N!");
         break;
@@ -532,7 +532,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
       graph_->root_sign_ *= -1;
       break;
     default:  // All other types keep the sign of the root.
-      assert((type == kAnd || type == kOr || type == kAtleast ||
+      assert((type == kAnd || type == kOr || type == kVote ||
               type == kXor || type == kNull) &&
              "Update the logic if new gate types are introduced.");
   }
@@ -563,7 +563,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) noexcept {
         break;
       default:  // No notification for other types.
         assert(type != kNull && "NULL gates should have been cleared.");
-        assert((type == kAnd || type == kOr || type == kAtleast ||
+        assert((type == kAnd || type == kOr || type == kVote ||
                 type == kXor) &&
                "Update the logic if new gate types are introduced.");
     }
@@ -600,11 +600,11 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
       if (!full) break;
       Preprocessor::NormalizeXorGate(gate);
       break;
-    case kAtleast:
+    case kVote:
       assert(gate->args().size() > 2);
       assert(gate->vote_number() > 1);
       if (!full) break;
-      Preprocessor::NormalizeAtleastGate(gate);
+      Preprocessor::NormalizeVoteGate(gate);
       break;
     case kNull:
       null_gates_.push_back(gate);  // Register for removal.
@@ -638,8 +638,8 @@ void Preprocessor::NormalizeXorGate(const IGatePtr& gate) noexcept {
   gate->AddArg(gate_two->index(), gate_two);
 }
 
-void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
-  assert(gate->type() == kAtleast);
+void Preprocessor::NormalizeVoteGate(const IGatePtr& gate) noexcept {
+  assert(gate->type() == kVote);
   int vote_number = gate->vote_number();
 
   assert(vote_number > 0);  // Vote number can be 1 for special OR gates.
@@ -660,11 +660,11 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
   auto first_arg = std::make_shared<IGate>(kAnd);
   gate->TransferArg(*it, first_arg);
 
-  auto grand_arg = std::make_shared<IGate>(kAtleast);
+  auto grand_arg = std::make_shared<IGate>(kVote);
   first_arg->AddArg(grand_arg->index(), grand_arg);
   grand_arg->vote_number(vote_number - 1);
 
-  auto second_arg = std::make_shared<IGate>(kAtleast);
+  auto second_arg = std::make_shared<IGate>(kVote);
   second_arg->vote_number(vote_number);
 
   for (it = gate->args().cbegin(); it != gate->args().cend(); ++it) {
@@ -681,8 +681,8 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
   gate->AddArg(first_arg->index(), first_arg);
   gate->AddArg(second_arg->index(), second_arg);
 
-  Preprocessor::NormalizeAtleastGate(grand_arg);
-  Preprocessor::NormalizeAtleastGate(second_arg);
+  Preprocessor::NormalizeVoteGate(grand_arg);
+  Preprocessor::NormalizeVoteGate(second_arg);
 }
 
 void Preprocessor::PropagateComplements(
@@ -2000,7 +2000,7 @@ void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
     case kAnd:
       gate->opti_value(ComputeState(gate->args().size(), 1));
       break;
-    case kAtleast:
+    case kVote:
       assert(gate->args().size() > gate->vote_number());
       gate->opti_value(
           ComputeState(gate->vote_number(),

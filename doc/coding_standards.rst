@@ -111,6 +111,17 @@ Core C++ Code
   For example, a Boolean product is more general and appropriate for analysis facilities
   than cut sets or prime implicants.
 
+    * There is no Boolean operator for the K-out-of-N logic.
+      This gate in fault tree analysis has many names
+      (Voting, Combination, atleast, K/N),
+      and there doesn't seem to be a consensus among sources and tools.
+      The OpenPSA MEF "atleast" best captures the nature of the gate;
+      however, the "atleast" is awkward to use in code and API
+      (Atleast vs. AtLeast vs. atleast vs. at_least).
+      In SCRAM, the "vote" word must be used consistently
+      to represent this gate in code and API.
+      The code that deals with the OpenPSA MEF may use the "atleast".
+
 .. _Defensive Programming: https://www.youtube.com/watch?v=1QhtXRMp3Hg
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 

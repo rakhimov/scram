@@ -15,7 +15,6 @@ Technical Issues
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers)
 - IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
-- 'Atleast' vs. 'Vote' vs. 'K/N' vs. 'Combination'
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
 - FetchTable() functions (Bdd/Zbdd) may not make sense semantically.

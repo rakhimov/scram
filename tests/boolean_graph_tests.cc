@@ -67,10 +67,10 @@ class IGateTest : public ::testing::Test {
   /// @note For K/N gates, K is set to 2 by default.
   void DefineGate(Operator type, int num_vars) {
     assert(num_vars < 6);
-    assert(!(type == kAtleast && num_vars < 2));
+    assert(!(type == kVote && num_vars < 2));
 
     g = std::make_shared<IGate>(type);
-    if (type == kAtleast) g->vote_number(2);
+    if (type == kVote) g->vote_number(2);
     for (int i = 0; i < num_vars; ++i) g->AddArg(vars_[i]->index(), vars_[i]);
 
     assert(g->state() == kNormalState);
@@ -106,7 +106,7 @@ TEST_F(IGateTest, AddArgDeathTests) {
   DefineGate(kAnd, 2);
   g->Nullify();  // Constant state.
   EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");  // Wrong index.
-  DefineGate(kAtleast, 3);
+  DefineGate(kVote, 3);
   g->vote_number(-1);  // Negative vote number.
   EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
 }
@@ -170,8 +170,8 @@ TEST_F(IGateTest, DuplicateArgXor) {
   EXPECT_TRUE(g->args().empty());
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToNull) {
-  DefineGate(kAtleast, 2);
+TEST_F(IGateTest, DuplicateArgVoteToNull) {
+  DefineGate(kVote, 2);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
   EXPECT_EQ(kNull, g->type());
@@ -179,8 +179,8 @@ TEST_F(IGateTest, DuplicateArgAtleastToNull) {
   EXPECT_EQ(var_two->index(), g->variable_args().begin()->first);
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
-  DefineGate(kAtleast, 3);
+TEST_F(IGateTest, DuplicateArgVoteToAnd) {
+  DefineGate(kVote, 3);
   g->vote_number(3);  // K equals to the number of input arguments.
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
@@ -198,8 +198,8 @@ TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToOrWithOneClone) {
-  DefineGate(kAtleast, 3);
+TEST_F(IGateTest, DuplicateArgVoteToOrWithOneClone) {
+  DefineGate(kVote, 3);
   g->vote_number(2);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
@@ -218,8 +218,8 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithOneClone) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
-  DefineGate(kAtleast, 5);
+TEST_F(IGateTest, DuplicateArgVoteToOrWithTwoClones) {
+  DefineGate(kVote, 5);
   g->vote_number(3);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
@@ -234,7 +234,7 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
   // Correcting the guess.
   if (and_gate->type() != kAnd) std::swap(and_gate, clone_one);
   ASSERT_EQ(kAnd, and_gate->type());
-  ASSERT_EQ(kAtleast, clone_one->type());
+  ASSERT_EQ(kVote, clone_one->type());
 
   EXPECT_EQ(kNormalState, clone_one->state());
   EXPECT_EQ(3, clone_one->vote_number());
@@ -280,15 +280,15 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity)
 
 #undef TEST_ADD_COMPLEMENT_ARG
 
-/// Collection of ATLEAST (K/N) gate tests
+/// Collection of VOTE (K/N) gate tests
 /// for addition of the complement of an existing argument.
 ///
 /// @param num_vars  Initial number of variables.
 /// @param v_num  Initial K number of the gate.
 /// @param final_type  Short name of the final type of the gate, i.e., 'And'.
 #define TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, final_type) \
-  TEST_F(IGateTest, ComplementArgAtleastTo##final_type) {       \
-    DefineGate(kAtleast, num_vars);                             \
+  TEST_F(IGateTest, ComplementArgVoteTo##final_type) {          \
+    DefineGate(kVote, num_vars);                                \
     g->vote_number(v_num);                                      \
     g->AddArg(-var_one->index(), var_one);                      \
     ASSERT_EQ(kNormalState, g->state());                        \
@@ -357,10 +357,10 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity)
     EXPECT_TRUE(g->constant_args().empty());                             \
   }
 
-TEST_CONSTANT_ARG_VNUM(true, 3, 2, Atleast, Or)
-TEST_CONSTANT_ARG_VNUM(true, 4, 3, Atleast, Atleast)
-TEST_CONSTANT_ARG_VNUM(false, 3, 2, Atleast, And)
-TEST_CONSTANT_ARG_VNUM(false, 4, 2, Atleast, Atleast)
+TEST_CONSTANT_ARG_VNUM(true, 3, 2, Vote, Or)
+TEST_CONSTANT_ARG_VNUM(true, 4, 3, Vote, Vote)
+TEST_CONSTANT_ARG_VNUM(false, 3, 2, Vote, And)
+TEST_CONSTANT_ARG_VNUM(false, 4, 2, Vote, Vote)
 
 /// The same tests as TEST_CONSTANT_ARG_VNUM
 /// but with no vote number initialization.

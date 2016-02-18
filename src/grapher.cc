@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ const std::map<std::string, std::string> Grapher::kGateColors_ = {
     {"not", "red"},
     {"xor", "brown"},
     {"inhibit", "yellow"},
-    {"atleast", "cyan"},
+    {"vote", "cyan"},
     {"null", "gray"},
     {"nor", "magenta"},
     {"nand", "orange"}};
@@ -122,15 +122,12 @@ void Grapher::GraphFormula(
 
 void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
   std::string gate = top_event->formula()->type();
-
+  if (gate == "atleast") gate = "vote";
   // Special case for inhibit gate.
   if (gate == "and" && top_event->HasAttribute("flavor"))
     gate = top_event->GetAttribute("flavor").value;
 
-  std::string gate_color = "black";
-  if (kGateColors_.count(gate)) {
-    gate_color = kGateColors_.find(gate)->second;
-  }
+  std::string gate_color = kGateColors_.at(gate);
 
   boost::to_upper(gate);
   out << "\"" <<  top_event->id()
@@ -140,7 +137,7 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
       << "label=\"" << top_event->name() << "\\n";
   if (!top_event->is_public()) out << "-- private --\\n";
   out << "{ " << gate;
-  if (gate == "ATLEAST") {
+  if (gate == "VOTE") {
     out << " " << top_event->formula()->vote_number()
         << "/" << top_event->formula()->num_args();
   }
@@ -154,11 +151,11 @@ void Grapher::FormatIntermediateEvents(
   std::unordered_map<std::string, GatePtr>::const_iterator it;
   for (it = inter_events.begin(); it != inter_events.end(); ++it) {
     std::string gate = it->second->formula()->type();
-
+    if (gate == "atleast") gate = "vote";
     if (it->second->HasAttribute("flavor") && gate == "and")
       gate = it->second->GetAttribute("flavor").value;
 
-    std::string gate_color = kGateColors_.find(gate)->second;
+    std::string gate_color = kGateColors_.at(gate);
     boost::to_upper(gate);  // This is for graphing.
     std::string id = it->second->id();
     std::string name = it->second->name();
@@ -176,7 +173,7 @@ void Grapher::FormatIntermediateEvents(
           << "label=\"" << name << "\\n";  // This is a new line in the label.
       if (!it->second->is_public()) out << "-- private --\\n";
       out << "{ " << gate;
-      if (gate == "ATLEAST") {
+      if (gate == "VOTE") {
         out << " " << it->second->formula()->vote_number()
             << "/" << it->second->formula()->num_args();
       }
@@ -255,7 +252,7 @@ void Grapher::FormatFormulas(
     out << "fontsize=10, fontcolor=black, "
         << "color=" << gate_color << ", "
         << "label=\"{ " << gate;
-    if (gate == "ATLEAST") {
+    if (gate == "VOTE") {
       out << " " << pair.second->vote_number()
           << "/" << pair.second->num_args();
     }

@@ -236,7 +236,7 @@ void IGate::ProcessTrueArg(int index) noexcept {
       assert(args_.size() == 1);
       type_ = kNot;
       break;
-    case kAtleast:  // (K - 1) / (N - 1).
+    case kVote:  // (K - 1) / (N - 1).
       assert(args_.size() > 2);
       IGate::EraseArg(index);
       assert(vote_number_ > 0);
@@ -261,7 +261,7 @@ void IGate::ProcessFalseArg(int index) noexcept {
     case kNot:
       IGate::MakeUnity();
       break;
-    case kAtleast:  // K / (N - 1).
+    case kVote:  // K / (N - 1).
       assert(args_.size() > 2);
       IGate::EraseArg(index);
       if (vote_number_ == args_.size()) type_ = kAnd;
@@ -322,8 +322,8 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
-  if (type_ == kAtleast)
-    return IGate::ProcessAtleastGateDuplicateArg(index);
+  if (type_ == kVote)
+    return IGate::ProcessVoteGateDuplicateArg(index);
 
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
@@ -346,9 +346,9 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   }
 }
 
-void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
+void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
   LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
-  assert(type_ == kAtleast);
+  assert(type_ == kVote);
   // This is a very special handling of K/N duplicates.
   // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
   assert(vote_number_ > 1);
@@ -413,7 +413,7 @@ void IGate::ProcessComplementArg(int index) noexcept {
     case kOr:
       IGate::MakeUnity();
       break;
-    case kAtleast:
+    case kVote:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
       assert(vote_number_ > 1 && "Vote number is wrong.");
       assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
@@ -436,7 +436,7 @@ void IGate::ProcessComplementArg(int index) noexcept {
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"and", kAnd},
     {"or", kOr},
-    {"atleast", kAtleast},
+    {"atleast", kVote},
     {"xor", kXor},
     {"not", kNot},
     {"nand", kNand},
@@ -472,7 +472,7 @@ IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
     case kXor:
       coherent_ = false;
       break;
-    case kAtleast:
+    case kVote:
       parent->vote_number(formula->vote_number());
       break;
     case kNull:
@@ -710,8 +710,8 @@ void BooleanGraph::Log() noexcept {
                                          << logger->gate_types[kAnd];
   BLOG(DEBUG5, logger->gate_types[kOr]) << "OR gates: "
                                         << logger->gate_types[kOr];
-  BLOG(DEBUG5, logger->gate_types[kAtleast])
-      << "K/N gates: " << logger->gate_types[kAtleast];
+  BLOG(DEBUG5, logger->gate_types[kVote])
+      << "K/N gates: " << logger->gate_types[kVote];
   BLOG(DEBUG5, logger->gate_types[kXor]) << "XOR gates: "
                                          << logger->gate_types[kXor];
   BLOG(DEBUG5, logger->gate_types[kNot]) << "NOT gates: "
@@ -800,7 +800,7 @@ const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
       sig.begin = "";  // No need for the parentheses.
       sig.end = "";
       break;
-    case kAtleast:
+    case kVote:
       sig.begin = "@(" + std::to_string(gate->vote_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";
