@@ -124,7 +124,7 @@ class Random {
   ///                     The size must be the same as the values vector size.
   ///
   /// @returns A sample Value from the value vector.
-  template<typename T>
+  template <typename T>
   static T DiscreteGenerator(const std::vector<T>& values,
                              const std::vector<double>& weights) noexcept {
     assert(values.size() == weights.size());

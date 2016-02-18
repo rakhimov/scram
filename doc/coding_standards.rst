@@ -62,7 +62,7 @@ Core C++ Code
 - Consider creating a typedef (using declaration/alias)
   for common smart pointers.
 
-    * ``ClassNamePtr`` for shared and unique pointers
+    * ``ClassNamePtr`` for shared, unique, and intrusive pointers
     * ``ClassNameWeakPtr`` for weak pointers
 
 - Prefer "modern C++" (C++11).
@@ -74,6 +74,7 @@ Core C++ Code
       with the corresponding class names, i.e., ``ClassName::Foo()``.
     * Qualify virtual functions to be overridden by design as ``this->Foo()``.
     * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
+    * Unqualified calls relying on the ADL must state the intent in the documentation.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
@@ -109,6 +110,17 @@ Core C++ Code
   to the terminology and concepts of risk analysis in **analysis code**.
   For example, a Boolean product is more general and appropriate for analysis facilities
   than cut sets or prime implicants.
+
+    * There is no Boolean operator for the K-out-of-N logic.
+      This gate in fault tree analysis has many names
+      (Voting, Combination, atleast, K/N),
+      and there doesn't seem to be a consensus among sources and tools.
+      The OpenPSA MEF "atleast" best captures the nature of the gate;
+      however, the "atleast" is awkward to use in code and API
+      (Atleast vs. AtLeast vs. atleast vs. at_least).
+      In SCRAM, the "vote" word must be used consistently
+      to represent this gate in code and API.
+      The code that deals with the OpenPSA MEF may use the "atleast".
 
 .. _Defensive Programming: https://www.youtube.com/watch?v=1QhtXRMp3Hg
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -166,10 +178,16 @@ Metric                 Before Release       On Release
 C++ Code Coverage      80%                  95%
 C++ Defect Density     0.5 per 1000 SLOC    0.35 per 1000 SLOC
 CCN                    15                   15
-Python Code Coverage   80%                  90%
+Python Code Coverage   80%                  95%
 Pylint Score           9.0                  9.5
 Documentation          Full                 Full
 ====================   ==================   ==================
+
+.. note:: C++ defects that count towards the defect density
+          include analysis errors, Coverity report, memory leaks,
+          and *known* critical bugs.
+
+.. note:: Utility scripts written in Python are exempt from the test coverage requirement.
 
 
 Testing and Continuous Integration

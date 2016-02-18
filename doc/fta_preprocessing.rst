@@ -37,14 +37,14 @@ Gate Normalization
 ==================
 
 The fault tree is simplified to contain only *AND* and *OR* gates
-by rewriting complex gates like *ATLEAST* and *XOR* with *AND* and *OR* gates
+by rewriting complex gates like *VOTE* and *XOR* with *AND* and *OR* gates
 [Nie94]_ [Rau03]_.
 After this operation,
 the graph is in normal form.
 
 
-Propagating Complements
-=======================
+Complement Propagation
+======================
 
 Complements or negations of gates are pushed down to basic events
 according to the De Morgan's law [Rau03]_.

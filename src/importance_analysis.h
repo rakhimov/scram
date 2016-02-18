@@ -118,7 +118,7 @@ class ImportanceAnalysis : public Analysis {
 /// with the help from probability analyzers.
 ///
 /// @tparam Calculator  Quantitative calculator of probability values.
-template<class Calculator>
+template <class Calculator>
 class ImportanceAnalyzerBase : public ImportanceAnalysis {
  public:
   /// Constructs importance analyzer from probability analyzer.
@@ -165,7 +165,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
 /// with the help from probability analyzers.
 ///
 /// @tparam Calculator  Quantitative calculator of probability values.
-template<class Calculator>
+template <class Calculator>
 class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
  public:
   using ImportanceAnalyzerBase<Calculator>::ImportanceAnalyzerBase;
@@ -174,7 +174,7 @@ class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
   double CalculateMif(int index) noexcept override;
 };
 
-template<class Calculator>
+template <class Calculator>
 double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   using Base = ImportanceAnalyzerBase<Calculator>;
   std::vector<double>& p_vars = Base::prob_analyzer()->p_vars();
@@ -197,7 +197,7 @@ double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
 
 /// @class ImportanceAnalyzer<Bdd>
 /// Specialization of importance analyzer with Binary Decision Diagrams.
-template<>
+template <>
 class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
  public:
   /// Constructs importance analyzer from probability analyzer.

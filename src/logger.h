@@ -109,7 +109,7 @@ class Logger {
   }
 
   /// @returns Reference to the cut-off level for reporting.
-  static const LogLevel& report_level() { return report_level_; }
+  static LogLevel report_level() { return report_level_; }
 
   /// Sets the reporting level cut-off.
   ///

@@ -28,7 +28,7 @@
 
 namespace scram {
 
-int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
+int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
 
 void NodeParentManager::AddParent(const IGatePtr& gate) {
   parents_.emplace(gate->index(), gate);
@@ -44,7 +44,7 @@ Node::Node(int index) noexcept
       pos_count_(0),
       neg_count_(0) {}
 
-Node::~Node() {}  // Empty body for pure virtual destructor.
+Node::~Node() = default;
 
 Constant::Constant(bool state) noexcept : Node(), state_(state) {}
 
@@ -190,7 +190,7 @@ void IGate::JoinNullGate(int index) noexcept {
   gate_args_.erase(index);
   null_gate->EraseParent(Node::index());
 
-  assert(null_gate->type_ == kNullGate);
+  assert(null_gate->type_ == kNull);
   assert(null_gate->args_.size() == 1);
 
   int arg_index = *null_gate->args_.begin();
@@ -218,53 +218,53 @@ void IGate::ProcessConstantArg(const NodePtr& arg, bool state) noexcept {
 
 void IGate::ProcessTrueArg(int index) noexcept {
   switch (type_) {
-    case kNullGate:
-    case kOrGate:
+    case kNull:
+    case kOr:
       IGate::MakeUnity();
       break;
-    case kNandGate:
-    case kAndGate:
+    case kNand:
+    case kAnd:
       IGate::RemoveConstantArg(index);
       break;
-    case kNorGate:
-    case kNotGate:
+    case kNor:
+    case kNot:
       IGate::Nullify();
       break;
-    case kXorGate:  // Special handling due to its internal negation.
+    case kXor:  // Special handling due to its internal negation.
       assert(args_.size() == 2);
       IGate::EraseArg(index);
       assert(args_.size() == 1);
-      type_ = kNotGate;
+      type_ = kNot;
       break;
-    case kAtleastGate:  // (K - 1) / (N - 1).
+    case kVote:  // (K - 1) / (N - 1).
       assert(args_.size() > 2);
       IGate::EraseArg(index);
       assert(vote_number_ > 0);
       --vote_number_;
-      if (vote_number_ == 1) type_ = kOrGate;
+      if (vote_number_ == 1) type_ = kOr;
       break;
   }
 }
 
 void IGate::ProcessFalseArg(int index) noexcept {
   switch (type_) {
-    case kNorGate:
-    case kXorGate:
-    case kOrGate:
+    case kNor:
+    case kXor:
+    case kOr:
       IGate::RemoveConstantArg(index);
       break;
-    case kNullGate:
-    case kAndGate:
+    case kNull:
+    case kAnd:
       IGate::Nullify();
       break;
-    case kNandGate:
-    case kNotGate:
+    case kNand:
+    case kNot:
       IGate::MakeUnity();
       break;
-    case kAtleastGate:  // K / (N - 1).
+    case kVote:  // K / (N - 1).
       assert(args_.size() > 2);
       IGate::EraseArg(index);
-      if (vote_number_ == args_.size()) type_ = kAndGate;
+      if (vote_number_ == args_.size()) type_ = kAnd;
       break;
   }
 }
@@ -274,14 +274,14 @@ void IGate::RemoveConstantArg(int index) noexcept {
   IGate::EraseArg(index);
   if (args_.size() == 1) {
     switch (type_) {
-      case kXorGate:
-      case kOrGate:
-      case kAndGate:
-        type_ = kNullGate;
+      case kXor:
+      case kOr:
+      case kAnd:
+        type_ = kNull;
         break;
-      case kNorGate:
-      case kNandGate:
-        type_ = kNotGate;
+      case kNor:
+      case kNand:
+        type_ = kNot;
         break;
       default:
         assert(false && "NULL/NOT one-arg gates should not appear.");
@@ -319,24 +319,24 @@ void IGate::EraseAllArgs() noexcept {
 }
 
 void IGate::ProcessDuplicateArg(int index) noexcept {
-  assert(type_ != kNotGate && type_ != kNullGate);
+  assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
-  if (type_ == kAtleastGate)
-    return IGate::ProcessAtleastGateDuplicateArg(index);
+  if (type_ == kVote)
+    return IGate::ProcessVoteGateDuplicateArg(index);
 
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
     switch (type_) {
-      case kAndGate:
-      case kOrGate:
-        type_ = kNullGate;
+      case kAnd:
+      case kOr:
+        type_ = kNull;
         break;
-      case kNandGate:
-      case kNorGate:
-        type_ = kNotGate;
+      case kNand:
+      case kNor:
+        type_ = kNot;
         break;
-      case kXorGate:
+      case kXor:
         LOG(DEBUG5) << "Handling special case of XOR duplicate argument!";
         IGate::Nullify();
         break;
@@ -346,9 +346,9 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   }
 }
 
-void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
+void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
   LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
-  assert(type_ == kAtleastGate);
+  assert(type_ == kVote);
   // This is a very special handling of K/N duplicates.
   // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
   assert(vote_number_ > 1);
@@ -356,7 +356,7 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
   if (args_.size() == 2) {  // @(2, [x, x, z]) = x
     assert(vote_number_ == 2);
     this->EraseArg(index);
-    this->type_ = kNullGate;
+    this->type_ = kNull;
     return;
   }
   if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
@@ -364,9 +364,9 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
     IGatePtr clone_two = this->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     this->EraseAllArgs();
-    this->type_ = kAndGate;
+    this->type_ = kAnd;
     clone_two->TransferArg(index, shared_from_this());  // Transfered the x.
-    if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+    if (clone_two->vote_number() == 1) clone_two->type(kOr);
     this->AddArg(clone_two->index(), clone_two);
     return;
   }
@@ -374,21 +374,21 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
   IGatePtr clone_one = this->Clone();  // @(k, [y_i])
 
   this->EraseAllArgs();  // The main gate turns into OR with x.
-  type_ = kOrGate;
+  type_ = kOr;
   this->AddArg(clone_one->index(), clone_one);
   if (vote_number_ == 2) {  // No need for the second K/N gate.
     clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
-    auto and_gate = std::make_shared<IGate>(kAndGate);
+    auto and_gate = std::make_shared<IGate>(kAnd);
     this->AddArg(and_gate->index(), and_gate);
     clone_one->TransferArg(index, and_gate);  // Transfered the x.
 
     // Have to create the second K/N for vote_number > 2.
     IGatePtr clone_two = clone_one->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-    if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+    if (clone_two->vote_number() == 1) clone_two->type(kOr);
     and_gate->AddArg(clone_two->index(), clone_two);
 
     assert(and_gate->args().size() == 2);
@@ -396,24 +396,24 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
   }
   assert(clone_one->vote_number() <= clone_one->args().size());
   if (clone_one->args().size() == clone_one->vote_number())
-    clone_one->type(kAndGate);
+    clone_one->type(kAnd);
 }
 
 void IGate::ProcessComplementArg(int index) noexcept {
-  assert(type_ != kNotGate && type_ != kNullGate);
+  assert(type_ != kNot && type_ != kNull);
   assert(args_.count(-index));
   LOG(DEBUG5) << "Handling complement argument for G" << Node::index();
   switch (type_) {
-    case kNorGate:
-    case kAndGate:
+    case kNor:
+    case kAnd:
       IGate::Nullify();
       break;
-    case kNandGate:
-    case kXorGate:
-    case kOrGate:
+    case kNand:
+    case kXor:
+    case kOr:
       IGate::MakeUnity();
       break;
-    case kAtleastGate:
+    case kVote:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
       assert(vote_number_ > 1 && "Vote number is wrong.");
       assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
@@ -421,11 +421,11 @@ void IGate::ProcessComplementArg(int index) noexcept {
       IGate::EraseArg(-index);
       --vote_number_;
       if (args_.size() == 1) {
-        type_ = kNullGate;
+        type_ = kNull;
       } else if (vote_number_ == 1) {
-        type_ = kOrGate;
+        type_ = kOr;
       } else if (vote_number_ == args_.size()) {
-        type_ = kAndGate;
+        type_ = kAnd;
       }
       break;
     default:
@@ -434,14 +434,14 @@ void IGate::ProcessComplementArg(int index) noexcept {
 }
 
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
-    {"and", kAndGate},
-    {"or", kOrGate},
-    {"atleast", kAtleastGate},
-    {"xor", kXorGate},
-    {"not", kNotGate},
-    {"nand", kNandGate},
-    {"nor", kNorGate},
-    {"null", kNullGate}};
+    {"and", kAnd},
+    {"or", kOr},
+    {"atleast", kVote},
+    {"xor", kXor},
+    {"not", kNot},
+    {"nand", kNand},
+    {"nor", kNor},
+    {"null", kNull}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
     : root_sign_(1),
@@ -463,23 +463,23 @@ IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
   Operator type = kStringToType_.find(formula->type())->second;
   auto parent = std::make_shared<IGate>(type);
 
-  if (type != kOrGate && type != kAndGate) normal_ = false;
+  if (type != kOr && type != kAnd) normal_ = false;
 
   switch (type) {
-    case kNotGate:
-    case kNandGate:
-    case kNorGate:
-    case kXorGate:
+    case kNot:
+    case kNand:
+    case kNor:
+    case kXor:
       coherent_ = false;
       break;
-    case kAtleastGate:
+    case kVote:
       parent->vote_number(formula->vote_number());
       break;
-    case kNullGate:
+    case kNull:
       null_gates_.push_back(parent);
       break;
     default:
-      assert((type == kOrGate || type == kAndGate) && "Unexpected gate type.");
+      assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
   BooleanGraph::ProcessBasicEvents(parent, formula->basic_event_args(), ccf,
                                    nodes);
@@ -706,22 +706,22 @@ void BooleanGraph::Log() noexcept {
   LOG(DEBUG4) << "# of gates with positive and negative indices: "
               << logger->CountOverlap(logger->gates);
 
-  BLOG(DEBUG5, logger->gate_types[kAndGate])
-      << "AND gates: " << logger->gate_types[kAndGate];
-  BLOG(DEBUG5, logger->gate_types[kOrGate])
-      << "OR gates: " << logger->gate_types[kOrGate];
-  BLOG(DEBUG5, logger->gate_types[kAtleastGate])
-      << "K/N gates: " << logger->gate_types[kAtleastGate];
-  BLOG(DEBUG5, logger->gate_types[kXorGate])
-      << "XOR gates: " << logger->gate_types[kXorGate];
-  BLOG(DEBUG5, logger->gate_types[kNotGate])
-      << "NOT gates: " << logger->gate_types[kNotGate];
-  BLOG(DEBUG5, logger->gate_types[kNandGate])
-      << "NAND gates: " << logger->gate_types[kNandGate];
-  BLOG(DEBUG5, logger->gate_types[kNorGate])
-      << "NOR gates: " << logger->gate_types[kNorGate];
-  BLOG(DEBUG5, logger->gate_types[kNullGate])
-      << "NULL gates: " << logger->gate_types[kNullGate];
+  BLOG(DEBUG5, logger->gate_types[kAnd]) << "AND gates: "
+                                         << logger->gate_types[kAnd];
+  BLOG(DEBUG5, logger->gate_types[kOr]) << "OR gates: "
+                                        << logger->gate_types[kOr];
+  BLOG(DEBUG5, logger->gate_types[kVote])
+      << "K/N gates: " << logger->gate_types[kVote];
+  BLOG(DEBUG5, logger->gate_types[kXor]) << "XOR gates: "
+                                         << logger->gate_types[kXor];
+  BLOG(DEBUG5, logger->gate_types[kNot]) << "NOT gates: "
+                                         << logger->gate_types[kNot];
+  BLOG(DEBUG5, logger->gate_types[kNand])
+      << "NAND gates: " << logger->gate_types[kNand];
+  BLOG(DEBUG5, logger->gate_types[kNor]) << "NOR gates: "
+                                         << logger->gate_types[kNor];
+  BLOG(DEBUG5, logger->gate_types[kNull])
+      << "NULL gates: " << logger->gate_types[kNull];
 
   LOG(DEBUG4) << "Total # of variables: " << logger->Count(logger->variables);
   LOG(DEBUG4) << "# of variables with negative indices: "
@@ -780,27 +780,27 @@ const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
   FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
 
   switch (gate->type()) {
-    case kNandGate:
+    case kNand:
       sig.begin = "~(";  // Fall-through to AND gate.
-    case kAndGate:
+    case kAnd:
       sig.op = " & ";
       break;
-    case kNorGate:
+    case kNor:
       sig.begin = "~(";  // Fall-through to OR gate.
-    case kOrGate:
+    case kOr:
       sig.op = " | ";
       break;
-    case kXorGate:
+    case kXor:
       sig.op = " ^ ";
       break;
-    case kNotGate:
+    case kNot:
       sig.begin = "~(";  // Parentheses are for cases of NOT(NOT Arg).
       break;
-    case kNullGate:
+    case kNull:
       sig.begin = "";  // No need for the parentheses.
       sig.end = "";
       break;
-    case kAtleastGate:
+    case kVote:
       sig.begin = "@(" + std::to_string(gate->vote_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";

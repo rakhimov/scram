@@ -74,10 +74,27 @@ class Initializer {
   std::shared_ptr<Model> model() const { return model_; }
 
  private:
+  /// Convenience alias for expression extractor function types.
+  using ExtractorFunction = std::function<ExpressionPtr(const xmlpp::NodeSet&,
+                                                        const std::string&,
+                                                        Initializer*)>;
+  /// Map of expression names and their extractor functions.
+  using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
+
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
   /// String representation of units.
   static const char* const kUnitToString_[];
+  /// Expressions mapped to their extraction functions.
+  static const ExtractorMap kExpressionExtractors_;
+
+  /// @tparam T  Type of an expression.
+  /// @tparam N  The number of arguments for the expression.
+  ///
+  /// Extracts argument expressions from XML elements
+  /// and constructs the requested expression T.
+  template <class T, int N>
+  struct Extractor;
 
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
@@ -261,35 +278,20 @@ class Initializer {
   /// Processes Constant Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.
-  /// @param[out] expression  Expression described in XML input expression node.
   ///
-  /// @returns true if expression was found and processed.
-  bool GetConstantExpression(const xmlpp::Element* expr_element,
-                             ExpressionPtr& expression);
+  /// @returns Expression described in XML input expression node.
+  ExpressionPtr GetConstantExpression(const xmlpp::Element* expr_element);
 
   /// Processes Parameter Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[out] expression  Expression described in XML input expression node.
   ///
-  /// @returns true if expression was found and processed.
+  /// @returns Parameter expression described in XML input expression node.
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
-  bool GetParameterExpression(const xmlpp::Element* expr_element,
-                              const std::string& base_path,
-                              ExpressionPtr& expression);
-
-  /// Processes Distribution deviate expression definitions in input file.
-  ///
-  /// @param[in] expr_element  XML expression element containing the definition.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[out] expression  Expression described in XML input expression node.
-  ///
-  /// @returns true if expression was found and processed.
-  bool GetDeviateExpression(const xmlpp::Element* expr_element,
-                            const std::string& base_path,
-                            ExpressionPtr& expression);
+  ExpressionPtr GetParameterExpression(const xmlpp::Element* expr_element,
+                                       const std::string& base_path);
 
   /// Registers a common cause failure group for later definition.
   ///

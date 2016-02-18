@@ -14,18 +14,13 @@ Technical Issues
 
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers)
-- Operator enum has "Gate" in its names
 - IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
-- 'Atleast' vs. 'Vote' vs. 'K/N' vs. 'Combination'
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
 - FetchTable() functions (Bdd/Zbdd) may not make sense semantically.
 - IGate::IsModule() vs. IGate::module(). (Inconsistent with the rest of the code.)
 - ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
-- Questionable explicit qualification rules for member functions.
-- Parsing code for nested formulas in ``shorthand_to_xml.py`` is add-hoc (ugly, incorrect).
-- Fault tree generator script is too complex.
 - Fuzz tester runs are coupled.
   Can't run two jobs at the same time.
 - Fuzz tester error collection and reporting are non-existent.
@@ -39,3 +34,4 @@ Technical Issues
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models
   (formulas, parameters, containers).
+- Static variables of class type with dynamic initialization.

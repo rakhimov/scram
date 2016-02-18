@@ -29,7 +29,7 @@
 namespace scram {
 namespace cycle {
 
-template<class N, class C>
+template <class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
@@ -46,7 +46,7 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 ///                    This is for printing errors and efficiency.
 ///
 /// @returns True if a cycle is found.
-template<class N, class C>
+template <class N, class C>
 bool DetectCycle(N* node, std::vector<std::string>* cycle) {
   if (node->mark() == "") {
     node->mark("temporary");
@@ -73,7 +73,7 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// @param[out] cycle  The cycle path if detected.
 ///
 /// @returns True if a cycle is detected.
-template<class N, class C>
+template <class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle) {
   for (N* node : connector->nodes()) {
     if (DetectCycle<N, C>(node, cycle)) return true;

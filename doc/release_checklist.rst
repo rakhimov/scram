@@ -24,7 +24,8 @@ Pre-Release
     * [ ] Performance tests
 
 - [ ] Fuzz testing preprocessor and analysis code (tools: fuzz_tester.py, fault_tree_generator.py)
-- [ ] Coveralls >= 95%
+- [ ] Coveralls (C++) >= 95%
+- [ ] CodeCov (Python) >= 95%
 - [ ] Coverity defects < 0.35 per 1000 SLOC (target: 0)
 - [ ] Static code analysis with CppCheck
 - [ ] Valgrind check for memory leaks

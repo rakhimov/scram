@@ -242,7 +242,7 @@ struct TripletHash {
 /// Hash table with triplets of numbers as keys.
 ///
 /// @tparam Value  Type of values to be stored in the table.
-template<typename Value>
+template <typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class PairHash
@@ -261,7 +261,7 @@ struct PairHash {
 /// Hash table with pairs of numbers as keys.
 ///
 /// @tparam Value  Type of values to be stored in the table.
-template<typename Value>
+template <typename Value>
 using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
 
 class Zbdd;  // For analysis purposes.

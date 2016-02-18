@@ -267,14 +267,14 @@ using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 ///          for performance and simplicity reasons
 ///          that these are the only kinds of operators possible.
 enum Operator {
-  kAndGate = 0,  ///< Simple AND gate.
-  kOrGate,  ///< Simple OR gate.
-  kAtleastGate,  ///< Combination, K/N, or Vote gate representation.
-  kXorGate,  ///< Exclusive OR gate with two inputs.
-  kNotGate,  ///< Boolean negation.
-  kNandGate,  ///< NAND gate.
-  kNorGate,  ///< NOR gate.
-  kNullGate  ///< Special pass-through or NULL gate. This is not NULL set.
+  kAnd = 0,  ///< Simple AND gate.
+  kOr,  ///< Simple OR gate.
+  kVote,  ///< Combination, K/N, or Vote gate representation.
+  kXor,  ///< Exclusive OR gate with two inputs.
+  kNot,  ///< Boolean negation.
+  kNand,  ///< NAND gate.
+  kNor,  ///< NOR gate.
+  kNull  ///< Special pass-through or NULL gate. This is not NULL set.
 };
 
 /// The number of operators in the enum.
@@ -326,35 +326,35 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  const Operator& type() const { return type_; }
+  Operator type() const { return type_; }
 
   /// Changes the gate type information.
   /// This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
   ///
   /// @param[in] t  The type for this gate.
-  void type(const Operator& t) {
-    assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
+  void type(Operator t) {
+    assert(t == kAnd || t == kOr || t == kNot || t == kNull);
     type_ = t;
   }
 
   /// @returns Vote number.
   ///
   /// @warning The function does not validate the vote number,
-  ///          nor does it check for the ATLEAST type of the gate.
+  ///          nor does it check for the VOTE type of the gate.
   int vote_number() const { return vote_number_; }
 
   /// Sets the vote number for this gate.
   /// This function is used for K/N gates.
   ///
-  /// @param[in] number  The vote number of ATLEAST gate.
+  /// @param[in] number  The vote number of VOTE gate.
   ///
   /// @warning The function does not validate the vote number,
-  ///          nor does it check for the ATLEAST type of the gate.
+  ///          nor does it check for the VOTE type of the gate.
   void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
-  const State& state() const { return state_; }
+  State state() const { return state_; }
 
   /// @returns true if this gate has become constant.
   bool IsConstant() const { return state_ != kNormalState; }
@@ -500,7 +500,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          Depending on the logic of the gate,
   ///          new gates may be introduced
   ///          instead of the existing arguments.
-  /// @warning Complex logic gates like ATLEAST and XOR
+  /// @warning Complex logic gates like VOTE and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
@@ -616,13 +616,13 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] arg  Pointer to the argument.
   /// @param[in,out] container  The final destination to save the argument.
-  template<class Ptr, class Container>
+  template <class Ptr, class Container>
   void AddArg(int index, const Ptr& arg, Container* container) noexcept {
     assert(index != 0);
     assert(std::abs(index) == arg->index());
     assert(state_ == kNormalState);
-    assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty()));
-    assert(!(type_ == kXorGate && args_.size() > 1));
+    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
+    assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
 
     if (args_.count(index)) return IGate::ProcessDuplicateArg(index);
@@ -649,7 +649,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] index  Positive or negative index of the existing argument.
   ///
   /// @warning New gates may be introduced.
-  void ProcessAtleastGateDuplicateArg(int index) noexcept;
+  void ProcessVoteGateDuplicateArg(int index) noexcept;
 
   /// Process an addition of a complement of an existing argument.
   ///
@@ -696,7 +696,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
-  int vote_number_;  ///< Vote number for ATLEAST gate.
+  int vote_number_;  ///< Vote number for VOTE gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
   int descendant_;  ///< Mark by descendant indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
@@ -762,7 +762,7 @@ class GateSet {
     /// @returns true if the gate arguments are equal.
     bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
       if (lhs->args() != rhs->args()) return false;
-      if (lhs->type() == kAtleastGate &&
+      if (lhs->type() == kVote &&
           lhs->vote_number() != rhs->vote_number()) return false;
       return true;
     }

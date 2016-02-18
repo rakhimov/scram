@@ -58,7 +58,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     } else {
       root_ = {false, kOne_};
     }
-  } else if (fault_tree->root()->type() == kNullGate) {
+  } else if (fault_tree->root()->type() == kNull) {
     IGatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
@@ -219,19 +219,19 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
-  assert((type == kOrGate || type == kAndGate) &&
+  assert((type == kOr || type == kAnd) &&
          "Only normalized operations in BDD.");
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-  return type == kAndGate ? and_table_[{min_id, max_id}]
-                          : or_table_[{min_id, max_id}];
+  return type == kAnd ? and_table_[{min_id, max_id}]
+                      : or_table_[{min_id, max_id}];
 }
 
 Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
                                       bool complement) noexcept {
   Bdd::ClearTables();
-  return Bdd::Apply(kAndGate, ite->high(), ite->low(), complement,
+  return Bdd::Apply(kAnd, ite->high(), ite->low(), complement,
                     ite->complement_edge() ^ complement);
 }
 
@@ -278,9 +278,9 @@ Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
                          const VertexPtr& arg_two, bool complement_one,
                          bool complement_two) noexcept {
   assert(term_one->value());
-  assert((type == kOrGate || type == kAndGate) &&
+  assert((type == kOr || type == kAnd) &&
          "Only normalized operations in BDD.");
-  if (type == kAndGate) {
+  if (type == kAnd) {
     if (complement_one) return {true, kOne_};
   } else {
     if (!complement_one) return {false, kOne_};
@@ -290,10 +290,10 @@ Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
 
 Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
                          bool complement_one, bool complement_two) noexcept {
-  assert((type == kOrGate || type == kAndGate) &&
+  assert((type == kOr || type == kAnd) &&
          "Only normalized operations in BDD.");
   if (complement_one ^ complement_two) {
-    if (type == kAndGate) {
+    if (type == kAnd) {
       return {true, kOne_};
     } else {
       return {false, kOne_};
@@ -305,7 +305,7 @@ Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
 std::pair<Bdd::Function, Bdd::Function>
 Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
            bool complement_one, bool complement_two) noexcept {
-  assert((type == kOrGate || type == kAndGate) &&
+  assert((type == kOr || type == kAnd) &&
          "Only normalized operations in BDD.");
   if (arg_one->order() == arg_two->order()) {  // The same variable.
     assert(arg_one->index() == arg_two->index());

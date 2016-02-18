@@ -53,9 +53,8 @@ namespace {
 /// @param[in] num  The number to be converted.
 ///
 /// @returns Formatted string that represents the number.
-template<typename T>
-inline
-typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
+template <typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
 ToString(T num) {
   std::stringstream ss;  // Gets better formatting than std::to_string.
   ss << num;
