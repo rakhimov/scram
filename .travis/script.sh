@@ -49,5 +49,5 @@ if [[ -s doc_errors.txt ]]; then
 fi
 
 # Lizard function complexity printout for C++ and Python
-( cd ./src && ../scripts/lizard_report.sh | tail -n 30 )
-lizard -s cyclomatic_complexity -L 60 -a 5 scripts/*.py | tail -n 20
+lizard -w -L 60 -a 5 -EIgnoreAssert src/* || echo "TODO: Fix the C++ complexity"
+lizard -w -L 60 -a 5 scripts/*.py
