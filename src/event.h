@@ -402,7 +402,7 @@ class Formula {
   /// @param[in,out] container  The final destination to save the event.
   ///
   /// @throws DuplicateArgumentError  The argument even tis duplicate.
-  template<class Ptr>
+  template <class Ptr>
   void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
     if (event_args_.count(event->id()))
       throw DuplicateArgumentError("Duplicate argument " + event->name());

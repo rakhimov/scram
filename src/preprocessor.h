@@ -776,7 +776,7 @@ class Preprocessor {
   /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
   ///
   /// @param[in] common_node  A node with more than one parent.
-  template<class N>
+  template <class N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
   /// Marks ancestor gates true.
@@ -880,7 +880,7 @@ class Preprocessor {
   ///
   /// @warning This function will replace the root gate of the graph
   ///          if it is the destination.
-  template<class N>
+  template <class N>
   void ProcessStateDestinations(
       const std::shared_ptr<N>& node,
       const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept;
@@ -1074,14 +1074,14 @@ class Preprocessor {
 ///
 /// Undefined template class for specialization of Preprocessor
 /// for needs of specific analysis algorithms.
-template<class Algorithm>
+template <class Algorithm>
 class CustomPreprocessor;
 
 class Bdd;
 
 /// @class CustomPreprocessor<Bdd>
 /// Specialization of preprocessing for BDD based analyses.
-template<>
+template <>
 class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
@@ -1095,7 +1095,7 @@ class Zbdd;
 
 /// @class CustomPreprocessor<Zbdd>
 /// Specialization of preprocessing for ZBDD based analyses.
-template<>
+template <>
 class CustomPreprocessor<Zbdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
@@ -1111,7 +1111,7 @@ class Mocus;
 
 /// @class CustomPreprocessor<Mocus>
 /// Specialization of preprocessing for MOCUS based analyses.
-template<>
+template <>
 class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
  public:
   /// Constructor with a Boolean graph.

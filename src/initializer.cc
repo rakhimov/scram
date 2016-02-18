@@ -75,7 +75,7 @@ inline std::string GetAttributeValue(const xmlpp::Element* element,
 ///
 /// @throws ValidationError  Casting is unsuccessful.
 ///                          The error message will include the line number.
-template<typename T>
+template <typename T>
 inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
 CastAttributeValue(const xmlpp::Element* element,
                    const std::string& attribute) {
@@ -589,7 +589,7 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
   parameter->expression(expression);
 }
 
-template<class T, int N>
+template <class T, int N>
 struct Initializer::Extractor {
   /// Extracts and accumulates expressions
   /// to be passed to the constructor of expression T.
@@ -604,7 +604,7 @@ struct Initializer::Extractor {
   /// @returns A shared pointer to the extracted expression.
   ///
   /// @throws std::out_of_range  Not enough arguments in the args container.
-  template<class... Ts>
+  template <class... Ts>
   std::shared_ptr<T> operator()(const xmlpp::NodeSet& args,
                                 const std::string& base_path,
                                 Initializer* init,
@@ -618,7 +618,7 @@ struct Initializer::Extractor {
 };
 
 /// Partial specialization for terminal Extractor.
-template<class T>
+template <class T>
 struct Initializer::Extractor<T, 0> {
   /// Constructs the requested expression T
   /// with all accumulated argument expressions.
@@ -628,7 +628,7 @@ struct Initializer::Extractor<T, 0> {
   /// @param[in] expressions  All argument expressions for constructing T.
   ///
   /// @returns A shared pointer to the constructed expression.
-  template<class... Ts>
+  template <class... Ts>
   std::shared_ptr<T> operator()(const xmlpp::NodeSet& /*args*/,
                                 const std::string& /*base_path*/,
                                 Initializer* /*init*/,
@@ -641,7 +641,7 @@ struct Initializer::Extractor<T, 0> {
 /// Partial specialization for Extractor of Histogram expressions.
 ///
 /// @tparam N  Irrelevant request for this expression.
-template<int N>
+template <int N>
 struct Initializer::Extractor<Histogram, N> {
   /// Constructs Histogram deviate expression
   /// expression arguments in XML elements.

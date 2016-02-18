@@ -254,7 +254,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 ///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.
-template<class Algorithm>
+template <class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
   /// Constructor with a fault tree and analysis settings.
@@ -278,7 +278,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
 };
 
-template<class Algorithm>
+template <class Algorithm>
 void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 

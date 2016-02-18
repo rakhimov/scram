@@ -93,7 +93,7 @@ class Initializer {
   ///
   /// Extracts argument expressions from XML elements
   /// and constructs the requested expression T.
-  template<class T, int N>
+  template <class T, int N>
   struct Extractor;
 
   /// Reads one input file with the structure of analysis entities.

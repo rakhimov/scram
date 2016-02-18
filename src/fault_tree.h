@@ -147,7 +147,7 @@ class Component : public Element, public Role {
   /// @param[in,out] container  The destination container.
   ///
   /// @throws ValidationError  The event is already in this container.
-  template<class Ptr, class Container>
+  template <class Ptr, class Container>
   void AddEvent(const Ptr& event, Container* container);
 
   std::string name_;  ///< The name of this component.

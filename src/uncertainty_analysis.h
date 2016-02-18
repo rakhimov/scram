@@ -111,7 +111,7 @@ class UncertaintyAnalysis : public Analysis {
 /// Uncertainty analysis facility.
 ///
 /// @tparam Calculator  Quantitative analysis calculator.
-template<class Calculator>
+template <class Calculator>
 class UncertaintyAnalyzer : public UncertaintyAnalysis {
  public:
   /// Constructs uncertainty analyzer from probability analyzer.
@@ -136,7 +136,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-template<class Calculator>
+template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
