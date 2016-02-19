@@ -38,12 +38,26 @@ class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class ImportanceAnalysis;
 class UncertaintyAnalysis;
+class RiskAnalysis;
 
 /// @class Reporter
 /// This class reports the results of the analyses.
 class Reporter {
  public:
   using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;  ///< @todo Ugly!
+
+  /// Reports the results of risk analysis on a model.
+  /// The XML report is formed as a single document.
+  ///
+  /// @param[in] risk_an  Risk analysis with results.
+  /// @param[out] out  The report destination stream.
+  ///
+  /// @pre The output destination is used only by this reporter.
+  ///      There is going to be no appending to the stream after the report.
+  void Report(const RiskAnalysis& risk_an, std::ostream& out);
+
+ private:
+  using BasicEventPtr = std::shared_ptr<const BasicEvent>;  ///< For simplicity.
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -57,8 +71,7 @@ class Reporter {
   /// @param[in,out] doc  An empty document.
   ///
   /// @throws LogicError  The document is not empty.
-  void SetupReport(const std::shared_ptr<const Model>& model,
-                   const Settings& settings,
+  void SetupReport(const Model& model, const Settings& settings,
                    xmlpp::Document* doc);
 
   /// Reports orphan primary events
@@ -114,9 +127,6 @@ class Reporter {
   void ReportUncertainty(std::string ft_name,
                          const UncertaintyAnalysis& uncert_analysis,
                          xmlpp::Document* doc);
-
- private:
-  using BasicEventPtr = std::shared_ptr<const BasicEvent>;  ///< For simplicity.
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

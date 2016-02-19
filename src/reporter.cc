@@ -75,8 +75,61 @@ inline std::string ToString(double num, int precision) {
 
 }  // namespace
 
-void Reporter::SetupReport(const std::shared_ptr<const Model>& model,
-                           const Settings& settings,
+void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
+  // Create XML or use already created document.
+  std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
+  Reporter::SetupReport(risk_an.model(), risk_an.settings(), doc.get());
+
+  // Container for excess primary events not in the analysis.
+  // This container is for warning
+  // in case the input is formed not as intended.
+  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
+  for (const std::pair<const std::string, BasicEventPtr>& event :
+       risk_an.model().basic_events()) {
+    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+  }
+
+  for (const std::pair<const std::string, HouseEventPtr>& event :
+       risk_an.model().house_events()) {
+    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+  }
+  Reporter::ReportOrphanPrimaryEvents(orphan_primary_events, doc.get());
+
+  // Container for unused parameters not in the analysis.
+  // This container is for warning in case the input is formed not as intended.
+  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
+  for (const std::pair<const std::string, ParameterPtr>& param :
+       risk_an.model().parameters()) {
+    if (param.second->unused()) unused_parameters.push_back(param.second);
+  }
+  Reporter::ReportUnusedParameters(unused_parameters, doc.get());
+
+  CLOCK(report_time);
+  LOG(DEBUG1) << "Reporting analysis results...";
+  for (const auto& fta : risk_an.fault_tree_analyses()) {
+    std::string id = fta.first;
+    ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
+    if (risk_an.settings().probability_analysis()) {
+      prob_analysis = risk_an.probability_analyses().at(id).get();
+    }
+    Reporter::ReportFta(id, *fta.second, prob_analysis, doc.get());
+
+    if (risk_an.settings().importance_analysis()) {
+      Reporter::ReportImportance(id, *risk_an.importance_analyses().at(id),
+                                 doc.get());
+    }
+
+    if (risk_an.settings().uncertainty_analysis()) {
+      Reporter::ReportUncertainty(id, *risk_an.uncertainty_analyses().at(id),
+                                  doc.get());
+    }
+  }
+  LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
+
+  doc->write_to_stream_formatted(out, "UTF-8");
+}
+
+void Reporter::SetupReport(const Model& model, const Settings& settings,
                            xmlpp::Document* doc) {
   if (doc->get_root_node()) throw LogicError("The document is not empty.");
   xmlpp::Node* root = doc->create_root_node("report");
@@ -177,18 +230,18 @@ void Reporter::SetupReport(const std::shared_ptr<const Model>& model,
   }
 
   xmlpp::Element* model_features = information->add_child("model-features");
-  if (!model->name().empty())
-    model_features->set_attribute("name", model->name());
+  if (!model.name().empty())
+    model_features->set_attribute("name", model.name());
   model_features->add_child("gates")
-      ->add_child_text(ToString(model->gates().size()));
+      ->add_child_text(ToString(model.gates().size()));
   model_features->add_child("basic-events")
-      ->add_child_text(ToString(model->basic_events().size()));
+      ->add_child_text(ToString(model.basic_events().size()));
   model_features->add_child("house-events")
-      ->add_child_text(ToString(model->house_events().size()));
+      ->add_child_text(ToString(model.house_events().size()));
   model_features->add_child("ccf-groups")
-      ->add_child_text(ToString(model->ccf_groups().size()));
+      ->add_child_text(ToString(model.ccf_groups().size()));
   model_features->add_child("fault-trees")
-      ->add_child_text(ToString(model->fault_trees().size()));
+      ->add_child_text(ToString(model.fault_trees().size()));
 
   // Setup for results.
   root->add_child("results");
