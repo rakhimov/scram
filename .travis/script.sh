@@ -51,3 +51,7 @@ fi
 # Lizard function complexity printout for C++ and Python
 lizard -w -L 60 -a 5 -EIgnoreAssert src/* || echo "TODO: Fix the C++ complexity"
 lizard -w -L 60 -a 5 scripts/*.py
+
+# C++ linting
+cpplint --repository=../ --filter=-build/include src/* tests/* \
+  || echo "TODO: Fix the C++ code"

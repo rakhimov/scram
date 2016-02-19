@@ -21,3 +21,4 @@ sudo pip install cpp-coveralls
 sudo pip install lizard
 sudo pip install codecov
 sudo pip install coverage
+sudo pip install cpplint
