@@ -31,8 +31,6 @@ namespace scram {
 
 class Model;
 class Settings;
-class Parameter;
-class PrimaryEvent;
 class BasicEvent;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
@@ -44,8 +42,6 @@ class RiskAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;  ///< @todo Ugly!
-
   /// Reports the results of risk analysis on a model.
   /// The XML report is formed as a single document.
   ///
@@ -84,11 +80,9 @@ class Reporter {
   /// Reports unused parameters
   /// as warnings of the top information level.
   ///
-  /// @param[in] unused_parameters  Container of unused parameters.
+  /// @param[in] model  Model containing all parameters.
   /// @param[in,out] doc  Pre-formatted XML document.
-  void ReportUnusedParameters(
-      const std::vector<std::shared_ptr<const Parameter>>& unused_parameters,
-      xmlpp::Document* doc);
+  void ReportUnusedParameters(const Model& model, xmlpp::Document* doc);
 
   /// Reports the results of analysis
   /// to a specified output destination.

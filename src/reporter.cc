@@ -80,15 +80,7 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
   Reporter::SetupReport(risk_an.model(), risk_an.settings(), doc.get());
   Reporter::ReportOrphanPrimaryEvents(risk_an.model(), doc.get());
-
-  // Container for unused parameters not in the analysis.
-  // This container is for warning in case the input is formed not as intended.
-  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
-  for (const std::pair<const std::string, ParameterPtr>& param :
-       risk_an.model().parameters()) {
-    if (param.second->unused()) unused_parameters.push_back(param.second);
-  }
-  Reporter::ReportUnusedParameters(unused_parameters, doc.get());
+  Reporter::ReportUnusedParameters(risk_an.model(), doc.get());
 
   CLOCK(report_time);
   LOG(DEBUG1) << "Reporting analysis results...";
@@ -260,9 +252,14 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
   information->add_child("warning")->add_child_text(out);
 }
 
-void Reporter::ReportUnusedParameters(
-    const std::vector<std::shared_ptr<const Parameter>>& unused_parameters,
-    xmlpp::Document* doc) {
+void Reporter::ReportUnusedParameters(const Model& model,
+                                      xmlpp::Document* doc) {
+  // Container for unused parameters not in the analysis.
+  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
+  for (const std::pair<const std::string, ParameterPtr>& param :
+       model.parameters()) {
+    if (param.second->unused()) unused_parameters.push_back(param.second);
+  }
   if (unused_parameters.empty()) return;
   std::string out = "WARNING! Unused Parameters: ";
   for (const auto param : unused_parameters) {
