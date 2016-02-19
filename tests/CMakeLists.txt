@@ -6,9 +6,9 @@ set(GENERATED_FILTER_LIST "" CACHE INTERNAL "")
 set(GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "")
 
 # The gtest include file directories.
-set(GTEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest/include")
+set(GTEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/include")
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/googletest")
 
 # Alerts CMake to any tests
 # we need to worry about.
