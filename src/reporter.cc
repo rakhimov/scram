@@ -79,21 +79,7 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   // Create XML or use already created document.
   std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
   Reporter::SetupReport(risk_an.model(), risk_an.settings(), doc.get());
-
-  // Container for excess primary events not in the analysis.
-  // This container is for warning
-  // in case the input is formed not as intended.
-  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
-  for (const std::pair<const std::string, BasicEventPtr>& event :
-       risk_an.model().basic_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
-  }
-
-  for (const std::pair<const std::string, HouseEventPtr>& event :
-       risk_an.model().house_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
-  }
-  Reporter::ReportOrphanPrimaryEvents(orphan_primary_events, doc.get());
+  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), doc.get());
 
   // Container for unused parameters not in the analysis.
   // This container is for warning in case the input is formed not as intended.
@@ -247,9 +233,19 @@ void Reporter::SetupReport(const Model& model, const Settings& settings,
   root->add_child("results");
 }
 
-void Reporter::ReportOrphanPrimaryEvents(
-    const std::vector<PrimaryEventPtr>& orphan_primary_events,
-    xmlpp::Document* doc) {
+void Reporter::ReportOrphanPrimaryEvents(const Model& model,
+                                         xmlpp::Document* doc) {
+  // Container for excess primary events not in the analysis.
+  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
+  for (const std::pair<const std::string, BasicEventPtr>& event :
+       model.basic_events()) {
+    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+  }
+
+  for (const std::pair<const std::string, HouseEventPtr>& event :
+       model.house_events()) {
+    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+  }
   if (orphan_primary_events.empty()) return;
   std::string out = "WARNING! Orphan Primary Events: ";
   for (const auto& event : orphan_primary_events) {

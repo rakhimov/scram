@@ -77,11 +77,9 @@ class Reporter {
   /// Reports orphan primary events
   /// as warnings of the top information level.
   ///
-  /// @param[in] orphan_primary_events  Container of orphan events.
+  /// @param[in] model  Model containing all primary events.
   /// @param[in,out] doc  Pre-formatted XML document.
-  void ReportOrphanPrimaryEvents(
-      const std::vector<PrimaryEventPtr>& orphan_primary_events,
-      xmlpp::Document* doc);
+  void ReportOrphanPrimaryEvents(const Model& model, xmlpp::Document* doc);
 
   /// Reports unused parameters
   /// as warnings of the top information level.
