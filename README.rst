@@ -82,7 +82,8 @@ follow the building and installing instructions bellow.
 Building and Installing
 ***********************
 
-A list of dependencies:
+Dependencies
+============
 
 ====================   ==================
 Package                Minimum Version
@@ -95,7 +96,8 @@ Package                Minimum Version
 ====================   ==================
 
 
-Optional dependencies:
+Optional Dependencies
+---------------------
 
 ====================   ==================
 Package                Minimum Version
@@ -106,7 +108,8 @@ Package                Minimum Version
 ====================   ==================
 
 
-Python modules:
+Python Modules
+--------------
 
 ====================   ==================
 Package                Tested Version
@@ -117,7 +120,8 @@ Package                Tested Version
 ====================   ==================
 
 
-Compilers:
+Compilers
+---------
 
 ====================   ==================
 Package                Minimum Version
@@ -129,6 +133,20 @@ Package                Minimum Version
 .. note::
     Earlier versions may or may not work.
     The listed minimum versions are the ones known to work.
+
+
+Google Test
+-----------
+
+The testing framework is provided as a git submodule.
+In order to initialize the submodule,
+this repository must be cloned recursively with ``git clone --recursive``,
+or the following commands must be executed after a normal clone.
+
+.. code-block:: bash
+
+    git submodule init && git submodule update
+
 
 
 Installing Dependencies (Linux and Unix)
