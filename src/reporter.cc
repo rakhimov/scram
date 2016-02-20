@@ -106,6 +106,7 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   doc->write_to_stream_formatted(out, "UTF-8");
 }
 
+/// Describes the fault tree analysis and techniques.
 template<>
 void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
     const Settings& settings,
@@ -138,6 +139,7 @@ void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
   }
 }
 
+/// Describes the probability analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
     const Settings& settings,
@@ -169,6 +171,7 @@ void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
         ->add_child_text(ToString(settings.mission_time()));
 }
 
+/// Describes the importance analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
     const Settings& /*settings*/,
@@ -180,6 +183,7 @@ void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
                        "importance factors of events.");
 }
 
+/// Describes the uncertainty analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
     const Settings& settings,
@@ -200,6 +204,7 @@ void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
   }
 }
 
+/// Describes all performed analyses deduced from settings.
 template <>
 void Reporter::ReportCalculatedQuantity<RiskAnalysis>(
     const Settings& settings,
