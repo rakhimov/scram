@@ -37,6 +37,7 @@ class ProbabilityAnalysis;
 class ImportanceAnalysis;
 class UncertaintyAnalysis;
 class RiskAnalysis;
+class XmlStreamElement;
 
 /// @class Reporter
 /// This class reports the results of the analyses.

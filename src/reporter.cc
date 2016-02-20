@@ -73,6 +73,102 @@ inline std::string ToString(double num, int precision) {
   return ss.str();
 }
 
+/// @class XmlStreamElement
+/// Writer of data formed as an XML element to a stream.
+/// This class relies on the RAII to put the closing tags.
+class XmlStreamElement {
+ public:
+  /// Constructs streamer for the XML element data
+  /// ready to accept attributes.
+  ///
+  /// @param[in] name  Non-empty string name for the element.
+  /// @param[in] indent  The number of spaces to indent the tags.
+  /// @param[in,out] out  The destination stream.
+  ///
+  /// @throws LogicError  Invalid setup for the element.
+  XmlStreamElement(std::string name, int indent, std::ostream& out)
+      : kName_(std::move(name)),
+        kIndent_(indent),
+        accept_attributes_(true),
+        accept_elements_(true),
+        accept_text_(true),
+        out_(out) {
+    if (kName_.empty()) throw LogicError("The element name can't be empty.");
+    if (kIndent_ < 0) throw LogicError("Negative indentation.");
+    out_ << std::string(kIndent_, ' ') << "<" << kName_;
+  }
+
+  /// Puts the closing tag.
+  ~XmlStreamElement() {
+    if (accept_attributes_) {
+      out_ << "/>\n";
+    } else if (accept_text_) {
+      out_ << "</" << kName_ << ">\n";
+    } else {
+      assert(accept_elements_);
+      out_ << std::string(kIndent_, ' ') << "</" << kName_ << ">\n";
+    }
+  }
+
+  /// Sets the attributes for the element.
+  ///
+  /// @tparam T  Type that supports operator<<.
+  ///
+  /// @param[in] name  Non-empty name for the attribute.
+  /// @param[in] value  The value of the attribute.
+  ///
+  /// @throws LogicError  Invalid setup for the attribute.
+  template<typename T>
+  void SetAttribute(const std::string& name, const T& value) {
+    if (!accept_attributes_) throw LogicError("Too late to set attributes.");
+    if (name.empty()) throw LogicError("Attribute name can't be empty.");
+    out_ << " " << name << "=\"" << value << "\"";
+  }
+
+  /// Adds text to the element.
+  ///
+  /// @param[in] text  Non-empty text.
+  ///
+  /// @post No more elements or attributes can be added.
+  /// @post More text can be added.
+  ///
+  /// @throws LogicError  Invalid setup or state for text addition.
+  void AddChildText(const std::string& text) {
+    if (!accept_text_) throw LogicError("Too late to put text.");
+    if (text.empty()) throw LogicError("Text can't be empty.");
+    if (accept_elements_) accept_elements_ = false;
+    if (accept_attributes_) {
+      accept_attributes_ = false;
+      out_ << ">";
+    }
+    out_ << text;
+  }
+
+  /// @returns A streamer for child element.
+  ///
+  /// @pre The child element will be destroyed before the parent.
+  ///
+  /// @throws LogicError  Invalid setup or state for element addition.
+  XmlStreamElement AddChild(std::string name) {
+    if (!accept_elements_) throw LogicError("Too late to add elements.");
+    if (name.empty()) throw LogicError("Element name can't be empty.");
+    if (accept_text_) accept_text_ = false;
+    if (accept_attributes_) {
+      accept_attributes_ = false;
+      out_ << ">\n";
+    }
+    return XmlStreamElement(name, kIndent_ + 2, out_);
+  }
+
+ private:
+  const std::string kName_;  ///< The name of the element.
+  const int kIndent_;  ///< Indentation for tags.
+  bool accept_attributes_;  ///< Flag for preventing late attributes.
+  bool accept_elements_;  ///< Flag for preventing late elements.
+  bool accept_text_;  ///< Flag for preventing late text additions.
+  std::ostream& out_;  ///< The output destination.
+};
+
 }  // namespace
 
 void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
