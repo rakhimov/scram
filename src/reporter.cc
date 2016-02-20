@@ -30,16 +30,8 @@
 
 #include "ccf_group.h"
 #include "error.h"
-#include "event.h"
 #include "expression.h"
-#include "fault_tree_analysis.h"
-#include "importance_analysis.h"
 #include "logger.h"
-#include "model.h"
-#include "probability_analysis.h"
-#include "risk_analysis.h"
-#include "settings.h"
-#include "uncertainty_analysis.h"
 #include "version.h"
 
 namespace scram {
@@ -73,33 +65,70 @@ inline std::string ToString(double num, int precision) {
   return ss.str();
 }
 
+}  // namespace
+
 /// @class XmlStreamElement
 /// Writer of data formed as an XML element to a stream.
 /// This class relies on the RAII to put the closing tags.
+/// It is designed for stack-based use
+/// so that its destructor gets called at scope exit.
+/// One element at a time must be operated.
+/// The output will be malformed
+/// if two child elements at the same scope are being streamed.
+/// To prevent this from happening,
+/// the parent element is deactivated
+/// while its child element is alive.
 class XmlStreamElement {
  public:
-  /// Constructs streamer for the XML element data
-  /// ready to accept attributes.
+  /// Constructs a root streamer for the XML element data
+  /// ready to accept attributes, elements, text.
   ///
   /// @param[in] name  Non-empty string name for the element.
   /// @param[in] indent  The number of spaces to indent the tags.
   /// @param[in,out] out  The destination stream.
   ///
   /// @throws LogicError  Invalid setup for the element.
-  XmlStreamElement(std::string name, int indent, std::ostream& out)
-      : kName_(std::move(name)),
-        kIndent_(indent),
-        accept_attributes_(true),
-        accept_elements_(true),
-        accept_text_(true),
-        out_(out) {
-    if (kName_.empty()) throw LogicError("The element name can't be empty.");
-    if (kIndent_ < 0) throw LogicError("Negative indentation.");
-    out_ << std::string(kIndent_, ' ') << "<" << kName_;
+  XmlStreamElement(std::string name, std::ostream& out)
+      : XmlStreamElement(std::move(name), 0, nullptr, out) {}
+
+  XmlStreamElement(const XmlStreamElement&) = delete;
+  XmlStreamElement& operator=(const XmlStreamElement&) = delete;
+
+  /// Move constructor is only provided
+  /// to make the compiler happy.
+  /// The code should rely on the RVO and NRVO
+  /// instead of this move constructor.
+  ///
+  /// @param[in,out] el  An active element
+  ///                    that transfers streaming responsibility
+  ///                    to a new element.
+  ///
+  /// @throws LogicError  The argument element is inactive.
+  XmlStreamElement(XmlStreamElement&& el)
+      : kName_(el.kName_),
+        kIndent_(el.kIndent_),
+        accept_attributes_(el.accept_attributes_),
+        accept_elements_(el.accept_elements_),
+        accept_text_(el.accept_elements_),
+        parent_(el.parent_),
+        out_(el.out_) {
+    assert(false && "Use the RVO and NRVO instead.");
+    if (!el.active_) throw LogicError("Can't move deactivated element.");
+    el.active_ = false;  // No child elements present.
   }
 
   /// Puts the closing tag.
-  ~XmlStreamElement() {
+  ///
+  /// @pre No child element is alive.
+  ///
+  /// @warning The output will be malformed
+  ///          if the child outlives the parent.
+  ///          It can happen if the destructor is called explicitly,
+  ///          or if the objects are allocated on the heap
+  ///          with different lifetimes.
+  ~XmlStreamElement() noexcept {
+    if (!active_) return;
+    if (parent_) parent_->active_ = true;
     if (accept_attributes_) {
       out_ << "/>\n";
     } else if (accept_text_) {
@@ -120,6 +149,7 @@ class XmlStreamElement {
   /// @throws LogicError  Invalid setup for the attribute.
   template<typename T>
   void SetAttribute(const std::string& name, const T& value) {
+    if (!active_) throw LogicError("The element is deactivated.");
     if (!accept_attributes_) throw LogicError("Too late to set attributes.");
     if (name.empty()) throw LogicError("Attribute name can't be empty.");
     out_ << " " << name << "=\"" << value << "\"";
@@ -134,6 +164,7 @@ class XmlStreamElement {
   ///
   /// @throws LogicError  Invalid setup or state for text addition.
   void AddChildText(const std::string& text) {
+    if (!active_) throw LogicError("The element is deactivated.");
     if (!accept_text_) throw LogicError("Too late to put text.");
     if (text.empty()) throw LogicError("Text can't be empty.");
     if (accept_elements_) accept_elements_ = false;
@@ -148,8 +179,12 @@ class XmlStreamElement {
   ///
   /// @pre The child element will be destroyed before the parent.
   ///
+  /// @post The parent element is deactivated
+  ///       while the child element is alive.
+  ///
   /// @throws LogicError  Invalid setup or state for element addition.
   XmlStreamElement AddChild(std::string name) {
+    if (!active_) throw LogicError("The element is deactivated.");
     if (!accept_elements_) throw LogicError("Too late to add elements.");
     if (name.empty()) throw LogicError("Element name can't be empty.");
     if (accept_text_) accept_text_ = false;
@@ -157,81 +192,108 @@ class XmlStreamElement {
       accept_attributes_ = false;
       out_ << ">\n";
     }
-    return XmlStreamElement(name, kIndent_ + 2, out_);
+    return XmlStreamElement(name, kIndent_ + 2, this, out_);
   }
 
  private:
+  /// Private constructor for a streamer
+  /// to pass parent-child information.
+  ///
+  /// @param[in] name  Non-empty string name for the element.
+  /// @param[in] indent  The number of spaces to indent the tags.
+  /// @param[in,out] parent  The parent element.
+  /// @param[in,out] out  The destination stream.
+  ///
+  /// @throws LogicError  Invalid setup for the element.
+  XmlStreamElement(std::string name, int indent, XmlStreamElement* parent,
+                   std::ostream& out)
+      : kName_(std::move(name)),
+        kIndent_(indent),
+        accept_attributes_(true),
+        accept_elements_(true),
+        accept_text_(true),
+        active_(true),
+        parent_(parent),
+        out_(out) {
+    if (kName_.empty()) throw LogicError("The element name can't be empty.");
+    if (kIndent_ < 0) throw LogicError("Negative indentation.");
+    if (parent_) {
+      if (!parent_->active_) throw LogicError("The parent is deactivated.");
+      parent_->active_ = false;
+    }
+    out_ << std::string(kIndent_, ' ') << "<" << kName_;
+  }
+
   const std::string kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.
   bool accept_attributes_;  ///< Flag for preventing late attributes.
   bool accept_elements_;  ///< Flag for preventing late elements.
   bool accept_text_;  ///< Flag for preventing late text additions.
+  bool active_;  ///< Active in streaming.
+  XmlStreamElement* parent_;  ///< Parent element.
   std::ostream& out_;  ///< The output destination.
 };
 
-}  // namespace
-
 void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
-  std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
-  xmlpp::Element* report = doc->create_root_node("report");
-  Reporter::ReportInformation(risk_an, report);
+  out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  XmlStreamElement report("report", out);
+  Reporter::ReportInformation(risk_an, &report);
 
   CLOCK(report_time);
   LOG(DEBUG1) << "Reporting analysis results...";
-  xmlpp::Element* results = report->add_child("results");
+  XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     std::string id = fta.first;
     ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
     if (risk_an.settings().probability_analysis()) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
     }
-    Reporter::ReportResults(id, *fta.second, prob_analysis, results);
+    Reporter::ReportResults(id, *fta.second, prob_analysis, &results);
 
     if (risk_an.settings().importance_analysis()) {
       Reporter::ReportResults(id, *risk_an.importance_analyses().at(id),
-                              results);
+                              &results);
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
       Reporter::ReportResults(id, *risk_an.uncertainty_analyses().at(id),
-                              results);
+                              &results);
     }
   }
   LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
-
-  doc->write_to_stream_formatted(out, "UTF-8");
 }
 
 /// Describes the fault tree analysis and techniques.
 template<>
 void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
     const Settings& settings,
-    xmlpp::Element* information) {
-  xmlpp::Element* quant = information->add_child("calculated-quantity");
-  if (settings.prime_implicants()) {
-    quant->set_attribute("name", "Prime Implicants");
-  } else {
-    quant->set_attribute("name", "Minimal Cut Sets");
+    XmlStreamElement* information) {
+  {
+    XmlStreamElement quant = information->AddChild("calculated-quantity");
+    if (settings.prime_implicants()) {
+      quant.SetAttribute("name", "Prime Implicants");
+    } else {
+      quant.SetAttribute("name", "Minimal Cut Sets");
+    }
   }
-
-  xmlpp::Element* methods = information->add_child("calculation-method");
-  if (settings.algorithm() == "bdd") {
-    methods->set_attribute("name", "Binary Decision Diagram");
-  } else if (settings.algorithm() == "zbdd") {
-    methods->set_attribute("name", "Zero-Suppressed Binary Decision Diagram");
-  } else {
-    assert(settings.algorithm() == "mocus");
-    methods->set_attribute("name", "MOCUS");
+  {
+    XmlStreamElement methods = information->AddChild("calculation-method");
+    if (settings.algorithm() == "bdd") {
+      methods.SetAttribute("name", "Binary Decision Diagram");
+    } else if (settings.algorithm() == "zbdd") {
+      methods.SetAttribute("name", "Zero-Suppressed Binary Decision Diagram");
+    } else {
+      assert(settings.algorithm() == "mocus");
+      methods.SetAttribute("name", "MOCUS");
+    }
+    methods.AddChild("limits").AddChild("number-of-basic-events").AddChildText(
+        ToString(settings.limit_order()));
   }
-  methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(ToString(settings.limit_order()));
-
-  // Report the setup for CCF analysis.
   if (settings.ccf_analysis()) {
-    xmlpp::Element* ccf_quant = information->add_child("calculated-quantity");
-    ccf_quant->set_attribute("name", "Common Cause Failure Analysis");
-    ccf_quant->set_attribute("definition",
-                             "Incorporation of common cause failure models");
+    XmlStreamElement ccf_quant = information->AddChild("calculated-quantity");
+    ccf_quant.SetAttribute("name", "Common Cause Failure Analysis");
+    ccf_quant.SetAttribute("definition",
+                           "Incorporation of common cause failure models");
   }
 }
 
@@ -239,64 +301,61 @@ void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
 template <>
 void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
     const Settings& settings,
-    xmlpp::Element* information) {
-    xmlpp::Element* quant = information->add_child("calculated-quantity");
-    quant->set_attribute("name", "Probability Analysis");
-    quant->set_attribute("definition",
-                         "Quantitative analysis of failure probability");
-    quant->set_attribute("approximation", settings.approximation());
+    XmlStreamElement* information) {
+  {
+    XmlStreamElement quant = information->AddChild("calculated-quantity");
+    quant.SetAttribute("name", "Probability Analysis");
+    quant.SetAttribute("definition",
+                       "Quantitative analysis of failure probability");
+    quant.SetAttribute("approximation", settings.approximation());
+  }
 
-    xmlpp::Element* methods = information->add_child("calculation-method");
-    if (settings.approximation() == "rare-event") {
-      information->add_child("warning")->add_child_text(
-          " The rare-event approximation may be inaccurate for analysis"
-          " if cut sets' probabilities exceed 0.1.");
-      methods->set_attribute("name", "Rare-Event Approximation");
-    } else if (settings.approximation() == "mcub") {
-      information->add_child("warning")->add_child_text(
-          " The MCUB approximation may not hold"
-          " if the fault tree is non-coherent"
-          " or there are many common events.");
-      methods->set_attribute("name", "MCUB Approximation");
-    } else {
-      assert(settings.approximation() == "no");
-      methods->set_attribute("name", "Binary Decision Diagram");
-    }
-    xmlpp::Element* limits = methods->add_child("limits");
-    limits->add_child("mission-time")
-        ->add_child_text(ToString(settings.mission_time()));
+  XmlStreamElement methods = information->AddChild("calculation-method");
+  if (settings.approximation() == "rare-event") {
+    methods.SetAttribute("name", "Rare-Event Approximation");
+  } else if (settings.approximation() == "mcub") {
+    methods.SetAttribute("name", "MCUB Approximation");
+  } else {
+    assert(settings.approximation() == "no");
+    methods.SetAttribute("name", "Binary Decision Diagram");
+  }
+  XmlStreamElement limits = methods.AddChild("limits");
+  limits.AddChild("mission-time")
+      .AddChildText(ToString(settings.mission_time()));
 }
 
 /// Describes the importance analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
     const Settings& /*settings*/,
-    xmlpp::Element* information) {
-  xmlpp::Element* quant = information->add_child("calculated-quantity");
-  quant->set_attribute("name", "Importance Analysis");
-  quant->set_attribute("definition",
-                       "Quantitative analysis of contributions and "
-                       "importance factors of events.");
+    XmlStreamElement* information) {
+  XmlStreamElement quant = information->AddChild("calculated-quantity");
+  quant.SetAttribute("name", "Importance Analysis");
+  quant.SetAttribute("definition",
+                     "Quantitative analysis of contributions and "
+                     "importance factors of events.");
 }
 
 /// Describes the uncertainty analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
     const Settings& settings,
-    xmlpp::Element* information) {
-  xmlpp::Element* quant = information->add_child("calculated-quantity");
-  quant->set_attribute("name", "Uncertainty Analysis");
-  quant->set_attribute(
-      "definition",
-      "Calculation of uncertainties with the Monte Carlo method");
+    XmlStreamElement* information) {
+  {
+    XmlStreamElement quant = information->AddChild("calculated-quantity");
+    quant.SetAttribute("name", "Uncertainty Analysis");
+    quant.SetAttribute(
+        "definition",
+        "Calculation of uncertainties with the Monte Carlo method");
+  }
 
-  xmlpp::Element* methods = information->add_child("calculation-method");
-  methods->set_attribute("name", "Monte Carlo");
-  xmlpp::Element* limits = methods->add_child("limits");
-  limits->add_child("number-of-trials")
-      ->add_child_text(ToString(settings.num_trials()));
+  XmlStreamElement methods = information->AddChild("calculation-method");
+  methods.SetAttribute("name", "Monte Carlo");
+  XmlStreamElement limits = methods.AddChild("limits");
+  limits.AddChild("number-of-trials")
+      .AddChildText(ToString(settings.num_trials()));
   if (settings.seed() >= 0) {
-    limits->add_child("seed")->add_child_text(ToString(settings.seed()));
+    limits.AddChild("seed").AddChildText(ToString(settings.seed()));
   }
 }
 
@@ -304,7 +363,7 @@ void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
 template <>
 void Reporter::ReportCalculatedQuantity<RiskAnalysis>(
     const Settings& settings,
-    xmlpp::Element* information) {
+    XmlStreamElement* information) {
   // Report the fault tree analysis by default.
   Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(settings, information);
   // Report optional analyses.
@@ -323,72 +382,73 @@ void Reporter::ReportCalculatedQuantity<RiskAnalysis>(
 }
 
 void Reporter::ReportInformation(const RiskAnalysis& risk_an,
-                                 xmlpp::Element* report) {
-  xmlpp::Element* information = report->add_child("information");
-  Reporter::ReportSoftwareInformation(information);
-  Reporter::ReportPerformance(risk_an, information);
-  Reporter::ReportCalculatedQuantity(risk_an.settings(), information);
-  Reporter::ReportModelFeatures(risk_an.model(), information);
-  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), information);
-  Reporter::ReportUnusedParameters(risk_an.model(), information);
+                                 XmlStreamElement* report) {
+  XmlStreamElement information = report->AddChild("information");
+  Reporter::ReportSoftwareInformation(&information);
+  Reporter::ReportPerformance(risk_an, &information);
+  Reporter::ReportCalculatedQuantity(risk_an.settings(), &information);
+  Reporter::ReportModelFeatures(risk_an.model(), &information);
+  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), &information);
+  Reporter::ReportUnusedParameters(risk_an.model(), &information);
 }
 
-void Reporter::ReportSoftwareInformation(xmlpp::Element* information) {
-  xmlpp::Element* software = information->add_child("software");
-  software->set_attribute("name", "SCRAM");
-  software->set_attribute("version", version::core());
+void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
+  {
+    XmlStreamElement software = information->AddChild("software");
+    software.SetAttribute("name", "SCRAM");
+    software.SetAttribute("version", version::core());
+  }
   std::stringstream time;
   time << boost::posix_time::second_clock::local_time();
-  information->add_child("time")->add_child_text(time.str());
+  information->AddChild("time").AddChildText(time.str());
 }
 
 void Reporter::ReportModelFeatures(const Model& model,
-                                   xmlpp::Element* information) {
-  xmlpp::Element* model_features = information->add_child("model-features");
+                                   XmlStreamElement* information) {
+  XmlStreamElement model_features = information->AddChild("model-features");
   if (!model.name().empty())
-    model_features->set_attribute("name", model.name());
-  model_features->add_child("gates")
-      ->add_child_text(ToString(model.gates().size()));
-  model_features->add_child("basic-events")
-      ->add_child_text(ToString(model.basic_events().size()));
-  model_features->add_child("house-events")
-      ->add_child_text(ToString(model.house_events().size()));
-  model_features->add_child("ccf-groups")
-      ->add_child_text(ToString(model.ccf_groups().size()));
-  model_features->add_child("fault-trees")
-      ->add_child_text(ToString(model.fault_trees().size()));
+    model_features.SetAttribute("name", model.name());
+  model_features.AddChild("gates").AddChildText(ToString(model.gates().size()));
+  model_features.AddChild("basic-events")
+      .AddChildText(ToString(model.basic_events().size()));
+  model_features.AddChild("house-events")
+      .AddChildText(ToString(model.house_events().size()));
+  model_features.AddChild("ccf-groups")
+      .AddChildText(ToString(model.ccf_groups().size()));
+  model_features.AddChild("fault-trees")
+      .AddChildText(ToString(model.fault_trees().size()));
 }
 
 void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
-                                 xmlpp::Element* information) {
+                                 XmlStreamElement* information) {
   // Setup for performance information.
-  xmlpp::Element* performance = information->add_child("performance");
+  XmlStreamElement performance = information->AddChild("performance");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
-    xmlpp::Element* calc_time = performance->add_child("calculation-time");
+    XmlStreamElement calc_time = performance.AddChild("calculation-time");
     std::string id = fta.first;
-    calc_time->set_attribute("name", id);
-    calc_time->add_child("products")
-        ->add_child_text(ToString(fta.second->analysis_time(), 5));
+    calc_time.SetAttribute("name", id);
+    calc_time.AddChild("products")
+        .AddChildText(ToString(fta.second->analysis_time(), 5));
 
     if (risk_an.settings().probability_analysis()) {
-      calc_time->add_child("probability")->add_child_text(
+      calc_time.AddChild("probability").AddChildText(
           ToString(risk_an.probability_analyses().at(id)->analysis_time(), 5));
     }
 
     if (risk_an.settings().importance_analysis()) {
-      calc_time->add_child("importance")->add_child_text(
+      calc_time.AddChild("importance").AddChildText(
           ToString(risk_an.importance_analyses().at(id)->analysis_time(), 5));
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
-      calc_time->add_child("uncertainty")->add_child_text(
+      calc_time.AddChild("uncertainty").AddChildText(
           ToString(risk_an.uncertainty_analyses().at(id)->analysis_time(), 5));
     }
   }
 }
 
 void Reporter::ReportOrphanPrimaryEvents(const Model& model,
-                                         xmlpp::Element* information) {
+                                         XmlStreamElement* information) {
   // Container for excess primary events not in the analysis.
   std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
   for (const std::pair<const std::string, BasicEventPtr>& event :
@@ -407,11 +467,11 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
     out += event->name();
     out += " ";
   }
-  information->add_child("warning")->add_child_text(out);
+  information->AddChild("warning").AddChildText(out);
 }
 
 void Reporter::ReportUnusedParameters(const Model& model,
-                                      xmlpp::Element* information) {
+                                      XmlStreamElement* information) {
   // Container for unused parameters not in the analysis.
   std::vector<std::shared_ptr<const Parameter>> unused_parameters;
   for (const std::pair<const std::string, ParameterPtr>& param :
@@ -425,53 +485,49 @@ void Reporter::ReportUnusedParameters(const Model& model,
     out += param->name();
     out += " ";
   }
-  information->add_child("warning")->add_child_text(out);
+  information->AddChild("warning").AddChildText(out);
 }
 
 void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
                              const ProbabilityAnalysis* prob_analysis,
-                             xmlpp::Element* results) {
-  xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
-  sum_of_products->set_attribute("name", ft_name);
-  sum_of_products->set_attribute("basic-events",
-                                 ToString(fta.product_events().size()));
-  sum_of_products->set_attribute("products",
-                                 ToString(fta.products().size()));
-
+                             XmlStreamElement* results) {
+  XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
+  sum_of_products.SetAttribute("name", ft_name);
+  sum_of_products.SetAttribute("basic-events",
+                               ToString(fta.product_events().size()));
+  sum_of_products.SetAttribute("products", ToString(fta.products().size()));
   std::string warning = fta.warnings();
-  if (prob_analysis) warning += prob_analysis->warnings();
-  if (warning != "") {
-    sum_of_products->add_child("warning")->add_child_text(warning);
+  if (prob_analysis) {
+    sum_of_products.SetAttribute("probability",
+                                 ToString(prob_analysis->p_total(), 7));
+    warning += prob_analysis->warnings();
+  }
+  if (!warning.empty()) {
+    sum_of_products.AddChild("warning").AddChildText(warning);
   }
 
   CLOCK(cs_time);
   LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
-  std::vector<xmlpp::Element*> products;  // To add more info later.
-  for (const Product& product_set : fta.products()) {
-    xmlpp::Element* product = sum_of_products->add_child("product");
-    products.push_back(product);
-    product->set_attribute("order", ToString(GetOrder(product_set)));
-    for (const Literal& literal : product_set) {
-      xmlpp::Element* parent = product;
-      if (literal.complement) parent = product->add_child("not");
-      Reporter::ReportBasicEvent(literal.event, parent);
-    }
-  }
+  std::vector<double> probs;  // Product probabilities.
+  double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
-    sum_of_products->set_attribute("probability",
-                                   ToString(prob_analysis->p_total(), 7));
-
-    std::vector<double> probs;  // Product probabilities.
-    for (const Product& product_set : fta.products())
-      probs.push_back(CalculateProbability(product_set));
-
-    double sum = std::accumulate(probs.begin(), probs.end(), 0.0);
-    assert(products.size() == probs.size() && "Elements are missing!");
-    for (int i = 0; i < products.size(); ++i) {
-      auto* product = products[i];
+    for (const Product& product_set : fta.products()) {
+      double prob = CalculateProbability(product_set);
+      sum += prob;
+      probs.push_back(prob);
+    }
+  }  // Ugliness because FTA and Probability analysis are not integrated.
+  for (int i = 0; i < fta.products().size(); ++i) {
+    const Product& product_set = fta.products()[i];
+    XmlStreamElement product = sum_of_products.AddChild("product");
+    product.SetAttribute("order", ToString(GetOrder(product_set)));
+    if (prob_analysis) {
       double prob = probs[i];
-      product->set_attribute("probability", ToString(prob, 7));
-      product->set_attribute("contribution", ToString(prob / sum, 7));
+      product.SetAttribute("probability", ToString(prob, 7));
+      product.SetAttribute("contribution", ToString(prob / sum, 7));
+    }
+    for (const Literal& literal : product_set) {
+      Reporter::ReportLiteral(literal, &product);
     }
   }
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
@@ -479,114 +535,151 @@ void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
 
 void Reporter::ReportResults(std::string ft_name,
                              const ImportanceAnalysis& importance_analysis,
-                             xmlpp::Element* results) {
-  xmlpp::Element* importance = results->add_child("importance");
-  importance->set_attribute("name", ft_name);
-  importance->set_attribute("basic-events",
-                            ToString(importance_analysis.importance().size()));
-
-  std::string warning = importance_analysis.warnings();
-  if (warning != "") {
-    importance->add_child("warning")->add_child_text(warning);
+                             XmlStreamElement* results) {
+  XmlStreamElement importance = results->AddChild("importance");
+  importance.SetAttribute("name", ft_name);
+  importance.SetAttribute("basic-events",
+                          ToString(importance_analysis.importance().size()));
+  if (!importance_analysis.warnings().empty()) {
+    importance.AddChild("warning").AddChildText(importance_analysis.warnings());
   }
 
   for (const std::pair<BasicEventPtr, ImportanceFactors>& entry :
        importance_analysis.important_events()) {
-    xmlpp::Element* element =
-        Reporter::ReportBasicEvent(entry.first, importance);
-    const ImportanceFactors& factors = entry.second;
-    element->set_attribute("MIF", ToString(factors.mif, 4));
-    element->set_attribute("CIF", ToString(factors.cif, 4));
-    element->set_attribute("DIF", ToString(factors.dif, 4));
-    element->set_attribute("RAW", ToString(factors.raw, 4));
-    element->set_attribute("RRW", ToString(factors.rrw, 4));
+    Reporter::ReportImportantEvent(entry.first, entry.second, &importance);
   }
 }
 
 void Reporter::ReportResults(std::string ft_name,
                              const UncertaintyAnalysis& uncert_analysis,
-                             xmlpp::Element* results) {
-  xmlpp::Element* measure = results->add_child("measure");
-  measure->set_attribute("name", ft_name);
-
-  std::string warning = uncert_analysis.warnings();
-  if (warning != "") {
-    measure->add_child("warning")->add_child_text(warning);
+                             XmlStreamElement* results) {
+  XmlStreamElement measure = results->AddChild("measure");
+  measure.SetAttribute("name", ft_name);
+  if (!uncert_analysis.warnings().empty()) {
+    measure.AddChild("warning").AddChildText(uncert_analysis.warnings());
   }
-
-  measure->add_child("mean")
-      ->set_attribute("value", ToString(uncert_analysis.mean(), 7));
-  measure->add_child("standard-deviation")
-      ->set_attribute("value", ToString(uncert_analysis.sigma(), 7));
-  xmlpp::Element* confidence = measure->add_child("confidence-range");
-  confidence->set_attribute("percentage", "95");
-  confidence->set_attribute(
-      "lower-bound",
-      ToString(uncert_analysis.confidence_interval().first, 7));
-  confidence->set_attribute(
-      "upper-bound",
-      ToString(uncert_analysis.confidence_interval().second, 7));
-  xmlpp::Element* error_factor = measure->add_child("error-factor");
-  error_factor->set_attribute("percentage", "95");
-  error_factor->set_attribute("value",
+  measure.AddChild("mean")
+      .SetAttribute("value", ToString(uncert_analysis.mean(), 7));
+  measure.AddChild("standard-deviation")
+      .SetAttribute("value", ToString(uncert_analysis.sigma(), 7));
+  {
+    XmlStreamElement confidence = measure.AddChild("confidence-range");
+    confidence.SetAttribute("percentage", "95");
+    confidence.SetAttribute(
+        "lower-bound",
+        ToString(uncert_analysis.confidence_interval().first, 7));
+    confidence.SetAttribute(
+        "upper-bound",
+        ToString(uncert_analysis.confidence_interval().second, 7));
+  }
+  {
+    XmlStreamElement error_factor = measure.AddChild("error-factor");
+    error_factor.SetAttribute("percentage", "95");
+    error_factor.SetAttribute("value",
                               ToString(uncert_analysis.error_factor(), 7));
-
-  xmlpp::Element* quantiles = measure->add_child("quantiles");
-  int num_quantiles = uncert_analysis.quantiles().size();
-  quantiles->set_attribute("number", ToString(num_quantiles));
-  double lower_bound = 0;
-  double delta = 1.0 / num_quantiles;
-  for (int i = 0; i < num_quantiles; ++i) {
-    xmlpp::Element* quant = quantiles->add_child("quantile");
-    quant->set_attribute("number", ToString(i + 1));
-    double upper = uncert_analysis.quantiles()[i];
-    double value = delta * (i + 1);
-    quant->set_attribute("value", ToString(value, 7));
-    quant->set_attribute("lower-bound", ToString(lower_bound, 7));
-    quant->set_attribute("upper-bound", ToString(upper, 7));
-    lower_bound = upper;
   }
-
-  xmlpp::Element* hist = measure->add_child("histogram");
-  int num_bins = uncert_analysis.distribution().size() - 1;
-  hist->set_attribute("number", ToString(num_bins));
-  for (int i = 0; i < num_bins; ++i) {
-    xmlpp::Element* bin = hist->add_child("bin");
-    bin->set_attribute("number", ToString(i + 1));
-    double lower = uncert_analysis.distribution()[i].first;
-    double upper = uncert_analysis.distribution()[i + 1].first;
-    double value = uncert_analysis.distribution()[i].second;
-    bin->set_attribute("value", ToString(value, 7));
-    bin->set_attribute("lower-bound", ToString(lower, 7));
-    bin->set_attribute("upper-bound", ToString(upper, 7));
+  {
+    XmlStreamElement quantiles = measure.AddChild("quantiles");
+    int num_quantiles = uncert_analysis.quantiles().size();
+    quantiles.SetAttribute("number", ToString(num_quantiles));
+    double lower_bound = 0;
+    double delta = 1.0 / num_quantiles;
+    for (int i = 0; i < num_quantiles; ++i) {
+      XmlStreamElement quant = quantiles.AddChild("quantile");
+      quant.SetAttribute("number", ToString(i + 1));
+      double upper = uncert_analysis.quantiles()[i];
+      double value = delta * (i + 1);
+      quant.SetAttribute("value", ToString(value, 7));
+      quant.SetAttribute("lower-bound", ToString(lower_bound, 7));
+      quant.SetAttribute("upper-bound", ToString(upper, 7));
+      lower_bound = upper;
+    }
+  }
+  {
+    XmlStreamElement hist = measure.AddChild("histogram");
+    int num_bins = uncert_analysis.distribution().size() - 1;
+    hist.SetAttribute("number", ToString(num_bins));
+    for (int i = 0; i < num_bins; ++i) {
+      XmlStreamElement bin = hist.AddChild("bin");
+      bin.SetAttribute("number", ToString(i + 1));
+      double lower = uncert_analysis.distribution()[i].first;
+      double upper = uncert_analysis.distribution()[i + 1].first;
+      double value = uncert_analysis.distribution()[i].second;
+      bin.SetAttribute("value", ToString(value, 7));
+      bin.SetAttribute("lower-bound", ToString(lower, 7));
+      bin.SetAttribute("upper-bound", ToString(upper, 7));
+    }
   }
 }
 
-xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
-                                           xmlpp::Element* parent) {
+void Reporter::ReportLiteral(const Literal& literal, XmlStreamElement* parent) {
+  if (literal.complement) {
+    XmlStreamElement not_parent = parent->AddChild("not");
+    Reporter::ReportBasicEvent(literal.event, &not_parent);
+  } else {
+    Reporter::ReportBasicEvent(literal.event, parent);
+  }
+}
+
+void Reporter::ReportImportantEvent(const BasicEventPtr& basic_event,
+                                    const ImportanceFactors& factors,
+                                    XmlStreamElement* parent) {
+  Reporter::ReportBasicEvent(basic_event, factors, parent);
+}
+
+void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
+                                XmlStreamElement* parent) {
   std::shared_ptr<const CcfEvent> ccf_event =
       std::dynamic_pointer_cast<const CcfEvent>(basic_event);
   std::string prefix =
         basic_event->is_public() ? "" : basic_event->base_path() + ".";
-  xmlpp::Element* element;
   if (!ccf_event) {
     std::string name = prefix + basic_event->name();
-    element = parent->add_child("basic-event");
-    element->set_attribute("name", name);
+    XmlStreamElement element = parent->AddChild("basic-event");
+    element.SetAttribute("name", name);
   } else {
-    element = parent->add_child("ccf-event");
+    XmlStreamElement element = parent->AddChild("ccf-event");
     const CcfGroup* ccf_group = ccf_event->ccf_group();
-    std::string group_name = prefix + ccf_group->name();
-    element->set_attribute("ccf-group", group_name);
-    int order = ccf_event->member_names().size();
-    element->set_attribute("order", ToString(order));
-    int group_size = ccf_group->members().size();
-    element->set_attribute("group-size", ToString(group_size));
+    element.SetAttribute("ccf-group", prefix + ccf_group->name());
+    element.SetAttribute("order", ToString(ccf_event->member_names().size()));
+    element.SetAttribute("group-size", ToString(ccf_group->members().size()));
     for (const std::string& name : ccf_event->member_names()) {
-      element->add_child("basic-event")->set_attribute("name", name);
+      element.AddChild("basic-event").SetAttribute("name", name);
     }
   }
-  return element;
+}
+
+void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
+                                const ImportanceFactors& factors,
+                                XmlStreamElement* parent) {
+  std::shared_ptr<const CcfEvent> ccf_event =
+      std::dynamic_pointer_cast<const CcfEvent>(basic_event);
+  std::string prefix =
+        basic_event->is_public() ? "" : basic_event->base_path() + ".";
+  if (!ccf_event) {
+    std::string name = prefix + basic_event->name();
+    XmlStreamElement element = parent->AddChild("basic-event");
+    element.SetAttribute("name", name);
+    element.SetAttribute("MIF", ToString(factors.mif, 4));
+    element.SetAttribute("CIF", ToString(factors.cif, 4));
+    element.SetAttribute("DIF", ToString(factors.dif, 4));
+    element.SetAttribute("RAW", ToString(factors.raw, 4));
+    element.SetAttribute("RRW", ToString(factors.rrw, 4));
+  } else {
+    XmlStreamElement element = parent->AddChild("ccf-event");
+    const CcfGroup* ccf_group = ccf_event->ccf_group();
+    element.SetAttribute("ccf-group", prefix + ccf_group->name());
+    element.SetAttribute("order", ToString(ccf_event->member_names().size()));
+    element.SetAttribute("group-size", ToString(ccf_group->members().size()));
+    element.SetAttribute("MIF", ToString(factors.mif, 4));
+    element.SetAttribute("CIF", ToString(factors.cif, 4));
+    element.SetAttribute("DIF", ToString(factors.dif, 4));
+    element.SetAttribute("RAW", ToString(factors.raw, 4));
+    element.SetAttribute("RRW", ToString(factors.rrw, 4));
+    for (const std::string& name : ccf_event->member_names()) {
+      element.AddChild("basic-event").SetAttribute("name", name);
+    }
+  }
 }
 
 }  // namespace scram

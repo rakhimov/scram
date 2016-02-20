@@ -25,18 +25,17 @@
 #include <string>
 #include <vector>
 
-#include <libxml++/libxml++.h>
+#include "event.h"
+#include "fault_tree_analysis.h"
+#include "importance_analysis.h"
+#include "model.h"
+#include "probability_analysis.h"
+#include "risk_analysis.h"
+#include "settings.h"
+#include "uncertainty_analysis.h"
 
 namespace scram {
 
-class Model;
-class Settings;
-class BasicEvent;
-class FaultTreeAnalysis;
-class ProbabilityAnalysis;
-class ImportanceAnalysis;
-class UncertaintyAnalysis;
-class RiskAnalysis;
 class XmlStreamElement;
 
 /// @class Reporter
@@ -61,12 +60,12 @@ class Reporter {
   ///
   /// @param[in] risk_an  Risk analysis with all the information.
   /// @param[in,out] report  The root element of the document.
-  void ReportInformation(const RiskAnalysis& risk_an, xmlpp::Element* report);
+  void ReportInformation(const RiskAnalysis& risk_an, XmlStreamElement* report);
 
   /// Reports software information and relevant run identifiers.
   ///
   /// @param[in,out] information  The XML element to append the results.
-  void ReportSoftwareInformation(xmlpp::Element* information);
+  void ReportSoftwareInformation(XmlStreamElement* information);
 
   /// Reports information about calculated quantities.
   /// The default call reports everything about the analysis
@@ -78,20 +77,20 @@ class Reporter {
   /// @param[in,out] information  The XML element to append the results.
   template<class T = RiskAnalysis>
   void ReportCalculatedQuantity(const Settings& settings,
-                                xmlpp::Element* information);
+                                XmlStreamElement* information);
 
   /// Reports summary of the model and its constructs.
   ///
   /// @param[in] model  The container of all the analysis constructs.
   /// @param[in,out] information  The XML element to append the results.
-  void ReportModelFeatures(const Model& model, xmlpp::Element* information);
+  void ReportModelFeatures(const Model& model, XmlStreamElement* information);
 
   /// Reports performance metrics of all conducted analyses.
   ///
   /// @param[in] risk_an  Container of the analyses.
   /// @param[in,out] information  The XML element to append the results.
   void ReportPerformance(const RiskAnalysis& risk_an,
-                         xmlpp::Element* information);
+                         XmlStreamElement* information);
 
   /// Reports orphan primary events
   /// as warnings of the top information level.
@@ -99,14 +98,15 @@ class Reporter {
   /// @param[in] model  Model containing all primary events.
   /// @param[in,out] information  The XML element to append the results.
   void ReportOrphanPrimaryEvents(const Model& model,
-                                 xmlpp::Element* information);
+                                 XmlStreamElement* information);
 
   /// Reports unused parameters
   /// as warnings of the top information level.
   ///
   /// @param[in] model  Model containing all parameters.
   /// @param[in,out] information  The XML element to append the results.
-  void ReportUnusedParameters(const Model& model, xmlpp::Element* information);
+  void ReportUnusedParameters(const Model& model,
+                              XmlStreamElement* information);
 
   /// Reports the results of fault tree analysis
   /// to a specified output destination.
@@ -118,7 +118,7 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
                      const ProbabilityAnalysis* prob_analysis,
-                     xmlpp::Element* results);
+                     XmlStreamElement* results);
 
   /// Reports results of importance analysis.
   ///
@@ -127,7 +127,7 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(std::string ft_name,
                      const ImportanceAnalysis& importance_analysis,
-                     xmlpp::Element* results);
+                     XmlStreamElement* results);
 
   /// Reports the results of uncertainty analysis.
   ///
@@ -136,17 +136,40 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(std::string ft_name,
                      const UncertaintyAnalysis& uncert_analysis,
-                     xmlpp::Element* results);
+                     XmlStreamElement* results);
+
+  /// Reports literal in products.
+  ///
+  /// @param[in] literal  A literal to be reported.
+  /// @param[in,out] parent  A parent element node to have this literal.
+  void ReportLiteral(const Literal& literal, XmlStreamElement* parent);
+
+  /// Reports a basic event with importance factors.
+  ///
+  /// @param[in] basic_event  A basic event to be reported.
+  /// @param[in] factors  Importance factors.
+  /// @param[in,out] parent  A parent element node to have the report.
+  void ReportImportantEvent(const BasicEventPtr& basic_event,
+                            const ImportanceFactors& factors,
+                            XmlStreamElement* parent);
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
   ///
   /// @param[in] basic_event  A basic event to be reported.
   /// @param[in,out] parent  A parent element node to have this basic event.
+  void ReportBasicEvent(const BasicEventPtr& basic_event,
+                        XmlStreamElement* parent);
+
+  /// Reports a basic event with importance factors.
   ///
-  /// @returns A newly created element node with the event description.
-  xmlpp::Element* ReportBasicEvent(const BasicEventPtr& basic_event,
-                                   xmlpp::Element* parent);
+  /// @param[in] basic_event  A basic event to be reported.
+  /// @param[in] factors  Importance factors.
+  /// @param[in,out] parent  A parent element node to have the report.
+  void ReportBasicEvent(const BasicEventPtr& basic_event,
+                        const ImportanceFactors& factors,
+                        XmlStreamElement* parent);
+
 };
 
 }  // namespace scram
