@@ -55,34 +55,57 @@ class Reporter {
  private:
   using BasicEventPtr = std::shared_ptr<const BasicEvent>;  ///< For simplicity.
 
-  /// Sets up XML report document according to a specific standards.
   /// This function populates information
-  /// about the software, settings, time, methods, and model.
-  /// In addition, the function forms the structure
-  /// of the overall report for use by other reporting functions.
-  /// This function must be called before other reporting functions.
+  /// about the software, settings, time, methods, model, etc.
   ///
-  /// @param[in] model  The main model container.
-  /// @param[in] settings  Configured settings for analysis.
-  /// @param[in,out] doc  An empty document.
+  /// @param[in] risk_an  Risk analysis with all the information.
+  /// @param[in,out] report  The root element of the document.
+  void ReportInformation(const RiskAnalysis& risk_an, xmlpp::Element* report);
+
+  /// Reports software information and relevant run identifiers.
   ///
-  /// @throws LogicError  The document is not empty.
-  void SetupReport(const Model& model, const Settings& settings,
-                   xmlpp::Document* doc);
+  /// @param[in,out] information  The XML element to append the results.
+  void ReportSoftwareInformation(xmlpp::Element* information);
+
+  /// Reports information about calculated quantities.
+  /// The default call reports everything about the analysis
+  /// as requested by settings.
+  ///
+  /// @tparam T  The kind of analysis information to be reported.
+  ///
+  /// @param[in] settings  The whole analysis settings.
+  /// @param[in,out] information  The XML element to append the results.
+  template<class T = RiskAnalysis>
+  void ReportCalculatedQuantity(const Settings& settings,
+                                xmlpp::Element* information);
+
+  /// Reports summary of the model and its constructs.
+  ///
+  /// @param[in] model  The container of all the analysis constructs.
+  /// @param[in,out] information  The XML element to append the results.
+  void ReportModelFeatures(const Model& model, xmlpp::Element* information);
+
+  /// Reports performance metrics of all conducted analyses.
+  ///
+  /// @param[in] risk_an  Container of the analyses.
+  /// @param[in,out] information  The XML element to append the results.
+  void ReportPerformance(const RiskAnalysis& risk_an,
+                         xmlpp::Element* information);
 
   /// Reports orphan primary events
   /// as warnings of the top information level.
   ///
   /// @param[in] model  Model containing all primary events.
-  /// @param[in,out] doc  Pre-formatted XML document.
-  void ReportOrphanPrimaryEvents(const Model& model, xmlpp::Document* doc);
+  /// @param[in,out] information  The XML element to append the results.
+  void ReportOrphanPrimaryEvents(const Model& model,
+                                 xmlpp::Element* information);
 
   /// Reports unused parameters
   /// as warnings of the top information level.
   ///
   /// @param[in] model  Model containing all parameters.
-  /// @param[in,out] doc  Pre-formatted XML document.
-  void ReportUnusedParameters(const Model& model, xmlpp::Document* doc);
+  /// @param[in,out] information  The XML element to append the results.
+  void ReportUnusedParameters(const Model& model, xmlpp::Element* information);
 
   /// Reports the results of analysis
   /// to a specified output destination.

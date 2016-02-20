@@ -78,9 +78,10 @@ inline std::string ToString(double num, int precision) {
 void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   // Create XML or use already created document.
   std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
-  Reporter::SetupReport(risk_an.model(), risk_an.settings(), doc.get());
-  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), doc.get());
-  Reporter::ReportUnusedParameters(risk_an.model(), doc.get());
+  xmlpp::Element* report = doc->create_root_node("report");
+  Reporter::ReportInformation(risk_an, report);
+  // Setup for results.
+  report->add_child("results");
 
   CLOCK(report_time);
   LOG(DEBUG1) << "Reporting analysis results...";
@@ -107,22 +108,10 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   doc->write_to_stream_formatted(out, "UTF-8");
 }
 
-void Reporter::SetupReport(const Model& model, const Settings& settings,
-                           xmlpp::Document* doc) {
-  if (doc->get_root_node()) throw LogicError("The document is not empty.");
-  xmlpp::Node* root = doc->create_root_node("report");
-  // Add an information node.
-  xmlpp::Element* information = root->add_child("information");
-  xmlpp::Element* software = information->add_child("software");
-  software->set_attribute("name", "SCRAM");
-  software->set_attribute("version", version::core());
-  std::stringstream time;
-  time << boost::posix_time::second_clock::local_time();
-  information->add_child("time")->add_child_text(time.str());
-  // Setup for performance information.
-  information->add_child("performance");
-
-  // Report the setup for main analysis.
+template<>
+void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
+    const Settings& settings,
+    xmlpp::Element* information) {
   xmlpp::Element* quant = information->add_child("calculated-quantity");
   if (settings.prime_implicants()) {
     quant->set_attribute("name", "Prime Implicants");
@@ -144,22 +133,24 @@ void Reporter::SetupReport(const Model& model, const Settings& settings,
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis()) {
-    quant = information->add_child("calculated-quantity");
-    quant->set_attribute("name", "Common Cause Failure Analysis");
-    quant->set_attribute("definition",
-                         "Incorporation of common cause failure models");
+    xmlpp::Element* ccf_quant = information->add_child("calculated-quantity");
+    ccf_quant->set_attribute("name", "Common Cause Failure Analysis");
+    ccf_quant->set_attribute("definition",
+                             "Incorporation of common cause failure models");
   }
+}
 
-  // Report the setup for probability analysis.
-  if (settings.probability_analysis()) {
-    quant = information->add_child("calculated-quantity");
+template <>
+void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
+    const Settings& settings,
+    xmlpp::Element* information) {
+    xmlpp::Element* quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
                          "Quantitative analysis of failure probability");
     quant->set_attribute("approximation", settings.approximation());
 
-    methods = information->add_child("calculation-method");
-
+    xmlpp::Element* methods = information->add_child("calculation-method");
     if (settings.approximation() == "rare-event") {
       information->add_child("warning")->add_child_text(
           " The rare-event approximation may be inaccurate for analysis"
@@ -178,35 +169,82 @@ void Reporter::SetupReport(const Model& model, const Settings& settings,
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
         ->add_child_text(ToString(settings.mission_time()));
-  }
+}
 
-  // Report the setup for optional importance analysis.
+template <>
+void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
+    const Settings& /*settings*/,
+    xmlpp::Element* information) {
+  xmlpp::Element* quant = information->add_child("calculated-quantity");
+  quant->set_attribute("name", "Importance Analysis");
+  quant->set_attribute("definition",
+                       "Quantitative analysis of contributions and "
+                       "importance factors of events.");
+}
+
+template <>
+void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
+    const Settings& settings,
+    xmlpp::Element* information) {
+  xmlpp::Element* quant = information->add_child("calculated-quantity");
+  quant->set_attribute("name", "Uncertainty Analysis");
+  quant->set_attribute(
+      "definition",
+      "Calculation of uncertainties with the Monte Carlo method");
+
+  xmlpp::Element* methods = information->add_child("calculation-method");
+  methods->set_attribute("name", "Monte Carlo");
+  xmlpp::Element* limits = methods->add_child("limits");
+  limits->add_child("number-of-trials")
+      ->add_child_text(ToString(settings.num_trials()));
+  if (settings.seed() >= 0) {
+    limits->add_child("seed")->add_child_text(ToString(settings.seed()));
+  }
+}
+
+template <>
+void Reporter::ReportCalculatedQuantity<RiskAnalysis>(
+    const Settings& settings,
+    xmlpp::Element* information) {
+  // Report the fault tree analysis by default.
+  Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(settings, information);
+  // Report optional analyses.
+  if (settings.probability_analysis()) {
+    Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(settings,
+                                                            information);
+  }
   if (settings.importance_analysis()) {
-    quant = information->add_child("calculated-quantity");
-    quant->set_attribute("name", "Importance Analysis");
-    quant->set_attribute("definition",
-                         "Quantitative analysis of contributions and "
-                         "importance factors of events.");
+    Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(settings,
+                                                           information);
   }
-
-  // Report the setup for optional uncertainty analysis.
   if (settings.uncertainty_analysis()) {
-    quant = information->add_child("calculated-quantity");
-    quant->set_attribute("name", "Uncertainty Analysis");
-    quant->set_attribute(
-        "definition",
-        "Calculation of uncertainties with the Monte Carlo method");
-
-    methods = information->add_child("calculation-method");
-    methods->set_attribute("name", "Monte Carlo");
-    xmlpp::Element* limits = methods->add_child("limits");
-    limits->add_child("number-of-trials")
-        ->add_child_text(ToString(settings.num_trials()));
-    if (settings.seed() >= 0) {
-      limits->add_child("seed")->add_child_text(ToString(settings.seed()));
-    }
+    Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(settings,
+                                                            information);
   }
+}
 
+void Reporter::ReportInformation(const RiskAnalysis& risk_an,
+                                 xmlpp::Element* report) {
+  xmlpp::Element* information = report->add_child("information");
+  Reporter::ReportSoftwareInformation(information);
+  Reporter::ReportPerformance(risk_an, information);
+  Reporter::ReportCalculatedQuantity(risk_an.settings(), information);
+  Reporter::ReportModelFeatures(risk_an.model(), information);
+  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), information);
+  Reporter::ReportUnusedParameters(risk_an.model(), information);
+}
+
+void Reporter::ReportSoftwareInformation(xmlpp::Element* information) {
+  xmlpp::Element* software = information->add_child("software");
+  software->set_attribute("name", "SCRAM");
+  software->set_attribute("version", version::core());
+  std::stringstream time;
+  time << boost::posix_time::second_clock::local_time();
+  information->add_child("time")->add_child_text(time.str());
+}
+
+void Reporter::ReportModelFeatures(const Model& model,
+                                   xmlpp::Element* information) {
   xmlpp::Element* model_features = information->add_child("model-features");
   if (!model.name().empty())
     model_features->set_attribute("name", model.name());
@@ -220,13 +258,38 @@ void Reporter::SetupReport(const Model& model, const Settings& settings,
       ->add_child_text(ToString(model.ccf_groups().size()));
   model_features->add_child("fault-trees")
       ->add_child_text(ToString(model.fault_trees().size()));
+}
 
-  // Setup for results.
-  root->add_child("results");
+void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
+                                 xmlpp::Element* information) {
+  // Setup for performance information.
+  xmlpp::Element* performance = information->add_child("performance");
+  for (const auto& fta : risk_an.fault_tree_analyses()) {
+    xmlpp::Element* calc_time = performance->add_child("calculation-time");
+    std::string id = fta.first;
+    calc_time->set_attribute("name", id);
+    calc_time->add_child("products")
+        ->add_child_text(ToString(fta.second->analysis_time(), 5));
+
+    if (risk_an.settings().probability_analysis()) {
+      calc_time->add_child("probability")->add_child_text(
+          ToString(risk_an.probability_analyses().at(id)->analysis_time(), 5));
+    }
+
+    if (risk_an.settings().importance_analysis()) {
+      calc_time->add_child("importance")->add_child_text(
+          ToString(risk_an.importance_analyses().at(id)->analysis_time(), 5));
+    }
+
+    if (risk_an.settings().uncertainty_analysis()) {
+      calc_time->add_child("uncertainty")->add_child_text(
+          ToString(risk_an.uncertainty_analyses().at(id)->analysis_time(), 5));
+    }
+  }
 }
 
 void Reporter::ReportOrphanPrimaryEvents(const Model& model,
-                                         xmlpp::Document* doc) {
+                                         xmlpp::Element* information) {
   // Container for excess primary events not in the analysis.
   std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
   for (const std::pair<const std::string, BasicEventPtr>& event :
@@ -239,21 +302,17 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
     if (event.second->orphan()) orphan_primary_events.push_back(event.second);
   }
   if (orphan_primary_events.empty()) return;
-  std::string out = "WARNING! Orphan Primary Events: ";
+  std::string out = "Orphan Primary Events: ";
   for (const auto& event : orphan_primary_events) {
     out += event->is_public() ? "" : event->base_path() + ".";
     out += event->name();
     out += " ";
   }
-  xmlpp::Node* root = doc->get_root_node();
-  xmlpp::NodeSet inf = root->find("./information");
-  assert(inf.size() == 1);
-  xmlpp::Element* information = static_cast<xmlpp::Element*>(inf[0]);
   information->add_child("warning")->add_child_text(out);
 }
 
 void Reporter::ReportUnusedParameters(const Model& model,
-                                      xmlpp::Document* doc) {
+                                      xmlpp::Element* information) {
   // Container for unused parameters not in the analysis.
   std::vector<std::shared_ptr<const Parameter>> unused_parameters;
   for (const std::pair<const std::string, ParameterPtr>& param :
@@ -261,16 +320,12 @@ void Reporter::ReportUnusedParameters(const Model& model,
     if (param.second->unused()) unused_parameters.push_back(param.second);
   }
   if (unused_parameters.empty()) return;
-  std::string out = "WARNING! Unused Parameters: ";
+  std::string out = "Unused Parameters: ";
   for (const auto param : unused_parameters) {
     out += param->is_public() ? "" : param->base_path() + ".";
     out += param->name();
     out += " ";
   }
-  xmlpp::Node* root = doc->get_root_node();
-  xmlpp::NodeSet inf = root->find("./information");
-  assert(inf.size() == 1);
-  xmlpp::Element* information = static_cast<xmlpp::Element*>(inf[0]);
   information->add_child("warning")->add_child_text(out);
 }
 
@@ -325,21 +380,6 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
     }
   }
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
-
-  // Report calculation time in the information section.
-  // It is assumed that MCS reporting is the default
-  // and the first thing to be reported.
-  xmlpp::NodeSet perf = root->find("./information/performance");
-  assert(perf.size() == 1);
-  xmlpp::Element* performance = static_cast<xmlpp::Element*>(perf[0]);
-  xmlpp::Element* calc_time = performance->add_child("calculation-time");
-  calc_time->set_attribute("name", ft_name);
-  calc_time->add_child("products")
-      ->add_child_text(ToString(fta.analysis_time(), 5));
-  if (prob_analysis) {
-    calc_time->add_child("probability")
-        ->add_child_text(ToString(prob_analysis->analysis_time(), 5));
-  }
 }
 
 void Reporter::ReportImportance(std::string ft_name,
@@ -370,12 +410,6 @@ void Reporter::ReportImportance(std::string ft_name,
     element->set_attribute("RAW", ToString(factors.raw, 4));
     element->set_attribute("RRW", ToString(factors.rrw, 4));
   }
-  xmlpp::NodeSet calc_times =
-      root->find("./information/performance/calculation-time");
-  assert(!calc_times.empty());
-  xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
-  calc_time->add_child("importance")
-      ->add_child_text(ToString(importance_analysis.analysis_time(), 5));
 }
 
 void Reporter::ReportUncertainty(std::string ft_name,
@@ -439,12 +473,6 @@ void Reporter::ReportUncertainty(std::string ft_name,
     bin->set_attribute("lower-bound", ToString(lower, 7));
     bin->set_attribute("upper-bound", ToString(upper, 7));
   }
-  xmlpp::NodeSet calc_times =
-      root->find("./information/performance/calculation-time");
-  assert(!calc_times.empty());
-  xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
-  calc_time->add_child("uncertainty")
-      ->add_child_text(ToString(uncert_analysis.analysis_time(), 5));
 }
 
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
