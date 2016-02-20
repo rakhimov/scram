@@ -76,31 +76,29 @@ inline std::string ToString(double num, int precision) {
 }  // namespace
 
 void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
-  // Create XML or use already created document.
   std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
   xmlpp::Element* report = doc->create_root_node("report");
   Reporter::ReportInformation(risk_an, report);
-  // Setup for results.
-  report->add_child("results");
 
   CLOCK(report_time);
   LOG(DEBUG1) << "Reporting analysis results...";
+  xmlpp::Element* results = report->add_child("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     std::string id = fta.first;
     ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
     if (risk_an.settings().probability_analysis()) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
     }
-    Reporter::ReportFta(id, *fta.second, prob_analysis, doc.get());
+    Reporter::ReportResults(id, *fta.second, prob_analysis, results);
 
     if (risk_an.settings().importance_analysis()) {
-      Reporter::ReportImportance(id, *risk_an.importance_analyses().at(id),
-                                 doc.get());
+      Reporter::ReportResults(id, *risk_an.importance_analyses().at(id),
+                              results);
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
-      Reporter::ReportUncertainty(id, *risk_an.uncertainty_analyses().at(id),
-                                  doc.get());
+      Reporter::ReportResults(id, *risk_an.uncertainty_analyses().at(id),
+                              results);
     }
   }
   LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
@@ -329,13 +327,9 @@ void Reporter::ReportUnusedParameters(const Model& model,
   information->add_child("warning")->add_child_text(out);
 }
 
-void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
-                         const ProbabilityAnalysis* prob_analysis,
-                         xmlpp::Document* doc) {
-  xmlpp::Node* root = doc->get_root_node();
-  xmlpp::NodeSet res = root->find("./results");
-  assert(res.size() == 1);
-  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
+void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
+                             const ProbabilityAnalysis* prob_analysis,
+                             xmlpp::Element* results) {
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute("basic-events",
@@ -382,13 +376,9 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
 }
 
-void Reporter::ReportImportance(std::string ft_name,
-                                const ImportanceAnalysis& importance_analysis,
-                                xmlpp::Document* doc) {
-  xmlpp::Node* root = doc->get_root_node();
-  xmlpp::NodeSet res = root->find("./results");
-  assert(res.size() == 1);
-  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
+void Reporter::ReportResults(std::string ft_name,
+                             const ImportanceAnalysis& importance_analysis,
+                             xmlpp::Element* results) {
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
   importance->set_attribute("basic-events",
@@ -412,13 +402,9 @@ void Reporter::ReportImportance(std::string ft_name,
   }
 }
 
-void Reporter::ReportUncertainty(std::string ft_name,
-                                 const UncertaintyAnalysis& uncert_analysis,
-                                 xmlpp::Document* doc) {
-  xmlpp::Node* root = doc->get_root_node();
-  xmlpp::NodeSet res = root->find("./results");
-  assert(res.size() == 1);
-  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
+void Reporter::ReportResults(std::string ft_name,
+                             const UncertaintyAnalysis& uncert_analysis,
+                             xmlpp::Element* results) {
   xmlpp::Element* measure = results->add_child("measure");
   measure->set_attribute("name", ft_name);
 
@@ -477,11 +463,11 @@ void Reporter::ReportUncertainty(std::string ft_name,
 
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
                                            xmlpp::Element* parent) {
-  xmlpp::Element* element;
   std::shared_ptr<const CcfEvent> ccf_event =
       std::dynamic_pointer_cast<const CcfEvent>(basic_event);
   std::string prefix =
         basic_event->is_public() ? "" : basic_event->base_path() + ".";
+  xmlpp::Element* element;
   if (!ccf_event) {
     std::string name = prefix + basic_event->name();
     element = parent->add_child("basic-event");

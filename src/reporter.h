@@ -107,41 +107,35 @@ class Reporter {
   /// @param[in,out] information  The XML element to append the results.
   void ReportUnusedParameters(const Model& model, xmlpp::Element* information);
 
-  /// Reports the results of analysis
+  /// Reports the results of fault tree analysis
   /// to a specified output destination.
   ///
   /// @param[in] ft_name  The original name of a fault tree.
   /// @param[in] fta  Fault Tree Analysis with results.
-  /// @param[in] prob_analysis  ProbabilityAnalysis with results.
+  /// @param[in] prob_analysis  Probability Analysis with results.
   ///                           Null pointer for no probability analysis.
-  /// @param[in,out] doc  Pre-formatted XML document.
-  ///
-  /// @note This function must be called only after analysis is done.
-  void ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
-                 const ProbabilityAnalysis* prob_analysis,
-                 xmlpp::Document* doc);
+  /// @param[in,out] results  XML element to for all results.
+  void ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
+                     const ProbabilityAnalysis* prob_analysis,
+                     xmlpp::Element* results);
 
-  /// Reports results of importance analysis in probability analysis.
+  /// Reports results of importance analysis.
   ///
   /// @param[in] ft_name  The original name of a fault tree.
-  /// @param[in] importance_analysis  ImportanceAnalysis with results.
-  /// @param[in,out] doc  Pre-formatted XML document.
-  ///
-  /// @note This function must be called only after analysis is done.
-  void ReportImportance(std::string ft_name,
-                        const ImportanceAnalysis& importance_analysis,
-                        xmlpp::Document* doc);
+  /// @param[in] importance_analysis  Importance analysis with results.
+  /// @param[in,out] results  XML element to for all results.
+  void ReportResults(std::string ft_name,
+                     const ImportanceAnalysis& importance_analysis,
+                     xmlpp::Element* results);
 
   /// Reports the results of uncertainty analysis.
   ///
   /// @param[in] ft_name  The original name of a fault tree.
-  /// @param[in] uncert_analysis  UncertaintyAnalysis with results.
-  /// @param[in,out] doc  Pre-formatted XML document.
-  ///
-  /// @note This function must be called only after analysis is done.
-  void ReportUncertainty(std::string ft_name,
-                         const UncertaintyAnalysis& uncert_analysis,
-                         xmlpp::Document* doc);
+  /// @param[in] uncert_analysis  Uncertainty analysis with results.
+  /// @param[in,out] results  XML element to for all results.
+  void ReportResults(std::string ft_name,
+                     const UncertaintyAnalysis& uncert_analysis,
+                     xmlpp::Element* results);
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
