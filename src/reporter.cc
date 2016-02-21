@@ -281,43 +281,41 @@ void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
 
 void Reporter::ReportOrphanPrimaryEvents(const Model& model,
                                          XmlStreamElement* information) {
-  // Container for excess primary events not in the analysis.
-  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
-  for (const std::pair<const std::string, BasicEventPtr>& event :
+  std::string out = "";
+  for (const std::pair<const std::string, BasicEventPtr>& entry :
        model.basic_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+    const auto& param = entry.second;
+    if (param->orphan()) {
+      out += param->is_public() ? "" : param->base_path() + ".";
+      out += param->name() + " ";
+    }
   }
-
-  for (const std::pair<const std::string, HouseEventPtr>& event :
+  for (const std::pair<const std::string, HouseEventPtr>& entry :
        model.house_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
+    const auto& param = entry.second;
+    if (param->orphan()) {
+      out += param->is_public() ? "" : param->base_path() + ".";
+      out += param->name() + " ";
+    }
   }
-  if (orphan_primary_events.empty()) return;
-  std::string out = "Orphan Primary Events: ";
-  for (const auto& event : orphan_primary_events) {
-    out += event->is_public() ? "" : event->base_path() + ".";
-    out += event->name();
-    out += " ";
-  }
-  information->AddChild("warning").AddChildText(out);
+  if (!out.empty())
+    information->AddChild("warning")
+        .AddChildText("Orphan Primary Events: " + out);
 }
 
 void Reporter::ReportUnusedParameters(const Model& model,
                                       XmlStreamElement* information) {
-  // Container for unused parameters not in the analysis.
-  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
-  for (const std::pair<const std::string, ParameterPtr>& param :
+  std::string out = "";
+  for (const std::pair<const std::string, ParameterPtr>& entry :
        model.parameters()) {
-    if (param.second->unused()) unused_parameters.push_back(param.second);
+    const auto& param = entry.second;
+    if (param->unused()) {
+      out += param->is_public() ? "" : param->base_path() + ".";
+      out += param->name() + " ";
+    }
   }
-  if (unused_parameters.empty()) return;
-  std::string out = "Unused Parameters: ";
-  for (const auto param : unused_parameters) {
-    out += param->is_public() ? "" : param->base_path() + ".";
-    out += param->name();
-    out += " ";
-  }
-  information->AddChild("warning").AddChildText(out);
+  if (!out.empty())
+    information->AddChild("warning").AddChildText("Unused Parameters: " + out);
 }
 
 void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
