@@ -19,6 +19,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # Any GoogleTests inside will be automatically added to ctest.
 set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/xml_stream_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/config_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/element_tests.cc"

@@ -23,7 +23,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "event.h"
 #include "fault_tree_analysis.h"
@@ -33,10 +32,9 @@
 #include "risk_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
+#include "xml_stream.h"
 
 namespace scram {
-
-class XmlStreamElement;
 
 /// @class Reporter
 /// This class reports the results of the analyses.

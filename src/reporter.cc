@@ -21,15 +21,14 @@
 #include "reporter.h"
 
 #include <iomanip>
-#include <numeric>
 #include <sstream>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <boost/date_time.hpp>
 
 #include "ccf_group.h"
-#include "error.h"
 #include "expression.h"
 #include "logger.h"
 #include "version.h"
@@ -66,173 +65,6 @@ inline std::string ToString(double num, int precision) {
 }
 
 }  // namespace
-
-/// @class XmlStreamElement
-/// Writer of data formed as an XML element to a stream.
-/// This class relies on the RAII to put the closing tags.
-/// It is designed for stack-based use
-/// so that its destructor gets called at scope exit.
-/// One element at a time must be operated.
-/// The output will be malformed
-/// if two child elements at the same scope are being streamed.
-/// To prevent this from happening,
-/// the parent element is deactivated
-/// while its child element is alive.
-class XmlStreamElement {
- public:
-  /// Constructs a root streamer for the XML element data
-  /// ready to accept attributes, elements, text.
-  ///
-  /// @param[in] name  Non-empty string name for the element.
-  /// @param[in] indent  The number of spaces to indent the tags.
-  /// @param[in,out] out  The destination stream.
-  ///
-  /// @throws LogicError  Invalid setup for the element.
-  XmlStreamElement(std::string name, std::ostream& out)
-      : XmlStreamElement(std::move(name), 0, nullptr, out) {}
-
-  XmlStreamElement(const XmlStreamElement&) = delete;
-  XmlStreamElement& operator=(const XmlStreamElement&) = delete;
-
-  /// Move constructor is only provided
-  /// to make the compiler happy.
-  /// The code should rely on the RVO and NRVO
-  /// instead of this move constructor.
-  ///
-  /// @param[in,out] el  An active element
-  ///                    that transfers streaming responsibility
-  ///                    to a new element.
-  ///
-  /// @throws LogicError  The argument element is inactive.
-  XmlStreamElement(XmlStreamElement&& el)
-      : kName_(el.kName_),
-        kIndent_(el.kIndent_),
-        accept_attributes_(el.accept_attributes_),
-        accept_elements_(el.accept_elements_),
-        accept_text_(el.accept_elements_),
-        parent_(el.parent_),
-        out_(el.out_) {
-    assert(false && "Use the RVO and NRVO instead.");
-    if (!el.active_) throw LogicError("Can't move deactivated element.");
-    el.active_ = false;  // No child elements present.
-  }
-
-  /// Puts the closing tag.
-  ///
-  /// @pre No child element is alive.
-  ///
-  /// @warning The output will be malformed
-  ///          if the child outlives the parent.
-  ///          It can happen if the destructor is called explicitly,
-  ///          or if the objects are allocated on the heap
-  ///          with different lifetimes.
-  ~XmlStreamElement() noexcept {
-    if (!active_) return;
-    if (parent_) parent_->active_ = true;
-    if (accept_attributes_) {
-      out_ << "/>\n";
-    } else if (accept_text_) {
-      out_ << "</" << kName_ << ">\n";
-    } else {
-      assert(accept_elements_);
-      out_ << std::string(kIndent_, ' ') << "</" << kName_ << ">\n";
-    }
-  }
-
-  /// Sets the attributes for the element.
-  ///
-  /// @tparam T  Type that supports operator<<.
-  ///
-  /// @param[in] name  Non-empty name for the attribute.
-  /// @param[in] value  The value of the attribute.
-  ///
-  /// @throws LogicError  Invalid setup for the attribute.
-  template<typename T>
-  void SetAttribute(const std::string& name, const T& value) {
-    if (!active_) throw LogicError("The element is deactivated.");
-    if (!accept_attributes_) throw LogicError("Too late to set attributes.");
-    if (name.empty()) throw LogicError("Attribute name can't be empty.");
-    out_ << " " << name << "=\"" << value << "\"";
-  }
-
-  /// Adds text to the element.
-  ///
-  /// @param[in] text  Non-empty text.
-  ///
-  /// @post No more elements or attributes can be added.
-  /// @post More text can be added.
-  ///
-  /// @throws LogicError  Invalid setup or state for text addition.
-  void AddChildText(const std::string& text) {
-    if (!active_) throw LogicError("The element is deactivated.");
-    if (!accept_text_) throw LogicError("Too late to put text.");
-    if (text.empty()) throw LogicError("Text can't be empty.");
-    if (accept_elements_) accept_elements_ = false;
-    if (accept_attributes_) {
-      accept_attributes_ = false;
-      out_ << ">";
-    }
-    out_ << text;
-  }
-
-  /// @returns A streamer for child element.
-  ///
-  /// @pre The child element will be destroyed before the parent.
-  ///
-  /// @post The parent element is deactivated
-  ///       while the child element is alive.
-  ///
-  /// @throws LogicError  Invalid setup or state for element addition.
-  XmlStreamElement AddChild(std::string name) {
-    if (!active_) throw LogicError("The element is deactivated.");
-    if (!accept_elements_) throw LogicError("Too late to add elements.");
-    if (name.empty()) throw LogicError("Element name can't be empty.");
-    if (accept_text_) accept_text_ = false;
-    if (accept_attributes_) {
-      accept_attributes_ = false;
-      out_ << ">\n";
-    }
-    return XmlStreamElement(name, kIndent_ + 2, this, out_);
-  }
-
- private:
-  /// Private constructor for a streamer
-  /// to pass parent-child information.
-  ///
-  /// @param[in] name  Non-empty string name for the element.
-  /// @param[in] indent  The number of spaces to indent the tags.
-  /// @param[in,out] parent  The parent element.
-  /// @param[in,out] out  The destination stream.
-  ///
-  /// @throws LogicError  Invalid setup for the element.
-  XmlStreamElement(std::string name, int indent, XmlStreamElement* parent,
-                   std::ostream& out)
-      : kName_(std::move(name)),
-        kIndent_(indent),
-        accept_attributes_(true),
-        accept_elements_(true),
-        accept_text_(true),
-        active_(true),
-        parent_(parent),
-        out_(out) {
-    if (kName_.empty()) throw LogicError("The element name can't be empty.");
-    if (kIndent_ < 0) throw LogicError("Negative indentation.");
-    if (parent_) {
-      if (!parent_->active_) throw LogicError("The parent is deactivated.");
-      parent_->active_ = false;
-    }
-    out_ << std::string(kIndent_, ' ') << "<" << kName_;
-  }
-
-  const std::string kName_;  ///< The name of the element.
-  const int kIndent_;  ///< Indentation for tags.
-  bool accept_attributes_;  ///< Flag for preventing late attributes.
-  bool accept_elements_;  ///< Flag for preventing late elements.
-  bool accept_text_;  ///< Flag for preventing late text additions.
-  bool active_;  ///< Active in streaming.
-  XmlStreamElement* parent_;  ///< Parent element.
-  std::ostream& out_;  ///< The output destination.
-};
 
 void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
