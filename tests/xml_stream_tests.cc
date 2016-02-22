@@ -89,18 +89,5 @@ TEST(XmlStreamTest, InactiveParent) {
   EXPECT_NO_THROW(el.AddChild("another_child"));
 }
 
-#ifdef NDEBUG
-TEST(XmlStreamTest, MoveConstructor) {
-  XmlStreamElement el("element", std::cerr);
-  XmlStreamElement move_el(std::move(el));
-  EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-  EXPECT_THROW(el.AddChildText("text"), XmlStreamError);
-  EXPECT_THROW(el.AddChild("another_child"), XmlStreamError);
-
-  EXPECT_NO_THROW(move_el.SetAttribute("attr", "value"));
-  EXPECT_NO_THROW(move_el.AddChild("child"));
-}
-#endif
-
 }  // namespace test
 }  // namespace scram

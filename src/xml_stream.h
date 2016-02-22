@@ -64,17 +64,14 @@ class XmlStreamElement {
 
   XmlStreamElement& operator=(const XmlStreamElement&) = delete;
 
-  /// Move constructor is only provided
+  /// Copy constructor is only declared
   /// to make the compiler happy.
-  /// The code should rely on the RVO and NRVO
-  /// instead of this move constructor.
+  /// The code must rely on the RVO, NRVO, and copy elision
+  /// instead of this constructor.
   ///
-  /// @param[in,out] el  An active element
-  ///                    that transfers streaming responsibility
-  ///                    to a new element.
-  ///
-  /// @throws XmlStreamError  The argument element is inactive.
-  XmlStreamElement(XmlStreamElement&& el);
+  /// The constructor is not defined,
+  /// so the use of this constructor will produce a linker error.
+  XmlStreamElement(const XmlStreamElement&);
 
   /// Puts the closing tag.
   ///
@@ -130,8 +127,6 @@ class XmlStreamElement {
   /// @throws XmlStreamError  Invalid setup for the element.
   XmlStreamElement(std::string name, int indent, XmlStreamElement* parent,
                    std::ostream& out);
-
-  XmlStreamElement(const XmlStreamElement&) = default;  ///< For simpler move.
 
   const std::string kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.

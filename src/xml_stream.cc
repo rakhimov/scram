@@ -46,13 +46,6 @@ XmlStreamElement::XmlStreamElement(std::string name, int indent,
   out_ << std::string(kIndent_, ' ') << "<" << kName_;
 }
 
-XmlStreamElement::XmlStreamElement(XmlStreamElement&& el)
-    : XmlStreamElement(el) {
-  assert(false && "Use the RVO and NRVO instead.");
-  if (!el.active_) throw XmlStreamError("Can't move inactive element.");
-  el.active_ = false;  // No child elements present.
-}
-
 XmlStreamElement::~XmlStreamElement() noexcept {
   if (!active_) return;
   if (parent_) parent_->active_ = true;
@@ -61,7 +54,7 @@ XmlStreamElement::~XmlStreamElement() noexcept {
   } else if (accept_text_) {
     out_ << "</" << kName_ << ">\n";
   } else {
-    assert(accept_elements_);
+    assert(accept_elements_ && "The element is in unspecified state.");
     out_ << std::string(kIndent_, ' ') << "</" << kName_ << ">\n";
   }
 }
