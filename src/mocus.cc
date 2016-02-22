@@ -32,9 +32,9 @@
 namespace scram {
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
-      : constant_graph_(false),
-        graph_(fault_tree),
-        kSettings_(settings) {
+    : constant_graph_(false),
+      graph_(fault_tree),
+      kSettings_(settings) {
   IGatePtr top = fault_tree->root();
   if (top->IsConstant() || top->type() == kNull) {
     constant_graph_ = true;

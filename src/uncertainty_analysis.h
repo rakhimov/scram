@@ -125,7 +125,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   /// @post Probability analyzer's probability values are
   ///       reset to the original values (event probabilities).
   explicit UncertaintyAnalyzer(ProbabilityAnalyzer<Calculator>* prob_analyzer)
-      : UncertaintyAnalysis::UncertaintyAnalysis(prob_analyzer),
+      : UncertaintyAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
 
  private:

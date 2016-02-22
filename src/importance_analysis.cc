@@ -28,9 +28,8 @@
 
 namespace scram {
 
-ImportanceAnalysis::ImportanceAnalysis(
-    const ProbabilityAnalysis* prob_analysis)
-    : Analysis::Analysis(prob_analysis->settings()) {}
+ImportanceAnalysis::ImportanceAnalysis(const ProbabilityAnalysis* prob_analysis)
+    : Analysis(prob_analysis->settings()) {}
 
 void ImportanceAnalysis::Analyze() noexcept {
   CLOCK(imp_time);

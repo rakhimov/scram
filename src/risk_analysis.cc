@@ -39,7 +39,7 @@ namespace scram {
 
 RiskAnalysis::RiskAnalysis(const std::shared_ptr<const Model>& model,
                            const Settings& settings)
-    : Analysis::Analysis(settings),
+    : Analysis(settings),
       model_(model) {}
 
 void RiskAnalysis::GraphingInstructions() {

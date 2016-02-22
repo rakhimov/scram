@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ namespace scram {
 
 UncertaintyAnalysis::UncertaintyAnalysis(
     const ProbabilityAnalysis* prob_analysis)
-    : Analysis::Analysis(prob_analysis->settings()),
+    : Analysis(prob_analysis->settings()),
       mean_(0),
       sigma_(0),
       error_factor_(1) {}

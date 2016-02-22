@@ -30,7 +30,7 @@ namespace scram {
 
 Vertex::Vertex(int id) : id_(id) {}
 
-Terminal::Terminal(bool value) : Vertex::Vertex(value) {}
+Terminal::Terminal(bool value) : Vertex(value) {}
 
 NonTerminal::NonTerminal(int index, int order, int id, const VertexPtr& high,
                          const VertexPtr& low)
