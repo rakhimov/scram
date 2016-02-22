@@ -451,12 +451,6 @@ void Reporter::ReportLiteral(const Literal& literal, XmlStreamElement* parent) {
   }
 }
 
-void Reporter::ReportImportantEvent(const BasicEventPtr& basic_event,
-                                    const ImportanceFactors& factors,
-                                    XmlStreamElement* parent) {
-  Reporter::ReportBasicEvent(basic_event, factors, parent);
-}
-
 void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
                                 XmlStreamElement* parent) {
   std::shared_ptr<const CcfEvent> ccf_event =
@@ -479,9 +473,10 @@ void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
   }
 }
 
-void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
-                                const ImportanceFactors& factors,
-                                XmlStreamElement* parent) {
+void Reporter::ReportImportantEvent(const BasicEventPtr& basic_event,
+                                    const ImportanceFactors& factors,
+                                    XmlStreamElement* parent) {
+  /// @todo Refactor the code duplication.
   std::shared_ptr<const CcfEvent> ccf_event =
       std::dynamic_pointer_cast<const CcfEvent>(basic_event);
   std::string prefix =

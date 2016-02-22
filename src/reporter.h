@@ -142,15 +142,6 @@ class Reporter {
   /// @param[in,out] parent  A parent element node to have this literal.
   void ReportLiteral(const Literal& literal, XmlStreamElement* parent);
 
-  /// Reports a basic event with importance factors.
-  ///
-  /// @param[in] basic_event  A basic event to be reported.
-  /// @param[in] factors  Importance factors.
-  /// @param[in,out] parent  A parent element node to have the report.
-  void ReportImportantEvent(const BasicEventPtr& basic_event,
-                            const ImportanceFactors& factors,
-                            XmlStreamElement* parent);
-
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
   ///
@@ -164,10 +155,9 @@ class Reporter {
   /// @param[in] basic_event  A basic event to be reported.
   /// @param[in] factors  Importance factors.
   /// @param[in,out] parent  A parent element node to have the report.
-  void ReportBasicEvent(const BasicEventPtr& basic_event,
-                        const ImportanceFactors& factors,
-                        XmlStreamElement* parent);
-
+  void ReportImportantEvent(const BasicEventPtr& basic_event,
+                            const ImportanceFactors& factors,
+                            XmlStreamElement* parent);
 };
 
 }  // namespace scram
