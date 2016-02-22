@@ -34,7 +34,7 @@ void NodeParentManager::AddParent(const IGatePtr& gate) {
   parents_.emplace(gate->index(), gate);
 }
 
-Node::Node() noexcept : Node::Node(next_index_++) {}
+Node::Node() noexcept : Node(next_index_++) {}
 
 Node::Node(int index) noexcept
     : index_(index),
@@ -46,15 +46,14 @@ Node::Node(int index) noexcept
 
 Node::~Node() = default;
 
-Constant::Constant(bool state) noexcept : Node(), state_(state) {}
+Constant::Constant(bool state) noexcept : state_(state) {}
 
 int Variable::next_variable_ = 1;
 
 Variable::Variable() noexcept : Node(next_variable_++) {}
 
 IGate::IGate(Operator type) noexcept
-    : Node(),
-      type_(type),
+    : type_(type),
       state_(kNormalState),
       vote_number_(0),
       mark_(false),
@@ -157,7 +156,7 @@ void IGate::InvertArg(int existing_arg) noexcept {
   }
 }
 
-void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
+void IGate::CoalesceGate(const IGatePtr& arg_gate) noexcept {
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
   assert(arg_gate->state() == kNormalState && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");

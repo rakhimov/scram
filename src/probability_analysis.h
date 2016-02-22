@@ -180,7 +180,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
 template <class Algorithm>
 ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     const FaultTreeAnalyzer<Algorithm>* fta)
-    : ProbabilityAnalysis::ProbabilityAnalysis(fta),
+    : ProbabilityAnalysis(fta),
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
   p_vars_.push_back(-1);  // Padding.
@@ -276,7 +276,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
 template <class Algorithm>
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
     const FaultTreeAnalyzer<Algorithm>* fta)
-    : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
+    : ProbabilityAnalyzerBase(fta),
       current_mark_(false),
       owner_(true) {
   CLOCK(main_time);

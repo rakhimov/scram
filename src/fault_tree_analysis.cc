@@ -113,8 +113,8 @@ void FaultTreeDescriptor::ClearMarks() noexcept {
 
 FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
                                      const Settings& settings)
-    : Analysis::Analysis(settings),
-      FaultTreeDescriptor::FaultTreeDescriptor(root) {}
+    : Analysis(settings),
+      FaultTreeDescriptor(root) {}
 
 void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
                                 const BooleanGraph* graph) noexcept {

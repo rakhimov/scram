@@ -18,12 +18,12 @@ This project adheres to the following coding styles:
     #. `Qt Coding Style`_ for the GUI Development
     #. `Google Shell Style Guide`_
 
-.. _Google C++ Style Guide (GCSG): http://google-styleguide.googlecode.com/svn/trunk/cppguide.html
-.. _Google Python Style Guide (GPSG): http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+.. _Google C++ Style Guide (GCSG): https://google.github.io/styleguide/cppguide.html
+.. _Google Python Style Guide (GPSG): https://google.github.io/styleguide/pyguide.html
 .. _PEP 8 -- Style Guide for Python Code (PEP8): https://www.python.org/dev/peps/pep-0008/
 .. _KDE CMake Coding Style: https://techbase.kde.org/Policies/CMake_Coding_Style
 .. _Qt Coding Style: http://qt-project.org/wiki/Qt_Coding_Style
-.. _Google Shell Style Guide: https://google-styleguide.googlecode.com/svn/trunk/shell.xml
+.. _Google Shell Style Guide: https://google.github.io/styleguide/shell.xml
 
 
 Deviations from the GCSG
@@ -143,12 +143,12 @@ C++
 
 .. _Gprof: https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
-.. _Coveralls: https://coveralls.io/r/rakhimov/scram
+.. _Coveralls: https://coveralls.io/github/rakhimov/scram
 .. _Valgrind: http://valgrind.org/
 .. _Coverity: https://scan.coverity.com/projects/2555
 .. _CppCheck: https://github.com/danmar/cppcheck/
 .. _Lizard: https://github.com/terryyin/lizard
-.. _Cpplint: https://google-styleguide.googlecode.com/svn/trunk/cpplint/
+.. _Cpplint: https://github.com/theandrewdavis/cpplint
 .. _cppclean: https://github.com/myint/cppclean
 .. _ClangFormat: http://clang.llvm.org/docs/ClangFormat.html
 
@@ -208,7 +208,7 @@ Guided fuzz testing is performed
 with auto-generated analysis input files
 to discover bugs, bottlenecks, and assumption failures.
 
-.. _GoogleTest: https://code.google.com/p/googletest/
+.. _GoogleTest: https://github.com/google/googletest
 .. _Nose: https://nose.readthedocs.org/en/latest/
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
 

@@ -70,12 +70,12 @@ void Expression::GatherNodesAndConnectors() {
 
 Parameter::Parameter(const std::string& name, const std::string& base_path,
                      bool is_public)
-      : Expression::Expression({}),
-        Role::Role(is_public, base_path),
-        name_(name),
-        unit_(kUnitless),
-        unused_(true),
-        mark_("") {
+    : Expression({}),
+      Role(is_public, base_path),
+      name_(name),
+      unit_(kUnitless),
+      unused_(true),
+      mark_("") {
   assert(name != "");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
   boost::to_lower(id_);
@@ -88,25 +88,25 @@ void Parameter::expression(const ExpressionPtr& expression) {
 }
 
 MissionTime::MissionTime()
-      : Expression::Expression({}),
-        mission_time_(-1),
-        unit_(kHours) {}
+    : Expression({}),
+      mission_time_(-1),
+      unit_(kHours) {}
 
 ConstantExpression::ConstantExpression(double val)
-      : Expression::Expression({}),
-        value_(val) {}
+    : Expression({}),
+      value_(val) {}
 
 ConstantExpression::ConstantExpression(int val)
-      : Expression::Expression({}),
-        value_(val) {}
+    : Expression({}),
+      value_(val) {}
 
 ConstantExpression::ConstantExpression(bool val)
-      : Expression::Expression({}),
-        value_(val) {}
+    : Expression({}),
+      value_(val) {}
 
 ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
                                              const ExpressionPtr& t)
-    : Expression::Expression({lambda, t}),
+    : Expression({lambda, t}),
       lambda_(lambda),
       time_(t) {}
 
@@ -126,7 +126,7 @@ GlmExpression::GlmExpression(const ExpressionPtr& gamma,
                              const ExpressionPtr& lambda,
                              const ExpressionPtr& mu,
                              const ExpressionPtr& t)
-    : Expression::Expression({gamma, lambda, mu, t}),
+    : Expression({gamma, lambda, mu, t}),
       gamma_(gamma),
       lambda_(lambda),
       mu_(mu),
@@ -172,7 +172,7 @@ WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
                                      const ExpressionPtr& beta,
                                      const ExpressionPtr& t0,
                                      const ExpressionPtr& time)
-    : Expression::Expression({alpha, beta, t0, time}),
+    : Expression({alpha, beta, t0, time}),
       alpha_(alpha),
       beta_(beta),
       t0_(t0),
@@ -214,9 +214,9 @@ double WeibullExpression::Compute(double alpha, double beta,
 
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                                const ExpressionPtr& max)
-      : RandomDeviate::RandomDeviate({min, max}),
-        min_(min),
-        max_(max) {}
+    : RandomDeviate({min, max}),
+      min_(min),
+      max_(max) {}
 
 void UniformDeviate::Validate() {
   if (min_->Mean() >= max_->Mean()) {
@@ -234,9 +234,9 @@ double UniformDeviate::GetSample() noexcept {
 
 NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
                              const ExpressionPtr& sigma)
-      : RandomDeviate::RandomDeviate({mean, sigma}),
-        mean_(mean),
-        sigma_(sigma) {}
+    : RandomDeviate({mean, sigma}),
+      mean_(mean),
+      sigma_(sigma) {}
 
 void NormalDeviate::Validate() {
   if (sigma_->Mean() <= 0) {
@@ -253,10 +253,10 @@ double NormalDeviate::GetSample() noexcept {
 LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
                                    const ExpressionPtr& ef,
                                    const ExpressionPtr& level)
-      : RandomDeviate::RandomDeviate({mean, ef, level}),
-        mean_(mean),
-        ef_(ef),
-        level_(level) {}
+    : RandomDeviate({mean, ef, level}),
+      mean_(mean),
+      ef_(ef),
+      level_(level) {}
 
 void LogNormalDeviate::Validate() {
   if (level_->Mean() <= 0 || level_->Mean() >= 1) {
@@ -320,18 +320,18 @@ void GammaDeviate::Validate() {
 }
 
 GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
-      : RandomDeviate::RandomDeviate({k, theta}),
-        k_(k),
-        theta_(theta) {}
+    : RandomDeviate({k, theta}),
+      k_(k),
+      theta_(theta) {}
 
 double GammaDeviate::GetSample() noexcept {
   return Random::GammaGenerator(k_->Sample(), theta_->Sample());
 }
 
 BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
-      : RandomDeviate::RandomDeviate({alpha, beta}),
-        alpha_(alpha),
-        beta_(beta) {}
+    : RandomDeviate({alpha, beta}),
+      alpha_(alpha),
+      beta_(beta) {}
 
 void BetaDeviate::Validate() {
   if (alpha_->Mean() <= 0) {
@@ -355,7 +355,7 @@ double BetaDeviate::GetSample() noexcept {
 
 Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
                      std::vector<ExpressionPtr> weights)
-    : RandomDeviate::RandomDeviate(boundaries),  // Partial registration!
+    : RandomDeviate(boundaries),  // Partial registration!
       boundaries_(std::move(boundaries)),
       weights_(std::move(weights)) {
   if (weights_.size() != boundaries_.size())
@@ -421,8 +421,8 @@ void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
 }
 
 Neg::Neg(const ExpressionPtr& expression)
-      : Expression::Expression({expression}),
-        expression_(expression) {}
+    : Expression({expression}),
+      expression_(expression) {}
 
 double Add::Mean() noexcept {
   assert(!Expression::args().empty());

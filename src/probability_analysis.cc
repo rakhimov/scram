@@ -24,7 +24,7 @@
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
-    : Analysis::Analysis(fta->settings()),
+    : Analysis(fta->settings()),
       p_total_(0) {}
 
 void ProbabilityAnalysis::Analyze() noexcept {
@@ -78,7 +78,7 @@ double McubCalculator::Calculate(
 }
 
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
-    : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
+    : ProbabilityAnalyzerBase(fta),
       owner_(false) {
   LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
   bdd_graph_ = fta->algorithm();

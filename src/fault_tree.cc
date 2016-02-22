@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ namespace scram {
 
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
-    : Role::Role(is_public, base_path),
+    : Role(is_public, base_path),
       name_(name) {}
 
 void Component::AddGate(const GatePtr& gate) {
@@ -102,7 +102,7 @@ void Component::AddEvent(const Ptr& event, Container* container) {
   container->emplace(name, event);
 }
 
-FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
+FaultTree::FaultTree(const std::string& name) : Component(name) {}
 
 void FaultTree::CollectTopEvents() {
   top_events_.clear();

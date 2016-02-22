@@ -741,17 +741,17 @@ bool Preprocessor::CoalesceGates(bool common) noexcept {
   assert(null_gates_.empty());
   if (graph_->root()->IsConstant()) return false;
   graph_->ClearGateMarks();
-  bool ret = Preprocessor::JoinGates(graph_->root(), common);
+  bool ret = Preprocessor::CoalesceGates(graph_->root(), common);
 
   assert(null_gates_.empty());
   Preprocessor::ClearConstGates();
   return ret;
 }
 
-bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
+bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
   if (gate->mark()) return false;
   gate->mark(true);
-  bool possible = true;  // If joining is possible at all.
+  bool possible = true;  // Is coalescing possible at all?
   Operator target_type;  // What kind of arg gate are we searching for?
   switch (gate->type()) {
     case kNand:
@@ -772,11 +772,11 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
   bool changed = false;  // Indication if the graph is changed.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    if (Preprocessor::JoinGates(arg_gate, common)) changed = true;
+    if (Preprocessor::CoalesceGates(arg_gate, common)) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
     if (arg_gate->IsConstant()) continue;  // No args to join.
-    if (arg.first < 0) continue;  // Cannot join a negative arg gate.
+    if (arg.first < 0) continue;  // Cannot coalesce a negative arg gate.
     if (arg_gate->IsModule()) continue;  // Preserve modules.
     if (!common && arg_gate->parents().size() > 1) continue;  // Check common.
 
@@ -784,7 +784,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
   }
 
   for (const IGatePtr& arg : to_join) {
-    gate->JoinGate(arg);
+    gate->CoalesceGate(arg);
     changed = true;
     if (gate->IsConstant()) {
       const_gates_.push_back(gate);  // Register for future processing.

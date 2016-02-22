@@ -37,8 +37,9 @@
 
 namespace scram {
 
-RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings)
-    : Analysis::Analysis(settings),
+RiskAnalysis::RiskAnalysis(const std::shared_ptr<const Model>& model,
+                           const Settings& settings)
+    : Analysis(settings),
       model_(model) {}
 
 void RiskAnalysis::GraphingInstructions() {
@@ -131,57 +132,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 
 void RiskAnalysis::Report(std::ostream& out) {
   Reporter rp = Reporter();
-
-  // Create XML or use already created document.
-  std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
-  rp.SetupReport(model_, Analysis::settings(), doc.get());
-
-  // Container for excess primary events not in the analysis.
-  // This container is for warning
-  // in case the input is formed not as intended.
-  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
-  for (const std::pair<const std::string, BasicEventPtr>& event :
-       model_->basic_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
-  }
-
-  for (const std::pair<const std::string, HouseEventPtr>& event :
-       model_->house_events()) {
-    if (event.second->orphan()) orphan_primary_events.push_back(event.second);
-  }
-  rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc.get());
-
-  // Container for unused parameters not in the analysis.
-  // This container is for warning in case the input is formed not as intended.
-  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
-  for (const std::pair<const std::string, ParameterPtr>& param :
-       model_->parameters()) {
-    if (param.second->unused()) unused_parameters.push_back(param.second);
-  }
-  rp.ReportUnusedParameters(unused_parameters, doc.get());
-
-  CLOCK(report_time);
-  LOG(DEBUG1) << "Reporting analysis results...";
-  for (const std::pair<const std::string, FaultTreeAnalysisPtr>& fta :
-       fault_tree_analyses_) {
-    std::string id = fta.first;
-    ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
-    if (Analysis::settings().probability_analysis()) {
-      prob_analysis = probability_analyses_.at(id).get();
-    }
-    rp.ReportFta(id, *fta.second, prob_analysis, doc.get());
-
-    if (Analysis::settings().importance_analysis()) {
-      rp.ReportImportance(id, *importance_analyses_.at(id), doc.get());
-    }
-
-    if (Analysis::settings().uncertainty_analysis()) {
-      rp.ReportUncertainty(id, *uncertainty_analyses_.at(id), doc.get());
-    }
-  }
-  LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
-
-  doc->write_to_stream_formatted(out, "UTF-8");
+  rp.Report(*this, out);
 }
 
 void RiskAnalysis::Report(std::string output) {

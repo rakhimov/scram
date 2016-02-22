@@ -133,7 +133,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   ///       reset to the original values (event probabilities).
   explicit ImportanceAnalyzerBase(
       ProbabilityAnalyzer<Calculator>* prob_analyzer)
-      : ImportanceAnalysis::ImportanceAnalysis(prob_analyzer),
+      : ImportanceAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
 
  protected:
@@ -206,7 +206,7 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   ///
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
   explicit ImportanceAnalyzer(ProbabilityAnalyzer<Bdd>* prob_analyzer)
-      : ImportanceAnalyzerBase<Bdd>::ImportanceAnalyzerBase(prob_analyzer),
+      : ImportanceAnalyzerBase(prob_analyzer),
         bdd_graph_(prob_analyzer->bdd_graph()) {}
 
  private:

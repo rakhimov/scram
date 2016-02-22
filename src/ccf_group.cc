@@ -28,7 +28,7 @@ namespace scram {
 
 CcfGroup::CcfGroup(const std::string& name, const std::string& model,
                    const std::string& base_path, bool is_public)
-    : Role::Role(is_public, base_path),
+    : Role(is_public, base_path),
       name_(name),
       model_(model) {
   assert(name != "");

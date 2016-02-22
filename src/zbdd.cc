@@ -54,12 +54,12 @@ void Zbdd::Log() noexcept {
 }
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
-    : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
+    : Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
   CHECK_ZBDD(true);
 }
 
 Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
-    : Zbdd::Zbdd(fault_tree->root(), settings) {
+    : Zbdd(fault_tree->root(), settings) {
   assert(!fault_tree->complement() && "Complements must be propagated.");
   if (fault_tree->root()->IsConstant()) {
     if (fault_tree->root()->state() == kNullState) {
@@ -124,7 +124,7 @@ Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
 
 Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
            const Settings& settings, int module_index) noexcept
-    : Zbdd::Zbdd(settings, coherent, module_index) {
+    : Zbdd(settings, coherent, module_index) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD: G" << module_index;
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
@@ -165,7 +165,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
 }
 
 Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
-    : Zbdd::Zbdd(settings, gate->coherent(), gate->index()) {
+    : Zbdd(settings, gate->coherent(), gate->index()) {
   if (gate->IsConstant() || gate->type() == kNull) return;
   assert(!settings.prime_implicants() && "Not implemented.");
   CLOCK(init_time);
@@ -759,7 +759,7 @@ namespace zbdd {
 
 CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
                                  int gate_index_bound) noexcept
-    : Zbdd::Zbdd(settings, /*coherence=*/false, module_index),
+    : Zbdd(settings, /*coherence=*/false, module_index),
       gate_index_bound_(gate_index_bound) {}
 
 VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {

@@ -152,6 +152,24 @@ Release build:
 - Memory:   480
 
 
+CEA9601 -l 4 (mcs = 1614876)
+============================
+
+Release build:
+--------------
+
+- BDD Time: 5.6
+- ZBDD Time: 4.0
+- Reporting: 7.2
+
+- # of BDD vertices created: 3048746
+- # of ITE in BDD: 1175468
+- # of ZBDD vertices created: 43593
+- ZBDD Cut set extraction time: 3.5
+
+- Memory:   780
+
+
 Uncertainty Analysis
 ====================
 

@@ -18,8 +18,8 @@
 /// @file risk_analysis.h
 /// Contains the main system for performing analysis.
 
-#ifndef SCRAM_SRC_RISK_ANALYISIS_H_
-#define SCRAM_SRC_RISK_ANALYISIS_H_
+#ifndef SCRAM_SRC_RISK_ANALYSIS_H_
+#define SCRAM_SRC_RISK_ANALYSIS_H_
 
 #include <iostream>
 #include <map>
@@ -45,7 +45,6 @@ class RiskAnalysis : public Analysis {
  public:
   /// Pointer aliases for convenience.
   /// @{
-  using ModelPtr = std::shared_ptr<const Model>;
   using FaultTreeAnalysisPtr = std::unique_ptr<FaultTreeAnalysis>;
   using ProbabilityAnalysisPtr = std::unique_ptr<ProbabilityAnalysis>;
   using ImportanceAnalysisPtr = std::unique_ptr<ImportanceAnalysis>;
@@ -56,7 +55,11 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
-  RiskAnalysis(const ModelPtr& model, const Settings& settings);
+  RiskAnalysis(const std::shared_ptr<const Model>& model,
+               const Settings& settings);
+
+  /// @returns The model under analysis.
+  const Model& model() const { return *model_; }
 
   /// Provides graphing instructions
   /// for each fault tree initialized in the analysis.
@@ -161,7 +164,7 @@ class RiskAnalysis : public Analysis {
   void RunAnalysis(const std::string& name,
                    FaultTreeAnalyzer<Algorithm>* fta) noexcept;
 
-  ModelPtr model_;  ///< Analysis model with constructs.
+  std::shared_ptr<const Model> model_;  ///< Analysis model with constructs.
 
   /// Analyses performed by this risk analysis run.
   /// @{
