@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -464,11 +464,12 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
         formula->AddArgument(house_event);
         house_event->orphan(false);
       }
-    } catch (ValidationError& err) {
+    } catch (std::out_of_range& err) {
       std::stringstream msg;
-      msg << "Line " << event->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
-      throw;
+      msg << "Line " << event->get_line() << ":\n"
+          << "Undefined " << element_type << " " << name << " with base path "
+          << base_path;
+      throw ValidationError(msg.str());
     }
   }
 
@@ -729,11 +730,11 @@ ExpressionPtr Initializer::GetParameterExpression(
       param->unused(false);
       param_unit = kUnitToString_[param->unit()];
       expression = param;
-    } catch (ValidationError& err) {
+    } catch (std::out_of_range& err) {
       std::stringstream msg;
-      msg << "Line " << expr_element->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
-      throw;
+      msg << "Line " << expr_element->get_line() << ":\n"
+          << "Undefined parameter " << name << " with base path " << base_path;
+      throw ValidationError(msg.str());
     }
   } else {
     assert(expr_name == "system-mission-time");

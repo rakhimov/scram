@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the parameter found by following the given reference.
   ///
-  /// @throws ValidationError  There are problems with referencing.
+  /// @throws std::out_of_range  The entity cannot be found.
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
 
@@ -112,7 +112,7 @@ class Model : public Element {
   /// @returns A pair of the pointer to the event and its type
   ///          ("gate", "basic-event", "house-event").
   ///
-  /// @throws ValidationError  There are problems with referencing.
+  /// @throws std::out_of_range  The entity cannot be found.
   /// @throws LogicError  The given base path is invalid.
   std::pair<EventPtr, std::string> GetEvent(const std::string& reference,
                                             const std::string& base_path);
@@ -133,7 +133,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the house event found by following the reference.
   ///
-  /// @throws ValidationError  There are problems with referencing.
+  /// @throws std::out_of_range  The entity cannot be found.
   HouseEventPtr GetHouseEvent(const std::string& reference,
                               const std::string& base_path);
 
@@ -153,7 +153,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the basic event found by following the reference.
   ///
-  /// @throws ValidationError  There are problems with referencing.
+  /// @throws std::out_of_range  The entity cannot be found.
   BasicEventPtr GetBasicEvent(const std::string& reference,
                               const std::string& base_path);
 
@@ -173,7 +173,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the gate found by following the reference.
   ///
-  /// @throws ValidationError  There are problems with referencing.
+  /// @throws std::out_of_range  The entity cannot be found.
   GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
   /// Adds a CCF group that is used in this model's fault trees.
@@ -183,34 +183,16 @@ class Model : public Element {
   /// @throws RedefinitionError  The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
+
  private:
-  /// Helper function to find the scope container for references.
+  /// Helper function to find the container for references.
   ///
-  /// @param[in] base_path  The series of containers to get the container.
+  /// @param[in] path  The ancestor container names in lower case.
   ///
   /// @returns A fault tree or component from the base path if any.
   ///
-  /// @throws LogicError  There's missing container in the path.
-  const Component* GetContainer(const std::string& base_path);
-
-  /// Helper function to find the local container for references.
-  ///
-  /// @param[in] reference  The reference to the target element.
-  /// @param[in] scope  The fault tree or component as a scope.
-  ///
-  /// @returns A fault tree or component from the reference.
-  /// @returns nullptr if there is no local container.
-  const Component* GetLocalContainer(const std::string& reference,
-                                     const Component* scope);
-
-  /// Helper function to find the global container for references.
-  ///
-  /// @param[in] reference  The reference to the target element.
-  ///
-  /// @returns A fault tree or component from the reference.
-  ///
-  /// @throws ValidationError  There's missing container in the path.
-  const Component* GetGlobalContainer(const std::string& reference);
+  /// @throws std::out_of_range  There's missing container in the path.
+  const Component& GetContainer(const std::vector<std::string>& path);
 
   std::string name_;  ///< The name of the model.
 
