@@ -87,38 +87,12 @@ class Model : public Element {
   /// @throws RedefinitionError  The model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
 
-  /// Finds a parameter from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
-  ///
-  /// @param[in] reference  Reference string to the parameter.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  ///
-  /// @returns Pointer to the parameter found by following the given reference.
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  ParameterPtr GetParameter(const std::string& reference,
-                            const std::string& base_path);
-
   /// Adds a house event that is used in this model.
   ///
   /// @param[in] house_event  A house event defined in this model.
   ///
   /// @throws RedefinitionError  An event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
-
-  /// Finds a house event from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
-  ///
-  /// @param[in] reference  Reference string to the house event.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  ///
-  /// @returns Pointer to the house event found by following the reference.
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  HouseEventPtr GetHouseEvent(const std::string& reference,
-                              const std::string& base_path);
 
   /// Adds a basic event that is used in this model.
   ///
@@ -127,37 +101,12 @@ class Model : public Element {
   /// @throws RedefinitionError  An event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
-  /// Finds a basic event from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
-  ///
-  /// @param[in] reference  Reference string to the basic event.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  ///
-  /// @returns Pointer to the basic event found by following the reference.
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  BasicEventPtr GetBasicEvent(const std::string& reference,
-                              const std::string& base_path);
-
   /// Adds a gate that is used in this model's fault trees or components.
   ///
   /// @param[in] gate  A gate defined in this model.
   ///
   /// @throws RedefinitionError  An event with the same name already exists.
   void AddGate(const GatePtr& gate);
-
-  /// Finds a gate from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
-  ///
-  /// @param[in] reference  Reference string to the gate.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  ///
-  /// @returns Pointer to the gate found by following the reference.
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
   /// Adds a CCF group that is used in this model's fault trees.
   ///
@@ -166,14 +115,56 @@ class Model : public Element {
   /// @throws RedefinitionError  The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
+  /// Finds an entity (parameter, basic and house event, gate) from a reference.
+  /// The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  ///
+  /// @param[in] reference  Reference string to the entity.
+  /// @param[in] base_path  The series of containers indicating the scope.
+  ///
+  /// @returns Pointer to the entity found by following the given reference.
+  ///
+  /// @throws std::out_of_range  The entity cannot be found.
+  /// @{
+  ParameterPtr GetParameter(const std::string& reference,
+                            const std::string& base_path);
+  HouseEventPtr GetHouseEvent(const std::string& reference,
+                              const std::string& base_path);
+  BasicEventPtr GetBasicEvent(const std::string& reference,
+                              const std::string& base_path);
+  GatePtr GetGate(const std::string& reference, const std::string& base_path);
+  /// @}
+
  private:
+  /// Generic helper function to find an entity from a reference.
+  /// The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  ///
+  /// @tparam Tptr  Smart pointer type to the entity.
+  /// @tparam Getter  Function type to get the entity from components:
+  ///                 const Map<std::string, Tptr>&(const Component&)
+  ///
+  /// @param[in] reference  Reference string to the entity.
+  /// @param[in] base_path  The series of containers indicating the scope.
+  /// @param[in] public_container  Model's container for public entities.
+  /// @param[in] getter  The getter function to access
+  ///                    the components' container of private entities.
+  ///
+  /// @returns Pointer to the requested entity.
+  ///
+  /// @throws std::out_of_range  The entity cannot be found.
+  template <class Tptr, class Getter>
+  Tptr GetEntity(const std::string& reference, const std::string& base_path,
+                 const std::unordered_map<std::string, Tptr>& public_container,
+                 Getter getter);
+
   /// Helper function to find the container for references.
   ///
   /// @param[in] path  The ancestor container names in lower case.
   ///
-  /// @returns A fault tree or component from the base path if any.
+  /// @returns A fault tree or component from the path.
   ///
-  /// @throws std::out_of_range  There's missing container in the path.
+  /// @throws std::out_of_range  There's a missing container in the path.
   const Component& GetContainer(const std::vector<std::string>& path);
 
   std::string name_;  ///< The name of the model.

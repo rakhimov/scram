@@ -46,6 +46,73 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   }
 }
 
+void Model::AddHouseEvent(const HouseEventPtr& house_event) {
+  std::string id = house_event->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
+    std::string msg = "Redefinition of event " + house_event->name();
+    throw RedefinitionError(msg);
+  }
+  house_events_.emplace(id, house_event);
+}
+
+void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
+  std::string id = basic_event->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
+    std::string msg = "Redefinition of event " + basic_event->name();
+    throw RedefinitionError(msg);
+  }
+  basic_events_.emplace(id, basic_event);
+}
+
+void Model::AddGate(const GatePtr& gate) {
+  std::string id = gate->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
+    std::string msg = "Redefinition of event " + gate->name();
+    throw RedefinitionError(msg);
+  }
+  gates_.emplace(id, gate);
+}
+
+void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
+  std::string name = ccf_group->id();
+  bool original = ccf_groups_.emplace(name, ccf_group).second;
+  if (!original) {
+    std::string msg = "Redefinition of CCF group " + ccf_group->name();
+    throw RedefinitionError(msg);
+  }
+}
+
+ParameterPtr Model::GetParameter(const std::string& reference,
+                                 const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, parameters_,
+      [](const Component& component) { return component.parameters(); });
+}
+
+HouseEventPtr Model::GetHouseEvent(const std::string& reference,
+                                   const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, house_events_,
+      [](const Component& component) { return component.house_events(); });
+}
+
+BasicEventPtr Model::GetBasicEvent(const std::string& reference,
+                                   const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, basic_events_,
+      [](const Component& component) { return component.basic_events(); });
+}
+
+GatePtr Model::GetGate(const std::string& reference,
+                       const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, gates_,
+      [](const Component& component) { return component.gates(); });
+}
+
 namespace {
 
 /// @param[in] string_path  The reference string formatted with ".".
@@ -61,9 +128,13 @@ std::vector<std::string> GetPath(std::string string_path) {
 
 }  // namespace
 
-ParameterPtr Model::GetParameter(const std::string& reference,
-                                 const std::string& base_path) {
-  assert(reference != "");
+template <class Tptr, class Getter>
+Tptr Model::GetEntity(
+    const std::string& reference,
+    const std::string& base_path,
+    const std::unordered_map<std::string, Tptr>& public_container,
+    Getter getter) {
+  assert(!reference.empty());
   std::vector<std::string> path = GetPath(reference);
   std::string target_name = path.back();
   path.pop_back();
@@ -71,101 +142,11 @@ ParameterPtr Model::GetParameter(const std::string& reference,
     std::vector<std::string> full_path = GetPath(base_path);
     full_path.insert(full_path.end(), path.begin(), path.end());
     try {
-      return Model::GetContainer(full_path).parameters().at(target_name);
+      return getter(Model::GetContainer(full_path)).at(target_name);
     } catch (std::out_of_range&) {}  // Continue searching.
   }
-  if (path.empty()) return parameters_.at(target_name);  // Public parameter.
-  return Model::GetContainer(path).parameters().at(target_name);
-}
-
-void Model::AddHouseEvent(const HouseEventPtr& house_event) {
-  std::string id = house_event->id();
-  bool original = event_ids_.insert(id).second;
-  if (!original) {
-    std::string msg = "Redefinition of event " + house_event->name();
-    throw RedefinitionError(msg);
-  }
-  house_events_.emplace(id, house_event);
-}
-
-HouseEventPtr Model::GetHouseEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path = GetPath(reference);
-  std::string target_name = path.back();
-  path.pop_back();
-  if (!base_path.empty()) {  // Check the local scope.
-    std::vector<std::string> full_path = GetPath(base_path);
-    full_path.insert(full_path.end(), path.begin(), path.end());
-    try {
-      return Model::GetContainer(full_path).house_events().at(target_name);
-    } catch (std::out_of_range&) {}  // Continue searching.
-  }
-  if (path.empty()) return house_events_.at(target_name);  // Public entity.
-  return Model::GetContainer(path).house_events().at(target_name);
-}
-
-void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
-  std::string id = basic_event->id();
-  bool original = event_ids_.insert(id).second;
-  if (!original) {
-    std::string msg = "Redefinition of event " + basic_event->name();
-    throw RedefinitionError(msg);
-  }
-  basic_events_.emplace(id, basic_event);
-}
-
-BasicEventPtr Model::GetBasicEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path = GetPath(reference);
-  std::string target_name = path.back();
-  path.pop_back();
-  if (!base_path.empty()) {  // Check the local scope.
-    std::vector<std::string> full_path = GetPath(base_path);
-    full_path.insert(full_path.end(), path.begin(), path.end());
-    try {
-      return Model::GetContainer(full_path).basic_events().at(target_name);
-    } catch (std::out_of_range&) {}  // Continue searching.
-  }
-  if (path.empty()) return basic_events_.at(target_name);  // Public entity.
-  return Model::GetContainer(path).basic_events().at(target_name);
-}
-
-void Model::AddGate(const GatePtr& gate) {
-  std::string id = gate->id();
-  bool original = event_ids_.insert(id).second;
-  if (!original) {
-    std::string msg = "Redefinition of event " + gate->name();
-    throw RedefinitionError(msg);
-  }
-  gates_.emplace(id, gate);
-}
-
-GatePtr Model::GetGate(const std::string& reference,
-                       const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path = GetPath(reference);
-  std::string target_name = path.back();
-  path.pop_back();
-  if (!base_path.empty()) {  // Check the local scope.
-    std::vector<std::string> full_path = GetPath(base_path);
-    full_path.insert(full_path.end(), path.begin(), path.end());
-    try {
-      return Model::GetContainer(full_path).gates().at(target_name);
-    } catch (std::out_of_range&) {}  // Continue searching.
-  }
-  if (path.empty()) return gates_.at(target_name);  // Public entity.
-  return Model::GetContainer(path).gates().at(target_name);
-}
-
-void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->id();
-  bool original = ccf_groups_.emplace(name, ccf_group).second;
-  if (!original) {
-    std::string msg = "Redefinition of CCF group " + ccf_group->name();
-    throw RedefinitionError(msg);
-  }
+  if (path.empty()) return public_container.at(target_name);  // Public entity.
+  return getter(Model::GetContainer(path)).at(target_name);  // Direct access.
 }
 
 const Component& Model::GetContainer(const std::vector<std::string>& path) {
