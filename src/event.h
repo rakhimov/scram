@@ -408,6 +408,7 @@ class Formula {
       throw DuplicateArgumentError("Duplicate argument " + event->name());
     event_args_.emplace(event->id(), event);
     container->emplace_back(event);
+    if (event->orphan()) event->orphan(false);
   }
 
   /// Gathers nodes and connectors from arguments of the gate.

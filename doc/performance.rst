@@ -197,7 +197,7 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    21  |
+- Initialization and Validation    21  | 24
 
 - Memory:   1130
 

@@ -435,36 +435,26 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        std::pair<EventPtr, std::string> target =
-            model_->GetEvent(name, base_path);
-        EventPtr undefined = target.first;
-        undefined->orphan(false);
-        std::string type_inference = target.second;
-        if (type_inference == "gate") {
-          formula->AddArgument(std::static_pointer_cast<Gate>(undefined));
-        } else if (type_inference == "basic-event") {
-          formula->AddArgument(std::static_pointer_cast<BasicEvent>(undefined));
-        } else {
-          assert(type_inference == "house-event");
-          formula->AddArgument(std::static_pointer_cast<HouseEvent>(undefined));
+        try {  // Let's play some baseball.
+          try {
+            formula->AddArgument(model_->GetBasicEvent(name, base_path));
+          } catch (std::out_of_range&) {
+            formula->AddArgument(model_->GetGate(name, base_path));
+          }
+        } catch (std::out_of_range&) {
+          formula->AddArgument(model_->GetHouseEvent(name, base_path));
         }
       } else if (element_type == "gate") {
-        GatePtr gate = model_->GetGate(name, base_path);
-        formula->AddArgument(gate);
-        gate->orphan(false);
+        formula->AddArgument(model_->GetGate(name, base_path));
 
       } else if (element_type == "basic-event") {
-        BasicEventPtr basic_event = model_->GetBasicEvent(name, base_path);
-        formula->AddArgument(basic_event);
-        basic_event->orphan(false);
+        formula->AddArgument(model_->GetBasicEvent(name, base_path));
 
       } else {
         assert(element_type == "house-event");
-        HouseEventPtr house_event = model_->GetHouseEvent(name, base_path);
-        formula->AddArgument(house_event);
-        house_event->orphan(false);
+        formula->AddArgument(model_->GetHouseEvent(name, base_path));
       }
-    } catch (std::out_of_range& err) {
+    } catch (std::out_of_range&) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n"
           << "Undefined " << element_type << " " << name << " with base path "
@@ -730,7 +720,7 @@ ExpressionPtr Initializer::GetParameterExpression(
       param->unused(false);
       param_unit = kUnitToString_[param->unit()];
       expression = param;
-    } catch (std::out_of_range& err) {
+    } catch (std::out_of_range&) {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n"
           << "Undefined parameter " << name << " with base path " << base_path;

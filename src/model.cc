@@ -78,60 +78,6 @@ ParameterPtr Model::GetParameter(const std::string& reference,
   return Model::GetContainer(path).parameters().at(target_name);
 }
 
-std::pair<EventPtr, std::string> Model::GetEvent(const std::string& reference,
-                                                 const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path = GetPath(reference);
-  std::string target_name = path.back();
-  path.pop_back();
-  if (!base_path.empty()) {  // Check the local scope.
-    std::vector<std::string> full_path = GetPath(base_path);
-    full_path.insert(full_path.end(), path.begin(), path.end());
-    try {
-      const Component& container = Model::GetContainer(full_path);
-      try {
-        EventPtr event = container.basic_events().at(target_name);
-        return {event, "basic-event"};
-      } catch (std::out_of_range&) {}
-
-      try {
-        EventPtr event = container.gates().at(target_name);
-        return {event, "gate"};
-      } catch (std::out_of_range&) {}
-
-      EventPtr event = container.house_events().at(target_name);
-      return {event, "house-event"};
-    } catch (std::out_of_range&) {}  // Continue searching.
-  }
-  if (path.empty()) {  // Public event.
-    try {
-      EventPtr event = basic_events_.at(target_name);
-      return {event, "basic-event"};
-    } catch (std::out_of_range&) {}
-
-    try {
-      EventPtr event = gates_.at(target_name);
-      return {event, "gate"};
-    } catch (std::out_of_range&) {}
-
-    EventPtr event = house_events_.at(target_name);
-    return {event, "house-event"};
-  }
-  const Component& container = Model::GetContainer(path);
-  try {
-    EventPtr event = container.basic_events().at(target_name);
-    return {event, "basic-event"};
-  } catch (std::out_of_range&) {}
-
-  try {
-    EventPtr event = container.gates().at(target_name);
-    return {event, "gate"};
-  } catch (std::out_of_range&) {}
-
-  EventPtr event = container.house_events().at(target_name);
-  return {event, "house-event"};
-}
-
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   std::string id = house_event->id();
   bool original = event_ids_.insert(id).second;

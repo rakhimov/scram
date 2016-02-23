@@ -100,23 +100,6 @@ class Model : public Element {
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
 
-  /// Finds an event from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
-  /// The returned event may be a basic event, house event, or gate.
-  /// This information is communicated with the return value.
-  ///
-  /// @param[in] reference  Reference string to the event.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  ///
-  /// @returns A pair of the pointer to the event and its type
-  ///          ("gate", "basic-event", "house-event").
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  /// @throws LogicError  The given base path is invalid.
-  std::pair<EventPtr, std::string> GetEvent(const std::string& reference,
-                                            const std::string& base_path);
-
   /// Adds a house event that is used in this model.
   ///
   /// @param[in] house_event  A house event defined in this model.
@@ -182,7 +165,6 @@ class Model : public Element {
   ///
   /// @throws RedefinitionError  The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
-
 
  private:
   /// Helper function to find the container for references.
