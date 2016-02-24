@@ -47,7 +47,8 @@ XmlStreamElement::XmlStreamElement(std::string name, int indent,
 }
 
 XmlStreamElement::~XmlStreamElement() noexcept {
-  if (!active_) return;
+  assert(active_ && "The child element may still be alive.");
+  assert(!(parent_ && parent_->active_) && "The parent must be inactive.");
   if (parent_) parent_->active_ = true;
   if (accept_attributes_) {
     out_ << "/>\n";

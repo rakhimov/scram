@@ -102,9 +102,11 @@ class XmlStreamElement {
   /// @throws XmlStreamError  Invalid setup or state for text addition.
   void AddChildText(const std::string& text);
 
-  /// @returns A streamer for child element.
+  /// Adds a child element to the element.
   ///
   /// @param[in] name  Non-empty name for the child element.
+  ///
+  /// @returns A streamer for child element.
   ///
   /// @pre The child element will be destroyed before the parent.
   ///
