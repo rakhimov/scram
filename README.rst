@@ -408,17 +408,17 @@ address sanitizer in GCC and Clang ``-fsanitize=address``.
 In order to speed up the fuzz testing,
 SCRAM should be built with debugging optimizations ``-Og``.
 
-Fuzz testing must be performed inside of the ``scripts/`` directory.
+An example command to run SCRAM 1000 times with auto-generated inputs and configurations:
 
 .. code-block:: bash
 
-    ...scram/scripts$ ./fuzz_tester.py -n 1000
+    fuzz_tester.py -n 1000
 
 The fuzz tester can be guided with options listed in its help prompt.
 
 .. code-block:: bash
 
-    ...scram/scripts$ ./fuzz_tester.py --help
+    fuzz_tester.py --help
 
 The fuzz testing stops on the first failure
 with reporting run configurations

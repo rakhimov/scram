@@ -33,6 +33,8 @@ import sys
 
 import argparse as ap
 
+import fault_tree_generator as ft_gen
+
 
 class Config(object):
     """Storage for configurations.
@@ -93,8 +95,7 @@ def generate_input(normal, coherent):
         normal: Flag for models with AND/OR gates only.
         coherent: Flag for generation of coherent models.
     """
-    cmd = ["./fault_tree_generator.py",
-           "--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
+    cmd = ["--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
            "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5",
            "--seed", str(random.randint(1, 1e8)),
            "--max-prob", "0.5", "--min-prob", "0.1"]
@@ -104,7 +105,7 @@ def generate_input(normal, coherent):
         if not coherent and random.choice([True, False]):
             weights += ["0.01", "0.1"]  # Add non-coherence
     cmd += weights
-    call(cmd)
+    ft_gen.main(cmd)
 
 
 def get_limit_order():
