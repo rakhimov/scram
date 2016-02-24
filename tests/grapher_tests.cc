@@ -17,7 +17,7 @@
 
 #include "risk_analysis_tests.h"
 
-#include <sstream>
+#include <sstream>  // NOLINT
 
 #include "fault_tree.h"
 #include "grapher.h"

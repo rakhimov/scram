@@ -70,8 +70,8 @@ UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
 
 void UncertaintyAnalysis::CalculateStatistics(
     const std::vector<double>& samples) noexcept {
-  using namespace boost;
-  using namespace boost::accumulators;
+  using namespace boost;  // NOLINT
+  using namespace boost::accumulators;  // NOLINT
   using accumulator_q =
       accumulator_set<double, stats<tag::extended_p_square_quantile>>;
   quantiles_.clear();

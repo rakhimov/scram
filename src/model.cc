@@ -20,8 +20,6 @@
 
 #include "model.h"
 
-#include <vector>
-
 #include <boost/algorithm/string.hpp>
 
 namespace scram {

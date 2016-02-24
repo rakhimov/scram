@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "ccf_group.h"
 #include "element.h"

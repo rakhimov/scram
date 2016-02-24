@@ -53,5 +53,17 @@ lizard -w -L 60 -a 5 -EIgnoreAssert src/* || echo "TODO: Fix the C++ complexity"
 lizard -w -L 60 -a 5 scripts/*.py
 
 # C++ linting
-cpplint --repository=../ --filter=-build/include src/* tests/* \
+cpplint --repository=../ --quiet src/* tests/* 2> style.txt \
   || echo "TODO: Fix the C++ code"
+# Clean false positives and noise
+sed -i '/Found C system header after C\+\+/d' style.txt
+sed -i '/Include the directory when naming/d' style.txt
+sed -i '/^Ignoring/d' style.txt
+sed -i '/^Skipping/d' style.txt
+sed -i '/stream&/d' style.txt
+sed -i '/is an unapproved C++11 header/d' style.txt
+if [[ -s style.txt ]]; then
+  echo "Style errors:" >&2
+  cat style.txt >&2
+  exit 1
+fi
