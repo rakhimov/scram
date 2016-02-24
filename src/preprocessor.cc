@@ -472,7 +472,7 @@ void Preprocessor::PropagateConstant(const IGatePtr& gate) noexcept {
   assert(gate->IsConstant());
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-    bool state = gate->state() == kNullState ? false : true;
+    bool state = gate->state() == kUnityState;
     parent->ProcessConstantArg(gate, state);
     if (parent->IsConstant()) {
       Preprocessor::PropagateConstant(parent);
@@ -1203,7 +1203,7 @@ void Preprocessor::MarkCommonArgs(const IGatePtr& gate, Operator op) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
-  bool in_group = gate->type() == op ? true : false;
+  bool in_group = gate->type() == op;
 
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
@@ -1225,7 +1225,7 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, Operator op,
   if (gate->mark()) return;
   gate->mark(true);
 
-  bool in_group = gate->type() == op ? true : false;
+  bool in_group = gate->type() == op;
 
   std::vector<int> common_args;
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
@@ -1322,7 +1322,7 @@ void Preprocessor::GroupCandidatesByArgs(
                                                candidates.end());
   while (!member_list.empty()) {
     MergeTable::Candidates group;
-    IGatePtr first_member = member_list.front().first;
+    IGatePtr first_member = member_list.front().first;  /// @todo Unused?
     const MergeTable::CommonArgs& common_args = member_list.front().second;
     std::set<int> group_args(common_args.begin(), common_args.end());
     assert(group_args.size() > 1);
@@ -1959,13 +1959,10 @@ int Preprocessor::PropagateState(const IGatePtr& gate,
     int failed = gate->variable_args().count(node->index());
     if (!failed) failed = -gate->variable_args().count(-node->index());
     failed *= node->opti_value();
-    switch (failed) {
-      case 1:
-        ++num_failure;
-        break;
-      case -1:
-        ++num_success;
-        break;
+    if (failed == 1) {
+      ++num_failure;
+    } else if (failed == -1) {
+      ++num_success;
     }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
@@ -2080,7 +2077,7 @@ void Preprocessor::ProcessRedundantParents(
   for (const IGateWeakPtr& ptr : redundant_parents) {
     if (ptr.expired()) continue;
     IGatePtr parent = ptr.lock();
-    parent->ProcessConstantArg(node, node->opti_value() == 1 ? false : true);
+    parent->ProcessConstantArg(node, node->opti_value() != 1);
     if (parent->IsConstant()) {
       const_gates_.push_back(parent);
     } else if (parent->type() == kNull) {

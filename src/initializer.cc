@@ -277,7 +277,7 @@ ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
   std::string role = GetAttributeValue(component_node, "role");
   bool component_role = public_container;  // Inherited role by default.
   // Overwrite the role explicitly.
-  if (role != "") component_role = role == "public" ? true : false;
+  if (role != "") component_role = role == "public";
   ComponentPtr component(new Component(name, base_path, component_role));
   Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
                                      component.get());
@@ -352,7 +352,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   std::string name = GetAttributeValue(gate_node, "name");
   std::string role = GetAttributeValue(gate_node, "role");
   bool gate_role = public_container;  // Inherited role by default.
-  if (role != "") gate_role = role == "public" ? true : false;
+  if (role != "") gate_role = role == "public";
   auto gate = std::make_shared<Gate>(name, base_path, gate_role);
   try {
     model_->AddGate(gate);
@@ -479,7 +479,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public" ? true : false;
+  if (role != "") event_role = role == "public";
   auto basic_event = std::make_shared<BasicEvent>(name, base_path, event_role);
   try {
     model_->AddBasicEvent(basic_event);
@@ -513,7 +513,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public" ? true : false;
+  if (role != "") event_role = role == "public";
   auto house_event = std::make_shared<HouseEvent>(name, base_path, event_role);
   try {
     model_->AddHouseEvent(house_event);
@@ -532,7 +532,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
 
     std::string val = GetAttributeValue(constant, "value");
     assert(val == "true" || val == "false");
-    bool state = (val == "true") ? true : false;
+    bool state = val == "true";
     house_event->state(state);
   }
   Initializer::AttachLabelAndAttributes(event_node, house_event.get());
@@ -545,7 +545,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   std::string name = GetAttributeValue(param_node, "name");
   std::string role = GetAttributeValue(param_node, "role");
   bool param_role = public_container;  // Inherited role by default.
-  if (role != "") param_role = role == "public" ? true : false;
+  if (role != "") param_role = role == "public";
   auto parameter = std::make_shared<Parameter>(name, base_path, param_role);
   try {
     model_->AddParameter(parameter);

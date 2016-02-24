@@ -293,11 +293,8 @@ Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
   assert((type == kOr || type == kAnd) &&
          "Only normalized operations in BDD.");
   if (complement_one ^ complement_two) {
-    if (type == kAnd) {
-      return {true, kOne_};
-    } else {
-      return {false, kOne_};
-    }
+    if (type == kAnd) return {true, kOne_};
+    return {false, kOne_};  // OR operator.
   }
   return {complement_one, single_arg};
 }

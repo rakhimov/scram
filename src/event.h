@@ -181,8 +181,7 @@ class BasicEvent : public PrimaryEvent {
   /// Indicates if this basic event has been set to be in a CCF group.
   ///
   /// @returns true if in a CCF group.
-  /// @returns false otherwise.
-  bool HasCcf() const { return ccf_gate_ ? true : false; }
+  bool HasCcf() const { return ccf_gate_ != nullptr; }
 
   /// @returns CCF group gate representing this basic event.
   const GatePtr& ccf_gate() const {
