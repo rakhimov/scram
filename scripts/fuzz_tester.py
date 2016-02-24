@@ -27,6 +27,7 @@ complex auto-generated analysis inputs and configurations.
 
 from __future__ import print_function
 
+import os
 import random
 from subprocess import call
 import sys
@@ -85,7 +86,7 @@ class Config(object):
             Config.restrict()
 
 
-def generate_input(normal, coherent):
+def generate_input(normal, coherent, output_dir=None):
     """Calls fault tree generator.
 
     The auto-generated input file is located in the run-time directory
@@ -94,11 +95,19 @@ def generate_input(normal, coherent):
     Args:
         normal: Flag for models with AND/OR gates only.
         coherent: Flag for generation of coherent models.
+        output_dir: The directory to put the generated input file.
+
+    Returns:
+        The path to the input file.
     """
+    input_file = "fault_tree.xml"
+    if output_dir:
+        input_file = output_dir + "/" + input_file
     cmd = ["--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
            "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5",
            "--seed", str(random.randint(1, 1e8)),
-           "--max-prob", "0.5", "--min-prob", "0.1"]
+           "--max-prob", "0.5", "--min-prob", "0.1",
+           "-o", input_file]
     weights = ["--weights-g", "1", "1"]
     if not normal:
         weights += ["1"]
@@ -106,6 +115,7 @@ def generate_input(normal, coherent):
             weights += ["0.01", "0.1"]  # Add non-coherence
     cmd += weights
     ft_gen.main(cmd)
+    return input_file
 
 
 def get_limit_order():
@@ -117,13 +127,16 @@ def get_limit_order():
     return random.randint(1, Config.max_limit)
 
 
-def call_scram():
+def call_scram(input_file="fault_tree.xml"):
     """Calls SCRAM with generated input files.
+
+    Args:
+        input_file: The path to the input file.
 
     Returns:
         0 for successful runs.
     """
-    cmd = ["scram", "fault_tree.xml", "--limit-order", str(get_limit_order())]
+    cmd = ["scram", input_file, "--limit-order", str(get_limit_order())]
 
     if Config.switch:
         cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
@@ -160,15 +173,21 @@ def main():
                         help="focus on models only with AND/OR gates")
     parser.add_argument("--prime-implicants", action="store_true",
                         help="focus on Prime Implicants")
+    parser.add_argument("-o", "--output-dir", type=str, metavar="path",
+                        help="directory to put results")
     args = parser.parse_args()
 
     if call(["which", "scram"]):
         print("SCRAM is not found in the PATH.")
         return 1
+    if args.output_dir and not os.path.isdir(args.output_dir):
+        print("The output directory doesn't exist.")
+        return 1
+
     Config.configure(args)
     for i in range(args.num_runs):
-        generate_input(args.normal, args.coherent)
-        if call_scram():
+        input_file = generate_input(args.normal, args.coherent, args.output_dir)
+        if call_scram(input_file):
             print("SCRAM failed!")
             return 1
         if not (i + 1) % 100:
