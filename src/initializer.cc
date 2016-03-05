@@ -277,7 +277,7 @@ ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
   std::string role = GetAttributeValue(component_node, "role");
   bool component_role = public_container;  // Inherited role by default.
   // Overwrite the role explicitly.
-  if (role != "") component_role = role == "public";
+  if (!role.empty()) component_role = role == "public";
   ComponentPtr component(new Component(name, base_path, component_role));
   Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
                                      component.get());
@@ -352,7 +352,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   std::string name = GetAttributeValue(gate_node, "name");
   std::string role = GetAttributeValue(gate_node, "role");
   bool gate_role = public_container;  // Inherited role by default.
-  if (role != "") gate_role = role == "public";
+  if (!role.empty()) gate_role = role == "public";
   auto gate = std::make_shared<Gate>(name, base_path, gate_role);
   try {
     model_->AddGate(gate);
@@ -428,7 +428,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     std::string element_type = event->get_name();
     // This is for the case "<event name="id" type="type"/>".
     std::string type = GetAttributeValue(event, "type");
-    if (type != "") {
+    if (!type.empty()) {
       assert(type == "gate" || type == "basic-event" || type == "house-event");
       element_type = type;  // Event type is defined.
     }
@@ -479,7 +479,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public";
+  if (!role.empty()) event_role = role == "public";
   auto basic_event = std::make_shared<BasicEvent>(name, base_path, event_role);
   try {
     model_->AddBasicEvent(basic_event);
@@ -513,7 +513,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public";
+  if (!role.empty()) event_role = role == "public";
   auto house_event = std::make_shared<HouseEvent>(name, base_path, event_role);
   try {
     model_->AddHouseEvent(house_event);
@@ -545,7 +545,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   std::string name = GetAttributeValue(param_node, "name");
   std::string role = GetAttributeValue(param_node, "role");
   bool param_role = public_container;  // Inherited role by default.
-  if (role != "") param_role = role == "public";
+  if (!role.empty()) param_role = role == "public";
   auto parameter = std::make_shared<Parameter>(name, base_path, param_role);
   try {
     model_->AddParameter(parameter);
@@ -559,7 +559,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
 
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
-  if (unit != "") {
+  if (!unit.empty()) {
     assert(kUnits_.count(unit));
     parameter->unit(kUnits_.at(unit));
   }
@@ -711,7 +711,7 @@ ExpressionPtr Initializer::GetParameterExpression(
     const std::string& base_path) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
-  std::string param_unit = "";  // The expected unit.
+  std::string param_unit;  // The expected unit.
   ExpressionPtr expression;
   if (expr_name == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
@@ -871,7 +871,7 @@ void Initializer::ValidateInitialization() {
   std::stringstream error_messages;
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
-    std::string msg = "";
+    std::string msg;
     for (const std::pair<const std::string, BasicEventPtr>& event :
          model_->basic_events()) {
       if (!event.second->has_expression()) msg += event.second->name() + "\n";
@@ -920,7 +920,6 @@ void Initializer::ValidateExpressions() {
   // Check probability values for primary events.
   if (settings_.probability_analysis()) {
     std::stringstream msg;
-    msg << "";
     for (const std::pair<const std::string, CcfGroupPtr>& group :
          model_->ccf_groups()) {
       try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ namespace scram {
 
 Analysis::Analysis(const Settings& settings)
     : kSettings_(settings),
-      warnings_(""),
       analysis_time_(0) {}
 
 Analysis::~Analysis() {}  ///< Empty body for pure virtual destructor.

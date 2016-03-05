@@ -26,8 +26,6 @@
 
 namespace scram {
 
-Element::Element() : label_("") {}
-
 void Element::label(const std::string& new_label) {
   if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
   if (new_label.empty()) throw LogicError("Trying to apply empty label");

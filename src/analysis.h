@@ -70,8 +70,8 @@ class Analysis {
 
  private:
   const Settings kSettings_;  ///< All settings for analysis.
-  std::string warnings_;  ///< Generated warnings in analysis.
   double analysis_time_;  ///< Time taken by the analysis.
+  std::string warnings_;  ///< Generated warnings in analysis.
 };
 
 }  // namespace scram

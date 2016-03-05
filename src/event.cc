@@ -33,7 +33,7 @@ Event::Event(const std::string& name, const std::string& base_path,
     : Role(is_public, base_path),
       name_(name),
       orphan_(true) {
-  assert(name != "");
+  assert(!name.empty());
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
   boost::to_lower(id_);
 }
@@ -57,7 +57,6 @@ void Gate::Validate() {
                               "INHIBIT gate must have only 2 children");
       }
       std::stringstream msg;
-      msg << "";
       bool conditional_found = false;
       for (const BasicEventPtr& event : formula_->basic_event_args()) {
         if (!event->HasAttribute("flavor")) continue;

@@ -34,7 +34,7 @@
 
 namespace scram {
 
-Config::Config(const std::string& config_file) : output_path_("") {
+Config::Config(const std::string& config_file) {
   std::ifstream file_stream(config_file.c_str());
   if (!file_stream) {
     throw IOError("The file '" + config_file + "' could not be loaded.");

@@ -291,7 +291,7 @@ class Gate : public Event {
 
  private:
   FormulaPtr formula_;  ///< Boolean formula of this gate.
-  std::string mark_ = "";  ///< The mark for traversal or toposort.
+  std::string mark_;  ///< The mark for traversal or toposort.
 };
 
 /// @class Formula

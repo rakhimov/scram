@@ -48,7 +48,7 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 /// @returns True if a cycle is found.
 template <class N, class C>
 bool DetectCycle(N* node, std::vector<std::string>* cycle) {
-  if (node->mark() == "") {
+  if (node->mark().empty()) {
     node->mark("temporary");
     if (ContinueConnector<N, C>(node->connector(), cycle)) {
       cycle->push_back(node->name());

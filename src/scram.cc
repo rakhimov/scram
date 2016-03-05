@@ -206,7 +206,7 @@ int RunScram(const po::variables_map& vm) {
   }
   scram::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
-  std::string output_path = "";
+  std::string output_path;
   // Get configurations if any.
   // Invalid configurations will throw.
   if (vm.count("config-file")) {

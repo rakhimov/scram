@@ -281,12 +281,12 @@ void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
 
 void Reporter::ReportOrphanPrimaryEvents(const Model& model,
                                          XmlStreamElement* information) {
-  std::string out = "";
+  std::string out;
   for (const std::pair<const std::string, BasicEventPtr>& entry :
        model.basic_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
-      out += param->is_public() ? "" : param->base_path() + ".";
+      if (!param->is_public()) out += param->base_path() + ".";
       out += param->name() + " ";
     }
   }
@@ -294,7 +294,7 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
        model.house_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
-      out += param->is_public() ? "" : param->base_path() + ".";
+      if (!param->is_public()) out += param->base_path() + ".";
       out += param->name() + " ";
     }
   }
@@ -305,12 +305,12 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
 
 void Reporter::ReportUnusedParameters(const Model& model,
                                       XmlStreamElement* information) {
-  std::string out = "";
+  std::string out;
   for (const std::pair<const std::string, ParameterPtr>& entry :
        model.parameters()) {
     const auto& param = entry.second;
     if (param->unused()) {
-      out += param->is_public() ? "" : param->base_path() + ".";
+      if (!param->is_public()) out += param->base_path() + ".";
       out += param->name() + " ";
     }
   }
