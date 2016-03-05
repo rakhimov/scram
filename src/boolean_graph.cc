@@ -454,7 +454,7 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
 
 void BooleanGraph::Print() {
   ClearNodeVisits();
-  std::cerr << std::endl << this << std::endl;
+  std::cerr << "\n" << this << std::endl;
 }
 
 IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
@@ -749,14 +749,14 @@ std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {
   if (constant->Visited()) return os;
   constant->Visit(1);
   std::string state = constant->state() ? "true" : "false";
-  os << "s(H" << constant->index() << ") = " << state << std::endl;
+  os << "s(H" << constant->index() << ") = " << state << "\n";
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
   if (variable->Visited()) return os;
   variable->Visit(1);
-  os << "p(B" << variable->index() << ") = " << 1 << std::endl;
+  os << "p(B" << variable->index() << ") = " << 1 << "\n";
   return os;
 }
 
@@ -775,7 +775,7 @@ struct FormulaSig {
 /// @param[in] gate  The gate with the formula to be printed.
 ///
 /// @returns The beginning, operator, and end strings for the formula.
-const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
+FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
   FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
 
   switch (gate->type()) {
@@ -813,7 +813,7 @@ const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
 /// @param[in] gate  The gate which name must be created.
 ///
 /// @returns The name of the gate with extra information about its state.
-const std::string GetName(const std::shared_ptr<const IGate>& gate) {
+std::string GetName(const std::shared_ptr<const IGate>& gate) {
   std::string name = "G";
   if (gate->state() == kNormalState) {
     if (gate->IsModule()) name += "M";
@@ -829,51 +829,41 @@ const std::string GetName(const std::shared_ptr<const IGate>& gate) {
 std::ostream& operator<<(std::ostream& os, const IGatePtr& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
-  std::string name = GetName(gate);
   if (gate->IsConstant()) {
     std::string state = gate->state() == kNullState ? "false" : "true";
-    os << "s(" << name << ") = " << state << std::endl;
+    os << "s(" << GetName(gate) << ") = " << state << "\n";
     return os;
   }
-  std::string formula = "";  // The formula of the gate for printing.
+  std::string formula;  // The formula of the gate for printing.
   const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
   for (const auto& node : gate->gate_args()) {
     if (node.first < 0) formula += "~";  // Negation.
     formula += GetName(node.second);
-
     if (--num_args) formula += sig.op;
-
     os << node.second;
   }
 
   for (const auto& basic : gate->variable_args()) {
     if (basic.first < 0) formula += "~";  // Negation.
-    int index = basic.second->index();
-    formula += "B" + std::to_string(index);
-
+    formula += "B" + std::to_string(basic.second->index());
     if (--num_args) formula += sig.op;
-
     os << basic.second;
   }
 
   for (const auto& constant : gate->constant_args()) {
     if (constant.first < 0) formula += "~";  // Negation.
-    int index = constant.second->index();
-    formula += "H" + std::to_string(index);
-
+    formula += "H" + std::to_string(constant.second->index());
     if (--num_args) formula += sig.op;
-
     os << constant.second;
   }
-  os << name << " := " << sig.begin << formula << sig.end << std::endl;
+  os << GetName(gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
-  os << "BooleanGraph" << std::endl << std::endl;
-  os << ft->root();
+  os << "BooleanGraph" << "\n\n" << ft->root();
   return os;
 }
 
