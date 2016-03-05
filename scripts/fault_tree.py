@@ -144,20 +144,29 @@ class Gate(Event):
         self.b_arguments = set()
         self.h_arguments = set()
         self.u_arguments = set()
+        self.complement_arguments = set()
 
     def num_arguments(self):
         """Returns the number of arguments."""
         return (len(self.b_arguments) + len(self.h_arguments) +
                 len(self.g_arguments) + len(self.u_arguments))
 
-    def add_argument(self, argument):
+    def add_argument(self, argument, complement=False):
         """Adds argument into a collection of gate arguments.
 
         Note that this function also updates the parent set of the argument.
+        Duplicate arguments are ignored.
+        The logic of the Boolean operator is not taken into account
+        upon adding arguments to the gate.
+        Therefore, no logic checking is performed
+        for repeated or complement arguments.
 
         Args:
             argument: Gate, HouseEvent, BasicEvent, or Event argument.
+            complement: Flag to treat the argument as a complement.
         """
+        if complement:
+            self.complement_arguments.add(argument)
         argument.parents.add(self)
         if isinstance(argument, Gate):
             self.g_arguments.add(argument)
@@ -176,7 +185,7 @@ class Gate(Event):
             A set of ancestors.
         """
         ancestors = set([self])
-        parents = deque(self.parents)
+        parents = deque(self.parents)  # to avoid recursion
         while parents:
             parent = parents.popleft()
             if parent not in ancestors:
@@ -190,6 +199,21 @@ class Gate(Event):
         Args:
             nest: The level for nesting formulas of argument gates.
         """
+        def args_to_xml(type_str, container, gate, converter=None):
+            """Produces XML string representation of arguments."""
+            mef_xml = ""
+            for arg in container:
+                complement = arg in gate.complement_arguments
+                if complement:
+                    mef_xml += "<not>\n"
+                if converter:
+                    mef_xml += converter(arg)
+                else:
+                    mef_xml += "<%s name=\"%s\"/>\n" % (type_str, arg.name)
+                if complement:
+                    mef_xml += "</not>\n"
+            return mef_xml
+
         def convert_formula(gate, nest):
             """Converts the formula of a gate into XML representation."""
             mef_xml = ""
@@ -198,22 +222,15 @@ class Gate(Event):
                 if gate.operator == "atleast":
                     mef_xml += " min=\"" + str(gate.k_num) + "\""
                 mef_xml += ">\n"
-            for h_arg in gate.h_arguments:
-                mef_xml += "<house-event name=\"" + h_arg.name + "\"/>\n"
-
-            for b_arg in gate.b_arguments:
-                mef_xml += "<basic-event name=\"" + b_arg.name + "\"/>\n"
-
-            for u_arg in gate.u_arguments:
-                mef_xml += "<event name=\"" + u_arg.name + "\"/>\n"
+            mef_xml += args_to_xml("house-event", gate.h_arguments, gate)
+            mef_xml += args_to_xml("basic-event", gate.b_arguments, gate)
+            mef_xml += args_to_xml("event", gate.u_arguments, gate)
 
             if nest > 0:
-                for g_arg in gate.g_arguments:
-                    mef_xml += convert_formula(g_arg, nest - 1)
-
+                mef_xml += args_to_xml("gate", gate.g_arguments, gate,
+                                       lambda x: convert_formula(x, nest - 1))
             else:
-                for g_arg in gate.g_arguments:
-                    mef_xml += "<gate name=\"" + g_arg.name + "\"/>\n"
+                mef_xml += args_to_xml("gate", gate.g_arguments, gate)
 
             if gate.operator != "null":
                 mef_xml += "</" + gate.operator + ">\n"
@@ -227,20 +244,23 @@ class Gate(Event):
     def to_shorthand(self):
         """Produces the shorthand definition of the gate.
 
+        The transformation to the shorthand format
+        does not support complement or undefined arguments.
+
         Raises:
             KeyError: The gate operator is not supported.
         """
+        assert not self.complement_arguments
+        assert not self.u_arguments
         line = [self.name, " := "]
         line_start, div, line_end = {
             "and": ("(", " & ", ")"),
             "or": ("(", " | ", ")"),
             "xor": ("(", " ^ ", ")"),
             "not": ("~", "", ""),
-            "null": ("", "", ""),
             "atleast": ("@(" + str(self.k_num) + ", [", ", ", "])")
             }[self.operator]
         line.append(line_start)
-
         args = []
         for h_arg in self.h_arguments:
             args.append(h_arg.name)
