@@ -420,9 +420,8 @@ The fuzz tester can be guided with options listed in its help prompt.
 
     fuzz_tester.py --help
 
-The fuzz testing stops on the first failure
-with reporting run configurations
-and preserving auto-generated inputs.
+The fuzz tester collects run configurations, failures, and logs.
+The auto-generated inputs are preserved for failed runs.
 
 
 **********************

@@ -130,6 +130,9 @@ def get_limit_order():
 def call_scram(input_file):
     """Calls SCRAM with generated input files.
 
+    The logs with the call signature and report
+    are placed in a file with the name of the input file but "log" suffix.
+
     Args:
         input_file: The path to the input file.
 
@@ -148,8 +151,11 @@ def call_scram(input_file):
     cmd.append(random.choice(Config.analysis))
     cmd += Config.additional
     print(cmd)
-    cmd += ["-o", "/dev/null"]
-    return call(cmd)
+    cmd += ["--verbosity", "5", "-o", "/dev/null"]
+    log_file = open(input_file.rstrip(".xml") + ".log", "w")
+    log_file.write(str(cmd) + "\n")
+    log_file.flush()
+    return call(cmd, stderr=log_file)
 
 
 def main():
@@ -188,9 +194,10 @@ def main():
     for i in range(args.num_runs):
         input_file = generate_input(args.normal, args.coherent, args.output_dir)
         if call_scram(input_file):
-            print("SCRAM failed!")
-            return 1
+            print("SCRAM failed: " + input_file)
+            continue
         os.remove(input_file)
+        os.remove(input_file.rstrip(".xml") + ".log")
         if not (i + 1) % 100:
             print("Finished run #" + str(i + 1))
     return 0
