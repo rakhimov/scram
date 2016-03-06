@@ -31,6 +31,7 @@ import os
 import random
 from subprocess import call
 import sys
+from tempfile import NamedTemporaryFile
 
 import argparse as ap
 
@@ -100,14 +101,13 @@ def generate_input(normal, coherent, output_dir=None):
     Returns:
         The path to the input file.
     """
-    input_file = "fault_tree.xml"
-    if output_dir:
-        input_file = output_dir + "/" + input_file
+    input_file = NamedTemporaryFile(dir=output_dir, prefix="fault_tree_",
+                                    suffix=".xml", delete=False)
     cmd = ["--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
            "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5",
            "--seed", str(random.randint(1, 1e8)),
            "--max-prob", "0.5", "--min-prob", "0.1",
-           "-o", input_file]
+           "-o", input_file.name]
     weights = ["--weights-g", "1", "1"]
     if not normal:
         weights += ["1"]
@@ -115,7 +115,7 @@ def generate_input(normal, coherent, output_dir=None):
             weights += ["0.01", "0.1"]  # Add non-coherence
     cmd += weights
     ft_gen.main(cmd)
-    return input_file
+    return input_file.name
 
 
 def get_limit_order():
@@ -127,7 +127,7 @@ def get_limit_order():
     return random.randint(1, Config.max_limit)
 
 
-def call_scram(input_file="fault_tree.xml"):
+def call_scram(input_file):
     """Calls SCRAM with generated input files.
 
     Args:
@@ -190,6 +190,7 @@ def main():
         if call_scram(input_file):
             print("SCRAM failed!")
             return 1
+        os.remove(input_file)
         if not (i + 1) % 100:
             print("Finished run #" + str(i + 1))
     return 0

@@ -21,8 +21,6 @@ Technical Issues
 - IGate::IsModule() vs. IGate::module(). (Inconsistent with the rest of the code.)
 - ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
-- Fuzz tester runs are coupled.
-  Can't run two jobs at the same time.
 - Fuzz tester error collection and reporting are non-existent.
 - Preprocessing contracts need review, update, and clarification.
 - BooleanGraph must guarantee stable results (construction from PDAG).
