@@ -24,7 +24,7 @@ The shorthand notation is described as follows:
 AND gate:                          gate_name := (arg1 & arg2 & ...)
 OR gate:                           gate_name := (arg1 | arg2 | ...)
 ATLEAST(k/n) gate:                 gate_name := @(k, [arg1, arg2, ...])
-NOT gate:                          gate_name := ~arg
+NOT gate:                          gate_name := ~(arg)
 XOR gate:                          gate_name := (arg1 ^ arg2)
 NULL gate:                         gate_name := arg
 Probability of a basic event:      p(event_name) = probability
@@ -268,20 +268,25 @@ class LateBindingFaultTree(FaultTree):
         """
         for gate in self.gates:
             assert gate.num_arguments() > 0
-            for event_name in gate.event_arguments:
-                if event_name.lower() in self.__gates:
-                    gate.add_argument(self.__gates[event_name.lower()])
-                elif event_name.lower() in self.__basic_events:
-                    gate.add_argument(self.__basic_events[event_name.lower()])
-                elif event_name.lower() in self.__house_events:
-                    gate.add_argument(self.__house_events[event_name.lower()])
-                elif event_name.lower() in self.__undef_events:
-                    gate.add_argument(self.__undef_events[event_name.lower()])
+            for event_arg in gate.event_arguments:
+                complement = event_arg.startswith("~")
+                event_name = event_arg.lstrip("~").lower()
+                if event_name in self.__gates:
+                    gate.add_argument(self.__gates[event_name], complement)
+                elif event_name in self.__basic_events:
+                    gate.add_argument(self.__basic_events[event_name],
+                                      complement)
+                elif event_name in self.__house_events:
+                    gate.add_argument(self.__house_events[event_name],
+                                      complement)
+                elif event_name in self.__undef_events:
+                    gate.add_argument(self.__undef_events[event_name],
+                                      complement)
                 else:
                     print("Warning. Unidentified event: " + event_name)
                     event_node = Event(event_name)
-                    self.__undef_events.update({event_name.lower(): event_node})
-                    gate.add_argument(event_node)
+                    self.__undef_events.update({event_name: event_node})
+                    gate.add_argument(event_node, complement)
 
         for basic_event in self.basic_events:
             if basic_event.is_orphan():
@@ -318,8 +323,8 @@ _RE_OR = re.compile(r"(" + _LITERAL + r"(\s*\|\s*" + _LITERAL + r"\s*)+)$")
 _VOTE_ARGS = r"\[(\s*" + _LITERAL + r"(\s*,\s*" + _LITERAL + r"\s*){2,})\]"
 _RE_VOTE = re.compile(r"@\(\s*([2-9])\s*,\s*" + _VOTE_ARGS + r"\s*\)\s*$")
 _RE_XOR = re.compile(r"(" + _LITERAL + r"\s*\^\s*" + _LITERAL + r")$")
-_RE_NOT = re.compile(r"~(" + _NAME_SIG + r")$")
-_RE_NULL = re.compile(r"(" + _NAME_SIG + r")$")
+_RE_NOT = re.compile(r"~\(\s*(" + _LITERAL + r")\s*\)$")
+_RE_NULL = re.compile(r"(" + _LITERAL + r")$")
 
 
 def get_arguments(arguments_string, splitter):
@@ -383,7 +388,7 @@ def get_formula(line):
         operator = "atleast"
     elif _RE_NOT.match(line):
         arguments = _RE_NOT.match(line).group(1)
-        arguments = get_arguments(arguments, "~")
+        arguments = [arguments.strip()]
         operator = "not"
     elif _RE_NULL.match(line):
         arguments = _RE_NULL.match(line).group(1)
