@@ -29,6 +29,7 @@ from __future__ import print_function
 
 import os
 import random
+import resource
 from subprocess import call
 import sys
 from tempfile import NamedTemporaryFile
@@ -155,7 +156,9 @@ def call_scram(input_file):
     log_file = open(input_file.rstrip(".xml") + ".log", "w")
     log_file.write(str(cmd) + "\n")
     log_file.flush()
-    return call(cmd, stderr=log_file)
+    ret = call(cmd, stderr=log_file)
+    log_file.write("SCRAM run return value: " + str(ret))
+    return ret
 
 
 def main():
@@ -179,6 +182,8 @@ def main():
                         help="focus on models only with AND/OR gates")
     parser.add_argument("--prime-implicants", action="store_true",
                         help="focus on Prime Implicants")
+    parser.add_argument("--time-limit", type=int, metavar="seconds",
+                        help="CPU time limit for each run")
     parser.add_argument("-o", "--output-dir", type=str, metavar="path",
                         help="directory to put results")
     args = parser.parse_args()
@@ -189,6 +194,9 @@ def main():
     if args.output_dir and not os.path.isdir(args.output_dir):
         print("The output directory doesn't exist.")
         return 1
+    if args.time_limit:
+        resource.setrlimit(resource.RLIMIT_CPU,
+                           (args.time_limit, args.time_limit))
 
     Config.configure(args)
     for i in range(args.num_runs):
