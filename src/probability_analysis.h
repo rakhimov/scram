@@ -41,6 +41,9 @@ class ProbabilityAnalysis : public Analysis {
   /// with the results of qualitative analysis.
   ///
   /// @param[in] fta  Fault tree analysis with results.
+  ///
+  /// @pre The underlying fault tree must not have changed in any way
+  ///      since the fault tree analysis finished.
   explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
 
   virtual ~ProbabilityAnalysis() = default;

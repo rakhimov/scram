@@ -181,6 +181,9 @@ class FaultTreeDescriptor {
 /// and the results may be invalid.
 /// After the requested analysis is done,
 /// the fault tree can be changed without restrictions.
+/// However, other analyses may rely on unchanged fault tree
+/// to use the results of this fault tree analysis.
+///
 /// To conduct a new analysis on the changed fault tree,
 /// a new FaultTreeAnalysis object must be created.
 /// In general, rerunning the same analysis twice

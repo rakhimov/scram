@@ -22,11 +22,8 @@ Technical Issues
 - ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
 - Preprocessing contracts need review, update, and clarification.
-- BooleanGraph must guarantee stable results (construction from PDAG).
 - Migrate "Quick Installation" to "Installation" web page.
   (Windows installation is needed to get any value out of this migration.)
-- The code is not well designed as public API.
-  (Example design flaw: call analysis twice and get undefined behavior.)
 - Virtually everything is under one namespace.
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models

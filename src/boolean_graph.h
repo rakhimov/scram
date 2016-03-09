@@ -804,6 +804,11 @@ class BooleanGraph {
   ///
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
+  ///
+  /// @post The BooleanGraph is stable as long as
+  ///       the argument fault tree and its underlying containers are stable.
+  ///       If the fault tree has been manipulated (event addition, etc.),
+  ///       its BooleanGraph representation is not guaranteed to be the same.
   explicit BooleanGraph(const GatePtr& root, bool ccf = false) noexcept;
 
   BooleanGraph(const BooleanGraph&) = delete;
