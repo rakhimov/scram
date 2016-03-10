@@ -38,15 +38,22 @@ class XmlParserTests : public ::testing::Test {
 
   virtual void TearDown() {}
 
-  void FillSnippet(std::stringstream& ss);
-  void FillBadSnippet(std::stringstream& ss);
-  void FillSchema(std::stringstream& ss);
-  void FillBadSchema(std::stringstream& ss);
+  /// Fills stream with XML text.
+  ///
+  /// @param[out] ss  Empty stream.
+  /// @param[in] malformed  Make the snippet illegal XML.
+  void FillSnippet(std::stringstream& ss, bool malformed = false);
+
+  /// Fills RleaxNG schema.
+  ///
+  /// @param[out] ss  Empty stream.
+  /// @param[in] malformed  Make the schema illegal XML.
+  void FillSchema(std::stringstream& ss, bool malformed = false);
 
  private:
-  std::string outer_node_;
-  std::string inner_node_;
-  std::string inner_content_;
+  std::string outer_node_;  ///< Outermost element name.
+  std::string inner_node_;  ///< Innermost element name.
+  std::string inner_content_;  ///< Text content of the innermost element.
 };
 
 }  // namespace test
