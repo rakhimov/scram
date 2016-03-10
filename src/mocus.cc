@@ -66,23 +66,18 @@ Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
-  std::unordered_map<int, IGatePtr> gates;
-  gates.insert(gate->gate_args().begin(), gate->gate_args().end());
-
+  std::unordered_map<int, IGatePtr> gates = gate->gate_args();
   std::unique_ptr<zbdd::CutSetContainer> container(
       new zbdd::CutSetContainer(kSettings_, gate->index(),
                                 graph_->basic_events().size()));
   container->Merge(container->ConvertGate(gate));
-  int next_gate = container->GetNextGate();
-  while (next_gate) {
-    LOG(DEBUG5) << "Expanding gate G" << next_gate;
-    IGatePtr inter_gate = gates.find(next_gate)->second;
-    gates.insert(inter_gate->gate_args().begin(),
-                 inter_gate->gate_args().end());
+  while (int next_gate_index = container->GetNextGate()) {
+    LOG(DEBUG5) << "Expanding gate G" << next_gate_index;
+    const IGatePtr& next_gate = gates.find(next_gate_index)->second;
+    gates.insert(next_gate->gate_args().begin(), next_gate->gate_args().end());
     container->Merge(container->ExpandGate(
-        container->ConvertGate(inter_gate),
-        container->ExtractIntermediateCutSets(next_gate)));
-    next_gate = container->GetNextGate();
+        container->ConvertGate(next_gate),
+        container->ExtractIntermediateCutSets(next_gate_index)));
   }
   container->Minimize();
   container->Log();
@@ -104,9 +99,8 @@ Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
     }
     Settings adjusted(settings);
     adjusted.limit_order(limit);
-    container->JoinModule(index,
-                          Mocus::AnalyzeModule(gates.find(index)->second,
-                                               adjusted));
+    container->JoinModule(index, Mocus::AnalyzeModule(gates.find(index)->second,
+                                                      adjusted));
   }
   container->EliminateConstantModules();
   container->Minimize();
