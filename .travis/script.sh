@@ -62,6 +62,7 @@ sed -i '/^Ignoring/d' style.txt
 sed -i '/^Skipping/d' style.txt
 sed -i '/stream&/d' style.txt
 sed -i '/is an unapproved C++11 header/d' style.txt
+sed -i '/env\.cc:26/d' style.txt  # Unpredictable line length.
 if [[ -s style.txt ]]; then
   echo "Style errors:" >&2
   cat style.txt >&2
