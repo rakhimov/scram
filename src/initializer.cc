@@ -34,8 +34,6 @@
 #include "error.h"
 #include "logger.h"
 
-namespace fs = boost::filesystem;
-
 namespace scram {
 
 namespace {
@@ -159,7 +157,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   // Collection of input file locations in canonical path.
   std::set<std::string> input_paths;
-  fs::path file_path = fs::canonical(xml_file);
+  boost::filesystem::path file_path = boost::filesystem::canonical(xml_file);
   if (input_paths.count(file_path.native())) {
     throw ValidationError("Trying to pass the same file twice: " +
                           file_path.native());
