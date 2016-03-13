@@ -84,9 +84,9 @@ const std::set<std::string> Formula::kTwoOrMore_ = {{"and"}, {"or"}, {"nand"},
 const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
 Formula::Formula(const std::string& type)
-      : type_(type),
-        vote_number_(0),
-        gather_(true) {}
+    : type_(type),
+      vote_number_(0),
+      gather_(true) {}
 
 int Formula::vote_number() const {
   if (!vote_number_) throw LogicError("Vote number is not set.");

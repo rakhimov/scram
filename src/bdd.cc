@@ -34,14 +34,14 @@ Terminal::Terminal(bool value) : Vertex(value) {}
 
 NonTerminal::NonTerminal(int index, int order, int id, const VertexPtr& high,
                          const VertexPtr& low)
-      : Vertex(id),
-        order_(order),
-        high_(high),
-        low_(low),
-        index_(index),
-        module_(false),
-        coherent_(false),
-        mark_(false) {}
+    : Vertex(id),
+      order_(order),
+      high_(high),
+      low_(low),
+      index_(index),
+      module_(false),
+      coherent_(false),
+      mark_(false) {}
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),

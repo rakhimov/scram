@@ -52,7 +52,7 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
 }
 
 Role::Role(bool is_public, const std::string& base_path)
-      : is_public_(is_public),
-        base_path_(base_path) {}
+    : is_public_(is_public),
+      base_path_(base_path) {}
 
 }  // namespace scram
