@@ -40,13 +40,13 @@ class Error : public std::exception {
 
   virtual ~Error() noexcept = default;
 
-  /// @returns The error message.
+  /// @returns The formatted error message to be printed.
   const char* what() const noexcept override;
 
-  /// @returns The error message.
+  /// @returns The core message describing the error.
   const std::string& msg() const { return msg_; }
 
-  /// Sets the error message.
+  /// Sets the error messages.
   ///
   /// @param[in] msg  The error message.
   void msg(std::string msg) {

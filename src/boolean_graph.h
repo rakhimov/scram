@@ -279,7 +279,7 @@ enum Operator {
 
 /// The number of operators in the enum.
 /// This number is useful for optimizations and algorithms.
-static const int kNumOperators = 8;  // Update this number if operators change.
+const int kNumOperators = 8;  // Update this number if operators change.
 
 /// @enum State
 /// State of a gate as a set of Boolean variables.

@@ -77,7 +77,7 @@ enum LogLevel {  // The numbers are used for array indices.
   DEBUG5  ///< Debugging information for the code inside of DEBUG4.
 };
 
-static const int kMaxVerbosity = 7;  ///< The index of the last level.
+const int kMaxVerbosity = 7;  ///< The index of the last level.
 
 /// @class Logger
 /// This is a general purpose logger;
