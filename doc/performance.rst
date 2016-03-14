@@ -15,6 +15,7 @@ The record can also include (specialize on) performance proxies
 specific to the subject.
 
 - Running times are taken from the logs and reports.
+  The minimum of samples is recorded.
 - Peak consumption is recorded for memory utilization with the ``top`` program.
 - Records are for the total program or specific analysis facilities.
 - Performance for the debug build is recorded
@@ -143,8 +144,8 @@ Debug build:
 Release build:
 --------------
 
-- BDD Time: 3.8    |  5.6
-- ZBDD Time: 0.35
+- BDD Time: 3.8    |  5.1
+- ZBDD Time: 0.30
 
 - # of BDD vertices created: 3013946  |  3048123
 - # of ITE in BDD: 1175468
@@ -158,9 +159,9 @@ CEA9601 -l 4 (mcs = 1614876)
 Release build:
 --------------
 
-- BDD Time: 5.6
+- BDD Time: 5.1
 - ZBDD Time: 4.0
-- Reporting: 7.2
+- Reporting (/dev/null): 5.2
 
 - # of BDD vertices created: 3048746
 - # of ITE in BDD: 1175468

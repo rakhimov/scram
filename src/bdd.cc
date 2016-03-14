@@ -211,115 +211,132 @@ Bdd::Function Bdd::ConvertGraph(
   return result;
 }
 
-Bdd::Function& Bdd::FetchComputeTable(Operator type,
-                                      const VertexPtr& arg_one,
-                                      const VertexPtr& arg_two,
-                                      bool complement_one,
-                                      bool complement_two) noexcept {
+std::pair<int, int> Bdd::GetMinMaxId(const VertexPtr& arg_one,
+                                     const VertexPtr& arg_two,
+                                     bool complement_one,
+                                     bool complement_two) noexcept {
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-  return type == kAnd ? and_table_[{min_id, max_id}]
-                      : or_table_[{min_id, max_id}];
+  return {min_id, max_id};
 }
 
-Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
-                                      bool complement) noexcept {
-  Bdd::ClearTables();
-  return Bdd::Apply(kAnd, ite->high(), ite->low(), complement,
-                    ite->complement_edge() ^ complement);
+/// Specialization of Apply for AND operator with BDD vertices.
+template <>
+Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
+                               const VertexPtr& arg_two, bool complement_one,
+                               bool complement_two) noexcept {
+  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
+  if (arg_one->terminal()) {
+    if (complement_one) return {true, kOne_};
+    return {complement_two, arg_two};
+  }
+  if (arg_two->terminal()) {
+    if (complement_two) return {true, kOne_};
+    return {complement_one, arg_one};
+  }
+  if (arg_one->id() == arg_two->id()) {  // Reduction detection.
+    if (complement_one ^ complement_two) return {true, kOne_};
+    return {complement_one, arg_one};
+  }
+  Function& result = and_table_
+      [Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two)];
+  if (result.vertex) return result;  // Already computed.
+  Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two), complement_one,
+                   complement_two, &result);
+  return result;
+}
+
+/// Specialization of Apply for OR operator with BDD vertices.
+template <>
+Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
+                              const VertexPtr& arg_two, bool complement_one,
+                              bool complement_two) noexcept {
+  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
+  if (arg_one->terminal()) {
+    if (!complement_one) return {false, kOne_};
+    return {complement_two, arg_two};
+  }
+  if (arg_two->terminal()) {
+    if (!complement_two) return {false, kOne_};
+    return {complement_one, arg_one};
+  }
+  if (arg_one->id() == arg_two->id()) {  // Reduction detection.
+    if (complement_one ^ complement_two) return {false, kOne_};
+    return {complement_one, arg_one};
+  }
+  Function& result = or_table_
+      [Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two)];
+  if (result.vertex) return result;  // Already computed.
+  Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two), complement_one,
+                  complement_two, &result);
+  return result;
+}
+
+template <Operator Type>
+void Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
+                bool complement_one, bool complement_two,
+                Function* result) noexcept {
+  if (ite_one->order() > ite_two->order()) {
+    std::swap(ite_one, ite_two);
+    std::swap(complement_one, complement_two);
+  }
+  std::pair<Function, Function> new_edges =
+      Bdd::Apply<Type>(ite_one, ite_two, complement_one, complement_two);
+  Function& high = new_edges.first;
+  Function& low = new_edges.second;
+  result->complement = high.complement;
+  bool complement_edge = high.complement ^ low.complement;
+  if (!complement_edge && (high.vertex->id() == low.vertex->id())) {
+      result->vertex = low.vertex;  // Another redundancy detection.
+  } else {
+    result->vertex = Bdd::FetchUniqueTable(ite_one, high.vertex, low.vertex,
+                                           complement_edge);
+  }
 }
 
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
-  if (arg_one->terminal())
-    return Bdd::Apply(type, Terminal::Ptr(arg_one), arg_two, complement_one,
-                      complement_two);
-  if (arg_two->terminal())
-    return Bdd::Apply(type, Terminal::Ptr(arg_two), arg_one, complement_two,
-                      complement_one);
-  if (arg_one->id() == arg_two->id())  // Reduction detection.
-    return Bdd::Apply(type, arg_one, complement_one, complement_two);
-
-  Function& result = Bdd::FetchComputeTable(type, arg_one, arg_two,
-                                            complement_one, complement_two);
-  if (result.vertex) return result;  // Already computed.
-
-  ItePtr ite_one = Ite::Ptr(arg_one);
-  ItePtr ite_two = Ite::Ptr(arg_two);
-  if (ite_one->order() > ite_two->order()) {
-    std::swap(ite_one, ite_two);
-    std::swap(complement_one, complement_two);
-  }
-  std::pair<Function, Function> new_edges = Bdd::Apply(type, ite_one, ite_two,
-                                                       complement_one,
-                                                       complement_two);
-  Function& high = new_edges.first;
-  Function& low = new_edges.second;
-  result.complement = high.complement;
-  bool complement_edge = high.complement ^ low.complement;
-  if (!complement_edge && (high.vertex->id() == low.vertex->id())) {
-      result.vertex = low.vertex;  // Another redundancy detection.
-      return result;
-  }
-  result.vertex = Bdd::FetchUniqueTable(ite_one, high.vertex,
-                                        low.vertex, complement_edge);
-  return result;
-}
-
-Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
-                         const VertexPtr& arg_two, bool complement_one,
-                         bool complement_two) noexcept {
-  assert(term_one->value());
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
   if (type == kAnd) {
-    if (complement_one) return {true, kOne_};
-  } else {
-    if (!complement_one) return {false, kOne_};
+    return Bdd::Apply<kAnd>(arg_one, arg_two, complement_one, complement_two);
   }
-  return {complement_two, arg_two};
+  assert(type == kOr && "Unsupported operator.");
+  return Bdd::Apply<kOr>(arg_one, arg_two, complement_one, complement_two);
 }
 
-Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
-                         bool complement_one, bool complement_two) noexcept {
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
-  if (complement_one ^ complement_two) {
-    if (type == kAnd) return {true, kOne_};
-    return {false, kOne_};  // OR operator.
-  }
-  return {complement_one, single_arg};
-}
-
+template <Operator Type>
 std::pair<Bdd::Function, Bdd::Function>
-Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
+Bdd::Apply(const ItePtr& arg_one, const ItePtr& arg_two,
            bool complement_one, bool complement_two) noexcept {
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
   if (arg_one->order() == arg_two->order()) {  // The same variable.
     assert(arg_one->index() == arg_two->index());
-    Function high = Bdd::Apply(type, arg_one->high(), arg_two->high(),
-                               complement_one, complement_two);
-    Function low = Bdd::Apply(type, arg_one->low(), arg_two->low(),
-                              complement_one ^ arg_one->complement_edge(),
-                              complement_two ^ arg_two->complement_edge());
+    Function high = Bdd::Apply<Type>(arg_one->high(), arg_two->high(),
+                                     complement_one, complement_two);
+    Function low =
+        Bdd::Apply<Type>(arg_one->low(), arg_two->low(),
+                         complement_one ^ arg_one->complement_edge(),
+                         complement_two ^ arg_two->complement_edge());
     return {high, low};
   }
   assert(arg_one->order() < arg_two->order());
-  Function high = Bdd::Apply(type, arg_one->high(), arg_two,
-                             complement_one, complement_two);
-  Function low = Bdd::Apply(type, arg_one->low(), arg_two,
-                            complement_one ^ arg_one->complement_edge(),
-                            complement_two);
+  Function high = Bdd::Apply<Type>(arg_one->high(), arg_two, complement_one,
+                                   complement_two);
+  Function low = Bdd::Apply<Type>(arg_one->low(), arg_two,
+                                  complement_one ^ arg_one->complement_edge(),
+                                  complement_two);
   return {high, low};
+}
+
+Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
+                                      bool complement) noexcept {
+  Bdd::ClearTables();
+  return Bdd::Apply<kAnd>(ite->high(), ite->low(), complement,
+                          ite->complement_edge() ^ complement);
 }
 
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
