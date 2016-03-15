@@ -326,29 +326,42 @@ class Zbdd {
       std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
       std::unordered_map<int, IGatePtr>* module_gates) noexcept;
 
-  /// Fetches computation tables for results.
+  /// Computes the key for computation results.
+  /// The key is used in computation memoisation tables.
   ///
-  /// @param[in] type  Boolean operation type.
   /// @param[in] arg_one  First argument.
   /// @param[in] arg_two  Second argument.
   /// @param[in] limit_order  The limit on the order for the computations.
   ///
-  /// @returns nullptr reference for uploading the computation results
-  ///                  if it doesn't exists.
-  /// @returns Pointer to ZBDD root vertex as the computation result.
+  /// @returns A triplet of integers for the computation key.
   ///
-  /// @pre The operator is either AND or OR.
   /// @pre The arguments are not the same functions.
   ///      Equal ID functions are handled by the reduction.
   /// @pre Even though the arguments are not SetNodePtr type,
   ///      they are ZBDD SetNode vertices.
-  ///
-  /// @note The order of input argument vertices does not matter.
-  VertexPtr& FetchComputeTable(Operator type, const VertexPtr& arg_one,
-                               const VertexPtr& arg_two,
-                               int limit_order) noexcept;
+  Triplet GetResultKey(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                       int limit_order) noexcept;
 
   /// Applies Boolean operation to two vertices representing sets.
+  /// This is the main function for the operation.
+  ///
+  /// @tparam Type  The operator enum.
+  ///
+  /// @param[in] arg_one  First argument ZBDD set.
+  /// @param[in] arg_two  Second argument ZBDD set.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @note The limit on the order is not guaranteed.
+  ///       It is for optimization purposes only.
+  template <Operator Type>
+  VertexPtr Apply(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                  int limit_order) noexcept;
+
+  /// Applies Boolean operation to two vertices representing sets.
+  /// This is a convenience function
+  /// if the operator type cannot be determined at compile time.
   ///
   /// @param[in] type  The operator or type of the gate.
   /// @param[in] arg_one  First argument ZBDD set.
@@ -364,22 +377,10 @@ class Zbdd {
   VertexPtr Apply(Operator type, const VertexPtr& arg_one,
                   const VertexPtr& arg_two, int limit_order) noexcept;
 
-  /// Applies the logic of a Boolean operator
-  /// with a terminal vertex.
-  ///
-  /// @param[in] type  The operator to apply.
-  /// @param[in] term_one  First argument terminal vertex.
-  /// @param[in] arg_two  Second argument vertex.
-  ///
-  /// @returns The resulting ZBDD vertex.
-  ///
-  /// @pre The operator is either AND or OR.
-  VertexPtr Apply(Operator type, const TerminalPtr& term_one,
-                  const VertexPtr& arg_two) noexcept;
-
   /// Applies Boolean operation to ZBDD graph non-terminal vertices.
   ///
-  /// @param[in] type  The operator or type of the gate.
+  /// @tparam Type  The operator enum.
+  ///
   /// @param[in] arg_one  First argument set vertex.
   /// @param[in] arg_two  Second argument set vertex.
   /// @param[in] limit_order  The limit on the order for the computations.
@@ -387,10 +388,9 @@ class Zbdd {
   /// @returns The resulting ZBDD vertex.
   ///
   /// @pre Argument vertices are ordered.
-  ///
-  /// @pre The operator is either AND or OR.
-  VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
-                  const SetNodePtr& arg_two, int limit_order) noexcept;
+  template <Operator Type>
+  VertexPtr Apply(const SetNodePtr& arg_one, const SetNodePtr& arg_two,
+                  int limit_order) noexcept;
 
   /// Removes complements of variables from products.
   /// This procedure only needs to be performed for non-coherent graphs

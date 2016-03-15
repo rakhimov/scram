@@ -377,35 +377,82 @@ VertexPtr Zbdd::ConvertGraph(
   return result;
 }
 
-VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
-                                   const VertexPtr& arg_two,
-                                   int order) noexcept {
+Triplet Zbdd::GetResultKey(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                           int order) noexcept {
   assert(order >= 0 && "Illegal order for computations.");
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
   int min_id = std::min(arg_one->id(), arg_two->id());
   int max_id = std::max(arg_one->id(), arg_two->id());
-  return type == kAnd ? and_table_[{min_id, max_id, order}]
-                      : or_table_[{min_id, max_id, order}];
+  return {min_id, max_id, order};
 }
 
-VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
-                      const VertexPtr& arg_two, int limit_order) noexcept {
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
-  if (limit_order < 0) return kEmpty_;
-  if (arg_one->terminal())
-    return Zbdd::Apply(type, Terminal::Ptr(arg_one), arg_two);
-  if (arg_two->terminal())
-    return Zbdd::Apply(type, Terminal::Ptr(arg_two), arg_one);
+/// Forward declarations of interdependent Apply operation specializations.
+/// @{
+template <>
+VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                            int limit_order) noexcept;
+template <>
+VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                           int limit_order) noexcept;
+/// @}
 
+/// Specialization of Apply for AND operator for non-terminal ZBDD vertices.
+template <>
+VertexPtr Zbdd::Apply<kAnd>(const SetNodePtr& arg_one,
+                            const SetNodePtr& arg_two,
+                            int limit_order) noexcept {
+  VertexPtr high;
+  VertexPtr low;
+  int limit_high = limit_order - !Zbdd::MayBeUnity(arg_one);
+  if (arg_one->order() == arg_two->order() &&
+      arg_one->index() == arg_two->index()) {  // The same variable.
+    // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
+    high = Zbdd::Apply<kOr>(
+        Zbdd::Apply<kAnd>(
+            arg_one->high(),
+            Zbdd::Apply<kOr>(arg_two->high(), arg_two->low(), limit_high),
+            limit_high),
+        Zbdd::Apply<kAnd>(arg_one->low(), arg_two->high(), limit_high),
+        limit_high);
+    low = Zbdd::Apply<kAnd>(arg_one->low(), arg_two->low(), limit_order);
+  } else {
+    assert((arg_one->order() < arg_two->order() ||
+            arg_one->index() > arg_two->index()) &&
+           "Ordering contract failed.");
+    if (arg_one->order() == arg_two->order()) {
+      // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
+      high = Zbdd::Apply<kAnd>(arg_one->high(), arg_two->low(), limit_high);
+    } else {
+      high = Zbdd::Apply<kAnd>(arg_one->high(), arg_two, limit_high);
+    }
+    low = Zbdd::Apply<kAnd>(arg_one->low(), arg_two, limit_order);
+  }
+  if (!high->terminal() && SetNode::Ptr(high)->order() == arg_one->order()) {
+    assert(SetNode::Ptr(high)->index() < arg_one->index());
+    high = SetNode::Ptr(high)->low();
+  }
+  return Zbdd::Minimize(Zbdd::GetReducedVertex(arg_one, high, low));
+}
+
+/// Specialization of Apply for AND operator for any ZBDD vertices.
+template <>
+VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                            int limit_order) noexcept {
+  if (limit_order < 0) return kEmpty_;
+  if (arg_one->terminal()) {
+    if (Terminal::Ptr(arg_one)->value()) return arg_two;
+    return kEmpty_;
+  }
+  if (arg_two->terminal()) {
+    if (Terminal::Ptr(arg_two)->value()) return arg_one;
+    return kEmpty_;
+  }
   if (arg_one->id() == arg_two->id()) return arg_one;
 
-  VertexPtr& result = Zbdd::FetchComputeTable(type, arg_one, arg_two,
-                                              limit_order);
+  VertexPtr& result =
+      and_table_[Zbdd::GetResultKey(arg_one, arg_two, limit_order)];
   if (result) return result;  // Already computed.
 
   SetNodePtr set_one = SetNode::Ptr(arg_one);
@@ -413,73 +460,72 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
   if (set_one->order() > set_two->order()) std::swap(set_one, set_two);
   if (set_one->order() == set_two->order()
       && set_one->index() < set_two->index()) std::swap(set_one, set_two);
-  result = Zbdd::Apply(type, set_one, set_two, limit_order);
+  result = Zbdd::Apply<kAnd>(set_one, set_two, limit_order);
   return result;
 }
 
-VertexPtr Zbdd::Apply(Operator type, const TerminalPtr& term_one,
-                      const VertexPtr& arg_two) noexcept {
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
-  if (type == kAnd) {
-    if (!term_one->value()) return kEmpty_;
-  } else {
-    if (term_one->value()) return kBase_;
-  }
-  return arg_two;
-}
-
-VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
-                      const SetNodePtr& arg_two, int limit_order) noexcept {
-  assert((type == kOr || type == kAnd) &&
-         "Only normalized operations in BDD.");
+/// Specialization of Apply for OR operator for non-terminal ZBDD vertices.
+template <>
+VertexPtr Zbdd::Apply<kOr>(const SetNodePtr& arg_one, const SetNodePtr& arg_two,
+                           int limit_order) noexcept {
   VertexPtr high;
   VertexPtr low;
   int limit_high = limit_order - !Zbdd::MayBeUnity(arg_one);
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
-    if (type == kAnd) {
-      // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
-      high = Zbdd::Apply(
-          kOr,
-          Zbdd::Apply(kAnd, arg_one->high(),
-                      Zbdd::Apply(kOr, arg_two->high(),
-                                  arg_two->low(), limit_high),
-                      limit_high),
-          Zbdd::Apply(kAnd, arg_one->low(), arg_two->high(), limit_high),
-          limit_high);
-      low = Zbdd::Apply(kAnd, arg_one->low(), arg_two->low(), limit_order);
-    } else {
-      high = Zbdd::Apply(kOr, arg_one->high(), arg_two->high(), limit_high);
-      low = Zbdd::Apply(kOr, arg_one->low(), arg_two->low(), limit_order);
-    }
+    high = Zbdd::Apply<kOr>(arg_one->high(), arg_two->high(), limit_high);
+    low = Zbdd::Apply<kOr>(arg_one->low(), arg_two->low(), limit_order);
   } else {
     assert((arg_one->order() < arg_two->order() ||
             arg_one->index() > arg_two->index()) &&
            "Ordering contract failed.");
-    if (type == kAnd) {
-      if (arg_one->order() == arg_two->order()) {
-        // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
-        high =
-            Zbdd::Apply(kAnd, arg_one->high(), arg_two->low(), limit_high);
-      } else {
-        high = Zbdd::Apply(kAnd, arg_one->high(), arg_two, limit_high);
-      }
-      low = Zbdd::Apply(kAnd, arg_one->low(), arg_two, limit_order);
-    } else {
-      if (arg_one->order() == arg_two->order()) {
-        if (arg_one->high()->terminal() && arg_two->high()->terminal())
-          return kBase_;
-      }
-      high = arg_one->high();
-      low = Zbdd::Apply(kOr, arg_one->low(), arg_two, limit_order);
+    if (arg_one->order() == arg_two->order()) {
+      if (arg_one->high()->terminal() && arg_two->high()->terminal())
+        return kBase_;
     }
+    high = arg_one->high();
+    low = Zbdd::Apply<kOr>(arg_one->low(), arg_two, limit_order);
   }
   if (!high->terminal() && SetNode::Ptr(high)->order() == arg_one->order()) {
     assert(SetNode::Ptr(high)->index() < arg_one->index());
     high = SetNode::Ptr(high)->low();
   }
   return Zbdd::Minimize(Zbdd::GetReducedVertex(arg_one, high, low));
+}
+
+/// Specialization of Apply for OR operator for any ZBDD vertices.
+template <>
+VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                           int limit_order) noexcept {
+  if (limit_order < 0) return kEmpty_;
+  if (arg_one->terminal()) {
+    if (Terminal::Ptr(arg_one)->value()) return kBase_;
+    return arg_two;
+  }
+  if (arg_two->terminal()) {
+    if (Terminal::Ptr(arg_two)->value()) return kBase_;
+    return arg_one;
+  }
+  if (arg_one->id() == arg_two->id()) return arg_one;
+
+  VertexPtr& result =
+      or_table_[Zbdd::GetResultKey(arg_one, arg_two, limit_order)];
+  if (result) return result;  // Already computed.
+
+  SetNodePtr set_one = SetNode::Ptr(arg_one);
+  SetNodePtr set_two = SetNode::Ptr(arg_two);
+  if (set_one->order() > set_two->order()) std::swap(set_one, set_two);
+  if (set_one->order() == set_two->order()
+      && set_one->index() < set_two->index()) std::swap(set_one, set_two);
+  result = Zbdd::Apply<kOr>(set_one, set_two, limit_order);
+  return result;
+}
+
+VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
+                      const VertexPtr& arg_two, int limit_order) noexcept {
+  if (type == kAnd) return Zbdd::Apply<kAnd>(arg_one, arg_two, limit_order);
+  assert(type == kOr && "Only normalized operations in BDD.");
+  return Zbdd::Apply<kOr>(arg_one, arg_two, limit_order);
 }
 
 VertexPtr Zbdd::EliminateComplements(
@@ -501,7 +547,7 @@ VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
                                     const VertexPtr& low) noexcept {
   /// @todo Track the cut-off.
   if (node->index() < 0 && !(node->module() && !node->coherent()))
-    return Zbdd::Apply(kOr, high, low, kSettings_.limit_order());
+    return Zbdd::Apply<kOr>(high, low, kSettings_.limit_order());
   return Zbdd::Minimize(Zbdd::GetReducedVertex(node, high, low));
 }
 
@@ -538,7 +584,7 @@ VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
     Zbdd* module = modules_.find(node->index())->second.get();
     if (module->root_->terminal()) {
       if (!Terminal::Ptr(module->root_)->value()) return low;
-      return Zbdd::Apply(kOr, high, low, kSettings_.limit_order());
+      return Zbdd::Apply<kOr>(high, low, kSettings_.limit_order());
     }
   }
   return Zbdd::Minimize(Zbdd::GetReducedVertex(node, high, low));
