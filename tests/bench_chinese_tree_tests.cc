@@ -23,7 +23,6 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for Chinese fault tree from XFTA.
-// Test Minimal cut sets and probability.
 /// @todo Test importance factors.
 TEST_P(RiskAnalysisTest, ChineseTree) {
   std::vector<std::string> input_files;

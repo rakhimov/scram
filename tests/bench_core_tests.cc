@@ -23,7 +23,6 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for [A or B or C] fault tree.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, ABC) {
   std::string tree_input = "./share/scram/input/core/abc.xml";
   settings.probability_analysis(true);
@@ -41,7 +40,6 @@ TEST_P(RiskAnalysisTest, ABC) {
 }
 
 // Benchmark Tests for [AB or BC] fault tree.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, ABorBC) {
   std::string tree_input = "./share/scram/input/core/ab_bc.xml";
   settings.probability_analysis(true);
@@ -59,7 +57,6 @@ TEST_P(RiskAnalysisTest, ABorBC) {
 }
 
 // Benchmark Tests for [AB or ~AC] fault tree.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, ABorNotAC) {
   std::string tree_input = "./share/scram/input/core/ab_or_not_ac.xml";
   settings.probability_analysis(true);
@@ -84,7 +81,6 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
 }
 
 // Simple verification tests for K/N gate fault tree.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, Vote) {
   std::string tree_input = "./share/scram/input/core/atleast.xml";
   settings.probability_analysis(true);
@@ -342,7 +338,6 @@ TEST_P(RiskAnalysisTest, ComplementModule) {
 }
 
 // Benchmark Tests for [A xor B xor C] fault tree.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, XorABC) {
   std::string tree_input = "./share/scram/input/core/xor.xml";
   settings.probability_analysis(true);
@@ -397,7 +392,6 @@ TEST_P(RiskAnalysisTest, NullA) {
 }
 
 // Benchmark Tests for Beta factor common cause failure model.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, BetaFactorCCF) {
   std::string tree_input = "./share/scram/input/core/beta_factor_ccf.xml";
   std::string p1 = "[pumpone]";
@@ -434,7 +428,6 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
 }
 
 // Benchmark Tests for Phi factor common cause failure calculations.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, PhiFactorCCF) {
   std::string tree_input = "./share/scram/input/core/phi_factor_ccf.xml";
   settings.ccf_analysis(true).probability_analysis(true);
@@ -451,7 +444,6 @@ TEST_P(RiskAnalysisTest, PhiFactorCCF) {
 }
 
 // Benchmark Tests for MGL factor common cause failure calculations.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, MGLFactorCCF) {
   std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";
   settings.ccf_analysis(true).probability_analysis(true);
@@ -468,7 +460,6 @@ TEST_P(RiskAnalysisTest, MGLFactorCCF) {
 }
 
 // Benchmark Tests for Alpha factor common cause failure calculations.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
   std::string tree_input = "./share/scram/input/core/alpha_factor_ccf.xml";
   settings.ccf_analysis(true).probability_analysis(true);

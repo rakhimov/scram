@@ -23,7 +23,6 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for Theatre fault tree from OpenFTA.
-// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, Theatre) {
   std::string tree_input = "./share/scram/input/Theatre/theatre.xml";
   settings.probability_analysis(true);
@@ -34,7 +33,6 @@ TEST_P(RiskAnalysisTest, Theatre) {
   } else {
     EXPECT_DOUBLE_EQ(0.00207, p_total());
   }
-
   std::set<std::set<std::string>> mcs = {{"gen_fail", "mains_fail"},
                                          {"mains_fail", "relay_fail"}};
   EXPECT_EQ(2, products().size());

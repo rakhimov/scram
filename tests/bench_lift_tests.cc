@@ -22,7 +22,7 @@
 namespace scram {
 namespace test {
 
-// Benchmark tests for Lift system from OpenFTA
+// Benchmark tests for Lift system from OpenFTA.
 TEST_P(RiskAnalysisTest, Lift) {
   std::string tree_input = "./share/scram/input/Lift/lift.xml";
   settings.probability_analysis(true);

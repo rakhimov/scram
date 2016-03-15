@@ -29,7 +29,6 @@ TEST_P(RiskAnalysisTest, Baobab2) {
       "./share/scram/input/Baobab/baobab2-basic-events.xml"};
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
-  // Minimal cut set check.
   EXPECT_EQ(4805, products().size());
   std::vector<int> distr = {0, 6, 121, 268, 630, 3780};
   EXPECT_EQ(distr, ProductDistribution());

@@ -22,6 +22,7 @@
 namespace scram {
 namespace test {
 
+// Benchmark Tests for Baobab 1 fault tree from XFTA.
 #ifdef NDEBUG
 TEST_P(RiskAnalysisTest, Baobab1) {
 #else
@@ -35,11 +36,10 @@ TEST_F(RiskAnalysisTest, Baobab1) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   if (settings.approximation() == "rare-event") {
-    EXPECT_NEAR(1.6815e-6, p_total(), 1e-8);  // Probability with BDD.
-  } else {
-    EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
+    EXPECT_NEAR(1.6815e-6, p_total(), 1e-8);
+  } else {  // Probability with BDD.
+    EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);
   }
-  // Minimal cut set check.
   EXPECT_EQ(46188, products().size());
   std::vector<int> distr = {0,     1,    1,     70,   400, 2212,
                             14748, 8460, 10624, 6600, 3072};
