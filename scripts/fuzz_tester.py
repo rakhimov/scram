@@ -277,26 +277,28 @@ def main():
 
     if call(["which", "scram"]):
         print("SCRAM is not found in the PATH.")
-        return 1
+        return 2
     if args.output_dir and not os.path.isdir(args.output_dir):
         print("The output directory doesn't exist.")
-        return 1
+        return 2
     if args.time_limit:
         resource.setrlimit(resource.RLIMIT_CPU,
                            (args.time_limit, args.time_limit))
 
     Config.configure(args)
     call_function = cross_validate if args.cross_validate else call_scram
+    ret = 0
     for i in range(args.num_runs):
         input_file = generate_input(args.normal, args.coherent, args.output_dir)
         if call_function(input_file):
             print("SCRAM failed: " + input_file)
+            ret = 1
             continue
         os.remove(input_file)
         os.remove(get_log_file_name(input_file))
-        if not (i + 1) % 100:
-            print("Finished run #" + str(i + 1))
-    return 0
+        if not (i + 1) % 10:
+            print("\n========== Finished run #%d ==========\n" % (i + 1))
+    return ret
 
 if __name__ == "__main__":
     sys.exit(main())
