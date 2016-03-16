@@ -130,6 +130,18 @@ def generate_input(normal, coherent, output_dir=None):
     return input_file.name
 
 
+def get_log_file_name(input_file):
+    """Creates a unique log file name.
+
+    Args:
+        input_file: The name of input file with ".xml" suffix.
+
+    Returns:
+        The name of the log file with ".log" suffix.
+    """
+    return input_file[:input_file.rfind(".")] + ".log"
+
+
 def get_limit_order():
     """Generates the size limit on cut set order.
 
@@ -176,7 +188,7 @@ def call_scram(input_file):
     cmd = generate_analysis_call(input_file)
     print(cmd)
     cmd += ["--verbosity", "5", "-o", "/dev/null"]
-    log_file = open(input_file.rstrip(".xml") + ".log", "w")
+    log_file = open(get_log_file_name(input_file), "w")
     log_file.write(str(cmd) + "\n")
     log_file.flush()
     ret = call(cmd, stderr=log_file)
@@ -199,7 +211,7 @@ def cross_validate(input_file):
     cmd = generate_analysis_call(input_file)
     print(cmd)
     cmd += ["--print"]
-    log_file = open(input_file.rstrip(".xml") + ".log", "w")
+    log_file = open(get_log_file_name(input_file), "w")
     log_file.write(str(cmd) + "\n")
 
     def check_algorithm(flag):
@@ -281,7 +293,7 @@ def main():
             print("SCRAM failed: " + input_file)
             continue
         os.remove(input_file)
-        os.remove(input_file.rstrip(".xml") + ".log")
+        os.remove(get_log_file_name(input_file))
         if not (i + 1) % 100:
             print("Finished run #" + str(i + 1))
     return 0
