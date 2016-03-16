@@ -406,7 +406,7 @@ with assertions preserved
 and sanitizers enabled, for example,
 address sanitizer in GCC and Clang ``-fsanitize=address``.
 In order to speed up the fuzz testing,
-SCRAM should be built with debugging optimizations ``-Og``.
+SCRAM may be built with optimizations but ``NDEBUG`` undefined.
 
 An example command to run SCRAM 1000 times with auto-generated inputs and configurations:
 
@@ -415,6 +415,11 @@ An example command to run SCRAM 1000 times with auto-generated inputs and config
     fuzz_tester.py -n 1000
 
 The fuzz tester can be guided with options listed in its help prompt.
+Some options can be combined,
+and some are mutually exclusive.
+The priorities of mutually exclusive options and combinations are hard-coded in the script,
+and no error messages are produced;
+however, information messages are given to indicate the interpretation.
 
 .. code-block:: bash
 
@@ -422,6 +427,19 @@ The fuzz tester can be guided with options listed in its help prompt.
 
 The fuzz tester collects run configurations, failures, and logs.
 The auto-generated inputs are preserved for failed runs.
+
+
+Cross Validation
+----------------
+
+The Fuzz tester can check
+the results of qualitative analysis algorithms implemented in SCRAM.
+If there is any disagreement between various algorithms,
+the run is reported as failure.
+
+.. code-block:: bash
+
+    fuzz_tester.py --cross-validate
 
 
 **********************

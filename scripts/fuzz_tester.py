@@ -19,6 +19,9 @@
 
 This script is helpful to detect rare bugs, failed assumptions,
 flawed design, and bottlenecks.
+For the full functionality of the Fuzz tester,
+SCRAM must be built in non-Release mode
+so that NDEBUG is undefined.
 
 In addition to its main purpose,
 the script is handy to discover
@@ -27,6 +30,7 @@ complex auto-generated analysis inputs and configurations.
 
 from __future__ import print_function
 
+import hashlib
 import os
 import random
 import resource
@@ -68,6 +72,13 @@ class Config(object):
     @staticmethod
     def configure(args):
         """Adjusts configurations with the cmd-line arguments."""
+        if args.cross_validate:
+            print("Cross validating algorithms")
+            Config.analysis = [""]
+            Config.switch = []
+            Config.approximation = [""]
+            return
+
         if args.prime_implicants:
             print("Focusing on Prime Implicants")
             Config.analysis = ["--bdd"]
@@ -128,6 +139,28 @@ def get_limit_order():
     return random.randint(1, Config.max_limit)
 
 
+def generate_analysis_call(input_file):
+    """Generates the analysis call.
+
+    Args:
+        input_file: The path to the input file.
+
+    Returns:
+        An array to pass to the call command.
+    """
+    cmd = ["scram", input_file, "--limit-order", str(get_limit_order())]
+    if Config.switch:
+        cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
+    approx = random.choice(Config.approximation)
+    if approx:
+        cmd.append(approx)
+    analysis = random.choice(Config.analysis)
+    if analysis:
+        cmd.append(analysis)
+    cmd += Config.additional
+    return cmd
+
+
 def call_scram(input_file):
     """Calls SCRAM with generated input files.
 
@@ -140,25 +173,65 @@ def call_scram(input_file):
     Returns:
         0 for successful runs.
     """
-    cmd = ["scram", input_file, "--limit-order", str(get_limit_order())]
-
-    if Config.switch:
-        cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
-
-    approx = random.choice(Config.approximation)
-    if approx:
-        cmd.append(approx)
-
-    cmd.append(random.choice(Config.analysis))
-    cmd += Config.additional
+    cmd = generate_analysis_call(input_file)
     print(cmd)
     cmd += ["--verbosity", "5", "-o", "/dev/null"]
     log_file = open(input_file.rstrip(".xml") + ".log", "w")
     log_file.write(str(cmd) + "\n")
     log_file.flush()
     ret = call(cmd, stderr=log_file)
-    log_file.write("SCRAM run return value: " + str(ret))
+    log_file.write("SCRAM run return value: " + str(ret) + "\n")
     return ret
+
+
+def cross_validate(input_file):
+    """Calls all SCRAM algorithms with generated input files.
+
+    The logs with the call signature and report
+    are placed in a file with the name of the input file but "log" suffix.
+
+    Args:
+        input_file: The path to the input file.
+
+    Returns:
+        0 for successful runs.
+    """
+    cmd = generate_analysis_call(input_file)
+    print(cmd)
+    cmd += ["--print"]
+    log_file = open(input_file.rstrip(".xml") + ".log", "w")
+    log_file.write(str(cmd) + "\n")
+
+    def check_algorithm(flag):
+        """Runs SCRAM with the given algorithm flag."""
+        out_file = NamedTemporaryFile()
+        ret = call(cmd + [flag], stderr=out_file)
+        if ret:
+            log_file.write("SCRAM run return value: " + str(ret) + "\n")
+            return None, None
+        with open(out_file.name) as report:
+            return report.readline(), hashlib.md5(report.read()).hexdigest()
+
+    result = set()
+
+    def get_result(algorithm):
+        """Gets the results of running the algorithm."""
+        log_file.write("Running " + algorithm.upper() + ":\n")
+        summary, md5_hash = check_algorithm("--" + algorithm.lower())
+        if not summary:
+            return 1
+        log_file.write(" Summary: " + summary)  # Newline is in 'summary'.
+        log_file.write(" Hash: " + str(md5_hash) + "\n")
+        result.add((summary, md5_hash))
+        return 0
+    ret = get_result("bdd") | get_result("zbdd") | get_result("mocus")
+    if ret:
+        log_file.write("Analysis failed!\n")
+        return 1
+    assert result
+    if len(result) > 1:
+        log_file.write("Disagreement between algorithms!\n")
+        return 1
 
 
 def main():
@@ -176,10 +249,12 @@ def main():
     parser.add_argument("--mocus", action="store_true", help="focus on MOCUS")
     parser.add_argument("--bdd", action="store_true", help="focus on BDD")
     parser.add_argument("--zbdd", action="store_true", help="focus on ZBDD")
+    parser.add_argument("--cross-validate", action="store_true",
+                        help="compare results of BDD, ZBDD, and MOCUS")
     parser.add_argument("--coherent", action="store_true",
                         help="focus on coherent models")
     parser.add_argument("--normal", action="store_true",
-                        help="focus on models only with AND/OR gates")
+                        help="focus on models with AND/OR gates only")
     parser.add_argument("--prime-implicants", action="store_true",
                         help="focus on Prime Implicants")
     parser.add_argument("--time-limit", type=int, metavar="seconds",
@@ -199,9 +274,10 @@ def main():
                            (args.time_limit, args.time_limit))
 
     Config.configure(args)
+    call_function = cross_validate if args.cross_validate else call_scram
     for i in range(args.num_runs):
         input_file = generate_input(args.normal, args.coherent, args.output_dir)
-        if call_scram(input_file):
+        if call_function(input_file):
             print("SCRAM failed: " + input_file)
             continue
         os.remove(input_file)
