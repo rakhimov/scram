@@ -650,11 +650,15 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
 }
 
 bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {
-  if (!this->IsGate(node)) return false;  // Variables are never constants.
-  if (!node->module()) return true;  // Non-module gate.
-  if (kSettings_.prime_implicants()) return false;  // No Unity PI modules.
-  if (node->coherent() && (node->index() > 0)) return false;
-  return true;  // Non-coherent module in MCS.
+  if (kSettings_.prime_implicants()) return false;
+  // Unity node tests for minimal cut sets.
+  if (node->index() < 0) return true;  // Unity complement vars.
+  // Non-modular gates can be implied by other gates in the product;
+  // that is, (G1 & G2 = I & G2) if G2 implies G1.
+  //
+  // Non-coherent gates contain complements to be approximated to Unity.
+  if (this->IsGate(node)) return !node->module() || !node->coherent();
+  return false;  // Positive non-gate variable.
 }
 
 int Zbdd::GatherModules(

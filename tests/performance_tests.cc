@@ -134,9 +134,8 @@ TEST_F(PerformanceTest, DISABLED_Baobab1) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
   input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
-  settings.limit_order(8);
   ASSERT_NO_THROW(Analyze(input_files));
-  EXPECT_EQ(25892, NumOfProducts());
+  EXPECT_EQ(46188, NumOfProducts());
   EXPECT_NEAR(mcs_time, ProductGenerationTime(), mcs_time * delta);
 }
 

@@ -46,5 +46,17 @@ TEST_F(RiskAnalysisTest, Baobab1) {
   EXPECT_EQ(distr, ProductDistribution());
 }
 
+TEST_P(RiskAnalysisTest, Baobab1L8) {
+  std::vector<std::string> input_files = {
+      "./share/scram/input/Baobab/baobab1.xml",
+      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+  settings.limit_order(8);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_EQ(25892, products().size());
+  std::vector<int> distr = {0, 1, 1, 70, 400, 2212, 14748, 8460};
+  EXPECT_EQ(distr, ProductDistribution());
+}
+
 }  // namespace test
 }  // namespace scram
