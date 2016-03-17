@@ -28,11 +28,92 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "boolean_graph.h"
 #include "settings.h"
 
 namespace scram {
+
+/// @struct ControlBlock
+/// Control flags and pointers for communication
+/// between BDD vertex pointers and BDD tables.
+struct ControlBlock {
+  void* vertex;  ///< The manager of the control block.
+  int weak_count;  ///< Pointers in tables.
+};
+
+/// The default management of BDD vertices.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
+using IntrusivePtr = boost::intrusive_ptr<T>;
+
+/// A weak pointer to store in tables.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
+class WeakIntrusivePtr final {
+  /// No-throw swaperator for containers.
+  friend void swap(WeakIntrusivePtr& lhs, WeakIntrusivePtr& rhs) noexcept {
+    std::swap(lhs->control_block_, rhs->control_block_);
+  }
+
+ public:
+  /// Default constructor is to allow initialization in tables.
+  WeakIntrusivePtr() noexcept : control_block_(nullptr) {}
+
+  WeakIntrusivePtr(const WeakIntrusivePtr& ptr) = delete;  ///< No use.
+  WeakIntrusivePtr& operator=(const WeakIntrusivePtr&) = delete;  ///< No use.
+
+  /// Constructs from the shared pointer.
+  /// However, there is no weak-to-shared constructor.
+  ///
+  /// @param[in] ptr  Fully initialized intrusive pointer.
+  WeakIntrusivePtr(const IntrusivePtr<T>& ptr) noexcept
+      : control_block_(get_control_block(ptr.get())) {
+    control_block_->weak_count++;
+  }
+
+  /// Copy assignment from shared pointers
+  /// for convenient initialization with operator[] in hash tables.
+  ///
+  /// @param[in] ptr  Fully initialized intrusive pointer.
+  ///
+  /// @returns Reference to this.
+  WeakIntrusivePtr& operator=(const IntrusivePtr<T>& ptr) noexcept {
+    this->~WeakIntrusivePtr();
+    new(this) WeakIntrusivePtr(ptr);
+    return *this;
+  }
+
+  /// Decrements weak count in the control block.
+  /// If this is the last pointer and vertex is gone,
+  /// the control block is deleted.
+  ~WeakIntrusivePtr() noexcept {
+    if (control_block_) {
+      if (--control_block_->weak_count == 0 &&
+          control_block_->vertex == nullptr)
+        delete control_block_;
+    }
+  }
+
+  /// @returns true if the managed vertex is deleted or not initialized.
+  bool expired() const { return !control_block_ || !control_block_->vertex; }
+
+  /// @returns The intrusive pointer of the vertex.
+  ///
+  /// @warning Hard failure for uninitialized pointers.
+  IntrusivePtr<T> lock() const {
+    return IntrusivePtr<T>(static_cast<T*>(control_block_->vertex));
+  }
+
+ private:
+  ControlBlock* control_block_;  ///< To receive information from vertices.
+};
+
+template <class T>
+class Terminal;  // Forward declaration for Vertex to manage.
 
 /// @class Vertex
 /// Representation of a vertex in BDD graphs.
@@ -40,11 +121,48 @@ namespace scram {
 /// however, it is NOT polymorphic for performance reasons.
 ///
 /// @tparam T  The type of the main functional BDD vertex.
+///
+/// @pre Vertices are managed by reference counted pointers
+///      provided by this class' interface.
+/// @pre Vertices are not shared among separate BDD instances.
 template <class T>
 class Vertex {
+  /// @param[in] ptr  Vertex pointer managed by intrusive pointers.
+  ///
+  /// @returns The control block of intrusive counting for tables.
+  friend ControlBlock* get_control_block(Vertex<T>* ptr) noexcept {
+    return ptr->control_block_;
+  }
+
+  /// Increases the reference count for new intrusive pointers.
+  ///
+  /// @param[in] ptr  Vertex pointer managed by intrusive pointers.
+  friend void intrusive_ptr_add_ref(Vertex<T>* ptr) noexcept {
+    ptr->use_count_++;
+  }
+
+  /// Decrements the reference count for removed intrusive pointers.
+  /// If no more intrusive pointers left,
+  /// the object is deleted.
+  ///
+  /// @param[in] ptr  Vertex pointer managed by intrusive pointers.
+  friend void intrusive_ptr_release(Vertex<T>* ptr) noexcept {
+    assert(ptr->use_count_ > 0 && "Missing reference counts.");
+    if (--ptr->use_count_ == 0) {
+      if (!ptr->terminal()) {  // Likely.
+        delete static_cast<T*>(ptr);
+      } else {
+        delete static_cast<Terminal<T>*>(ptr);
+      }
+    }
+  }
+
  public:
   /// @param[in] id  Identifier of the BDD graph.
-  explicit Vertex(int id) : id_(id) {}
+  explicit Vertex(int id)
+      : id_(id),
+        use_count_(0),
+        control_block_(new ControlBlock{this}) {}
 
   Vertex(const Vertex&) = delete;
   Vertex& operator=(const Vertex&) = delete;
@@ -55,11 +173,30 @@ class Vertex {
   /// @returns true if this vertex is terminal.
   bool terminal() const { return id_ < 2; }
 
+  /// @returns The number of registered intrusive pointers.
+  int use_count() const { return use_count_; }
+
+  /// @returns true if there is only one registered shared pointer.
+  bool unique() const {
+    assert (use_count_ && "No registered shared pointers.");
+    return use_count_ == 1;
+  }
+
  protected:
-  ~Vertex() = default;
+  /// Communicates the destruction via the control block
+  /// if there's anyone left to care.
+  ~Vertex() noexcept {
+    if (control_block_->weak_count == 0) {
+      delete control_block_;
+    } else {
+      control_block_->vertex = nullptr;
+    }
+  }
 
  private:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.
+  int use_count_;  ///< Reference count for the intrusive pointer.
+  ControlBlock* control_block_;  ///< Communication channel for pointers.
 };
 
 /// @class Terminal
@@ -89,9 +226,8 @@ class Terminal : public Vertex<T> {
   /// @param[in] vertex  Pointer to a Vertex known to be a Terminal.
   ///
   /// @return Casted pointer to Terminal.
-  static std::shared_ptr<Terminal<T>> Ptr(
-      const std::shared_ptr<Vertex<T>>& vertex) {
-    return std::static_pointer_cast<Terminal<T>>(vertex);
+  static IntrusivePtr<Terminal<T>> Ptr(const IntrusivePtr<Vertex<T>>& vertex) {
+    return boost::static_pointer_cast<Terminal<T>>(vertex);
   }
 };
 
@@ -103,7 +239,7 @@ class Terminal : public Vertex<T> {
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
 class NonTerminal : public Vertex<T> {
-  using VertexPtr = std::shared_ptr<Vertex<T>>;  /// @todo Remove.
+  using VertexPtr = IntrusivePtr<Vertex<T>>;  ///< Convenient change point.
 
  public:
   /// @param[in] index  Index of this non-terminal vertex.
@@ -116,9 +252,9 @@ class NonTerminal : public Vertex<T> {
   NonTerminal(int index, int order, int id, const VertexPtr& high,
               const VertexPtr& low)
       : Vertex<T>(id),
-        order_(order),
         high_(high),
         low_(low),
+        order_(order),
         index_(index),
         module_(false),
         coherent_(false),
@@ -177,9 +313,9 @@ class NonTerminal : public Vertex<T> {
   }
 
  private:
-  int order_;  ///< Order of the variable.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  int order_;  ///< Order of the variable.
   int index_;  ///< Index of the variable.
   bool module_;  ///< Mark for module variables.
   bool coherent_;  ///< Mark for coherence.
@@ -228,8 +364,8 @@ class Ite : public NonTerminal<Ite> {
   /// @param[in] vertex  Pointer to a Vertex known to be an Ite.
   ///
   /// @return Casted pointer to Ite.
-  static std::shared_ptr<Ite> Ptr(const std::shared_ptr<Vertex<Ite>>& vertex) {
-    return std::static_pointer_cast<Ite>(vertex);
+  static IntrusivePtr<Ite> Ptr(const IntrusivePtr<Vertex<Ite>>& vertex) {
+    return boost::static_pointer_cast<Ite>(vertex);
   }
 
  private:
@@ -238,7 +374,7 @@ class Ite : public NonTerminal<Ite> {
   double factor_ = 0;  ///< Importance factor calculation results.
 };
 
-using ItePtr = std::shared_ptr<Ite>;  ///< Shared if-then-else vertices.
+using ItePtr = IntrusivePtr<Ite>;  ///< Shared if-then-else vertices.
 
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
@@ -293,8 +429,8 @@ class Bdd {
   friend class Zbdd;  // Direct access for calculation of prime implicants.
 
  public:
-  using VertexPtr = std::shared_ptr<Vertex<Ite>>;  ///< BDD vertex base.
-  using TerminalPtr = std::shared_ptr<Terminal<Ite>>;  ///< Terminal vertices.
+  using VertexPtr = IntrusivePtr<Vertex<Ite>>;  ///< BDD vertex base.
+  using TerminalPtr = IntrusivePtr<Terminal<Ite>>;  ///< Terminal vertices.
 
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
@@ -352,7 +488,7 @@ class Bdd {
   const std::vector<std::vector<int>>& products() const;
 
  private:
-  using IteWeakPtr = std::weak_ptr<Ite>;  ///< Pointer in containers.
+  using IteWeakPtr = WeakIntrusivePtr<Ite>;  ///< Pointer in containers.
   using UniqueTable = TripletTable<IteWeakPtr>;  ///< To keep BDD reduced.
   /// To store computed results with an ordered pair of arguments.
   /// This table introduces circular reference

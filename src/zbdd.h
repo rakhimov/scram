@@ -72,9 +72,9 @@ class SetNode : public NonTerminal<SetNode> {
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
   ///
   /// @return Casted pointer to SetNode.
-  static std::shared_ptr<SetNode> Ptr(
-      const std::shared_ptr<Vertex<SetNode>>& vertex) {
-    return std::static_pointer_cast<SetNode>(vertex);
+  static IntrusivePtr<SetNode> Ptr(
+      const IntrusivePtr<Vertex<SetNode>>& vertex) {
+    return boost::static_pointer_cast<SetNode>(vertex);
   }
 
  private:
@@ -83,14 +83,14 @@ class SetNode : public NonTerminal<SetNode> {
   int64_t count_ = 0;  ///< The number of products, nodes, or anything else.
 };
 
-using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
+using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
 
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
-  using VertexPtr = std::shared_ptr<Vertex<SetNode>>;  ///< ZBDD vertex base.
-  using TerminalPtr = std::shared_ptr<Terminal<SetNode>>;  ///< Terminal vertex.
+  using VertexPtr = IntrusivePtr<Vertex<SetNode>>;  ///< ZBDD vertex base.
+  using TerminalPtr = IntrusivePtr<Terminal<SetNode>>;  ///< Terminal vertex.
 
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.
@@ -135,7 +135,7 @@ class Zbdd {
   const std::vector<std::vector<int>>& products() const { return products_; }
 
  protected:
-  using SetNodeWeakPtr = std::weak_ptr<SetNode>;  ///< Pointer for tables.
+  using SetNodeWeakPtr = WeakIntrusivePtr<SetNode>;  ///< Pointer for tables.
   using UniqueTable = TripletTable<SetNodeWeakPtr>;  ///< To keep ZBDD reduced.
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
   using Product = std::vector<int>;  ///< For clarity of expected results.

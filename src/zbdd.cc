@@ -104,8 +104,8 @@ void Zbdd::Analyze() noexcept {
 }
 
 Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
-    : kBase_(std::make_shared<Terminal<SetNode>>(true)),
-      kEmpty_(std::make_shared<Terminal<SetNode>>(false)),
+    : kBase_(new Terminal<SetNode>(true)),
+      kEmpty_(new Terminal<SetNode>(false)),
       kSettings_(settings),
       root_(kEmpty_),
       coherent_(coherent),
@@ -211,7 +211,7 @@ SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
       node->low()->id() == low->id()) return node;
   SetNodePtr in_table =
       Zbdd::FetchUniqueTable(node->index(), high, low, node->order());
-  if (in_table.unique()) {
+  if (in_table->unique()) {
     in_table->module(node->module());
     in_table->coherent(node->coherent());
   }
@@ -224,7 +224,7 @@ SetNodePtr Zbdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
                                   const VertexPtr& low) noexcept {
   SetNodePtr in_table =
       Zbdd::FetchUniqueTable(gate->index(), high, low, gate->order());
-  if (in_table.unique()) {
+  if (in_table->unique()) {
     in_table->module(gate->IsModule());
     in_table->coherent(gate->coherent());
   }
@@ -243,7 +243,7 @@ Zbdd::VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
   int sign = complement ? -1 : 1;
   SetNodePtr in_table = Zbdd::FetchUniqueTable(sign * ite->index(), high, low,
                                                ite->order());
-  if (in_table.unique()) {
+  if (in_table->unique()) {
     in_table->module(ite->module());
     in_table->coherent(ite->coherent());
   }
@@ -724,7 +724,7 @@ Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   // Destroy the subgraph to remove extra reference counts.
   node->CutBranches();
 
-  if (node.use_count() > 2) node->products(result);
+  if (node->use_count() > 2) node->products(result);
   return result;
 }
 

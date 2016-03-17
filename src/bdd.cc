@@ -31,7 +31,7 @@ namespace scram {
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
       coherent_(fault_tree->coherent()),
-      kOne_(std::make_shared<Terminal<Ite>>(true)),
+      kOne_(new Terminal<Ite>(true)),
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
@@ -106,7 +106,7 @@ ItePtr Bdd::FetchUniqueTable(const ItePtr& ite, const VertexPtr& high,
                              bool complement_edge) noexcept {
   ItePtr in_table = Bdd::FetchUniqueTable(ite->index(), high, low,
                                           complement_edge, ite->order());
-  if (in_table.unique()) {
+  if (in_table->unique()) {
     in_table->module(ite->module());
     in_table->coherent(ite->coherent());
   }
@@ -121,7 +121,7 @@ ItePtr Bdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
   assert(gate->IsModule() && "Only module gates are expected for proxies.");
   ItePtr in_table = Bdd::FetchUniqueTable(gate->index(), high, low,
                                           complement_edge, gate->order());
-  if (in_table.unique()) {
+  if (in_table->unique()) {
     in_table->module(gate->IsModule());
     in_table->coherent(gate->coherent());
   }
