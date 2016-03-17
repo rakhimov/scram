@@ -22,6 +22,7 @@
 #define SCRAM_SRC_BDD_H_
 
 #include <array>
+#include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -70,7 +71,7 @@ class WeakIntrusivePtr final {
   /// However, there is no weak-to-shared constructor.
   ///
   /// @param[in] ptr  Fully initialized intrusive pointer.
-  WeakIntrusivePtr(const IntrusivePtr<T>& ptr) noexcept
+  explicit WeakIntrusivePtr(const IntrusivePtr<T>& ptr) noexcept
       : control_block_(get_control_block(ptr.get())) {
     control_block_->weak_count++;
   }
@@ -178,7 +179,7 @@ class Vertex {
 
   /// @returns true if there is only one registered shared pointer.
   bool unique() const {
-    assert (use_count_ && "No registered shared pointers.");
+    assert(use_count_ && "No registered shared pointers.");
     return use_count_ == 1;
   }
 

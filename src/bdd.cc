@@ -20,8 +20,6 @@
 
 #include "bdd.h"
 
-#include <algorithm>
-
 #include "event.h"
 #include "logger.h"
 #include "zbdd.h"
