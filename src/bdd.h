@@ -38,15 +38,18 @@ namespace scram {
 /// Representation of a vertex in BDD graphs.
 /// This is a base class for all BDD vertices;
 /// however, it is NOT polymorphic for performance reasons.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
 class Vertex {
  public:
-  /// @param[in] id  Identificator of the BDD graph.
-  explicit Vertex(int id);
+  /// @param[in] id  Identifier of the BDD graph.
+  explicit Vertex(int id) : id_(id) {}
 
   Vertex(const Vertex&) = delete;
   Vertex& operator=(const Vertex&) = delete;
 
-  /// @returns Identificator of the BDD graph rooted by this vertex.
+  /// @returns Identifier of the BDD graph rooted by this vertex.
   int id() const { return id_; }
 
   /// @returns true if this vertex is terminal.
@@ -66,25 +69,29 @@ class Vertex {
 /// there are at most two terminal vertices of value 1 or 0.
 /// If the BDD graph has attributed edges,
 /// only single terminal vertex is expected with value 1.
-class Terminal : public Vertex {
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
+class Terminal : public Vertex<T> {
  public:
   /// @param[in] value  True or False (1 or 0) terminal.
-  explicit Terminal(bool value);
+  explicit Terminal(bool value) : Vertex<T>(value) {}
 
   /// @returns The value of the terminal vertex.
   ///
   /// @note The value serves as an id for this terminal vertex.
   ///       Non-terminal if-then-else vertices should never have
   ///       identifications of value 0 or 1.
-  bool value() const { return Vertex::id(); }
+  bool value() const { return Vertex<T>::id(); }
 
   /// Recovers a shared pointer to Terminal from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a Terminal.
   ///
   /// @return Casted pointer to Terminal.
-  static std::shared_ptr<Terminal> Ptr(const std::shared_ptr<Vertex>& vertex) {
-    return std::static_pointer_cast<Terminal>(vertex);
+  static std::shared_ptr<Terminal<T>> Ptr(
+      const std::shared_ptr<Vertex<T>>& vertex) {
+    return std::static_pointer_cast<Terminal<T>>(vertex);
   }
 };
 
@@ -92,8 +99,11 @@ class Terminal : public Vertex {
 /// Representation of non-terminal vertices in BDD graphs.
 /// This class is a base class for various BDD-specific vertices.
 /// however, as Vertex, NonTerminal is not polymorphic.
-class NonTerminal : public Vertex {
-  using VertexPtr = std::shared_ptr<Vertex>;  /// @todo Remove.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
+class NonTerminal : public Vertex<T> {
+  using VertexPtr = std::shared_ptr<Vertex<T>>;  /// @todo Remove.
 
  public:
   /// @param[in] index  Index of this non-terminal vertex.
@@ -104,7 +114,15 @@ class NonTerminal : public Vertex {
   /// @param[in] high  A vertex for the (1/True/then/left) branch.
   /// @param[in] low  A vertex for the (0/False/else/right) branch.
   NonTerminal(int index, int order, int id, const VertexPtr& high,
-              const VertexPtr& low);
+              const VertexPtr& low)
+      : Vertex<T>(id),
+        order_(order),
+        high_(high),
+        low_(low),
+        index_(index),
+        module_(false),
+        coherent_(false),
+        mark_(false) {}
 
   /// @returns The index of this vertex.
   int index() const { return index_; }
@@ -177,7 +195,7 @@ class NonTerminal : public Vertex {
 ///       one of two (high/low) edges to assign the attribute.
 ///       Consistency is not the responsibility of this class
 ///       but of BDD algorithms and users.
-class Ite : public NonTerminal {
+class Ite : public NonTerminal<Ite> {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
@@ -210,7 +228,7 @@ class Ite : public NonTerminal {
   /// @param[in] vertex  Pointer to a Vertex known to be an Ite.
   ///
   /// @return Casted pointer to Ite.
-  static std::shared_ptr<Ite> Ptr(const std::shared_ptr<Vertex>& vertex) {
+  static std::shared_ptr<Ite> Ptr(const std::shared_ptr<Vertex<Ite>>& vertex) {
     return std::static_pointer_cast<Ite>(vertex);
   }
 
@@ -275,8 +293,8 @@ class Bdd {
   friend class Zbdd;  // Direct access for calculation of prime implicants.
 
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared BDD vertices.
-  using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+  using VertexPtr = std::shared_ptr<Vertex<Ite>>;  ///< BDD vertex base.
+  using TerminalPtr = std::shared_ptr<Terminal<Ite>>;  ///< Terminal vertices.
 
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.

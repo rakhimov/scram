@@ -113,8 +113,8 @@ void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
 }
 
 Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
-    : kBase_(std::make_shared<Terminal>(true)),
-      kEmpty_(std::make_shared<Terminal>(false)),
+    : kBase_(std::make_shared<Terminal<SetNode>>(true)),
+      kEmpty_(std::make_shared<Terminal<SetNode>>(false)),
       kSettings_(settings),
       root_(kEmpty_),
       coherent_(coherent),
@@ -248,8 +248,8 @@ Zbdd::VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
                                        const VertexPtr& high,
                                        const VertexPtr& low) noexcept {
   if (high->id() == low->id()) return low;
-  if (high->terminal() && !Terminal::Ptr(high)->value()) return low;
-  if (low->terminal() && Terminal::Ptr(low)->value()) return low;
+  if (high->terminal() && !Terminal<SetNode>::Ptr(high)->value()) return low;
+  if (low->terminal() && Terminal<SetNode>::Ptr(low)->value()) return low;
   assert(ite->index() > 0 && "BDD indices are never negative.");
   int sign = complement ? -1 : 1;
   SetNodePtr in_table = Zbdd::FetchUniqueTable(sign * ite->index(), high, low,
@@ -267,8 +267,8 @@ Zbdd::VertexPtr Zbdd::GetReducedVertex(const SetNodePtr& node,
                                        const VertexPtr& high,
                                        const VertexPtr& low) noexcept {
   if (high->id() == low->id()) return low;
-  if (high->terminal() && !Terminal::Ptr(high)->value()) return low;
-  if (low->terminal() && Terminal::Ptr(low)->value()) return low;
+  if (high->terminal() && !Terminal<SetNode>::Ptr(high)->value()) return low;
+  if (low->terminal() && Terminal<SetNode>::Ptr(low)->value()) return low;
   if (node->high()->id() == high->id() &&
       node->low()->id() == low->id()) return node;
   return Zbdd::FetchUniqueTable(node, high, low);
@@ -446,11 +446,11 @@ Zbdd::VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one,
                                   int limit_order) noexcept {
   if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal()) {
-    if (Terminal::Ptr(arg_one)->value()) return arg_two;
+    if (Terminal<SetNode>::Ptr(arg_one)->value()) return arg_two;
     return kEmpty_;
   }
   if (arg_two->terminal()) {
-    if (Terminal::Ptr(arg_two)->value()) return arg_one;
+    if (Terminal<SetNode>::Ptr(arg_two)->value()) return arg_one;
     return kEmpty_;
   }
   if (arg_one->id() == arg_two->id()) return arg_one;
@@ -505,11 +505,11 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
                                  int limit_order) noexcept {
   if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal()) {
-    if (Terminal::Ptr(arg_one)->value()) return kBase_;
+    if (Terminal<SetNode>::Ptr(arg_one)->value()) return kBase_;
     return arg_two;
   }
   if (arg_two->terminal()) {
-    if (Terminal::Ptr(arg_two)->value()) return kBase_;
+    if (Terminal<SetNode>::Ptr(arg_two)->value()) return kBase_;
     return arg_one;
   }
   if (arg_one->id() == arg_two->id()) return arg_one;
@@ -590,7 +590,7 @@ Zbdd::VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
   if (node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
     if (module->root_->terminal()) {
-      if (!Terminal::Ptr(module->root_)->value()) return low;
+      if (!Terminal<SetNode>::Ptr(module->root_)->value()) return low;
       return Zbdd::Apply<kOr>(high, low, kSettings_.limit_order());
     }
   }
@@ -607,8 +607,8 @@ Zbdd::VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   VertexPtr low = Zbdd::Minimize(node->low());
   high = Zbdd::Subsume(high, low);
   assert(high->id() != low->id() && "Subsume failed!");
-  if (high->terminal() && !Terminal::Ptr(high)->value()) {  // Reduction rule.
-    result = low;
+  if (high->terminal() && !Terminal<SetNode>::Ptr(high)->value()) {
+    result = low;  // Reduction rule.
     return result;
   }
   result = Zbdd::FetchUniqueTable(node, high, low);
@@ -618,7 +618,8 @@ Zbdd::VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
 
 Zbdd::VertexPtr Zbdd::Subsume(const VertexPtr& high,
                               const VertexPtr& low) noexcept {
-  if (low->terminal()) return Terminal::Ptr(low)->value() ? kEmpty_ : high;
+  if (low->terminal())
+    return Terminal<SetNode>::Ptr(low)->value() ? kEmpty_ : high;
   if (high->terminal()) return high;  // No need to reduce terminal sets.
   VertexPtr& computed = subsume_table_[{high->id(), low->id()}];
   if (computed) return computed;
@@ -646,7 +647,7 @@ Zbdd::VertexPtr Zbdd::Subsume(const VertexPtr& high,
     subhigh = Zbdd::Subsume(high_node->high(), low);
     sublow = Zbdd::Subsume(high_node->low(), low);
   }
-  if (subhigh->terminal() && !Terminal::Ptr(subhigh)->value()) {
+  if (subhigh->terminal() && !Terminal<SetNode>::Ptr(subhigh)->value()) {
     computed = sublow;
     return computed;
   }
@@ -674,7 +675,8 @@ int Zbdd::GatherModules(
     int current_order,
     std::unordered_map<int, std::pair<bool, int>>* modules) noexcept {
   assert(current_order >= 0);
-  if (vertex->terminal()) return Terminal::Ptr(vertex)->value() ? 0 : -1;
+  if (vertex->terminal())
+    return Terminal<SetNode>::Ptr(vertex)->value() ? 0 : -1;
   SetNodePtr node = SetNode::Ptr(vertex);
   int contribution = !Zbdd::MayBeUnity(node);
   int high_order = current_order + contribution;
@@ -701,7 +703,7 @@ int Zbdd::GatherModules(
 std::vector<std::vector<int>>
 Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
-    if (Terminal::Ptr(vertex)->value()) return {{}};  // The Base set signature.
+    if (Terminal<SetNode>::Ptr(vertex)->value()) return {{}};  // The Base set.
     return {};  // Don't include 0/NULL sets.
   }
   SetNodePtr node = SetNode::Ptr(vertex);
@@ -748,7 +750,7 @@ int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
 
 int64_t Zbdd::CountProducts(const VertexPtr& vertex, bool modules) noexcept {
   if (vertex->terminal()) {
-    if (Terminal::Ptr(vertex)->value()) return 1;
+    if (Terminal<SetNode>::Ptr(vertex)->value()) return 1;
     return 0;
   }
   SetNodePtr node = SetNode::Ptr(vertex);
@@ -785,8 +787,9 @@ void Zbdd::TestStructure(const VertexPtr& vertex, bool modules) noexcept {
   assert(node->index() && "Illegal index for a node.");
   assert(node->order() && "Improper order for nodes.");
   assert(node->high() && node->low() && "Malformed node high/low pointers.");
-  assert(!(node->high()->terminal() && !Terminal::Ptr(node->high())->value())
-         && "Reduction rule failure.");
+  assert(!(node->high()->terminal() &&
+           !Terminal<SetNode>::Ptr(node->high())->value()) &&
+         "Reduction rule failure.");
   assert((node->high()->id() != node->low()->id()) && "Minimization failure.");
   assert(!(!node->high()->terminal() &&
            node->order() >= SetNode::Ptr(node->high())->order()) &&

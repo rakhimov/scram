@@ -35,7 +35,7 @@ namespace scram {
 /// Representation of non-terminal nodes in ZBDD.
 /// Complement variables are represented with negative indices.
 /// The order of the complement is higher than the order of the variable.
-class SetNode : public NonTerminal {
+class SetNode : public NonTerminal<SetNode> {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
@@ -72,7 +72,8 @@ class SetNode : public NonTerminal {
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
   ///
   /// @return Casted pointer to SetNode.
-  static std::shared_ptr<SetNode> Ptr(const std::shared_ptr<Vertex>& vertex) {
+  static std::shared_ptr<SetNode> Ptr(
+      const std::shared_ptr<Vertex<SetNode>>& vertex) {
     return std::static_pointer_cast<SetNode>(vertex);
   }
 
@@ -88,8 +89,8 @@ using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared ZBDD vertices.
-  using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+  using VertexPtr = std::shared_ptr<Vertex<SetNode>>;  ///< ZBDD vertex base.
+  using TerminalPtr = std::shared_ptr<Terminal<SetNode>>;  ///< Terminal vertex.
 
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.

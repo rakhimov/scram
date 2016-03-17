@@ -55,7 +55,8 @@ namespace test {
 TEST(RegressionTest, ObjectSize) {
   // x86-64 platform.
   // 64-bit platform with alignment at 8-byte boundaries.
-  EXPECT_EQ(48, sizeof(NonTerminal));
+  EXPECT_EQ(4, sizeof(Vertex<Ite>));
+  EXPECT_EQ(48, sizeof(NonTerminal<Ite>));
   EXPECT_EQ(64, sizeof(Ite));
   EXPECT_EQ(80, sizeof(SetNode));
 }
