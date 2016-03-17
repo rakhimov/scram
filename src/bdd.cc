@@ -31,7 +31,6 @@ namespace scram {
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
       coherent_(fault_tree->coherent()),
-      unique_table_(std::make_shared<UniqueTable>()),
       kOne_(std::make_shared<Terminal<Ite>>(true)),
       function_id_(2) {
   CLOCK(init_time);
@@ -59,7 +58,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   Bdd::ClearMarks(false);
@@ -67,12 +66,10 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
   // Clear tables if no more calculations are expected.
-  if (coherent_) {
-    LOG(DEBUG5) << "BDD switched off the garbage collector.";
-    unique_table_.reset();
-  }
   Bdd::ClearTables();
   if (coherent_) {
+    unique_table_.clear();
+    unique_table_.reserve(0);
     and_table_.reserve(0);
     or_table_.reserve(0);
   }
@@ -90,28 +87,15 @@ const std::vector<std::vector<int>>& Bdd::products() const {
   return zbdd_->products();
 }
 
-void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
-  if (!unique_table_.expired()) {
-    LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
-    unique_table_.lock()->erase(
-        {ptr->index(),
-         ptr->high()->id(),
-         (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
-  }
-  delete ptr;
-}
-
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
                              int order) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
   int sign = complement_edge ? -1 : 1;
-  IteWeakPtr& in_table =
-      (*unique_table_)[{index, high->id(), sign * low->id()}];
+  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  ItePtr ite(new Ite(index, order, function_id_++, high, low),
-             GarbageCollector(this));
+  ItePtr ite(new Ite(index, order, function_id_++, high, low));
   ite->complement_edge(complement_edge);
   in_table = ite;
   return ite;

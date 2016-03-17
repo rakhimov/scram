@@ -66,7 +66,7 @@ Fault Tree Analysis (MOCUS)
 Baobab1 -l 7 (mcs = 17432)
 --------------------------
 
-Debug build:  2.5
+Debug build:  2.1
 
 Release build:  0.40
 
@@ -77,7 +77,7 @@ Release build:  0.40
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  2.5
+Debug build:  2.2
 
 Release build: 0.40
 
@@ -105,7 +105,7 @@ Baobab1 (mcs = 46188)
 Debug build:
 ~~~~~~~~~~~~
 
-- Total ZBDD time           1.8  |  2.0
+- Total ZBDD time:  1.7
 
     * # of ZBDD nodes created: 79264  |  86228
     * # of SetNodes in ZBDD: 3338
@@ -138,13 +138,13 @@ CEA9601 -l 4 (mcs = 54436)
 Debug build:
 ------------
 
-- BDD Time: 13     |  18
-- ZBDD Time: 1.8
+- BDD Time: 13
+- ZBDD Time: 1.0
 
 Release build:
 --------------
 
-- BDD Time: 3.8    |  5.1
+- BDD Time: 3.8    |  4.0
 - ZBDD Time: 0.30
 
 - # of BDD vertices created: 3013946  |  3048123
@@ -153,13 +153,13 @@ Release build:
 - Memory:   480
 
 
-CEA9601 -l 4 (mcs = 1614876)
+CEA9601 -l 5 (mcs = 1614876)
 ============================
 
 Release build:
 --------------
 
-- BDD Time: 5.1
+- BDD Time: 4.0
 - ZBDD Time: 4.0
 - Reporting (/dev/null): 5.2
 

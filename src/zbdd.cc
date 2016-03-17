@@ -41,7 +41,7 @@ namespace scram {
 void Zbdd::Log() noexcept {
   CHECK_ZBDD(false);
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();
@@ -91,7 +91,7 @@ void Zbdd::Analyze() noexcept {
   CLOCK(gen_time);
   LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
   // Complete cleanup of the memory.
-  unique_table_.reset();  // Important to turn the garbage collector off.
+  unique_table_.clear();
   Zbdd::ClearTables();
 
   products_ = Zbdd::GenerateProducts(root_);
@@ -103,15 +103,6 @@ void Zbdd::Analyze() noexcept {
   LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(gen_time);
 }
 
-void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
-  if (!unique_table_.expired()) {
-    LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
-    unique_table_.lock()->erase({ptr->index(), ptr->high()->id(),
-                                 ptr->low()->id()});
-  }
-  delete ptr;
-}
-
 Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
     : kBase_(std::make_shared<Terminal<SetNode>>(true)),
       kEmpty_(std::make_shared<Terminal<SetNode>>(false)),
@@ -119,7 +110,6 @@ Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
       root_(kEmpty_),
       coherent_(coherent),
       module_index_(module_index),
-      unique_table_(std::make_shared<UniqueTable>()),
       set_id_(2) {}
 
 Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
@@ -207,11 +197,10 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
 
 SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
                                   const VertexPtr& low, int order) noexcept {
-  SetNodeWeakPtr& in_table = (*unique_table_)[{index, high->id(), low->id()}];
+  SetNodeWeakPtr& in_table = unique_table_[{index, high->id(), low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  SetNodePtr node(new SetNode(index, order, set_id_++, high, low),
-                  GarbageCollector(this));
+  SetNodePtr node(new SetNode(index, order, set_id_++, high, low));
   in_table = node;
   return node;
 }

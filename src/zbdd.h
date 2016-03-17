@@ -140,26 +140,6 @@ class Zbdd {
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
   using Product = std::vector<int>;  ///< For clarity of expected results.
 
-  /// @class GarbageCollector
-  /// This garbage collector manages tables of a ZBDD.
-  /// The garbage collection is triggered
-  /// when the reference count of a ZBDD vertex reaches 0.
-  class GarbageCollector {
-   public:
-    /// @param[in,out] zbdd  ZBDD to manage.
-    explicit GarbageCollector(Zbdd* zbdd) noexcept
-        : unique_table_(zbdd->unique_table_) {}
-
-    /// Frees the memory
-    /// and triggers the garbage collection ONLY if requested.
-    ///
-    /// @param[in] ptr  Pointer to a SetNode vertex with reference count 0.
-    void operator()(SetNode* ptr) noexcept;
-
-   private:
-    std::weak_ptr<UniqueTable> unique_table_;  ///< Managed table.
-  };
-
   /// Default constructor to initialize member variables.
   ///
   /// @param[in] settings  Settings that control analysis complexity.
@@ -620,7 +600,7 @@ class Zbdd {
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
-  std::shared_ptr<UniqueTable> unique_table_;
+  UniqueTable unique_table_;
 
   /// Table of processed computations over sets.
   /// The argument sets are recorded with their IDs (not vertex indices).

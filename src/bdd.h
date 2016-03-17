@@ -359,26 +359,6 @@ class Bdd {
   /// if one of the arguments is the computation result.
   using ComputeTable = PairTable<Function>;
 
-  /// @class GarbageCollector
-  /// This garbage collector manages tables of a BDD.
-  /// The garbage collection is triggered
-  /// when the reference count of a BDD vertex reaches 0.
-  class GarbageCollector {
-   public:
-    /// @param[in,out] bdd  BDD to manage.
-    explicit GarbageCollector(Bdd* bdd) noexcept
-        : unique_table_(bdd->unique_table_) {}
-
-    /// Frees the memory
-    /// and triggers the garbage collection ONLY if requested.
-    ///
-    /// @param[in] ptr  Pointer to an ITE vertex with reference count 0.
-    void operator()(Ite* ptr) noexcept;
-
-   private:
-    std::weak_ptr<UniqueTable> unique_table_;  ///< Managed table.
-  };
-
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
   /// a new vertex is created.
@@ -391,8 +371,7 @@ class Bdd {
   ///
   /// @returns If-then-else node with the given parameters.
   ///
-  /// @pre Expired pointers in the unique table are garbage collected.
-  /// @pre Only pointers in the unique table are
+  /// @pre Non-expired pointers in the unique table are
   ///      either in the BDD or in the computation table.
   ItePtr FetchUniqueTable(int index, const VertexPtr& high,
                           const VertexPtr& low, bool complement_edge,
@@ -573,7 +552,7 @@ class Bdd {
   /// The key consists of ite(index, id_high, id_low),
   /// where IDs are unique (id_high != id_low) identifications of
   /// unique reduced-ordered function graphs.
-  std::shared_ptr<UniqueTable> unique_table_;
+  UniqueTable unique_table_;
 
   /// Tables of processed computations over functions.
   /// The argument functions are recorded with their IDs (not vertex indices).
