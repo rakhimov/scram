@@ -83,12 +83,14 @@ class SetNode : public NonTerminal {
 };
 
 using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
-using SetNodeWeakPtr = std::weak_ptr<SetNode>;  ///< Pointer for tables.
 
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
+  using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared ZBDD vertices.
+  using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.
   ///
@@ -132,6 +134,7 @@ class Zbdd {
   const std::vector<std::vector<int>>& products() const { return products_; }
 
  protected:
+  using SetNodeWeakPtr = std::weak_ptr<SetNode>;  ///< Pointer for tables.
   using UniqueTable = TripletTable<SetNodeWeakPtr>;  ///< To keep ZBDD reduced.
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
   using Product = std::vector<int>;  ///< For clarity of expected results.
@@ -274,7 +277,7 @@ class Zbdd {
   /// @returns Pointer to the root vertex of the ZBDD graph.
   ///
   /// @post The input BDD structure is not changed.
-  VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
+  VertexPtr ConvertBdd(const Bdd::VertexPtr& vertex, bool complement,
                        Bdd* bdd_graph, int limit_order,
                        PairTable<VertexPtr>* ites) noexcept;
 

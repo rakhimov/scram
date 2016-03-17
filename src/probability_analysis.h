@@ -269,7 +269,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   ///
   /// @warning If a vertex is already marked with the input mark,
   ///          it will not be traversed and updated with a probability value.
-  double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
+  double CalculateProbability(const Bdd::VertexPtr& vertex, bool mark) noexcept;
 
   Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
   bool current_mark_;  ///< To keep track of BDD current mark.

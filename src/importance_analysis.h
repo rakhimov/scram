@@ -223,14 +223,15 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   /// @note Probability factor fields are used to save results.
   /// @note The graph needs cleaning its marks after this function
   ///       because the graph gets continuously-but-partially marked.
-  double CalculateMif(const VertexPtr& vertex, int order, bool mark) noexcept;
+  double CalculateMif(const Bdd::VertexPtr& vertex, int order,
+                      bool mark) noexcept;
 
   /// Retrieves memorized probability values for BDD function graphs.
   ///
   /// @param[in] vertex  Vertex with calculated probabilities.
   ///
   /// @returns Saved probability value of the vertex.
-  double RetrieveProbability(const VertexPtr& vertex) noexcept;
+  double RetrieveProbability(const Bdd::VertexPtr& vertex) noexcept;
 
   Bdd* bdd_graph_;  ///< Binary decision diagram for the analyzer.
 };

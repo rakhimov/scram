@@ -88,14 +88,13 @@ class Terminal : public Vertex {
   }
 };
 
-using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared BDD vertices.
-using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
-
 /// @class NonTerminal
 /// Representation of non-terminal vertices in BDD graphs.
 /// This class is a base class for various BDD-specific vertices.
 /// however, as Vertex, NonTerminal is not polymorphic.
 class NonTerminal : public Vertex {
+  using VertexPtr = std::shared_ptr<Vertex>;  /// @todo Remove.
+
  public:
   /// @param[in] index  Index of this non-terminal vertex.
   /// @param[in] order  Specific ordering number for BDD graphs.
@@ -222,7 +221,6 @@ class Ite : public NonTerminal {
 };
 
 using ItePtr = std::shared_ptr<Ite>;  ///< Shared if-then-else vertices.
-using IteWeakPtr = std::weak_ptr<Ite>;  ///< Pointer for storage outside of BDD.
 
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
@@ -277,6 +275,9 @@ class Bdd {
   friend class Zbdd;  // Direct access for calculation of prime implicants.
 
  public:
+  using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared BDD vertices.
+  using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
@@ -333,6 +334,7 @@ class Bdd {
   const std::vector<std::vector<int>>& products() const;
 
  private:
+  using IteWeakPtr = std::weak_ptr<Ite>;  ///< Pointer in containers.
   using UniqueTable = TripletTable<IteWeakPtr>;  ///< To keep BDD reduced.
   /// To store computed results with an ordered pair of arguments.
   /// This table introduces circular reference
