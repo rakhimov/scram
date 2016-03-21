@@ -23,7 +23,9 @@
 
 #include <cstdint>
 
+#include <array>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -85,6 +87,27 @@ class SetNode : public NonTerminal<SetNode> {
 
 using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
 
+using Triplet = std::array<int, 3>;  ///< Triplet of numbers for functions.
+
+/// @struct TripletHash
+/// Functor for hashing triplets of ordered numbers.
+struct TripletHash {
+  /// Operator overload for hashing three ordered numbers.
+  ///
+  /// @param[in] triplet  Three numbers.
+  ///
+  /// @returns Hash value of the triplet.
+  std::size_t operator()(const Triplet& triplet) const noexcept {
+    return boost::hash_range(triplet.begin(), triplet.end());
+  }
+};
+
+/// Hash table with triplets of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
+template <typename Value>
+using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
+
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
@@ -136,7 +159,6 @@ class Zbdd {
 
  protected:
   using SetNodeWeakPtr = WeakIntrusivePtr<SetNode>;  ///< Pointer for tables.
-  using UniqueTable = TripletTable<SetNodeWeakPtr>;  ///< To keep ZBDD reduced.
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
   using Product = std::vector<int>;  ///< For clarity of expected results.
 
@@ -600,7 +622,7 @@ class Zbdd {
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
-  UniqueTable unique_table_;
+  UniqueTable<SetNode> unique_table_;
 
   /// Table of processed computations over sets.
   /// The argument sets are recorded with their IDs (not vertex indices).

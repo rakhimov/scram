@@ -66,8 +66,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   // Clear tables if no more calculations are expected.
   Bdd::ClearTables();
   if (coherent_) {
-    unique_table_.clear();
-    unique_table_.reserve(0);
+    unique_table_.Release();
     and_table_.reserve(0);
     or_table_.reserve(0);
   }
@@ -89,8 +88,9 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
                              int order) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
-  int sign = complement_edge ? -1 : 1;
-  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  IteWeakPtr& in_table =
+      unique_table_.FindOrAdd(index, high->id(),
+                              complement_edge ? -low->id() : low->id());
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
   ItePtr ite(new Ite(index, order, function_id_++, high, low));

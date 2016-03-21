@@ -21,8 +21,8 @@
 #ifndef SCRAM_SRC_BDD_H_
 #define SCRAM_SRC_BDD_H_
 
-#include <array>
 #include <algorithm>
+#include <forward_list>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -50,22 +50,19 @@ struct ControlBlock {
 template <class T>
 using IntrusivePtr = boost::intrusive_ptr<T>;
 
-/// A weak pointer to store in tables.
+/// A weak pointer to store in BDD unique tables.
+/// This weak pointer is unique pointer as well
+/// because vertices should not be easily shared among multiple BDDs.
 ///
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
 class WeakIntrusivePtr final {
-  /// No-throw swaperator for containers.
-  friend void swap(WeakIntrusivePtr& lhs, WeakIntrusivePtr& rhs) noexcept {
-    std::swap(lhs->control_block_, rhs->control_block_);
-  }
-
  public:
   /// Default constructor is to allow initialization in tables.
   WeakIntrusivePtr() noexcept : control_block_(nullptr) {}
 
-  WeakIntrusivePtr(const WeakIntrusivePtr& ptr) = delete;  ///< No use.
-  WeakIntrusivePtr& operator=(const WeakIntrusivePtr&) = delete;  ///< No use.
+  WeakIntrusivePtr(const WeakIntrusivePtr&) = delete;
+  WeakIntrusivePtr& operator=(const WeakIntrusivePtr&) = delete;
 
   /// Constructs from the shared pointer.
   /// However, there is no weak-to-shared constructor.
@@ -242,6 +239,20 @@ template <class T>
 class NonTerminal : public Vertex<T> {
   using VertexPtr = IntrusivePtr<Vertex<T>>;  ///< Convenient change point.
 
+  /// Default logic for getting signature high and low ids.
+  ///
+  /// @param[in] vertex  Non-terminal vertex.
+  ///
+  /// @returns Numbers that can be used to uniquely identify the arg vertex.
+  /// @{
+  friend int get_high_id(const NonTerminal<T>& vertex) noexcept {
+    return vertex.high_->id();
+  }
+  friend int get_low_id(const NonTerminal<T>& vertex) noexcept {
+    return vertex.low_->id();
+  }
+  /// @}
+
  public:
   /// @param[in] index  Index of this non-terminal vertex.
   /// @param[in] order  Specific ordering number for BDD graphs.
@@ -327,21 +338,30 @@ class NonTerminal : public Vertex<T> {
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
 /// This class is designed to help construct and manipulate BDD graphs.
 ///
-/// @note This class provides one attributed complement edge.
-///       The BDD data structure must choose
-///       one of two (high/low) edges to assign the attribute.
-///       Consistency is not the responsibility of this class
-///       but of BDD algorithms and users.
+/// This class provides one attributed complement edge.
+/// The attributed edge applies to the low/false/0 branch of the vertex.
+/// However, there is no logic to check
+/// if the complement edge manipulations are valid.
+/// Consistency is the responsibility of BDD algorithms and users.
 class Ite : public NonTerminal<Ite> {
+  /// Special handling of the complement flag in computing low id signature.
+  ///
+  /// @param[in] ite  Ite vertex.
+  ///
+  /// @returns The signed number for complement low id.
+  friend int get_low_id(const Ite& ite) noexcept {
+    return ite.complement_edge_ ? -ite.low()->id() : ite.low()->id();
+  }
+
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
-  /// @returns true if the chosen edge is complement.
+  /// @returns true if the low edge is complement.
   bool complement_edge() const { return complement_edge_; }
 
-  /// Sets the complement flag for the chosen edge.
+  /// Sets the complement flag for the low edge.
   ///
-  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
+  /// @param[in] flag  Indicator to treat the low branch as a complement.
   void complement_edge(bool flag) { complement_edge_ = flag; }
 
   /// @returns The probability of the function graph.
@@ -377,26 +397,159 @@ class Ite : public NonTerminal<Ite> {
 
 using ItePtr = IntrusivePtr<Ite>;  ///< Shared if-then-else vertices.
 
-using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
-
-/// @struct TripletHash
-/// Functor for hashing triplets of ordered numbers.
-struct TripletHash {
-  /// Operator overload for hashing three ordered numbers.
-  ///
-  /// @param[in] triplet  (v, G, H) nodes.
-  ///
-  /// @returns Hash value of the triplet.
-  std::size_t operator()(const Triplet& triplet) const noexcept {
-    return boost::hash_range(triplet.begin(), triplet.end());
-  }
-};
-
-/// Hash table with triplets of numbers as keys.
+/// @class UniqueTable
+/// A hash table for keeping BDD reduced.
+/// The management of the hash table is intrusive;
+/// that is, it relies on BDD vertices to provide necessary information.
 ///
-/// @tparam Value  Type of values to be stored in the table.
-template <typename Value>
-using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
+/// Each vertex must have a unique signature
+/// consisting of its index, special high and low ids.
+/// This signature is the key of the hash table;
+/// however, it is not duplicated in the table.
+/// The key is retrieved from the vertex as needed.
+///
+/// High and low ids are retrieved through unqualified calls
+/// to get_high_id(const T&) and get_low_id(const T&).
+/// This allows specialization of id calculations with attributed edges
+/// where simple calls for high/low ids may miss the edge information.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+template <class T>
+class UniqueTable {
+  /// Convenient aliases and customization points.
+  /// @{
+  using Bucket = std::forward_list<WeakIntrusivePtr<T>>;
+  using Table = std::vector<Bucket>;
+  /// @}
+
+ public:
+  /// Constructor for small graphs.
+  UniqueTable()
+      : capacity_(1001),
+        size_(0),
+        max_load_factor_(0.75),
+        table_(capacity_) {}
+
+  /// @returns The current number of entries.
+  int size() const { return size_; }
+
+  /// Erases all entries.
+  void clear() {
+    for (Bucket& chain : table_) chain.clear();
+  }
+
+  /// Releases all the memory associated with managing this table with BDD.
+  ///
+  /// @post No use after release.
+  //
+  /// @note The call for release is not mandatory.
+  ///       This functionality is experimental
+  ///       to discover best points that minimize memory usage
+  ///       considering the responsibilities of the BDD.
+  ///       The release keeps the data about the table,
+  ///       such as its size and capacity.
+  void Release() {
+    table_.clear();
+    table_.reserve(0);
+  }
+
+  /// Finds an existing BDD vertex or
+  /// inserts a default constructed weak pointer for a new vertex.
+  /// Proper initialization of the new vertex is responsibility of the BDD.
+  ///
+  /// Insertion operation may trigger resizing and rehashing.
+  /// Rehashing eliminates expired weak pointers.
+  ///
+  /// Collision resolution may also (opportunistically) remove
+  /// expired pointers in the chain.
+  ///
+  /// @param[in] index  Index of the variable.
+  /// @param[in] high_id  The id of the high vertex.
+  /// @param[in] low_id  The id of the low vertex.
+  ///
+  /// @returns Reference to the weak pointer.
+  WeakIntrusivePtr<T>& FindOrAdd(int index, int high_id, int low_id) noexcept {
+    if (max_load_factor_ < (static_cast<double>(size_) / capacity_))
+      UniqueTable::Rehash(2 * capacity_ + 1);
+
+    int bucket_number = UniqueTable::Hash(index, high_id, low_id) % capacity_;
+    Bucket& chain = table_[bucket_number];
+    auto it_prev = chain.before_begin();  // Parent.
+    for (auto it_cur = chain.begin(), it_end = chain.end(); it_cur != it_end;) {
+      if (it_cur->expired()) {
+        it_cur = chain.erase_after(it_prev);
+        --size_;
+      } else {
+        IntrusivePtr<T> vertex = it_cur->lock();
+        if (index == vertex->index() && high_id == get_high_id(*vertex) &&
+            low_id == get_low_id(*vertex)) {
+          return *it_cur;
+        }
+        it_prev = it_cur;
+        ++it_cur;
+      }
+    }
+    ++size_;
+    return *chain.emplace_after(it_prev);
+  }
+
+ private:
+  /// Rehashes the table for the new number of buckets.
+  /// Upon rehashing the expired nodes are not moved to the new table.
+  ///
+  /// @param[in] new_capacity  The desired number of buckets.
+  void Rehash(int new_capacity) {
+    int new_size = 0;
+    Table new_table(new_capacity);
+    for (Bucket& chain : table_) {
+      for (auto it_prev = chain.before_begin(), it_cur = chain.begin(),
+                it_end = chain.end();
+           it_cur != it_end;) {
+        if (it_cur->expired()) {
+          it_prev = it_cur;
+          ++it_cur;
+          continue;
+        }
+        ++new_size;
+        IntrusivePtr<T> vertex = it_cur->lock();
+        int bucket_number =
+            UniqueTable::Hash(vertex->index(), get_high_id(*vertex),
+                              get_low_id(*vertex)) %
+            capacity_;
+        Bucket& new_chain = new_table[bucket_number];
+        new_chain.splice_after(new_chain.before_begin(), chain, it_prev,
+                               ++it_cur);
+      }
+    }
+    std::swap(table_, new_table);
+    size_ = new_size;
+    capacity_ = new_capacity;
+  }
+
+  /// Computes the hash value of the key.
+  ///
+  /// @param[in] index  Index of the variable.
+  /// @param[in] high_id  The id of the high vertex.
+  /// @param[in] low_id  The id of the low vertex.
+  ///
+  /// @returns The combined hash value of the argument numbers.
+  std::size_t Hash(int index, int high_id, int low_id) {
+    std::size_t seed = 0;
+    boost::hash_combine(seed, index);
+    boost::hash_combine(seed, high_id);
+    boost::hash_combine(seed, low_id);
+    return seed;
+  }
+
+  int capacity_;  ///< The total number of buckets in the table.
+  int size_;  ///< The total number of elements in the table.
+  double max_load_factor_;  ///< The limit on the avg. # of elements per bucket.
+
+  /// A table of unique vertices is stored with weak pointers
+  /// so that this hash table does not interfere
+  /// with BDD node management with shared pointers.
+  Table table_;
+};
 
 /// @class PairHash
 /// Function for hashing a pair of ordered numbers.
@@ -490,11 +643,7 @@ class Bdd {
 
  private:
   using IteWeakPtr = WeakIntrusivePtr<Ite>;  ///< Pointer in containers.
-  using UniqueTable = TripletTable<IteWeakPtr>;  ///< To keep BDD reduced.
-  /// To store computed results with an ordered pair of arguments.
-  /// This table introduces circular reference
-  /// if one of the arguments is the computation result.
-  using ComputeTable = PairTable<Function>;
+  using ComputeTable = PairTable<Function>;  ///< Computation results.
 
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
@@ -689,7 +838,7 @@ class Bdd {
   /// The key consists of ite(index, id_high, id_low),
   /// where IDs are unique (id_high != id_low) identifications of
   /// unique reduced-ordered function graphs.
-  UniqueTable unique_table_;
+  UniqueTable<Ite> unique_table_;
 
   /// Tables of processed computations over functions.
   /// The argument functions are recorded with their IDs (not vertex indices).

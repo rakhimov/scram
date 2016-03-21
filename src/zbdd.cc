@@ -91,7 +91,7 @@ void Zbdd::Analyze() noexcept {
   CLOCK(gen_time);
   LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
   // Complete cleanup of the memory.
-  unique_table_.clear();
+  unique_table_.Release();
   Zbdd::ClearTables();
 
   products_ = Zbdd::GenerateProducts(root_);
@@ -197,7 +197,8 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
 
 SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
                                   const VertexPtr& low, int order) noexcept {
-  SetNodeWeakPtr& in_table = unique_table_[{index, high->id(), low->id()}];
+  SetNodeWeakPtr& in_table =
+      unique_table_.FindOrAdd(index, high->id(), low->id());
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
   SetNodePtr node(new SetNode(index, order, set_id_++, high, low));

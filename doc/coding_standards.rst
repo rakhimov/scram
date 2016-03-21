@@ -132,7 +132,7 @@ Monitoring Code Quality
 C++
 ---
 
-#. Performance profiling with Gprof and Valgrind_
+#. Performance profiling with Gprof, Valgrind_, and ``perf``
 #. Code coverage check with Gcov_ and reporting with Coveralls_
 #. Memory management bugs and leaks with Valgrind_
 #. Static code analysis with Coverity_ and CppCheck_
