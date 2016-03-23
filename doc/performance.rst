@@ -81,8 +81,8 @@ Debug build:  2.2
 
 Release build: 0.30  |  0.34
 
-- # of ZBDD nodes created: 34862  |  38241
-- # of SetNodes in ZBDD: 3333  |  4961
+- # of ZBDD nodes created: 34862  |  35380
+- # of SetNodes in ZBDD: 3333  |  3478
 
 - Memory:   23
 
@@ -106,10 +106,10 @@ Baobab1 (mcs = 46188)
 
 Debug build:  1.7
 
-Release build:  0.44
+Release build:  0.37
 
 - # of ZBDD nodes created: 79264  |  113310
-- # of SetNodes in ZBDD: 3338  |  5117
+- # of SetNodes in ZBDD: 3338  |  4122
 
 - Memory:   48
 
@@ -143,19 +143,19 @@ CEA9601 -l 4 (mcs = 54436)
 Debug build:
 ------------
 
-- BDD Time: 10
+- BDD Time: 8.7
 - ZBDD Time: 1.0
 
 Release build:
 --------------
 
-- BDD Time: 3.2
+- BDD Time: 2.5
 - ZBDD Time: 0.20
 
-- # of BDD vertices created: 3013946  |  3182993
-- # of ITE in BDD: 1175468  |  1194790
+- # of BDD vertices created: 3013946  |  3066051
+- # of ITE in BDD: 1175468
 
-- Memory:   340
+- Memory:   330
 
 - Cache-misses:  50.0 %
 
@@ -166,12 +166,13 @@ CEA9601 -l 5 (mcs = 1615876)
 Release build:
 --------------
 
-- BDD Time: 3.3
+- BDD Time: 2.5
 - ZBDD Time: 4.0
 
 - Reporting (/dev/null): 5.2
 
-- # of ZBDD vertices created: 43593  |  48992
+- # of ZBDD vertices created: 43593  |  45845
+- # of Nodes in ZBDD: 11351
 - ZBDD Cut set extraction time: 3.5
 - ZBDD Cut set extraction memory: 240
 

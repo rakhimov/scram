@@ -21,6 +21,8 @@
 #ifndef SCRAM_SRC_BDD_H_
 #define SCRAM_SRC_BDD_H_
 
+#include <cmath>
+
 #include <algorithm>
 #include <forward_list>
 #include <memory>
@@ -475,7 +477,7 @@ class UniqueTable {
   /// @returns Reference to the weak pointer.
   WeakIntrusivePtr<T>& FindOrAdd(int index, int high_id, int low_id) noexcept {
     if (max_load_factor_ < (static_cast<double>(size_) / capacity_))
-      UniqueTable::Rehash(2 * capacity_ + 1);
+      UniqueTable::Rehash(UniqueTable::GetNextCapacity(capacity_));
 
     int bucket_number = UniqueTable::Hash(index, high_id, low_id) % capacity_;
     Bucket& chain = table_[bucket_number];
@@ -544,6 +546,25 @@ class UniqueTable {
     boost::hash_combine(seed, high_id);
     boost::hash_combine(seed, low_id);
     return seed;
+  }
+
+  /// Computes a new capacity for resizing.
+  ///
+  /// @param[in] prev_capacity  The current capacity.
+  ///
+  /// @returns The new capacity scaled by the growth factor function.
+  ///
+  /// @note The growth tries to take into account the growth patterns of BDD.
+  /// @note Prime numbers have been tried,
+  ///       but the performance hasn't been noticeably different.
+  int GetNextCapacity(int prev_capacity) {
+    const int kMaxScaleCapacity = 1e8;
+    int scale_power = 1;  // The default power after the max scale capacity.
+    if (prev_capacity < kMaxScaleCapacity) {
+      scale_power += std::log10(kMaxScaleCapacity / prev_capacity);
+    }
+    int growth_factor = std::pow(2, scale_power);
+    return prev_capacity * growth_factor + 1;  // Odd numbers are preferred.
   }
 
   int capacity_;  ///< The total number of buckets in the table.
