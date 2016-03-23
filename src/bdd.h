@@ -106,6 +106,11 @@ class WeakIntrusivePtr final {
     return IntrusivePtr<T>(static_cast<T*>(control_block_->vertex));
   }
 
+  /// @returns The raw pointer to the vertex.
+  ///
+  /// @warning Hard failure for uninitialized pointers.
+  T* get() const { return static_cast<T*>(control_block_->vertex); }
+
  private:
   ControlBlock* control_block_;  ///< To receive information from vertices.
 };
@@ -480,7 +485,7 @@ class UniqueTable {
         it_cur = chain.erase_after(it_prev);
         --size_;
       } else {
-        IntrusivePtr<T> vertex = it_cur->lock();
+        T* vertex = it_cur->get();
         if (index == vertex->index() && high_id == get_high_id(*vertex) &&
             low_id == get_low_id(*vertex)) {
           return *it_cur;
@@ -511,7 +516,7 @@ class UniqueTable {
           continue;
         }
         ++new_size;
-        IntrusivePtr<T> vertex = it_cur->lock();
+        T* vertex = it_cur->get();
         int bucket_number =
             UniqueTable::Hash(vertex->index(), get_high_id(*vertex),
                               get_low_id(*vertex)) %
