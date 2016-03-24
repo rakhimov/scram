@@ -852,6 +852,18 @@ Zbdd::VertexPtr CutSetContainer::ExtractIntermediateCutSets(
   return node->high();
 }
 
+Zbdd::VertexPtr
+CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
+                            const VertexPtr& cut_sets) noexcept {
+  return Zbdd::Apply<kAnd>(gate_zbdd, cut_sets, Zbdd::settings().limit_order());
+}
+
+void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
+  Zbdd::root(
+      Zbdd::Apply<kOr>(Zbdd::root(), vertex, Zbdd::settings().limit_order()));
+  Zbdd::ClearTables();
+}
+
 }  // namespace zbdd
 
 }  // namespace scram
