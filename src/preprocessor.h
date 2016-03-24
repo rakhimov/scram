@@ -85,7 +85,7 @@ class Preprocessor {
   ///          however, the preprocessing algorithms should not rely on this.
   ///          If the partial normalization messes some significant algorithm,
   ///          it may be removed from this phase in future.
-  void PhaseOne() noexcept;
+  void RunPhaseOne() noexcept;
 
   /// Preprocessing phase of the original structure of the graph.
   /// This phase attempts to leverage
@@ -97,14 +97,14 @@ class Preprocessor {
   /// @note Modules are detected and created.
   /// @note Non-module and non-multiple gates are coalesced.
   /// @note Boolean optimization is applied.
-  void PhaseTwo() noexcept;
+  void RunPhaseTwo() noexcept;
 
   /// Application of gate normalization.
   /// After this phase,
   /// the graph is in normal form.
   ///
   /// @note Gate normalization is conducted.
-  void PhaseThree() noexcept;
+  void RunPhaseThree() noexcept;
 
   /// Propagation of complements.
   /// Complements are propagated down to the variables in the graph.
@@ -112,14 +112,14 @@ class Preprocessor {
   /// the graph is in negation normal form.
   ///
   /// @note Complements are propagated to the variables of the graph.
-  void PhaseFour() noexcept;
+  void RunPhaseFour() noexcept;
 
   /// The final phase
   /// that cleans up the graph,
   /// and puts the structure of the graph ready for analysis.
   /// This phase makes the graph structure
   /// alternating AND/OR gate layers.
-  void PhaseFive() noexcept;
+  void RunPhaseFive() noexcept;
 
   /// Checks the root gate of the graph for further processing.
   /// The root gate may become constant

@@ -88,20 +88,20 @@ Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
 void Preprocessor::Run() noexcept {
   CLOCK(time_1);
   LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
+  Preprocessor::RunPhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
   if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
+    Preprocessor::RunPhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
     if (Preprocessor::CheckRootGate()) return;
   }
@@ -185,7 +185,7 @@ class TestGateStructure {
   assert(TestGateStructure()(graph_->root()));                                \
   assert(TestGateMarks()(graph_->root(), graph_->root()->mark()))
 
-void Preprocessor::PhaseOne() noexcept {
+void Preprocessor::RunPhaseOne() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   if (!graph_->constants_.empty()) {
@@ -207,7 +207,7 @@ void Preprocessor::PhaseOne() noexcept {
   }
 }
 
-void Preprocessor::PhaseTwo() noexcept {
+void Preprocessor::RunPhaseTwo() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   CLOCK(mult_time);
@@ -275,7 +275,7 @@ void Preprocessor::PhaseTwo() noexcept {
   graph_->Log();
 }
 
-void Preprocessor::PhaseThree() noexcept {
+void Preprocessor::RunPhaseThree() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->normal_);
@@ -285,10 +285,10 @@ void Preprocessor::PhaseThree() noexcept {
   LOG(DEBUG3) << "Finished the full normalization of gates!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
 }
 
-void Preprocessor::PhaseFour() noexcept {
+void Preprocessor::RunPhaseFour() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->coherent());
@@ -309,10 +309,10 @@ void Preprocessor::PhaseFour() noexcept {
   LOG(DEBUG3) << "Complement propagation is done!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
 }
 
-void Preprocessor::PhaseFive() noexcept {
+void Preprocessor::RunPhaseFive() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
@@ -320,7 +320,7 @@ void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
   if (Preprocessor::CheckRootGate()) return;
 
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
@@ -2439,13 +2439,13 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
   if (!Preprocessor::graph().coherent()) {
     CLOCK(time_4);
     LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::PhaseFour();
+    Preprocessor::RunPhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
     if (Preprocessor::CheckRootGate()) return;
   }
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
-  Preprocessor::PhaseFive();
+  Preprocessor::RunPhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::MarkCoherence();
