@@ -456,10 +456,10 @@ class Preprocessor {
   /// The gates created with these modular arguments
   /// are guaranteed to be independent modules.
   ///
-  /// @param[in] modular_args  Candidates for modular grouping.
+  /// @param[in,out] modular_args  Candidates for modular grouping.
   /// @param[out] groups  Grouped modular arguments.
   void GroupModularArgs(
-      const std::vector<std::pair<int, NodePtr>>& modular_args,
+      std::vector<std::pair<int, NodePtr>>* modular_args,
       std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept;
 
   /// Creates new module gates
@@ -481,12 +481,12 @@ class Preprocessor {
 
   /// Gathers all modules in the Boolean graph.
   ///
-  /// @param[out] modules  Unique modules encountered breadth-first.
+  /// @returns Unique modules encountered breadth-first.
   ///
-  /// @note It is assumed that module detection is already performed.
+  /// @pre Module detection and marking has already been performed.
   ///
   /// @warning Gate marks are used.
-  void GatherModules(std::vector<IGateWeakPtr>* modules) noexcept;
+  std::vector<IGateWeakPtr> GatherModules() noexcept;
 
   /// Identifies common arguments of gates,
   /// and merges the common arguments into new gates.

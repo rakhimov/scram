@@ -354,7 +354,7 @@ int GetSign(int num) noexcept {
 bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
   assert(a_min < a_max);
   assert(b_min < b_max);
-  return std::max(a_min, b_min) <= std::min(a_max, b_max);
+  return a_min <= b_max && a_max >= b_min;
 }
 
 /// Checks if a node within a graph enter and exit times.
@@ -877,7 +877,7 @@ int Preprocessor::AssignTiming(int time, const IGatePtr& gate) noexcept {
     arg.second->Visit(time);  // Exit at the same time.
   }
   bool re_visited = gate->Visit(++time);  // Exiting the gate in second visit.
-  assert(!re_visited);  // No cyclic visiting.
+  assert(!re_visited && "Detected a cycle!");  // No cyclic visiting.
   return time;
 }
 
@@ -966,7 +966,7 @@ void Preprocessor::ProcessModularArgs(
       Preprocessor::FilterModularArgs(modular_args, non_modular_args);
       assert(modular_args->size() != 1 && "One modular arg is non-shared.");
       std::vector<std::vector<std::pair<int, NodePtr>>> groups;
-      Preprocessor::GroupModularArgs(*modular_args, &groups);
+      Preprocessor::GroupModularArgs(modular_args, &groups);
       Preprocessor::CreateNewModules(gate, *modular_args, groups);
       break;
     }
@@ -1015,70 +1015,66 @@ void Preprocessor::FilterModularArgs(
     std::vector<std::pair<int, NodePtr>>* modular_args,
     std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept {
   if (modular_args->empty() || non_modular_args->empty()) return;
-  std::vector<std::pair<int, NodePtr>> new_non_modular;
-  std::vector<std::pair<int, NodePtr>> still_modular;
-  for (const auto& mod_arg : *modular_args) {
-    int min = mod_arg.second->min_time();
-    int max = mod_arg.second->max_time();
-    bool non_module = false;
-    for (const auto& non_mod_arg : *non_modular_args) {
-      bool overlap = DetectOverlap(min, max,
-                                   non_mod_arg.second->min_time(),
-                                   non_mod_arg.second->max_time());
-      if (overlap) {
-        non_module = true;
-        break;
-      }
-    }
-    if (non_module) {
-      new_non_modular.push_back(mod_arg);
-    } else {
-      still_modular.push_back(mod_arg);
-    }
+  auto it_end = modular_args->end();
+  for (auto it_begin = modular_args->begin(),
+            check_begin = non_modular_args->begin(),
+            check_end = non_modular_args->end();
+       check_begin != check_end;) {
+    check_begin = std::partition(
+        it_begin, it_end,
+        [check_begin, check_end](const std::pair<int, NodePtr>& mod_arg) {
+          return std::none_of(check_begin, check_end,
+                              [&mod_arg](const std::pair<int, NodePtr>& arg) {
+            return DetectOverlap(mod_arg.second->min_time(),
+                                 mod_arg.second->max_time(),
+                                 arg.second->min_time(),
+                                 arg.second->max_time());
+          });
+        });
+    check_end = it_end;
+    it_end = check_begin;
   }
-  Preprocessor::FilterModularArgs(&still_modular, &new_non_modular);
-  *modular_args = still_modular;
-  non_modular_args->insert(non_modular_args->end(), new_non_modular.begin(),
-                           new_non_modular.end());
+  non_modular_args->insert(non_modular_args->end(), it_end,
+                           modular_args->end());
+  modular_args->erase(it_end, modular_args->end());
 }
 
 void Preprocessor::GroupModularArgs(
-    const std::vector<std::pair<int, NodePtr>>& modular_args,
+    std::vector<std::pair<int, NodePtr>>* modular_args,
     std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept {
-  if (modular_args.empty()) return;
-  assert(modular_args.size() > 1);
+  if (modular_args->empty()) return;
+  assert(modular_args->size() > 1);
   assert(groups->empty());
-  std::list<std::pair<int, NodePtr>> member_list(modular_args.begin(),
-                                                 modular_args.end());
-  while (!member_list.empty()) {
-    std::vector<std::pair<int, NodePtr>> group;
-    NodePtr first_member = member_list.front().second;
-    group.push_back(member_list.front());
-    member_list.pop_front();
-    int low = first_member->min_time();
-    int high = first_member->max_time();
-
-    int prev_size = 0;  // To track the addition of a new member into the group.
-    while (prev_size < group.size()) {
-      prev_size = group.size();
-      std::list<std::pair<int, NodePtr>>::iterator it;
-      for (it = member_list.begin(); it != member_list.end();) {
-        int min = it->second->min_time();
-        int max = it->second->max_time();
-        if (DetectOverlap(min, max, low, high)) {
-          group.push_back(*it);
-          low = std::min(min, low);
-          high = std::max(max, high);
-          std::list<std::pair<int, NodePtr> >::iterator it_erase = it;
-          ++it;
-          member_list.erase(it_erase);
-        } else {
-          ++it;
-        }
-      }
-    }
-    assert(group.size() > 1);
-    groups->emplace_back(group);
+  // Group nodes by the intersection of their visit ranges.
+  std::sort(modular_args->begin(), modular_args->end(),
+            [](const std::pair<int, NodePtr>& lhs_pair,
+               const std::pair<int, NodePtr>& rhs_pair) {
+    const NodePtr& lhs_node = lhs_pair.second;
+    const NodePtr& rhs_node = rhs_pair.second;
+    if (lhs_node->max_time() < rhs_node->min_time()) return true;
+    if (lhs_node->min_time() > rhs_node->max_time()) return false;
+    // Considering the intersection.
+    if (lhs_node->max_time() < rhs_node->max_time()) return true;
+    if (lhs_node->max_time() > rhs_node->max_time()) return false;
+    return lhs_node->min_time() > rhs_node->min_time();
+  });
+  // Gather intersections into groups.
+  for (auto it = modular_args->rbegin(), it_end = modular_args->rend();
+       it != it_end;) {
+    int min_time = it->second->min_time();
+    auto it_group_end =
+        std::find_if(it + 1, it_end,
+                     [it, &min_time](const std::pair<int, NodePtr>& arg) {
+          assert(it->second->max_time() >= arg.second->max_time());
+          if (min_time <= arg.second->max_time()) {
+            min_time = std::min(min_time, arg.second->min_time());
+            return false;
+          }
+          return true;  // Found first element not in the group.
+        });
+    assert(it_group_end - it > 1);
+    groups->emplace_back(it, it_group_end);
+    it = it_group_end;  // Continue with the next group.
   }
   LOG(DEBUG4) << "Grouped modular args in " << groups->size() << " group(s).";
   assert(!groups->empty());
@@ -1110,14 +1106,15 @@ void Preprocessor::CreateNewModules(
   }
 }
 
-void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
+std::vector<IGateWeakPtr> Preprocessor::GatherModules() noexcept {
   graph_->ClearGateMarks();
-  std::queue<IGatePtr> gates_queue;
   IGatePtr root = graph_->root();
   assert(!root->mark());
   assert(root->module());
   root->mark(true);
-  modules->push_back(root);
+  std::vector<IGateWeakPtr> modules;
+  modules.push_back(root);
+  std::queue<IGatePtr> gates_queue;
   gates_queue.push(root);
   while (!gates_queue.empty()) {
     IGatePtr gate = gates_queue.front();
@@ -1129,9 +1126,10 @@ void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
       if (arg_gate->mark()) continue;
       arg_gate->mark(true);
       gates_queue.push(arg_gate);
-      if (arg_gate->module()) modules->push_back(arg_gate);
+      if (arg_gate->module()) modules.push_back(arg_gate);
     }
   }
+  return modules;
 }
 
 bool Preprocessor::MergeCommonArgs() noexcept {
@@ -1162,8 +1160,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
   // by their operator types and common arguments.
   Preprocessor::MarkCommonArgs(graph_->root(), op);
   graph_->ClearGateMarks();
-  std::vector<IGateWeakPtr> modules;
-  Preprocessor::GatherModules(&modules);
+  std::vector<IGateWeakPtr> modules = Preprocessor::GatherModules();
   graph_->ClearGateMarks();
   LOG(DEBUG4) << "Working with " << modules.size() << " modules...";
   bool changed = false;
