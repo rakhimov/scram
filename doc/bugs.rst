@@ -17,7 +17,6 @@ Technical Issues
 - IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
 - Preprocessing contracts need review, update, and clarification.
 - Migrate "Quick Installation" to "Installation" web page.

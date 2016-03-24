@@ -473,9 +473,9 @@ class Zbdd {
   /// @param[in,out] ites  Processed function graphs with ids and limit order.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
-  VertexPtr ConvertBddPI(const ItePtr& ite, bool complement,
-                         Bdd* bdd_graph, int limit_order,
-                         PairTable<VertexPtr>* ites) noexcept;
+  VertexPtr ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
+                                      Bdd* bdd_graph, int limit_order,
+                                      PairTable<VertexPtr>* ites) noexcept;
 
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///

@@ -268,12 +268,12 @@ Zbdd::VertexPtr Zbdd::ConvertBdd(const Bdd::VertexPtr& vertex, bool complement,
                                  Bdd* bdd_graph, int limit_order,
                                  PairTable<VertexPtr>* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
-  int sign = complement ? -1 : 1;
-  VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
+  VertexPtr& result =
+      (*ites)[{complement ? -vertex->id() : vertex->id(), limit_order}];
   if (result) return result;
   if (!coherent_ && kSettings_.prime_implicants()) {
-    result = Zbdd::ConvertBddPI(Ite::Ptr(vertex), complement, bdd_graph,
-                                limit_order, ites);
+    result = Zbdd::ConvertBddPrimeImplicants(Ite::Ptr(vertex), complement,
+                                             bdd_graph, limit_order, ites);
   } else {
     result = Zbdd::ConvertBdd(Ite::Ptr(vertex), complement, bdd_graph,
                               limit_order, ites);
@@ -285,7 +285,8 @@ Zbdd::VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
                                  Bdd* bdd_graph, int limit_order,
                                  PairTable<VertexPtr>* ites) noexcept {
   if (ite->module() && !ite->coherent())
-    return Zbdd::ConvertBddPI(ite, complement, bdd_graph, limit_order, ites);
+    return Zbdd::ConvertBddPrimeImplicants(ite, complement, bdd_graph,
+                                           limit_order, ites);
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, limit_order, ites);
@@ -298,9 +299,10 @@ Zbdd::VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
   return Zbdd::GetReducedVertex(ite, false, high, low);
 }
 
-Zbdd::VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
-                                   Bdd* bdd_graph, int limit_order,
-                                   PairTable<VertexPtr>* ites) noexcept {
+Zbdd::VertexPtr
+Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
+                                Bdd* bdd_graph, int limit_order,
+                                PairTable<VertexPtr>* ites) noexcept {
   Bdd::Function common = bdd_graph->CalculateConsensus(ite, complement);
   VertexPtr consensus = Zbdd::ConvertBdd(common.vertex, common.complement,
                                          bdd_graph, limit_order, ites);
