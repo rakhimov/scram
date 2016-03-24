@@ -18,7 +18,6 @@ Technical Issues
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
 - FetchTable() functions (Bdd/Zbdd) may not make sense semantically.
-- IGate::IsModule() vs. IGate::module(). (Inconsistent with the rest of the code.)
 - ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
 - Preprocessing contracts need review, update, and clarification.

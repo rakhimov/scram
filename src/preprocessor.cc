@@ -700,7 +700,7 @@ void Preprocessor::PropagateComplements(
   std::vector<std::pair<int, IGatePtr>> to_swap;  // Gate args with negation.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    if ((arg.first < 0) && !(keep_modules && arg_gate->IsModule())) {
+    if ((arg.first < 0) && !(keep_modules && arg_gate->module())) {
       IGatePtr complement;
       if (complements->count(arg_gate->index())) {
         complement = complements->find(arg_gate->index())->second;
@@ -717,7 +717,7 @@ void Preprocessor::PropagateComplements(
         complement = arg_gate;
       } else {
         complement = arg_gate->Clone();
-        if (arg_gate->IsModule()) arg_gate->DestroyModule();  // Very bad.
+        if (arg_gate->module()) arg_gate->module(false);  // Not good.
         complement->type(complement_type);
         complement->InvertArgs();
         complements->emplace(arg_gate->index(), complement);
@@ -776,7 +776,7 @@ bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
     if (target_type == kNull) continue;  // Coalescing is impossible.
     if (arg_gate->IsConstant()) continue;  // No args to join.
     if (arg.first < 0) continue;  // Cannot coalesce a negative arg gate.
-    if (arg_gate->IsModule()) continue;  // Preserve modules.
+    if (arg_gate->module()) continue;  // Preserve modules.
     if (!common && arg_gate->parents().size() > 1) continue;  // Check common.
 
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
@@ -831,7 +831,7 @@ void Preprocessor::DetectMultipleDefinitions(
   gate->mark(true);
   assert(!gate->IsConstant());
 
-  if (!gate->IsModule()) {  // Modules are unique by definition.
+  if (!gate->module()) {  // Modules are unique by definition.
     std::pair<IGatePtr, bool> ret = unique_gates->insert(gate);
     assert(ret.first->mark());
     if (!ret.second) {  // The gate is duplicate.
@@ -896,7 +896,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
     Preprocessor::FindModules(arg_gate);
-    if (arg_gate->IsModule() && !arg_gate->Revisited()) {
+    if (arg_gate->module() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
       assert(arg_gate->parents().count(gate->index()));
       assert(IsSubgraphWithinGraph(arg_gate, enter_time, exit_time));
@@ -932,10 +932,10 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
   }
 
   // Determine if this gate is module itself.
-  if (!gate->IsModule() && min_time == enter_time && max_time == exit_time) {
+  if (!gate->module() && min_time == enter_time && max_time == exit_time) {
     LOG(DEBUG4) << "Found original module: G" << gate->index();
     assert(non_modular_args.empty());
-    gate->TurnModule();
+    gate->module(true);
   }
 
   max_time = std::max(max_time, gate->LastVisit());
@@ -982,7 +982,7 @@ IGatePtr Preprocessor::CreateNewModule(
   if (args.empty()) return module;
   if (args.size() == 1) return module;
   if (args.size() == gate->args().size()) {
-    assert(gate->IsModule());
+    assert(gate->module());
     return module;
   }
   assert(args.size() < gate->args().size());
@@ -998,7 +998,7 @@ IGatePtr Preprocessor::CreateNewModule(
     default:
       return module;  // Cannot create sub-modules for other types.
   }
-  module->TurnModule();
+  module->module(true);
   assert(gate->mark());
   module->mark(true);  // Keep consistent marking with the subgraph.
   for (const auto& arg : args) {
@@ -1092,14 +1092,14 @@ void Preprocessor::CreateNewModules(
   assert(modular_args.size() > 1);
   assert(!groups.empty());
   if (modular_args.size() == gate->args().size() && groups.size() == 1) {
-    assert(gate->IsModule());
+    assert(gate->module());
     return;
   }
   IGatePtr main_arg;
 
   if (modular_args.size() == gate->args().size()) {
     assert(groups.size() > 1);
-    assert(gate->IsModule());
+    assert(gate->module());
     main_arg = gate;
   } else {
     main_arg = Preprocessor::CreateNewModule(gate, modular_args);
@@ -1115,7 +1115,7 @@ void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
   std::queue<IGatePtr> gates_queue;
   IGatePtr root = graph_->root();
   assert(!root->mark());
-  assert(root->IsModule());
+  assert(root->module());
   root->mark(true);
   modules->push_back(root);
   gates_queue.push(root);
@@ -1129,7 +1129,7 @@ void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
       if (arg_gate->mark()) continue;
       arg_gate->mark(true);
       gates_queue.push(arg_gate);
-      if (arg_gate->IsModule()) modules->push_back(arg_gate);
+      if (arg_gate->module()) modules->push_back(arg_gate);
     }
   }
 }
@@ -1231,7 +1231,7 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, Operator op,
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
     assert(!arg_gate->IsConstant());
-    if (!arg_gate->IsModule())
+    if (!arg_gate->module())
       Preprocessor::GatherCommonArgs(arg_gate, op, group);
     if (!in_group) continue;
     int count = arg.first > 0 ? arg_gate->pos_count() : arg_gate->neg_count();
@@ -1574,7 +1574,7 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
     if (ret) changed = true;
     if (distr_type == kNull) continue;  // Distributivity is not possible.
     if (arg.first < 0) continue;  // Does not work on negation.
-    if (child_gate->IsModule()) continue;  // Can't have common arguments.
+    if (child_gate->module()) continue;  // Can't have common arguments.
     if (child_gate->type() == distr_type) candidates.push_back(child_gate);
   }
   if (Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates))
@@ -1828,7 +1828,7 @@ void Preprocessor::BooleanOptimization() noexcept {
   graph_->ClearGateMarks();
   graph_->ClearOptiValues();
   graph_->ClearDescendantMarks();
-  if (!graph_->root()->IsModule()) graph_->root()->TurnModule();
+  if (graph_->root()->module() == false) graph_->root()->module(true);
 
   std::vector<IGateWeakPtr> common_gates;
   std::vector<std::weak_ptr<Variable>> common_variables;
@@ -1924,7 +1924,7 @@ void Preprocessor::MarkAncestors(const NodePtr& node,
     IGatePtr parent = member.second.lock();
     if (parent->mark()) continue;
     parent->mark(true);
-    if (parent->IsModule()) {  // Do not mark further than independent subgraph.
+    if (parent->module()) {  // Do not mark further than independent subgraph.
       assert(!*module);
       *module = parent;
       continue;
@@ -2105,9 +2105,9 @@ void Preprocessor::ProcessStateDestinations(
     }
     auto new_gate = std::make_shared<IGate>(type);
     new_gate->AddArg(target->opti_value() * node->index(), node);
-    if (target->IsModule()) {  // Transfer modularity.
-      target->DestroyModule();
-      new_gate->TurnModule();
+    if (target->module()) {  // Transfer modularity.
+      target->module(false);
+      new_gate->module(true);
     }
     if (target == graph_->root()) {
       graph_->root(new_gate);  // The sign is preserved.
@@ -2197,7 +2197,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
   assert(2 >
          std::count_if(node_->parents().begin(), node_->parents().end(),
                        [](const std::pair<const int, IGateWeakPtr>& member) {
-               return member.second.lock()->IsModule();
+               return member.second.lock()->module();
          }));
 
   // Mark parents and ancestors.
@@ -2227,7 +2227,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
 
 void Preprocessor::DecompositionProcessor::MarkDestinations(
     const IGatePtr& parent) noexcept {
-  if (parent->IsModule()) return;  // Limited with independent subgraphs.
+  if (parent->module()) return;  // Limited with independent subgraphs.
   for (const std::pair<const int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
@@ -2464,7 +2464,7 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
   Preprocessor::GatherNodes(&gates, &variables);
   auto middle =
       std::partition(gates.begin(), gates.end(),
-                     [](const IGatePtr& gate) { return gate->IsModule(); });
+                     [](const IGatePtr& gate) { return gate->module(); });
 
   std::sort(middle, gates.end(), [](const IGatePtr& lhs, const IGatePtr& rhs) {
     assert(lhs->order() != rhs->order());

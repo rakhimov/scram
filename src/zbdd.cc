@@ -159,7 +159,7 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
   if (gate->IsConstant() || gate->type() == kNull) return;
   assert(!settings.prime_implicants() && "Not implemented.");
   CLOCK(init_time);
-  assert(gate->IsModule() && "The constructor is meant for module gates.");
+  assert(gate->module() && "The constructor is meant for module gates.");
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, std::pair<VertexPtr, int>> gates;
@@ -226,10 +226,10 @@ SetNodePtr Zbdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
   SetNodePtr in_table =
       Zbdd::FetchUniqueTable(gate->index(), high, low, gate->order());
   if (in_table->unique()) {
-    in_table->module(gate->IsModule());
+    in_table->module(gate->module());
     in_table->coherent(gate->coherent());
   }
-  assert(in_table->module() == gate->IsModule());
+  assert(in_table->module() == gate->module());
   assert(in_table->coherent() == gate->coherent());
   return in_table;
 }
@@ -344,7 +344,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    if (arg.second->IsModule()) {
+    if (arg.second->module()) {
       module_gates->insert(arg);
       args.push_back(Zbdd::FetchUniqueTable(arg.second, kBase_, kEmpty_));
     } else {

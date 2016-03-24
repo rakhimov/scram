@@ -62,7 +62,7 @@ const std::vector<std::vector<int>>& Mocus::products() const {
 
 std::unique_ptr<zbdd::CutSetContainer>
 Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
-  assert(gate->IsModule() && "Expected only module gates.");
+  assert(gate->module() && "Expected only module gates.");
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();

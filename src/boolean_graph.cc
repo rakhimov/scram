@@ -685,7 +685,7 @@ void BooleanGraph::GraphLogger::RegisterRoot(const IGatePtr& gate) noexcept {
 
 void BooleanGraph::GraphLogger::Log(const IGatePtr& gate) noexcept {
   ++gate_types[gate->type()];
-  if (gate->IsModule()) ++num_modules;
+  if (gate->module()) ++num_modules;
   for (const auto& arg : gate->gate_args()) gates.insert(arg.first);
   for (const auto& arg : gate->variable_args()) variables.insert(arg.first);
   for (const auto& arg : gate->constant_args()) constants.insert(arg.first);
@@ -816,7 +816,7 @@ FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
 std::string GetName(const std::shared_ptr<const IGate>& gate) {
   std::string name = "G";
   if (gate->state() == kNormalState) {
-    if (gate->IsModule()) name += "M";
+    if (gate->module()) name += "M";
   } else {  // This gate has become constant.
     name += "C";
   }

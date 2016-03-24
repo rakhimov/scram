@@ -426,21 +426,16 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   void coherent(bool flag) { coherent_ = flag; }
 
   /// @returns true if this gate is set to be a module.
-  /// @returns false if it is not yet set to be a module.
-  bool IsModule() const { return module_; }
+  bool module() const { return module_; }
 
-  /// Turns this gate's module flag on.
-  /// This should be one time operation.
-  void TurnModule() {
-    assert(!module_);
-    module_ = true;
-  }
-
-  /// Sets the module flag to false.
-  /// This is a destruction of the module.
-  void DestroyModule() {
-    assert(module_);
-    module_ = false;
+  /// Sets this gate's module flag.
+  ///
+  /// @param[in] flag  true for modular gates.
+  ///
+  /// @pre The gate has already been marked with an opposite flag.
+  void module(bool flag) {
+    assert(module_ != flag);
+    module_ = flag;
   }
 
   /// Helper function to use the sign of the argument.

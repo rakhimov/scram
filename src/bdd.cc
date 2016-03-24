@@ -116,14 +116,14 @@ ItePtr Bdd::FetchUniqueTable(const ItePtr& ite, const VertexPtr& high,
 ItePtr Bdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
                              const VertexPtr& low,
                              bool complement_edge) noexcept {
-  assert(gate->IsModule() && "Only module gates are expected for proxies.");
+  assert(gate->module() && "Only module gates are expected for proxies.");
   ItePtr in_table = Bdd::FetchUniqueTable(gate->index(), high, low,
                                           complement_edge, gate->order());
   if (in_table->unique()) {
-    in_table->module(gate->IsModule());
+    in_table->module(gate->module());
     in_table->coherent(gate->coherent());
   }
-  assert(in_table->module() == gate->IsModule());
+  assert(in_table->module() == gate->module());
   assert(in_table->coherent() == gate->coherent());
   return in_table;
 }
@@ -150,7 +150,7 @@ Bdd::Function Bdd::ConvertGraph(
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     Function res = Bdd::ConvertGraph(arg.second, gates);
-    if (arg.second->IsModule()) {
+    if (arg.second->module()) {
       args.push_back({arg.first < 0,
                       Bdd::FetchUniqueTable(arg.second, kOne_, kOne_, true)});
     } else {
@@ -173,7 +173,7 @@ Bdd::Function Bdd::ConvertGraph(
   }
   Bdd::ClearTables();
   assert(result.vertex);
-  if (gate->IsModule()) modules_.emplace(gate->index(), result);
+  if (gate->module()) modules_.emplace(gate->index(), result);
   if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
 }
