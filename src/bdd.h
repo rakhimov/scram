@@ -671,9 +671,9 @@ class Bdd {
   using IteWeakPtr = WeakIntrusivePtr<Ite>;  ///< Pointer in containers.
   using ComputeTable = PairTable<Function>;  ///< Computation results.
 
-  /// Fetches a unique if-then-else vertex from a hash table.
-  /// If the vertex doesn't exist,
-  /// a new vertex is created.
+  /// Finds or adds a unique if-then-else vertex in BDD.
+  /// All vertices in the BDD must be created with this functions.
+  /// Otherwise, the BDD may not be reduced.
   ///
   /// @param[in] index  Positive index of the variable.
   /// @param[in] high  The high vertex.
@@ -685,11 +685,10 @@ class Bdd {
   ///
   /// @pre Non-expired pointers in the unique table are
   ///      either in the BDD or in the computation table.
-  ItePtr FetchUniqueTable(int index, const VertexPtr& high,
-                          const VertexPtr& low, bool complement_edge,
-                          int order) noexcept;
+  ItePtr FindOrAddVertex(int index, const VertexPtr& high, const VertexPtr& low,
+                         bool complement_edge, int order) noexcept;
 
-  /// Fetches a replacement for an existing node
+  /// Finds or adds a replacement for an existing node
   /// or a new node based on an existing node.
   ///
   /// @param[in] ite  An existing vertex.
@@ -700,10 +699,10 @@ class Bdd {
   /// @returns Ite for a replacement.
   ///
   /// @warning This function is not aware of reduction rules.
-  ItePtr FetchUniqueTable(const ItePtr& ite, const VertexPtr& high,
-                          const VertexPtr& low, bool complement_edge) noexcept;
+  ItePtr FindOrAddVertex(const ItePtr& ite, const VertexPtr& high,
+                         const VertexPtr& low, bool complement_edge) noexcept;
 
-  /// Fetches a representation of a gate as Ite.
+  /// Find or adds a BDD ITE vertex using information from gates.
   ///
   /// @param[in] gate  Gate with index, order, and other information.
   /// @param[in] high  The new high vertex.
@@ -715,8 +714,8 @@ class Bdd {
   /// @pre The gate is a module.
   ///
   /// @warning This function is not aware of reduction rules.
-  ItePtr FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
-                          const VertexPtr& low, bool complement_edge) noexcept;
+  ItePtr FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
+                         const VertexPtr& low, bool complement_edge) noexcept;
 
   /// Converts all gates in the Boolean graph
   /// into function BDD graphs.

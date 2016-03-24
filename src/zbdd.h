@@ -204,9 +204,9 @@ class Zbdd {
   ///       if the Boolean graph is constant or single variable.
   Zbdd(const IGatePtr& gate, const Settings& settings) noexcept;
 
-  /// Fetches a unique set node from a hash table.
-  /// If the node doesn't exist,
-  /// a new node is created.
+  /// Finds or adds a unique SetNode in the ZBDD.
+  /// All vertices in the ZBDD must be created with this functions.
+  /// Otherwise, the ZBDD may not be reduced.
   ///
   /// @param[in] index  Positive or negative index of the node.
   /// @param[in] high  The high vertex.
@@ -216,11 +216,11 @@ class Zbdd {
   /// @returns Set node with the given parameters.
   ///
   /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(int index, const VertexPtr& high,
-                              const VertexPtr& low, int order) noexcept;
+  SetNodePtr FindOrAddVertex(int index, const VertexPtr& high,
+                             const VertexPtr& low, int order) noexcept;
 
-  /// Fetches a replacement for an existing node
-  /// or a new node based on an existing node.
+  /// Finds a replacement for an existing node
+  /// or adds a new node based on an existing node.
   ///
   /// @param[in] node  An existing node.
   /// @param[in] high  The new high vertex.
@@ -229,10 +229,10 @@ class Zbdd {
   /// @returns Set node for a replacement.
   ///
   /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
-                              const VertexPtr& low) noexcept;
+  SetNodePtr FindOrAddVertex(const SetNodePtr& node, const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
 
-  /// Fetches a representation of a gate as ZBDD SetNode.
+  /// Find or adds a ZBDD SetNode vertex using information from gates.
   ///
   /// @param[in] gate  Gate with index, order, and other information.
   /// @param[in] high  The new high vertex.
@@ -241,10 +241,10 @@ class Zbdd {
   /// @returns SetNode for a replacement.
   ///
   /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
-                              const VertexPtr& low) noexcept;
+  SetNodePtr FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
 
-  /// Gets a new or existing reduced ZBDD vertex
+  /// Adds a new or finds an existing reduced ZBDD vertex
   /// with parameters of a prototype BDD ITE vertex.
   ///
   /// @param[in] ite  The prototype BDD ITE vertex.
@@ -257,8 +257,8 @@ class Zbdd {
                              const VertexPtr& high,
                              const VertexPtr& low) noexcept;
 
-  /// Fetches a replacement reduced vertex for an existing node
-  /// or a new node based on an existing node.
+  /// Finds a replacement reduced vertex for an existing node,
+  /// or adds a new node based on an existing node.
   ///
   /// @param[in] node  An existing node.
   /// @param[in] high  The new high vertex.
