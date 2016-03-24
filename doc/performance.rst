@@ -9,7 +9,7 @@ if the performance becomes good enough
 to make the parameter negligible or noisy
 (time < 0.5s, memory consumption < 10 MiB, etc.).
 
-There are two main performance records in this file:
+There are two primary performance records in this file:
 run-time (in seconds) and memory utilization (in MiB).
 The record can also include (specialize on) performance proxies
 specific to the subject.
@@ -21,7 +21,7 @@ specific to the subject.
 - Performance for the debug build is recorded
   if there's a strong correlation with the release build.
   These debug-build records help the development process
-  by decreasing the need to recompile the code for performance testing.
+  by decreasing the need to recompile the code for performance regression testing.
 - The build types do not affect the memory as much as the speed.
 - Do not confuse these memory records
   with the actual allocation of the memory by the code.
@@ -53,7 +53,7 @@ Input name [flags] (results)
 Build Type:
 -----------
 
-- Record        Best Achieved | Current Performance (in seconds)
+- Record        Best Achieved | Current Performance
 
 
 Probability/Importance Analysis

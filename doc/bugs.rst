@@ -15,12 +15,9 @@ Technical Issues
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers)
 - IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
+- IGate in Boolean graph is confusing (There is Gate in event.h)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- IGate in Boolean graph is confusing (There is Gate in event.h)
-- Preprocessing contracts need review, update, and clarification.
-- Migrate "Quick Installation" to "Installation" web page.
-  (Windows installation is needed to get any value out of this migration.)
 - Virtually everything is under one namespace.
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models
