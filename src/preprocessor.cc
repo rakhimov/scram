@@ -391,6 +391,34 @@ bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
   return root->min_time() > enter_time && root->max_time() < exit_time;
 }
 
+/// Determines if two sorted ranges intersect.
+/// This function is complementary to std::set_intersection
+/// when the actual intersection container is not needed.
+///
+/// @tparam Iterator1  Forward iterator type of the first range.
+/// @tparam Iterator2  Forward iterator type of the second range.
+///
+/// @param[in] first1  Start of the first range.
+/// @param[in] last1  End of the first range.
+/// @param[in] first2  Start of the second range.
+/// @param[in] last2  End of the second range.
+///
+/// @returns true if the [first1, last1) and [first2, last2) ranges intersect.
+template <typename Iterator1, typename Iterator2>
+bool Intersects(Iterator1 first1, Iterator1 last1,
+                Iterator2 first2, Iterator2 last2) noexcept {
+  while (first1 != last1 && first2 != last2) {
+    if (*first1 < *first2) {
+      ++first1;
+    } else if (*first2 < *first1) {
+      ++first2;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 bool Preprocessor::CheckRootGate() noexcept {
@@ -1330,12 +1358,9 @@ void Preprocessor::GroupCandidatesByArgs(
     while (prev_size < group_args.size()) {
       prev_size = group_args.size();
       for (auto it = member_list.begin(); it != member_list.end();) {
-        std::vector<int> overlap;
         const MergeTable::CommonArgs& member_args = it->second;
-        std::set_intersection(member_args.begin(), member_args.end(),
-                              group_args.begin(), group_args.end(),
-                              std::back_inserter(overlap));
-        if (!overlap.empty()) {
+        if (Intersects(member_args.begin(), member_args.end(),
+                       group_args.begin(), group_args.end())) {
           group.push_back(*it);
           group_args.insert(member_args.begin(), member_args.end());
           auto it_erase = it;
@@ -1403,11 +1428,9 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
     ///       The intersections must be considered for each option.
     const MergeTable::CommonArgs& args = merge_group.back().first;
     for (MergeTable::Option& option : all_options) {
-      std::vector<int> common;
-      std::set_intersection(option.first.begin(), option.first.end(),
-                            args.begin(), args.end(),
-                            std::back_inserter(common));
-      if (common.empty()) continue;  // Doesn't affect this option.
+      if (!Intersects(option.first.begin(), option.first.end(),
+                      args.begin(), args.end()))
+        continue;  // Doesn't affect this option.
       MergeTable::CommonParents& parents = option.second;
       for (const IGatePtr& gate : gates) parents.erase(gate);
     }
@@ -1645,11 +1668,9 @@ bool Preprocessor::FilterDistributiveArgs(
   // Handling a special case of fast constant propagation.
   std::vector<int> to_erase;  // Late erase for more opportunities.
   for (const IGatePtr& candidate : *candidates) {  // All of them are positive.
-    std::vector<int> common;
-    std::set_intersection(candidate->args().begin(), candidate->args().end(),
-                          gate->args().begin(), gate->args().end(),
-                          std::back_inserter(common));
-    if (!common.empty()) to_erase.push_back(candidate->index());
+    if (Intersects(candidate->args().begin(), candidate->args().end(),
+                   gate->args().begin(), gate->args().end()))
+      to_erase.push_back(candidate->index());
   }
   bool changed = !to_erase.empty();
   for (int index : to_erase) {
