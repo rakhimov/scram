@@ -144,7 +144,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab2) {
 }
 
 TEST_F(PerformanceTest, DISABLED_Baobab1) {
-  double mcs_time = 2.2;
+  double mcs_time = 1.9;
 #ifdef NDEBUG
   mcs_time = 0.30;
 #endif
@@ -157,9 +157,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1) {
 }
 
 TEST_F(PerformanceTest, DISABLED_Baobab1_ZBDD) {
-  double mcs_time = 1.7;
+  double mcs_time = 1.4;
 #ifdef NDEBUG
-  mcs_time = 0.37;
+  mcs_time = 0.30;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");

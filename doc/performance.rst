@@ -66,33 +66,33 @@ Fault Tree Analysis (MOCUS)
 Baobab1 -l 7 (mcs = 17432)
 --------------------------
 
-Debug build:  2.1
+Debug build:  1.9
 
-Release build:  0.30  |  0.34
+Release build:  0.30
 
-- # of ZBDD nodes created: 34966  |  38342
-- # of SetNodes in ZBDD: 3377  |  5013
+- # of ZBDD nodes created: 34966
+- # of SetNodes in ZBDD: 3377
 
 
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  2.2
+Debug build:  1.9
 
-Release build: 0.30  |  0.34
+Release build: 0.30
 
-- # of ZBDD nodes created: 34862  |  35380
-- # of SetNodes in ZBDD: 3333  |  3478
+- # of ZBDD nodes created: 34862
+- # of SetNodes in ZBDD: 3333
 
 - Memory:   23
 
-- Cache-misses:  5.0 %
+- Cache-misses:  5.0 %  |  6.0 %
 
 
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 1614
+- # of ZBDD nodes created: 1593
 - # of SetNodes in ZBDD: 160
 
 - Memory:   15
@@ -104,23 +104,23 @@ Fault Tree Analysis (ZBDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  1.7
+Debug build:  1.4
 
-Release build:  0.37
+Release build:  0.30
 
-- # of ZBDD nodes created: 79264  |  113310
-- # of SetNodes in ZBDD: 3338  |  4122
+- # of ZBDD nodes created: 79264  |  86530
+- # of SetNodes in ZBDD: 3333
 
 - Memory:   48
 
-- Cache-misses:  31.5 %
+- Cache-misses:  28 %
 
 
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 33297  |  45581
-- # of SetNodes in ZBDD: 177
+- # of ZBDD nodes created: 33297  |  39852
+- # of SetNodes in ZBDD: 160
 
 
 Fault Tree Analysis (BDD)
@@ -129,12 +129,12 @@ Fault Tree Analysis (BDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-- # of BDD vertices created: 8289  |  8296
+- # of BDD vertices created: 8289  |  8301
 - # of ITE in BDD: 3349
 
 - Memory:   23
 
-- Cache-misses:  18.0 %
+- Cache-misses:  18 %
 
 
 CEA9601 -l 4 (mcs = 54436)
@@ -152,12 +152,12 @@ Release build:
 - BDD Time: 2.5
 - ZBDD Time: 0.20
 
-- # of BDD vertices created: 3013946  |  3066051
+- # of BDD vertices created: 3013946  |  3048746
 - # of ITE in BDD: 1175468
 
 - Memory:   330
 
-- Cache-misses:  50.0 %
+- Cache-misses:  46 %
 
 
 CEA9601 -l 5 (mcs = 1615876)
@@ -178,7 +178,7 @@ Release build:
 
 - Total Memory:   580
 
-- Cache-misses:  34 - 38 %
+- Cache-misses:  34 %
 
 
 Uncertainty Analysis

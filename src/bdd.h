@@ -522,7 +522,7 @@ class UniqueTable {
         int bucket_number =
             UniqueTable::Hash(vertex->index(), get_high_id(*vertex),
                               get_low_id(*vertex)) %
-            capacity_;
+            new_capacity;
         Bucket& new_chain = new_table[bucket_number];
         new_chain.splice_after(new_chain.before_begin(), chain, it_prev,
                                ++it_cur);
