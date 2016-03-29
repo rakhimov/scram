@@ -306,9 +306,12 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
                                                         Analysis::settings()));
   algorithm_->Analyze();
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
+  LOG(DEBUG2) << "# of products: " << algorithm_->products().size();
 
   Analysis::AddAnalysisTime(DUR(analysis_time));
+  CLOCK(convert_time);
   FaultTreeAnalysis::Convert(algorithm_->products(), graph_.get());
+  LOG(DEBUG2) << "Converted indices to pointers in " << DUR(convert_time);
 }
 
 }  // namespace scram
