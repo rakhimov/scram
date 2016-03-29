@@ -77,6 +77,12 @@ Bdd::~Bdd() noexcept = default;
 void Bdd::Analyze() noexcept {
   zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(this, kSettings_));
   zbdd_->Analyze();
+  if (!coherent_) {  // The BDD has been used by the ZBDD.
+    Bdd::ClearTables();
+    unique_table_.Release();
+    and_table_.reserve(0);
+    or_table_.reserve(0);
+  }
 }
 
 const std::vector<std::vector<int>>& Bdd::products() const {

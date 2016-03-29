@@ -317,6 +317,16 @@ class Zbdd {
     subsume_table_.clear();
   }
 
+  /// Releases all possible memory from memoization and unique tables.
+  void ReleaseTables() noexcept {
+    unique_table_.Release();
+    Zbdd::ClearTables();
+    and_table_.reserve(0);
+    or_table_.reserve(0);
+    minimal_results_.reserve(0);
+    subsume_table_.reserve(0);
+  }
+
   /// Joins a ZBDD representing a module gate.
   ///
   /// @param[in] index  The index of the module.

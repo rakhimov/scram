@@ -91,8 +91,7 @@ void Zbdd::Analyze() noexcept {
   CLOCK(gen_time);
   LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
   // Complete cleanup of the memory.
-  unique_table_.Release();
-  Zbdd::ClearTables();
+  Zbdd::ReleaseTables();
 
   products_ = Zbdd::GenerateProducts(root_);
 

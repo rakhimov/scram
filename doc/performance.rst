@@ -176,7 +176,7 @@ Release build:
 - ZBDD Cut set extraction time: 3.5
 - ZBDD Cut set extraction memory: 240
 
-- Total Memory:   580
+- Memory:   580
 
 - Cache-misses:  34 %
 
