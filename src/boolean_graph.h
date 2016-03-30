@@ -322,7 +322,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning This function does not destroy modules.
   ///          If cloning destroys modules,
-  ///          DestroyModule() member function must be called.
+  ///          module(false) member function must be called.
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
@@ -756,6 +756,7 @@ class GateSet {
     ///
     /// @returns true if the gate arguments are equal.
     bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
+      assert(lhs->type() == rhs->type());
       if (lhs->args() != rhs->args()) return false;
       if (lhs->type() == kVote &&
           lhs->vote_number() != rhs->vote_number()) return false;

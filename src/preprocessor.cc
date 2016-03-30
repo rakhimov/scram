@@ -610,11 +610,6 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
   }
 
   switch (gate->type()) {  // Negation is already processed.
-    case kNot:
-      assert(gate->args().size() == 1);
-      gate->type(kNull);
-      null_gates_.push_back(gate);  // Register for removal.
-      break;
     case kNor:
       assert(gate->args().size() > 1);
       gate->type(kOr);
@@ -625,15 +620,16 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
       break;
     case kXor:
       assert(gate->args().size() == 2);
-      if (!full) break;
-      Preprocessor::NormalizeXorGate(gate);
+      if (full) Preprocessor::NormalizeXorGate(gate);
       break;
     case kVote:
       assert(gate->args().size() > 2);
       assert(gate->vote_number() > 1);
-      if (!full) break;
-      Preprocessor::NormalizeVoteGate(gate);
+      if (full) Preprocessor::NormalizeVoteGate(gate);
       break;
+    case kNot:
+      assert(gate->args().size() == 1);
+      gate->type(kNull);  // Fall-through to NULL operator gate.
     case kNull:
       null_gates_.push_back(gate);  // Register for removal.
       break;
@@ -829,11 +825,12 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
 
   graph_->ClearGateMarks();
   // The original gate and its multiple definitions.
-  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
-  GateSet* unique_gates = new GateSet();
-  Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
-                                          unique_gates);
-  delete unique_gates;  // To remove extra reference counts.
+  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr>> multi_def;
+  {
+    GateSet unique_gates;
+    Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
+                                            &unique_gates);
+  }
   graph_->ClearGateMarks();
 
   if (multi_def.empty()) return false;
@@ -841,9 +838,9 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   for (const auto& def : multi_def) {
     LOG(DEBUG5) << "Gate " << def.first->index() << ": " << def.second.size()
                 << " times.";
-    for (const IGateWeakPtr& dup : def.second) {
-      if (dup.expired()) continue;
-      Preprocessor::ReplaceGate(dup.lock(), def.first);
+    for (const IGateWeakPtr& duplicate : def.second) {
+      if (duplicate.expired()) continue;
+      Preprocessor::ReplaceGate(duplicate.lock(), def.first);
     }
   }
   Preprocessor::ClearConstGates();
