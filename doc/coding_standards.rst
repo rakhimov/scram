@@ -182,8 +182,8 @@ Pylint Score           9.0                  9.5
 Documentation          Full                 Full
 ====================   ==================   ==================
 
-.. note:: C++ defects that count towards the defect density
-          include analysis errors, Coverity report, memory leaks,
+.. note:: C++ defects that count towards the defect density include
+          analysis errors, Coverity report, memory leaks,
           and *known* critical bugs.
 
 .. note:: Utility scripts written in Python are exempt from the test coverage requirement.
