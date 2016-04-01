@@ -588,12 +588,12 @@ class Preprocessor {
   /// The groups do not intersect
   /// either by candidates or common arguments.
   ///
-  /// @param[in] candidates  The group of the gates with their common arguments.
+  /// @param[in,out] candidates  The group of the gates with their common args.
   /// @param[out] groups  Non-intersecting collection of groups of candidates.
   ///
   /// @note Groups with only one member are discarded.
   void GroupCandidatesByArgs(
-      const MergeTable::Candidates& candidates,
+      MergeTable::Candidates* candidates,
       std::vector<MergeTable::Candidates>* groups) noexcept;
 
   /// Finds intersections of common arguments of gates.

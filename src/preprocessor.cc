@@ -1199,7 +1199,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
     Preprocessor::FilterMergeCandidates(&candidates);
     if (candidates.size() < 2) continue;
     std::vector<MergeTable::Candidates> groups;
-    Preprocessor::GroupCandidatesByArgs(candidates, &groups);
+    Preprocessor::GroupCandidatesByArgs(&candidates, &groups);
     for (const auto& group : groups) {
       // Finding common parents for the common arguments.
       MergeTable::Collection parents;
@@ -1335,44 +1335,66 @@ void Preprocessor::FilterMergeCandidates(
 }
 
 void Preprocessor::GroupCandidatesByArgs(
-    const MergeTable::Candidates& candidates,
+    MergeTable::Candidates* candidates,
     std::vector<MergeTable::Candidates>* groups) noexcept {
-  if (candidates.empty()) return;
-  assert(candidates.size() > 1);
+  if (candidates->empty()) return;
+  assert(candidates->size() > 1);
   assert(groups->empty());
-  std::list<MergeTable::Candidate> member_list(candidates.begin(),
-                                               candidates.end());
-  while (!member_list.empty()) {
-    MergeTable::Candidates group;
-    IGatePtr first_member = member_list.front().first;  /// @todo Unused?
-    const MergeTable::CommonArgs& common_args = member_list.front().second;
-    std::set<int> group_args(common_args.begin(), common_args.end());
-    assert(group_args.size() > 1);
-    group.push_back(member_list.front());
-    member_list.pop_front();
+  // Group candidates by the intersection of their [min_arg, max_arg] ranges.
+  std::sort(candidates->begin(), candidates->end(),
+            [](const MergeTable::Candidate& lhs_candidate,
+               const MergeTable::Candidate& rhs_candidate) {
+    const MergeTable::CommonArgs& lhs_args = lhs_candidate.second;
+    const MergeTable::CommonArgs& rhs_args = rhs_candidate.second;
+    if (lhs_args.back() < rhs_args.front()) return true;
+    if (lhs_args.front() > rhs_args.back()) return false;
+    // Considering the intersection.
+    if (lhs_args.back() < rhs_args.back()) return true;
+    if (lhs_args.back() > rhs_args.back()) return false;
+    return lhs_args.front() > rhs_args.front();
+  });
 
-    int prev_size = 0;  // To track the change in group arguments.
-    while (prev_size < group_args.size()) {
-      prev_size = group_args.size();
-      for (auto it = member_list.begin(); it != member_list.end();) {
-        const MergeTable::CommonArgs& member_args = it->second;
-        if (Intersects(member_args.begin(), member_args.end(),
-                       group_args.begin(), group_args.end())) {
-          group.push_back(*it);
-          group_args.insert(member_args.begin(), member_args.end());
-          auto it_erase = it;
-          ++it;
-          member_list.erase(it_erase);
-        } else {
-          ++it;
+  std::vector<std::list<MergeTable::Candidate*>> super_groups;
+  for (auto it = candidates->rbegin(), it_end = candidates->rend();
+       it != it_end;) {
+    int min_time = it->second.front();
+    std::list<MergeTable::Candidate*> super_group = {&*it};
+    for (++it; it != it_end && min_time <= it->second.back(); ++it) {
+      min_time = std::min(min_time, it->second.front());
+      super_group.push_back(&*it);
+    }
+    super_groups.emplace_back(std::move(super_group));
+  }
+
+  for (auto& super_group : super_groups) {
+    while (!super_group.empty()) {
+      MergeTable::Candidates group;
+      const MergeTable::CommonArgs& common_args = super_group.front()->second;
+      std::set<int> group_args(common_args.begin(), common_args.end());
+      assert(group_args.size() > 1);
+      group.push_back(*super_group.front());
+      super_group.pop_front();
+
+      int prev_size = 0;  // To track the change in group arguments.
+      while (prev_size < group_args.size()) {
+        prev_size = group_args.size();
+        for (auto it = super_group.begin(); it != super_group.end();) {
+          const MergeTable::CommonArgs& member_args = (*it)->second;
+          if (Intersects(member_args.begin(), member_args.end(),
+                         group_args.begin(), group_args.end())) {
+            group.push_back(**it);
+            group_args.insert(member_args.begin(), member_args.end());
+            super_group.erase(it++);
+          } else {
+            ++it;
+          }
         }
       }
+      if (group.size() > 1) groups->emplace_back(std::move(group));
     }
-    if (group.size() > 1) groups->push_back(group);  // Discard single members.
   }
-  bool any_groups = !groups->empty();
-  BLOG(DEBUG4, any_groups) << "Grouped merge candidates in " << groups->size()
-                           << " group(s).";
+  BLOG(DEBUG4, !groups->empty()) << "Grouped merge candidates in "
+                                 << groups->size() << " group(s).";
 }
 
 void Preprocessor::GroupCommonParents(
@@ -1482,7 +1504,7 @@ void Preprocessor::FindBaseOption(
   int best_counts[3] = {};  // The number of extra parents.
   for (auto it = all_options->begin(); it != all_options->end(); ++it) {
     int num_parents = it->second.size();
-    IGatePtr parent = *it->second.begin();  // Representative.
+    const IGatePtr& parent = *it->second.begin();  // Representative.
     const MergeTable::CommonArgs& args = it->first;
     int cur_counts[3] = {};
     for (int index : args) {
@@ -1518,7 +1540,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
 
     LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
     LOG(DEBUG5) << "The number of common parents: " << common_parents.size();
-    IGatePtr parent = *common_parents.begin();  // To get the arguments.
+    const IGatePtr& parent = *common_parents.begin();  // To get the arguments.
     assert(parent->args().size() > 1);
     auto merge_gate = std::make_shared<IGate>(parent->type());
     for (int index : common_args) {
