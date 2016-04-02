@@ -437,14 +437,16 @@ Zbdd::VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one,
                                   int limit_order) noexcept {
   if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal()) {
-    if (Terminal<SetNode>::Ptr(arg_one)->value()) return arg_two;
+    if (Terminal<SetNode>::Ptr(arg_one)->value())
+      return Zbdd::Prune(arg_two, limit_order);
     return kEmpty_;
   }
   if (arg_two->terminal()) {
-    if (Terminal<SetNode>::Ptr(arg_two)->value()) return arg_one;
+    if (Terminal<SetNode>::Ptr(arg_two)->value())
+      return Zbdd::Prune(arg_one, limit_order);
     return kEmpty_;
   }
-  if (arg_one->id() == arg_two->id()) return arg_one;
+  if (arg_one->id() == arg_two->id()) return Zbdd::Prune(arg_one, limit_order);
 
   VertexPtr& result =
       and_table_[Zbdd::GetResultKey(arg_one, arg_two, limit_order)];
@@ -497,13 +499,13 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
   if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal()) {
     if (Terminal<SetNode>::Ptr(arg_one)->value()) return kBase_;
-    return arg_two;
+    return Zbdd::Prune(arg_two, limit_order);
   }
   if (arg_two->terminal()) {
     if (Terminal<SetNode>::Ptr(arg_two)->value()) return kBase_;
-    return arg_one;
+    return Zbdd::Prune(arg_one, limit_order);
   }
-  if (arg_one->id() == arg_two->id()) return arg_one;
+  if (arg_one->id() == arg_two->id()) return Zbdd::Prune(arg_one, limit_order);
 
   VertexPtr& result =
       or_table_[Zbdd::GetResultKey(arg_one, arg_two, limit_order)];
@@ -647,6 +649,18 @@ Zbdd::VertexPtr Zbdd::Subsume(const VertexPtr& high,
   new_high->minimal(high_node->minimal());
   computed = new_high;
   return computed;
+}
+
+Zbdd::VertexPtr Zbdd::Prune(const VertexPtr& vertex, int limit_order) noexcept {
+  if (limit_order < 0) return kEmpty_;
+  if (vertex->terminal()) return vertex;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  int limit_high = limit_order - !Zbdd::MayBeUnity(node);
+  VertexPtr result =
+      Zbdd::GetReducedVertex(node, Zbdd::Prune(node->high(), limit_high),
+                             Zbdd::Prune(node->low(), limit_order));
+  if (!result->terminal()) SetNode::Ptr(result)->minimal(node->minimal());
+  return result;
 }
 
 bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {

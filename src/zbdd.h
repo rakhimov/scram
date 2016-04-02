@@ -551,6 +551,17 @@ class Zbdd {
   /// @returns Minimized high branch for a variable.
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
 
+  /// Prunes the ZBDD graph with the cut-off.
+  ///
+  /// @param[in] vertex  The root vertex of the ZBDD.
+  /// @param[in] limit_order  The cut-off order for the sets.
+  ///
+  /// @returns The root vertex of the pruned ZBDD.
+  ///
+  /// @post If the ZBDD is minimal,
+  ///       the resultant pruned ZBDD is minimal.
+  VertexPtr Prune(const VertexPtr& vertex, int limit_order) noexcept;
+
   /// Checks if a set node represents a gate.
   /// Apply operations and truncation operations
   /// should avoid accounting non-module gates

@@ -123,6 +123,20 @@ Baobab2 (mcs = 4805)
 - # of SetNodes in ZBDD: 160
 
 
+CEA9601 -l 3 (mcs = 1144)
+=========================
+
+Release build:
+--------------
+
+- ZBDD Time: 4.50
+
+- # of ZBDD nodes created: 205957
+- # of SetNodes in ZBDD: 75
+
+- Memory:   130
+
+
 Fault Tree Analysis (BDD)
 =========================
 
