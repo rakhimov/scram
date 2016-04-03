@@ -44,8 +44,19 @@ class SetNode : public NonTerminal<SetNode> {
   /// @returns true if the ZBDD is minimized.
   bool minimal() const { return minimal_; }
 
+  /// Sets the indication of a minimized ZBDD.
+  ///
   /// @param[in] flag  A flag for minimized ZBDD.
   void minimal(bool flag) { minimal_ = flag; }
+
+  /// @returns The registered order of the largest set in the ZBDD.
+  int max_set_order() const { return max_set_order_; }
+
+  /// Registers the order of the largest set in the ZBDD
+  /// represented by this vertex.
+  ///
+  /// @param[in] order  The order/size of the largest set.
+  void max_set_order(int order) { max_set_order_ = order; }
 
   /// @returns Whatever count is stored in this node.
   int64_t count() const { return count_; }
@@ -81,6 +92,7 @@ class SetNode : public NonTerminal<SetNode> {
 
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
+  int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
   std::vector<std::vector<int>> products_;  ///< Products of this node.
   int64_t count_ = 0;  ///< The number of products, nodes, or anything else.
 };
@@ -187,18 +199,23 @@ class Zbdd {
 
   /// Finds or adds a unique SetNode in the ZBDD.
   /// All vertices in the ZBDD must be created with this functions.
-  /// Otherwise, the ZBDD may not be reduced.
+  /// Otherwise, the ZBDD may not be reduced,
+  /// and vertices will miss crucial meta-information about the ZBDD.
   ///
   /// @param[in] index  Positive or negative index of the node.
   /// @param[in] high  The high vertex.
   /// @param[in] low  The low vertex.
   /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  The indication of a proxy for a modular ZBDD.
+  /// @param[in] coherent  The indication of a coherent proxy.
   ///
   /// @returns Set node with the given parameters.
   ///
   /// @warning This function is not aware of reduction rules.
   SetNodePtr FindOrAddVertex(int index, const VertexPtr& high,
-                             const VertexPtr& low, int order) noexcept;
+                             const VertexPtr& low, int order,
+                             bool module = false,
+                             bool coherent = false) noexcept;
 
   /// Find or adds a ZBDD SetNode vertex using information from gates.
   ///

@@ -195,12 +195,22 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
 #undef CHECK_ZBDD
 
 SetNodePtr Zbdd::FindOrAddVertex(int index, const VertexPtr& high,
-                                 const VertexPtr& low, int order) noexcept {
+                                 const VertexPtr& low, int order,
+                                 bool module, bool coherent) noexcept {
+  assert(high->id() != low->id() && "Reduction failure.");
+
   SetNodeWeakPtr& in_table =
       unique_table_.FindOrAdd(index, high->id(), low->id());
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
   SetNodePtr node(new SetNode(index, order, set_id_++, high, low));
+  node->module(module);
+  node->coherent(coherent);
+  int high_order = high->terminal() ? 0 : SetNode::Ptr(high)->max_set_order();
+  high_order += !Zbdd::MayBeUnity(node);
+  int low_order = low->terminal() ? 0 : SetNode::Ptr(low)->max_set_order();
+  node->max_set_order(std::max(high_order, low_order));
+
   in_table = node;
   return node;
 }
@@ -209,28 +219,14 @@ SetNodePtr Zbdd::FindOrAddVertex(const SetNodePtr& node, const VertexPtr& high,
                                  const VertexPtr& low) noexcept {
   if (node->high()->id() == high->id() &&
       node->low()->id() == low->id()) return node;
-  SetNodePtr in_table =
-      Zbdd::FindOrAddVertex(node->index(), high, low, node->order());
-  if (in_table->unique()) {
-    in_table->module(node->module());
-    in_table->coherent(node->coherent());
-  }
-  assert(in_table->module() == node->module());
-  assert(in_table->coherent() == node->coherent());
-  return in_table;
+  return Zbdd::FindOrAddVertex(node->index(), high, low, node->order(),
+                               node->module(), node->coherent());
 }
 
 SetNodePtr Zbdd::FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
                                  const VertexPtr& low) noexcept {
-  SetNodePtr in_table =
-      Zbdd::FindOrAddVertex(gate->index(), high, low, gate->order());
-  if (in_table->unique()) {
-    in_table->module(gate->module());
-    in_table->coherent(gate->coherent());
-  }
-  assert(in_table->module() == gate->module());
-  assert(in_table->coherent() == gate->coherent());
-  return in_table;
+  return Zbdd::FindOrAddVertex(gate->index(), high, low, gate->order(),
+                               gate->module(), gate->coherent());
 }
 
 Zbdd::VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
@@ -240,16 +236,9 @@ Zbdd::VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
   if (high->terminal() && !Terminal<SetNode>::Ptr(high)->value()) return low;
   if (low->terminal() && Terminal<SetNode>::Ptr(low)->value()) return low;
   assert(ite->index() > 0 && "BDD indices are never negative.");
-  SetNodePtr in_table =
-      Zbdd::FindOrAddVertex(complement ? -ite->index() : ite->index(),
-                            high, low, ite->order());
-  if (in_table->unique()) {
-    in_table->module(ite->module());
-    in_table->coherent(ite->coherent());
-  }
-  assert(in_table->module() == ite->module());
-  assert(in_table->coherent() == ite->coherent());
-  return in_table;
+  return Zbdd::FindOrAddVertex(complement ? -ite->index() : ite->index(),
+                               high, low, ite->order(), ite->module(),
+                               ite->coherent());
 }
 
 Zbdd::VertexPtr Zbdd::GetReducedVertex(const SetNodePtr& node,
@@ -655,6 +644,8 @@ Zbdd::VertexPtr Zbdd::Prune(const VertexPtr& vertex, int limit_order) noexcept {
   if (limit_order < 0) return kEmpty_;
   if (vertex->terminal()) return vertex;
   SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->max_set_order() <= limit_order) return node;
+
   int limit_high = limit_order - !Zbdd::MayBeUnity(node);
   VertexPtr result =
       Zbdd::GetReducedVertex(node, Zbdd::Prune(node->high(), limit_high),
