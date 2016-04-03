@@ -66,9 +66,9 @@ Fault Tree Analysis (MOCUS)
 Baobab1 -l 7 (mcs = 17432)
 --------------------------
 
-Debug build:  1.9
+Debug build:  1.8
 
-Release build:  0.30
+Release build:  0.25
 
 - # of ZBDD nodes created: 34966
 - # of SetNodes in ZBDD: 3377
@@ -129,12 +129,12 @@ CEA9601 -l 3 (mcs = 1144)
 Release build:
 --------------
 
-- ZBDD Time: 2.10
+- ZBDD Time: 1.6
 
-- # of ZBDD nodes created: 205957
+- # of ZBDD nodes created: 174673
 - # of SetNodes in ZBDD: 75
 
-- Memory:   130
+- Memory:   100
 
 
 Fault Tree Analysis (BDD)

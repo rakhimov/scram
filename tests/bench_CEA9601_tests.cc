@@ -25,9 +25,9 @@ namespace test {
 // Benchmark Tests for CEA9601 fault tree from XFTA.
 #ifdef NDEBUG
 TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
+  std::vector<std::string> input_files = {
+      "./share/scram/input/CEA9601/CEA9601.xml",
+      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(4).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
@@ -37,6 +37,21 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
   EXPECT_EQ(distr, ProductDistribution());
 
   EXPECT_NEAR(2.38155e-6, p_total(), 1e-10);
+}
+
+TEST_F(RiskAnalysisTest, CEA9601_Test_ZBDD) {
+  std::vector<std::string> input_files = {
+      "./share/scram/input/CEA9601/CEA9601.xml",
+      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
+  settings.limit_order(3).algorithm("zbdd").probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  ASSERT_NO_THROW(ran->Analyze());
+  // Minimal cut set check.
+  EXPECT_EQ(1144, products().size());
+  std::vector<int> distr = {0, 0, 1144};
+  EXPECT_EQ(distr, ProductDistribution());
+
+  EXPECT_NEAR(3.316e-8, p_total(), 1e-10);
 }
 #endif
 

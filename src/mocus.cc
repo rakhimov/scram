@@ -89,8 +89,11 @@ Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   }
   for (const auto& entry : container->GatherModules()) {
     int index = entry.first;
+    assert(index > 0 && "No complement modules are expected.");
     int limit = entry.second.second;
-    if (limit == 0) {  /// @todo Make cut-offs strict.
+    assert(limit >= 0 && "Order cut-off is not strict.");
+    bool coherent = entry.second.first;
+    if (limit == 0 && coherent) {  // Unity is impossible.
       std::unique_ptr<zbdd::CutSetContainer> empty_zbdd(
           new zbdd::CutSetContainer(kSettings_, index,
                                     graph_->basic_events().size()));

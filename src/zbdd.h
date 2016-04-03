@@ -240,8 +240,7 @@ class Zbdd {
   ///
   /// @returns The resulting ZBDD vertex.
   ///
-  /// @note The limit on the order is not guaranteed.
-  ///       It is for optimization purposes only.
+  /// @post The limit on the set order is guaranteed.
   template <Operator Type>
   VertexPtr Apply(const VertexPtr& arg_one, const VertexPtr& arg_two,
                   int limit_order) noexcept;
@@ -259,8 +258,7 @@ class Zbdd {
   ///
   /// @pre The operator is either AND or OR.
   ///
-  /// @note The limit on the order is not guaranteed.
-  ///       It is for optimization purposes only.
+  /// @post The limit on the set order is guaranteed.
   VertexPtr Apply(Operator type, const VertexPtr& arg_one,
                   const VertexPtr& arg_two, int limit_order) noexcept;
 
