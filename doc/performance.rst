@@ -181,18 +181,36 @@ Release build:
 --------------
 
 - BDD Time: 2.5
-- ZBDD Time: 4.0
+- ZBDD Time: 2.0
 
 - Reporting (/dev/null): 5.2
 
 - # of ZBDD vertices created: 43593  |  45845
 - # of Nodes in ZBDD: 11351
-- ZBDD Cut set extraction time: 3.5
-- ZBDD Cut set extraction memory: 240
+- ZBDD Cut set extraction time: 1.5
+- ZBDD Cut set extraction memory: 200
 
-- Memory:   580
+- Memory:   530
 
 - Cache-misses:  34 %
+
+
+CEA9601 -l 6 (mcs = 9323572)
+============================
+
+Release build:
+--------------
+
+- BDD Time: 2.5
+- ZBDD Time: 11
+
+- Reporting (/dev/null): 35
+
+- # of ZBDD vertices created: 225475
+- # of Nodes in ZBDD: 22014
+- ZBDD Cut set extraction time: 9.0
+
+- Memory:   2048
 
 
 Uncertainty Analysis

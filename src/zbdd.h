@@ -62,10 +62,18 @@ class SetNode : public NonTerminal<SetNode> {
   int64_t count() const { return count_; }
 
   /// Stores numerical value for later retrieval.
-  /// This is a helper functionality
+  /// This can be a helper functionality
   /// for counting the number of sets or nodes.
   ///
   /// @param[in] number  A number with a meaning for the caller.
+  ///
+  /// @note This field is provided for ZBDD processing techniques
+  ///       that use mutually exclusive meta-data about the node
+  ///       in different stages of ZBDD processing.
+  ///       Usually, the data is not needed after the technique is done.
+  ///       In contrast to providing separate fields or using hash tables
+  ///       for each technique metric,
+  ///       this general-purpose field saves space and time.
   void count(int64_t number) { count_ = number; }
 
   /// @returns Products found in the ZBDD represented by this node.
@@ -596,6 +604,21 @@ class Zbdd {
   /// @returns false if the passed node can never be Unity.
   bool MayBeUnity(const SetNodePtr& node) noexcept;
 
+  /// Encodes the limit order for sub-sets for product generation.
+  /// The encoding lets avoid generation of unnecessary products.
+  ///
+  /// @param[in,out] vertex  The vertex to start the encoding.
+  /// @param[in] limit_order  The limit on the product order.
+  ///
+  /// @pre 'count' fields of nodes are clear.
+  /// @pre All processing is done,
+  ///      such minimization and constant module elimination.
+  /// @pre The encoding is done before the product generation.
+  ///
+  /// @post The limit order is encoded in the node count field.
+  /// @post The encoding is not propagated to sub-modules.
+  void EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept;
+
   /// Traverses the reduced ZBDD graph to generate products.
   /// ZBDD is destructively converted into products.
   ///
@@ -604,7 +627,11 @@ class Zbdd {
   /// @returns A collection of products
   ///          generated from the ZBDD subgraph.
   ///
+  /// @pre The ZBDD node marks are clear.
   /// @pre The ZBDD is minimized.
+  /// @pre There are no constant modules.
+  /// @pre The internal limit order for generation
+  ///      is encoded in the node counts.
   ///
   /// @post The products of modules are incorporated to the result.
   ///
@@ -641,6 +668,17 @@ class Zbdd {
   ///
   /// @pre The graph is marked "true" contiguously.
   void ClearMarks(const VertexPtr& vertex, bool modules) noexcept;
+
+  /// Cleans up non-terminal vertex count fields
+  /// by setting them to 0.
+  ///
+  /// @param[in] vertex  The root vertex of the graph.
+  /// @param[in] modules  Clear counts in modules as well.
+  ///
+  /// @pre The graph node marks are clear.
+  ///
+  /// @post Traversed marks are set to 'true'.
+  void ClearCounts(const VertexPtr& vertex, bool modules) noexcept;
 
   /// Checks ZBDD graphs for errors in the structure.
   /// Errors are assertions that fail at runtime.

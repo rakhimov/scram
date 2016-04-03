@@ -94,7 +94,10 @@ void Zbdd::Analyze() noexcept {
   LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
   // Complete cleanup of the memory.
   Zbdd::ReleaseTables();
-
+  Zbdd::ClearMarks(root_, false);
+  Zbdd::ClearCounts(root_, false);
+  Zbdd::EncodeLimitOrder(root_, kSettings_.limit_order());
+  Zbdd::ClearMarks(root_, false);
   products_ = Zbdd::GenerateProducts(root_);
 
   // Cleanup of temporary products.
@@ -720,6 +723,15 @@ int Zbdd::GatherModules(
   return std::min(min_high + contribution, min_low);
 }
 
+void Zbdd::EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->count() >= limit_order) return;
+  node->count(limit_order);
+  Zbdd::EncodeLimitOrder(node->high(), limit_order - 1);
+  Zbdd::EncodeLimitOrder(node->low(), limit_order);
+}
+
 std::vector<std::vector<int>>
 Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
@@ -728,16 +740,22 @@ Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   }
   SetNodePtr node = SetNode::Ptr(vertex);
   assert(node->minimal() && "Detected non-minimal ZBDD.");
+  if (node->count() <= 0) return {};  // The result of a conservative count.
+
   if (node->mark()) return node->products();
   node->mark(true);
   std::vector<Product> low = Zbdd::GenerateProducts(node->low());
   std::vector<Product> high = Zbdd::GenerateProducts(node->high());
-  auto& result = low;  // For clarity.
+  std::vector<Product> result;
+  for (auto& product : low) {
+    if (product.size() <= node->count())
+      result.emplace_back(std::move(product));
+  }
   if (node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
-    for (auto& product : high) {  // Cross-product.
+    for (const auto& product : high) {  // Cross-product.
       for (const auto& module_set : module->products()) {
-        if (product.size() + module_set.size() > kSettings_.limit_order())
+        if (product.size() + module_set.size() > node->count())
           continue;  // Cut-off on the product size.
         Product combo = product;
         combo.insert(combo.end(), module_set.begin(), module_set.end());
@@ -746,9 +764,10 @@ Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
     }
   } else {
     for (auto& product : high) {
-      if (product.size() == kSettings_.limit_order()) continue;
-      product.push_back(node->index());
-      result.emplace_back(std::move(product));
+      if (product.size() < node->count()) {
+        product.push_back(node->index());
+        result.emplace_back(std::move(product));
+      }
     }
   }
 
@@ -797,6 +816,20 @@ void Zbdd::ClearMarks(const VertexPtr& vertex, bool modules) noexcept {
   }
   Zbdd::ClearMarks(node->high(), modules);
   Zbdd::ClearMarks(node->low(), modules);
+}
+
+void Zbdd::ClearCounts(const VertexPtr& vertex, bool modules) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->mark()) return;
+  node->mark(true);
+  node->count(0);
+  if (modules && node->module()) {
+    Zbdd* module = modules_.find(node->index())->second.get();
+    module->ClearCounts(module->root_, true);
+  }
+  Zbdd::ClearCounts(node->high(), modules);
+  Zbdd::ClearCounts(node->low(), modules);
 }
 
 void Zbdd::TestStructure(const VertexPtr& vertex, bool modules) noexcept {
