@@ -137,8 +137,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
     int limit = entry.second.second;
     assert(limit >= 0 && "Order cut-off is not strict.");
-    bool coherent = entry.second.first;
-    bool module_coherence = coherent && (index > 0);
+    bool module_coherence = entry.second.first && (index > 0);
     if (limit == 0 && module_coherence) {  // Unity is impossible.
       Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(new Zbdd(settings)));
       continue;
