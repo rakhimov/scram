@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
   <information>
-    <software name="SCRAM" version="0.10.0"/>
-    <time>2016-Jan-19 07:34:14</time>
+    <software name="SCRAM" version="0.11.1"/>
+    <time>2016-Apr-05 07:34:14</time>
     <performance>
       <calculation-time name="TopEvent">
         <products>0.001879</products>
@@ -13,7 +13,7 @@
     <calculated-quantity name="Minimal Cut Sets"/>
     <calculation-method name="Binary Decision Diagram">
       <limits>
-        <number-of-basic-events>20</number-of-basic-events>
+        <product-order>20</product-order>
       </limits>
     </calculation-method>
     <calculated-quantity name="Probability Analysis" definition="Quantitative analysis of failure probability" approximation="no"/>

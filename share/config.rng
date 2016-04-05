@@ -68,7 +68,7 @@
         <element name="limits">
           <interleave>
             <optional>
-              <element name="limit-order">
+              <element name="product-order">
                 <data type="nonNegativeInteger"/>
               </element>
             </optional>

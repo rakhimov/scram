@@ -6,7 +6,7 @@
   <options>
     <analysis importance="true" uncertainty="false" ccf="false"/>
     <limits>
-      <limit-order>10</limit-order>
+      <product-order>10</product-order>
       <mission-time>8760</mission-time>
       <cut-off>0.001</cut-off>
     </limits>

@@ -118,7 +118,7 @@ void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
       assert(settings.algorithm() == "mocus");
       methods.SetAttribute("name", "MOCUS");
     }
-    methods.AddChild("limits").AddChild("number-of-basic-events").AddChildText(
+    methods.AddChild("limits").AddChild("product-order").AddChildText(
         ToString(settings.limit_order()));
   }
   if (settings.ccf_analysis()) {

@@ -168,7 +168,7 @@ void Config::SetLimits(const xmlpp::Element* limits) {
     const xmlpp::Element* limit = static_cast<const xmlpp::Element*>(node);
     std::string name = limit->get_name();
     std::string content = limit->get_child_text()->get_content();
-    if (name == "limit-order") {
+    if (name == "product-order") {
       settings_.limit_order(boost::lexical_cast<int>(content));
 
     } else if (name == "cut-off") {

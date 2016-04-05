@@ -75,7 +75,7 @@
             <optional>
               <element name="limits">
                 <optional>
-                  <element name="number-of-basic-events">
+                  <element name="product-order">
                     <data type="nonNegativeInteger"/>
                   </element>
                 </optional>

@@ -8,7 +8,7 @@ This configuration file is missing the required input files.
     <analysis probability="true" importance="true" uncertainty="true" ccf="true"/>
     <approximation name="rare-event"/>
     <limits>
-      <limit-order>11</limit-order>
+      <product-order>11</product-order>
       <mission-time>48</mission-time>
       <cut-off>0.009</cut-off>
       <number-of-trials>777</number-of-trials>
