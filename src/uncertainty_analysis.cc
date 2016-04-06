@@ -98,8 +98,7 @@ void UncertaintyAnalysis::CalculateStatistics(
     distribution_.push_back(hist[i]);
   }
   mean_ = boost::accumulators::mean(acc);
-  double var = variance(acc);
-  sigma_ = std::sqrt(var);
+  sigma_ = std::sqrt(num_trials * variance(acc) / (num_trials - 1));
   error_factor_ = std::exp(1.96 * sigma_);
   confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials);
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
