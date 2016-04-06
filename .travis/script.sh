@@ -57,6 +57,7 @@ cpplint --repository=../ --quiet src/* tests/* 2> style.txt \
   || echo "TODO: Fix the C++ code"
 # Clean false positives and noise
 sed -i '/Found C system header after C\+\+/d' style.txt
+sed -i '/Found C system header after other header/d' style.txt
 sed -i '/Include the directory when naming/d' style.txt
 sed -i '/^Ignoring/d' style.txt
 sed -i '/^Skipping/d' style.txt
