@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 /// Implementation of functions in Model class.
 
 #include "model.h"
-
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
 
@@ -46,99 +44,6 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   }
 }
 
-ParameterPtr Model::GetParameter(const std::string& reference,
-                                 const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  std::string target_name = path.back();
-  boost::to_lower(target_name);
-  if (base_path != "") {
-    const Component* scope = Model::GetContainer(base_path);
-    const Component* container = Model::GetLocalContainer(reference, scope);
-    if (container) {
-      try {
-        return container->parameters().at(target_name);
-      } catch (std::out_of_range&) {}  // Continue searching.
-    }
-  }
-  const std::unordered_map<std::string, ParameterPtr>* parameters =
-      &parameters_;
-  if (path.size() > 1) {
-    const Component* container = Model::GetGlobalContainer(reference);
-    parameters = &container->parameters();
-  }
-
-  try {
-    return parameters->at(target_name);
-  } catch (std::out_of_range&) {}
-
-  std::string msg = "Undefined parameter " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
-  throw ValidationError(msg);
-}
-
-std::pair<EventPtr, std::string> Model::GetEvent(const std::string& reference,
-                                                 const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  std::string target_name = path.back();
-  boost::to_lower(target_name);
-  if (base_path != "") {
-    const Component* scope = Model::GetContainer(base_path);
-    const Component* container = Model::GetLocalContainer(reference, scope);
-    if (container) {
-      try {
-        EventPtr event = container->basic_events().at(target_name);
-        return {event, "basic-event"};
-      } catch (std::out_of_range&) {}
-
-      try {
-        EventPtr event = container->gates().at(target_name);
-        return {event, "gate"};
-      } catch (std::out_of_range&) {}
-
-      try {
-        EventPtr event = container->house_events().at(target_name);
-        return {event, "house-event"};
-      } catch (std::out_of_range&) {}
-    }
-  }
-  const std::unordered_map<std::string, GatePtr>* gates = &gates_;
-  const std::unordered_map<std::string, HouseEventPtr>* house_events =
-      &house_events_;
-  const std::unordered_map<std::string, BasicEventPtr>* basic_events =
-      &basic_events_;
-  if (path.size() > 1) {
-    const Component* container = Model::GetGlobalContainer(reference);
-    gates = &container->gates();
-    basic_events = &container->basic_events();
-    house_events = &container->house_events();
-  }
-
-  try {
-    EventPtr event = basic_events->at(target_name);
-    return {event, "basic-event"};
-  } catch (std::out_of_range&) {}
-
-  try {
-    EventPtr event = gates->at(target_name);
-    return {event, "gate"};
-  } catch (std::out_of_range&) {}
-
-  try {
-    EventPtr event = house_events->at(target_name);
-    return {event, "house-event"};
-  } catch (std::out_of_range&) {}
-
-  std::string msg = "Undefined event " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
-  throw ValidationError(msg);
-}
-
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   std::string id = house_event->id();
   bool original = event_ids_.insert(id).second;
@@ -147,39 +52,6 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
     throw RedefinitionError(msg);
   }
   house_events_.emplace(id, house_event);
-}
-
-HouseEventPtr Model::GetHouseEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  std::string target_name = path.back();
-  boost::to_lower(target_name);
-  if (base_path != "") {
-    const Component* scope = Model::GetContainer(base_path);
-    const Component* container = Model::GetLocalContainer(reference, scope);
-    if (container) {
-      try {
-        return container->house_events().at(target_name);
-      } catch (std::out_of_range&) {}  // Continue searching.
-    }
-  }
-  const std::unordered_map<std::string, HouseEventPtr>* house_events =
-      &house_events_;
-  if (path.size() > 1) {
-    const Component* container = Model::GetGlobalContainer(reference);
-    house_events = &container->house_events();
-  }
-
-  try {
-    return house_events->at(target_name);
-  } catch (std::out_of_range&) {}
-
-  std::string msg = "Undefined house event " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
-  throw ValidationError(msg);
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
@@ -192,39 +64,6 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.emplace(id, basic_event);
 }
 
-BasicEventPtr Model::GetBasicEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  std::string target_name = path.back();
-  boost::to_lower(target_name);
-  if (base_path != "") {
-    const Component* scope = Model::GetContainer(base_path);
-    const Component* container = Model::GetLocalContainer(reference, scope);
-    if (container) {
-      try {
-        return container->basic_events().at(target_name);
-      } catch (std::out_of_range&) {}  // Continue searching.
-    }
-  }
-  const std::unordered_map<std::string, BasicEventPtr>* basic_events =
-      &basic_events_;
-  if (path.size() > 1) {
-    const Component* container = Model::GetGlobalContainer(reference);
-    basic_events = &container->basic_events();
-  }
-
-  try {
-    return basic_events->at(target_name);
-  } catch (std::out_of_range&) {}
-
-  std::string msg = "Undefined basic event " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
-  throw ValidationError(msg);
-}
-
 void Model::AddGate(const GatePtr& gate) {
   std::string id = gate->id();
   bool original = event_ids_.insert(id).second;
@@ -233,38 +72,6 @@ void Model::AddGate(const GatePtr& gate) {
     throw RedefinitionError(msg);
   }
   gates_.emplace(id, gate);
-}
-
-GatePtr Model::GetGate(const std::string& reference,
-                       const std::string& base_path) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  std::string target_name = path.back();
-  boost::to_lower(target_name);
-  if (base_path != "") {
-    const Component* scope = Model::GetContainer(base_path);
-    const Component* container = Model::GetLocalContainer(reference, scope);
-    if (container) {
-      try {
-        return container->gates().at(target_name);
-      } catch (std::out_of_range&) {}  // Continue searching.
-    }
-  }
-  const std::unordered_map<std::string, GatePtr>* gates = &gates_;
-  if (path.size() > 1) {
-    const Component* container = Model::GetGlobalContainer(reference);
-    gates = &container->gates();
-  }
-
-  try {
-    return gates->at(target_name);
-  } catch (std::out_of_range&) {}  // Continue searching.
-
-  std::string msg = "Undefined gate " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
-  throw ValidationError(msg);
 }
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
@@ -276,79 +83,78 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   }
 }
 
-const Component* Model::GetContainer(const std::string& base_path) {
-  assert(base_path != "");
+ParameterPtr Model::GetParameter(const std::string& reference,
+                                 const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, parameters_,
+      [](const Component& component) { return component.parameters(); });
+}
+
+HouseEventPtr Model::GetHouseEvent(const std::string& reference,
+                                   const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, house_events_,
+      [](const Component& component) { return component.house_events(); });
+}
+
+BasicEventPtr Model::GetBasicEvent(const std::string& reference,
+                                   const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, basic_events_,
+      [](const Component& component) { return component.basic_events(); });
+}
+
+GatePtr Model::GetGate(const std::string& reference,
+                       const std::string& base_path) {
+  return Model::GetEntity(
+      reference, base_path, gates_,
+      [](const Component& component) { return component.gates(); });
+}
+
+namespace {
+
+/// @param[in] string_path  The reference string formatted with ".".
+///
+/// @returns A set of names in the reference path.
+std::vector<std::string> GetPath(std::string string_path) {
   std::vector<std::string> path;
-  boost::split(path, base_path, boost::is_any_of("."),
+  boost::to_lower(string_path);
+  boost::split(path, string_path, boost::is_any_of("."),
                boost::token_compress_on);
-  auto it = path.begin();
-  std::string name = *it;
-  boost::to_lower(name);
-  const Component* container;
-  try {
-    container = fault_trees_.at(name).get();
-  } catch (std::out_of_range&) {
-    throw LogicError("Missing fault tree " + *it);
+  return path;
+}
+
+}  // namespace
+
+template <class Tptr, class Getter>
+Tptr Model::GetEntity(
+    const std::string& reference,
+    const std::string& base_path,
+    const std::unordered_map<std::string, Tptr>& public_container,
+    Getter getter) {
+  assert(!reference.empty());
+  std::vector<std::string> path = GetPath(reference);
+  std::string target_name = path.back();
+  path.pop_back();
+  if (!base_path.empty()) {  // Check the local scope.
+    std::vector<std::string> full_path = GetPath(base_path);
+    full_path.insert(full_path.end(), path.begin(), path.end());
+    try {
+      return getter(Model::GetContainer(full_path)).at(target_name);
+    } catch (std::out_of_range&) {}  // Continue searching.
   }
+  if (path.empty()) return public_container.at(target_name);  // Public entity.
+  return getter(Model::GetContainer(path)).at(target_name);  // Direct access.
+}
+
+const Component& Model::GetContainer(const std::vector<std::string>& path) {
+  assert(!path.empty());
+  auto it = path.begin();  // The path starts with a fault tree.
+  const Component* container = fault_trees_.at(*it).get();
   for (++it; it != path.end(); ++it) {
-    name = *it;
-    boost::to_lower(name);
-    try {
-      container = container->components().at(name).get();
-    } catch (std::out_of_range&) {
-      throw LogicError("Undefined component " + *it + " in path " + base_path);
-    }
+    container = container->components().at(*it).get();
   }
-  return container;
-}
-
-const Component* Model::GetLocalContainer(const std::string& reference,
-                                          const Component* scope) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  const Component* container = scope;
-  if (path.size() > 1) {
-    for (int i = 0; i < path.size() - 1; ++i) {
-      std::string name = path[i];
-      boost::to_lower(name);
-      try {
-        container = container->components().at(name).get();
-      } catch (std::out_of_range&) {
-        return nullptr;  // Not possible to reach locally.
-      }
-    }
-  }
-  return container;
-}
-
-const Component* Model::GetGlobalContainer(const std::string& reference) {
-  assert(reference != "");
-  std::vector<std::string> path;
-  boost::split(path, reference, boost::is_any_of("."),
-               boost::token_compress_on);
-  assert(path.size() > 1);
-  std::string name = path.front();
-  boost::to_lower(name);
-  const Component* container;
-  try {
-    container = fault_trees_.at(name).get();
-  } catch (std::out_of_range&) {
-    throw ValidationError("Undefined fault tree " + path.front() +
-                          " in reference " + reference);
-  }
-  for (int i = 1; i < path.size() - 1; ++i) {
-    std::string next_name = path[i];
-    boost::to_lower(next_name);
-    try {
-      container = container->components().at(next_name).get();
-    } catch (std::out_of_range&) {
-      throw ValidationError("Undefined component " + next_name +
-                            " in reference " + reference);
-    }
-  }
-  return container;
+  return *container;
 }
 
 }  // namespace scram

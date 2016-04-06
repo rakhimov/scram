@@ -85,7 +85,7 @@ class Preprocessor {
   ///          however, the preprocessing algorithms should not rely on this.
   ///          If the partial normalization messes some significant algorithm,
   ///          it may be removed from this phase in future.
-  void PhaseOne() noexcept;
+  void RunPhaseOne() noexcept;
 
   /// Preprocessing phase of the original structure of the graph.
   /// This phase attempts to leverage
@@ -97,14 +97,14 @@ class Preprocessor {
   /// @note Modules are detected and created.
   /// @note Non-module and non-multiple gates are coalesced.
   /// @note Boolean optimization is applied.
-  void PhaseTwo() noexcept;
+  void RunPhaseTwo() noexcept;
 
   /// Application of gate normalization.
   /// After this phase,
   /// the graph is in normal form.
   ///
   /// @note Gate normalization is conducted.
-  void PhaseThree() noexcept;
+  void RunPhaseThree() noexcept;
 
   /// Propagation of complements.
   /// Complements are propagated down to the variables in the graph.
@@ -112,14 +112,14 @@ class Preprocessor {
   /// the graph is in negation normal form.
   ///
   /// @note Complements are propagated to the variables of the graph.
-  void PhaseFour() noexcept;
+  void RunPhaseFour() noexcept;
 
   /// The final phase
   /// that cleans up the graph,
   /// and puts the structure of the graph ready for analysis.
   /// This phase makes the graph structure
   /// alternating AND/OR gate layers.
-  void PhaseFive() noexcept;
+  void RunPhaseFive() noexcept;
 
   /// Checks the root gate of the graph for further processing.
   /// The root gate may become constant
@@ -456,10 +456,10 @@ class Preprocessor {
   /// The gates created with these modular arguments
   /// are guaranteed to be independent modules.
   ///
-  /// @param[in] modular_args  Candidates for modular grouping.
+  /// @param[in,out] modular_args  Candidates for modular grouping.
   /// @param[out] groups  Grouped modular arguments.
   void GroupModularArgs(
-      const std::vector<std::pair<int, NodePtr>>& modular_args,
+      std::vector<std::pair<int, NodePtr>>* modular_args,
       std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept;
 
   /// Creates new module gates
@@ -481,12 +481,12 @@ class Preprocessor {
 
   /// Gathers all modules in the Boolean graph.
   ///
-  /// @param[out] modules  Unique modules encountered breadth-first.
+  /// @returns Unique modules encountered breadth-first.
   ///
-  /// @note It is assumed that module detection is already performed.
+  /// @pre Module detection and marking has already been performed.
   ///
   /// @warning Gate marks are used.
-  void GatherModules(std::vector<IGateWeakPtr>* modules) noexcept;
+  std::vector<IGateWeakPtr> GatherModules() noexcept;
 
   /// Identifies common arguments of gates,
   /// and merges the common arguments into new gates.
@@ -588,12 +588,12 @@ class Preprocessor {
   /// The groups do not intersect
   /// either by candidates or common arguments.
   ///
-  /// @param[in] candidates  The group of the gates with their common arguments.
+  /// @param[in,out] candidates  The group of the gates with their common args.
   /// @param[out] groups  Non-intersecting collection of groups of candidates.
   ///
   /// @note Groups with only one member are discarded.
   void GroupCandidatesByArgs(
-      const MergeTable::Candidates& candidates,
+      MergeTable::Candidates* candidates,
       std::vector<MergeTable::Candidates>* groups) noexcept;
 
   /// Finds intersections of common arguments of gates.
@@ -913,6 +913,7 @@ class Preprocessor {
   ///       and complicate application and performance of other algorithms.
   ///
   /// @warning Gate descendant marks are used.
+  /// @warning Gate ancestor marks are used.
   /// @warning Node visit information is used.
   /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
@@ -962,6 +963,7 @@ class Preprocessor {
     ///
     /// @warning Gate marks are used to traverse subgraphs in linear time.
     /// @warning Gate descendant marks are used to detect ancestor.
+    /// @warning Gate ancestor marks are used to detect sub-graphs.
     /// @warning Gate visit time information is used to detect shared nodes.
     bool ProcessDestinations(const std::vector<IGateWeakPtr>& dest) noexcept;
 
@@ -972,21 +974,48 @@ class Preprocessor {
     ///
     /// @param[in] ancestor  The parent or ancestor of the common node.
     /// @param[in] state  The constant state to be propagated.
-    /// @param[in] visit_bounds  The main graph's visit enter and exit times.
+    /// @param[in] root  The root of the graph,
+    ///                  the decomposition destination.
     ///
     /// @returns true if the parent is reached and processed.
     ///
     /// @warning Gate marks are used to traverse subgraphs in linear time.
     ///          Gate marks must be clear for the subgraph for the first call.
     /// @warning Gate descendant marks are used to detect ancestors.
+    /// @warning Gate ancestor marks are used to detect sub-graphs.
     /// @warning Gate visit time information is used to detect shared nodes.
     bool ProcessAncestors(const IGatePtr& ancestor, bool state,
-                          const std::pair<int, int>& visit_bounds) noexcept;
+                          const IGatePtr& root) noexcept;
+
+    /// Determines if none of the gate ancestors of the node
+    /// is outside of the given graph.
+    ///
+    /// @param[in] gate  The starting ancestor.
+    /// @param[in] root  The root of the graph.
+    ///
+    /// @returns true if all the ancestors are within the graph.
+    ///
+    /// @pre Already processed ancestors are marked with the root index.
+    ///      The positive ancestor mark means the result is true,
+    ///      the negative mark means the ancestry is outside of the graph.
+    ///
+    /// @post The ancestor gates are marked with the signed root gate index
+    ///       as explained in the precondition.
+    static bool IsAncestryWithinGraph(const IGatePtr& gate,
+                                      const IGatePtr& root) noexcept;
+
+    /// Clears only the used ancestor marks.
+    ///
+    /// @param[in] gate  The starting ancestor
+    ///                  that is likely to be marked.
+    /// @param[in] root  The root of the graph.
+    ///
+    /// @post Gate ancestor marks are set to 0.
+    static void ClearAncestorMarks(const IGatePtr& gate,
+                                   const IGatePtr& root) noexcept;
 
     NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
-    std::unordered_map<int, IGatePtr> clones_true_;  ///< True state clones.
-    std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.
   };
 
   /// Marks coherence of the whole graph.
@@ -1012,6 +1041,15 @@ class Preprocessor {
   /// @post If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
   void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
+
+  /// Registers mutated gates for potential deletion later.
+  ///
+  /// @param[in] gate  The mutated gate under examination.
+  ///
+  /// @returns true if the gate is registered for clearance.
+  ///
+  /// @pre The caller will later call the appropriate cleanup functions.
+  bool RegisterToClear(const IGatePtr& gate) noexcept;
 
   /// Assigns order for Boolean graph variables.
   ///

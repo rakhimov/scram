@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,71 +25,14 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
 #include "logger.h"
 
-namespace fs = boost::filesystem;
-
 namespace scram {
-
-namespace {
-
-/// Helper function to statically cast to XML element.
-///
-/// @param[in] node  XML node known to be XML element.
-///
-/// @returns XML element cast from the XML node.
-///
-/// @warning The node must be an XML element.
-inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
-  return static_cast<const xmlpp::Element*>(node);
-}
-
-/// Normalizes the string in an XML attribute.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns Normalized (trimmed) string from the attribute.
-inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute) {
-  std::string value = element->get_attribute_value(attribute);
-  boost::trim(value);
-  return value;
-}
-
-/// Gets a number from an XML attribute.
-///
-/// @tparam T  Numerical type.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns The interpreted value.
-///
-/// @throws ValidationError  Casting is unsuccessful.
-///                          The error message will include the line number.
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-CastAttributeValue(const xmlpp::Element* element,
-                   const std::string& attribute) {
-  try {
-    return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
-  } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret attribute '" << attribute << "' to a number.";
-    throw ValidationError(msg.str());
-  }
-}
-
-}  // namespace
 
 const std::map<std::string, Units> Initializer::kUnits_ = {
     {"bool", kBool},
@@ -159,7 +102,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   // Collection of input file locations in canonical path.
   std::set<std::string> input_paths;
-  fs::path file_path = fs::canonical(xml_file);
+  boost::filesystem::path file_path = boost::filesystem::canonical(xml_file);
   if (input_paths.count(file_path.native())) {
     throw ValidationError("Trying to pass the same file twice: " +
                           file_path.native());
@@ -277,7 +220,7 @@ ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
   std::string role = GetAttributeValue(component_node, "role");
   bool component_role = public_container;  // Inherited role by default.
   // Overwrite the role explicitly.
-  if (role != "") component_role = role == "public" ? true : false;
+  if (!role.empty()) component_role = role == "public";
   ComponentPtr component(new Component(name, base_path, component_role));
   Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
                                      component.get());
@@ -352,7 +295,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   std::string name = GetAttributeValue(gate_node, "name");
   std::string role = GetAttributeValue(gate_node, "role");
   bool gate_role = public_container;  // Inherited role by default.
-  if (role != "") gate_role = role == "public" ? true : false;
+  if (!role.empty()) gate_role = role == "public";
   auto gate = std::make_shared<Gate>(name, base_path, gate_role);
   try {
     model_->AddGate(gate);
@@ -428,47 +371,38 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     std::string element_type = event->get_name();
     // This is for the case "<event name="id" type="type"/>".
     std::string type = GetAttributeValue(event, "type");
-    if (type != "") {
+    if (!type.empty()) {
       assert(type == "gate" || type == "basic-event" || type == "house-event");
       element_type = type;  // Event type is defined.
     }
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        std::pair<EventPtr, std::string> target =
-            model_->GetEvent(name, base_path);
-        EventPtr undefined = target.first;
-        undefined->orphan(false);
-        std::string type_inference = target.second;
-        if (type_inference == "gate") {
-          formula->AddArgument(std::static_pointer_cast<Gate>(undefined));
-        } else if (type_inference == "basic-event") {
-          formula->AddArgument(std::static_pointer_cast<BasicEvent>(undefined));
-        } else {
-          assert(type_inference == "house-event");
-          formula->AddArgument(std::static_pointer_cast<HouseEvent>(undefined));
+        try {  // Let's play some baseball.
+          try {
+            formula->AddArgument(model_->GetBasicEvent(name, base_path));
+          } catch (std::out_of_range&) {
+            formula->AddArgument(model_->GetGate(name, base_path));
+          }
+        } catch (std::out_of_range&) {
+          formula->AddArgument(model_->GetHouseEvent(name, base_path));
         }
       } else if (element_type == "gate") {
-        GatePtr gate = model_->GetGate(name, base_path);
-        formula->AddArgument(gate);
-        gate->orphan(false);
+        formula->AddArgument(model_->GetGate(name, base_path));
 
       } else if (element_type == "basic-event") {
-        BasicEventPtr basic_event = model_->GetBasicEvent(name, base_path);
-        formula->AddArgument(basic_event);
-        basic_event->orphan(false);
+        formula->AddArgument(model_->GetBasicEvent(name, base_path));
 
       } else {
         assert(element_type == "house-event");
-        HouseEventPtr house_event = model_->GetHouseEvent(name, base_path);
-        formula->AddArgument(house_event);
-        house_event->orphan(false);
+        formula->AddArgument(model_->GetHouseEvent(name, base_path));
       }
-    } catch (ValidationError& err) {
+    } catch (std::out_of_range&) {
       std::stringstream msg;
-      msg << "Line " << event->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
-      throw;
+      msg << "Line " << event->get_line() << ":\n"
+          << "Undefined " << element_type << " " << name << " with base path "
+          << base_path;
+      throw ValidationError(msg.str());
     }
   }
 
@@ -488,7 +422,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public" ? true : false;
+  if (!role.empty()) event_role = role == "public";
   auto basic_event = std::make_shared<BasicEvent>(name, base_path, event_role);
   try {
     model_->AddBasicEvent(basic_event);
@@ -522,7 +456,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
-  if (role != "") event_role = role == "public" ? true : false;
+  if (!role.empty()) event_role = role == "public";
   auto house_event = std::make_shared<HouseEvent>(name, base_path, event_role);
   try {
     model_->AddHouseEvent(house_event);
@@ -541,7 +475,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
 
     std::string val = GetAttributeValue(constant, "value");
     assert(val == "true" || val == "false");
-    bool state = (val == "true") ? true : false;
+    bool state = val == "true";
     house_event->state(state);
   }
   Initializer::AttachLabelAndAttributes(event_node, house_event.get());
@@ -554,7 +488,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   std::string name = GetAttributeValue(param_node, "name");
   std::string role = GetAttributeValue(param_node, "role");
   bool param_role = public_container;  // Inherited role by default.
-  if (role != "") param_role = role == "public" ? true : false;
+  if (!role.empty()) param_role = role == "public";
   auto parameter = std::make_shared<Parameter>(name, base_path, param_role);
   try {
     model_->AddParameter(parameter);
@@ -568,7 +502,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
 
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
-  if (unit != "") {
+  if (!unit.empty()) {
     assert(kUnits_.count(unit));
     parameter->unit(kUnits_.at(unit));
   }
@@ -720,7 +654,7 @@ ExpressionPtr Initializer::GetParameterExpression(
     const std::string& base_path) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
-  std::string param_unit = "";  // The expected unit.
+  std::string param_unit;  // The expected unit.
   ExpressionPtr expression;
   if (expr_name == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
@@ -729,11 +663,11 @@ ExpressionPtr Initializer::GetParameterExpression(
       param->unused(false);
       param_unit = kUnitToString_[param->unit()];
       expression = param;
-    } catch (ValidationError& err) {
+    } catch (std::out_of_range&) {
       std::stringstream msg;
-      msg << "Line " << expr_element->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
-      throw;
+      msg << "Line " << expr_element->get_line() << ":\n"
+          << "Undefined parameter " << name << " with base path " << base_path;
+      throw ValidationError(msg.str());
     }
   } else {
     assert(expr_name == "system-mission-time");
@@ -880,7 +814,7 @@ void Initializer::ValidateInitialization() {
   std::stringstream error_messages;
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
-    std::string msg = "";
+    std::string msg;
     for (const std::pair<const std::string, BasicEventPtr>& event :
          model_->basic_events()) {
       if (!event.second->has_expression()) msg += event.second->name() + "\n";
@@ -929,7 +863,6 @@ void Initializer::ValidateExpressions() {
   // Check probability values for primary events.
   if (settings_.probability_analysis()) {
     std::stringstream msg;
-    msg << "";
     for (const std::pair<const std::string, CcfGroupPtr>& group :
          model_->ccf_groups()) {
       try {

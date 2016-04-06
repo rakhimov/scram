@@ -129,18 +129,16 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     assert(result_set.size() <= Analysis::settings().limit_order() &&
            "Miscalculated product sets with larger-than-required order.");
     Product product;
+    product.reserve(result_set.size());
     for (int index : result_set) {
-      BasicEventPtr basic_event = graph->GetBasicEvent(std::abs(index));
-      if (index < 0) {  // NOT logic.
-        product.push_back({true, basic_event});
-      } else {
-        product.push_back({false, basic_event});
-      }
-      if (unique_events.count(std::abs(index))) continue;
-      unique_events.insert(std::abs(index));
+      int abs_index = std::abs(index);
+      const BasicEventPtr& basic_event = graph->GetBasicEvent(abs_index);
+      product.push_back({index < 0, basic_event});
+      if (unique_events.count(abs_index)) continue;
+      unique_events.insert(abs_index);
       product_events_.push_back(basic_event);
     }
-    products_.push_back(product);
+    products_.emplace_back(std::move(product));
   }
 #ifndef NDEBUG
   if (Analysis::settings().print) Print(products_);

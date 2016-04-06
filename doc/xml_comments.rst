@@ -28,5 +28,3 @@ Recommended Tools
 - `BaseX <http://basex.org>`_
 
 - `Eclipse XML Editors and Tools <http://www.eclipse.org/webtools/sse/>`_
-
-- `w3 Recommendations <http://www.w3schools.com/xml/xml_editors.asp>`_

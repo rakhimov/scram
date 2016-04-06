@@ -26,36 +26,26 @@
 #include <boost/version.hpp>
 #include <libxml/xmlversion.h>
 
-/// @def INNER(x)
 /// Stringifies version numbers.
 #define INNER(x) #x
 
-/// @def SVER(x, y, z)
 /// Two level stringification of the version numbers.
 #define SVER(x, y, z) INNER(x.y.z)
 
 namespace scram {
 namespace version {
 
-const char* describe() {
-  return "@core_version@";
-}
+const char* describe() { return "@core_version@"; }
 
-const char* build() {
-  return "@CMAKE_BUILD_TYPE@";
-}
+const char* build() { return "@CMAKE_BUILD_TYPE@"; }
 
 const char* core() {
   return SVER(SCRAM_VERSION_MAJOR, SCRAM_VERSION_MINOR, SCRAM_VERSION_MICRO);
 }
 
-const char* boost() {
-  return BOOST_LIB_VERSION;
-}
+const char* boost() { return BOOST_LIB_VERSION; }
 
-const char* xml2() {
-  return LIBXML_DOTTED_VERSION;
-}
+const char* xml2() { return LIBXML_DOTTED_VERSION; }
 
 }  // namespace version
 }  // namespace scram

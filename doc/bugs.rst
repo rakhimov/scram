@@ -13,23 +13,13 @@ Technical Issues
           low-level technical issues.
 
 - Copying Settings around is expensive (~100B)
-- Abuse of smart pointers (shared pointers)
+- Abuse of smart pointers (shared pointers).
+  Pollution of function interfaces.
 - IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
+- Role::is_public instead of ``public`` (keyword in C++)
+- IGate in Boolean graph is confusing (There is Gate in event.h)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- FetchTable() functions (Bdd/Zbdd) may not make sense semantically.
-- IGate::IsModule() vs. IGate::module(). (Inconsistent with the rest of the code.)
-- ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
-- IGate in Boolean graph is confusing (There is Gate in event.h)
-- Fuzz tester runs are coupled.
-  Can't run two jobs at the same time.
-- Fuzz tester error collection and reporting are non-existent.
-- Preprocessing contracts need review, update, and clarification.
-- BooleanGraph must guarantee stable results (construction from PDAG).
-- Migrate "Quick Installation" to "Installation" web page.
-  (Windows installation is needed to get any value out of this migration.)
-- The code is not well designed as public API.
-  (Example design flaw: call analysis twice and get undefined behavior.)
 - Virtually everything is under one namespace.
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models

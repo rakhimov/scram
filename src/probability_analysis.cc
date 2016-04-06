@@ -82,7 +82,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
       owner_(false) {
   LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
   bdd_graph_ = fta->algorithm();
-  VertexPtr root = bdd_graph_->root().vertex;
+  Bdd::VertexPtr root = bdd_graph_->root().vertex;
   current_mark_ = root->terminal() ? false : Ite::Ptr(root)->mark();
 }
 
@@ -122,7 +122,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
 }
 
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
-    const VertexPtr& vertex,
+    const Bdd::VertexPtr& vertex,
     bool mark) noexcept {
   if (vertex->terminal()) return 1;
   ItePtr ite = Ite::Ptr(vertex);

@@ -88,20 +88,20 @@ Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
 void Preprocessor::Run() noexcept {
   CLOCK(time_1);
   LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
+  Preprocessor::RunPhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
   if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
+    Preprocessor::RunPhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
     if (Preprocessor::CheckRootGate()) return;
   }
@@ -185,7 +185,7 @@ class TestGateStructure {
   assert(TestGateStructure()(graph_->root()));                                \
   assert(TestGateMarks()(graph_->root(), graph_->root()->mark()))
 
-void Preprocessor::PhaseOne() noexcept {
+void Preprocessor::RunPhaseOne() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   if (!graph_->constants_.empty()) {
@@ -207,7 +207,7 @@ void Preprocessor::PhaseOne() noexcept {
   }
 }
 
-void Preprocessor::PhaseTwo() noexcept {
+void Preprocessor::RunPhaseTwo() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   CLOCK(mult_time);
@@ -275,7 +275,7 @@ void Preprocessor::PhaseTwo() noexcept {
   graph_->Log();
 }
 
-void Preprocessor::PhaseThree() noexcept {
+void Preprocessor::RunPhaseThree() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->normal_);
@@ -285,10 +285,10 @@ void Preprocessor::PhaseThree() noexcept {
   LOG(DEBUG3) << "Finished the full normalization of gates!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
 }
 
-void Preprocessor::PhaseFour() noexcept {
+void Preprocessor::RunPhaseFour() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->coherent());
@@ -309,10 +309,10 @@ void Preprocessor::PhaseFour() noexcept {
   LOG(DEBUG3) << "Complement propagation is done!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
 }
 
-void Preprocessor::PhaseFive() noexcept {
+void Preprocessor::RunPhaseFive() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
@@ -320,7 +320,7 @@ void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
-  Preprocessor::PhaseTwo();
+  Preprocessor::RunPhaseTwo();
   if (Preprocessor::CheckRootGate()) return;
 
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
@@ -354,7 +354,7 @@ int GetSign(int num) noexcept {
 bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
   assert(a_min < a_max);
   assert(b_min < b_max);
-  return std::max(a_min, b_min) <= std::min(a_max, b_max);
+  return a_min <= b_max && a_max >= b_min;
 }
 
 /// Checks if a node within a graph enter and exit times.
@@ -389,6 +389,34 @@ bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
   assert(root->min_time() > 0);
   assert(root->max_time() > root->min_time());
   return root->min_time() > enter_time && root->max_time() < exit_time;
+}
+
+/// Determines if two sorted ranges intersect.
+/// This function is complementary to std::set_intersection
+/// when the actual intersection container is not needed.
+///
+/// @tparam Iterator1  Forward iterator type of the first range.
+/// @tparam Iterator2  Forward iterator type of the second range.
+///
+/// @param[in] first1  Start of the first range.
+/// @param[in] last1  End of the first range.
+/// @param[in] first2  Start of the second range.
+/// @param[in] last2  End of the second range.
+///
+/// @returns true if the [first1, last1) and [first2, last2) ranges intersect.
+template <typename Iterator1, typename Iterator2>
+bool Intersects(Iterator1 first1, Iterator1 last1,
+                Iterator2 first2, Iterator2 last2) noexcept {
+  while (first1 != last1 && first2 != last2) {
+    if (*first1 < *first2) {
+      ++first1;
+    } else if (*first2 < *first1) {
+      ++first2;
+    } else {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -472,7 +500,7 @@ void Preprocessor::PropagateConstant(const IGatePtr& gate) noexcept {
   assert(gate->IsConstant());
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-    bool state = gate->state() == kNullState ? false : true;
+    bool state = gate->state() == kUnityState;
     parent->ProcessConstantArg(gate, state);
     if (parent->IsConstant()) {
       Preprocessor::PropagateConstant(parent);
@@ -582,11 +610,6 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
   }
 
   switch (gate->type()) {  // Negation is already processed.
-    case kNot:
-      assert(gate->args().size() == 1);
-      gate->type(kNull);
-      null_gates_.push_back(gate);  // Register for removal.
-      break;
     case kNor:
       assert(gate->args().size() > 1);
       gate->type(kOr);
@@ -597,15 +620,16 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
       break;
     case kXor:
       assert(gate->args().size() == 2);
-      if (!full) break;
-      Preprocessor::NormalizeXorGate(gate);
+      if (full) Preprocessor::NormalizeXorGate(gate);
       break;
     case kVote:
       assert(gate->args().size() > 2);
       assert(gate->vote_number() > 1);
-      if (!full) break;
-      Preprocessor::NormalizeVoteGate(gate);
+      if (full) Preprocessor::NormalizeVoteGate(gate);
       break;
+    case kNot:
+      assert(gate->args().size() == 1);
+      gate->type(kNull);  // Fall-through to NULL operator gate.
     case kNull:
       null_gates_.push_back(gate);  // Register for removal.
       break;
@@ -700,7 +724,7 @@ void Preprocessor::PropagateComplements(
   std::vector<std::pair<int, IGatePtr>> to_swap;  // Gate args with negation.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    if ((arg.first < 0) && !(keep_modules && arg_gate->IsModule())) {
+    if ((arg.first < 0) && !(keep_modules && arg_gate->module())) {
       IGatePtr complement;
       if (complements->count(arg_gate->index())) {
         complement = complements->find(arg_gate->index())->second;
@@ -717,7 +741,7 @@ void Preprocessor::PropagateComplements(
         complement = arg_gate;
       } else {
         complement = arg_gate->Clone();
-        if (arg_gate->IsModule()) arg_gate->DestroyModule();  // Very bad.
+        if (arg_gate->module()) arg_gate->module(false);  // Not good.
         complement->type(complement_type);
         complement->InvertArgs();
         complements->emplace(arg_gate->index(), complement);
@@ -751,8 +775,7 @@ bool Preprocessor::CoalesceGates(bool common) noexcept {
 bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
   if (gate->mark()) return false;
   gate->mark(true);
-  bool possible = true;  // Is coalescing possible at all?
-  Operator target_type;  // What kind of arg gate are we searching for?
+  Operator target_type = kNull;  // What kind of arg gate are we searching for?
   switch (gate->type()) {
     case kNand:
     case kAnd:
@@ -765,27 +788,27 @@ bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
       target_type = kOr;
       break;
     default:
-      possible = false;
+      target_type = kNull;  // Implicit no operation!
   }
   assert(!gate->args().empty());
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the graph is changed.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    if (Preprocessor::CoalesceGates(arg_gate, common)) changed = true;
+    changed |= Preprocessor::CoalesceGates(arg_gate, common);
 
-    if (!possible) continue;  // Joining with the parent is impossible.
+    if (target_type == kNull) continue;  // Coalescing is impossible.
     if (arg_gate->IsConstant()) continue;  // No args to join.
     if (arg.first < 0) continue;  // Cannot coalesce a negative arg gate.
-    if (arg_gate->IsModule()) continue;  // Preserve modules.
+    if (arg_gate->module()) continue;  // Preserve modules.
     if (!common && arg_gate->parents().size() > 1) continue;  // Check common.
 
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
 
+  changed |= !to_join.empty();
   for (const IGatePtr& arg : to_join) {
     gate->CoalesceGate(arg);
-    changed = true;
     if (gate->IsConstant()) {
       const_gates_.push_back(gate);  // Register for future processing.
       break;  // The parent is constant. No need to join other arguments.
@@ -802,11 +825,12 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
 
   graph_->ClearGateMarks();
   // The original gate and its multiple definitions.
-  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
-  GateSet* unique_gates = new GateSet();
-  Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
-                                          unique_gates);
-  delete unique_gates;  // To remove extra reference counts.
+  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr>> multi_def;
+  {
+    GateSet unique_gates;
+    Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
+                                            &unique_gates);
+  }
   graph_->ClearGateMarks();
 
   if (multi_def.empty()) return false;
@@ -814,9 +838,9 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   for (const auto& def : multi_def) {
     LOG(DEBUG5) << "Gate " << def.first->index() << ": " << def.second.size()
                 << " times.";
-    for (const IGateWeakPtr& dup : def.second) {
-      if (dup.expired()) continue;
-      Preprocessor::ReplaceGate(dup.lock(), def.first);
+    for (const IGateWeakPtr& duplicate : def.second) {
+      if (duplicate.expired()) continue;
+      Preprocessor::ReplaceGate(duplicate.lock(), def.first);
     }
   }
   Preprocessor::ClearConstGates();
@@ -832,7 +856,7 @@ void Preprocessor::DetectMultipleDefinitions(
   gate->mark(true);
   assert(!gate->IsConstant());
 
-  if (!gate->IsModule()) {  // Modules are unique by definition.
+  if (!gate->module()) {  // Modules are unique by definition.
     std::pair<IGatePtr, bool> ret = unique_gates->insert(gate);
     assert(ret.first->mark());
     if (!ret.second) {  // The gate is duplicate.
@@ -878,7 +902,7 @@ int Preprocessor::AssignTiming(int time, const IGatePtr& gate) noexcept {
     arg.second->Visit(time);  // Exit at the same time.
   }
   bool re_visited = gate->Visit(++time);  // Exiting the gate in second visit.
-  assert(!re_visited);  // No cyclic visiting.
+  assert(!re_visited && "Detected a cycle!");  // No cyclic visiting.
   return time;
 }
 
@@ -897,7 +921,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
     Preprocessor::FindModules(arg_gate);
-    if (arg_gate->IsModule() && !arg_gate->Revisited()) {
+    if (arg_gate->module() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
       assert(arg_gate->parents().count(gate->index()));
       assert(IsSubgraphWithinGraph(arg_gate, enter_time, exit_time));
@@ -933,10 +957,10 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
   }
 
   // Determine if this gate is module itself.
-  if (!gate->IsModule() && min_time == enter_time && max_time == exit_time) {
+  if (!gate->module() && min_time == enter_time && max_time == exit_time) {
     LOG(DEBUG4) << "Found original module: G" << gate->index();
     assert(non_modular_args.empty());
-    gate->TurnModule();
+    gate->module(true);
   }
 
   max_time = std::max(max_time, gate->LastVisit());
@@ -967,7 +991,7 @@ void Preprocessor::ProcessModularArgs(
       Preprocessor::FilterModularArgs(modular_args, non_modular_args);
       assert(modular_args->size() != 1 && "One modular arg is non-shared.");
       std::vector<std::vector<std::pair<int, NodePtr>>> groups;
-      Preprocessor::GroupModularArgs(*modular_args, &groups);
+      Preprocessor::GroupModularArgs(modular_args, &groups);
       Preprocessor::CreateNewModules(gate, *modular_args, groups);
       break;
     }
@@ -983,7 +1007,7 @@ IGatePtr Preprocessor::CreateNewModule(
   if (args.empty()) return module;
   if (args.size() == 1) return module;
   if (args.size() == gate->args().size()) {
-    assert(gate->IsModule());
+    assert(gate->module());
     return module;
   }
   assert(args.size() < gate->args().size());
@@ -999,7 +1023,7 @@ IGatePtr Preprocessor::CreateNewModule(
     default:
       return module;  // Cannot create sub-modules for other types.
   }
-  module->TurnModule();
+  module->module(true);
   assert(gate->mark());
   module->mark(true);  // Keep consistent marking with the subgraph.
   for (const auto& arg : args) {
@@ -1016,70 +1040,66 @@ void Preprocessor::FilterModularArgs(
     std::vector<std::pair<int, NodePtr>>* modular_args,
     std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept {
   if (modular_args->empty() || non_modular_args->empty()) return;
-  std::vector<std::pair<int, NodePtr>> new_non_modular;
-  std::vector<std::pair<int, NodePtr>> still_modular;
-  for (const auto& mod_arg : *modular_args) {
-    int min = mod_arg.second->min_time();
-    int max = mod_arg.second->max_time();
-    bool non_module = false;
-    for (const auto& non_mod_arg : *non_modular_args) {
-      bool overlap = DetectOverlap(min, max,
-                                   non_mod_arg.second->min_time(),
-                                   non_mod_arg.second->max_time());
-      if (overlap) {
-        non_module = true;
-        break;
-      }
-    }
-    if (non_module) {
-      new_non_modular.push_back(mod_arg);
-    } else {
-      still_modular.push_back(mod_arg);
-    }
+  auto it_end = modular_args->end();
+  for (auto it_begin = modular_args->begin(),
+            check_begin = non_modular_args->begin(),
+            check_end = non_modular_args->end();
+       check_begin != check_end;) {
+    check_begin = std::partition(
+        it_begin, it_end,
+        [check_begin, check_end](const std::pair<int, NodePtr>& mod_arg) {
+          return std::none_of(check_begin, check_end,
+                              [&mod_arg](const std::pair<int, NodePtr>& arg) {
+            return DetectOverlap(mod_arg.second->min_time(),
+                                 mod_arg.second->max_time(),
+                                 arg.second->min_time(),
+                                 arg.second->max_time());
+          });
+        });
+    check_end = it_end;
+    it_end = check_begin;
   }
-  Preprocessor::FilterModularArgs(&still_modular, &new_non_modular);
-  *modular_args = still_modular;
-  non_modular_args->insert(non_modular_args->end(), new_non_modular.begin(),
-                           new_non_modular.end());
+  non_modular_args->insert(non_modular_args->end(), it_end,
+                           modular_args->end());
+  modular_args->erase(it_end, modular_args->end());
 }
 
 void Preprocessor::GroupModularArgs(
-    const std::vector<std::pair<int, NodePtr>>& modular_args,
+    std::vector<std::pair<int, NodePtr>>* modular_args,
     std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept {
-  if (modular_args.empty()) return;
-  assert(modular_args.size() > 1);
+  if (modular_args->empty()) return;
+  assert(modular_args->size() > 1);
   assert(groups->empty());
-  std::list<std::pair<int, NodePtr>> member_list(modular_args.begin(),
-                                                 modular_args.end());
-  while (!member_list.empty()) {
-    std::vector<std::pair<int, NodePtr>> group;
-    NodePtr first_member = member_list.front().second;
-    group.push_back(member_list.front());
-    member_list.pop_front();
-    int low = first_member->min_time();
-    int high = first_member->max_time();
-
-    int prev_size = 0;  // To track the addition of a new member into the group.
-    while (prev_size < group.size()) {
-      prev_size = group.size();
-      std::list<std::pair<int, NodePtr>>::iterator it;
-      for (it = member_list.begin(); it != member_list.end();) {
-        int min = it->second->min_time();
-        int max = it->second->max_time();
-        if (DetectOverlap(min, max, low, high)) {
-          group.push_back(*it);
-          low = std::min(min, low);
-          high = std::max(max, high);
-          std::list<std::pair<int, NodePtr> >::iterator it_erase = it;
-          ++it;
-          member_list.erase(it_erase);
-        } else {
-          ++it;
-        }
-      }
-    }
-    assert(group.size() > 1);
-    groups->emplace_back(group);
+  // Group nodes by the intersection of their visit ranges.
+  std::sort(modular_args->begin(), modular_args->end(),
+            [](const std::pair<int, NodePtr>& lhs_pair,
+               const std::pair<int, NodePtr>& rhs_pair) {
+    const NodePtr& lhs_node = lhs_pair.second;
+    const NodePtr& rhs_node = rhs_pair.second;
+    if (lhs_node->max_time() < rhs_node->min_time()) return true;
+    if (lhs_node->min_time() > rhs_node->max_time()) return false;
+    // Considering the intersection.
+    if (lhs_node->max_time() < rhs_node->max_time()) return true;
+    if (lhs_node->max_time() > rhs_node->max_time()) return false;
+    return lhs_node->min_time() > rhs_node->min_time();
+  });
+  // Gather intersections into groups.
+  for (auto it = modular_args->rbegin(), it_end = modular_args->rend();
+       it != it_end;) {
+    int min_time = it->second->min_time();
+    auto it_group_end =
+        std::find_if(it + 1, it_end,
+                     [it, &min_time](const std::pair<int, NodePtr>& arg) {
+          assert(it->second->max_time() >= arg.second->max_time());
+          if (min_time <= arg.second->max_time()) {
+            min_time = std::min(min_time, arg.second->min_time());
+            return false;
+          }
+          return true;  // Found first element not in the group.
+        });
+    assert(it_group_end - it > 1);
+    groups->emplace_back(it, it_group_end);
+    it = it_group_end;  // Continue with the next group.
   }
   LOG(DEBUG4) << "Grouped modular args in " << groups->size() << " group(s).";
   assert(!groups->empty());
@@ -1093,14 +1113,14 @@ void Preprocessor::CreateNewModules(
   assert(modular_args.size() > 1);
   assert(!groups.empty());
   if (modular_args.size() == gate->args().size() && groups.size() == 1) {
-    assert(gate->IsModule());
+    assert(gate->module());
     return;
   }
   IGatePtr main_arg;
 
   if (modular_args.size() == gate->args().size()) {
     assert(groups.size() > 1);
-    assert(gate->IsModule());
+    assert(gate->module());
     main_arg = gate;
   } else {
     main_arg = Preprocessor::CreateNewModule(gate, modular_args);
@@ -1111,14 +1131,15 @@ void Preprocessor::CreateNewModules(
   }
 }
 
-void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
+std::vector<IGateWeakPtr> Preprocessor::GatherModules() noexcept {
   graph_->ClearGateMarks();
-  std::queue<IGatePtr> gates_queue;
   IGatePtr root = graph_->root();
   assert(!root->mark());
-  assert(root->IsModule());
+  assert(root->module());
   root->mark(true);
-  modules->push_back(root);
+  std::vector<IGateWeakPtr> modules;
+  modules.push_back(root);
+  std::queue<IGatePtr> gates_queue;
   gates_queue.push(root);
   while (!gates_queue.empty()) {
     IGatePtr gate = gates_queue.front();
@@ -1130,9 +1151,10 @@ void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
       if (arg_gate->mark()) continue;
       arg_gate->mark(true);
       gates_queue.push(arg_gate);
-      if (arg_gate->IsModule()) modules->push_back(arg_gate);
+      if (arg_gate->module()) modules.push_back(arg_gate);
     }
   }
+  return modules;
 }
 
 bool Preprocessor::MergeCommonArgs() noexcept {
@@ -1141,13 +1163,11 @@ bool Preprocessor::MergeCommonArgs() noexcept {
   bool changed = false;
 
   LOG(DEBUG4) << "Merging common arguments for AND gates...";
-  bool ret = Preprocessor::MergeCommonArgs(kAnd);
-  if (ret) changed = true;
+  changed |= Preprocessor::MergeCommonArgs(kAnd);
   LOG(DEBUG4) << "Finished merging for AND gates!";
 
   LOG(DEBUG4) << "Merging common arguments for OR gates...";
-  ret = Preprocessor::MergeCommonArgs(kOr);
-  if (ret) changed = true;
+  changed |= Preprocessor::MergeCommonArgs(kOr);
   LOG(DEBUG4) << "Finished merging for OR gates!";
 
   assert(null_gates_.empty());
@@ -1163,8 +1183,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
   // by their operator types and common arguments.
   Preprocessor::MarkCommonArgs(graph_->root(), op);
   graph_->ClearGateMarks();
-  std::vector<IGateWeakPtr> modules;
-  Preprocessor::GatherModules(&modules);
+  std::vector<IGateWeakPtr> modules = Preprocessor::GatherModules();
   graph_->ClearGateMarks();
   LOG(DEBUG4) << "Working with " << modules.size() << " modules...";
   bool changed = false;
@@ -1178,7 +1197,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
     Preprocessor::FilterMergeCandidates(&candidates);
     if (candidates.size() < 2) continue;
     std::vector<MergeTable::Candidates> groups;
-    Preprocessor::GroupCandidatesByArgs(candidates, &groups);
+    Preprocessor::GroupCandidatesByArgs(&candidates, &groups);
     for (const auto& group : groups) {
       // Finding common parents for the common arguments.
       MergeTable::Collection parents;
@@ -1204,7 +1223,7 @@ void Preprocessor::MarkCommonArgs(const IGatePtr& gate, Operator op) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
-  bool in_group = gate->type() == op ? true : false;
+  bool in_group = gate->type() == op;
 
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
@@ -1226,13 +1245,13 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, Operator op,
   if (gate->mark()) return;
   gate->mark(true);
 
-  bool in_group = gate->type() == op ? true : false;
+  bool in_group = gate->type() == op;
 
   std::vector<int> common_args;
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
     assert(!arg_gate->IsConstant());
-    if (!arg_gate->IsModule())
+    if (!arg_gate->module())
       Preprocessor::GatherCommonArgs(arg_gate, op, group);
     if (!in_group) continue;
     int count = arg.first > 0 ? arg_gate->pos_count() : arg_gate->neg_count();
@@ -1314,47 +1333,66 @@ void Preprocessor::FilterMergeCandidates(
 }
 
 void Preprocessor::GroupCandidatesByArgs(
-    const MergeTable::Candidates& candidates,
+    MergeTable::Candidates* candidates,
     std::vector<MergeTable::Candidates>* groups) noexcept {
-  if (candidates.empty()) return;
-  assert(candidates.size() > 1);
+  if (candidates->empty()) return;
+  assert(candidates->size() > 1);
   assert(groups->empty());
-  std::list<MergeTable::Candidate> member_list(candidates.begin(),
-                                               candidates.end());
-  while (!member_list.empty()) {
-    MergeTable::Candidates group;
-    IGatePtr first_member = member_list.front().first;
-    const MergeTable::CommonArgs& common_args = member_list.front().second;
-    std::set<int> group_args(common_args.begin(), common_args.end());
-    assert(group_args.size() > 1);
-    group.push_back(member_list.front());
-    member_list.pop_front();
+  // Group candidates by the intersection of their [min_arg, max_arg] ranges.
+  std::sort(candidates->begin(), candidates->end(),
+            [](const MergeTable::Candidate& lhs_candidate,
+               const MergeTable::Candidate& rhs_candidate) {
+    const MergeTable::CommonArgs& lhs_args = lhs_candidate.second;
+    const MergeTable::CommonArgs& rhs_args = rhs_candidate.second;
+    if (lhs_args.back() < rhs_args.front()) return true;
+    if (lhs_args.front() > rhs_args.back()) return false;
+    // Considering the intersection.
+    if (lhs_args.back() < rhs_args.back()) return true;
+    if (lhs_args.back() > rhs_args.back()) return false;
+    return lhs_args.front() > rhs_args.front();
+  });
 
-    int prev_size = 0;  // To track the change in group arguments.
-    while (prev_size < group_args.size()) {
-      prev_size = group_args.size();
-      for (auto it = member_list.begin(); it != member_list.end();) {
-        std::vector<int> overlap;
-        const MergeTable::CommonArgs& member_args = it->second;
-        std::set_intersection(member_args.begin(), member_args.end(),
-                              group_args.begin(), group_args.end(),
-                              std::back_inserter(overlap));
-        if (!overlap.empty()) {
-          group.push_back(*it);
-          group_args.insert(member_args.begin(), member_args.end());
-          auto it_erase = it;
-          ++it;
-          member_list.erase(it_erase);
-        } else {
-          ++it;
+  std::vector<std::list<MergeTable::Candidate*>> super_groups;
+  for (auto it = candidates->rbegin(), it_end = candidates->rend();
+       it != it_end;) {
+    int min_time = it->second.front();
+    std::list<MergeTable::Candidate*> super_group = {&*it};
+    for (++it; it != it_end && min_time <= it->second.back(); ++it) {
+      min_time = std::min(min_time, it->second.front());
+      super_group.push_back(&*it);
+    }
+    super_groups.emplace_back(std::move(super_group));
+  }
+
+  for (auto& super_group : super_groups) {
+    while (!super_group.empty()) {
+      MergeTable::Candidates group;
+      const MergeTable::CommonArgs& common_args = super_group.front()->second;
+      std::set<int> group_args(common_args.begin(), common_args.end());
+      assert(group_args.size() > 1);
+      group.push_back(*super_group.front());
+      super_group.pop_front();
+
+      int prev_size = 0;  // To track the change in group arguments.
+      while (prev_size < group_args.size()) {
+        prev_size = group_args.size();
+        for (auto it = super_group.begin(); it != super_group.end();) {
+          const MergeTable::CommonArgs& member_args = (*it)->second;
+          if (Intersects(member_args.begin(), member_args.end(),
+                         group_args.begin(), group_args.end())) {
+            group.push_back(**it);
+            group_args.insert(member_args.begin(), member_args.end());
+            super_group.erase(it++);
+          } else {
+            ++it;
+          }
         }
       }
+      if (group.size() > 1) groups->emplace_back(std::move(group));
     }
-    if (group.size() > 1) groups->push_back(group);  // Discard single members.
   }
-  bool any_groups = !groups->empty();
-  BLOG(DEBUG4, any_groups) << "Grouped merge candidates in " << groups->size()
-                           << " group(s).";
+  BLOG(DEBUG4, !groups->empty()) << "Grouped merge candidates in "
+                                 << groups->size() << " group(s).";
 }
 
 void Preprocessor::GroupCommonParents(
@@ -1407,11 +1445,9 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
     ///       The intersections must be considered for each option.
     const MergeTable::CommonArgs& args = merge_group.back().first;
     for (MergeTable::Option& option : all_options) {
-      std::vector<int> common;
-      std::set_intersection(option.first.begin(), option.first.end(),
-                            args.begin(), args.end(),
-                            std::back_inserter(common));
-      if (common.empty()) continue;  // Doesn't affect this option.
+      if (!Intersects(option.first.begin(), option.first.end(),
+                      args.begin(), args.end()))
+        continue;  // Doesn't affect this option.
       MergeTable::CommonParents& parents = option.second;
       for (const IGatePtr& gate : gates) parents.erase(gate);
     }
@@ -1466,7 +1502,7 @@ void Preprocessor::FindBaseOption(
   int best_counts[3] = {};  // The number of extra parents.
   for (auto it = all_options->begin(); it != all_options->end(); ++it) {
     int num_parents = it->second.size();
-    IGatePtr parent = *it->second.begin();  // Representative.
+    const IGatePtr& parent = *it->second.begin();  // Representative.
     const MergeTable::CommonArgs& args = it->first;
     int cur_counts[3] = {};
     for (int index : args) {
@@ -1502,7 +1538,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
 
     LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
     LOG(DEBUG5) << "The number of common parents: " << common_parents.size();
-    IGatePtr parent = *common_parents.begin();  // To get the arguments.
+    const IGatePtr& parent = *common_parents.begin();  // To get the arguments.
     assert(parent->args().size() > 1);
     auto merge_gate = std::make_shared<IGate>(parent->type());
     for (int index : common_args) {
@@ -1553,8 +1589,7 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
   gate->mark(true);
   assert(!gate->IsConstant());
   bool changed = false;
-  bool possible = true;  // Whether or not distributivity possible.
-  Operator distr_type;
+  Operator distr_type = kNull;  // Implicit flag of no operation!
   switch (gate->type()) {
     case kAnd:
     case kNand:
@@ -1565,22 +1600,21 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
       distr_type = kAnd;
       break;
     default:
-      possible = false;
+      distr_type = kNull;
   }
   std::vector<IGatePtr> candidates;
   // Collect child gates of distributivity type.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr child_gate = arg.second;
-    bool ret = Preprocessor::DetectDistributivity(child_gate);
+    changed |= Preprocessor::DetectDistributivity(child_gate);
     assert(!child_gate->IsConstant() && "Impossible state.");
-    if (ret) changed = true;
-    if (!possible) continue;  // Distributivity is not possible.
+    if (distr_type == kNull) continue;  // Distributivity is not possible.
     if (arg.first < 0) continue;  // Does not work on negation.
-    if (child_gate->IsModule()) continue;  // Can't have common arguments.
+    if (child_gate->module()) continue;  // Can't have common arguments.
     if (child_gate->type() == distr_type) candidates.push_back(child_gate);
   }
-  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates))
-    changed = true;
+  changed |=
+      Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates);
   return changed;
 }
 
@@ -1590,6 +1624,7 @@ bool Preprocessor::HandleDistributiveArgs(
     std::vector<IGatePtr>* candidates) noexcept {
   if (candidates->empty()) return false;
   assert(gate->args().size() > 1 && "Malformed parent gate.");
+  assert(distr_type == kAnd || distr_type == kOr);
   bool changed = Preprocessor::FilterDistributiveArgs(gate, candidates);
   if (candidates->size() < 2) return changed;
   // Detecting a combination
@@ -1649,11 +1684,9 @@ bool Preprocessor::FilterDistributiveArgs(
   // Handling a special case of fast constant propagation.
   std::vector<int> to_erase;  // Late erase for more opportunities.
   for (const IGatePtr& candidate : *candidates) {  // All of them are positive.
-    std::vector<int> common;
-    std::set_intersection(candidate->args().begin(), candidate->args().end(),
-                          gate->args().begin(), gate->args().end(),
-                          std::back_inserter(common));
-    if (!common.empty()) to_erase.push_back(candidate->index());
+    if (Intersects(candidate->args().begin(), candidate->args().end(),
+                   gate->args().begin(), gate->args().end()))
+      to_erase.push_back(candidate->index());
   }
   bool changed = !to_erase.empty();
   for (int index : to_erase) {
@@ -1747,6 +1780,7 @@ void Preprocessor::TransformDistributiveArgs(
     Operator distr_type,
     MergeTable::MergeGroup* group) noexcept {
   if (group->empty()) return;
+  assert(distr_type == kAnd || distr_type == kOr);
   const MergeTable::Option& base_option = group->front();
   const MergeTable::CommonArgs& args = base_option.first;
   const MergeTable::CommonParents& gates = base_option.second;
@@ -1828,7 +1862,7 @@ void Preprocessor::BooleanOptimization() noexcept {
   graph_->ClearGateMarks();
   graph_->ClearOptiValues();
   graph_->ClearDescendantMarks();
-  if (!graph_->root()->IsModule()) graph_->root()->TurnModule();
+  if (graph_->root()->module() == false) graph_->root()->module(true);
 
   std::vector<IGateWeakPtr> common_gates;
   std::vector<std::weak_ptr<Variable>> common_variables;
@@ -1924,7 +1958,7 @@ void Preprocessor::MarkAncestors(const NodePtr& node,
     IGatePtr parent = member.second.lock();
     if (parent->mark()) continue;
     parent->mark(true);
-    if (parent->IsModule()) {  // Do not mark further than independent subgraph.
+    if (parent->module()) {  // Do not mark further than independent subgraph.
       assert(!*module);
       *module = parent;
       continue;
@@ -1959,13 +1993,10 @@ int Preprocessor::PropagateState(const IGatePtr& gate,
     int failed = gate->variable_args().count(node->index());
     if (!failed) failed = -gate->variable_args().count(-node->index());
     failed *= node->opti_value();
-    switch (failed) {
-      case 1:
-        ++num_failure;
-        break;
-      case -1:
-        ++num_success;
-        break;
+    if (failed == 1) {
+      ++num_failure;
+    } else if (failed == -1) {
+      ++num_success;
     }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
@@ -2080,7 +2111,7 @@ void Preprocessor::ProcessRedundantParents(
   for (const IGateWeakPtr& ptr : redundant_parents) {
     if (ptr.expired()) continue;
     IGatePtr parent = ptr.lock();
-    parent->ProcessConstantArg(node, node->opti_value() == 1 ? false : true);
+    parent->ProcessConstantArg(node, node->opti_value() != 1);
     if (parent->IsConstant()) {
       const_gates_.push_back(parent);
     } else if (parent->type() == kNull) {
@@ -2108,9 +2139,9 @@ void Preprocessor::ProcessStateDestinations(
     }
     auto new_gate = std::make_shared<IGate>(type);
     new_gate->AddArg(target->opti_value() * node->index(), node);
-    if (target->IsModule()) {  // Transfer modularity.
-      target->DestroyModule();
-      new_gate->TurnModule();
+    if (target->module()) {  // Transfer modularity.
+      target->module(false);
+      new_gate->module(true);
     }
     if (target == graph_->root()) {
       graph_->root(new_gate);  // The sign is preserved.
@@ -2139,12 +2170,13 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   assert(null_gates_.empty());
 
   std::vector<IGateWeakPtr> common_gates;
-  std::vector<std::weak_ptr<Variable> > common_variables;
+  std::vector<std::weak_ptr<Variable>> common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
   graph_->ClearNodeVisits();
   Preprocessor::AssignTiming(0, graph_->root());  // Required for optimization.
   graph_->ClearDescendantMarks();  // Used for ancestor detection.
+  graph_->ClearAncestorMarks();  // Used for sub-graph detection.
   graph_->ClearGateMarks();  // Important for linear traversal.
 
   bool changed = false;
@@ -2152,8 +2184,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // The deepest-first processing avoids generating extra parents
   // for the nodes that are deep in the graph.
   for (auto it = common_gates.rbegin(); it != common_gates.rend(); ++it) {
-    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
-    if (ret) changed = true;
+    changed |= Preprocessor::DecompositionProcessor()(*it, this);
   }
 
   // Variables are processed after gates
@@ -2161,8 +2192,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // there may be no need to process these variables.
   for (auto it = common_variables.rbegin(); it != common_variables.rend();
        ++it) {
-    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
-    if (ret) changed = true;
+    changed |= Preprocessor::DecompositionProcessor()(*it, this);
   }
   return changed;
 }
@@ -2200,7 +2230,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
   assert(2 >
          std::count_if(node_->parents().begin(), node_->parents().end(),
                        [](const std::pair<const int, IGateWeakPtr>& member) {
-               return member.second.lock()->IsModule();
+               return member.second.lock()->module();
          }));
 
   // Mark parents and ancestors.
@@ -2230,7 +2260,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
 
 void Preprocessor::DecompositionProcessor::MarkDestinations(
     const IGatePtr& parent) noexcept {
-  if (parent->IsModule()) return;  // Limited with independent subgraphs.
+  if (parent->module()) return;  // Limited with independent subgraphs.
   for (const std::pair<const int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
@@ -2265,11 +2295,10 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
         assert(false && "Complex gates cannot be decomposition destinations.");
     }
     if (parent->GetArgSign(node_) < 0) state = !state;
-    std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
     assert(!parent->mark() && "Subgraph is not clean!");
     bool ret =
-        DecompositionProcessor::ProcessAncestors(parent, state, visit_bounds);
-    if (ret) changed = true;
+        DecompositionProcessor::ProcessAncestors(parent, state, parent);
+    changed |= ret;
     preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
   }
@@ -2281,7 +2310,7 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
 bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     const IGatePtr& ancestor,
     bool state,
-    const std::pair<int, int>& visit_bounds) noexcept {
+    const IGatePtr& root) noexcept {
   if (ancestor->mark()) return false;
   ancestor->mark(true);
   bool changed = false;
@@ -2289,34 +2318,33 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   for (const std::pair<const int, IGatePtr>& arg : ancestor->gate_args()) {
     IGatePtr gate = arg.second;
     if (node_->parents().count(gate->index())) {
-      std::unordered_map<int, IGatePtr>* clones =
-          state ? &clones_true_ : &clones_false_;
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
-      if (clones->count(gate->index())) {
-        to_swap.emplace_back(arg.first, clones->find(gate->index())->second);
+      if (DecompositionProcessor::IsAncestryWithinGraph(gate, root)) {
         changed = true;
-        continue;  // Existing clones are not to be traversed further.
+        gate->ProcessConstantArg(node_, state);
+        preprocessor_->RegisterToClear(gate);
+      } else {
+        IGatePtr clone = gate->Clone();
+        if (preprocessor_->RegisterToClear(clone)) {
+          to_swap.emplace_back(arg.first, clone);
+          changed = true;
+          clone->descendant(gate->descendant());
+          clone->ancestor(root->index());
+          clone->Visit(gate->EnterTime());
+          clone->Visit(gate->ExitTime());
+          clone->Visit(gate->LastVisit());
+          clone->ProcessConstantArg(node_, state);
+          gate = clone;  // Continue with the new parent.
+        }
       }
-      IGatePtr clone = gate->Clone();
-      clone->Visit(gate->EnterTime());
-      clone->Visit(gate->ExitTime());
-      clone->Visit(gate->LastVisit());
-      to_swap.emplace_back(arg.first, clone);
-      clone->ProcessConstantArg(node_, state);
-      changed = true;
-      if (clone->IsConstant()) {
-        preprocessor_->const_gates_.push_back(clone);
-      } else if (clone->type() == kNull) {
-        preprocessor_->null_gates_.push_back(clone);
-      }
-      continue;  // Avoid processing parents.
     }
-    if (!IsNodeWithinGraph(gate, visit_bounds.first, visit_bounds.second))
-      continue;
     if (gate->descendant() != node_->index()) continue;
-    bool ret =
-        DecompositionProcessor::ProcessAncestors(gate, state, visit_bounds);
-    if (ret) changed = true;
+    if (!DecompositionProcessor::IsAncestryWithinGraph(gate, root)) continue;
+    changed |=
+        DecompositionProcessor::ProcessAncestors(gate, state, root);
+  }
+  for (const auto& arg : ancestor->gate_args()) {
+    DecompositionProcessor::ClearAncestorMarks(arg.second, root);
   }
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
@@ -2330,6 +2358,40 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
   return changed;
+}
+
+bool Preprocessor::DecompositionProcessor::IsAncestryWithinGraph(
+    const IGatePtr& gate,
+    const IGatePtr& root) noexcept {
+  if (gate == root) return true;
+  if (gate->ancestor() == root->index()) return true;
+  if (gate->ancestor() == -root->index()) return false;
+
+  if (IsNodeWithinGraph(gate, root->EnterTime(), root->ExitTime()) &&
+      std::all_of(gate->parents().begin(), gate->parents().end(),
+                  [&root](const std::pair<const int, IGateWeakPtr>& member) {
+        return DecompositionProcessor::IsAncestryWithinGraph(
+            member.second.lock(),
+            root);
+      })) {
+    gate->ancestor(root->index());
+    return true;
+  }
+
+  gate->ancestor(-root->index());
+  return false;
+}
+
+void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
+    const IGatePtr& gate,
+    const IGatePtr& root) noexcept {
+  assert(root->ancestor() == 0 && "The root mark is dirty.");
+  if (gate->ancestor() == 0) return;
+  assert(std::abs(gate->ancestor()) == root->index() && "Wrong markings.");
+  gate->ancestor(0);
+  for (const std::pair<const int, IGateWeakPtr>& member : gate->parents()) {
+    DecompositionProcessor::ClearAncestorMarks(member.second.lock(), root);
+  }
 }
 
 void Preprocessor::MarkCoherence() noexcept {
@@ -2387,6 +2449,18 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
   }
 }
 
+bool Preprocessor::RegisterToClear(const IGatePtr& gate) noexcept {
+  if (gate->IsConstant()) {
+    const_gates_.push_back(gate);
+    return true;
+  }
+  if (gate->type() == kNull) {
+    null_gates_.push_back(gate);
+    return true;
+  }
+  return false;
+}
+
 void Preprocessor::AssignOrder() noexcept {
   graph_->ClearNodeOrders();
   Preprocessor::TopologicalOrder(graph_->root(), 0);
@@ -2442,13 +2516,13 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
   if (!Preprocessor::graph().coherent()) {
     CLOCK(time_4);
     LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::PhaseFour();
+    Preprocessor::RunPhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
     if (Preprocessor::CheckRootGate()) return;
   }
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
-  Preprocessor::PhaseFive();
+  Preprocessor::RunPhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::MarkCoherence();
@@ -2467,7 +2541,7 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
   Preprocessor::GatherNodes(&gates, &variables);
   auto middle =
       std::partition(gates.begin(), gates.end(),
-                     [](const IGatePtr& gate) { return gate->IsModule(); });
+                     [](const IGatePtr& gate) { return gate->module(); });
 
   std::sort(middle, gates.end(), [](const IGatePtr& lhs, const IGatePtr& rhs) {
     assert(lhs->order() != rhs->order());

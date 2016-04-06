@@ -42,8 +42,6 @@ struct Attribute {
 /// such as attributes and a label.
 class Element {
  public:
-  Element();
-
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
   const std::string& label() const { return label_; }

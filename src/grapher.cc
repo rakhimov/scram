@@ -189,7 +189,7 @@ void Grapher::FormatBasicEvents(
     std::ostream& out) {
   std::unordered_map<std::string, BasicEventPtr>::const_iterator it;
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    std::string prob_msg = "";
+    std::string prob_msg;
     if (prob_requested) {
       std::stringstream snippet;
       snippet << it->second->p();
@@ -213,7 +213,7 @@ void Grapher::FormatHouseEvents(
     std::ostream& out) {
   std::unordered_map<std::string, HouseEventPtr>::const_iterator it;
   for (it = house_events.begin(); it != house_events.end(); ++it) {
-    std::string prob_msg = "";
+    std::string prob_msg;
     if (prob_requested) {
       prob_msg = "\\n";
       prob_msg += it->second->state() ? "True" : "False";

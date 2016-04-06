@@ -279,7 +279,7 @@ enum Operator {
 
 /// The number of operators in the enum.
 /// This number is useful for optimizations and algorithms.
-static const int kNumOperators = 8;  // Update this number if operators change.
+const int kNumOperators = 8;  // Update this number if operators change.
 
 /// @enum State
 /// State of a gate as a set of Boolean variables.
@@ -322,7 +322,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning This function does not destroy modules.
   ///          If cloning destroys modules,
-  ///          DestroyModule() member function must be called.
+  ///          module(false) member function must be called.
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
@@ -388,10 +388,18 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @returns Pre-assigned index of one of gate's descendants.
   int descendant() const { return descendant_; }
 
-  /// Assigns an ancestor mark for this gate.
+  /// Assigns a descendant index of this gate.
   ///
-  /// @param[in] index  Positive index of the descendant.
+  /// @param[in] index  Index of the descendant.
   void descendant(int index) { descendant_ = index; }
+
+  /// @returns Pre-assigned index of one of the gate's ancestors.
+  int ancestor() { return ancestor_; }
+
+  /// Assigns an ancestor index of this gate.
+  ///
+  /// @param[in] index  Index of the ancestor.
+  void ancestor(int index) { ancestor_ = index; }
 
   /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
@@ -426,21 +434,16 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   void coherent(bool flag) { coherent_ = flag; }
 
   /// @returns true if this gate is set to be a module.
-  /// @returns false if it is not yet set to be a module.
-  bool IsModule() const { return module_; }
+  bool module() const { return module_; }
 
-  /// Turns this gate's module flag on.
-  /// This should be one time operation.
-  void TurnModule() {
-    assert(!module_);
-    module_ = true;
-  }
-
-  /// Sets the module flag to false.
-  /// This is a destruction of the module.
-  void DestroyModule() {
-    assert(module_);
-    module_ = false;
+  /// Sets this gate's module flag.
+  ///
+  /// @param[in] flag  true for modular gates.
+  ///
+  /// @pre The gate has already been marked with an opposite flag.
+  void module(bool flag) {
+    assert(module_ != flag);
+    module_ = flag;
   }
 
   /// Helper function to use the sign of the argument.
@@ -697,10 +700,11 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for VOTE gate.
-  bool mark_;  ///< Marking for linear traversal of a graph.
   int descendant_;  ///< Mark by descendant indices.
+  int ancestor_;  ///< Mark by ancestor indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
+  bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
   std::set<int> args_;  ///< Arguments of the gate.
@@ -761,6 +765,7 @@ class GateSet {
     ///
     /// @returns true if the gate arguments are equal.
     bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
+      assert(lhs->type() == rhs->type());
       if (lhs->args() != rhs->args()) return false;
       if (lhs->type() == kVote &&
           lhs->vote_number() != rhs->vote_number()) return false;
@@ -804,6 +809,11 @@ class BooleanGraph {
   ///
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
+  ///
+  /// @post The BooleanGraph is stable as long as
+  ///       the argument fault tree and its underlying containers are stable.
+  ///       If the fault tree has been manipulated (event addition, etc.),
+  ///       its BooleanGraph representation is not guaranteed to be the same.
   explicit BooleanGraph(const GatePtr& root, bool ccf = false) noexcept;
 
   BooleanGraph(const BooleanGraph&) = delete;
@@ -996,6 +1006,18 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearDescendantMarks(const IGatePtr& gate) noexcept;
+
+  /// Clears ancestor indices of all gates in the graph.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearAncestorMarks() noexcept;
+
+  /// Clears ancestor marks of gates.
+  ///
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearAncestorMarks(const IGatePtr& gate) noexcept;
 
   /// Clears ordering marks of nodes in the graph.
   ///

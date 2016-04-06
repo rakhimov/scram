@@ -181,6 +181,9 @@ class FaultTreeDescriptor {
 /// and the results may be invalid.
 /// After the requested analysis is done,
 /// the fault tree can be changed without restrictions.
+/// However, other analyses may rely on unchanged fault tree
+/// to use the results of this fault tree analysis.
+///
 /// To conduct a new analysis on the changed fault tree,
 /// a new FaultTreeAnalysis object must be created.
 /// In general, rerunning the same analysis twice
@@ -303,9 +306,12 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
                                                         Analysis::settings()));
   algorithm_->Analyze();
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
+  LOG(DEBUG2) << "# of products: " << algorithm_->products().size();
 
   Analysis::AddAnalysisTime(DUR(analysis_time));
+  CLOCK(convert_time);
   FaultTreeAnalysis::Convert(algorithm_->products(), graph_.get());
+  LOG(DEBUG2) << "Converted indices to pointers in " << DUR(convert_time);
 }
 
 }  // namespace scram

@@ -26,8 +26,6 @@
 
 namespace scram {
 
-Element::Element() : label_("") {}
-
 void Element::label(const std::string& new_label) {
   if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
   if (new_label.empty()) throw LogicError("Trying to apply empty label");
@@ -54,7 +52,7 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
 }
 
 Role::Role(bool is_public, const std::string& base_path)
-      : is_public_(is_public),
-        base_path_(base_path) {}
+    : is_public_(is_public),
+      base_path_(base_path) {}
 
 }  // namespace scram

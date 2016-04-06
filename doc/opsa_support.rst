@@ -101,10 +101,10 @@ Deviations from OpenPSA MEF
   :ref:`naming_rules` section contains more information on these restrictions.
 - House events must be defined explicitly
   for analysis with probability information.
-- The correct number of a gate's children is required.
+- The correct number of gate-formula arguments is required.
 - Orphan primary events are reported as warning.
 - Unused parameters are reported as warning.
-- Redefinition of containers, events, and parameters is considered an error.
+- Redefinition of containers, events, and parameters is an error.
 - Common cause model levels for factors are required
   and must be strictly sequential in ascending order.
 - Attributes are not inherited.

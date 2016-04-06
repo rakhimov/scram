@@ -132,7 +132,7 @@ Monitoring Code Quality
 C++
 ---
 
-#. Performance profiling with Gprof_
+#. Performance profiling with Gprof, Valgrind_, and ``perf``
 #. Code coverage check with Gcov_ and reporting with Coveralls_
 #. Memory management bugs and leaks with Valgrind_
 #. Static code analysis with Coverity_ and CppCheck_
@@ -141,7 +141,6 @@ C++
 #. Common C++ code problem check with cppclean_
 #. Consistent code formatting with ClangFormat_
 
-.. _Gprof: https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _Coveralls: https://coveralls.io/github/rakhimov/scram
 .. _Valgrind: http://valgrind.org/
@@ -165,7 +164,7 @@ Python
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
 .. _Codecov: https://codecov.io/github/rakhimov/scram?ref=develop
-.. _Landscape: https://landscape.io/github/rakhimov/scram/develop/
+.. _Landscape: https://landscape.io/
 .. _Prospector: https://github.com/landscapeio/prospector
 
 
@@ -183,8 +182,8 @@ Pylint Score           9.0                  9.5
 Documentation          Full                 Full
 ====================   ==================   ==================
 
-.. note:: C++ defects that count towards the defect density
-          include analysis errors, Coverity report, memory leaks,
+.. note:: C++ defects that count towards the defect density include
+          analysis errors, Coverity report, memory leaks,
           and *known* critical bugs.
 
 .. note:: Utility scripts written in Python are exempt from the test coverage requirement.

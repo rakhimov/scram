@@ -22,9 +22,6 @@
 
 #include <cassert>
 
-#include <string>
-
-#include "error.h"
 #include "relax_ng_validator.h"
 
 namespace scram {

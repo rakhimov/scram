@@ -31,7 +31,7 @@ CcfGroup::CcfGroup(const std::string& name, const std::string& model,
     : Role(is_public, base_path),
       name_(name),
       model_(model) {
-  assert(name != "");
+  assert(!name.empty());
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
   boost::to_lower(id_);
 }

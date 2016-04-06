@@ -23,7 +23,9 @@
 
 #include <cstdint>
 
+#include <array>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -35,24 +37,43 @@ namespace scram {
 /// Representation of non-terminal nodes in ZBDD.
 /// Complement variables are represented with negative indices.
 /// The order of the complement is higher than the order of the variable.
-class SetNode : public NonTerminal {
+class SetNode : public NonTerminal<SetNode> {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns true if the ZBDD is minimized.
   bool minimal() const { return minimal_; }
 
+  /// Sets the indication of a minimized ZBDD.
+  ///
   /// @param[in] flag  A flag for minimized ZBDD.
   void minimal(bool flag) { minimal_ = flag; }
+
+  /// @returns The registered order of the largest set in the ZBDD.
+  int max_set_order() const { return max_set_order_; }
+
+  /// Registers the order of the largest set in the ZBDD
+  /// represented by this vertex.
+  ///
+  /// @param[in] order  The order/size of the largest set.
+  void max_set_order(int order) { max_set_order_ = order; }
 
   /// @returns Whatever count is stored in this node.
   int64_t count() const { return count_; }
 
   /// Stores numerical value for later retrieval.
-  /// This is a helper functionality
+  /// This can be a helper functionality
   /// for counting the number of sets or nodes.
   ///
   /// @param[in] number  A number with a meaning for the caller.
+  ///
+  /// @note This field is provided for ZBDD processing techniques
+  ///       that use mutually exclusive meta-data about the node
+  ///       in different stages of ZBDD processing.
+  ///       Usually, the data is not needed after the technique is done.
+  ///       In contrast to providing separate fields or using hash tables
+  ///       for each technique metric,
+  ///       this general-purpose field saves space and time.
   void count(int64_t number) { count_ = number; }
 
   /// @returns Products found in the ZBDD represented by this node.
@@ -72,23 +93,48 @@ class SetNode : public NonTerminal {
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
   ///
   /// @return Casted pointer to SetNode.
-  static std::shared_ptr<SetNode> Ptr(const std::shared_ptr<Vertex>& vertex) {
-    return std::static_pointer_cast<SetNode>(vertex);
+  static IntrusivePtr<SetNode> Ptr(
+      const IntrusivePtr<Vertex<SetNode>>& vertex) {
+    return boost::static_pointer_cast<SetNode>(vertex);
   }
 
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
+  int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
   std::vector<std::vector<int>> products_;  ///< Products of this node.
   int64_t count_ = 0;  ///< The number of products, nodes, or anything else.
 };
 
-using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
-using SetNodeWeakPtr = std::weak_ptr<SetNode>;  ///< Pointer for tables.
+using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
+
+using Triplet = std::array<int, 3>;  ///< Triplet of numbers for functions.
+
+/// @struct TripletHash
+/// Functor for hashing triplets of ordered numbers.
+struct TripletHash {
+  /// Operator overload for hashing three ordered numbers.
+  ///
+  /// @param[in] triplet  Three numbers.
+  ///
+  /// @returns Hash value of the triplet.
+  std::size_t operator()(const Triplet& triplet) const noexcept {
+    return boost::hash_range(triplet.begin(), triplet.end());
+  }
+};
+
+/// Hash table with triplets of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
+template <typename Value>
+using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
+  using VertexPtr = IntrusivePtr<Vertex<SetNode>>;  ///< ZBDD vertex base.
+  using TerminalPtr = IntrusivePtr<Terminal<SetNode>>;  ///< Terminal vertex.
+
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.
   ///
@@ -132,30 +178,6 @@ class Zbdd {
   const std::vector<std::vector<int>>& products() const { return products_; }
 
  protected:
-  using UniqueTable = TripletTable<SetNodeWeakPtr>;  ///< To keep ZBDD reduced.
-  using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
-  using Product = std::vector<int>;  ///< For clarity of expected results.
-
-  /// @class GarbageCollector
-  /// This garbage collector manages tables of a ZBDD.
-  /// The garbage collection is triggered
-  /// when the reference count of a ZBDD vertex reaches 0.
-  class GarbageCollector {
-   public:
-    /// @param[in,out] zbdd  ZBDD to manage.
-    explicit GarbageCollector(Zbdd* zbdd) noexcept
-        : unique_table_(zbdd->unique_table_) {}
-
-    /// Frees the memory
-    /// and triggers the garbage collection ONLY if requested.
-    ///
-    /// @param[in] ptr  Pointer to a SetNode vertex with reference count 0.
-    void operator()(SetNode* ptr) noexcept;
-
-   private:
-    std::weak_ptr<UniqueTable> unique_table_;  ///< Managed table.
-  };
-
   /// Default constructor to initialize member variables.
   ///
   /// @param[in] settings  Settings that control analysis complexity.
@@ -163,6 +185,195 @@ class Zbdd {
   /// @param[in] module_index  The of a module if known.
   explicit Zbdd(const Settings& settings, bool coherent = false,
                 int module_index = 0) noexcept;
+
+  /// @returns Current root vertex of the ZBDD.
+  const VertexPtr& root() const { return root_; }
+
+  /// Sets a new root vertex for ZBDD.
+  ///
+  /// @param[in] vertex  A vertex already registered in this ZBDD.
+  void root(const VertexPtr& vertex) { root_ = vertex; }
+
+  /// @returns Analysis setting with this ZBDD.
+  const Settings& settings() const { return kSettings_; }
+
+  /// @returns A set of registered and fully processed modules;
+  const std::unordered_map<int, std::unique_ptr<Zbdd>>& modules() const {
+    return modules_;
+  }
+
+  /// Logs properties of the Zbdd.
+  void Log() noexcept;
+
+  /// Finds or adds a unique SetNode in the ZBDD.
+  /// All vertices in the ZBDD must be created with this functions.
+  /// Otherwise, the ZBDD may not be reduced,
+  /// and vertices will miss crucial meta-information about the ZBDD.
+  ///
+  /// @param[in] index  Positive or negative index of the node.
+  /// @param[in] high  The high vertex.
+  /// @param[in] low  The low vertex.
+  /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  The indication of a proxy for a modular ZBDD.
+  /// @param[in] coherent  The indication of a coherent proxy.
+  ///
+  /// @returns Set node with the given parameters.
+  ///
+  /// @warning This function is not aware of reduction rules.
+  SetNodePtr FindOrAddVertex(int index, const VertexPtr& high,
+                             const VertexPtr& low, int order,
+                             bool module = false,
+                             bool coherent = false) noexcept;
+
+  /// Find or adds a ZBDD SetNode vertex using information from gates.
+  ///
+  /// @param[in] gate  Gate with index, order, and other information.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  ///
+  /// @returns SetNode for a replacement.
+  ///
+  /// @warning This function is not aware of reduction rules.
+  SetNodePtr FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
+
+  /// Applies Boolean operation to two vertices representing sets.
+  /// This is the main function for the operation.
+  ///
+  /// @tparam Type  The operator enum.
+  ///
+  /// @param[in] arg_one  First argument ZBDD set.
+  /// @param[in] arg_two  Second argument ZBDD set.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @post The limit on the set order is guaranteed.
+  template <Operator Type>
+  VertexPtr Apply(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                  int limit_order) noexcept;
+
+  /// Applies Boolean operation to two vertices representing sets.
+  /// This is a convenience function
+  /// if the operator type cannot be determined at compile time.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument ZBDD set.
+  /// @param[in] arg_two  Second argument ZBDD set.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @pre The operator is either AND or OR.
+  ///
+  /// @post The limit on the set order is guaranteed.
+  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
+                  const VertexPtr& arg_two, int limit_order) noexcept;
+
+  /// Applies Boolean operation to ZBDD graph non-terminal vertices.
+  ///
+  /// @tparam Type  The operator enum.
+  ///
+  /// @param[in] arg_one  First argument set vertex.
+  /// @param[in] arg_two  Second argument set vertex.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @pre Argument vertices are ordered.
+  template <Operator Type>
+  VertexPtr Apply(const SetNodePtr& arg_one, const SetNodePtr& arg_two,
+                  int limit_order) noexcept;
+
+  /// Removes complements of variables from products.
+  /// This procedure only needs to be performed for non-coherent graphs
+  /// with minimal cut sets as output.
+  ///
+  /// @param[in] vertex  The variable vertex in the ZBDD.
+  /// @param[in,out] wide_results  Memoisation of the processed vertices.
+  ///
+  /// @returns Processed vertex.
+  ///
+  /// @post Sub-modules are not processed.
+  /// @post Complements of modules are not eliminated.
+  VertexPtr EliminateComplements(
+      const VertexPtr& vertex,
+      std::unordered_map<int, VertexPtr>* wide_results) noexcept;
+
+  /// Removes constant modules from products.
+  /// Constant modules are likely to happen after complement elimination.
+  /// This procedure is inherently bottom-up,
+  /// so the caller must make sure
+  /// that the modules have already been pre-processed.
+  ///
+  /// @pre All modules have been processed.
+  void EliminateConstantModules() noexcept;
+
+  /// Removes subsets in ZBDD.
+  ///
+  /// @param[in] vertex  The variable node in the set.
+  ///
+  /// @returns Processed vertex.
+  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
+
+  /// Traverses ZBDD to find modules and adjusted cut-offs.
+  /// Modules within modules are not gathered.
+  ///
+  /// @param[in] vertex  The root vertex to start with.
+  /// @param[in] current_order  The product order from the top to the module.
+  /// @param[in,out] modules  A map of module indices, coherence, and cut-offs.
+  ///
+  /// @returns The minimum product order from the bottom.
+  /// @returns -1 if the vertex is terminal Empty on low branch only.
+  ///
+  /// @pre The ZBDD is minimal.
+  int GatherModules(
+      const VertexPtr& vertex,
+      int current_order,
+      std::unordered_map<int, std::pair<bool, int>>* modules) noexcept;
+
+  /// Clears all memoization tables.
+  void ClearTables() noexcept {
+    and_table_.clear();
+    or_table_.clear();
+    minimal_results_.clear();
+    subsume_table_.clear();
+  }
+
+  /// Releases all possible memory from memoization and unique tables.
+  void ReleaseTables() noexcept {
+    unique_table_.Release();
+    Zbdd::ClearTables();
+    and_table_.reserve(0);
+    or_table_.reserve(0);
+    minimal_results_.reserve(0);
+    subsume_table_.reserve(0);
+  }
+
+  /// Joins a ZBDD representing a module gate.
+  ///
+  /// @param[in] index  The index of the module.
+  /// @param[in] container  The container of the module graph.
+  ///
+  /// @pre The module products are final,
+  ///      and no more processing or sanitizing is needed.
+  void JoinModule(int index, std::unique_ptr<Zbdd> container) noexcept {
+    assert(!modules_.count(index));
+    assert(container->root()->terminal() ||
+           SetNode::Ptr(container->root())->minimal());
+    modules_.emplace(index, std::move(container));
+  }
+
+  /// @todo Redesign vertex management and creation.
+  ///       The management mechanism must be encapsulated.
+  ///       Invariants must be private.
+  const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
+  const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
+
+ private:
+  using SetNodeWeakPtr = WeakIntrusivePtr<SetNode>;  ///< Pointer for tables.
+  using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
+  using Product = std::vector<int>;  ///< For clarity of expected results.
 
   /// Converts a modular BDD function
   /// into Zero-Suppressed BDD.
@@ -198,23 +409,8 @@ class Zbdd {
   ///       if the Boolean graph is constant or single variable.
   Zbdd(const IGatePtr& gate, const Settings& settings) noexcept;
 
-  /// Fetches a unique set node from a hash table.
-  /// If the node doesn't exist,
-  /// a new node is created.
-  ///
-  /// @param[in] index  Positive or negative index of the node.
-  /// @param[in] high  The high vertex.
-  /// @param[in] low  The low vertex.
-  /// @param[in] order The order for the vertex variable.
-  ///
-  /// @returns Set node with the given parameters.
-  ///
-  /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(int index, const VertexPtr& high,
-                              const VertexPtr& low, int order) noexcept;
-
-  /// Fetches a replacement for an existing node
-  /// or a new node based on an existing node.
+  /// Finds a replacement for an existing node
+  /// or adds a new node based on an existing node.
   ///
   /// @param[in] node  An existing node.
   /// @param[in] high  The new high vertex.
@@ -223,22 +419,10 @@ class Zbdd {
   /// @returns Set node for a replacement.
   ///
   /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
-                              const VertexPtr& low) noexcept;
+  SetNodePtr FindOrAddVertex(const SetNodePtr& node, const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
 
-  /// Fetches a representation of a gate as ZBDD SetNode.
-  ///
-  /// @param[in] gate  Gate with index, order, and other information.
-  /// @param[in] high  The new high vertex.
-  /// @param[in] low  The new low vertex.
-  ///
-  /// @returns SetNode for a replacement.
-  ///
-  /// @warning This function is not aware of reduction rules.
-  SetNodePtr FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
-                              const VertexPtr& low) noexcept;
-
-  /// Gets a new or existing reduced ZBDD vertex
+  /// Adds a new or finds an existing reduced ZBDD vertex
   /// with parameters of a prototype BDD ITE vertex.
   ///
   /// @param[in] ite  The prototype BDD ITE vertex.
@@ -251,8 +435,8 @@ class Zbdd {
                              const VertexPtr& high,
                              const VertexPtr& low) noexcept;
 
-  /// Fetches a replacement reduced vertex for an existing node
-  /// or a new node based on an existing node.
+  /// Finds a replacement reduced vertex for an existing node,
+  /// or adds a new node based on an existing node.
   ///
   /// @param[in] node  An existing node.
   /// @param[in] high  The new high vertex.
@@ -262,6 +446,22 @@ class Zbdd {
   VertexPtr GetReducedVertex(const SetNodePtr& node,
                              const VertexPtr& high,
                              const VertexPtr& low) noexcept;
+
+  /// Computes the key for computation results.
+  /// The key is used in computation memoisation tables.
+  ///
+  /// @param[in] arg_one  First argument.
+  /// @param[in] arg_two  Second argument.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns A triplet of integers for the computation key.
+  ///
+  /// @pre The arguments are not the same functions.
+  ///      Equal ID functions are handled by the reduction.
+  /// @pre Even though the arguments are not SetNodePtr type,
+  ///      they are ZBDD SetNode vertices.
+  Triplet GetResultKey(const VertexPtr& arg_one, const VertexPtr& arg_two,
+                       int limit_order) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
@@ -274,7 +474,7 @@ class Zbdd {
   /// @returns Pointer to the root vertex of the ZBDD graph.
   ///
   /// @post The input BDD structure is not changed.
-  VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
+  VertexPtr ConvertBdd(const Bdd::VertexPtr& vertex, bool complement,
                        Bdd* bdd_graph, int limit_order,
                        PairTable<VertexPtr>* ites) noexcept;
 
@@ -306,9 +506,9 @@ class Zbdd {
   /// @param[in,out] ites  Processed function graphs with ids and limit order.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
-  VertexPtr ConvertBddPI(const ItePtr& ite, bool complement,
-                         Bdd* bdd_graph, int limit_order,
-                         PairTable<VertexPtr>* ites) noexcept;
+  VertexPtr ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
+                                      Bdd* bdd_graph, int limit_order,
+                                      PairTable<VertexPtr>* ites) noexcept;
 
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///
@@ -326,87 +526,6 @@ class Zbdd {
       std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
       std::unordered_map<int, IGatePtr>* module_gates) noexcept;
 
-  /// Fetches computation tables for results.
-  ///
-  /// @param[in] type  Boolean operation type.
-  /// @param[in] arg_one  First argument.
-  /// @param[in] arg_two  Second argument.
-  /// @param[in] limit_order  The limit on the order for the computations.
-  ///
-  /// @returns nullptr reference for uploading the computation results
-  ///                  if it doesn't exists.
-  /// @returns Pointer to ZBDD root vertex as the computation result.
-  ///
-  /// @pre The operator is either AND or OR.
-  /// @pre The arguments are not the same functions.
-  ///      Equal ID functions are handled by the reduction.
-  /// @pre Even though the arguments are not SetNodePtr type,
-  ///      they are ZBDD SetNode vertices.
-  ///
-  /// @note The order of input argument vertices does not matter.
-  VertexPtr& FetchComputeTable(Operator type, const VertexPtr& arg_one,
-                               const VertexPtr& arg_two,
-                               int limit_order) noexcept;
-
-  /// Applies Boolean operation to two vertices representing sets.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] arg_one  First argument ZBDD set.
-  /// @param[in] arg_two  Second argument ZBDD set.
-  /// @param[in] limit_order  The limit on the order for the computations.
-  ///
-  /// @returns The resulting ZBDD vertex.
-  ///
-  /// @pre The operator is either AND or OR.
-  ///
-  /// @note The limit on the order is not guaranteed.
-  ///       It is for optimization purposes only.
-  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
-                  const VertexPtr& arg_two, int limit_order) noexcept;
-
-  /// Applies the logic of a Boolean operator
-  /// with a terminal vertex.
-  ///
-  /// @param[in] type  The operator to apply.
-  /// @param[in] term_one  First argument terminal vertex.
-  /// @param[in] arg_two  Second argument vertex.
-  ///
-  /// @returns The resulting ZBDD vertex.
-  ///
-  /// @pre The operator is either AND or OR.
-  VertexPtr Apply(Operator type, const TerminalPtr& term_one,
-                  const VertexPtr& arg_two) noexcept;
-
-  /// Applies Boolean operation to ZBDD graph non-terminal vertices.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] arg_one  First argument set vertex.
-  /// @param[in] arg_two  Second argument set vertex.
-  /// @param[in] limit_order  The limit on the order for the computations.
-  ///
-  /// @returns The resulting ZBDD vertex.
-  ///
-  /// @pre Argument vertices are ordered.
-  ///
-  /// @pre The operator is either AND or OR.
-  VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
-                  const SetNodePtr& arg_two, int limit_order) noexcept;
-
-  /// Removes complements of variables from products.
-  /// This procedure only needs to be performed for non-coherent graphs
-  /// with minimal cut sets as output.
-  ///
-  /// @param[in] vertex  The variable vertex in the ZBDD.
-  /// @param[in,out] wide_results  Memoisation of the processed vertices.
-  ///
-  /// @returns Processed vertex.
-  ///
-  /// @post Sub-modules are not processed.
-  /// @post Complements of modules are not eliminated.
-  VertexPtr EliminateComplements(
-      const VertexPtr& vertex,
-      std::unordered_map<int, VertexPtr>* wide_results) noexcept;
-
   /// Processes complements in a SetNode with processed high/low edges.
   ///
   /// @param[in] node  SetNode to be processed.
@@ -419,15 +538,6 @@ class Zbdd {
   /// @post Complements of modules are not eliminated.
   VertexPtr EliminateComplement(const SetNodePtr& node, const VertexPtr& high,
                                 const VertexPtr& low) noexcept;
-
-  /// Removes constant modules from products.
-  /// Constant modules are likely to happen after complement elimination.
-  /// This procedure is inherently bottom-up,
-  /// so the caller must make sure
-  /// that the modules have already been pre-processed.
-  ///
-  /// @pre All modules have been processed.
-  void EliminateConstantModules() noexcept;
 
   /// Removes constant modules from products.
   ///
@@ -454,13 +564,6 @@ class Zbdd {
                                     const VertexPtr& high,
                                     const VertexPtr& low) noexcept;
 
-  /// Removes subsets in ZBDD.
-  ///
-  /// @param[in] vertex  The variable node in the set.
-  ///
-  /// @returns Processed vertex.
-  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
-
   /// Applies subsume operation on two sets.
   /// Subsume operation removes
   /// paths that exist in Low branch from High branch.
@@ -471,6 +574,29 @@ class Zbdd {
   /// @returns Minimized high branch for a variable.
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
 
+  /// Prunes the ZBDD graph with the cut-off.
+  ///
+  /// @param[in] vertex  The root vertex of the ZBDD.
+  /// @param[in] limit_order  The cut-off order for the sets.
+  ///
+  /// @returns The root vertex of the pruned ZBDD.
+  ///
+  /// @post If the ZBDD is minimal,
+  ///       the resultant pruned ZBDD is minimal.
+  VertexPtr Prune(const VertexPtr& vertex, int limit_order) noexcept;
+
+  /// Checks if a set node represents a gate.
+  /// Apply operations and truncation operations
+  /// should avoid accounting non-module gates
+  /// if they exist in ZBDD.
+  ///
+  /// @param[in] node  A node to be tested.
+  ///
+  /// @returns true for modules by default.
+  virtual bool IsGate(const SetNodePtr& node) noexcept {
+    return node->module();
+  }
+
   /// Checks if a node have a possibility to represent Unity.
   ///
   /// @param[in] node  SetNode to test for possibility of Unity.
@@ -478,21 +604,20 @@ class Zbdd {
   /// @returns false if the passed node can never be Unity.
   bool MayBeUnity(const SetNodePtr& node) noexcept;
 
-  /// Traverses ZBDD to find modules and adjusted cut-offs.
-  /// Modules within modules are not gathered.
+  /// Encodes the limit order for sub-sets for product generation.
+  /// The encoding lets avoid generation of unnecessary products.
   ///
-  /// @param[in] vertex  The root vertex to start with.
-  /// @param[in] current_order  The product order from the top to the module.
-  /// @param[in,out] modules  A map of module indices, coherence, and cut-offs.
+  /// @param[in,out] vertex  The vertex to start the encoding.
+  /// @param[in] limit_order  The limit on the product order.
   ///
-  /// @returns The minimum product order from the bottom.
-  /// @returns -1 if the vertex is terminal Empty on low branch only.
+  /// @pre 'count' fields of nodes are clear.
+  /// @pre All processing is done,
+  ///      such minimization and constant module elimination.
+  /// @pre The encoding is done before the product generation.
   ///
-  /// @pre The ZBDD is minimal.
-  int GatherModules(
-      const VertexPtr& vertex,
-      int current_order,
-      std::unordered_map<int, std::pair<bool, int>>* modules) noexcept;
+  /// @post The limit order is encoded in the node count field.
+  /// @post The encoding is not propagated to sub-modules.
+  void EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept;
 
   /// Traverses the reduced ZBDD graph to generate products.
   /// ZBDD is destructively converted into products.
@@ -502,7 +627,11 @@ class Zbdd {
   /// @returns A collection of products
   ///          generated from the ZBDD subgraph.
   ///
+  /// @pre The ZBDD node marks are clear.
   /// @pre The ZBDD is minimized.
+  /// @pre There are no constant modules.
+  /// @pre The internal limit order for generation
+  ///      is encoded in the node counts.
   ///
   /// @post The products of modules are incorporated to the result.
   ///
@@ -540,6 +669,17 @@ class Zbdd {
   /// @pre The graph is marked "true" contiguously.
   void ClearMarks(const VertexPtr& vertex, bool modules) noexcept;
 
+  /// Cleans up non-terminal vertex count fields
+  /// by setting them to 0.
+  ///
+  /// @param[in] vertex  The root vertex of the graph.
+  /// @param[in] modules  Clear counts in modules as well.
+  ///
+  /// @pre The graph node marks are clear.
+  ///
+  /// @post Traversed marks are set to 'true'.
+  void ClearCounts(const VertexPtr& vertex, bool modules) noexcept;
+
   /// Checks ZBDD graphs for errors in the structure.
   /// Errors are assertions that fail at runtime.
   ///
@@ -549,66 +689,6 @@ class Zbdd {
   /// @pre SetNode marks are clear (false).
   void TestStructure(const VertexPtr& vertex, bool modules) noexcept;
 
-  /// Clears all memoization tables.
-  void ClearTables() noexcept {
-    and_table_.clear();
-    or_table_.clear();
-    minimal_results_.clear();
-    subsume_table_.clear();
-  }
-
-  /// Logs properties of the Zbdd.
-  void Log() noexcept;
-
-  /// @returns Current root vertex of the ZBDD.
-  const VertexPtr& root() const { return root_; }
-
-  /// Sets a new root vertex for ZBDD.
-  ///
-  /// @param[in] vertex  A vertex already registered in this ZBDD.
-  void root(const VertexPtr& vertex) { root_ = vertex; }
-
-  /// @returns Analysis setting with this ZBDD.
-  const Settings& settings() const { return kSettings_; }
-
-  /// @returns A set of registered and fully processed modules;
-  const std::unordered_map<int, std::unique_ptr<Zbdd>>& modules() const {
-    return modules_;
-  }
-
-  /// Joins a ZBDD representing a module gate.
-  ///
-  /// @param[in] index  The index of the module.
-  /// @param[in] container  The container of the module graph.
-  ///
-  /// @pre The module products are final,
-  ///      and no more processing or sanitizing is needed.
-  void JoinModule(int index, std::unique_ptr<Zbdd> container) noexcept {
-    assert(!modules_.count(index));
-    assert(container->root()->terminal() ||
-           SetNode::Ptr(container->root())->minimal());
-    modules_.emplace(index, std::move(container));
-  }
-
-  /// @todo Redesign vertex management and creation.
-  ///       The management mechanism must be encapsulated.
-  ///       Invariants must be private.
-  const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
-  const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
-
- private:
-  /// Checks if a set node represents a gate.
-  /// Apply operations and truncation operations
-  /// should avoid accounting non-module gates
-  /// if they exist in ZBDD.
-  ///
-  /// @param[in] node  A node to be tested.
-  ///
-  /// @returns true for modules by default.
-  virtual bool IsGate(const SetNodePtr& node) noexcept {
-    return node->module();
-  }
-
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
   bool coherent_;  ///< Inherited coherence from BDD.
@@ -616,7 +696,7 @@ class Zbdd {
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
-  std::shared_ptr<UniqueTable> unique_table_;
+  UniqueTable<SetNode> unique_table_;
 
   /// Table of processed computations over sets.
   /// The argument sets are recorded with their IDs (not vertex indices).
@@ -704,21 +784,14 @@ class CutSetContainer : public Zbdd {
   /// @pre The intermediate cut sets are pre-processed
   ///      by removing the vertex with the index of the gate.
   VertexPtr ExpandGate(const VertexPtr& gate_zbdd,
-                       const VertexPtr& cut_sets) noexcept {
-    return Zbdd::Apply(kAnd, gate_zbdd, cut_sets,
-                       Zbdd::settings().limit_order());
-  }
+                       const VertexPtr& cut_sets) noexcept;
 
   /// Merges a set of cut sets into the main container.
   ///
   /// @param[in] vertex  The root ZBDD vertex representing the cut sets.
   ///
   /// @pre The argument ZBDD cut sets are managed by this container.
-  void Merge(const VertexPtr& vertex) noexcept {
-    Zbdd::root(Zbdd::Apply(kOr, Zbdd::root(), vertex,
-                           Zbdd::settings().limit_order()));
-    Zbdd::ClearTables();
-  }
+  void Merge(const VertexPtr& vertex) noexcept;
 
   /// Eliminates all complements from cut sets.
   /// This can only be done
@@ -732,7 +805,11 @@ class CutSetContainer : public Zbdd {
     Zbdd::root(Zbdd::EliminateComplements(Zbdd::root(), &wide_results));
   }
 
-  using Zbdd::EliminateConstantModules;  ///< Remove all constant modules.
+  /// Removes constant modules from cut sets.
+  /// Constant modules are likely to happen after complement elimination.
+  ///
+  /// @pre All modules have been processed.
+  void EliminateConstantModules() noexcept { Zbdd::EliminateConstantModules(); }
 
   /// Minimizes cut sets in the container.
   ///
