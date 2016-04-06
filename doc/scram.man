@@ -1,4 +1,4 @@
-.TH SCRAM "1" "January 2016" "SCRAM 0.11.0" "SCRAM Manual"
+.TH SCRAM "1" "April 2016" "SCRAM 0.11.1" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
@@ -68,7 +68,7 @@ Use the MCUB approximation for probability
 calculations
 .HP
 \fB\-l\fR [ \fB\-\-limit\-order\fR ] arg
-Upper limit for product order
+Upper limit for the product order
 .TP
 \fB\-\-cut\-off\fR arg
 Cut\-off probability for products
