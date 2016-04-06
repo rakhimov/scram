@@ -1016,8 +1016,6 @@ class Preprocessor {
 
     NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
-    std::unordered_map<int, IGatePtr> clones_true_;  ///< True state clones.
-    std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.
   };
 
   /// Marks coherence of the whole graph.
@@ -1043,6 +1041,15 @@ class Preprocessor {
   /// @post If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
   void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
+
+  /// Registers mutated gates for potential deletion later.
+  ///
+  /// @param[in] gate  The mutated gate under examination.
+  ///
+  /// @returns true if the gate is registered for clearance.
+  ///
+  /// @pre The caller will later call the appropriate cleanup functions.
+  bool RegisterToClear(const IGatePtr& gate) noexcept;
 
   /// Assigns order for Boolean graph variables.
   ///

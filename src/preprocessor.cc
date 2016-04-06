@@ -2316,36 +2316,34 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   bool changed = false;
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<const int, IGatePtr>& arg : ancestor->gate_args()) {
-    const IGatePtr& gate = arg.second;
+    IGatePtr gate = arg.second;
     if (node_->parents().count(gate->index())) {
-      std::unordered_map<int, IGatePtr>* clones =
-          state ? &clones_true_ : &clones_false_;
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
-      if (clones->count(gate->index())) {
-        to_swap.emplace_back(arg.first, clones->find(gate->index())->second);
+      if (DecompositionProcessor::IsAncestryWithinGraph(gate, root)) {
         changed = true;
-        continue;  // Existing clones are not to be traversed further.
+        gate->ProcessConstantArg(node_, state);
+        preprocessor_->RegisterToClear(gate);
+      } else {
+        IGatePtr clone = gate->Clone();
+        if (preprocessor_->RegisterToClear(clone)) {
+          to_swap.emplace_back(arg.first, clone);
+          changed = true;
+          clone->descendant(gate->descendant());
+          clone->ancestor(root->index());
+          clone->Visit(gate->EnterTime());
+          clone->Visit(gate->ExitTime());
+          clone->Visit(gate->LastVisit());
+          clone->ProcessConstantArg(node_, state);
+          gate = clone;  // Continue with the new parent.
+        }
       }
-      IGatePtr clone = gate->Clone();
-      clone->Visit(gate->EnterTime());
-      clone->Visit(gate->ExitTime());
-      clone->Visit(gate->LastVisit());
-      to_swap.emplace_back(arg.first, clone);
-      clone->ProcessConstantArg(node_, state);
-      changed = true;
-      if (clone->IsConstant()) {
-        preprocessor_->const_gates_.push_back(clone);
-      } else if (clone->type() == kNull) {
-        preprocessor_->null_gates_.push_back(clone);
-      }
-      continue;  // Avoid processing parents.
     }
     if (gate->descendant() != node_->index()) continue;
     if (!DecompositionProcessor::IsAncestryWithinGraph(gate, root)) continue;
     changed |=
         DecompositionProcessor::ProcessAncestors(gate, state, root);
   }
-  for (const std::pair<const int, IGatePtr>& arg : ancestor->gate_args()) {
+  for (const auto& arg : ancestor->gate_args()) {
     DecompositionProcessor::ClearAncestorMarks(arg.second, root);
   }
   for (const auto& arg : to_swap) {
@@ -2449,6 +2447,18 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
       null_gates_.push_back(parent);
     }
   }
+}
+
+bool Preprocessor::RegisterToClear(const IGatePtr& gate) noexcept {
+  if (gate->IsConstant()) {
+    const_gates_.push_back(gate);
+    return true;
+  }
+  if (gate->type() == kNull) {
+    null_gates_.push_back(gate);
+    return true;
+  }
+  return false;
 }
 
 void Preprocessor::AssignOrder() noexcept {

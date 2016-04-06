@@ -81,7 +81,7 @@ Debug build:  1.9
 
 Release build: 0.30
 
-- # of ZBDD nodes created: 34862
+- # of ZBDD nodes created: 34862  |  35624
 - # of SetNodes in ZBDD: 3333
 
 - Memory:   23
@@ -92,7 +92,7 @@ Release build: 0.30
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 1593
+- # of ZBDD nodes created: 1593  |  1597
 - # of SetNodes in ZBDD: 160
 
 - Memory:   15
@@ -108,7 +108,7 @@ Debug build:  1.4
 
 Release build:  0.30
 
-- # of ZBDD nodes created: 79264  |  86530
+- # of ZBDD nodes created: 79264  |  88693
 - # of SetNodes in ZBDD: 3333
 
 - Memory:   48
@@ -119,7 +119,7 @@ Release build:  0.30
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 33297  |  39852
+- # of ZBDD nodes created: 33297  |  57376
 - # of SetNodes in ZBDD: 160
 
 
@@ -131,8 +131,8 @@ Release build:
 
 - ZBDD Time: 1.6
 
-- # of ZBDD nodes created: 174673
-- # of SetNodes in ZBDD: 75
+- # of ZBDD nodes created: 170713
+- # of SetNodes in ZBDD: 75  |  76
 
 - Memory:   100
 
@@ -143,8 +143,10 @@ Fault Tree Analysis (BDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-- # of BDD vertices created: 8289  |  8301
+- # of BDD vertices created: 8289  |  8490
 - # of ITE in BDD: 3349
+- # of ZBDD nodes created: 18099
+- # of SetNodes in ZBDD: 3338
 
 - Memory:   23
 
@@ -166,10 +168,10 @@ Release build:
 - BDD Time: 2.5
 - ZBDD Time: 0.20
 
-- # of BDD vertices created: 3013946  |  3048746
-- # of ITE in BDD: 1175468
+- # of BDD vertices created: 2884142
+- # of ITE in BDD: 1123370
 
-- Memory:   330
+- Memory:   320
 
 - Cache-misses:  46 %
 
@@ -185,12 +187,12 @@ Release build:
 
 - Reporting (/dev/null): 5.2
 
-- # of ZBDD vertices created: 43593  |  45845
-- # of Nodes in ZBDD: 11351
+- # of ZBDD vertices created: 42990
+- # of Nodes in ZBDD: 10791
 - ZBDD Cut set extraction time: 1.5
 - ZBDD Cut set extraction memory: 200
 
-- Memory:   530
+- Memory:   520
 
 - Cache-misses:  34 %
 
@@ -206,8 +208,8 @@ Release build:
 
 - Reporting (/dev/null): 35
 
-- # of ZBDD vertices created: 225475
-- # of Nodes in ZBDD: 22014
+- # of ZBDD vertices created: 219353
+- # of Nodes in ZBDD: 21707
 - ZBDD Cut set extraction time: 9.0
 
 - Memory:   2048
