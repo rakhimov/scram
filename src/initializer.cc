@@ -25,9 +25,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "cycle.h"
 #include "env.h"
@@ -35,59 +33,6 @@
 #include "logger.h"
 
 namespace scram {
-
-namespace {
-
-/// Helper function to statically cast to XML element.
-///
-/// @param[in] node  XML node known to be XML element.
-///
-/// @returns XML element cast from the XML node.
-///
-/// @warning The node must be an XML element.
-inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
-  return static_cast<const xmlpp::Element*>(node);
-}
-
-/// Normalizes the string in an XML attribute.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns Normalized (trimmed) string from the attribute.
-inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute) {
-  std::string value = element->get_attribute_value(attribute);
-  boost::trim(value);
-  return value;
-}
-
-/// Gets a number from an XML attribute.
-///
-/// @tparam T  Numerical type.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns The interpreted value.
-///
-/// @throws ValidationError  Casting is unsuccessful.
-///                          The error message will include the line number.
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-CastAttributeValue(const xmlpp::Element* element,
-                   const std::string& attribute) {
-  try {
-    return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
-  } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret attribute '" << attribute << "' to a number.";
-    throw ValidationError(msg.str());
-  }
-}
-
-}  // namespace
 
 const std::map<std::string, Units> Initializer::kUnits_ = {
     {"bool", kBool},

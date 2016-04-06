@@ -26,8 +26,6 @@
 #include <memory>
 #include <sstream>
 
-#include <boost/lexical_cast.hpp>
-
 #include "env.h"
 #include "error.h"
 #include "xml_parser.h"
@@ -64,7 +62,7 @@ Config::Config(const std::string& config_file) {
   Config::GetOutputPath(root);
   try {
     Config::GatherOptions(root);
-  } catch (InvalidArgument& err) {
+  } catch (Error& err) {
     err.msg("In file '" + config_file + "', " + err.msg());
     throw;
   }
@@ -167,27 +165,26 @@ void Config::SetLimits(const xmlpp::Element* limits) {
   for (const xmlpp::Node* node : limits->find("./*")) {
     const xmlpp::Element* limit = static_cast<const xmlpp::Element*>(node);
     std::string name = limit->get_name();
-    std::string content = limit->get_child_text()->get_content();
     if (name == "product-order") {
-      settings_.limit_order(boost::lexical_cast<int>(content));
+      settings_.limit_order(CastChildText<int>(limit));
 
     } else if (name == "cut-off") {
-      settings_.cut_off(boost::lexical_cast<double>(content));
+      settings_.cut_off(CastChildText<double>(limit));
 
     } else if (name == "mission-time") {
-      settings_.mission_time(boost::lexical_cast<double>(content));
+      settings_.mission_time(CastChildText<double>(limit));
 
     } else if (name == "number-of-trials") {
-      settings_.num_trials(boost::lexical_cast<int>(content));
+      settings_.num_trials(CastChildText<int>(limit));
 
     } else if (name == "number-of-quantiles") {
-      settings_.num_quantiles(boost::lexical_cast<int>(content));
+      settings_.num_quantiles(CastChildText<int>(limit));
 
     } else if (name == "number-of-bins") {
-      settings_.num_bins(boost::lexical_cast<int>(content));
+      settings_.num_bins(CastChildText<int>(limit));
 
     } else if (name == "seed") {
-      settings_.seed(boost::lexical_cast<int>(content));
+      settings_.seed(CastChildText<int>(limit));
     }
   }
 }

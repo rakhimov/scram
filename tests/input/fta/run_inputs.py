@@ -112,6 +112,8 @@ BAD_PROBS = [
     "ccf_wrong_distribution.xml"
     ]
 
+BAD_CONFIG = ["int_overflow_config.xml"]
+
 # Visual delimeters
 BLOCK_DELIM = "=" * 80
 FILE_DELIM = "-" * 80
@@ -173,6 +175,19 @@ def main():
         print("\nVALIDATING : " + i)
         print(FILE_DELIM)
         args = ["scram", i, "--probability", "1", "--validate"]
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            print(sys.exc_info()[0])
+        print(FILE_DELIM)
+    print(BLOCK_DELIM)
+
+    print("\nVALIDATING INCORRECT CONFIGURATION FILES")
+    print(BLOCK_DELIM)
+    for i in BAD_CONFIG:
+        print("\nVALIDATING : " + i)
+        print(FILE_DELIM)
+        args = ["scram", "--config-file", i, "--validate"]
         try:
             subprocess.check_call(args)
         except subprocess.CalledProcessError:
