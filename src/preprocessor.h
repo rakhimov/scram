@@ -972,7 +972,8 @@ class Preprocessor {
     ///
     /// @param[in] ancestor  The parent or ancestor of the common node.
     /// @param[in] state  The constant state to be propagated.
-    /// @param[in] visit_bounds  The main graph's visit enter and exit times.
+    /// @param[in] root  The root of the graph,
+    ///                  the decomposition destination.
     ///
     /// @returns true if the parent is reached and processed.
     ///
@@ -981,7 +982,17 @@ class Preprocessor {
     /// @warning Gate descendant marks are used to detect ancestors.
     /// @warning Gate visit time information is used to detect shared nodes.
     bool ProcessAncestors(const IGatePtr& ancestor, bool state,
-                          const std::pair<int, int>& visit_bounds) noexcept;
+                          const IGatePtr& root) noexcept;
+
+    /// Determines if none of the gate ancestors of the node
+    /// is outside of the given graph.
+    ///
+    /// @param[in] gate  The starting ancestor.
+    /// @param[in] root  The root of the graph.
+    ///
+    /// @returns true if all the ancestors are within the graph.
+    bool IsAncestryWithinGraph(const IGatePtr& gate,
+                               const IGatePtr& root) noexcept;
 
     NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.

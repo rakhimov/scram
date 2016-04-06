@@ -795,7 +795,7 @@ bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
   bool changed = false;  // Indication if the graph is changed.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    if (Preprocessor::CoalesceGates(arg_gate, common)) changed = true;
+    changed |= Preprocessor::CoalesceGates(arg_gate, common);
 
     if (target_type == kNull) continue;  // Coalescing is impossible.
     if (arg_gate->IsConstant()) continue;  // No args to join.
@@ -806,9 +806,9 @@ bool Preprocessor::CoalesceGates(const IGatePtr& gate, bool common) noexcept {
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
 
+  changed |= !to_join.empty();
   for (const IGatePtr& arg : to_join) {
     gate->CoalesceGate(arg);
-    changed = true;
     if (gate->IsConstant()) {
       const_gates_.push_back(gate);  // Register for future processing.
       break;  // The parent is constant. No need to join other arguments.
@@ -1163,13 +1163,11 @@ bool Preprocessor::MergeCommonArgs() noexcept {
   bool changed = false;
 
   LOG(DEBUG4) << "Merging common arguments for AND gates...";
-  bool ret = Preprocessor::MergeCommonArgs(kAnd);
-  if (ret) changed = true;
+  changed |= Preprocessor::MergeCommonArgs(kAnd);
   LOG(DEBUG4) << "Finished merging for AND gates!";
 
   LOG(DEBUG4) << "Merging common arguments for OR gates...";
-  ret = Preprocessor::MergeCommonArgs(kOr);
-  if (ret) changed = true;
+  changed |= Preprocessor::MergeCommonArgs(kOr);
   LOG(DEBUG4) << "Finished merging for OR gates!";
 
   assert(null_gates_.empty());
@@ -1608,16 +1606,15 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
   // Collect child gates of distributivity type.
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr child_gate = arg.second;
-    bool ret = Preprocessor::DetectDistributivity(child_gate);
+    changed |= Preprocessor::DetectDistributivity(child_gate);
     assert(!child_gate->IsConstant() && "Impossible state.");
-    if (ret) changed = true;
     if (distr_type == kNull) continue;  // Distributivity is not possible.
     if (arg.first < 0) continue;  // Does not work on negation.
     if (child_gate->module()) continue;  // Can't have common arguments.
     if (child_gate->type() == distr_type) candidates.push_back(child_gate);
   }
-  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates))
-    changed = true;
+  changed |=
+      Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates);
   return changed;
 }
 
@@ -2173,7 +2170,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   assert(null_gates_.empty());
 
   std::vector<IGateWeakPtr> common_gates;
-  std::vector<std::weak_ptr<Variable> > common_variables;
+  std::vector<std::weak_ptr<Variable>> common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
   graph_->ClearNodeVisits();
@@ -2186,8 +2183,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // The deepest-first processing avoids generating extra parents
   // for the nodes that are deep in the graph.
   for (auto it = common_gates.rbegin(); it != common_gates.rend(); ++it) {
-    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
-    if (ret) changed = true;
+    changed |= Preprocessor::DecompositionProcessor()(*it, this);
   }
 
   // Variables are processed after gates
@@ -2195,8 +2191,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // there may be no need to process these variables.
   for (auto it = common_variables.rbegin(); it != common_variables.rend();
        ++it) {
-    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
-    if (ret) changed = true;
+    changed |= Preprocessor::DecompositionProcessor()(*it, this);
   }
   return changed;
 }
@@ -2299,11 +2294,10 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
         assert(false && "Complex gates cannot be decomposition destinations.");
     }
     if (parent->GetArgSign(node_) < 0) state = !state;
-    std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
     assert(!parent->mark() && "Subgraph is not clean!");
     bool ret =
-        DecompositionProcessor::ProcessAncestors(parent, state, visit_bounds);
-    if (ret) changed = true;
+        DecompositionProcessor::ProcessAncestors(parent, state, parent);
+    changed |= ret;
     preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
   }
@@ -2315,13 +2309,13 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
 bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     const IGatePtr& ancestor,
     bool state,
-    const std::pair<int, int>& visit_bounds) noexcept {
+    const IGatePtr& root) noexcept {
   if (ancestor->mark()) return false;
   ancestor->mark(true);
   bool changed = false;
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<const int, IGatePtr>& arg : ancestor->gate_args()) {
-    IGatePtr gate = arg.second;
+    const IGatePtr& gate = arg.second;
     if (node_->parents().count(gate->index())) {
       std::unordered_map<int, IGatePtr>* clones =
           state ? &clones_true_ : &clones_false_;
@@ -2345,12 +2339,10 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
       }
       continue;  // Avoid processing parents.
     }
-    if (!IsNodeWithinGraph(gate, visit_bounds.first, visit_bounds.second))
-      continue;
     if (gate->descendant() != node_->index()) continue;
-    bool ret =
-        DecompositionProcessor::ProcessAncestors(gate, state, visit_bounds);
-    if (ret) changed = true;
+    if (!DecompositionProcessor::IsAncestryWithinGraph(gate, root)) continue;
+    changed |=
+        DecompositionProcessor::ProcessAncestors(gate, state, root);
   }
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
@@ -2364,6 +2356,20 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
   return changed;
+}
+
+bool Preprocessor::DecompositionProcessor::IsAncestryWithinGraph(
+    const IGatePtr& gate,
+    const IGatePtr& root) noexcept {
+  if (gate == root) return true;
+  if (!IsNodeWithinGraph(gate, root->EnterTime(), root->ExitTime()))
+    return false;
+  for (const std::pair<const int, IGateWeakPtr>& member : gate->parents()) {
+    if (!DecompositionProcessor::IsAncestryWithinGraph(member.second.lock(),
+                                                       root))
+      return false;
+  }
+  return true;
 }
 
 void Preprocessor::MarkCoherence() noexcept {
