@@ -913,6 +913,7 @@ class Preprocessor {
   ///       and complicate application and performance of other algorithms.
   ///
   /// @warning Gate descendant marks are used.
+  /// @warning Gate ancestor marks are used.
   /// @warning Node visit information is used.
   /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
@@ -962,6 +963,7 @@ class Preprocessor {
     ///
     /// @warning Gate marks are used to traverse subgraphs in linear time.
     /// @warning Gate descendant marks are used to detect ancestor.
+    /// @warning Gate ancestor marks are used to detect sub-graphs.
     /// @warning Gate visit time information is used to detect shared nodes.
     bool ProcessDestinations(const std::vector<IGateWeakPtr>& dest) noexcept;
 
@@ -980,6 +982,7 @@ class Preprocessor {
     /// @warning Gate marks are used to traverse subgraphs in linear time.
     ///          Gate marks must be clear for the subgraph for the first call.
     /// @warning Gate descendant marks are used to detect ancestors.
+    /// @warning Gate ancestor marks are used to detect sub-graphs.
     /// @warning Gate visit time information is used to detect shared nodes.
     bool ProcessAncestors(const IGatePtr& ancestor, bool state,
                           const IGatePtr& root) noexcept;
@@ -991,8 +994,25 @@ class Preprocessor {
     /// @param[in] root  The root of the graph.
     ///
     /// @returns true if all the ancestors are within the graph.
-    bool IsAncestryWithinGraph(const IGatePtr& gate,
-                               const IGatePtr& root) noexcept;
+    ///
+    /// @pre Already processed ancestors are marked with the root index.
+    ///      The positive ancestor mark means the result is true,
+    ///      the negative mark means the ancestry is outside of the graph.
+    ///
+    /// @post The ancestor gates are marked with the signed root gate index
+    ///       as explained in the precondition.
+    static bool IsAncestryWithinGraph(const IGatePtr& gate,
+                                      const IGatePtr& root) noexcept;
+
+    /// Clears only the used ancestor marks.
+    ///
+    /// @param[in] gate  The starting ancestor
+    ///                  that is likely to be marked.
+    /// @param[in] root  The root of the graph.
+    ///
+    /// @post Gate ancestor marks are set to 0.
+    static void ClearAncestorMarks(const IGatePtr& gate,
+                                   const IGatePtr& root) noexcept;
 
     NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.

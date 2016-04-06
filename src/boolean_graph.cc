@@ -56,10 +56,11 @@ IGate::IGate(Operator type) noexcept
     : type_(type),
       state_(kNormalState),
       vote_number_(0),
-      mark_(false),
       descendant_(0),
+      ancestor_(0),
       min_time_(0),
       max_time_(0),
+      mark_(false),
       module_(false),
       coherent_(false) {}
 
@@ -655,6 +656,23 @@ void BooleanGraph::ClearDescendantMarks(const IGatePtr& gate) noexcept {
   gate->descendant(0);
   for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearDescendantMarks(arg.second);
+  }
+}
+
+void BooleanGraph::ClearAncestorMarks() noexcept {
+  LOG(DEBUG5) << "Clearing gate descendant marks...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearAncestorMarks(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Descendant marks are clear!";
+}
+
+void BooleanGraph::ClearAncestorMarks(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  gate->ancestor(0);
+  for (const auto& arg : gate->gate_args()) {
+    BooleanGraph::ClearAncestorMarks(arg.second);
   }
 }
 

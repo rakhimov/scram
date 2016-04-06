@@ -2176,6 +2176,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   graph_->ClearNodeVisits();
   Preprocessor::AssignTiming(0, graph_->root());  // Required for optimization.
   graph_->ClearDescendantMarks();  // Used for ancestor detection.
+  graph_->ClearAncestorMarks();  // Used for sub-graph detection.
   graph_->ClearGateMarks();  // Important for linear traversal.
 
   bool changed = false;
@@ -2344,6 +2345,9 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     changed |=
         DecompositionProcessor::ProcessAncestors(gate, state, root);
   }
+  for (const std::pair<const int, IGatePtr>& arg : ancestor->gate_args()) {
+    DecompositionProcessor::ClearAncestorMarks(arg.second, root);
+  }
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
     ancestor->AddArg(GetSign(arg.first) * arg.second->index(), arg.second);
@@ -2362,14 +2366,34 @@ bool Preprocessor::DecompositionProcessor::IsAncestryWithinGraph(
     const IGatePtr& gate,
     const IGatePtr& root) noexcept {
   if (gate == root) return true;
-  if (!IsNodeWithinGraph(gate, root->EnterTime(), root->ExitTime()))
-    return false;
-  for (const std::pair<const int, IGateWeakPtr>& member : gate->parents()) {
-    if (!DecompositionProcessor::IsAncestryWithinGraph(member.second.lock(),
-                                                       root))
-      return false;
+  if (gate->ancestor() == root->index()) return true;
+  if (gate->ancestor() == -root->index()) return false;
+
+  if (IsNodeWithinGraph(gate, root->EnterTime(), root->ExitTime()) &&
+      std::all_of(gate->parents().begin(), gate->parents().end(),
+                  [&root](const std::pair<const int, IGateWeakPtr>& member) {
+        return DecompositionProcessor::IsAncestryWithinGraph(
+            member.second.lock(),
+            root);
+      })) {
+    gate->ancestor(root->index());
+    return true;
   }
-  return true;
+
+  gate->ancestor(-root->index());
+  return false;
+}
+
+void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
+    const IGatePtr& gate,
+    const IGatePtr& root) noexcept {
+  assert(root->ancestor() == 0 && "The root mark is dirty.");
+  if (gate->ancestor() == 0) return;
+  assert(std::abs(gate->ancestor()) == root->index() && "Wrong markings.");
+  gate->ancestor(0);
+  for (const std::pair<const int, IGateWeakPtr>& member : gate->parents()) {
+    DecompositionProcessor::ClearAncestorMarks(member.second.lock(), root);
+  }
 }
 
 void Preprocessor::MarkCoherence() noexcept {
