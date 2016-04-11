@@ -1,3 +1,6 @@
 # Build directories
 build/
 build-*/
+
+# Tests
+tests/googletest
