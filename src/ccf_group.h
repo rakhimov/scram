@@ -48,6 +48,8 @@ class CcfGroup : public Element, public Role {
   /// @param[in] model  CCF model of this group.
   /// @param[in] base_path  The series of containers to get this group.
   /// @param[in] is_public  Whether or not the group is public.
+  ///
+  /// @throws LogicError  The name is empty.
   CcfGroup(const std::string& name, const std::string& model,
            const std::string& base_path = "", bool is_public = true);
 
@@ -65,7 +67,7 @@ class CcfGroup : public Element, public Role {
   /// @returns The CCF model applied to this group.
   const std::string& model() const { return model_; }
 
-  /// @returns Members of the CCF group with lower-case names as keys.
+  /// @returns Members of the CCF group with original names as keys.
   const std::map<std::string, BasicEventPtr>& members() const {
     return members_;
   }
@@ -88,6 +90,8 @@ class CcfGroup : public Element, public Role {
   /// No more basic events can be added after this function.
   ///
   /// @param[in] distr  The probability distribution of this group.
+  ///
+  /// @throws LogicError  The distribution has already been defined.
   void AddDistribution(const ExpressionPtr& distr);
 
   /// Adds a CCF factor for the specified model.
@@ -99,6 +103,7 @@ class CcfGroup : public Element, public Role {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
+  /// @throws LogicError  The level is not positive.
   void AddFactor(const ExpressionPtr& factor, int level) {
     this->CheckLevel(level);
     factors_.emplace_back(level, factor);
@@ -152,6 +157,7 @@ class CcfGroup : public Element, public Role {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
+  /// @throws LogicError  The level is not positive.
   virtual void CheckLevel(int level);
 
   /// Calculates probabilities for new basic events
@@ -201,6 +207,7 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
+  /// @throws LogicError  The level is not positive.
   void CheckLevel(int level) override;
 
   void ConstructCcfBasicEvents(
@@ -237,6 +244,7 @@ class MglModel : public CcfGroup {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
+  /// @throws LogicError  The level is not positive.
   void CheckLevel(int level) override;
 
   void CalculateProbabilities(

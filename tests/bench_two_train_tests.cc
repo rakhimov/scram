@@ -34,10 +34,10 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
   } else {
     EXPECT_DOUBLE_EQ(0.7225, p_total());
   }
-  std::set<std::set<std::string>> mcs = {{"valveone", "valvetwo"},
-                                         {"valveone", "pumptwo"},
-                                         {"valvetwo", "pumpone"},
-                                         {"pumpone", "pumptwo"}};
+  std::set<std::set<std::string>> mcs = {{"ValveOne", "ValveTwo"},
+                                         {"ValveOne", "PumpTwo"},
+                                         {"ValveTwo", "PumpOne"},
+                                         {"PumpOne", "PumpTwo"}};
   EXPECT_EQ(4, products().size());
   EXPECT_EQ(mcs, products());
 }

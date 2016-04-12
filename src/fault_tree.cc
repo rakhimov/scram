@@ -22,8 +22,6 @@
 
 #include <utility>
 
-#include <boost/algorithm/string.hpp>
-
 #include "cycle.h"
 #include "error.h"
 
@@ -32,7 +30,9 @@ namespace scram {
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
     : Role(is_public, base_path),
-      name_(name) {}
+      name_(name) {
+  if (name.empty()) throw LogicError("Component names can't be empty");
+}
 
 void Component::AddGate(const GatePtr& gate) {
   Component::AddEvent(gate, &gates_);
@@ -47,18 +47,14 @@ void Component::AddHouseEvent(const HouseEventPtr& house_event) {
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
-  std::string name = parameter->name();
-  boost::to_lower(name);
-  if (parameters_.count(name)) {
+  if (parameters_.count(parameter->name())) {
     throw ValidationError("Duplicate parameter " + parameter->name());
   }
-  parameters_.emplace(name, parameter);
+  parameters_.emplace(parameter->name(), parameter);
 }
 
 void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->name();
-  boost::to_lower(name);
-  if (ccf_groups_.count(name)) {
+  if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
   for (const std::pair<const std::string, BasicEventPtr>& member :
@@ -70,16 +66,14 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
     }
   }
   for (const auto& member : ccf_group->members()) basic_events_.insert(member);
-  ccf_groups_.emplace(name, ccf_group);
+  ccf_groups_.emplace(ccf_group->name(), ccf_group);
 }
 
 void Component::AddComponent(std::unique_ptr<Component> component) {
-  std::string name = component->name();
-  boost::to_lower(name);
-  if (components_.count(name)) {
+  if (components_.count(component->name())) {
     throw ValidationError("Duplicate component " + component->name());
   }
-  components_.emplace(name, std::move(component));
+  components_.emplace(component->name(), std::move(component));
 }
 
 void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
@@ -93,11 +87,10 @@ void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
 
 template <class Ptr, class Container>
 void Component::AddEvent(const Ptr& event, Container* container) {
-  std::string name = event->name();
-  boost::to_lower(name);
+  const std::string& name = event->name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + event->name());
+    throw ValidationError("Duplicate event " + name);
   }
   container->emplace(name, event);
 }

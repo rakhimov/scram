@@ -21,8 +21,6 @@
 
 #include "expression.h"
 
-#include <boost/algorithm/string.hpp>
-
 #include "error.h"
 #include "random.h"
 
@@ -75,9 +73,8 @@ Parameter::Parameter(const std::string& name, const std::string& base_path,
       name_(name),
       unit_(kUnitless),
       unused_(true) {
-  assert(!name.empty());
+  if (name.empty()) throw LogicError("Parameter names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-  boost::to_lower(id_);
 }
 
 void Parameter::expression(const ExpressionPtr& expression) {

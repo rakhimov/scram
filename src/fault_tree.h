@@ -49,6 +49,8 @@ class Component : public Element, public Role {
   /// @param[in] name  The name identificator for the component.
   /// @param[in] base_path  The series of containers to get this container.
   /// @param[in] is_public  A flag to define public or private role for members.
+  ///
+  /// @throws LogicError  The name is empty.
   explicit Component(const std::string& name, const std::string& base_path = "",
                      bool is_public = true);
 
@@ -61,7 +63,7 @@ class Component : public Element, public Role {
   const std::string& name() const { return name_; }
 
   /// @returns The container of component constructs of specific kind
-  ///          with lower-case names as keys.
+  ///          with construct original names as keys.
   /// @{
   const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
@@ -141,7 +143,7 @@ class Component : public Element, public Role {
   /// Adds an event into this component container.
   ///
   /// @tparam Ptr  The smart pointer type to the event.
-  /// @tparam Container  Map with the lower case name as the key.
+  /// @tparam Container  Map with the event's original name as the key.
   ///
   /// @param[in] event  The event to be added to this component.
   /// @param[in,out] container  The destination container.
@@ -152,7 +154,7 @@ class Component : public Element, public Role {
 
   std::string name_;  ///< The name of this component.
 
-  /// Container for component constructs with lower-case names as keys.
+  /// Container for component constructs with original names as keys.
   /// @{
   std::unordered_map<std::string, GatePtr> gates_;
   std::unordered_map<std::string, BasicEventPtr> basic_events_;

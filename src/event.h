@@ -42,9 +42,11 @@ class Event : public Element, public Role {
   /// and other strings do not have
   /// leading and trailing whitespace characters.
   ///
-  /// @param[in] name  The identifying name with caps preserved.
+  /// @param[in] name  The original name.
   /// @param[in] base_path  The series of containers to get this event.
   /// @param[in] is_public  Whether or not the event is public.
+  ///
+  /// @throws LogicError  The name is empty.
   explicit Event(const std::string& name, const std::string& base_path = "",
                  bool is_public = true);
 
@@ -53,10 +55,10 @@ class Event : public Element, public Role {
 
   virtual ~Event() = 0;  ///< Abstract class.
 
-  /// @returns The id that is set upon the construction of this event.
+  /// @returns The unique id that is set upon the construction of this event.
   const std::string& id() const { return id_; }
 
-  /// @returns The original name with capitalizations.
+  /// @returns The original name.
   const std::string& name() const { return name_; }
 
   /// @returns True if this node is orphan.
@@ -68,8 +70,8 @@ class Event : public Element, public Role {
   void orphan(bool state) { orphan_ = state; }
 
  private:
-  std::string id_;  ///< Id name of a event. It is in lower case.
-  std::string name_;  ///< Original name with capitalizations preserved.
+  std::string id_;  ///< Unique Id name of an event.
+  std::string name_;  ///< Original name.
   bool orphan_;  ///< Indication of an orphan node.
 };
 

@@ -34,7 +34,7 @@ TEST_P(RiskAnalysisTest, ABC) {
     EXPECT_DOUBLE_EQ(0.496, p_total());
   }
 
-  std::set< std::set<std::string> > mcs = {{"a"}, {"b"} , {"c"}};
+  std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
   EXPECT_EQ(3, products().size());
   EXPECT_EQ(mcs, products());
 }
@@ -51,7 +51,7 @@ TEST_P(RiskAnalysisTest, ABorBC) {
     EXPECT_DOUBLE_EQ(0.074, p_total());
   }
 
-  std::set< std::set<std::string> > mcs = {{"a", "b"}, {"b", "c"}};
+  std::set<std::set<std::string>> mcs = {{"A", "B"}, {"B", "C"}};
   EXPECT_EQ(2, products().size());
   EXPECT_EQ(mcs, products());
 }
@@ -69,12 +69,12 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"a", "b"}, {"not a", "c"},
-                                          {"b", "c"}};
+    std::set<std::set<std::string>> pi = {{"A", "B"}, {"not A", "C"},
+                                          {"B", "C"}};
     EXPECT_EQ(3, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{"a", "b"}, {"c"}};
+    std::set<std::set<std::string>> mcs = {{"A", "B"}, {"C"}};
     EXPECT_EQ(2, products().size());
     EXPECT_EQ(mcs, products());
   }
@@ -92,7 +92,7 @@ TEST_P(RiskAnalysisTest, Vote) {
     EXPECT_DOUBLE_EQ(0.098, p_total());
   }
 
-  std::set< std::set<std::string> > mcs = {{"a", "b"}, {"b", "c"}, {"a", "c"}};
+  std::set<std::set<std::string>> mcs = {{"A", "B"}, {"B", "C"}, {"A", "C"}};
   EXPECT_EQ(3, products().size());
   EXPECT_EQ(mcs, products());
 }
@@ -125,7 +125,7 @@ TEST_P(RiskAnalysisTest, AorNotB) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"a"}, {"not b"}};
+    std::set<std::set<std::string>> pi = {{"A"}, {"not B"}};
     EXPECT_EQ(2, products().size());
     EXPECT_EQ(pi, products());
   } else {
@@ -157,11 +157,11 @@ TEST_P(RiskAnalysisTest, AandNotB) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"a", "not b"}};
+    std::set<std::set<std::string>> pi = {{"A", "not B"}};
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set< std::set<std::string> > mcs = {{"a"}};
+    std::set<std::set<std::string>> mcs = {{"A"}};
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(mcs, products());
   }
@@ -179,7 +179,7 @@ TEST_P(RiskAnalysisTest, AorNotAB) {
     EXPECT_DOUBLE_EQ(0.28, p_total());
   }
 
-  std::set< std::set<std::string> > mcs = {{"a"}, {"b"}};
+  std::set<std::set<std::string>> mcs = {{"A"}, {"B"}};
   EXPECT_EQ(2, products().size());
   EXPECT_EQ(mcs, products());
 }
@@ -215,7 +215,7 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"not a"}};
+    std::set<std::set<std::string>> pi = {{"not A"}};
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(pi, products());
   } else {
@@ -231,7 +231,7 @@ TEST_P(RiskAnalysisTest, Nand) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"not a"}, {"not b"}};
+    std::set<std::set<std::string>> pi = {{"not A"}, {"not B"}};
     EXPECT_EQ(2, products().size());
     EXPECT_EQ(pi, products());
   } else {
@@ -247,7 +247,7 @@ TEST_P(RiskAnalysisTest, Nor) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"not a", "not b"}};
+    std::set<std::set<std::string>> pi = {{"not A", "not B"}};
     EXPECT_EQ(pi, products());
   } else {
     std::set<std::set<std::string>> mcs = {{}};
@@ -323,7 +323,7 @@ TEST_P(RiskAnalysisTest, SubtleNull) {
   std::string tree_input = "./share/scram/input/core/subtle_null.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set< std::set<std::string> > mcs = {};
+  std::set<std::set<std::string>> mcs = {};
   EXPECT_EQ(mcs, products());
   EXPECT_TRUE(products().empty());
 }
@@ -350,14 +350,14 @@ TEST_P(RiskAnalysisTest, XorABC) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"a", "b", "c"},
-                                          {"a", "not b", "not c"},
-                                          {"not a", "b", "not c"},
-                                          {"not a", "not b", "c"}};
+    std::set<std::set<std::string>> pi = {{"A", "B", "C"},
+                                          {"A", "not B", "not C"},
+                                          {"not A", "B", "not C"},
+                                          {"not A", "not B", "C"}};
     EXPECT_EQ(4, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{"a"}, {"b"}, {"c"}};
+    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
     EXPECT_EQ(3, products().size());
     EXPECT_EQ(mcs, products());
   }
@@ -370,7 +370,7 @@ TEST_P(RiskAnalysisTest, NotA) {
   ASSERT_NO_THROW(ran->Analyze());
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"not onlychild"}};
+    std::set<std::set<std::string>> pi = {{"not OnlyChild"}};
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(pi, products());
   } else {
@@ -386,7 +386,7 @@ TEST_P(RiskAnalysisTest, NullA) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
-  std::set< std::set<std::string> > mcs = {{"onlychild"}};
+  std::set<std::set<std::string>> mcs = {{"OnlyChild"}};
   EXPECT_EQ(1, products().size());
   EXPECT_EQ(mcs, products());
 }
@@ -394,14 +394,14 @@ TEST_P(RiskAnalysisTest, NullA) {
 // Benchmark Tests for Beta factor common cause failure model.
 TEST_P(RiskAnalysisTest, BetaFactorCCF) {
   std::string tree_input = "./share/scram/input/core/beta_factor_ccf.xml";
-  std::string p1 = "[pumpone]";
-  std::string p2 = "[pumptwo]";
-  std::string p3 = "[pumpthree]";
-  std::string v1 = "[valveone]";
-  std::string v2 = "[valvetwo]";
-  std::string v3 = "[valvethree]";
-  std::string pumps = "[pumpone pumpthree pumptwo]";
-  std::string valves = "[valveone valvethree valvetwo]";
+  std::string p1 = "[PumpOne]";
+  std::string p2 = "[PumpTwo]";
+  std::string p3 = "[PumpThree]";
+  std::string v1 = "[ValveOne]";
+  std::string v2 = "[ValveTwo]";
+  std::string v3 = "[ValveThree]";
+  std::string pumps = "[PumpOne PumpThree PumpTwo]";
+  std::string valves = "[ValveOne ValveThree ValveTwo]";
 
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -412,17 +412,16 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
     EXPECT_NEAR(0.04308, p_total(), 1e-5);
   }
   // Minimal cut set check.
-  std::set< std::set<std::string> > mcs;  // For expected min cut sets.
-  mcs.insert({pumps});
-  mcs.insert({valves});
-  mcs.insert({v1, v2, v3});
-  mcs.insert({p1, v2, v3});
-  mcs.insert({p2, v1, v3});
-  mcs.insert({p3, v1, v2});
-  mcs.insert({p3, p2, v1});
-  mcs.insert({p1, p2, v3});
-  mcs.insert({p1, p3, v2});
-  mcs.insert({p1, p2, p3});
+  std::set<std::set<std::string>> mcs = {{pumps},
+                                         {valves},
+                                         {v1, v2, v3},
+                                         {p1, v2, v3},
+                                         {p2, v1, v3},
+                                         {p3, v1, v2},
+                                         {p3, p2, v1},
+                                         {p1, p2, v3},
+                                         {p1, p3, v2},
+                                         {p1, p2, p3}};
   EXPECT_EQ(10, products().size());
   EXPECT_EQ(mcs, products());
 }

@@ -1,35 +1,19 @@
 <?xml version="1.0"?>
 <!--
-This input contains two trees with the same names but in different cases.
+This input contains two trees with the same names.
 This input should fail due to redefinition attempt.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEventA">
-      <and>
-        <gate name="TrainOne"/>
-        <event name="TrainTwo"/>
-      </and>
+      <basic-event name="ValveOne"/>
     </define-gate>
-    <define-gate name="TrainOne">
-      <or>
-        <basic-event name="ValveOne"/>
-        <house-event name="PumpOne"/>
-      </or>
-    </define-gate>
-    <define-gate name="TrainTwo">
-      <or>
-        <basic-event name="ValveTwo"/>
-        <event name="PumpTwo"/>
-      </or>
-    </define-gate>
+    <define-basic-event name="ValveOne"/>
   </define-fault-tree>
-  <define-fault-tree name="twotrains">  <!-- Trying to redefine -->
+  <define-fault-tree name="TwoTrains">  <!-- Trying to redefine -->
     <define-gate name="TopEventB">
-      <and>
-        <gate name="TrainOne"/>
-        <event name="TrainTwo"/>
-      </and>
+      <basic-event name="ValveTwo"/>
     </define-gate>
+    <define-basic-event name="ValveTwo"/>
   </define-fault-tree>
 </opsa-mef>

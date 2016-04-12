@@ -34,9 +34,9 @@ TEST_P(RiskAnalysisTest, ne574) {
   } else {
     EXPECT_NEAR(0.662208, p_total(), 1e-6);
   }
-  std::set<std::set<std::string>> mcs = {{"c"}, {"d", "f"}, {"d", "g"},
-                                         {"d", "b"}, {"h", "i", "f"},
-                                         {"h", "i", "g"}, {"h", "i", "b"}};
+  std::set<std::set<std::string>> mcs = {{"C"}, {"D", "F"}, {"D", "G"},
+                                         {"D", "B"}, {"H", "I", "F"},
+                                         {"H", "I", "G"}, {"H", "I", "B"}};
   EXPECT_EQ(7, products().size());
   EXPECT_EQ(mcs, products());
 }

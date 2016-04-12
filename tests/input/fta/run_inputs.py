@@ -45,7 +45,8 @@ PASS_INPUTS = [
     "very_long_mcs.xml",
     "unordered_structure.xml",
     "non_top_gate.xml",
-    "nested_formula.xml"
+    "nested_formula.xml",
+    "case_sensitivity.xml",
     ]
 
 # Correct corner cases with probability information

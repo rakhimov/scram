@@ -33,8 +33,8 @@ TEST_P(RiskAnalysisTest, Theatre) {
   } else {
     EXPECT_DOUBLE_EQ(0.00207, p_total());
   }
-  std::set<std::set<std::string>> mcs = {{"gen_fail", "mains_fail"},
-                                         {"mains_fail", "relay_fail"}};
+  std::set<std::set<std::string>> mcs = {{"Gen_Fail", "Mains_Fail"},
+                                         {"Mains_Fail", "Relay_Fail"}};
   EXPECT_EQ(2, products().size());
   EXPECT_EQ(mcs, products());
 }

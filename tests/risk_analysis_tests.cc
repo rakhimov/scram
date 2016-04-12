@@ -28,31 +28,31 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   EXPECT_EQ(3, gates().size());
-  EXPECT_EQ(1, gates().count("trainone"));
-  EXPECT_EQ(1, gates().count("traintwo"));
-  EXPECT_EQ(1, gates().count("topevent"));
+  EXPECT_EQ(1, gates().count("TrainOne"));
+  EXPECT_EQ(1, gates().count("TrainTwo"));
+  EXPECT_EQ(1, gates().count("TopEvent"));
   EXPECT_EQ(4, basic_events().size());
-  EXPECT_EQ(1, basic_events().count("pumpone"));
-  EXPECT_EQ(1, basic_events().count("pumptwo"));
-  EXPECT_EQ(1, basic_events().count("valveone"));
-  EXPECT_EQ(1, basic_events().count("valvetwo"));
-  if (gates().count("topevent")) {
-    GatePtr top = gates().at("topevent");
-    EXPECT_EQ("topevent", top->id());
+  EXPECT_EQ(1, basic_events().count("PumpOne"));
+  EXPECT_EQ(1, basic_events().count("PumpTwo"));
+  EXPECT_EQ(1, basic_events().count("ValveOne"));
+  EXPECT_EQ(1, basic_events().count("ValveTwo"));
+  if (gates().count("TopEvent")) {
+    GatePtr top = gates().at("TopEvent");
+    EXPECT_EQ("TopEvent", top->id());
     ASSERT_NO_THROW(top->formula()->type());
     EXPECT_EQ("and", top->formula()->type());
     EXPECT_EQ(2, top->formula()->event_args().size());
   }
-  if (gates().count("trainone")) {
-    GatePtr inter = gates().at("trainone");
-    EXPECT_EQ("trainone", inter->id());
+  if (gates().count("TrainOne")) {
+    GatePtr inter = gates().at("TrainOne");
+    EXPECT_EQ("TrainOne", inter->id());
     ASSERT_NO_THROW(inter->formula()->type());
     EXPECT_EQ("or", inter->formula()->type());
     EXPECT_EQ(2, inter->formula()->event_args().size());
   }
-  if (basic_events().count("valveone")) {
-    BasicEventPtr primary = basic_events().at("valveone");
-    EXPECT_EQ("valveone", primary->id());
+  if (basic_events().count("ValveOne")) {
+    BasicEventPtr primary = basic_events().at("ValveOne");
+    EXPECT_EQ("ValveOne", primary->id());
   }
 }
 
@@ -63,18 +63,18 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_EQ(4, basic_events().size());
-  ASSERT_EQ(1, basic_events().count("pumpone"));
-  ASSERT_EQ(1, basic_events().count("pumptwo"));
-  ASSERT_EQ(1, basic_events().count("valveone"));
-  ASSERT_EQ(1, basic_events().count("valvetwo"));
-  ASSERT_NO_THROW(basic_events().at("pumpone")->p());
-  ASSERT_NO_THROW(basic_events().at("pumptwo")->p());
-  ASSERT_NO_THROW(basic_events().at("valveone")->p());
-  ASSERT_NO_THROW(basic_events().at("valvetwo")->p());
-  EXPECT_EQ(0.6, basic_events().at("pumpone")->p());
-  EXPECT_EQ(0.7, basic_events().at("pumptwo")->p());
-  EXPECT_EQ(0.4, basic_events().at("valveone")->p());
-  EXPECT_EQ(0.5, basic_events().at("valvetwo")->p());
+  ASSERT_EQ(1, basic_events().count("PumpOne"));
+  ASSERT_EQ(1, basic_events().count("PumpTwo"));
+  ASSERT_EQ(1, basic_events().count("ValveOne"));
+  ASSERT_EQ(1, basic_events().count("ValveTwo"));
+  ASSERT_NO_THROW(basic_events().at("PumpOne")->p());
+  ASSERT_NO_THROW(basic_events().at("PumpTwo")->p());
+  ASSERT_NO_THROW(basic_events().at("ValveOne")->p());
+  ASSERT_NO_THROW(basic_events().at("ValveTwo")->p());
+  EXPECT_EQ(0.6, basic_events().at("PumpOne")->p());
+  EXPECT_EQ(0.7, basic_events().at("PumpTwo")->p());
+  EXPECT_EQ(0.4, basic_events().at("ValveOne")->p());
+  EXPECT_EQ(0.5, basic_events().at("ValveTwo")->p());
 }
 
 // Test Analysis of Two train system.
@@ -82,10 +82,10 @@ TEST_P(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"pumptwo", "valveone"},
-                                         {"valveone", "valvetwo"}};
+  std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
+                                         {"PumpOne", "ValveTwo"},
+                                         {"PumpTwo", "ValveOne"},
+                                         {"ValveOne", "ValveTwo"}};
   EXPECT_EQ(mcs, products());
   PrintProducts();  // Quick visual verification.
 }
@@ -95,17 +95,17 @@ TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"not pumpone", "valveone"},
-                                          {"pumpone", "pumptwo"},
-                                          {"pumpone", "valvetwo"},
-                                          {"pumptwo", "valveone"},
-                                          {"valveone", "valvetwo"}};
+    std::set<std::set<std::string>> pi = {{"not PumpOne", "ValveOne"},
+                                          {"PumpOne", "PumpTwo"},
+                                          {"PumpOne", "ValveTwo"},
+                                          {"PumpTwo", "ValveOne"},
+                                          {"ValveOne", "ValveTwo"}};
     EXPECT_EQ(5, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                           {"pumpone", "valvetwo"},
-                                           {"valveone"}};
+    std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
+                                           {"PumpOne", "ValveTwo"},
+                                           {"ValveOne"}};
     EXPECT_EQ(mcs, products());
   }
 }
@@ -113,10 +113,10 @@ TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
 TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  std::set<std::string> mcs_1 = {"pumpone", "pumptwo"};
-  std::set<std::string> mcs_2 = {"pumpone", "valvetwo"};
-  std::set<std::string> mcs_3 = {"pumptwo", "valveone"};
-  std::set<std::string> mcs_4 = {"valveone", "valvetwo"};
+  std::set<std::string> mcs_1 = {"PumpOne", "PumpTwo"};
+  std::set<std::string> mcs_2 = {"PumpOne", "ValveTwo"};
+  std::set<std::string> mcs_3 = {"PumpTwo", "ValveOne"};
+  std::set<std::string> mcs_4 = {"ValveOne", "ValveTwo"};
   std::set<std::set<std::string>> mcs = {mcs_1, mcs_2, mcs_3, mcs_4};
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
@@ -147,10 +147,10 @@ TEST_P(RiskAnalysisTest, EnforceExactProbability) {
 
 TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
   std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"pumptwo", "valveone"},
-                                         {"valveone", "valvetwo"}};
+  std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
+                                         {"PumpOne", "ValveTwo"},
+                                         {"PumpTwo", "ValveOne"},
+                                         {"ValveOne", "ValveTwo"}};
   ASSERT_NO_THROW(ProcessInputFile(nested_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_EQ(mcs, products());
@@ -164,10 +164,10 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
   ASSERT_NO_THROW(ran->Analyze());
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
-      {"pumpone", {0.51, 0.4737, 0.7895, 1.316, 1.9}},
-      {"pumptwo", {0.38, 0.4118, 0.8235, 1.176, 1.7}},
-      {"valveone", {0.34, 0.2105, 0.5263, 1.316, 1.267}},
-      {"valvetwo", {0.228, 0.1765, 0.5882, 1.176, 1.214}}};
+      {"PumpOne", {0.51, 0.4737, 0.7895, 1.316, 1.9}},
+      {"PumpTwo", {0.38, 0.4118, 0.8235, 1.176, 1.7}},
+      {"ValveOne", {0.34, 0.2105, 0.5263, 1.316, 1.267}},
+      {"ValveTwo", {0.228, 0.1765, 0.5882, 1.176, 1.214}}};
 
   for (const auto& entry : importance) {
     const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
@@ -188,10 +188,10 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
   EXPECT_NEAR(0.04459, p_total(), 1e-3);
   // Check importance values with negative event.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
-      {"pumpone", {0.0765, 0.1029, 0.1568, 2.613, 1.115}},
-      {"pumptwo", {0.057, 0.08948, 0.1532, 2.189, 1.098}},
-      {"valveone", {0.94, 0.8432, 0.8495, 21.237, 6.379}},
-      {"valvetwo", {0.0558, 0.06257, 0.1094, 2.189, 1.067}}};
+      {"PumpOne", {0.0765, 0.1029, 0.1568, 2.613, 1.115}},
+      {"PumpTwo", {0.057, 0.08948, 0.1532, 2.189, 1.098}},
+      {"ValveOne", {0.94, 0.8432, 0.8495, 21.237, 6.379}},
+      {"ValveTwo", {0.0558, 0.06257, 0.1094, 2.189, 1.067}}};
 
   for (const auto& entry : importance) {
     const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
@@ -214,10 +214,10 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   EXPECT_DOUBLE_EQ(0.012, p_total());  // Adjusted probability.
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
-      {"pumpone", {0.12, 0.6, 0.624, 10.4, 2.5}},
-      {"pumptwo", {0.1, 0.5833, 0.6125, 8.75, 2.4}},
-      {"valveone", {0.12, 0.4, 0.424, 10.6, 1.667}},
-      {"valvetwo", {0.1, 0.4167, 0.4458, 8.917, 1.714}}};
+      {"PumpOne", {0.12, 0.6, 0.624, 10.4, 2.5}},
+      {"PumpTwo", {0.1, 0.5833, 0.6125, 8.75, 2.4}},
+      {"ValveOne", {0.12, 0.4, 0.424, 10.6, 1.667}},
+      {"ValveTwo", {0.1, 0.4167, 0.4458, 8.917, 1.714}}};
 
   for (const auto& entry : importance) {
     const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
@@ -351,8 +351,8 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   ASSERT_NO_THROW(ran->Analyze());
   if (settings.prime_implicants()) {
     std::set<std::set<std::string>> pi = {
-        {"not pumpone", "not pumptwo", "not valveone"},
-        {"not pumpone", "not valvetwo", "not valveone"}};
+        {"not PumpOne", "not PumpTwo", "not ValveOne"},
+        {"not PumpOne", "not ValveTwo", "not ValveOne"}};
     EXPECT_EQ(pi, products());
   } else {
     std::set<std::set<std::string>> mcs = {{}};
@@ -365,7 +365,7 @@ TEST_P(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{"a", "b"}};
+  std::set<std::set<std::string>> mcs = {{"A", "B"}};
   EXPECT_EQ(mcs, products());
 }
 

@@ -35,7 +35,7 @@ This input contains repeated defintion of a CCF group.
       </factor>
     </define-CCF-group>
   </define-fault-tree>
-  <define-CCF-group name="PUMPS" model="beta-factor">
+  <define-CCF-group name="Pumps" model="beta-factor">
     <members>
       <basic-event name="PumpOne"/>
       <basic-event name="PumpTwo"/>

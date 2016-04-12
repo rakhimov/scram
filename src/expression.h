@@ -165,6 +165,8 @@ class Parameter : public Expression, public Element, public Role {
   /// @param[in] name  The name of this variable (Case sensitive).
   /// @param[in] base_path  The series of containers to get this parameter.
   /// @param[in] is_public  Whether or not the parameter is public.
+  ///
+  /// @throws LogicError  The name is empty.
   explicit Parameter(const std::string& name,
                      const std::string& base_path = "",
                      bool is_public = true);
@@ -179,7 +181,7 @@ class Parameter : public Expression, public Element, public Role {
   /// @returns The name of this variable.
   const std::string& name() const { return name_; }
 
-  /// @returns The unique identifier  of this parameter.
+  /// @returns The unique identifier of this parameter.
   const std::string& id() const { return id_; }
 
   /// @returns The unit of this parameter.
@@ -325,7 +327,7 @@ class ExponentialExpression : public Expression {
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
 ///
-/// @todo Find the minimum and minimum values.
+/// @todo Find the minimum and maximum values.
 class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.

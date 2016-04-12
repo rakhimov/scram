@@ -102,7 +102,8 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "unordered_structure.xml",
       "non_top_gate.xml",
       "unused_parameter.xml",
-      "nested_formula.xml"};
+      "nested_formula.xml",
+      "case_sensitivity.xml"};
 
   for (const auto& input : correct_inputs) {
     Initializer* init = new Initializer(Settings());

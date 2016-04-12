@@ -26,21 +26,21 @@ namespace test {
 TEST_P(RiskAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/ThreeMotor/three_motor.xml";
   std::set<std::set<std::string>> mcs;  // For expected min cut sets.
-  std::string T3 = "t3";
-  std::string S1 = "s1";
-  std::string T4 = "t4";
-  std::string T1 = "t1";
-  std::string K2 = "k2";
-  std::string T2 = "t2";
-  std::string K5 = "k5";
-  std::string K1 = "k1";
-  std::string KT1inc = "kt1inc";
-  std::string KT2inc = "kt2inc";
-  std::string KT3inc = "kt3inc";
-  std::string T1inc = "t1inc";
-  std::string T2inc = "t2inc";
-  std::string T3inc = "t3inc";
-  std::string T4inc = "t4inc";
+  std::string T3 = "T3";
+  std::string S1 = "S1";
+  std::string T4 = "T4";
+  std::string T1 = "T1";
+  std::string K2 = "K2";
+  std::string T2 = "T2";
+  std::string K5 = "K5";
+  std::string K1 = "K1";
+  std::string KT1inc = "KT1inc";
+  std::string KT2inc = "KT2inc";
+  std::string KT3inc = "KT3inc";
+  std::string T1inc = "T1inc";
+  std::string T2inc = "T2inc";
+  std::string T3inc = "T3inc";
+  std::string T4inc = "T4inc";
 
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));

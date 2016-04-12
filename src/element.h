@@ -63,7 +63,7 @@ class Element {
 
   /// Checks if the element has a given attribute.
   ///
-  /// @param[in] id  The identification name of the attribute in lower case.
+  /// @param[in] id  The identification name of the attribute.
   ///
   /// @returns true if this element has an attribute with the given ID.
   /// @returns false otherwise.
@@ -71,7 +71,7 @@ class Element {
 
   /// @returns Reference to the attribute if it exists.
   ///
-  /// @param[in] id  The id name of the attribute in lower case.
+  /// @param[in] id  The id name of the attribute.
   ///
   /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& id) const;

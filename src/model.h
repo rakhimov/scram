@@ -43,7 +43,7 @@ class Model : public Element {
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.
-  explicit Model(const std::string& name = "");
+  explicit Model(std::string name = "");
 
   Model(const Model&) = delete;
   Model& operator=(const Model&) = delete;
@@ -161,7 +161,7 @@ class Model : public Element {
 
   /// Helper function to find the container for references.
   ///
-  /// @param[in] path  The ancestor container names in lower case.
+  /// @param[in] path  The ancestor container names chained with ".".
   ///
   /// @returns A fault tree or component from the path.
   ///
