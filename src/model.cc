@@ -85,30 +85,25 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
 
 ParameterPtr Model::GetParameter(const std::string& reference,
                                  const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, parameters_,
-      [](const Component& component) { return component.parameters(); });
+  return Model::GetEntity(reference, base_path, parameters_,
+                          &Component::parameters);
 }
 
 HouseEventPtr Model::GetHouseEvent(const std::string& reference,
                                    const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, house_events_,
-      [](const Component& component) { return component.house_events(); });
+  return Model::GetEntity(reference, base_path, house_events_,
+                          &Component::house_events);
 }
 
 BasicEventPtr Model::GetBasicEvent(const std::string& reference,
                                    const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, basic_events_,
-      [](const Component& component) { return component.basic_events(); });
+  return Model::GetEntity(reference, base_path, basic_events_,
+                          &Component::basic_events);
 }
 
 GatePtr Model::GetGate(const std::string& reference,
                        const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, gates_,
-      [](const Component& component) { return component.gates(); });
+  return Model::GetEntity(reference, base_path, gates_, &Component::gates);
 }
 
 namespace {
@@ -140,11 +135,11 @@ Tptr Model::GetEntity(
     std::vector<std::string> full_path = GetPath(base_path);
     full_path.insert(full_path.end(), path.begin(), path.end());
     try {
-      return getter(Model::GetContainer(full_path)).at(target_name);
+      return (Model::GetContainer(full_path).*getter)().at(target_name);
     } catch (std::out_of_range&) {}  // Continue searching.
   }
   if (path.empty()) return public_container.at(target_name);  // Public entity.
-  return getter(Model::GetContainer(path)).at(target_name);  // Direct access.
+  return (Model::GetContainer(path).*getter)().at(target_name);  // Direct call.
 }
 
 const Component& Model::GetContainer(const std::vector<std::string>& path) {
