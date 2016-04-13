@@ -20,6 +20,16 @@ In addition to the XML format,
 the :ref:`shorthand_format` is supported indirectly.
 
 
+Encodings
+=========
+
+- UTF-8
+- UTF-16
+- other encodings supported by `GNOME XML Parser`_ on the given platform.
+
+.. _GNOME XML Parser: http://xmlsoft.org/encoding.html
+
+
 Steps in XML Input Validation
 =============================
 
