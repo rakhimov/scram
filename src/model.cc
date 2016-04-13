@@ -121,12 +121,12 @@ std::vector<std::string> GetPath(std::string string_path) {
 
 }  // namespace
 
-template <class Tptr, class Getter>
-Tptr Model::GetEntity(
+template <class Container>
+typename Container::mapped_type Model::GetEntity(
     const std::string& reference,
     const std::string& base_path,
-    const std::unordered_map<std::string, Tptr>& public_container,
-    Getter getter) {
+    const Container& public_container,
+    const Container& (Component::*getter)() const) {
   assert(!reference.empty());
   std::vector<std::string> path = GetPath(reference);
   std::string target_name = path.back();

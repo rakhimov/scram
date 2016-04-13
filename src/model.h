@@ -141,9 +141,7 @@ class Model : public Element {
   /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
-  /// @tparam Tptr  Smart pointer type to the entity.
-  /// @tparam Getter  Function type to get the entity from components:
-  ///                 const Map<std::string, Tptr>&(const Component&)
+  /// @tparam Container  Map of name and entity pairs.
   ///
   /// @param[in] reference  Reference string to the entity.
   /// @param[in] base_path  The series of containers indicating the scope.
@@ -154,10 +152,12 @@ class Model : public Element {
   /// @returns Pointer to the requested entity.
   ///
   /// @throws std::out_of_range  The entity cannot be found.
-  template <class Tptr, class Getter>
-  Tptr GetEntity(const std::string& reference, const std::string& base_path,
-                 const std::unordered_map<std::string, Tptr>& public_container,
-                 Getter getter);
+  template <class Container>
+  typename Container::mapped_type GetEntity(
+      const std::string& reference,
+      const std::string& base_path,
+      const Container& public_container,
+      const Container& (Component::*getter)() const);
 
   /// Helper function to find the container for references.
   ///
