@@ -20,8 +20,6 @@
 
 #include "element.h"
 
-#include <boost/algorithm/string.hpp>
-
 #include "error.h"
 
 namespace scram {
@@ -33,9 +31,7 @@ void Element::label(const std::string& new_label) {
 }
 
 void Element::AddAttribute(const Attribute& attr) {
-  std::string id = attr.name;
-  boost::to_lower(id);
-  if (attributes_.emplace(id, attr).second == false)
+  if (attributes_.emplace(attr.name, attr).second == false)
     throw LogicError("Trying to re-add an attribute: " + attr.name);
 }
 

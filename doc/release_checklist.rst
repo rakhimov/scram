@@ -23,7 +23,7 @@ Pre-Release
     * [ ] Benchmarking tests
     * [ ] Performance tests
 
-- [ ] Fuzz testing preprocessor and analysis code (tools: fuzz_tester.py, fault_tree_generator.py)
+- [ ] Fuzz testing preprocessor and analysis code (tools: fuzz_tester.py)
 - [ ] Coveralls (C++) >= 95%
 - [ ] CodeCov (Python) >= 95%
 - [ ] Coverity defects < 0.35 per 1000 SLOC (target: 0)
@@ -46,13 +46,11 @@ Pre-Release
     * [ ] Unused ``import``
     * [ ] Spell check the code (optional)
 
-- [ ] Update the Lizard report
-
 
 Release
 =======
 
-- [ ] Update version number
+- [ ] Update version numbers
 
     * [ ] version.h
     * [ ] scram.man
@@ -60,12 +58,14 @@ Release
 
 - [ ] Update the website
 
+    * [ ] Lizard CCN report
     * [ ] Sitemap
 
 - [ ] Update release notes on GitHub
 - [ ] Release with GitHub automatic tagging
 - [ ] Rebase Master on Develop (Avoid merging)
 - [ ] Close the milestone on GitHub
+- [ ] Publish the release notes on the scram-announce mailing list
 
 
 Distribution

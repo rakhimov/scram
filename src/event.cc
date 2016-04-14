@@ -33,9 +33,8 @@ Event::Event(const std::string& name, const std::string& base_path,
     : Role(is_public, base_path),
       name_(name),
       orphan_(true) {
-  assert(!name.empty());
+  if (name.empty()) throw LogicError("Event names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-  boost::to_lower(id_);
 }
 
 Event::~Event() = default;
@@ -99,11 +98,9 @@ void Formula::vote_number(int number) {
                       "The operator of this formula is " + type_ + ".";
     throw LogicError(msg);
   } else if (number < 2) {
-    std::string msg = "Vote number cannot be less than 2.";
-    throw InvalidArgument(msg);
+    throw InvalidArgument("Vote number cannot be less than 2.");
   } else if (vote_number_) {
-    std::string msg = "Trying to re-assign a vote number";
-    throw LogicError(msg);
+    throw LogicError("Trying to re-assign a vote number");
   }
   vote_number_ = number;
 }

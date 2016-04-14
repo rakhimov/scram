@@ -22,8 +22,6 @@
 
 #include <sstream>
 
-#include <boost/algorithm/string.hpp>
-
 namespace scram {
 
 CcfGroup::CcfGroup(const std::string& name, const std::string& model,
@@ -31,27 +29,24 @@ CcfGroup::CcfGroup(const std::string& name, const std::string& model,
     : Role(is_public, base_path),
       name_(name),
       model_(model) {
-  assert(!name.empty());
+  if (name.empty()) throw LogicError("CCF group names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-  boost::to_lower(id_);
 }
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
-  std::string name = basic_event->name();
-  boost::to_lower(name);
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
   }
-  if (members_.count(name)) {
+  if (members_.count(basic_event->name())) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + name_ + " CCF group.");
   }
-  members_.emplace(name, basic_event);
+  members_.emplace(basic_event->name(), basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
-  assert(!distribution_);
+  if (distribution_) throw LogicError("CCF distribution is already defined.");
   distribution_ = distr;
   // Define probabilities of all basic events.
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
@@ -60,7 +55,7 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 }
 
 void CcfGroup::CheckLevel(int level) {
-  assert(level > 0);
+  if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
     std::stringstream msg;
     msg << name_ << " " << model_ << " CCF group level expected "
@@ -167,7 +162,7 @@ void CcfGroup::ConstructCcfBasicEvents(
 }
 
 void BetaFactorModel::CheckLevel(int level) {
-  assert(level > 0);
+  if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (!CcfGroup::factors().empty()) {
     throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
                           " CCF group must have exactly one factor.");
@@ -210,7 +205,7 @@ void BetaFactorModel::CalculateProbabilities(
 }
 
 void MglModel::CheckLevel(int level) {
-  assert(level > 0);
+  if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != CcfGroup::factors().size() + 2) {
     std::stringstream msg;
     msg << CcfGroup::name() << " MGL model CCF group level expected "

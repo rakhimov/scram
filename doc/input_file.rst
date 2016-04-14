@@ -20,6 +20,16 @@ In addition to the XML format,
 the :ref:`shorthand_format` is supported indirectly.
 
 
+Encodings
+=========
+
+- UTF-8
+- UTF-16
+- other encodings supported by `GNOME XML Parser`_ on the given platform.
+
+.. _GNOME XML Parser: http://xmlsoft.org/encoding.html
+
+
 Steps in XML Input Validation
 =============================
 
@@ -33,7 +43,7 @@ Steps in XML Input Validation
 #. An XML input file is validated against the RelaxNG_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
-    - Event names and references are not case-sensitive.
+    - Event names and references are case-sensitive.
     - Leading and trailing whitespace characters are trimmed.
     - Names and references should conform to the rules defined in :ref:`naming_rules` section.
     - Public names must be unique globally,

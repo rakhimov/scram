@@ -24,91 +24,74 @@
 
 namespace scram {
 
-Model::Model(const std::string& name) : name_(name) {}
+Model::Model(std::string name) : name_(std::move(name)) {}
 
 void Model::AddFaultTree(FaultTreePtr fault_tree) {
-  std::string name = fault_tree->name();
-  boost::to_lower(name);
-  if (fault_trees_.count(name)) {
-    std::string msg = "Redefinition of fault tree " + fault_tree->name();
-    throw RedefinitionError(msg);
+  if (fault_trees_.count(fault_tree->name())) {
+    throw RedefinitionError("Redefinition of fault tree " + fault_tree->name());
   }
-  fault_trees_.emplace(name, std::move(fault_tree));
+  fault_trees_.emplace(fault_tree->name(), std::move(fault_tree));
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
   bool original = parameters_.emplace(parameter->id(), parameter).second;
   if (!original) {
-    std::string msg = "Redefinition of parameter " + parameter->name();
-    throw RedefinitionError(msg);
+    throw RedefinitionError("Redefinition of parameter " + parameter->name());
   }
 }
 
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
-  std::string id = house_event->id();
-  bool original = event_ids_.insert(id).second;
+  bool original = event_ids_.insert(house_event->id()).second;
   if (!original) {
-    std::string msg = "Redefinition of event " + house_event->name();
-    throw RedefinitionError(msg);
+    throw RedefinitionError("Redefinition of event " + house_event->name());
   }
-  house_events_.emplace(id, house_event);
+  house_events_.emplace(house_event->id(), house_event);
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
-  std::string id = basic_event->id();
-  bool original = event_ids_.insert(id).second;
+  bool original = event_ids_.insert(basic_event->id()).second;
   if (!original) {
-    std::string msg = "Redefinition of event " + basic_event->name();
-    throw RedefinitionError(msg);
+    throw RedefinitionError("Redefinition of event " + basic_event->name());
   }
-  basic_events_.emplace(id, basic_event);
+  basic_events_.emplace(basic_event->id(), basic_event);
 }
 
 void Model::AddGate(const GatePtr& gate) {
-  std::string id = gate->id();
-  bool original = event_ids_.insert(id).second;
+  bool original = event_ids_.insert(gate->id()).second;
   if (!original) {
-    std::string msg = "Redefinition of event " + gate->name();
-    throw RedefinitionError(msg);
+    throw RedefinitionError("Redefinition of event " + gate->name());
   }
-  gates_.emplace(id, gate);
+  gates_.emplace(gate->id(), gate);
 }
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->id();
-  bool original = ccf_groups_.emplace(name, ccf_group).second;
+  bool original = ccf_groups_.emplace(ccf_group->id(), ccf_group).second;
   if (!original) {
-    std::string msg = "Redefinition of CCF group " + ccf_group->name();
-    throw RedefinitionError(msg);
+    throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
   }
 }
 
 ParameterPtr Model::GetParameter(const std::string& reference,
                                  const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, parameters_,
-      [](const Component& component) { return component.parameters(); });
+  return Model::GetEntity(reference, base_path, parameters_,
+                          &Component::parameters);
 }
 
 HouseEventPtr Model::GetHouseEvent(const std::string& reference,
                                    const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, house_events_,
-      [](const Component& component) { return component.house_events(); });
+  return Model::GetEntity(reference, base_path, house_events_,
+                          &Component::house_events);
 }
 
 BasicEventPtr Model::GetBasicEvent(const std::string& reference,
                                    const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, basic_events_,
-      [](const Component& component) { return component.basic_events(); });
+  return Model::GetEntity(reference, base_path, basic_events_,
+                          &Component::basic_events);
 }
 
 GatePtr Model::GetGate(const std::string& reference,
                        const std::string& base_path) {
-  return Model::GetEntity(
-      reference, base_path, gates_,
-      [](const Component& component) { return component.gates(); });
+  return Model::GetEntity(reference, base_path, gates_, &Component::gates);
 }
 
 namespace {
@@ -118,20 +101,17 @@ namespace {
 /// @returns A set of names in the reference path.
 std::vector<std::string> GetPath(std::string string_path) {
   std::vector<std::string> path;
-  boost::to_lower(string_path);
-  boost::split(path, string_path, boost::is_any_of("."),
-               boost::token_compress_on);
-  return path;
+  return boost::split(path, string_path, boost::is_any_of("."));
 }
 
 }  // namespace
 
-template <class Tptr, class Getter>
-Tptr Model::GetEntity(
+template <class Container>
+typename Container::mapped_type Model::GetEntity(
     const std::string& reference,
     const std::string& base_path,
-    const std::unordered_map<std::string, Tptr>& public_container,
-    Getter getter) {
+    const Container& public_container,
+    const Container& (Component::*getter)() const) {
   assert(!reference.empty());
   std::vector<std::string> path = GetPath(reference);
   std::string target_name = path.back();
@@ -140,11 +120,11 @@ Tptr Model::GetEntity(
     std::vector<std::string> full_path = GetPath(base_path);
     full_path.insert(full_path.end(), path.begin(), path.end());
     try {
-      return getter(Model::GetContainer(full_path)).at(target_name);
+      return (Model::GetContainer(full_path).*getter)().at(target_name);
     } catch (std::out_of_range&) {}  // Continue searching.
   }
   if (path.empty()) return public_container.at(target_name);  // Public entity.
-  return getter(Model::GetContainer(path)).at(target_name);  // Direct access.
+  return (Model::GetContainer(path).*getter)().at(target_name);  // Direct call.
 }
 
 const Component& Model::GetContainer(const std::vector<std::string>& path) {

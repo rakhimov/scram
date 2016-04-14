@@ -56,6 +56,14 @@ The report contains two constructs:
         * Probability/frequency, importance factors, sensitivity analyses, ...
 
 
+Encodings
+=========
+
+There is no specification for file encodings in OpenPSA MEF.
+SCRAM results are reported with the UTF-8 character set
+regardless of what the input file encodings are.
+
+
 Validation Schemas
 ==================
 
