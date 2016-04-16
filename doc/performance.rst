@@ -165,15 +165,15 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 2.5
+- BDD Time: 2.0
 - ZBDD Time: 0.20
 
 - # of BDD vertices created: 2884142
 - # of ITE in BDD: 1123370
 
-- Memory:   320
+- Memory:   290
 
-- Cache-misses:  46 %
+- Cache-misses:  46 %  |  50 %
 
 
 CEA9601 -l 5 (mcs = 1615876)
@@ -182,7 +182,6 @@ CEA9601 -l 5 (mcs = 1615876)
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 2.5
 - ZBDD Time: 2.0
 
 - Reporting (/dev/null): 5.2
@@ -192,7 +191,7 @@ Release build:
 - ZBDD Cut set extraction time: 1.5
 - ZBDD Cut set extraction memory: 200
 
-- Memory:   520
+- Memory:   480
 
 - Cache-misses:  34 %
 
@@ -203,7 +202,6 @@ CEA9601 -l 6 (mcs = 9323572)
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 2.5
 - ZBDD Time: 11
 
 - Reporting (/dev/null): 35

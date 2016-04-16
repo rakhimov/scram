@@ -109,7 +109,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1L7) {
 TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
   double mcs_time = 9.7;
 #ifdef NDEBUG
-  mcs_time = 2.7;
+  mcs_time = 2.3;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
@@ -122,7 +122,7 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
 
 #ifdef NDEBUG
 TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
-  double mcs_time = 4.8;
+  double mcs_time = 4.3;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");

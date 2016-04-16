@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 #include "bdd.h"
 
 namespace scram {
@@ -106,6 +108,25 @@ class SetNode : public NonTerminal<SetNode> {
 };
 
 using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
+
+/// @class PairHash
+/// Function for hashing a pair of ordered numbers.
+struct PairHash {
+  /// Operator overload for hashing two ordered numbers.
+  ///
+  /// @param[in] p  The pair of numbers.
+  ///
+  /// @returns Hash value of the pair.
+  std::size_t operator()(const std::pair<int, int>& p) const noexcept {
+    return boost::hash_value(p);
+  }
+};
+
+/// Hash table with pairs of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
+template <typename Value>
+using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
 
 using Triplet = std::array<int, 3>;  ///< Triplet of numbers for functions.
 
