@@ -324,7 +324,7 @@ or building and installation instructions for `Linux Systems`_.
 Another option is to use MSYS2_ with Mingw-w64_ or Cygwin_
 to build and install SCRAM on Windows.
 Cygwin_ 64bit has been tested to produce binaries on Windows,
-but currently it is not being tested on regular basis.
+but currently it is not being tested on a regular basis.
 The dependencies listed for Linux systems must be installed with Cygwin64.
 
 MSYS2_ with Mingw-w64_, on the other hand,
