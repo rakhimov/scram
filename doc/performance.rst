@@ -129,7 +129,7 @@ CEA9601 -l 3 (mcs = 1144)
 Release build:
 ~~~~~~~~~~~~~~
 
-- ZBDD Time: 1.6
+- ZBDD Time: 1.4
 
 - # of ZBDD nodes created: 170713
 - # of SetNodes in ZBDD: 75  |  76

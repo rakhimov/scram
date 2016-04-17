@@ -359,6 +359,7 @@ class Zbdd {
     or_table_.clear();
     minimal_results_.clear();
     subsume_table_.clear();
+    prune_results_.clear();
   }
 
   /// Releases all possible memory from memoization and unique tables.
@@ -733,6 +734,8 @@ class Zbdd {
   std::unordered_map<int, VertexPtr> minimal_results_;
   /// The results of subsume operations over sets.
   PairTable<VertexPtr> subsume_table_;
+  /// The results of pruning operations.
+  PairTable<VertexPtr> prune_results_;
 
   std::unordered_map<int, std::unique_ptr<Zbdd>> modules_;  ///< Module graphs.
   int set_id_;  ///< Identification assignment for new set graphs.

@@ -133,7 +133,7 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L3_ZBDD) {
-  double mcs_time = 1.6;
+  double mcs_time = 1.4;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
