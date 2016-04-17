@@ -431,8 +431,10 @@ class UniqueTable {
 
  public:
   /// Constructor for small graphs.
-  UniqueTable()
-      : capacity_(1001),
+  ///
+  /// @param[in] init_capacity  The starting capacity for the table.
+  explicit UniqueTable(int init_capacity = 1001)
+      : capacity_(init_capacity),
         size_(0),
         max_load_factor_(0.75),
         table_(capacity_) {}
@@ -476,7 +478,7 @@ class UniqueTable {
   ///
   /// @returns Reference to the weak pointer.
   WeakIntrusivePtr<T>& FindOrAdd(int index, int high_id, int low_id) noexcept {
-    if (max_load_factor_ < (static_cast<double>(size_) / capacity_))
+    if (size_ >= (max_load_factor_ * capacity_))
       UniqueTable::Rehash(UniqueTable::GetNextCapacity(capacity_));
 
     int bucket_number = UniqueTable::Hash(index, high_id, low_id) % capacity_;
@@ -609,7 +611,12 @@ class CacheTable {
   /// @}
 
   /// Constructor with average expectations for computations.
-  CacheTable() : size_(0), max_load_factor_(0.75), table_(1001) {}
+  ///
+  /// @param[in] init_capacity
+  explicit CacheTable(int init_capacity = 1001)
+      : size_(0),
+        max_load_factor_(0.75),
+        table_(init_capacity) {}
 
   /// @returns The number of entires in the table.
   int size() const { return size_; }
