@@ -404,6 +404,13 @@ class Ite : public NonTerminal<Ite> {
 
 using ItePtr = IntrusivePtr<Ite>;  ///< Shared if-then-else vertices.
 
+/// Prime number generation for hash tables.
+///
+/// @param[in] n  The starting candidate for a prime number.
+///
+/// @returns Probable prime number >= n.
+int GetPrimeNumber(int n);
+
 /// @class UniqueTable
 /// A hash table for keeping BDD reduced.
 /// The management of the hash table is intrusive;
@@ -433,8 +440,8 @@ class UniqueTable {
   /// Constructor for small graphs.
   ///
   /// @param[in] init_capacity  The starting capacity for the table.
-  explicit UniqueTable(int init_capacity = 1001)
-      : capacity_(init_capacity),
+  explicit UniqueTable(int init_capacity = 1000)
+      : capacity_(GetPrimeNumber(init_capacity)),
         size_(0),
         max_load_factor_(0.75),
         table_(capacity_) {}
@@ -557,8 +564,6 @@ class UniqueTable {
   /// @returns The new capacity scaled by the growth factor function.
   ///
   /// @note The growth tries to take into account the growth patterns of BDD.
-  /// @note Prime numbers have been tried,
-  ///       but the performance hasn't been noticeably different.
   int GetNextCapacity(int prev_capacity) {
     const int kMaxScaleCapacity = 1e8;
     int scale_power = 1;  // The default power after the max scale capacity.
@@ -566,7 +571,8 @@ class UniqueTable {
       scale_power += std::log10(kMaxScaleCapacity / prev_capacity);
     }
     int growth_factor = std::pow(2, scale_power);
-    return prev_capacity * growth_factor + 1;  // Odd numbers are preferred.
+    int new_capacity =  prev_capacity * growth_factor;
+    return GetPrimeNumber(new_capacity);
   }
 
   int capacity_;  ///< The total number of buckets in the table.
@@ -613,10 +619,10 @@ class CacheTable {
   /// Constructor with average expectations for computations.
   ///
   /// @param[in] init_capacity
-  explicit CacheTable(int init_capacity = 1001)
+  explicit CacheTable(int init_capacity = 1000)
       : size_(0),
         max_load_factor_(0.75),
-        table_(init_capacity) {}
+        table_(GetPrimeNumber(init_capacity)) {}
 
   /// @returns The number of entires in the table.
   int size() const { return size_; }
@@ -665,7 +671,7 @@ class CacheTable {
     assert(value && "Empty computation results!");
 
     if (size_ >= (max_load_factor_ * table_.size()))
-      CacheTable::Rehash(table_.size() * 2 + 1);
+      CacheTable::Rehash(GetPrimeNumber(table_.size() * 2));
 
     int index = boost::hash_value(key) % table_.size();
     value_type& entry = table_[index];

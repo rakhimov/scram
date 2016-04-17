@@ -89,7 +89,7 @@ Dependencies
 Package                Minimum Version
 ====================   ==================
 `CMake`                2.8.12
-`boost`                1.48.0
+`boost`                1.54
 `libxml2`              2.8.0
 `libxml++`             2.34.1
 `Python`               2.7.3 or 3.3+
@@ -125,7 +125,7 @@ Compilers
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`GCC/G++`              4.8
+`GCC/G++`              4.8.1
 `Clang/LLVM`           3.3
 ====================   ==================
 

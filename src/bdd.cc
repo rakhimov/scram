@@ -20,11 +20,20 @@
 
 #include "bdd.h"
 
+#include <boost/multiprecision/miller_rabin.hpp>
+
 #include "event.h"
 #include "logger.h"
 #include "zbdd.h"
 
 namespace scram {
+
+int GetPrimeNumber(int n) {
+  assert(n > 0 && "Only natural numbers.");
+  if (n % 2 == 0) ++n;
+  while (boost::multiprecision::miller_rabin_test(n, 25) == false) n += 2;
+  return n;
+}
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
