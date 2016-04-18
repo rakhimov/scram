@@ -156,6 +156,10 @@ set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
 # Find the QtWidgets library.
+if(APPLE)
+  # Qt5 with Homebrew.
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
+endif()
 find_package(Qt5Widgets)
 if(Qt5Widgets_FOUND)
   message(STATUS "Found Qt5")

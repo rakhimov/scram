@@ -3,12 +3,29 @@ dist: trusty
 
 language: cpp
 
+os:
+    - linux
+
 compiler:
     - gcc
     - clang
 
-git:
-    depth: 3
+# This explicit matrix inclusion is provided
+# to work around the default beta-xcode6.1 clang,
+# which is having a trouble with C++11 features.
+# There seems not to be a way to use 'osx_image' multiplier
+# outside of this matrix
+# without messing with Linux builds.
+matrix:
+    include:
+        - os: osx
+          compiler: clang
+          osx_image: beta-xcode6.3
+          env: RELEASE=
+        - os: osx
+          compiler: clang
+          osx_image: beta-xcode6.3
+          env: RELEASE=true
 
 env:
     global:
@@ -28,17 +45,13 @@ addons:
             - libxml++2.6-dev
             - libgoogle-perftools-dev
             - qt5-default
-            - python-lxml
             - graphviz
 
-before_install:
-    - sudo apt-get update -qq
-
 install:
-    - ./.travis/install.sh
+    - .travis/install.sh
 
 before_script:
-    - mkdir ./install
+    - mkdir install
 
 script:
-    - ./.travis/script.sh
+    - .travis/script.sh
