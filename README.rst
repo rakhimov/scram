@@ -4,6 +4,9 @@ SCRAM
 
 .. image:: https://travis-ci.org/rakhimov/scram.svg?branch=develop
     :target: https://travis-ci.org/rakhimov/scram
+.. image:: https://ci.appveyor.com/api/projects/status/d36yu2w3t8hy4ito/branch/develop?svg=true
+    :target: https://ci.appveyor.com/project/rakhimov/scram/branch/develop
+    :alt: 'Build status'
 .. image:: https://coveralls.io/repos/rakhimov/scram/badge.svg?branch=develop
     :target: https://coveralls.io/r/rakhimov/scram?branch=develop
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
@@ -13,9 +16,11 @@ SCRAM
     :alt: Code Health
 .. image:: https://codecov.io/github/rakhimov/scram/coverage.svg?branch=develop
     :target: https://codecov.io/github/rakhimov/scram?branch=develop
-.. image:: https://badge.waffle.io/rakhimov/scram.png?label=ready&title=Ready
+.. image:: https://badge.waffle.io/rakhimov/scram.svg?label=ready&title=Ready
     :target: https://waffle.io/rakhimov/scram
     :alt: 'Stories in Ready'
+
+|
 
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
@@ -215,7 +220,7 @@ The optional installation for GUI:
 Mac Systems
 -----------
 
-If on a Mac system, a good manager to use is macports_.
+If on a Mac system, a good manager to use is macports_ or homebrew_.
 It is assumed that some dependencies are provided by Xcode.
 The following instructions are tested on OS X 10.9.2,
 but it should work for other systems as well.
@@ -265,6 +270,7 @@ The optional installation for GUI building:
     sudo port install qt5-mac
 
 .. _macports: http://www.macports.org/
+.. _homebrew: http://brew.sh/
 
 
 Installing SCRAM (Linux and Unix)
@@ -313,13 +319,19 @@ to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
 with `Ubuntu 14.04`_.
 Follow the Quick Installation guide for this option.
 
-Another option is to use MinGW_, Mingw-w64_, or Cygwin_
-and to build on Windows.
-
-Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
+Another option is to use MSYS2_ with Mingw-w64_ or Cygwin_
+to build and install SCRAM on Windows.
+Cygwin_ 64bit has been tested to produce binaries on Windows,
+but currently it is not being tested on regular basis.
 The dependencies listed for Linux systems must be installed with Cygwin64.
 
-.. _MinGW: http://www.mingw.org/
+MSYS2_ with Mingw-w64_, on the other hand,
+is the current target platform for Continuous Integration on Windows.
+It is as friendly and easy as Cygwin.
+Please see the ``appveyor.yml`` file for installation commands
+and respective project links for more information.
+
+.. _MSYS2: https://sourceforge.net/projects/msys2/
 .. _Mingw-w64: http://mingw-w64.sourceforge.net/
 .. _Cygwin: https://www.cygwin.com/
 

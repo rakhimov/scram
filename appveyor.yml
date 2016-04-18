@@ -1,0 +1,32 @@
+clone_depth: 50
+
+platform:
+    - x64
+
+configuration:
+    - Debug
+    - Release
+
+install:
+    - git submodule update --init --recursive
+    - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;
+    - pacman --noconfirm -S mingw-w64-x86_64-boost
+    - pacman --noconfirm -S mingw-w64-x86_64-libxml++
+    - pacman --noconfirm -S mingw-w64-x86_64-qt5
+
+before_build:
+    - md install
+    - md build
+    - cd build
+
+build_script:
+    - cmake -DTARGET_ARCH=x86_64-w64-mingw32 -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=..\install -DCMAKE_BUILD_TYPE=%CONFIGURATION% ..
+    - make
+
+after_build:
+    - make install
+    - cd ..
+    - set PATH=%PATH%;%CD%\install\bin
+
+test_script:
+    - scram_tests

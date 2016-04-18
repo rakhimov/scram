@@ -68,12 +68,11 @@ else()
     )
 endif()
 
-add_executable(scram
-  scram.cc
-  )
+add_executable(scram scram.cc)
 target_link_libraries(scram scramcore ${Boost_LIBRARIES})
 
-install(TARGETS scram
+install(
+  TARGETS scram
   RUNTIME DESTINATION bin
   COMPONENT scram
   )

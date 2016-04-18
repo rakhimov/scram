@@ -31,6 +31,11 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-register -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 endif()
 
+if(WIN32)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-declarations")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
+endif()
+
 ######################## End compiler configurations ####################
 
 ##################### Begin cmake configuration ###################
@@ -44,6 +49,10 @@ set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(SCRAM_INPUT_DIR "${PROJECT_SOURCE_DIR}/input")
 
 set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
+
+if(WIN32)
+  set(BUILD_SHARED_LIBS FALSE)  # TODO: Shared libs are failing on Windows.
+endif()
 
 # Linking of external libraries, such as BOOST.
 set(USE_STATIC_LIBS OFF)  # Change this for static building
@@ -126,15 +135,19 @@ message(STATUS ${LIBS})
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
-set(BOOST_MIN_VERSION "1.48.0")
+set(BOOST_MIN_VERSION "1.54.0")
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${USE_STATIC_LIBS})
 set(Boost_USE_MULTITHREADED OFF)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
-  program_options filesystem system
-  REQUIRED)
+if(WIN32)
+  find_package(Boost ${BOOST_MIN_VERSION} REQUIRED)
+else()
+  find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
+    program_options filesystem system
+    REQUIRED)
+endif()
 
 if(USE_STATIC_LIBS)
   message(STATUS "Linking against boost static libraries")
@@ -147,13 +160,15 @@ if(Boost_ROOT)
 endif()
 message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
-set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
-message(STATUS "    Boost Program Options location:
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}")
-set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
-message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
-set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
-message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
+
+if(NOT WIN32)
+  set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+  message(STATUS "    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
+  set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
+  message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
+  set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
+  message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
+endif()
 
 # Find the QtWidgets library.
 if(APPLE)
