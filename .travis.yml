@@ -17,6 +17,20 @@ env:
         - RELEASE=
         - RELEASE=true
 
+addons:
+    apt:
+        packages:
+            - libboost-program-options-dev
+            - libboost-filesystem-dev
+            - libboost-system-dev
+            - libboost-math-dev
+            - libxml2-dev
+            - libxml++2.6-dev
+            - libgoogle-perftools-dev
+            - qt5-default
+            - python-lxml
+            - graphviz
+
 before_install:
     - sudo apt-get update -qq
 
