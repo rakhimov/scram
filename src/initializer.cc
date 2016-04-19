@@ -107,14 +107,31 @@ void Initializer::CheckFileExistence(
 void Initializer::CheckDuplicateFiles(
     const std::vector<std::string>& xml_files) {
   namespace fs = boost::filesystem;
+  using Path = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
-  std::vector<fs::path> files;
-  for (auto& xml_file : xml_files) files.push_back(fs::canonical(xml_file));
-  std::sort(files.begin(), files.end());
-  auto it = std::adjacent_find(files.begin(), files.end());
+  std::vector<Path> files;
+  auto Comparator = [](const Path& lhs,
+                       const Path& rhs) { return lhs.first < rhs.first; };
+
+  for (auto& xml_file : xml_files)
+    files.emplace_back(fs::canonical(xml_file), xml_file);
+
+  std::sort(files.begin(), files.end(), Comparator);
+
+  auto it = std::adjacent_find(files.begin(), files.end(),
+                               [](const Path& lhs, const Path& rhs) {
+    return lhs.first == rhs.first;
+  });
+
   if (it != files.end()) {
     std::stringstream msg;
-    msg << "Trying to pass the same file twice: " << it->native();
+    msg << "Duplicate input files:\n";
+    const Path& path = *it;
+    auto it_end = std::upper_bound(it, files.end(), path, Comparator);
+    for (; it != it_end; ++it) {
+      msg << "    " << it->second << "\n";
+    }
+    msg << "  POSIX Path: " << path.first.c_str();
     throw DuplicateArgumentError(msg.str());
   }
 }
