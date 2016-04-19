@@ -20,9 +20,9 @@
 
 #include "initializer.h"
 
+#include <algorithm>
 #include <fstream>
 #include <set>
-#include <type_traits>
 #include <unordered_map>
 
 #include <boost/filesystem.hpp>
@@ -67,6 +67,8 @@ Initializer::Initializer(const Settings& settings)
 void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
+  Initializer::CheckFileExistence(xml_files);
+  Initializer::CheckDuplicateFiles(xml_files);
   std::vector<std::string>::const_iterator it;
   try {
     for (it = xml_files.begin(); it != xml_files.end(); ++it) {
@@ -94,20 +96,32 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
+void Initializer::CheckFileExistence(
+    const std::vector<std::string>& xml_files) {
+  for (auto& xml_file : xml_files) {
+    if (boost::filesystem::exists(xml_file) == false)
+      throw IOError("File doesn't exist: " + xml_file);
+  }
+}
+
+void Initializer::CheckDuplicateFiles(
+    const std::vector<std::string>& xml_files) {
+  namespace fs = boost::filesystem;
+  // Collection of input file locations in canonical path.
+  std::vector<fs::path> files;
+  for (auto& xml_file : xml_files) files.push_back(fs::canonical(xml_file));
+  std::sort(files.begin(), files.end());
+  auto it = std::adjacent_find(files.begin(), files.end());
+  if (it != files.end()) {
+    std::stringstream msg;
+    msg << "Trying to pass the same file twice: " << it->native();
+    throw DuplicateArgumentError(msg.str());
+  }
+}
+
 void Initializer::ProcessInputFile(const std::string& xml_file) {
   std::ifstream file_stream(xml_file.c_str());
-  if (!file_stream) {
-    throw IOError("File '" + xml_file + "' could not be loaded.");
-  }
-
-  // Collection of input file locations in canonical path.
-  std::set<std::string> input_paths;
-  boost::filesystem::path file_path = boost::filesystem::canonical(xml_file);
-  if (input_paths.count(file_path.native())) {
-    throw ValidationError("Trying to pass the same file twice: " +
-                          file_path.native());
-  }
-  input_paths.insert(file_path.native());
+  if (!file_stream) throw IOError("'" + xml_file + "' could not be loaded.");
 
   std::stringstream stream;
   stream << file_stream.rdbuf();
