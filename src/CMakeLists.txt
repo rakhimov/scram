@@ -54,11 +54,21 @@ set_target_properties(scramcore
 
 target_link_libraries(scramcore ${LIBS})
 
+if(WIN32)
+  install(
+    TARGETS scramcore
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    COMPONENT scramcore
+    )
+else()
 install(
   TARGETS scramcore
   DESTINATION lib
   COMPONENT scramcore
   )
+endif()
 
 add_executable(scram scram.cc)
 target_link_libraries(scram scramcore ${Boost_LIBRARIES})

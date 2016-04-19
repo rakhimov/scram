@@ -62,10 +62,13 @@ def generate_make_files(args):
         cmake_cmd += ["-Wdev"]
 
     if args.D is not None:
-        cmake_cmd += ['-D' + x for x in args.D]
+        cmake_cmd += ["-D" + x for x in args.D]
+
+    if args.mingw64:
+        cmake_cmd += ["-G", "MSYS Makefiles"]
 
     subprocess.check_call(cmake_cmd, cwd=args.build_dir,
-                          shell=(os.name == 'nt'))
+                          shell=(os.name == "nt"))
 
 
 def install_scram(args):
@@ -128,7 +131,7 @@ def main():
                         help="only build the package, do not install")
     parser.add_argument("--test", action="store_true",
                         help="run tests after building")
-    parser.add_argument('--build-type', help="the CMAKE_BUILD_TYPE")
+    parser.add_argument("--build-type", help="the CMAKE_BUILD_TYPE")
     parser.add_argument("-d", "--debug", help="build for debugging (default)",
                         action="store_true", default=False)
     parser.add_argument("-p", "--profile", help="build for profiling",
@@ -136,8 +139,11 @@ def main():
     parser.add_argument("-r", "--release",
                         help="build for release with optimizations",
                         action="store_true", default=False)
-    parser.add_argument('-D', metavar='VAR', action='append',
-                        help='pass environment variable(s) to CMake')
+    parser.add_argument("-D", metavar="VAR", action="append",
+                        help="pass environment variable(s) to CMake")
+    parser.add_argument("--mingw64",
+                        help="building on MSYS2 with mingw64-x86_64",
+                        action="store_true", default=False)
 
     args = parser.parse_args()
     if args.uninstall:

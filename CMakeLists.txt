@@ -32,6 +32,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 if(WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-declarations")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
 endif()
@@ -134,16 +135,16 @@ message(STATUS ${LIBS})
 set(BOOST_MIN_VERSION "1.54.0")
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${USE_STATIC_LIBS})
-set(Boost_USE_MULTITHREADED OFF)
+
+if(NOT WIN32)
+  set(Boost_USE_MULTITHREADED OFF)
+endif()
+
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-if(WIN32)
-  find_package(Boost ${BOOST_MIN_VERSION} REQUIRED)
-else()
-  find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
-    program_options filesystem system
-    REQUIRED)
-endif()
+find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
+  program_options filesystem system
+  REQUIRED)
 
 if(USE_STATIC_LIBS)
   message(STATUS "Linking against boost static libraries")
@@ -157,14 +158,12 @@ endif()
 message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
 
-if(NOT WIN32)
-  set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
-  message(STATUS "    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
-  set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
-  message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
-  set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
-  message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
-endif()
+set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+message(STATUS "    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
+set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
+message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
+set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
+message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
 # Find the QtWidgets library.
 if(APPLE)
