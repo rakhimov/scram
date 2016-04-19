@@ -50,10 +50,6 @@ set(SCRAM_INPUT_DIR "${PROJECT_SOURCE_DIR}/input")
 
 set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 
-if(WIN32)
-  set(BUILD_SHARED_LIBS FALSE)  # TODO: Shared libs are failing on Windows.
-endif()
-
 # Linking of external libraries, such as BOOST.
 set(USE_STATIC_LIBS OFF)  # Change this for static building
 

@@ -57,13 +57,14 @@ add_executable(scram_tests
   ${SCRAM_CORE_TEST_SOURCE}
   )
 
-target_link_libraries(scram_tests dl
+target_link_libraries(scram_tests
   ${LIBS}
   scramcore
   gtest
   )
 
-install(TARGETS scram_tests
+install(
+  TARGETS scram_tests
   RUNTIME DESTINATION bin
   COMPONENT testing
   )
