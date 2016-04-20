@@ -69,21 +69,6 @@ install(
   COMPONENT testing
   )
 
-if(NOT WIN32)
-  # Read tests after building the driver
-  # and add them to ctest.
-  set(tgt "scram_tests")
-  add_custom_command(TARGET ${tgt}
-    POST_BUILD
-    COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/generate_gtest_macros.py"
-    "--executable=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tgt}"
-    "--output=${SCRAM_BINARY_DIR}/CTestTestfile.cmake"
-    COMMENT "adding tests from ${tgt}"
-    DEPENDS
-    VERBATIM
-    )
-endif()
-
 # Copy test input files into the shared directory for testing.
 install(DIRECTORY
   "${CMAKE_CURRENT_SOURCE_DIR}/input"

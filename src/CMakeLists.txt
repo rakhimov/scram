@@ -63,11 +63,11 @@ if(WIN32)
     COMPONENT scramcore
     )
 else()
-install(
-  TARGETS scramcore
-  DESTINATION lib
-  COMPONENT scramcore
-  )
+  install(
+    TARGETS scramcore
+    DESTINATION lib
+    COMPONENT scramcore
+    )
 endif()
 
 add_executable(scram scram.cc)

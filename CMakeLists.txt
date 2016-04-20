@@ -98,14 +98,6 @@ else()
   set(suffix ".so")
 endif()
 
-# Enable testing.
-# Must be at top-level cmake file.
-option(USE_TESTING "Build testing" ON)
-if(USE_TESTING)
-  enable_testing()
-  include(CTest)
-endif()
-
 ######################## End cmake configuration ###################
 
 ######################## Begin find libraries ######################
