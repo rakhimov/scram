@@ -97,7 +97,7 @@ Package                Minimum Version
 `boost`                1.54
 `libxml2`              2.8.0
 `libxml++`             2.34.1
-`Python`               2.7.3 or 3.3+
+`Python`               2.7.3 or 3.3
 ====================   ==================
 
 
@@ -122,6 +122,8 @@ Package                Tested Version
 `nose`                 1.3.1
 `lxml`                 3.3.3
 ====================   ==================
+
+.. note:: Python modules are needed for tests only.
 
 
 Compilers
@@ -150,7 +152,6 @@ or the following commands must be executed after a normal clone.
 .. code-block:: bash
 
     git submodule init && git submodule update
-
 
 
 Installing Dependencies (Linux and Unix)
@@ -222,8 +223,8 @@ Mac Systems
 
 If on a Mac system, a good manager to use is macports_ or homebrew_.
 It is assumed that some dependencies are provided by Xcode.
-The following instructions are tested on OS X 10.9.2,
-but it should work for other systems as well.
+The following instructions are tested on OS X 10.9,
+but it should work for later versions as well.
 
 Using macports_, the command to install a dependency takes the form of:
 
@@ -317,7 +318,8 @@ Windows
 Currently the easiest option is
 to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
 with `Ubuntu 14.04`_.
-Follow the Quick Installation guide for this option.
+Follow the `Quick Installation`_ guide for this option
+or building and installation instructions for `Linux Systems`_.
 
 Another option is to use MSYS2_ with Mingw-w64_ or Cygwin_
 to build and install SCRAM on Windows.
@@ -328,8 +330,49 @@ The dependencies listed for Linux systems must be installed with Cygwin64.
 MSYS2_ with Mingw-w64_, on the other hand,
 is the current target platform for Continuous Integration on Windows.
 It is as friendly and easy as Cygwin.
-Please see the ``appveyor.yml`` file for installation commands
-and respective project links for more information.
+Assuming MSYS2 is installed on the system,
+the following instructions will install SCRAM dependencies.
+
+Using ``pacman``, in MSYS2_64 command shell,
+a C++ dependency installation takes the form of:
+
+.. code-block:: bash
+
+    pacman -S mingw-w64-x86_64-package
+
+Where ``package`` is replaced by the correct package name:
+
+#. gcc
+#. make
+#. cmake
+#. boost
+#. libxml2
+#. libxml++
+#. qt5
+
+If Python has not already been installed on the system,
+Python installation takes the form of:
+
+.. code-block:: bash
+
+    pacman -S python
+
+If you'd prefer to copy/paste,
+the following line will install all major dependencies:
+
+.. code-block:: bash
+
+    pacman --noconfirm -S python mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libxml++ mingw-w64-x86_64-qt5
+
+The building and installation can be done with the ``install.py`` script
+in the root directory.
+
+.. code-block:: bash
+
+    .../scram$ python install.py --prefix=path/to/installation/directory -r --mingw64
+
+After installation,
+SCRAM must be run inside of the MSYS2 shell.
 
 .. _MSYS2: https://sourceforge.net/projects/msys2/
 .. _Mingw-w64: http://mingw-w64.sourceforge.net/
