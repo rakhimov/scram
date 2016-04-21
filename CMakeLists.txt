@@ -12,6 +12,9 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 project(SCRAM)
+set(SCRAM_VERSION_MAJOR 0)  # Indicate major API change after 1.0.0
+set(SCRAM_VERSION_MINOR 11)  # New features and improvements.
+set(SCRAM_VERSION_MICRO 2)  # Bug fixes.
 
 ####################### Begin compiler configurations ###################
 
