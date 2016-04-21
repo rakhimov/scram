@@ -209,16 +209,38 @@ add_custom_target(uninstall
 
 ###################### Begin CPACK configurations ###########################
 
+if(WIN32)
+  set(CPACK_GENERATOR "NSIS")
+  # TODO: Find a way to programmatically detect shared libraries and add to installation.
+  # The following configuration assumes MinGW64 is setup specifically for this project.
+  get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
+  message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
+  file(GLOB all_libs "${MINGW_DLL_DIR}/lib*.dll")
+  install(FILES
+    ${all_libs}
+    ${MINGW_DLL_DIR}/zlib1.dll
+    DESTINATION bin COMPONENT libraries
+  )
+
+  # Qt Libraries
+  install(FILES
+    ${MINGW_DLL_DIR}/Qt5Core.dll
+    ${MINGW_DLL_DIR}/Qt5Gui.dll
+    ${MINGW_DLL_DIR}/Qt5Widgets.dll
+    DESTINATION bin COMPONENT libraries
+  )
+endif()
+
 set(CPACK_PACKAGE_VENDOR "Olzhas Rakhimov")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Probabilistic risk analysis tool")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SCRAM_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SCRAM_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SCRAM_VERSION_MICRO}")
-set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 
-set(CPACK_COMPONENTS_ALL Unspecified scram gui examples)
+set(CPACK_COMPONENTS_ALL scram libraries gui examples)
 set(CPACK_COMPONENT_SCRAM_REQUIRED ON)
+set(CPACK_COMPONENT_LIBRARIES_REQUIRED ON)
 
 include(CPack)
 

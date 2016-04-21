@@ -57,10 +57,9 @@ target_link_libraries(scramcore ${LIBS})
 if(WIN32)
   install(
     TARGETS scramcore
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    COMPONENT scram
+    RUNTIME DESTINATION bin COMPONENT scram
+    LIBRARY DESTINATION lib COMPONENT scram
+    ARCHIVE DESTINATION lib COMPONENT scram
     )
 else()
   install(
