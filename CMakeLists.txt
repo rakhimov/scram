@@ -206,3 +206,20 @@ add_custom_target(uninstall
   COMMAND "${CMAKE_COMMAND}" -P "\"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake\"")
 
 ###################### End uninstall target #############################
+
+###################### Begin CPACK configurations ###########################
+
+set(CPACK_PACKAGE_VENDOR "Olzhas Rakhimov")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Probabilistic risk analysis tool")
+set(CPACK_PACKAGE_VERSION_MAJOR "${SCRAM_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${SCRAM_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${SCRAM_VERSION_MICRO}")
+set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+
+set(CPACK_COMPONENTS_ALL Unspecified scram gui examples)
+set(CPACK_COMPONENT_SCRAM_REQUIRED ON)
+
+include(CPack)
+
+###################### End CPACK configurations #############################

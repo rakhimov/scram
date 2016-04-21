@@ -30,5 +30,5 @@ target_link_libraries(scram-gui scramgui scramcore ${Boost_LIBRARIES})
 
 install(TARGETS scram-gui
   RUNTIME DESTINATION bin
-  COMPONENT scram-gui
+  COMPONENT gui
   )

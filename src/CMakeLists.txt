@@ -60,13 +60,13 @@ if(WIN32)
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    COMPONENT scramcore
+    COMPONENT scram
     )
 else()
   install(
     TARGETS scramcore
     DESTINATION lib
-    COMPONENT scramcore
+    COMPONENT scram
     )
 endif()
 

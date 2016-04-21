@@ -11,5 +11,5 @@ install(DIRECTORY
   "${CMAKE_CURRENT_SOURCE_DIR}/ThreeMotor"
   "${CMAKE_CURRENT_SOURCE_DIR}/Lift"
   DESTINATION share/scram/input
-  COMPONENT testing
+  COMPONENT examples
   )
