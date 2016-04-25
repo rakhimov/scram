@@ -20,11 +20,20 @@
 
 #include "bdd.h"
 
+#include <boost/multiprecision/miller_rabin.hpp>
+
 #include "event.h"
 #include "logger.h"
 #include "zbdd.h"
 
 namespace scram {
+
+int GetPrimeNumber(int n) {
+  assert(n > 0 && "Only natural numbers.");
+  if (n % 2 == 0) ++n;
+  while (boost::multiprecision::miller_rabin_test(n, 25) == false) n += 2;
+  return n;
+}
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
@@ -214,11 +223,13 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
     if (complement_one ^ complement_two) return {true, kOne_};
     return {complement_one, arg_one};
   }
-  Function& result = and_table_
-      [Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two)];
-  if (result.vertex) return result;  // Already computed.
-  Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two), complement_one,
-                   complement_two, &result);
+  std::pair<int, int> min_max_id =
+      Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
+  auto it = and_table_.find(min_max_id);
+  if (it != and_table_.end()) return it->second;
+  Function result = Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
+                                     complement_one, complement_two);
+  and_table_.emplace(min_max_id, result);
   return result;
 }
 
@@ -240,34 +251,50 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
     if (complement_one ^ complement_two) return {false, kOne_};
     return {complement_one, arg_one};
   }
-  Function& result = or_table_
-      [Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two)];
-  if (result.vertex) return result;  // Already computed.
-  Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two), complement_one,
-                  complement_two, &result);
+  std::pair<int, int> min_max_id =
+      Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
+  auto it = or_table_.find(min_max_id);
+  if (it != or_table_.end()) return it->second;
+  Function result = Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
+                                    complement_one, complement_two);
+  or_table_.emplace(min_max_id, result);
   return result;
 }
 
 template <Operator Type>
-void Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
-                bool complement_one, bool complement_two,
-                Function* result) noexcept {
+Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
+                         bool complement_one,
+                         bool complement_two) noexcept {
   if (ite_one->order() > ite_two->order()) {
-    std::swap(ite_one, ite_two);
+    ite_one.swap(ite_two);
     std::swap(complement_one, complement_two);
   }
-  std::pair<Function, Function> new_edges =
-      Bdd::Apply<Type>(ite_one, ite_two, complement_one, complement_two);
-  Function& high = new_edges.first;
-  Function& low = new_edges.second;
-  result->complement = high.complement;
-  bool complement_edge = high.complement ^ low.complement;
-  if (!complement_edge && (high.vertex->id() == low.vertex->id())) {
-      result->vertex = low.vertex;  // Another redundancy detection.
+
+  Function high;
+  Function low;
+  if (ite_one->order() == ite_two->order()) {  // The same variable.
+    assert(ite_one->index() == ite_two->index());
+    high = Bdd::Apply<Type>(ite_one->high(), ite_two->high(), complement_one,
+                            complement_two);
+    low = Bdd::Apply<Type>(ite_one->low(), ite_two->low(),
+                           complement_one ^ ite_one->complement_edge(),
+                           complement_two ^ ite_two->complement_edge());
   } else {
-    result->vertex =
+    assert(ite_one->order() < ite_two->order());
+    high = Bdd::Apply<Type>(ite_one->high(), ite_two, complement_one,
+                            complement_two);
+    low = Bdd::Apply<Type>(ite_one->low(), ite_two,
+                           complement_one ^ ite_one->complement_edge(),
+                           complement_two);
+  }
+
+  bool complement_edge = high.complement ^ low.complement;
+  if (complement_edge || (high.vertex->id() != low.vertex->id())) {
+    high.vertex =
         Bdd::FindOrAddVertex(ite_one, high.vertex, low.vertex, complement_edge);
   }
+
+  return high;
 }
 
 Bdd::Function Bdd::Apply(Operator type,
@@ -279,29 +306,6 @@ Bdd::Function Bdd::Apply(Operator type,
   }
   assert(type == kOr && "Unsupported operator.");
   return Bdd::Apply<kOr>(arg_one, arg_two, complement_one, complement_two);
-}
-
-template <Operator Type>
-std::pair<Bdd::Function, Bdd::Function>
-Bdd::Apply(const ItePtr& arg_one, const ItePtr& arg_two,
-           bool complement_one, bool complement_two) noexcept {
-  if (arg_one->order() == arg_two->order()) {  // The same variable.
-    assert(arg_one->index() == arg_two->index());
-    Function high = Bdd::Apply<Type>(arg_one->high(), arg_two->high(),
-                                     complement_one, complement_two);
-    Function low =
-        Bdd::Apply<Type>(arg_one->low(), arg_two->low(),
-                         complement_one ^ arg_one->complement_edge(),
-                         complement_two ^ arg_two->complement_edge());
-    return {high, low};
-  }
-  assert(arg_one->order() < arg_two->order());
-  Function high = Bdd::Apply<Type>(arg_one->high(), arg_two, complement_one,
-                                   complement_two);
-  Function low = Bdd::Apply<Type>(arg_one->low(), arg_two,
-                                  complement_one ^ arg_one->complement_edge(),
-                                  complement_two);
-  return {high, low};
 }
 
 Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,

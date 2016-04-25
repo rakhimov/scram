@@ -201,7 +201,7 @@ The following tools are used for this purpose:
     - Nose_
 
 These tests are automated,
-and continuous integration is provided by `Travis CI`_.
+and continuous integration is provided by `Travis CI`_ and AppVeyor_.
 
 Guided fuzz testing is performed
 with auto-generated analysis input files
@@ -210,6 +210,7 @@ to discover bugs, bottlenecks, and assumption failures.
 .. _GoogleTest: https://github.com/google/googletest
 .. _Nose: https://nose.readthedocs.org/en/latest/
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
+.. _AppVeyor: https://ci.appveyor.com/project/rakhimov/scram
 
 
 References for testing and quality assurance

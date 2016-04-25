@@ -2544,7 +2544,6 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
                      [](const IGatePtr& gate) { return gate->module(); });
 
   std::sort(middle, gates.end(), [](const IGatePtr& lhs, const IGatePtr& rhs) {
-    assert(lhs->order() != rhs->order());
     return lhs->order() < rhs->order();
   });
   for (auto it = middle; it != gates.end(); ++it)

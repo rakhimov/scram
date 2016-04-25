@@ -672,11 +672,12 @@ Zbdd::VertexPtr Zbdd::Prune(const VertexPtr& vertex, int limit_order) noexcept {
   if (vertex->terminal()) return vertex;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->max_set_order() <= limit_order) return node;
+  VertexPtr& result = prune_results_[{node->id(), limit_order}];
+  if (result) return result;
 
   int limit_high = limit_order - !Zbdd::MayBeUnity(node);
-  VertexPtr result =
-      Zbdd::GetReducedVertex(node, Zbdd::Prune(node->high(), limit_high),
-                             Zbdd::Prune(node->low(), limit_order));
+  result = Zbdd::GetReducedVertex(node, Zbdd::Prune(node->high(), limit_high),
+                                  Zbdd::Prune(node->low(), limit_order));
   if (!result->terminal()) SetNode::Ptr(result)->minimal(node->minimal());
   return result;
 }

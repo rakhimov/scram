@@ -404,6 +404,13 @@ class Ite : public NonTerminal<Ite> {
 
 using ItePtr = IntrusivePtr<Ite>;  ///< Shared if-then-else vertices.
 
+/// Prime number generation for hash tables.
+///
+/// @param[in] n  The starting candidate for a prime number.
+///
+/// @returns Probable prime number >= n.
+int GetPrimeNumber(int n);
+
 /// @class UniqueTable
 /// A hash table for keeping BDD reduced.
 /// The management of the hash table is intrusive;
@@ -431,8 +438,10 @@ class UniqueTable {
 
  public:
   /// Constructor for small graphs.
-  UniqueTable()
-      : capacity_(1001),
+  ///
+  /// @param[in] init_capacity  The starting capacity for the table.
+  explicit UniqueTable(int init_capacity = 1000)
+      : capacity_(GetPrimeNumber(init_capacity)),
         size_(0),
         max_load_factor_(0.75),
         table_(capacity_) {}
@@ -476,7 +485,7 @@ class UniqueTable {
   ///
   /// @returns Reference to the weak pointer.
   WeakIntrusivePtr<T>& FindOrAdd(int index, int high_id, int low_id) noexcept {
-    if (max_load_factor_ < (static_cast<double>(size_) / capacity_))
+    if (size_ >= (max_load_factor_ * capacity_))
       UniqueTable::Rehash(UniqueTable::GetNextCapacity(capacity_));
 
     int bucket_number = UniqueTable::Hash(index, high_id, low_id) % capacity_;
@@ -555,8 +564,6 @@ class UniqueTable {
   /// @returns The new capacity scaled by the growth factor function.
   ///
   /// @note The growth tries to take into account the growth patterns of BDD.
-  /// @note Prime numbers have been tried,
-  ///       but the performance hasn't been noticeably different.
   int GetNextCapacity(int prev_capacity) {
     const int kMaxScaleCapacity = 1e8;
     int scale_power = 1;  // The default power after the max scale capacity.
@@ -564,7 +571,8 @@ class UniqueTable {
       scale_power += std::log10(kMaxScaleCapacity / prev_capacity);
     }
     int growth_factor = std::pow(2, scale_power);
-    return prev_capacity * growth_factor + 1;  // Odd numbers are preferred.
+    int new_capacity =  prev_capacity * growth_factor;
+    return GetPrimeNumber(new_capacity);
   }
 
   int capacity_;  ///< The total number of buckets in the table.
@@ -577,24 +585,122 @@ class UniqueTable {
   Table table_;
 };
 
-/// @class PairHash
-/// Function for hashing a pair of ordered numbers.
-struct PairHash {
-  /// Operator overload for hashing two ordered numbers.
-  ///
-  /// @param[in] p  The pair of numbers.
-  ///
-  /// @returns Hash value of the pair.
-  std::size_t operator()(const std::pair<int, int>& p) const noexcept {
-    return boost::hash_value(p);
-  }
-};
-
-/// Hash table with pairs of numbers as keys.
+/// @class CacheTable
+/// A hash table without collision resolution.
+/// Instead of resolving the collision,
+/// the existing value is purged and replaced by the new entry.
 ///
-/// @tparam Value  Type of values to be stored in the table.
-template <typename Value>
-using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
+/// This hash table is designed to store computation results of BDD Apply.
+/// The implementation of the table
+/// is very much coupled with the BDD use cases.
+///
+/// @tparam V  The type of the value/result of BDD Apply.
+///            The type must provide swap(), reset(), and operator bool().
+///
+/// @note The API is designed after STL maps as drop-in replacement for BDD.
+///       This approach allows performance testing with the baseline.
+///       However, only necessary and sufficient functions are provided.
+///
+/// @warning The behavior is very different from standard maps.
+///          References can easily be invalidated upon rehashing or insertion.
+template <class V>
+class CacheTable {
+ public:
+  /// Public typedefs similar to the standard maps.
+  ///
+  /// @{
+  using key_type = std::pair<int, int>;
+  using mapped_type = V;
+  using value_type = std::pair<key_type, mapped_type>;
+  using container_type = std::vector<value_type>;
+  using iterator = typename container_type::iterator;
+  /// @}
+
+  /// Constructor with average expectations for computations.
+  ///
+  /// @param[in] init_capacity
+  explicit CacheTable(int init_capacity = 1000)
+      : size_(0),
+        max_load_factor_(0.75),
+        table_(GetPrimeNumber(init_capacity)) {}
+
+  /// @returns The number of entires in the table.
+  int size() const { return size_; }
+
+  /// Removes all entries from the table.
+  void clear() {
+    for (value_type& entry : table_) {
+      if (entry.second) entry.second.reset();
+    }
+    size_ = 0;
+  }
+
+  /// Prepares the table for more entries.
+  ///
+  /// @param[in] n  The number of expected entries.
+  void reserve(int n) {
+    if (n <= size_) return;
+    CacheTable::Rehash(GetPrimeNumber(n / max_load_factor_ + 1));
+  }
+
+  /// Searches for existing entry.
+  ///
+  /// @param[in] key  Ordered unique ids of BDD Apply argument vertices.
+  ///
+  /// @returns Iterator pointing to the found entry.
+  /// @returns end() if no entry with the given key is found.
+  iterator find(const key_type& key) {
+    int index = boost::hash_value(key) % table_.size();
+    value_type& entry = table_[index];
+    if (!entry.second || entry.first != key) return table_.end();
+    return table_.begin() + index;
+  }
+
+  /// @returns Iterator to the end.
+  iterator end() { return table_.end(); }
+
+  /// Emplaces a new entry.
+  ///
+  /// @param[in] key  Ordered unique ids of BDD Apply argument vertices.
+  /// @param[in] value  Non-empty result of BDD Apply computations.
+  ///
+  /// @warning API deviation from STL maps.
+  void emplace(const key_type& key, const mapped_type& value) {
+    assert(value && "Empty computation results!");
+
+    if (size_ >= (max_load_factor_ * table_.size()))
+      CacheTable::Rehash(GetPrimeNumber(table_.size() * 2));
+
+    int index = boost::hash_value(key) % table_.size();
+    value_type& entry = table_[index];
+    if (!entry.second) ++size_;
+    entry.first = key;  // Key equality is unlikely for the use case.
+    entry.second = value;  // Might be purging another value.
+  }
+
+ private:
+  /// Rehashes the table with a new capacity.
+  ///
+  /// @param[in] new_capacity  Desired size of the underlying container.
+  void Rehash(int new_capacity) {
+    int new_size = 0;
+    std::vector<value_type> new_table(new_capacity);
+    for (value_type& entry : table_) {
+      if (!entry.second) continue;
+      int new_index = boost::hash_value(entry.first) % new_table.size();
+      value_type& new_entry = new_table[new_index];
+      new_entry.first = entry.first;
+      if (!new_entry.second) ++new_size;
+      new_entry.second.swap(entry.second);
+    }
+    size_ = new_size;
+    std::swap(table_, new_table);
+  }
+
+  int size_;  ///< The total number of elements in the table.
+  double max_load_factor_;  ///< The limit on (size / capacity) ratio.
+  std::vector<value_type> table_;  ///< The main container.
+};
 
 class Zbdd;  // For analysis purposes.
 
@@ -635,6 +741,18 @@ class Bdd {
   struct Function {
     bool complement;  ///< The interpretation of the function.
     VertexPtr vertex;  ///< The root vertex of the BDD function graph.
+
+    /// @returns true if the function is initialized.
+    operator bool() const { return vertex != nullptr; }
+
+    /// Clears the function's root vertex pointer.
+    void reset() { vertex = nullptr; }
+
+    /// Swaps with another function.
+    void swap(Function& other) noexcept {
+      std::swap(complement, other.complement);
+      vertex.swap(other.vertex);
+    }
   };
 
   /// @returns The root function of the ROBDD.
@@ -669,7 +787,7 @@ class Bdd {
 
  private:
   using IteWeakPtr = WeakIntrusivePtr<Ite>;  ///< Pointer in containers.
-  using ComputeTable = PairTable<Function>;  ///< Computation results.
+  using ComputeTable = CacheTable<Function>;  ///< Computation results.
 
   /// Finds or adds a unique if-then-else vertex in BDD.
   /// All vertices in the BDD must be created with this functions.
@@ -774,10 +892,11 @@ class Bdd {
   /// @param[in] ite_two  Second argument function graph.
   /// @param[in] complement_one  Interpretation of arg_one as complement.
   /// @param[in] complement_two  Interpretation of arg_two as complement.
-  /// @param[out] result  The BDD function as a result of operation.
+  ///
+  /// @returns The BDD function as a result of operation.
   template <Operator Type>
-  void Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
-             bool complement_two, Function* result) noexcept;
+  Function Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
+                 bool complement_two) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   /// This is a convenience function
@@ -797,24 +916,6 @@ class Bdd {
   Function Apply(Operator type,
                  const VertexPtr& arg_one, const VertexPtr& arg_two,
                  bool complement_one, bool complement_two) noexcept;
-
-  /// Applies Boolean operation to BDD graph non-terminal vertices.
-  ///
-  /// @tparam Type  The operator enum.
-  ///
-  /// @param[in] arg_one  First argument if-then-else vertex.
-  /// @param[in] arg_two  Second argument if-then-else vertex.
-  /// @param[in] complement_one  Interpretation of arg_one as complement.
-  /// @param[in] complement_two  Interpretation of arg_two as complement.
-  ///
-  /// @returns High and Low BDD functions as a result of operation.
-  ///
-  /// @pre Argument if-then-else vertices must be ordered.
-  template <Operator Type>
-  std::pair<Function, Function> Apply(const ItePtr& arg_one,
-                                      const ItePtr& arg_two,
-                                      bool complement_one,
-                                      bool complement_two) noexcept;
 
   /// Calculates consensus of high and low of an if-then-else BDD vertex.
   ///

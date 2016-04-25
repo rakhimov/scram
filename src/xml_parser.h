@@ -24,6 +24,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>

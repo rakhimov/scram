@@ -66,6 +66,7 @@ class Initializer {
   ///
   /// @param[in] xml_files  The formatted XML input files.
   ///
+  /// @throws DuplicateArgumentError  Input contains duplicate files.
   /// @throws ValidationError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
@@ -96,6 +97,22 @@ class Initializer {
   template <class T, int N>
   struct Extractor;
 
+  /// Checks if all input files exist on the system.
+  ///
+  /// @param[in] xml_files  The XML input files.
+  ///
+  /// @throws IOError  Some files are missing.
+  void CheckFileExistence(const std::vector<std::string>& xml_files);
+
+  /// Checks if there are duplicate input files.
+  ///
+  /// @param[in] xml_files  The XML input files.
+  ///
+  /// @pre All input files exist on the system.
+  ///
+  /// @throws DuplicateArgumentError  There are duplicate input files.
+  void CheckDuplicateFiles(const std::vector<std::string>& xml_files);
+
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
@@ -104,6 +121,8 @@ class Initializer {
   /// because of possible undefined dependencies of those elements.
   ///
   /// @param[in] xml_file  The formatted XML input file.
+  ///
+  /// @pre The input file has not been passed before.
   ///
   /// @throws ValidationError  The input contains errors.
   /// @throws IOError  The input file is not accessible.
