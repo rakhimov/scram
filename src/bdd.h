@@ -640,9 +640,7 @@ class CacheTable {
   /// @param[in] n  The number of expected entries.
   void reserve(int n) {
     if (n <= size_) return;
-    int new_capacity = n / max_load_factor_ + 1;
-    if (new_capacity % 2) new_capacity += 1;
-    CacheTable::Rehash(new_capacity);
+    CacheTable::Rehash(GetPrimeNumber(n / max_load_factor_ + 1));
   }
 
   /// Searches for existing entry.
