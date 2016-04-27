@@ -5,14 +5,15 @@ set(GENERATED_TEST_LIST "" CACHE INTERNAL "")
 set(GENERATED_FILTER_LIST "" CACHE INTERNAL "")
 set(GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "")
 
-# The gtest include file directories.
-set(GTEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/include")
+# Exclude Debug warnings from the framework.
+set(CURRENT_DEBUG_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/googletest")
 
-# Alerts CMake to any tests
-# we need to worry about.
-include_directories(${GTEST_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS_DEBUG "${CURRENT_DEBUG_FLAGS}")  # Restore the original flags.
+
+include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/googletest/include")
 
 # To add a new file,
 # just add it to this list.

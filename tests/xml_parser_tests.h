@@ -30,13 +30,13 @@ namespace test {
 
 class XmlParserTests : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     inner_node_ = "inside";
     outer_node_ = "outside";
     inner_content_ = "inside_content";
   }
 
-  virtual void TearDown() {}
+  void TearDown() override {}
 
   /// Fills stream with XML text.
   ///

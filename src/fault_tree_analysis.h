@@ -264,7 +264,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   using FaultTreeAnalysis::FaultTreeAnalysis;
 
   /// Runs fault tree analysis with the given algorithm.
-  void Analyze() noexcept;
+  void Analyze() noexcept override;
 
   /// @returns Pointer to the analysis algorithm.
   const Algorithm* algorithm() const { return algorithm_.get(); }

@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.12)
-
 set(BUILD_SHARED_LIBS FALSE)  # GUI code should never be used by the core.
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

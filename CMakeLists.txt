@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # In-source build prevention.
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -7,7 +7,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(STATUS "CMakeCache.txt")
   message(STATUS "CMakeFiles")
   message(STATUS "Once these files are removed, create a separate directory")
-  message(STATUS "and run CMake from there")
+  message(STATUS "and run CMake from there.")
   message(FATAL_ERROR "in-source build detected")
 endif()
 
@@ -29,7 +29,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.3)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wsuggest-override")
+  endif()
+
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 endif()
@@ -173,12 +178,14 @@ endif()
 
 ########################## Begin includes ###############################
 
-# Include all the directories we just found.
+# Include all the discovered system directories.
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
 include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
 include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
+
+# Include project directories.
 include_directories("${SCRAM_SOURCE_DIR}")
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")

@@ -33,12 +33,12 @@ namespace test {
 
 class PerformanceTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     settings.algorithm("mocus");
     delta = 0.10;  // % variation of values.
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     delete ran;
   }
 

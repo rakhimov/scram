@@ -403,7 +403,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 
   /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  int min_time() const { return min_time_; }
+  int min_time() const override { return min_time_; }
 
   /// Sets the queried minimum visit time of the sub-graph.
   ///
@@ -415,7 +415,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 
   /// @returns The maximum time of the visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  int max_time() const { return max_time_; }
+  int max_time() const override { return max_time_; }
 
   /// Sets the queried maximum visit time of the sub-graph.
   ///

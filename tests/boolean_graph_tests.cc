@@ -45,7 +45,7 @@ static_assert(kNumOperators == 8, "New gate types are not considered!");
 
 class IGateTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     var_one = std::make_shared<Variable>();
     var_two = std::make_shared<Variable>();
     var_three = std::make_shared<Variable>();
@@ -53,7 +53,7 @@ class IGateTest : public ::testing::Test {
     for (int i = 0; i < 2; ++i) vars_.emplace_back(new Variable());  // Extra.
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     Node::ResetIndex();
     Variable::ResetIndex();
   }

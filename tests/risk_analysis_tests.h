@@ -38,7 +38,7 @@ namespace test {
 
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     if (HasParam()) {
       std::string param = GetParam();
       if (param == "pi") {
@@ -50,7 +50,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     }
   }
 
-  virtual void TearDown() {}
+  void TearDown() override {}
 
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files) {
