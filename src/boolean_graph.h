@@ -1114,14 +1114,6 @@ class BooleanGraph {
 };
 
 /// Prints Boolean graph nodes in the shorthand format.
-///
-/// @param[in,out] os  Output stream.
-/// @param[in] node  The graph node.
-///
-/// @returns The provided output stream in its original state.
-///
-/// @warning Visit information may get changed.
-///
 /// @{
 std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant);
 std::ostream& operator<<(std::ostream& os, const VariablePtr& variable);

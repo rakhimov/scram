@@ -67,7 +67,7 @@ double CalculateProbability(const Product& product);
 
 /// Helper function to determine order of a Boolean product.
 ///
-/// @param[in] Product  A set of literals.
+/// @param[in] product  A set of literals.
 ///
 /// @returns The order of the product.
 ///
