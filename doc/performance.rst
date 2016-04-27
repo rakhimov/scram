@@ -32,11 +32,11 @@ specific to the subject.
 System Specs     Version
 ==============   ===================
 Processor         Core i7-2820QM
-OS                Ubuntu 14.04 64bit
-GCC version       4.8.4
-Boost version     1.55
-Libxml2           2.9.1
-TCMalloc          2.1
+OS                Ubuntu 16.04 64bit
+GCC version       5.3.1
+Boost version     1.58
+Libxml2           2.9.3
+TCMalloc          2.4
 ==============   ===================
 
 .. note:: If the current performance is not listed, then the best is the current.
@@ -66,23 +66,23 @@ Fault Tree Analysis (MOCUS)
 Baobab1 -l 7 (mcs = 17432)
 --------------------------
 
-Debug build:  1.8
+Debug build:  1.8  |  2.0
 
 Release build:  0.25
 
-- # of ZBDD nodes created: 34966
-- # of SetNodes in ZBDD: 3377
+- # of ZBDD nodes created: 34966  |  36909
+- # of SetNodes in ZBDD: 2073
 
 
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  1.9
+Debug build:  1.9  |  2.4
 
 Release build: 0.30
 
-- # of ZBDD nodes created: 34862  |  35624
-- # of SetNodes in ZBDD: 3333
+- # of ZBDD nodes created: 34862  |  35240
+- # of SetNodes in ZBDD: 3333  |  4207
 
 - Memory:   23
 
@@ -92,8 +92,8 @@ Release build: 0.30
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 1593  |  1597
-- # of SetNodes in ZBDD: 160
+- # of ZBDD nodes created: 1593  |  1843
+- # of SetNodes in ZBDD: 160  |  168
 
 - Memory:   15
 
@@ -104,14 +104,14 @@ Fault Tree Analysis (ZBDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  1.4
+Debug build:  1.4  |  2.3
 
-Release build:  0.30
+Release build:  0.30  |  0.46
 
-- # of ZBDD nodes created: 79264  |  88693
-- # of SetNodes in ZBDD: 3333
+- # of ZBDD nodes created: 79264  |  138128
+- # of SetNodes in ZBDD: 3333  |  4207
 
-- Memory:   48
+- Memory:   48  |  64
 
 - Cache-misses:  28 %
 
@@ -119,8 +119,8 @@ Release build:  0.30
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 33297  |  57376
-- # of SetNodes in ZBDD: 160
+- # of ZBDD nodes created: 33297  |  54944
+- # of SetNodes in ZBDD: 160  |  168
 
 
 CEA9601 -l 3 (mcs = 1144)
@@ -129,10 +129,10 @@ CEA9601 -l 3 (mcs = 1144)
 Release build:
 ~~~~~~~~~~~~~~
 
-- ZBDD Time: 1.4
+- ZBDD Time: 1.4  |  1.55
 
-- # of ZBDD nodes created: 170713
-- # of SetNodes in ZBDD: 75  |  76
+- # of ZBDD nodes created: 170713  |  173565
+- # of SetNodes in ZBDD: 75  |  79
 
 - Memory:   100
 
@@ -143,10 +143,10 @@ Fault Tree Analysis (BDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-- # of BDD vertices created: 8289  |  8490
-- # of ITE in BDD: 3349
-- # of ZBDD nodes created: 18099
-- # of SetNodes in ZBDD: 3338
+- # of BDD vertices created: 8289  |  13501
+- # of ITE in BDD: 3349  |  4266
+- # of ZBDD nodes created: 18099  |  19481
+- # of SetNodes in ZBDD: 3338  |  3836
 
 - Memory:   23
 
@@ -168,8 +168,8 @@ Release build:
 - BDD Time: 2.0
 - ZBDD Time: 0.20
 
-- # of BDD vertices created: 2884142
-- # of ITE in BDD: 1123370
+- # of BDD vertices created: 2884142  |  2887410
+- # of ITE in BDD: 1123292
 
 - Memory:   290
 
@@ -184,14 +184,14 @@ Release build:
 
 - ZBDD Time: 2.0
 
-- Reporting (/dev/null): 5.2
+- Reporting (/dev/null): 4.2
 
-- # of ZBDD vertices created: 42990
-- # of Nodes in ZBDD: 10791
-- ZBDD Cut set extraction time: 1.5
-- ZBDD Cut set extraction memory: 200
+- # of ZBDD vertices created: 42919
+- # of Nodes in ZBDD: 10790
+- ZBDD Cut set extraction memory: 100
+- Cut set indices to pointers memory: 200
 
-- Memory:   480
+- Memory: 600
 
 - Cache-misses:  34 %
 
@@ -204,13 +204,15 @@ Release build:
 
 - ZBDD Time: 11
 
-- Reporting (/dev/null): 35
+- Reporting (/dev/null): 27
 
-- # of ZBDD vertices created: 219353
-- # of Nodes in ZBDD: 21707
-- ZBDD Cut set extraction time: 9.0
+- # of ZBDD vertices created: 218856
+- # of Nodes in ZBDD: 21706
+- ZBDD Cut set extraction memory: 800
+- Cut set indices to pointers memory: 1500
+- Cut set indices to pointers time: 2.4
 
-- Memory:   2048
+- Memory:   2340
 
 
 Uncertainty Analysis
@@ -240,9 +242,9 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    21  | 24
+- Initialization and Validation    20
 
-- Memory:   1130
+- Memory:   1100
 
 
 Fault Tree Generator Script

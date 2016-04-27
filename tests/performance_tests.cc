@@ -28,10 +28,10 @@
 // from a computer with the following specs:
 //
 //   Proc         Core i7-2820QM
-//   Ubuntu       14.04 64bit
-//   GCC          4.8.4
-//   Boost        1.55
-//   TCMalloc     2.1
+//   Ubuntu       16.04 64bit
+//   GCC          5.3.1
+//   Boost        1.58
+//   TCMalloc     2.4
 //
 // The performance measurements are expected to have some random variation.
 // Better as well as worse performance are reported
