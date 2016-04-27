@@ -25,14 +25,17 @@ if(NOT COMPILER_SUPPORTS_CXX11)
   message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")  # Libxml++ autoptr.
 
 set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-register -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
+    "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
+endif()
+
+if(WIN32)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-error")
 endif()
 
 ######################## End compiler configurations ####################
@@ -171,11 +174,11 @@ endif()
 ########################## Begin includes ###############################
 
 # Include all the directories we just found.
-include_directories("${Boost_INCLUDE_DIR}")
-include_directories("${LIBXML2_INCLUDE_DIR}")
-include_directories("${LibXML++_INCLUDE_DIR}")
-include_directories("${LibXML++Config_INCLUDE_DIR}")
-include_directories(${Glibmm_INCLUDE_DIRS})
+include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
+include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
+include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
+include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
+include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
 include_directories("${SCRAM_SOURCE_DIR}")
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")
