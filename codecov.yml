@@ -1,0 +1,8 @@
+comment:
+    layout: header, changes, diff
+
+coverage:
+    ignore:
+        - tests/*
+        - src/*
+        - scripts/test_*
