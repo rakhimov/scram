@@ -139,6 +139,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
 
   std::vector<std::string> incorrect_inputs = {
       "int_overflow.xml",
+      "invalid_probability.xml",
       "doubly_defined_gate.xml",
       "doubly_defined_house.xml",
       "doubly_defined_basic.xml",
@@ -176,6 +177,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "phi_ccf_wrong_sum.xml",
       "ccf_negative_factor.xml",
       "ccf_more_factors_than_needed.xml",
+      "ccf_wrong_distribution.xml",
       "repeated_ccf_members.xml"};
 
   for (const auto& input : incorrect_inputs) {
@@ -186,13 +188,11 @@ TEST(InitializerTest, IncorrectFtaInputs) {
   }
 }
 
+// Test failures triggered only in with probability analysis.
 TEST(InitializerTest, IncorrectProbabilityInputs) {
   std::string dir = "./share/scram/input/fta/";
-  std::vector<std::string> incorrect_inputs = {
-      "invalid_probability.xml",
-      "missing_bool_constant.xml",
-      "missing_expression.xml",
-      "ccf_wrong_distribution.xml"};
+  std::vector<std::string> incorrect_inputs = {"missing_bool_constant.xml",
+                                               "missing_expression.xml"};
 
   Settings settings;
   settings.probability_analysis(true);

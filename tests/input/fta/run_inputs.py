@@ -66,6 +66,7 @@ BAD_INPUTS = [
     "../unsupported_expression.xml",
     "nonexistent_file.xml",
     "int_overflow.xml",
+    "invalid_probability.xml",
     "doubly_defined_gate.xml",
     "doubly_defined_house.xml",
     "doubly_defined_basic.xml",
@@ -102,15 +103,14 @@ BAD_INPUTS = [
     "phi_ccf_wrong_sum.xml",
     "ccf_negative_factor.xml",
     "ccf_more_factors_than_needed.xml",
+    "ccf_wrong_distribution.xml",
     "repeated_ccf_members.xml",
     ]
 
 # Incorrect input files with probability calculations
 BAD_PROBS = [
-    "invalid_probability.xml",
     "missing_bool_constant.xml",
     "missing_expression.xml",
-    "ccf_wrong_distribution.xml"
     ]
 
 BAD_CONFIG = ["int_overflow_config.xml"]

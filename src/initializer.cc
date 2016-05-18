@@ -842,7 +842,6 @@ void Initializer::ValidateInitialization() {
       throw ValidationError(msg);
     }
   }
-  std::stringstream error_messages;
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -854,14 +853,11 @@ void Initializer::ValidateInitialization() {
          model_->house_events()) {
       if (!event.second->has_expression()) msg += event.second->name() + "\n";
     }
-    if (!msg.empty()) {
-      error_messages << "\nThese primary events do not have expressions:\n"
-                     << msg;
-    }
-  }
 
-  if (!error_messages.str().empty())
-    throw ValidationError(error_messages.str());
+    if (!msg.empty())
+      throw ValidationError("These primary events do not have expressions:\n" +
+                            msg);
+  }
 
   Initializer::ValidateExpressions();
 
@@ -891,29 +887,34 @@ void Initializer::ValidateExpressions() {
     throw ValidationError(err.msg());
   }
 
+  // Check distribution values for CCF groups.
+  std::stringstream msg;
+  for (const std::pair<const std::string, CcfGroupPtr>& group :
+        model_->ccf_groups()) {
+    try {
+      group.second->ValidateDistribution();
+    } catch (ValidationError& err) {
+      msg << group.second->name() << " : " << err.msg() << "\n";
+    }
+  }
+  if (!msg.str().empty()) {
+    std::string head = "Invalid distributions for CCF groups detected:\n";
+    throw ValidationError(head + msg.str());
+  }
+
   // Check probability values for primary events.
-  if (settings_.probability_analysis()) {
-    std::stringstream msg;
-    for (const std::pair<const std::string, CcfGroupPtr>& group :
-         model_->ccf_groups()) {
-      try {
-        group.second->ValidateDistribution();
-      } catch (ValidationError& err) {
-        msg << group.second->name() << " : " << err.msg() << "\n";
-      }
+  for (const std::pair<const std::string, BasicEventPtr>& event :
+        model_->basic_events()) {
+    if (event.second->has_expression() == false) continue;
+    try {
+      event.second->Validate();
+    } catch (ValidationError& err) {
+      msg << event.second->name() << " : " << err.msg() << "\n";
     }
-    for (const std::pair<const std::string, BasicEventPtr>& event :
-         model_->basic_events()) {
-      try {
-        event.second->Validate();
-      } catch (ValidationError& err) {
-        msg << event.second->name() << " : " << err.msg() << "\n";
-      }
-    }
-    if (!msg.str().empty()) {
-      std::string head = "Invalid probabilities detected:\n";
-      throw ValidationError(head + msg.str());
-    }
+  }
+  if (!msg.str().empty()) {
+    std::string head = "Invalid basic event probabilities detected:\n";
+    throw ValidationError(head + msg.str());
   }
 }
 
