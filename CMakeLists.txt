@@ -174,9 +174,6 @@ include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
 include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
 
-# Include project directories.
-include_directories("${SCRAM_SOURCE_DIR}")
-
 add_subdirectory("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
 add_subdirectory("${SCRAM_TEST_DIR}")

@@ -15,6 +15,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CURRENT_DEBUG_FLAGS}")  # Restore the original flag
 
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/googletest/include")
 
+# Include the project headers.
+include_directories("${SCRAM_SOURCE_DIR}")
+
 # To add a new file,
 # just add it to this list.
 # Any GoogleTests inside will be automatically added to ctest.

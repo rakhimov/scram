@@ -26,10 +26,10 @@
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 
-#include "config.h"
-#include "error.h"
-#include "initializer.h"
-#include "settings.h"
+#include "src/config.h"
+#include "src/error.h"
+#include "src/initializer.h"
+#include "src/settings.h"
 
 namespace po = boost::program_options;
 

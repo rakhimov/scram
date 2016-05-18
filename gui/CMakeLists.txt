@@ -2,6 +2,8 @@ set(BUILD_SHARED_LIBS FALSE)  # GUI code should never be used by the core.
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+include_directories("${PROJECT_SOURCE_DIR}")  # Include core headers via "src".
+
 set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
 set(SCRAM_GUI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp")
 set(SCRAM_GUI_HDR "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.h")
