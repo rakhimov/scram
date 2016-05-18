@@ -89,9 +89,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Tell CMake where the modules are.
-if(CMAKE_DIR)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_DIR}/share/cmake-2.8/Modules")
-endif()
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Set configuration for all library builds.
@@ -163,15 +160,17 @@ message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
-# Find the QtWidgets library.
-if(APPLE)
-  # Qt5 with Homebrew.
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
-endif()
-find_package(Qt5Widgets)
-if(Qt5Widgets_FOUND)
-  message(STATUS "Found Qt5")
-  message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+if(NOT NGUI)
+  # Find the QtWidgets library.
+  if(APPLE)
+    # Qt5 with Homebrew.
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
+  endif()
+  find_package(Qt5Widgets REQUIRED)
+  if(Qt5Widgets_FOUND)
+    message(STATUS "Found Qt5")
+    message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+  endif()
 endif()
 
 ########################## End of find libraries ########################
@@ -193,7 +192,7 @@ add_subdirectory("${SCRAM_SHARE_DIR}")
 add_subdirectory("${SCRAM_TEST_DIR}")
 add_subdirectory("${SCRAM_INPUT_DIR}")
 
-if(Qt5Widgets_FOUND)
+if(NOT NGUI)
   add_subdirectory("${SCRAM_GUI_DIR}")
 endif()
 
