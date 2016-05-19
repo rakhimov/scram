@@ -91,16 +91,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # Tell CMake where the modules are.
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# Set configuration for all library builds.
-if(WIN32)
-  set(suffix ".dll")
-elseif(APPLE)
-  set(CMAKE_SHARED_LINKER_FLAGS "-undefined dynamic_lookup")
-  set(suffix ".dylib")
-else()
-  set(suffix ".so")
-endif()
-
 ######################## End cmake configuration ###################
 
 ######################## Begin find libraries ######################
