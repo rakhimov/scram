@@ -21,7 +21,7 @@ add_library(scramgui
   ${SCRAM_GUI_LIB_RES}
   )
 
-qt5_use_modules(scramgui Core Gui Widgets)
+target_link_libraries(scramgui Qt5::Core Qt5::Gui Qt5::Widgets)
 
 target_link_libraries(scramgui scramcore ${LIBS})
 
