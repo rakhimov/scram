@@ -57,9 +57,10 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
             ("probability", po::value<bool>(), "Use probability information");
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
-    } catch (std::exception& err) {
+    } catch (std::exception &err) {
         std::cerr << "Option error: " << err.what() << "\n\n"
-                  << usage << "\n\n" << desc << "\n";
+                  << usage << "\n\n"
+                  << desc << "\n";
         return 1;
     }
 
@@ -74,15 +75,15 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 
     // Process command-line arguments.
     if (vm->count("help")) {
-      std::cout << usage << "\n\n" << desc << "\n";
-      return -1;
+        std::cout << usage << "\n\n" << desc << "\n";
+        return -1;
     }
 
     if (!vm->count("input-files") && !vm->count("config-file")) {
-      std::string msg = "No input or configuration file is given.\n";
-      std::cerr << msg << std::endl;
-      std::cerr << usage << "\n\n" << desc << "\n";
-      return 1;
+        std::string msg = "No input or configuration file is given.\n";
+        std::cerr << msg << std::endl;
+        std::cerr << usage << "\n\n" << desc << "\n";
+        return 1;
     }
     return 0;
 }
@@ -99,15 +100,15 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
  * @throws boost::exception  Boost errors.
  * @throws std::exception  All other problems.
  */
-int acceptCmdLine(const po::variables_map& vm)
+int acceptCmdLine(const po::variables_map &vm)
 {
     scram::Settings settings;
     std::vector<std::string> inputFiles;
     // Get configurations if any.
     // Invalid configurations will throw.
     if (vm.count("config-file")) {
-        std::unique_ptr<scram::Config>
-                config(new scram::Config(vm["config-file"].as<std::string>()));
+        std::unique_ptr<scram::Config> config(
+            new scram::Config(vm["config-file"].as<std::string>()));
         settings = config->settings();
         inputFiles = config->input_files();
     }
@@ -116,8 +117,8 @@ int acceptCmdLine(const po::variables_map& vm)
         settings.probability_analysis(vm["probability"].as<bool>());
     // Add input files from the command-line.
     if (vm.count("input-files")) {
-        std::vector<std::string> cmdInput =
-                vm["input-files"].as< std::vector<std::string> >();
+        std::vector<std::string> cmdInput
+            = vm["input-files"].as<std::vector<std::string>>();
         inputFiles.insert(inputFiles.end(), cmdInput.begin(), cmdInput.end());
     }
     // Process input files
@@ -135,18 +136,20 @@ int main(int argc, char *argv[])
         try {
             po::variables_map vm;
             int ret = parseArguments(argc, argv, &vm);
-            if (ret == 1) return 1;
-            if (ret == -1) return 0;
+            if (ret == 1)
+                return 1;
+            if (ret == -1)
+                return 0;
             acceptCmdLine(vm);
-        } catch (scram::Error& scramErr) {
+        } catch (scram::Error &scramErr) {
             std::cerr << "SCRAM Error\n" << std::endl;
             std::cerr << scramErr.what() << std::endl;
             return 1;
-        } catch (boost::exception& boostErr) {
+        } catch (boost::exception &boostErr) {
             std::cerr << "Boost Exception:\n" << std::endl;
             std::cerr << boost::diagnostic_information(boostErr) << std::endl;
             return 1;
-        } catch (std::exception& stdErr) {
+        } catch (std::exception &stdErr) {
             std::cerr << "Standard Exception:\n" << std::endl;
             std::cerr << stdErr.what() << std::endl;
             return 1;

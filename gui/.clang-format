@@ -1,0 +1,8 @@
+BasedOnStyle: llvm
+AccessModifierOffset: -4
+BreakBeforeBinaryOperators: true
+ColumnLimit: 80
+Standard: Cpp11
+IndentWidth: 4
+BreakBeforeBraces: Linux
+ExperimentalAutoDetectBinPacking: true

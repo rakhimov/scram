@@ -1,0 +1,4 @@
+# Default configuration for most C++ code
+Language:        Cpp
+BasedOnStyle:  Google
+ExperimentalAutoDetectBinPacking: true
