@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 class TestElement : public Element {};
@@ -48,4 +49,5 @@ TEST(ElementTest, Attribute) {
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

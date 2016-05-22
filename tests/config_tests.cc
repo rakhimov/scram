@@ -56,7 +56,7 @@ TEST(ConfigTest, FullSettings) {
   // Check the output destination.
   EXPECT_EQ("temp_results.xml", config->output_path());
 
-  const Settings& settings = config->settings();
+  const core::Settings& settings = config->settings();
   EXPECT_EQ("bdd", settings.algorithm());
   EXPECT_FALSE(settings.prime_implicants());
   EXPECT_EQ(true, settings.probability_analysis());
@@ -84,7 +84,7 @@ TEST(ConfigTest, PrimeImplicantsSettings) {
   // Check the output destination.
   EXPECT_EQ("temp_results.xml", config->output_path());
 
-  const Settings& settings = config->settings();
+  const core::Settings& settings = config->settings();
   EXPECT_EQ("bdd", settings.algorithm());
   EXPECT_TRUE(settings.prime_implicants());
 }

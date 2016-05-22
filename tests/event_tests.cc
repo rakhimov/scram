@@ -23,6 +23,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 // Test for Event base class.
@@ -237,4 +238,5 @@ TEST(PrimaryEventTest, HouseProbability) {
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

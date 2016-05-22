@@ -23,6 +23,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 
 void Element::label(const std::string& new_label) {
   if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
@@ -51,4 +52,5 @@ Role::Role(bool is_public, const std::string& base_path)
     : is_public_(is_public),
       base_path_(base_path) {}
 
+}  // namespace mef
 }  // namespace scram

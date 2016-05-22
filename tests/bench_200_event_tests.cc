@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for auto-generated 200 event fault tree.
@@ -37,4 +38,5 @@ TEST_P(RiskAnalysisTest, 200Event) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

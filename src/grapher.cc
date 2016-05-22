@@ -43,7 +43,7 @@ const std::map<std::string, std::string> Grapher::kEventColors_ = {
     {"house", "green"},
     {"conditional", "red"}};
 
-void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
+void Grapher::GraphFaultTree(const mef::GatePtr& top_event, bool prob_requested,
                              std::ostream& out) {
   // The structure of the output:
   // List gates with their children.
@@ -52,26 +52,25 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
 
   out << "digraph " << top_event->name() << " {\n";
 
-  FaultTreeDescriptor* fta = new FaultTreeDescriptor(top_event);
+  auto* fta = new core::FaultTreeDescriptor(top_event);
 
   // Keep track of nested formulas for future special formatting.
-  std::vector<std::pair<std::string, const Formula*> > formulas;
+  std::vector<std::pair<std::string, const mef::Formula*> > formulas;
 
   // Keep track of number of repetitions of nodes.
   // These repetitions are needed so that
   // the graph links to separate nodes with the same display name.
-  std::unordered_map<EventPtr, int> node_repeat;
+  std::unordered_map<mef::EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.
   Grapher::GraphFormula(fta->top_event()->id() + "_R0",
                         fta->top_event()->formula(),
                         &formulas, &node_repeat, out);
   // Do the same for all intermediate events.
-  std::unordered_map<std::string, GatePtr>::const_iterator it_inter;
-  for (it_inter = fta->inter_events().begin();
+  for (auto it_inter = fta->inter_events().begin();
        it_inter != fta->inter_events().end(); ++it_inter) {
     std::string name = it_inter->second->id() + "_R0";
-    const FormulaPtr& formula = it_inter->second->formula();
+    const mef::FormulaPtr& formula = it_inter->second->formula();
     Grapher::GraphFormula(name, formula, &formulas, &node_repeat, out);
   }
 
@@ -90,13 +89,13 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
 
 void Grapher::GraphFormula(
     const std::string& formula_name,
-    const FormulaPtr& formula,
-    std::vector<std::pair<std::string, const Formula*> >* formulas,
-    std::unordered_map<EventPtr, int>* node_repeat,
+    const mef::FormulaPtr& formula,
+    std::vector<std::pair<std::string, const mef::Formula*> >* formulas,
+    std::unordered_map<mef::EventPtr, int>* node_repeat,
     std::ostream& out) {
   // Populate intermediate and primary events of the input gate.
-  const std::map<std::string, EventPtr>* events = &formula->event_args();
-  std::map<std::string, EventPtr>::const_iterator it_child;
+  const std::map<std::string, mef::EventPtr>* events = &formula->event_args();
+  std::map<std::string, mef::EventPtr>::const_iterator it_child;
   for (it_child = events->begin(); it_child != events->end(); ++it_child) {
     if (node_repeat->count(it_child->second)) {
       node_repeat->find(it_child->second)->second++;
@@ -109,7 +108,7 @@ void Grapher::GraphFormula(
   }
   // Deal with formulas.
   int i = 1;  // Count formulas for unique naming.
-  for (const FormulaPtr& arg : formula->formula_args()) {
+  for (const mef::FormulaPtr& arg : formula->formula_args()) {
     std::stringstream unique_name;
     unique_name << formula_name << "._F" << i;  // Unique name.
     ++i;
@@ -120,7 +119,7 @@ void Grapher::GraphFormula(
   }
 }
 
-void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
+void Grapher::FormatTopEvent(const mef::GatePtr& top_event, std::ostream& out) {
   std::string gate = top_event->formula()->type();
   if (gate == "atleast") gate = "vote";
   // Special case for inhibit gate.
@@ -145,10 +144,10 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
 }
 
 void Grapher::FormatIntermediateEvents(
-    const std::unordered_map<std::string, GatePtr>& inter_events,
-    const std::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, mef::GatePtr>& inter_events,
+    const std::unordered_map<mef::EventPtr, int>& node_repeat,
     std::ostream& out) {
-  std::unordered_map<std::string, GatePtr>::const_iterator it;
+  std::unordered_map<std::string, mef::GatePtr>::const_iterator it;
   for (it = inter_events.begin(); it != inter_events.end(); ++it) {
     std::string gate = it->second->formula()->type();
     if (gate == "atleast") gate = "vote";
@@ -183,11 +182,11 @@ void Grapher::FormatIntermediateEvents(
 }
 
 void Grapher::FormatBasicEvents(
-    const std::unordered_map<std::string, BasicEventPtr>& basic_events,
-    const std::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, mef::BasicEventPtr>& basic_events,
+    const std::unordered_map<mef::EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
-  std::unordered_map<std::string, BasicEventPtr>::const_iterator it;
+  std::unordered_map<std::string, mef::BasicEventPtr>::const_iterator it;
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     std::string prob_msg;
     if (prob_requested) {
@@ -207,11 +206,11 @@ void Grapher::FormatBasicEvents(
 }
 
 void Grapher::FormatHouseEvents(
-    const std::unordered_map<std::string, HouseEventPtr>& house_events,
-    const std::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, mef::HouseEventPtr>& house_events,
+    const std::unordered_map<mef::EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
-  std::unordered_map<std::string, HouseEventPtr>::const_iterator it;
+  std::unordered_map<std::string, mef::HouseEventPtr>::const_iterator it;
   for (it = house_events.begin(); it != house_events.end(); ++it) {
     std::string prob_msg;
     if (prob_requested) {
@@ -223,7 +222,7 @@ void Grapher::FormatHouseEvents(
   }
 }
 
-void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
+void Grapher::FormatPrimaryEvent(const mef::PrimaryEventPtr& primary_event,
                                  int repetition,
                                  const std::string& type,
                                  const std::string& prob_msg,
@@ -241,7 +240,7 @@ void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
 }
 
 void Grapher::FormatFormulas(
-    const std::vector<std::pair<std::string, const Formula*> >& formulas,
+    const std::vector<std::pair<std::string, const mef::Formula*> >& formulas,
     std::ostream& out) {
   for (const auto& pair : formulas) {
     std::string gate = pair.second->type();

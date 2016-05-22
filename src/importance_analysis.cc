@@ -27,6 +27,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 ImportanceAnalysis::ImportanceAnalysis(const ProbabilityAnalysis* prob_analysis)
     : Analysis(prob_analysis->settings()) {}
@@ -34,7 +35,7 @@ ImportanceAnalysis::ImportanceAnalysis(const ProbabilityAnalysis* prob_analysis)
 void ImportanceAnalysis::Analyze() noexcept {
   CLOCK(imp_time);
   LOG(DEBUG3) << "Calculating importance factors...";
-  std::vector<std::pair<int, BasicEventPtr>> target_events =
+  std::vector<std::pair<int, mef::BasicEventPtr>> target_events =
       this->GatherImportantEvents();
   double p_total = this->p_total();
   for (const auto& event : target_events) {
@@ -52,11 +53,11 @@ void ImportanceAnalysis::Analyze() noexcept {
   Analysis::AddAnalysisTime(DUR(imp_time));
 }
 
-std::vector<std::pair<int, BasicEventPtr>>
+std::vector<std::pair<int, mef::BasicEventPtr>>
 ImportanceAnalysis::GatherImportantEvents(
     const BooleanGraph* graph,
     const std::vector<std::vector<int>>& products) noexcept {
-  std::vector<std::pair<int, BasicEventPtr>> important_events;
+  std::vector<std::pair<int, mef::BasicEventPtr>> important_events;
   std::unordered_set<int> unique_indices;
   for (const auto& product : products) {
     for (int index : product) {
@@ -136,4 +137,5 @@ double ImportanceAnalyzer<Bdd>::RetrieveProbability(
   return Ite::Ptr(vertex)->p();
 }
 
+}  // namespace core
 }  // namespace scram

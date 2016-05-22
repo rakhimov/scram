@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 TEST_F(RiskAnalysisTest, ProcessInput) {
@@ -37,21 +38,21 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, basic_events().count("ValveOne"));
   EXPECT_EQ(1, basic_events().count("ValveTwo"));
   if (gates().count("TopEvent")) {
-    GatePtr top = gates().at("TopEvent");
+    mef::GatePtr top = gates().at("TopEvent");
     EXPECT_EQ("TopEvent", top->id());
     ASSERT_NO_THROW(top->formula()->type());
     EXPECT_EQ("and", top->formula()->type());
     EXPECT_EQ(2, top->formula()->event_args().size());
   }
   if (gates().count("TrainOne")) {
-    GatePtr inter = gates().at("TrainOne");
+    mef::GatePtr inter = gates().at("TrainOne");
     EXPECT_EQ("TrainOne", inter->id());
     ASSERT_NO_THROW(inter->formula()->type());
     EXPECT_EQ("or", inter->formula()->type());
     EXPECT_EQ(2, inter->formula()->event_args().size());
   }
   if (basic_events().count("ValveOne")) {
-    BasicEventPtr primary = basic_events().at("ValveOne");
+    mef::BasicEventPtr primary = basic_events().at("ValveOne");
     EXPECT_EQ("ValveOne", primary->id());
   }
 }
@@ -379,4 +380,5 @@ TEST_P(RiskAnalysisTest, ConstantGates) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

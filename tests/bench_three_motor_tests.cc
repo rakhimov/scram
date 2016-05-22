@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
@@ -75,4 +76,5 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

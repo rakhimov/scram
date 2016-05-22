@@ -25,6 +25,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 #ifndef NDEBUG
 /// Runs assertions on ZBDD structure.
@@ -937,4 +938,5 @@ void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
 
 }  // namespace zbdd
 
+}  // namespace core
 }  // namespace scram

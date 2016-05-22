@@ -25,11 +25,12 @@
 #include "settings.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 // Test if the XML is well formed.
 TEST(InitializerTest, XMLFormatting) {
-  Initializer* init = new Initializer(Settings());
+  Initializer* init = new Initializer(core::Settings());
   EXPECT_THROW(
       init->ProcessInputFiles({"./share/scram/input/xml_formatting_error.xml"}),
       ValidationError);
@@ -39,7 +40,7 @@ TEST(InitializerTest, XMLFormatting) {
 // Test the response for non-existent file.
 TEST(InitializerTest, NonExistentFile) {
   // Access issues. IOErrors
-  Initializer* init = new Initializer(Settings());
+  Initializer* init = new Initializer(core::Settings());
   EXPECT_THROW(
       init->ProcessInputFiles({"./share/scram/input/nonexistent_file.xml"}),
       IOError);
@@ -51,7 +52,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
   std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
   std::string the_same_path = "./share/.."  // Path obfuscation.
                               "/share/scram/input/fta/correct_tree_input.xml";
-  Initializer* init = new Initializer(Settings());
+  Initializer* init = new Initializer(core::Settings());
   EXPECT_THROW(init->ProcessInputFiles({input_correct, the_same_path}),
                ValidationError);
   delete init;
@@ -61,7 +62,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
 // This is trusted to XML libraries and the correctness of the RelaxNG schema,
 // so the test is very basic calls.
 TEST(InitializerTest, FailSchemaValidation) {
-  Initializer* init = new Initializer(Settings());
+  Initializer* init = new Initializer(core::Settings());
   EXPECT_THROW(init->ProcessInputFiles({"./share/scram/input/schema_fail.xml"}),
                ValidationError);
   delete init;
@@ -75,7 +76,7 @@ TEST(InitializerTest, UnsupportedFeature) {
       "../unsupported_gate.xml",
       "../unsupported_expression.xml"};
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(Settings());
+    Initializer* init = new Initializer(core::Settings());
     EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
         << " Filename:  " << input;
     delete init;
@@ -106,7 +107,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "case_sensitivity.xml"};
 
   for (const auto& input : correct_inputs) {
-    Initializer* init = new Initializer(Settings());
+    Initializer* init = new Initializer(core::Settings());
     EXPECT_NO_THROW(init->ProcessInputFiles({dir + input}))
         << " Filename: " << input;
     delete init;
@@ -122,7 +123,7 @@ TEST(InitializerTest, CorrectProbabilityInputs) {
       "correct_expressions.xml",
       "flavored_types.xml"};
 
-  Settings settings;
+  core::Settings settings;
   settings.probability_analysis(true);
 
   for (const auto& input : correct_inputs) {
@@ -181,7 +182,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "repeated_ccf_members.xml"};
 
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(Settings());
+    Initializer* init = new Initializer(core::Settings());
     EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
         << " Filename:  " << input;
     delete init;
@@ -194,7 +195,7 @@ TEST(InitializerTest, IncorrectProbabilityInputs) {
   std::vector<std::string> incorrect_inputs = {"missing_bool_constant.xml",
                                                "missing_expression.xml"};
 
-  Settings settings;
+  core::Settings settings;
   settings.probability_analysis(true);
   for (const auto& input : incorrect_inputs) {
     Initializer* init = new Initializer(settings);
@@ -209,11 +210,12 @@ TEST(InitializerTest, IncorrectProbabilityInputs) {
 // can be a child of a gate of another fault tree.
 TEST(InitializerTest, NonOrphanTopEvent) {
   std::string dir = "./share/scram/input/fta/";
-  Initializer* init = new Initializer(Settings());
+  Initializer* init = new Initializer(core::Settings());
   EXPECT_NO_THROW(init->ProcessInputFiles({dir + "correct_tree_input.xml",
                                            dir + "second_fault_tree.xml"}));
   delete init;
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

@@ -27,6 +27,7 @@
 #include "ccf_group.h"
 
 namespace scram {
+namespace mef {
 
 Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
@@ -149,4 +150,5 @@ void Formula::GatherNodesAndConnectors() {
   gather_ = false;
 }
 
+}  // namespace mef
 }  // namespace scram

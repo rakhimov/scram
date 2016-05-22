@@ -27,6 +27,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
 
@@ -443,7 +444,7 @@ const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"nor", kNor},
     {"null", kNull}};
 
-BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
+BooleanGraph::BooleanGraph(const mef::GatePtr& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
       normal_(true) {
@@ -458,7 +459,7 @@ void BooleanGraph::Print() {
   std::cerr << "\n" << this << std::endl;
 }
 
-IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
+IGatePtr BooleanGraph::ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
                                       ProcessedNodes* nodes) noexcept {
   Operator type = kStringToType_.find(formula->type())->second;
   auto parent = std::make_shared<IGate>(type);
@@ -488,7 +489,7 @@ IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
 
   BooleanGraph::ProcessGates(parent, formula->gate_args(), ccf, nodes);
 
-  for (const FormulaPtr& sub_form : formula->formula_args()) {
+  for (const mef::FormulaPtr& sub_form : formula->formula_args()) {
     IGatePtr new_gate = BooleanGraph::ProcessFormula(sub_form, ccf, nodes);
     parent->AddArg(new_gate->index(), new_gate);
   }
@@ -497,7 +498,7 @@ IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
 
 void BooleanGraph::ProcessBasicEvents(
     const IGatePtr& parent,
-    const std::vector<BasicEventPtr>& basic_events,
+    const std::vector<mef::BasicEventPtr>& basic_events,
     bool ccf,
     ProcessedNodes* nodes) noexcept {
   for (const auto& basic_event : basic_events) {
@@ -506,9 +507,9 @@ void BooleanGraph::ProcessBasicEvents(
         IGatePtr ccf_gate = nodes->gates.find(basic_event->id())->second;
         parent->AddArg(ccf_gate->index(), ccf_gate);
       } else {
-        GatePtr ccf_gate = basic_event->ccf_gate();
         IGatePtr new_gate =
-            BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, nodes);
+            BooleanGraph::ProcessFormula(basic_event->ccf_gate()->formula(),
+                                         ccf, nodes);
         parent->AddArg(new_gate->index(), new_gate);
         nodes->gates.emplace(basic_event->id(), new_gate);
       }
@@ -529,7 +530,7 @@ void BooleanGraph::ProcessBasicEvents(
 
 void BooleanGraph::ProcessHouseEvents(
     const IGatePtr& parent,
-    const std::vector<HouseEventPtr>& house_events,
+    const std::vector<mef::HouseEventPtr>& house_events,
     ProcessedNodes* nodes) noexcept {
   for (const auto& house : house_events) {
     if (nodes->constants.count(house->id())) {
@@ -545,7 +546,7 @@ void BooleanGraph::ProcessHouseEvents(
 }
 
 void BooleanGraph::ProcessGates(const IGatePtr& parent,
-                                const std::vector<GatePtr>& gates,
+                                const std::vector<mef::GatePtr>& gates,
                                 bool ccf,
                                 ProcessedNodes* nodes) noexcept {
   for (const auto& gate : gates) {
@@ -885,4 +886,5 @@ std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
   return os;
 }
 
+}  // namespace core
 }  // namespace scram

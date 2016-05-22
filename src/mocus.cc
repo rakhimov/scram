@@ -30,6 +30,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     : constant_graph_(false),
@@ -110,4 +111,5 @@ Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   return container;
 }
 
+}  // namespace core
 }  // namespace scram

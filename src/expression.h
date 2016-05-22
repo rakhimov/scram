@@ -35,6 +35,7 @@
 #include "element.h"
 
 namespace scram {
+namespace mef {
 
 class Expression;
 using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
@@ -774,6 +775,7 @@ class Div : public Expression {
   double GetExtremum(bool maximum) noexcept;
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_EXPRESSION_H_

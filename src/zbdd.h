@@ -34,6 +34,7 @@
 #include "bdd.h"
 
 namespace scram {
+namespace core {
 
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
@@ -871,6 +872,7 @@ class CutSetContainer : public Zbdd {
 
 }  // namespace zbdd
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ZBDD_H_

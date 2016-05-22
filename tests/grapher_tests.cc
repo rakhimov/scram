@@ -23,6 +23,7 @@
 #include "grapher.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Test Graphing Intructions
@@ -75,4 +76,5 @@ TEST_F(RiskAnalysisTest, GraphingHouseNull) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

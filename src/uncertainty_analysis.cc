@@ -32,6 +32,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 UncertaintyAnalysis::UncertaintyAnalysis(
     const ProbabilityAnalysis* prob_analysis)
@@ -57,11 +58,11 @@ void UncertaintyAnalysis::Analyze() noexcept {
   Analysis::AddAnalysisTime(DUR(analysis_time));
 }
 
-std::vector<std::pair<int, BasicEvent*>>
+std::vector<std::pair<int, mef::BasicEvent*>>
 UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
-  std::vector<std::pair<int, BasicEvent*>> uncertain_events;
+  std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events;
   int index = 1;
-  for (const BasicEventPtr& event : graph->basic_events()) {
+  for (const mef::BasicEventPtr& event : graph->basic_events()) {
     if (!event->IsConstant()) uncertain_events.emplace_back(index, event.get());
     ++index;
   }
@@ -108,4 +109,5 @@ void UncertaintyAnalysis::CalculateStatistics(
   }
 }
 
+}  // namespace core
 }  // namespace scram

@@ -34,6 +34,7 @@
 #include "boolean_graph.h"
 
 namespace scram {
+namespace core {
 
 /// @class Preprocessor
 /// The class provides main preprocessing operations
@@ -1178,6 +1179,7 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
   void InvertOrder() noexcept;
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_PREPROCESSOR_H_

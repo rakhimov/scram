@@ -34,6 +34,7 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees
@@ -76,6 +77,7 @@ class Mocus {
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_MOCUS_H_

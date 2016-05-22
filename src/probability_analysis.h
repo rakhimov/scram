@@ -32,6 +32,7 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis class.
@@ -187,7 +188,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
   p_vars_.push_back(-1);  // Padding.
-  for (const BasicEventPtr& event : graph_->basic_events()) {
+  for (const mef::BasicEventPtr& event : graph_->basic_events()) {
     p_vars_.push_back(event->p());
   }
 }
@@ -257,7 +258,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @param[in] root  The root gate of the fault tree.
   ///
   /// @pre The function is called in the constructor only once.
-  void CreateBdd(const GatePtr& root) noexcept;
+  void CreateBdd(const mef::GatePtr& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
@@ -287,6 +288,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
   Analysis::AddAnalysisTime(DUR(main_time));
 }
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_PROBABILITY_ANALYSIS_H_

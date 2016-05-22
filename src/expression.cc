@@ -25,6 +25,7 @@
 #include "random.h"
 
 namespace scram {
+namespace mef {
 
 Expression::Expression(std::vector<ExpressionPtr> args)
     : args_(std::move(args)),
@@ -564,4 +565,5 @@ double Div::GetExtremum(bool maximum) noexcept {
   return min_value;
 }
 
+}  // namespace mef
 }  // namespace scram

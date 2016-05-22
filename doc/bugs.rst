@@ -20,7 +20,6 @@ Technical Issues
 - IGate in Boolean graph is confusing (There is Gate in event.h)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- Virtually everything is under one namespace.
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models
   (formulas, parameters, containers).

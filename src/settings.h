@@ -24,6 +24,7 @@
 #include <string>
 
 namespace scram {
+namespace core {
 
 /// @class Settings
 /// Builder for analysis settings.
@@ -254,6 +255,7 @@ class Settings {
   int num_bins_ = 20;  ///< The number of bins for histograms.
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif   // SCRAM_SRC_SETTINGS_H_

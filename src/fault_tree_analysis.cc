@@ -24,6 +24,7 @@
 #include <utility>
 
 namespace scram {
+namespace core {
 
 void Print(const std::vector<Product>& products) {
   if (products.empty()) {
@@ -74,44 +75,46 @@ int GetOrder(const Product& product) {
   return product.empty() ? 1 : product.size();
 }
 
-FaultTreeDescriptor::FaultTreeDescriptor(const GatePtr& root)
+FaultTreeDescriptor::FaultTreeDescriptor(const mef::GatePtr& root)
     : top_event_(root) {
   FaultTreeDescriptor::GatherEvents(top_event_);
   FaultTreeDescriptor::ClearMarks();
 }
 
-void FaultTreeDescriptor::GatherEvents(const GatePtr& gate) noexcept {
+void FaultTreeDescriptor::GatherEvents(const mef::GatePtr& gate) noexcept {
   if (gate->mark() == "visited") return;
   gate->mark("visited");
   FaultTreeDescriptor::GatherEvents(gate->formula());
 }
 
-void FaultTreeDescriptor::GatherEvents(const FormulaPtr& formula) noexcept {
-  for (const BasicEventPtr& basic_event : formula->basic_event_args()) {
+void FaultTreeDescriptor::GatherEvents(
+    const mef::FormulaPtr& formula) noexcept {
+  for (const mef::BasicEventPtr& basic_event : formula->basic_event_args()) {
     basic_events_.emplace(basic_event->id(), basic_event);
     if (basic_event->HasCcf())
       ccf_events_.emplace(basic_event->id(), basic_event);
   }
-  for (const HouseEventPtr& house_event : formula->house_event_args()) {
+  for (const mef::HouseEventPtr& house_event : formula->house_event_args()) {
     house_events_.emplace(house_event->id(), house_event);
   }
-  for (const GatePtr& gate : formula->gate_args()) {
+  for (const mef::GatePtr& gate : formula->gate_args()) {
     inter_events_.emplace(gate->id(), gate);
     FaultTreeDescriptor::GatherEvents(gate);
   }
-  for (const FormulaPtr& arg : formula->formula_args()) {
+  for (const mef::FormulaPtr& arg : formula->formula_args()) {
     FaultTreeDescriptor::GatherEvents(arg);
   }
 }
 
 void FaultTreeDescriptor::ClearMarks() noexcept {
   top_event_->mark("");
-  for (const std::pair<const std::string, GatePtr>& member : inter_events_) {
+  for (const std::pair<const std::string, mef::GatePtr>& member :
+       inter_events_) {
     member.second->mark("");
   }
 }
 
-FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
+FaultTreeAnalysis::FaultTreeAnalysis(const mef::GatePtr& root,
                                      const Settings& settings)
     : Analysis(settings),
       FaultTreeDescriptor(root) {}
@@ -132,7 +135,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     product.reserve(result_set.size());
     for (int index : result_set) {
       int abs_index = std::abs(index);
-      const BasicEventPtr& basic_event = graph->GetBasicEvent(abs_index);
+      const mef::BasicEventPtr& basic_event = graph->GetBasicEvent(abs_index);
       product.push_back({index < 0, basic_event});
       if (unique_events.count(abs_index)) continue;
       unique_events.insert(abs_index);
@@ -145,4 +148,5 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
 #endif
 }
 
+}  // namespace core
 }  // namespace scram

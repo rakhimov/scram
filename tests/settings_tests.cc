@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 TEST(SettingsTest, IncorrectSetup) {
@@ -106,4 +107,5 @@ TEST(SettingsTest, SetupForPrimeImplicants) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

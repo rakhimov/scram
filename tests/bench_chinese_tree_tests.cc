@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for Chinese fault tree from XFTA.
@@ -43,4 +44,5 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

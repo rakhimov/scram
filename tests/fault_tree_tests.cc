@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 TEST(FaultTreeTest, AddGate) {
@@ -80,4 +81,5 @@ TEST(FaultTreeTest, AddParameter) {
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

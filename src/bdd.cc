@@ -27,6 +27,7 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 
 int GetPrimeNumber(int n) {
   assert(n > 0 && "Only natural numbers.");
@@ -368,4 +369,5 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
   Bdd::TestStructure(ite->low());
 }
 
+}  // namespace core
 }  // namespace scram

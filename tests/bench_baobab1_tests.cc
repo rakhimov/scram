@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for Baobab 1 fault tree from XFTA.
@@ -59,4 +60,5 @@ TEST_P(RiskAnalysisTest, Baobab1L8) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

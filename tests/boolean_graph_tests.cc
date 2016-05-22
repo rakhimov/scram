@@ -25,11 +25,12 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 TEST(BooleanGraphTest, Print) {
   Settings settings;
-  Initializer* init = new Initializer(settings);
+  auto* init = new mef::Initializer(settings);
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/fta/correct_formulas.xml");
   EXPECT_NO_THROW(init->ProcessInputFiles(input_files));
@@ -382,4 +383,5 @@ TEST_CONSTANT_ARG(false, 2, Xor, Null)
 #undef TEST_CONSTANT_ARG
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

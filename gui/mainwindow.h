@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ namespace Ui {
 class MainWindow;
 }
 
+namespace scram {
+namespace gui {
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -35,5 +38,8 @@ public:
 private:
     Ui::MainWindow *ui;
 };
+
+} // namespace gui
+} // namespace scram
 
 #endif // MAINWINDOW_H

@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 // This mock class is used to specify
@@ -592,4 +593,5 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

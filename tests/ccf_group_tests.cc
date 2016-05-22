@@ -22,6 +22,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 namespace test {
 
 TEST(CcfGroupTest, AddMemberRepeated) {
@@ -47,4 +48,5 @@ TEST(CcfGroupTest, AddMemberAfterDistribution) {
 }
 
 }  // namespace test
+}  // namespace mef
 }  // namespace scram

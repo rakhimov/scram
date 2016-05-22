@@ -33,6 +33,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace mef {
 
 const std::map<std::string, Units> Initializer::kUnits_ = {
     {"bool", kBool},
@@ -52,7 +53,7 @@ const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
 
 std::stringstream Initializer::schema_;
 
-Initializer::Initializer(const Settings& settings)
+Initializer::Initializer(const core::Settings& settings)
     : settings_(settings),
       mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
@@ -932,4 +933,5 @@ void Initializer::SetupForAnalysis() {
   }
 }
 
+}  // namespace mef
 }  // namespace scram

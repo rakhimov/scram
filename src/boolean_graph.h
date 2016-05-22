@@ -49,6 +49,7 @@
 #include "event.h"
 
 namespace scram {
+namespace core {
 
 class IGate;  // Indexed gate parent of nodes.
 using IGatePtr = std::shared_ptr<IGate>;  ///< Shared gates in the graph.
@@ -814,7 +815,7 @@ class BooleanGraph {
   ///       the argument fault tree and its underlying containers are stable.
   ///       If the fault tree has been manipulated (event addition, etc.),
   ///       its BooleanGraph representation is not guaranteed to be the same.
-  explicit BooleanGraph(const GatePtr& root, bool ccf = false) noexcept;
+  explicit BooleanGraph(const mef::GatePtr& root, bool ccf = false) noexcept;
 
   BooleanGraph(const BooleanGraph&) = delete;
   BooleanGraph& operator=(const BooleanGraph&) = delete;
@@ -834,7 +835,7 @@ class BooleanGraph {
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
-  const std::vector<BasicEventPtr>& basic_events() const {
+  const std::vector<mef::BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
@@ -847,7 +848,7 @@ class BooleanGraph {
   /// @param[in] index  Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  const BasicEventPtr& GetBasicEvent(int index) const {
+  const mef::BasicEventPtr& GetBasicEvent(int index) const {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
@@ -890,7 +891,7 @@ class BooleanGraph {
   /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
-  IGatePtr ProcessFormula(const FormulaPtr& formula, bool ccf,
+  IGatePtr ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
                           ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's basic events
@@ -901,7 +902,7 @@ class BooleanGraph {
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessBasicEvents(const IGatePtr& parent,
-                          const std::vector<BasicEventPtr>& basic_events,
+                          const std::vector<mef::BasicEventPtr>& basic_events,
                           bool ccf,
                           ProcessedNodes* nodes) noexcept;
 
@@ -913,7 +914,7 @@ class BooleanGraph {
   /// @param[in] house_events  The collection of house events of the formula.
   /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessHouseEvents(const IGatePtr& parent,
-                          const std::vector<HouseEventPtr>& house_events,
+                          const std::vector<mef::HouseEventPtr>& house_events,
                           ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's gates
@@ -923,8 +924,10 @@ class BooleanGraph {
   /// @param[in] gates  The collection of gates of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessGates(const IGatePtr& parent, const std::vector<GatePtr>& gates,
-                    bool ccf, ProcessedNodes* nodes) noexcept;
+  void ProcessGates(const IGatePtr& parent,
+                    const std::vector<mef::GatePtr>& gates,
+                    bool ccf,
+                    ProcessedNodes* nodes) noexcept;
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,
@@ -1106,7 +1109,7 @@ class BooleanGraph {
   int root_sign_;  ///< The negative or positive sign of the root node.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
-  std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
+  std::vector<mef::BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   /// Registered house events upon the creation of the Boolean graph.
   std::vector<std::weak_ptr<Constant> > constants_;
   /// Registered NULL type gates upon the creation of the Boolean graph.
@@ -1133,6 +1136,7 @@ std::ostream& operator<<(std::ostream& os, const IGatePtr& gate);
 ///          Visit information may get changed.
 std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft);
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_BOOLEAN_GRAPH_H_

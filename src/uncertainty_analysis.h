@@ -31,6 +31,7 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics
@@ -80,7 +81,7 @@ class UncertaintyAnalysis : public Analysis {
   /// @param[in] graph  Boolean graph with the variables.
   ///
   /// @returns The gathered uncertain basic events.
-  std::vector<std::pair<int, BasicEvent*>> FilterUncertainEvents(
+  std::vector<std::pair<int, mef::BasicEvent*>> FilterUncertainEvents(
       const BooleanGraph* graph) noexcept;
 
  private:
@@ -138,7 +139,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
 
 template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
-  std::vector<std::pair<int, BasicEvent*>> uncertain_events =
+  std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
   std::vector<double>& p_vars = prob_analyzer_->p_vars();
   std::vector<double> samples;
@@ -169,6 +170,7 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   return samples;
 }
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_

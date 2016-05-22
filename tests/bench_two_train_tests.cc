@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for an example fault tree with
@@ -43,4 +44,5 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

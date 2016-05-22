@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for CEA9601 fault tree from XFTA.
@@ -56,4 +57,5 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_ZBDD) {
 #endif
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

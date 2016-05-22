@@ -47,6 +47,7 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Regression check for performance assumptions of developers.
@@ -182,4 +183,5 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_ZBDD) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

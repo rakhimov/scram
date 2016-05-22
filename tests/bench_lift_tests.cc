@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark tests for Lift system from OpenFTA.
@@ -40,4 +41,5 @@ TEST_P(RiskAnalysisTest, Lift) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

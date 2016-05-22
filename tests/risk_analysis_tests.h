@@ -34,6 +34,7 @@
 #include "xml_parser.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
@@ -61,7 +62,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Resets the initializer with the settings of the object.
   void ResetInitializer() {
-    init = std::unique_ptr<Initializer>(new Initializer(settings));
+    init = std::unique_ptr<mef::Initializer>(new mef::Initializer(settings));
   }
 
   // Resets the risk analysis with the initialized model and settings.
@@ -98,19 +99,19 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   // Returns a single fault tree, assuming one fault tree with single top gate.
-  const FaultTreePtr& fault_tree() {
+  const mef::FaultTreePtr& fault_tree() {
     return init->model()->fault_trees().begin()->second;
   }
 
-  const std::unordered_map<std::string, GatePtr>& gates() {
+  const std::unordered_map<std::string, mef::GatePtr>& gates() {
     return init->model()->gates();
   }
 
-  const std::unordered_map<std::string, HouseEventPtr>& house_events() {
+  const std::unordered_map<std::string, mef::HouseEventPtr>& house_events() {
     return init->model()->house_events();
   }
 
-  const std::unordered_map<std::string, BasicEventPtr>& basic_events() {
+  const std::unordered_map<std::string, mef::BasicEventPtr>& basic_events() {
     return init->model()->basic_events();
   }
 
@@ -205,7 +206,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Members
   std::unique_ptr<RiskAnalysis> ran;
-  std::unique_ptr<Initializer> init;
+  std::unique_ptr<mef::Initializer> init;
   Settings settings;
 
  private:
@@ -214,6 +215,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 };
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_

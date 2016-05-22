@@ -28,16 +28,15 @@
 
 #include "analysis.h"
 #include "event.h"
-#include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
+#include "model.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
 
 namespace scram {
-
-class Model;
+namespace core {
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -55,11 +54,11 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
-  RiskAnalysis(const std::shared_ptr<const Model>& model,
+  RiskAnalysis(const std::shared_ptr<const mef::Model>& model,
                const Settings& settings);
 
   /// @returns The model under analysis.
-  const Model& model() const { return *model_; }
+  const mef::Model& model() const { return *model_; }
 
   /// Provides graphing instructions
   /// for each fault tree initialized in the analysis.
@@ -138,7 +137,8 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
-  void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name,
+                   const mef::GatePtr& target) noexcept;
 
   /// Defines and runs Qualitative analysis on the target.
   /// Calls the Quantitative analysis if requested in settings.
@@ -148,7 +148,8 @@ class RiskAnalysis : public Analysis {
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
   template <class Algorithm>
-  void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name,
+                   const mef::GatePtr& target) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
   ///
@@ -164,7 +165,8 @@ class RiskAnalysis : public Analysis {
   void RunAnalysis(const std::string& name,
                    FaultTreeAnalyzer<Algorithm>* fta) noexcept;
 
-  std::shared_ptr<const Model> model_;  ///< Analysis model with constructs.
+  /// Analysis model with constructs.
+  std::shared_ptr<const mef::Model> model_;
 
   /// Analyses performed by this risk analysis run.
   /// @{
@@ -175,6 +177,7 @@ class RiskAnalysis : public Analysis {
   /// @}
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_RISK_ANALYSIS_H_

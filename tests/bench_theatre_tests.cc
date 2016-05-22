@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for Theatre fault tree from OpenFTA.
@@ -40,4 +41,5 @@ TEST_P(RiskAnalysisTest, Theatre) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

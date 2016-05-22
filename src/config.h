@@ -51,7 +51,7 @@ class Config {
   const std::vector<std::string>& input_files() const { return input_files_; }
 
   /// @returns the settings for analysis.
-  const Settings& settings() const { return settings_; }
+  const core::Settings& settings() const { return settings_; }
 
   /// @returns the output destination if any.
   const std::string& output_path() const { return output_path_; }
@@ -102,7 +102,7 @@ class Config {
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;
-  Settings settings_;  ///< Settings for specific analysis.
+  core::Settings settings_;  ///< Settings for specific analysis.
   std::string output_path_;  ///< The output destination.
 };
 

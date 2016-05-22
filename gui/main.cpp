@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,21 @@
 #include <string>
 #include <vector>
 
-#include "mainwindow.h"
-#include <QApplication>
-
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
+
+#include <QApplication>
 
 #include "src/config.h"
 #include "src/error.h"
 #include "src/initializer.h"
 #include "src/settings.h"
 
+#include "mainwindow.h"
+
 namespace po = boost::program_options;
+
+namespace {
 
 /**
  * Parses the command-line arguments.
@@ -102,7 +105,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
  */
 int acceptCmdLine(const po::variables_map &vm)
 {
-    scram::Settings settings;
+    scram::core::Settings settings;
     std::vector<std::string> inputFiles;
     // Get configurations if any.
     // Invalid configurations will throw.
@@ -123,12 +126,15 @@ int acceptCmdLine(const po::variables_map &vm)
     }
     // Process input files
     // into valid analysis containers and constructs.
-    std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
+    std::unique_ptr<scram::mef::Initializer> init(
+        new scram::mef::Initializer(settings));
     // Validation phase happens upon processing.
     init->ProcessInputFiles(inputFiles);
 
     return 0;
 }
+
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -157,7 +163,7 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    MainWindow w;
+    scram::gui::MainWindow w;
     w.show();
 
     return a.exec();

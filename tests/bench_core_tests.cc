@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for [A or B or C] fault tree.
@@ -475,4 +476,5 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram

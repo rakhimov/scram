@@ -80,6 +80,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
@@ -2556,4 +2557,5 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
   for (auto var : variables) var->order(shift + var->order());
 }
 
+}  // namespace core
 }  // namespace scram

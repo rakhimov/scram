@@ -20,6 +20,7 @@
 #include "risk_analysis_tests.h"
 
 namespace scram {
+namespace core {
 namespace test {
 
 // Benchmark Tests for Small Tree fault tree from XFTA.
@@ -38,4 +39,5 @@ TEST_P(RiskAnalysisTest, SmallTree) {
 }
 
 }  // namespace test
+}  // namespace core
 }  // namespace scram
