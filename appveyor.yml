@@ -9,9 +9,11 @@ configuration:
 
 install:
     - git submodule update --init --recursive
-    - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;
+    - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
+    - pacman --noconfirm -Syu
+    - pacman --noconfirm -Syu
     - pacman --noconfirm -S mingw-w64-x86_64-boost
-    - pacman --noconfirm -S mingw-w64-x86_64-libxml++
+    - pacman --noconfirm -S mingw-w64-x86_64-libxml++2.6
     - pacman --noconfirm -S mingw-w64-x86_64-qt5
 
 before_build:
