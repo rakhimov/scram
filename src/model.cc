@@ -23,6 +23,7 @@
 #include <boost/algorithm/string.hpp>
 
 namespace scram {
+namespace mef {
 
 Model::Model(std::string name) : name_(std::move(name)) {}
 
@@ -137,4 +138,5 @@ const Component& Model::GetContainer(const std::vector<std::string>& path) {
   return *container;
 }
 
+}  // namespace mef
 }  // namespace scram

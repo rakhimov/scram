@@ -21,11 +21,13 @@
 #include "analysis.h"
 
 namespace scram {
+namespace core {
 
 Analysis::Analysis(const Settings& settings)
     : kSettings_(settings),
       analysis_time_(0) {}
 
-Analysis::~Analysis() {}  ///< Empty body for pure virtual destructor.
+Analysis::~Analysis() = default;  ///< Pure virtual destructor.
 
+}  // namespace core
 }  // namespace scram

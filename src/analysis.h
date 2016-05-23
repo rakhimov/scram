@@ -28,6 +28,7 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 
 /// @class Analysis
 /// Base abstract class for all analysis with settings.
@@ -74,6 +75,7 @@ class Analysis {
   std::string warnings_;  ///< Generated warnings in analysis.
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ANALYSIS_H_

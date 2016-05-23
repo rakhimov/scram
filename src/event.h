@@ -32,6 +32,7 @@
 #include "expression.h"
 
 namespace scram {
+namespace mef {
 
 /// @class Event
 /// Abstract base class for general fault tree events.
@@ -429,6 +430,7 @@ class Formula {
   bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_EVENT_H_

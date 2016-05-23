@@ -27,10 +27,11 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
 
-void NodeParentManager::AddParent(const IGatePtr& gate) {
+void NodeParentManager::AddParent(const GatePtr& gate) {
   parents_.emplace(gate->index(), gate);
 }
 
@@ -52,7 +53,7 @@ int Variable::next_variable_ = 1;
 
 Variable::Variable() noexcept : Node(next_variable_++) {}
 
-IGate::IGate(Operator type) noexcept
+Gate::Gate(Operator type) noexcept
     : type_(type),
       state_(kNormalState),
       vote_number_(0),
@@ -64,9 +65,9 @@ IGate::IGate(Operator type) noexcept
       module_(false),
       coherent_(false) {}
 
-IGatePtr IGate::Clone() noexcept {
+GatePtr Gate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
-  auto clone = std::make_shared<IGate>(type_);  // The same type.
+  auto clone = std::make_shared<Gate>(type_);  // The same type.
   clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
@@ -81,7 +82,7 @@ IGatePtr IGate::Clone() noexcept {
   return clone;
 }
 
-void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
+void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
@@ -103,7 +104,7 @@ void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
   node->EraseParent(Node::index());
 }
 
-void IGate::ShareArg(int index, const IGatePtr& recipient) noexcept {
+void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   if (gate_args_.count(index)) {
@@ -116,12 +117,12 @@ void IGate::ShareArg(int index, const IGatePtr& recipient) noexcept {
   }
 }
 
-void IGate::InvertArgs() noexcept {
+void Gate::InvertArgs() noexcept {
   std::set<int> inverted_args;
   for (int index : args_) inverted_args.insert(inverted_args.begin(), -index);
   args_ = std::move(inverted_args);
 
-  std::unordered_map<int, IGatePtr> inverted_gates;
+  std::unordered_map<int, GatePtr> inverted_gates;
   for (const auto& arg : gate_args_)
     inverted_gates.emplace(-arg.first, arg.second);
   gate_args_ = std::move(inverted_gates);
@@ -137,13 +138,13 @@ void IGate::InvertArgs() noexcept {
   constant_args_ = std::move(inverted_consts);
 }
 
-void IGate::InvertArg(int existing_arg) noexcept {
+void Gate::InvertArg(int existing_arg) noexcept {
   assert(args_.count(existing_arg));
   assert(!args_.count(-existing_arg));
   args_.erase(existing_arg);
   args_.insert(-existing_arg);
   if (gate_args_.count(existing_arg)) {
-    IGatePtr arg = gate_args_.find(existing_arg)->second;
+    GatePtr arg = gate_args_.find(existing_arg)->second;
     gate_args_.erase(existing_arg);
     gate_args_.emplace(-existing_arg, arg);
   } else if (variable_args_.count(existing_arg)) {
@@ -157,21 +158,21 @@ void IGate::InvertArg(int existing_arg) noexcept {
   }
 }
 
-void IGate::CoalesceGate(const IGatePtr& arg_gate) noexcept {
+void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
   assert(arg_gate->state() == kNormalState && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
 
   for (const auto& arg : arg_gate->gate_args_) {
-    IGate::AddArg(arg.first, arg.second);
+    Gate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
   for (const auto& arg : arg_gate->variable_args_) {
-    IGate::AddArg(arg.first, arg.second);
+    Gate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
   for (const auto& arg : arg_gate->constant_args_) {
-    IGate::AddArg(arg.first, arg.second);
+    Gate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
 
@@ -180,13 +181,13 @@ void IGate::CoalesceGate(const IGatePtr& arg_gate) noexcept {
   arg_gate->EraseParent(Node::index());
 }
 
-void IGate::JoinNullGate(int index) noexcept {
+void Gate::JoinNullGate(int index) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   assert(gate_args_.count(index));
 
   args_.erase(index);
-  IGatePtr null_gate = gate_args_.find(index)->second;
+  GatePtr null_gate = gate_args_.find(index)->second;
   gate_args_.erase(index);
   null_gate->EraseParent(Node::index());
 
@@ -197,48 +198,48 @@ void IGate::JoinNullGate(int index) noexcept {
   arg_index *= index > 0 ? 1 : -1;  // Carry the parent's sign.
 
   if (!null_gate->gate_args_.empty()) {
-    IGate::AddArg(arg_index, null_gate->gate_args_.begin()->second);
+    Gate::AddArg(arg_index, null_gate->gate_args_.begin()->second);
   } else if (!null_gate->variable_args_.empty()) {
-    IGate::AddArg(arg_index, null_gate->variable_args_.begin()->second);
+    Gate::AddArg(arg_index, null_gate->variable_args_.begin()->second);
   } else {
     assert(!null_gate->constant_args_.empty());
-    IGate::AddArg(arg_index, null_gate->constant_args_.begin()->second);
+    Gate::AddArg(arg_index, null_gate->constant_args_.begin()->second);
   }
 }
 
-void IGate::ProcessConstantArg(const NodePtr& arg, bool state) noexcept {
-  int index = IGate::GetArgSign(arg) * arg->index();
+void Gate::ProcessConstantArg(const NodePtr& arg, bool state) noexcept {
+  int index = Gate::GetArgSign(arg) * arg->index();
   if (index < 0) state = !state;
   if (state) {  // Unity state or True index.
-    IGate::ProcessTrueArg(index);
+    Gate::ProcessTrueArg(index);
   } else {  // Null state or False index.
-    IGate::ProcessFalseArg(index);
+    Gate::ProcessFalseArg(index);
   }
 }
 
-void IGate::ProcessTrueArg(int index) noexcept {
+void Gate::ProcessTrueArg(int index) noexcept {
   switch (type_) {
     case kNull:
     case kOr:
-      IGate::MakeUnity();
+      Gate::MakeUnity();
       break;
     case kNand:
     case kAnd:
-      IGate::RemoveConstantArg(index);
+      Gate::RemoveConstantArg(index);
       break;
     case kNor:
     case kNot:
-      IGate::Nullify();
+      Gate::Nullify();
       break;
     case kXor:  // Special handling due to its internal negation.
       assert(args_.size() == 2);
-      IGate::EraseArg(index);
+      Gate::EraseArg(index);
       assert(args_.size() == 1);
       type_ = kNot;
       break;
     case kVote:  // (K - 1) / (N - 1).
       assert(args_.size() > 2);
-      IGate::EraseArg(index);
+      Gate::EraseArg(index);
       assert(vote_number_ > 0);
       --vote_number_;
       if (vote_number_ == 1) type_ = kOr;
@@ -246,32 +247,32 @@ void IGate::ProcessTrueArg(int index) noexcept {
   }
 }
 
-void IGate::ProcessFalseArg(int index) noexcept {
+void Gate::ProcessFalseArg(int index) noexcept {
   switch (type_) {
     case kNor:
     case kXor:
     case kOr:
-      IGate::RemoveConstantArg(index);
+      Gate::RemoveConstantArg(index);
       break;
     case kNull:
     case kAnd:
-      IGate::Nullify();
+      Gate::Nullify();
       break;
     case kNand:
     case kNot:
-      IGate::MakeUnity();
+      Gate::MakeUnity();
       break;
     case kVote:  // K / (N - 1).
       assert(args_.size() > 2);
-      IGate::EraseArg(index);
+      Gate::EraseArg(index);
       if (vote_number_ == args_.size()) type_ = kAnd;
       break;
   }
 }
 
-void IGate::RemoveConstantArg(int index) noexcept {
+void Gate::RemoveConstantArg(int index) noexcept {
   assert(args_.size() > 1 && "One-arg gate must have become constant.");
-  IGate::EraseArg(index);
+  Gate::EraseArg(index);
   if (args_.size() == 1) {
     switch (type_) {
       case kXor:
@@ -289,7 +290,7 @@ void IGate::RemoveConstantArg(int index) noexcept {
   }  // More complex cases with K/N gates are handled by the caller functions.
 }
 
-void IGate::EraseArg(int index) noexcept {
+void Gate::EraseArg(int index) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
@@ -308,7 +309,7 @@ void IGate::EraseArg(int index) noexcept {
   node->EraseParent(Node::index());
 }
 
-void IGate::EraseAllArgs() noexcept {
+void Gate::EraseAllArgs() noexcept {
   args_.clear();
   for (const auto& arg : gate_args_) arg.second->EraseParent(Node::index());
   gate_args_.clear();
@@ -318,12 +319,12 @@ void IGate::EraseAllArgs() noexcept {
   constant_args_.clear();
 }
 
-void IGate::ProcessDuplicateArg(int index) noexcept {
+void Gate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
   if (type_ == kVote)
-    return IGate::ProcessVoteGateDuplicateArg(index);
+    return Gate::ProcessVoteGateDuplicateArg(index);
 
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
@@ -338,7 +339,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
         break;
       case kXor:
         LOG(DEBUG5) << "Handling special case of XOR duplicate argument!";
-        IGate::Nullify();
+        Gate::Nullify();
         break;
       default:
         assert(false && "NOT and NULL gates can't have duplicates.");
@@ -346,7 +347,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   }
 }
 
-void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
+void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
   assert(type_ == kVote);
   // This is a very special handling of K/N duplicates.
@@ -361,7 +362,7 @@ void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
   }
   if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
     assert(vote_number_ > 2 && "Corrupted number of gate arguments.");
-    IGatePtr clone_two = this->Clone();
+    GatePtr clone_two = this->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     this->EraseAllArgs();
     this->type_ = kAnd;
@@ -371,7 +372,7 @@ void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
     return;
   }
   assert(args_.size() > 2);
-  IGatePtr clone_one = this->Clone();  // @(k, [y_i])
+  GatePtr clone_one = this->Clone();  // @(k, [y_i])
 
   this->EraseAllArgs();  // The main gate turns into OR with x.
   type_ = kOr;
@@ -381,12 +382,12 @@ void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
-    auto and_gate = std::make_shared<IGate>(kAnd);
+    auto and_gate = std::make_shared<Gate>(kAnd);
     this->AddArg(and_gate->index(), and_gate);
     clone_one->TransferArg(index, and_gate);  // Transfered the x.
 
     // Have to create the second K/N for vote_number > 2.
-    IGatePtr clone_two = clone_one->Clone();
+    GatePtr clone_two = clone_one->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     if (clone_two->vote_number() == 1) clone_two->type(kOr);
     and_gate->AddArg(clone_two->index(), clone_two);
@@ -399,26 +400,26 @@ void IGate::ProcessVoteGateDuplicateArg(int index) noexcept {
     clone_one->type(kAnd);
 }
 
-void IGate::ProcessComplementArg(int index) noexcept {
+void Gate::ProcessComplementArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(-index));
   LOG(DEBUG5) << "Handling complement argument for G" << Node::index();
   switch (type_) {
     case kNor:
     case kAnd:
-      IGate::Nullify();
+      Gate::Nullify();
       break;
     case kNand:
     case kXor:
     case kOr:
-      IGate::MakeUnity();
+      Gate::MakeUnity();
       break;
     case kVote:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
       assert(vote_number_ > 1 && "Vote number is wrong.");
       assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
       // @(k, [x, x', y_i]) = @(k-1, [y_i])
-      IGate::EraseArg(-index);
+      Gate::EraseArg(-index);
       --vote_number_;
       if (args_.size() == 1) {
         type_ = kNull;
@@ -443,7 +444,7 @@ const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"nor", kNor},
     {"null", kNull}};
 
-BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
+BooleanGraph::BooleanGraph(const mef::GatePtr& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
       normal_(true) {
@@ -458,10 +459,10 @@ void BooleanGraph::Print() {
   std::cerr << "\n" << this << std::endl;
 }
 
-IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
-                                      ProcessedNodes* nodes) noexcept {
+GatePtr BooleanGraph::ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
+                                     ProcessedNodes* nodes) noexcept {
   Operator type = kStringToType_.find(formula->type())->second;
-  auto parent = std::make_shared<IGate>(type);
+  auto parent = std::make_shared<Gate>(type);
 
   if (type != kOr && type != kAnd) normal_ = false;
 
@@ -488,27 +489,27 @@ IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
 
   BooleanGraph::ProcessGates(parent, formula->gate_args(), ccf, nodes);
 
-  for (const FormulaPtr& sub_form : formula->formula_args()) {
-    IGatePtr new_gate = BooleanGraph::ProcessFormula(sub_form, ccf, nodes);
+  for (const mef::FormulaPtr& sub_form : formula->formula_args()) {
+    GatePtr new_gate = BooleanGraph::ProcessFormula(sub_form, ccf, nodes);
     parent->AddArg(new_gate->index(), new_gate);
   }
   return parent;
 }
 
 void BooleanGraph::ProcessBasicEvents(
-    const IGatePtr& parent,
-    const std::vector<BasicEventPtr>& basic_events,
+    const GatePtr& parent,
+    const std::vector<mef::BasicEventPtr>& basic_events,
     bool ccf,
     ProcessedNodes* nodes) noexcept {
   for (const auto& basic_event : basic_events) {
     if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
       if (nodes->gates.count(basic_event->id())) {
-        IGatePtr ccf_gate = nodes->gates.find(basic_event->id())->second;
+        GatePtr ccf_gate = nodes->gates.find(basic_event->id())->second;
         parent->AddArg(ccf_gate->index(), ccf_gate);
       } else {
-        GatePtr ccf_gate = basic_event->ccf_gate();
-        IGatePtr new_gate =
-            BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, nodes);
+        GatePtr new_gate =
+            BooleanGraph::ProcessFormula(basic_event->ccf_gate()->formula(),
+                                         ccf, nodes);
         parent->AddArg(new_gate->index(), new_gate);
         nodes->gates.emplace(basic_event->id(), new_gate);
       }
@@ -528,8 +529,8 @@ void BooleanGraph::ProcessBasicEvents(
 }
 
 void BooleanGraph::ProcessHouseEvents(
-    const IGatePtr& parent,
-    const std::vector<HouseEventPtr>& house_events,
+    const GatePtr& parent,
+    const std::vector<mef::HouseEventPtr>& house_events,
     ProcessedNodes* nodes) noexcept {
   for (const auto& house : house_events) {
     if (nodes->constants.count(house->id())) {
@@ -544,17 +545,17 @@ void BooleanGraph::ProcessHouseEvents(
   }
 }
 
-void BooleanGraph::ProcessGates(const IGatePtr& parent,
-                                const std::vector<GatePtr>& gates,
+void BooleanGraph::ProcessGates(const GatePtr& parent,
+                                const std::vector<mef::GatePtr>& gates,
                                 bool ccf,
                                 ProcessedNodes* nodes) noexcept {
   for (const auto& gate : gates) {
     if (nodes->gates.count(gate->id())) {
-      IGatePtr node = nodes->gates.find(gate->id())->second;
+      GatePtr node = nodes->gates.find(gate->id())->second;
       parent->AddArg(node->index(), node);
     } else {
-      IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
-                                                       nodes);
+      GatePtr new_gate =
+          BooleanGraph::ProcessFormula(gate->formula(), ccf, nodes);
       parent->AddArg(new_gate->index(), new_gate);
       nodes->gates.emplace(gate->id(), new_gate);
     }
@@ -565,7 +566,7 @@ void BooleanGraph::ClearGateMarks() noexcept {
   BooleanGraph::ClearGateMarks(root_);
 }
 
-void BooleanGraph::ClearGateMarks(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearGateMarks(const GatePtr& gate) noexcept {
   if (!gate->mark()) return;
   gate->mark(false);
   for (const auto& arg : gate->gate_args()) {
@@ -581,7 +582,7 @@ void BooleanGraph::ClearNodeVisits() noexcept {
   LOG(DEBUG5) << "Node visit times are clear!";
 }
 
-void BooleanGraph::ClearNodeVisits(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearNodeVisits(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
@@ -606,7 +607,7 @@ void BooleanGraph::ClearOptiValues() noexcept {
   LOG(DEBUG5) << "Node OptiValues are clear!";
 }
 
-void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearOptiValues(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
@@ -628,7 +629,7 @@ void BooleanGraph::ClearNodeCounts() noexcept {
   LOG(DEBUG5) << "Node counts are clear!";
 }
 
-void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearNodeCounts(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
@@ -650,7 +651,7 @@ void BooleanGraph::ClearDescendantMarks() noexcept {
   LOG(DEBUG5) << "Descendant marks are clear!";
 }
 
-void BooleanGraph::ClearDescendantMarks(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearDescendantMarks(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   gate->descendant(0);
@@ -667,7 +668,7 @@ void BooleanGraph::ClearAncestorMarks() noexcept {
   LOG(DEBUG5) << "Descendant marks are clear!";
 }
 
-void BooleanGraph::ClearAncestorMarks(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearAncestorMarks(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   gate->ancestor(0);
@@ -684,7 +685,7 @@ void BooleanGraph::ClearNodeOrders() noexcept {
   LOG(DEBUG5) << "Node order marks are clear!";
 }
 
-void BooleanGraph::ClearNodeOrders(const IGatePtr& gate) noexcept {
+void BooleanGraph::ClearNodeOrders(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   if (gate->order()) gate->order(0);
@@ -697,11 +698,11 @@ void BooleanGraph::ClearNodeOrders(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
-void BooleanGraph::GraphLogger::RegisterRoot(const IGatePtr& gate) noexcept {
+void BooleanGraph::GraphLogger::RegisterRoot(const GatePtr& gate) noexcept {
   gates.insert(gate->index());
 }
 
-void BooleanGraph::GraphLogger::Log(const IGatePtr& gate) noexcept {
+void BooleanGraph::GraphLogger::Log(const GatePtr& gate) noexcept {
   ++gate_types[gate->type()];
   if (gate->module()) ++num_modules;
   for (const auto& arg : gate->gate_args()) gates.insert(arg.first);
@@ -753,7 +754,7 @@ void BooleanGraph::Log() noexcept {
   BooleanGraph::ClearGateMarks();
 }
 
-void BooleanGraph::GatherInformation(const IGatePtr& gate,
+void BooleanGraph::GatherInformation(const GatePtr& gate,
                                      GraphLogger* logger) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
@@ -793,7 +794,7 @@ struct FormulaSig {
 /// @param[in] gate  The gate with the formula to be printed.
 ///
 /// @returns The beginning, operator, and end strings for the formula.
-FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
+FormulaSig GetFormulaSig(const std::shared_ptr<const Gate>& gate) {
   FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
 
   switch (gate->type()) {
@@ -831,7 +832,7 @@ FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
 /// @param[in] gate  The gate which name must be created.
 ///
 /// @returns The name of the gate with extra information about its state.
-std::string GetName(const std::shared_ptr<const IGate>& gate) {
+std::string GetName(const std::shared_ptr<const Gate>& gate) {
   std::string name = "G";
   if (gate->state() == kNormalState) {
     if (gate->module()) name += "M";
@@ -844,7 +845,7 @@ std::string GetName(const std::shared_ptr<const IGate>& gate) {
 
 }  // namespace
 
-std::ostream& operator<<(std::ostream& os, const IGatePtr& gate) {
+std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
   if (gate->IsConstant()) {
@@ -885,4 +886,5 @@ std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
   return os;
 }
 
+}  // namespace core
 }  // namespace scram

@@ -15,12 +15,10 @@ Technical Issues
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers).
   Pollution of function interfaces.
-- IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
+- mef::Gate and mef::Formula have 'type' field instead of 'operator' (reserved in C++)
 - Role::is_public instead of ``public`` (keyword in C++)
-- IGate in Boolean graph is confusing (There is Gate in event.h)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- Virtually everything is under one namespace.
 - The violation of a basic guarantee (memory leaks)
   due to circular references in incorrect models
   (formulas, parameters, containers).

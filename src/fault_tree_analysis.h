@@ -34,13 +34,14 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 
 /// @struct Literal
 /// Event or its complement
 /// that may appear in products.
 struct Literal {
   bool complement;  ///< Indication of a complement event.
-  std::shared_ptr<BasicEvent> event;  ///< The event in the product.
+  std::shared_ptr<mef::BasicEvent> event;  ///< The event in the product.
 };
 
 using Product = std::vector<Literal>;  ///< Collection of unique literals.
@@ -67,7 +68,7 @@ double CalculateProbability(const Product& product);
 
 /// Helper function to determine order of a Boolean product.
 ///
-/// @param[in] Product  A set of literals.
+/// @param[in] product  A set of literals.
 ///
 /// @returns The order of the product.
 ///
@@ -89,18 +90,18 @@ class FaultTreeDescriptor {
   /// @warning If the fault tree structure is changed,
   ///          this description does not incorporate the changed structure.
   ///          Moreover, the data may get corrupted.
-  explicit FaultTreeDescriptor(const GatePtr& root);
+  explicit FaultTreeDescriptor(const mef::GatePtr& root);
 
   virtual ~FaultTreeDescriptor() = default;
 
   /// @returns The top gate that is passed to the analysis.
-  const GatePtr& top_event() const { return top_event_; }
+  const mef::GatePtr& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, GatePtr>& inter_events() const {
+  const std::unordered_map<std::string, mef::GatePtr>& inter_events() const {
     return inter_events_;
   }
 
@@ -108,7 +109,8 @@ class FaultTreeDescriptor {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
+  const std::unordered_map<std::string, mef::BasicEventPtr>&
+  basic_events() const {
     return basic_events_;
   }
 
@@ -116,7 +118,8 @@ class FaultTreeDescriptor {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, BasicEventPtr>& ccf_events() const {
+  const std::unordered_map<std::string, mef::BasicEventPtr>&
+  ccf_events() const {
     return ccf_events_;
   }
 
@@ -124,7 +127,8 @@ class FaultTreeDescriptor {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
+  const std::unordered_map<std::string, mef::HouseEventPtr>&
+  house_events() const {
     return house_events_;
   }
 
@@ -142,12 +146,12 @@ class FaultTreeDescriptor {
   /// The mark is checked to prevent revisiting.
   ///
   /// @param[in] gate  The gate to start traversal from.
-  void GatherEvents(const GatePtr& gate) noexcept;
+  void GatherEvents(const mef::GatePtr& gate) noexcept;
 
   /// Traverses formulas recursively to find all events.
   ///
   /// @param[in] formula  The formula to get events from.
-  void GatherEvents(const FormulaPtr& formula) noexcept;
+  void GatherEvents(const mef::FormulaPtr& formula) noexcept;
 
   /// Clears marks from gates that were traversed.
   /// Marks are set to empty strings.
@@ -155,20 +159,20 @@ class FaultTreeDescriptor {
   /// because other code may assume that marks are empty.
   void ClearMarks() noexcept;
 
-  GatePtr top_event_;  ///< Top event of this fault tree.
+  mef::GatePtr top_event_;  ///< Top event of this fault tree.
 
   /// Container for intermediate events.
-  std::unordered_map<std::string, GatePtr> inter_events_;
+  std::unordered_map<std::string, mef::GatePtr> inter_events_;
 
   /// Container for basic events.
-  std::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, mef::BasicEventPtr> basic_events_;
 
   /// Container for house events of the tree.
-  std::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, mef::HouseEventPtr> house_events_;
 
   /// Container for basic events that are identified to be in some CCF group.
   /// These basic events are not necessarily in the same CCF group.
-  std::unordered_map<std::string, BasicEventPtr> ccf_events_;
+  std::unordered_map<std::string, mef::BasicEventPtr> ccf_events_;
 };
 
 /// @class FaultTreeAnalysis
@@ -209,7 +213,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @warning If the fault tree structure is changed,
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
-  FaultTreeAnalysis(const GatePtr& root, const Settings& settings);
+  FaultTreeAnalysis(const mef::GatePtr& root, const Settings& settings);
 
   virtual ~FaultTreeAnalysis() = default;
 
@@ -232,7 +236,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   const std::vector<Product>& products() const { return products_; }
 
   /// @returns Collection of basic events that are in the products.
-  const std::vector<BasicEventPtr>& product_events() const {
+  const std::vector<mef::BasicEventPtr>& product_events() const {
     return product_events_;
   }
 
@@ -248,7 +252,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 
  private:
   std::vector<Product> products_;  ///< Container of analysis results.
-  std::vector<BasicEventPtr> product_events_;  ///< Basic events in the sets.
+  std::vector<mef::BasicEventPtr> product_events_;  ///< Events in the results.
 };
 
 /// @class FaultTreeAnalyzer
@@ -264,7 +268,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   using FaultTreeAnalysis::FaultTreeAnalysis;
 
   /// Runs fault tree analysis with the given algorithm.
-  void Analyze() noexcept;
+  void Analyze() noexcept override;
 
   /// @returns Pointer to the analysis algorithm.
   const Algorithm* algorithm() const { return algorithm_.get(); }
@@ -314,6 +318,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   LOG(DEBUG2) << "Converted indices to pointers in " << DUR(convert_time);
 }
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_FAULT_TREE_ANALYSIS_H_

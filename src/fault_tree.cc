@@ -26,6 +26,7 @@
 #include "error.h"
 
 namespace scram {
+namespace mef {
 
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
@@ -130,4 +131,5 @@ void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
   }
 }
 
+}  // namespace mef
 }  // namespace scram

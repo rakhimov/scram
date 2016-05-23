@@ -30,12 +30,13 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     : constant_graph_(false),
       graph_(fault_tree),
       kSettings_(settings) {
-  IGatePtr top = fault_tree->root();
+  GatePtr top = fault_tree->root();
   if (top->IsConstant() || top->type() == kNull) {
     constant_graph_ = true;
     zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(fault_tree, settings));
@@ -61,19 +62,19 @@ const std::vector<std::vector<int>>& Mocus::products() const {
 }
 
 std::unique_ptr<zbdd::CutSetContainer>
-Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
+Mocus::AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept {
   assert(gate->module() && "Expected only module gates.");
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
-  std::unordered_map<int, IGatePtr> gates = gate->gate_args();
+  std::unordered_map<int, GatePtr> gates = gate->gate_args();
   std::unique_ptr<zbdd::CutSetContainer> container(
       new zbdd::CutSetContainer(kSettings_, gate->index(),
                                 graph_->basic_events().size()));
   container->Merge(container->ConvertGate(gate));
   while (int next_gate_index = container->GetNextGate()) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate_index;
-    const IGatePtr& next_gate = gates.find(next_gate_index)->second;
+    const GatePtr& next_gate = gates.find(next_gate_index)->second;
     gates.insert(next_gate->gate_args().begin(), next_gate->gate_args().end());
     container->Merge(container->ExpandGate(
         container->ConvertGate(next_gate),
@@ -110,4 +111,5 @@ Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   return container;
 }
 
+}  // namespace core
 }  // namespace scram

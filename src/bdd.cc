@@ -27,6 +27,7 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 
 int GetPrimeNumber(int n) {
   assert(n > 0 && "Only natural numbers.");
@@ -50,7 +51,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
       root_ = {false, kOne_};
     }
   } else if (fault_tree->root()->type() == kNull) {
-    IGatePtr top = fault_tree->root();
+    GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
@@ -128,7 +129,7 @@ ItePtr Bdd::FindOrAddVertex(const ItePtr& ite, const VertexPtr& high,
   return in_table;
 }
 
-ItePtr Bdd::FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
+ItePtr Bdd::FindOrAddVertex(const GatePtr& gate, const VertexPtr& high,
                             const VertexPtr& low,
                             bool complement_edge) noexcept {
   assert(gate->module() && "Only module gates are expected for proxies.");
@@ -144,7 +145,7 @@ ItePtr Bdd::FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
 }
 
 Bdd::Function Bdd::ConvertGraph(
-    const IGatePtr& gate,
+    const GatePtr& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   Function result;
@@ -163,7 +164,7 @@ Bdd::Function Bdd::ConvertGraph(
                                          true, arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
-  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
     Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->module()) {
       args.push_back({arg.first < 0,
@@ -368,4 +369,5 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
   Bdd::TestStructure(ite->low());
 }
 
+}  // namespace core
 }  // namespace scram

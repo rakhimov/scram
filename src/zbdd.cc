@@ -25,6 +25,7 @@
 #include "logger.h"
 
 namespace scram {
+namespace core {
 
 #ifndef NDEBUG
 /// Runs assertions on ZBDD structure.
@@ -68,7 +69,7 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
       root_ = kBase_;
     }
   } else if (fault_tree->root()->type() == kNull) {
-    IGatePtr top = fault_tree->root();
+    GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
@@ -159,7 +160,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
   }
 }
 
-Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
+Zbdd::Zbdd(const GatePtr& gate, const Settings& settings) noexcept
     : Zbdd(settings, gate->coherent(), gate->index()) {
   if (gate->IsConstant() || gate->type() == kNull) return;
   assert(!settings.prime_implicants() && "Not implemented.");
@@ -168,7 +169,7 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, std::pair<VertexPtr, int>> gates;
-  std::unordered_map<int, IGatePtr> module_gates;
+  std::unordered_map<int, GatePtr> module_gates;
   root_ = Zbdd::ConvertGraph(gate, &gates, &module_gates);
   if (!coherent_) {
     LOG(DEBUG4) << "Eliminating complements from ZBDD...";
@@ -192,7 +193,7 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
       Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(new Zbdd(settings)));
       continue;
     }
-    IGatePtr module_gate = module_gates.find(index)->second;
+    GatePtr module_gate = module_gates.find(index)->second;
     Settings adjusted(settings);
     adjusted.limit_order(limit);
     Zbdd::JoinModule(index,
@@ -232,7 +233,7 @@ SetNodePtr Zbdd::FindOrAddVertex(const SetNodePtr& node, const VertexPtr& high,
                                node->module(), node->coherent());
 }
 
-SetNodePtr Zbdd::FindOrAddVertex(const IGatePtr& gate, const VertexPtr& high,
+SetNodePtr Zbdd::FindOrAddVertex(const GatePtr& gate, const VertexPtr& high,
                                  const VertexPtr& low) noexcept {
   return Zbdd::FindOrAddVertex(gate->index(), high, low, gate->order(),
                                gate->module(), gate->coherent());
@@ -325,9 +326,9 @@ Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
 }
 
 Zbdd::VertexPtr Zbdd::ConvertGraph(
-    const IGatePtr& gate,
+    const GatePtr& gate,
     std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
-    std::unordered_map<int, IGatePtr>* module_gates) noexcept {
+    std::unordered_map<int, GatePtr>* module_gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   VertexPtr result;
   if (gates->count(gate->index())) {
@@ -343,7 +344,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     if (arg.second->module()) {
       module_gates->insert(arg);
@@ -876,7 +877,7 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
     : Zbdd(settings, /*coherence=*/false, module_index),
       gate_index_bound_(gate_index_bound) {}
 
-Zbdd::VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
+Zbdd::VertexPtr CutSetContainer::ConvertGate(const GatePtr& gate) noexcept {
   assert(gate->type() == kAnd || gate->type() == kOr);
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
@@ -885,7 +886,7 @@ Zbdd::VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     args.push_back(Zbdd::FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }
@@ -937,4 +938,5 @@ void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
 
 }  // namespace zbdd
 
+}  // namespace core
 }  // namespace scram

@@ -26,6 +26,7 @@
 #include <string>
 
 namespace scram {
+namespace mef {
 
 /// @struct Attribute
 /// This struct allows any attribute.
@@ -111,6 +112,7 @@ class Role {
   std::string base_path_;  ///< A series of containers leading to this event.
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ELEMENT_H_

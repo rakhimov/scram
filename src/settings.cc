@@ -23,6 +23,7 @@
 #include "error.h"
 
 namespace scram {
+namespace core {
 
 Settings& Settings::algorithm(const std::string& algorithm) {
   if (algorithm != "mocus" && algorithm != "bdd" && algorithm != "zbdd")
@@ -113,4 +114,5 @@ Settings& Settings::mission_time(double time) {
   return *this;
 }
 
+}  // namespace core
 }  // namespace scram

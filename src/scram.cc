@@ -155,7 +155,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @throws InvalidArgument  The indication of an error in arguments.
 /// @throws std::exception  vm does not contain a required option.
 ///                         At least defaults are expected.
-void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
+void ConstructSettings(const po::variables_map& vm,
+                       scram::core::Settings* settings) {
   if (vm.count("bdd")) {
     settings->algorithm("bdd");
   } else if (vm.count("zbdd")) {
@@ -204,14 +205,14 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     scram::Logger::SetVerbosity(vm["verbosity"].as<int>());
   }
-  scram::Settings settings;  // Analysis settings.
+  scram::core::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
   std::string output_path;
   // Get configurations if any.
   // Invalid configurations will throw.
   if (vm.count("config-file")) {
-    std::unique_ptr<scram::Config>
-        config(new scram::Config(vm["config-file"].as<std::string>()));
+    std::unique_ptr<scram::Config> config(
+        new scram::Config(vm["config-file"].as<std::string>()));
     settings = config->settings();
     input_files = config->input_files();
     output_path = config->output_path();
@@ -228,13 +229,14 @@ int RunScram(const po::variables_map& vm) {
   }
   // Process input files
   // into valid analysis containers and constructs.
-  std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
+  std::unique_ptr<scram::mef::Initializer> init(
+      new scram::mef::Initializer(settings));
   init->ProcessInputFiles(input_files);  // Throws if anything is invalid.
   if (vm.count("validate")) return 0;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
-  std::unique_ptr<scram::RiskAnalysis>
-      ran(new scram::RiskAnalysis(init->model(), settings));
+  std::unique_ptr<scram::core::RiskAnalysis> ran(
+      new scram::core::RiskAnalysis(init->model(), settings));
   init.reset();  // Remove extra reference counts to shared objects.
 
   // Graph if requested.

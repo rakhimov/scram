@@ -35,6 +35,7 @@
 #include "element.h"
 
 namespace scram {
+namespace mef {
 
 class Expression;
 using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
@@ -200,9 +201,9 @@ class Parameter : public Expression, public Element, public Role {
   /// @param[in] state  The usage state for this parameter.
   void unused(bool state) { unused_ = state; }
 
-  double Mean() noexcept { return expression_->Mean(); }
-  double Max() noexcept { return expression_->Max(); }
-  double Min() noexcept { return expression_->Min(); }
+  double Mean() noexcept override { return expression_->Mean(); }
+  double Max() noexcept override { return expression_->Max(); }
+  double Min() noexcept override { return expression_->Min(); }
 
   /// This function is for cycle detection.
   ///
@@ -251,8 +252,8 @@ class MissionTime : public Expression {
   /// @param[in] unit  A valid unit.
   void unit(Units unit) { unit_ = unit; }
 
-  double Mean() noexcept { return mission_time_; }
-  bool IsConstant() noexcept { return true; }
+  double Mean() noexcept override { return mission_time_; }
+  bool IsConstant() noexcept override { return true; }
 
  private:
   double GetSample() noexcept override { return mission_time_; }
@@ -280,8 +281,8 @@ class ConstantExpression : public Expression {
   /// @param[in] val  true for 1 and false for 0 value of this constant.
   explicit ConstantExpression(bool val);
 
-  double Mean() noexcept { return value_; }
-  bool IsConstant() noexcept { return true; }
+  double Mean() noexcept override { return value_; }
+  bool IsConstant() noexcept override { return true; }
 
  private:
   double GetSample() noexcept override { return value_; }
@@ -300,17 +301,17 @@ class ExponentialExpression : public Expression {
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t);
 
   /// @throws InvalidArgument  The failure rate or time is negative.
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept {
+  double Mean() noexcept override {
     return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
   }
 
-  double Max() noexcept {
+  double Max() noexcept override {
     return 1 - std::exp(-(lambda_->Max() * time_->Max()));
   }
 
-  double Min() noexcept {
+  double Min() noexcept override {
     return 1 - std::exp(-(lambda_->Min() * time_->Min()));
   }
 
@@ -339,11 +340,11 @@ class GlmExpression : public Expression {
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t);
 
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept;
-  double Max() noexcept { return 1; }
-  double Min() noexcept { return 0; }
+  double Mean() noexcept override;
+  double Max() noexcept override { return 1; }
+  double Min() noexcept override { return 0; }
 
  private:
   double GetSample() noexcept override;
@@ -377,19 +378,19 @@ class WeibullExpression : public Expression {
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
                     const ExpressionPtr& t0, const ExpressionPtr& time);
 
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept {
+  double Mean() noexcept override {
     return WeibullExpression::Compute(alpha_->Mean(), beta_->Mean(),
                                       t0_->Mean(), time_->Mean());
   }
 
-  double Max() noexcept {
+  double Max() noexcept override {
     return WeibullExpression::Compute(alpha_->Min(), beta_->Max(),
                                       t0_->Min(), time_->Max());
   }
 
-  double Min() noexcept {
+  double Min() noexcept override {
     return WeibullExpression::Compute(alpha_->Max(), beta_->Min(),
                                       t0_->Max(), time_->Min());
   }
@@ -437,11 +438,11 @@ class UniformDeviate : public RandomDeviate {
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max);
 
   /// @throws InvalidArgument  The min value is more or equal to max value.
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept { return (min_->Mean() + max_->Mean()) / 2; }
-  double Max() noexcept { return max_->Max(); }
-  double Min() noexcept { return min_->Min(); }
+  double Mean() noexcept override { return (min_->Mean() + max_->Mean()) / 2; }
+  double Max() noexcept override { return max_->Max(); }
+  double Min() noexcept override { return min_->Min(); }
 
  private:
   double GetSample() noexcept override;
@@ -461,19 +462,19 @@ class NormalDeviate : public RandomDeviate {
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma);
 
   /// @throws InvalidArgument  The sigma is negative or zero.
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept { return mean_->Mean(); }
+  double Mean() noexcept override { return mean_->Mean(); }
 
   /// @returns ~99.9% percentile value.
   ///
   /// @warning This is only an approximation of the maximum value.
-  double Max() noexcept { return mean_->Max() + 6 * sigma_->Max(); }
+  double Max() noexcept override { return mean_->Max() + 6 * sigma_->Max(); }
 
   /// @returns Less than 0.1% percentile value.
   ///
   /// @warning This is only an approximation.
-  double Min() noexcept { return mean_->Min() - 6 * sigma_->Max(); }
+  double Min() noexcept override { return mean_->Min() - 6 * sigma_->Max(); }
 
  private:
   double GetSample() noexcept override;
@@ -501,14 +502,14 @@ class LogNormalDeviate : public RandomDeviate {
                    const ExpressionPtr& level);
 
   /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept { return mean_->Mean(); }
+  double Mean() noexcept override { return mean_->Mean(); }
 
   /// 99 percentile estimate.
-  double Max() noexcept;
+  double Max() noexcept override;
 
-  double Min() noexcept { return 0; }
+  double Min() noexcept override { return 0; }
 
  private:
   double GetSample() noexcept override;
@@ -545,18 +546,18 @@ class GammaDeviate : public RandomDeviate {
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta);
 
   /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept { return k_->Mean() * theta_->Mean(); }
+  double Mean() noexcept override { return k_->Mean() * theta_->Mean(); }
 
   /// @returns 99 percentile.
-  double Max() noexcept {
+  double Max() noexcept override {
     using boost::math::gamma_q;
     return theta_->Max() *
         std::pow(gamma_q(k_->Max(), gamma_q(k_->Max(), 0) - 0.99), -1);
   }
 
-  double Min() noexcept { return 0; }
+  double Min() noexcept override { return 0; }
 
  private:
   double GetSample() noexcept override;
@@ -576,18 +577,18 @@ class BetaDeviate : public RandomDeviate {
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta);
 
   /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept {
+  double Mean() noexcept override {
     return alpha_->Mean() / (alpha_->Mean() + beta_->Mean());
   }
 
   /// @returns 99 percentile.
-  double Max() noexcept {
+  double Max() noexcept override {
     return std::pow(boost::math::ibeta(alpha_->Max(), beta_->Max(), 0.99), -1);
   }
 
-  double Min() noexcept { return 0; }
+  double Min() noexcept override { return 0; }
 
  private:
   double GetSample() noexcept override;
@@ -627,11 +628,11 @@ class Histogram : public RandomDeviate {
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept;
-  double Max() noexcept { return boundaries_.back()->Max(); }
-  double Min() noexcept { return boundaries_.front()->Min(); }
+  double Mean() noexcept override;
+  double Max() noexcept override { return boundaries_.back()->Max(); }
+  double Min() noexcept override { return boundaries_.front()->Min(); }
 
  private:
   double GetSample() noexcept override;
@@ -668,9 +669,9 @@ class Neg : public Expression {
   /// @param[in] expression  The expression to be negated.
   explicit Neg(const ExpressionPtr& expression);
 
-  double Mean() noexcept { return -expression_->Mean(); }
-  double Max() noexcept { return -expression_->Min(); }
-  double Min() noexcept { return -expression_->Max(); }
+  double Mean() noexcept override { return -expression_->Mean(); }
+  double Max() noexcept override { return -expression_->Min(); }
+  double Min() noexcept override { return -expression_->Max(); }
 
  private:
   double GetSample() noexcept override { return -expression_->Sample(); }
@@ -684,9 +685,9 @@ class Add : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept;
-  double Max() noexcept;
-  double Min() noexcept;
+  double Mean() noexcept override;
+  double Max() noexcept override;
+  double Min() noexcept override;
 
  private:
   double GetSample() noexcept override;
@@ -699,9 +700,9 @@ class Sub : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept;
-  double Max() noexcept;
-  double Min() noexcept;
+  double Mean() noexcept override;
+  double Max() noexcept override;
+  double Min() noexcept override;
 
  private:
   double GetSample() noexcept override;
@@ -713,21 +714,21 @@ class Mul : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept;
+  double Mean() noexcept override;
 
   /// Finds maximum product
   /// from the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum possible value of the product.
-  double Max() noexcept { return Mul::GetExtremum(/*max=*/true); }
+  double Max() noexcept override { return Mul::GetExtremum(/*max=*/true); }
 
   /// Finds minimum product
   /// from the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum possible value of the product.
-  double Min() noexcept { return Mul::GetExtremum(/*max=*/false); }
+  double Min() noexcept override { return Mul::GetExtremum(/*max=*/false); }
 
  private:
   double GetSample() noexcept override;
@@ -747,23 +748,23 @@ class Div : public Expression {
   using Expression::Expression;  // Base class constructors with arguments.
 
   /// @throws InvalidArgument  Division by 0.
-  void Validate();
+  void Validate() override;
 
-  double Mean() noexcept;
+  double Mean() noexcept override;
 
   /// Finds maximum results of division
   /// of the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum value for division of arguments.
-  double Max() noexcept { return Div::GetExtremum(/*max=*/true); }
+  double Max() noexcept override { return Div::GetExtremum(/*max=*/true); }
 
   /// Finds minimum results of division
   /// of the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum value for division of arguments.
-  double Min() noexcept { return Div::GetExtremum(/*max=*/false); }
+  double Min() noexcept override { return Div::GetExtremum(/*max=*/false); }
 
  private:
   double GetSample() noexcept override;
@@ -774,6 +775,7 @@ class Div : public Expression {
   double GetExtremum(bool maximum) noexcept;
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_EXPRESSION_H_

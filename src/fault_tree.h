@@ -33,6 +33,7 @@
 #include "expression.h"
 
 namespace scram {
+namespace mef {
 
 /// @class Component
 /// Component is for logical grouping of events, gates, and other components.
@@ -211,6 +212,7 @@ class FaultTree : public Component {
 
 using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_FAULT_TREE_H_

@@ -34,6 +34,7 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees
@@ -68,7 +69,7 @@ class Mocus {
   ///
   /// @returns Fully processed, minimized Zbdd cut set container.
   std::unique_ptr<zbdd::CutSetContainer>
-  AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept;
+  AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept;
 
   bool constant_graph_;  ///< No need for analysis.
   const BooleanGraph* graph_;  ///< The analysis PDAG.
@@ -76,6 +77,7 @@ class Mocus {
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_MOCUS_H_

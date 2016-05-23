@@ -66,7 +66,7 @@ inline std::string ToString(double num, int precision) {
 
 }  // namespace
 
-void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
+void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   XmlStreamElement report("report", out);
   Reporter::ReportInformation(risk_an, &report);
@@ -76,7 +76,7 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     std::string id = fta.first;
-    ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
+    core::ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
     if (risk_an.settings().probability_analysis()) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
     }
@@ -97,8 +97,8 @@ void Reporter::Report(const RiskAnalysis& risk_an, std::ostream& out) {
 
 /// Describes the fault tree analysis and techniques.
 template<>
-void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
-    const Settings& settings,
+void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
+    const core::Settings& settings,
     XmlStreamElement* information) {
   {
     XmlStreamElement quant = information->AddChild("calculated-quantity");
@@ -131,8 +131,8 @@ void Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(
 
 /// Describes the probability analysis and techniques.
 template <>
-void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
-    const Settings& settings,
+void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
+    const core::Settings& settings,
     XmlStreamElement* information) {
   {
     XmlStreamElement quant = information->AddChild("calculated-quantity");
@@ -158,8 +158,8 @@ void Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(
 
 /// Describes the importance analysis and techniques.
 template <>
-void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
-    const Settings& /*settings*/,
+void Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(
+    const core::Settings& /*settings*/,
     XmlStreamElement* information) {
   XmlStreamElement quant = information->AddChild("calculated-quantity");
   quant.SetAttribute("name", "Importance Analysis");
@@ -170,8 +170,8 @@ void Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(
 
 /// Describes the uncertainty analysis and techniques.
 template <>
-void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
-    const Settings& settings,
+void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
+    const core::Settings& settings,
     XmlStreamElement* information) {
   {
     XmlStreamElement quant = information->AddChild("calculated-quantity");
@@ -193,27 +193,28 @@ void Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(
 
 /// Describes all performed analyses deduced from settings.
 template <>
-void Reporter::ReportCalculatedQuantity<RiskAnalysis>(
-    const Settings& settings,
+void Reporter::ReportCalculatedQuantity<core::RiskAnalysis>(
+    const core::Settings& settings,
     XmlStreamElement* information) {
   // Report the fault tree analysis by default.
-  Reporter::ReportCalculatedQuantity<FaultTreeAnalysis>(settings, information);
+  Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(settings,
+                                                              information);
   // Report optional analyses.
   if (settings.probability_analysis()) {
-    Reporter::ReportCalculatedQuantity<ProbabilityAnalysis>(settings,
-                                                            information);
+    Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(settings,
+                                                                  information);
   }
   if (settings.importance_analysis()) {
-    Reporter::ReportCalculatedQuantity<ImportanceAnalysis>(settings,
-                                                           information);
+    Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(settings,
+                                                                 information);
   }
   if (settings.uncertainty_analysis()) {
-    Reporter::ReportCalculatedQuantity<UncertaintyAnalysis>(settings,
-                                                            information);
+    Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(settings,
+                                                                  information);
   }
 }
 
-void Reporter::ReportInformation(const RiskAnalysis& risk_an,
+void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* report) {
   XmlStreamElement information = report->AddChild("information");
   Reporter::ReportSoftwareInformation(&information);
@@ -235,7 +236,7 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
   information->AddChild("time").AddChildText(time.str());
 }
 
-void Reporter::ReportModelFeatures(const Model& model,
+void Reporter::ReportModelFeatures(const mef::Model& model,
                                    XmlStreamElement* information) {
   XmlStreamElement model_features = information->AddChild("model-features");
   if (!model.name().empty())
@@ -251,7 +252,7 @@ void Reporter::ReportModelFeatures(const Model& model,
       .AddChildText(ToString(model.fault_trees().size()));
 }
 
-void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
+void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* information) {
   // Setup for performance information.
   XmlStreamElement performance = information->AddChild("performance");
@@ -279,10 +280,10 @@ void Reporter::ReportPerformance(const RiskAnalysis& risk_an,
   }
 }
 
-void Reporter::ReportOrphanPrimaryEvents(const Model& model,
+void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
                                          XmlStreamElement* information) {
   std::string out;
-  for (const std::pair<const std::string, BasicEventPtr>& entry :
+  for (const std::pair<const std::string, mef::BasicEventPtr>& entry :
        model.basic_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
@@ -290,7 +291,7 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
       out += param->name() + " ";
     }
   }
-  for (const std::pair<const std::string, HouseEventPtr>& entry :
+  for (const std::pair<const std::string, mef::HouseEventPtr>& entry :
        model.house_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
@@ -303,10 +304,10 @@ void Reporter::ReportOrphanPrimaryEvents(const Model& model,
         .AddChildText("Orphan Primary Events: " + out);
 }
 
-void Reporter::ReportUnusedParameters(const Model& model,
+void Reporter::ReportUnusedParameters(const mef::Model& model,
                                       XmlStreamElement* information) {
   std::string out;
-  for (const std::pair<const std::string, ParameterPtr>& entry :
+  for (const std::pair<const std::string, mef::ParameterPtr>& entry :
        model.parameters()) {
     const auto& param = entry.second;
     if (param->unused()) {
@@ -318,8 +319,9 @@ void Reporter::ReportUnusedParameters(const Model& model,
     information->AddChild("warning").AddChildText("Unused Parameters: " + out);
 }
 
-void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
-                             const ProbabilityAnalysis* prob_analysis,
+void Reporter::ReportResults(std::string ft_name,
+                             const core::FaultTreeAnalysis& fta,
+                             const core::ProbabilityAnalysis* prob_analysis,
                              XmlStreamElement* results) {
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
   sum_of_products.SetAttribute("name", ft_name);
@@ -341,14 +343,14 @@ void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
   std::vector<double> probs;  // Product probabilities.
   double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
-    for (const Product& product_set : fta.products()) {
+    for (const core::Product& product_set : fta.products()) {
       double prob = CalculateProbability(product_set);
       sum += prob;
       probs.push_back(prob);
     }
   }  // Ugliness because FTA and Probability analysis are not integrated.
   for (int i = 0; i < fta.products().size(); ++i) {
-    const Product& product_set = fta.products()[i];
+    const core::Product& product_set = fta.products()[i];
     XmlStreamElement product = sum_of_products.AddChild("product");
     product.SetAttribute("order", ToString(GetOrder(product_set)));
     if (prob_analysis) {
@@ -356,16 +358,17 @@ void Reporter::ReportResults(std::string ft_name, const FaultTreeAnalysis& fta,
       product.SetAttribute("probability", ToString(prob, 7));
       product.SetAttribute("contribution", ToString(prob / sum, 7));
     }
-    for (const Literal& literal : product_set) {
+    for (const core::Literal& literal : product_set) {
       Reporter::ReportLiteral(literal, &product);
     }
   }
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
 }
 
-void Reporter::ReportResults(std::string ft_name,
-                             const ImportanceAnalysis& importance_analysis,
-                             XmlStreamElement* results) {
+void Reporter::ReportResults(
+    std::string ft_name,
+    const core::ImportanceAnalysis& importance_analysis,
+    XmlStreamElement* results) {
   XmlStreamElement importance = results->AddChild("importance");
   importance.SetAttribute("name", ft_name);
   importance.SetAttribute("basic-events",
@@ -374,14 +377,14 @@ void Reporter::ReportResults(std::string ft_name,
     importance.AddChild("warning").AddChildText(importance_analysis.warnings());
   }
 
-  for (const std::pair<BasicEventPtr, ImportanceFactors>& entry :
+  for (const core::ImportanceAnalysis::ImportanceRecord& entry :
        importance_analysis.important_events()) {
-    Reporter::ReportImportantEvent(entry.first, entry.second, &importance);
+    Reporter::ReportImportantEvent(*entry.first, entry.second, &importance);
   }
 }
 
 void Reporter::ReportResults(std::string ft_name,
-                             const UncertaintyAnalysis& uncert_analysis,
+                             const core::UncertaintyAnalysis& uncert_analysis,
                              XmlStreamElement* results) {
   XmlStreamElement measure = results->AddChild("measure");
   measure.SetAttribute("name", ft_name);
@@ -442,28 +445,28 @@ void Reporter::ReportResults(std::string ft_name,
   }
 }
 
-void Reporter::ReportLiteral(const Literal& literal, XmlStreamElement* parent) {
+void Reporter::ReportLiteral(const core::Literal& literal,
+                             XmlStreamElement* parent) {
   if (literal.complement) {
     XmlStreamElement not_parent = parent->AddChild("not");
-    Reporter::ReportBasicEvent(literal.event, &not_parent);
+    Reporter::ReportBasicEvent(*literal.event, &not_parent);
   } else {
-    Reporter::ReportBasicEvent(literal.event, parent);
+    Reporter::ReportBasicEvent(*literal.event, parent);
   }
 }
 
-void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
+void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
                                 XmlStreamElement* parent) {
-  std::shared_ptr<const CcfEvent> ccf_event =
-      std::dynamic_pointer_cast<const CcfEvent>(basic_event);
+  const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
   std::string prefix =
-        basic_event->is_public() ? "" : basic_event->base_path() + ".";
+        basic_event.is_public() ? "" : basic_event.base_path() + ".";
   if (!ccf_event) {
-    std::string name = prefix + basic_event->name();
+    std::string name = prefix + basic_event.name();
     XmlStreamElement element = parent->AddChild("basic-event");
     element.SetAttribute("name", name);
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
-    const CcfGroup* ccf_group = ccf_event->ccf_group();
+    const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
     element.SetAttribute("ccf-group", prefix + ccf_group->name());
     element.SetAttribute("order", ToString(ccf_event->member_names().size()));
     element.SetAttribute("group-size", ToString(ccf_group->members().size()));
@@ -473,16 +476,15 @@ void Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
   }
 }
 
-void Reporter::ReportImportantEvent(const BasicEventPtr& basic_event,
-                                    const ImportanceFactors& factors,
+void Reporter::ReportImportantEvent(const mef::BasicEvent& basic_event,
+                                    const core::ImportanceFactors& factors,
                                     XmlStreamElement* parent) {
   /// @todo Refactor the code duplication.
-  std::shared_ptr<const CcfEvent> ccf_event =
-      std::dynamic_pointer_cast<const CcfEvent>(basic_event);
+  const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
   std::string prefix =
-        basic_event->is_public() ? "" : basic_event->base_path() + ".";
+        basic_event.is_public() ? "" : basic_event.base_path() + ".";
   if (!ccf_event) {
-    std::string name = prefix + basic_event->name();
+    std::string name = prefix + basic_event.name();
     XmlStreamElement element = parent->AddChild("basic-event");
     element.SetAttribute("name", name);
     element.SetAttribute("MIF", ToString(factors.mif, 4));
@@ -492,7 +494,7 @@ void Reporter::ReportImportantEvent(const BasicEventPtr& basic_event,
     element.SetAttribute("RRW", ToString(factors.rrw, 4));
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
-    const CcfGroup* ccf_group = ccf_event->ccf_group();
+    const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
     element.SetAttribute("ccf-group", prefix + ccf_group->name());
     element.SetAttribute("order", ToString(ccf_event->member_names().size()));
     element.SetAttribute("group-size", ToString(ccf_group->members().size()));

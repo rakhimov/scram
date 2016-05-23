@@ -27,6 +27,7 @@
 #include "bdd.h"
 #include "error.h"
 #include "expression.h"
+#include "fault_tree.h"
 #include "grapher.h"
 #include "logger.h"
 #include "mocus.h"
@@ -36,8 +37,9 @@
 #include "zbdd.h"
 
 namespace scram {
+namespace core {
 
-RiskAnalysis::RiskAnalysis(const std::shared_ptr<const Model>& model,
+RiskAnalysis::RiskAnalysis(const std::shared_ptr<const mef::Model>& model,
                            const Settings& settings)
     : Analysis(settings),
       model_(model) {}
@@ -45,9 +47,9 @@ RiskAnalysis::RiskAnalysis(const std::shared_ptr<const Model>& model,
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);
   LOG(DEBUG1) << "Producing graphing instructions";
-  for (const std::pair<const std::string, FaultTreePtr>& fault_tree :
+  for (const std::pair<const std::string, mef::FaultTreePtr>& fault_tree :
        model_->fault_trees()) {
-    for (const GatePtr& top_event : fault_tree.second->top_events()) {
+    for (const mef::GatePtr& top_event : fault_tree.second->top_events()) {
       std::string output =
           fault_tree.second->name() + "_" + top_event->name() + ".dot";
       std::ofstream of(output.c_str());
@@ -68,9 +70,9 @@ void RiskAnalysis::Analyze() noexcept {
   // Otherwise it defaults to the current time.
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
-  for (const std::pair<const std::string, FaultTreePtr>& ft :
+  for (const std::pair<const std::string, mef::FaultTreePtr>& ft :
        model_->fault_trees()) {
-    for (const GatePtr& target : ft.second->top_events()) {
+    for (const mef::GatePtr& target : ft.second->top_events()) {
       std::string name = target->name();  // Analysis ID.
       if (!target->is_public()) name = target->base_path() + "." + name;
       LOG(INFO) << "Running analysis: " << name;
@@ -81,7 +83,7 @@ void RiskAnalysis::Analyze() noexcept {
 }
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const GatePtr& target) noexcept {
+                               const mef::GatePtr& target) noexcept {
   if (Analysis::settings().algorithm() == "bdd") {
     RiskAnalysis::RunAnalysis<Bdd>(name, target);
   } else if (Analysis::settings().algorithm() == "zbdd") {
@@ -94,7 +96,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 
 template <class Algorithm>
 void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const GatePtr& target) noexcept {
+                               const mef::GatePtr& target) noexcept {
   auto* fta = new FaultTreeAnalyzer<Algorithm>(target, Analysis::settings());
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {
@@ -141,4 +143,5 @@ void RiskAnalysis::Report(std::string output) {
   RiskAnalysis::Report(of);
 }
 
+}  // namespace core
 }  // namespace scram

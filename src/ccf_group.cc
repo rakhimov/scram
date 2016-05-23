@@ -23,6 +23,7 @@
 #include <sstream>
 
 namespace scram {
+namespace mef {
 
 CcfGroup::CcfGroup(const std::string& name, const std::string& model,
                    const std::string& base_path, bool is_public)
@@ -317,4 +318,5 @@ void PhiFactorModel::CalculateProbabilities(
   assert(probabilities->size() == max_level);
 }
 
+}  // namespace mef
 }  // namespace scram

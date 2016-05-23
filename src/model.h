@@ -35,6 +35,7 @@
 #include "fault_tree.h"
 
 namespace scram {
+namespace mef {
 
 /// @class Model
 /// This class represents a risk analysis model.
@@ -182,6 +183,7 @@ class Model : public Element {
   std::unordered_set<std::string> event_ids_;  ///< For faster lookup.
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_MODEL_H_

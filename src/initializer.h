@@ -40,6 +40,7 @@
 #include "xml_parser.h"
 
 namespace scram {
+namespace mef {
 
 /// @class Initializer
 /// This class operates on input files
@@ -55,7 +56,7 @@ class Initializer {
   /// for example, mission time and validation schema.
   ///
   /// @param[in] settings  Analysis settings.
-  explicit Initializer(const Settings& settings);
+  explicit Initializer(const core::Settings& settings);
 
   Initializer(const Initializer&) = delete;
   Initializer& operator=(const Initializer&) = delete;
@@ -378,7 +379,7 @@ class Initializer {
   void SetupForAnalysis();
 
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
-  Settings settings_;  ///< Settings for analysis.
+  core::Settings settings_;  ///< Settings for analysis.
   std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
   /// The main schema for validation.
@@ -408,6 +409,7 @@ class Initializer {
   std::vector<ExpressionPtr> expressions_;
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_INITIALIZER_H_

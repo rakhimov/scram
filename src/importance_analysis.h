@@ -33,6 +33,7 @@
 #include "settings.h"
 
 namespace scram {
+namespace core {
 
 /// @struct ImportanceFactors
 /// Collection of importance factors for variables.
@@ -48,6 +49,9 @@ struct ImportanceFactors {
 /// Analysis of importance factors of risk model variables.
 class ImportanceAnalysis : public Analysis {
  public:
+  /// Mapping of an event and its importance.
+  using ImportanceRecord = std::pair<mef::BasicEventPtr, ImportanceFactors>;
+
   /// Importance analysis
   /// on the fault tree represented by
   /// its probability analysis.
@@ -73,8 +77,7 @@ class ImportanceAnalysis : public Analysis {
   /// @returns A collection of important events and their importance factors.
   ///
   /// @pre The importance analysis is done.
-  const std::vector<std::pair<BasicEventPtr, ImportanceFactors>>&
-  important_events() const {
+  const std::vector<ImportanceRecord>& important_events() const {
     return important_events_;
   }
 
@@ -86,7 +89,7 @@ class ImportanceAnalysis : public Analysis {
   /// @param[in] products  Products with basic event indices.
   ///
   /// @returns A unique collection of important basic events.
-  std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents(
+  std::vector<std::pair<int, mef::BasicEventPtr>> GatherImportantEvents(
       const BooleanGraph* graph,
       const std::vector<std::vector<int>>& products) noexcept;
 
@@ -97,7 +100,7 @@ class ImportanceAnalysis : public Analysis {
   /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
-  virtual std::vector<std::pair<int, BasicEventPtr>>
+  virtual std::vector<std::pair<int, mef::BasicEventPtr>>
   GatherImportantEvents() noexcept = 0;
 
   /// Calculates Marginal Importance Factor.
@@ -110,7 +113,7 @@ class ImportanceAnalysis : public Analysis {
   /// Container for basic event importance factors.
   std::unordered_map<std::string, ImportanceFactors> importance_;
   /// Container of pointers to important events and their importance factors.
-  std::vector<std::pair<BasicEventPtr, ImportanceFactors>> important_events_;
+  std::vector<ImportanceRecord> important_events_;
 };
 
 /// @class ImportanceAnalyzerBase
@@ -134,7 +137,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   explicit ImportanceAnalyzerBase(
       ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : ImportanceAnalysis(prob_analyzer),
-        prob_analyzer_(prob_analyzer) {}
+      prob_analyzer_(prob_analyzer) {}
 
  protected:
   virtual ~ImportanceAnalyzerBase() = default;
@@ -149,7 +152,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
-  std::vector<std::pair<int, BasicEventPtr>>
+  std::vector<std::pair<int, mef::BasicEventPtr>>
   GatherImportantEvents() noexcept override {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
@@ -207,7 +210,7 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
   explicit ImportanceAnalyzer(ProbabilityAnalyzer<Bdd>* prob_analyzer)
       : ImportanceAnalyzerBase(prob_analyzer),
-        bdd_graph_(prob_analyzer->bdd_graph()) {}
+      bdd_graph_(prob_analyzer->bdd_graph()) {}
 
  private:
   double CalculateMif(int index) noexcept override;
@@ -236,6 +239,7 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   Bdd* bdd_graph_;  ///< Binary decision diagram for the analyzer.
 };
 
+}  // namespace core
 }  // namespace scram
 
 #endif  // SCRAM_SRC_IMPORTANCE_ANALYSIS_H_

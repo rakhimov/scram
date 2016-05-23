@@ -37,6 +37,7 @@
 #include "expression.h"
 
 namespace scram {
+namespace mef {
 
 /// @class CcfGroup
 /// Abstract base class for all common cause failure models.
@@ -306,6 +307,7 @@ class PhiFactorModel : public CcfGroup {
       std::map<int, ExpressionPtr>* probabilities) override;
 };
 
+}  // namespace mef
 }  // namespace scram
 
 #endif  // SCRAM_SRC_CCF_GROUP_H_
