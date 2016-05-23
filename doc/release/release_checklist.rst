@@ -50,19 +50,24 @@ Pre-Release
 Release
 =======
 
-- [ ] Update version numbers
+- [ ] Bump the version
 
-    * [ ] version.h
-    * [ ] scram.man
-    * [ ] conf.py on the gh-source branch
+    * [ ] Add release notes into ``doc/release``
+
+    * [ ] Update version numbers
+
+        + [ ] CMakeLists.txt
+        + [ ] scram.man
+
+    * Commit the release with *SCRAM x.y.z* (x, y, z being version numbers)
 
 - [ ] Update the website
 
+    * [ ] Version number in ``conf.py`` on the ``gh-source`` branch
     * [ ] Lizard CCN report
     * [ ] Sitemap
 
-- [ ] Update release notes on GitHub
-- [ ] Release with GitHub automatic tagging
+- [ ] Release with GitHub automatic tagging with the release notes
 - [ ] Rebase Master on Develop (Avoid merging)
 - [ ] Close the milestone on GitHub
 - [ ] Publish the release notes on the scram-announce mailing list
@@ -71,4 +76,5 @@ Release
 Distribution
 ============
 
-- [ ] Update PPA (Ubuntu)
+- [ ] Update PPA (DEB/Ubuntu)
+- [ ] Installation package (NSIS/Windows)
