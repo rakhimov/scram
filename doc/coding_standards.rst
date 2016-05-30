@@ -205,7 +205,7 @@ GUI Code
 - Upon using Qt containers and constructs,
   stick to their STL API and usage style
   as much as possible.
-  Avoid Java-style API as much as possible.
+  Avoid the Java-style API as much as possible.
 
 - Avoid overloading signals and slots.
 
@@ -223,6 +223,10 @@ GUI Code
 
     * The UI class member must be aggregated as a private pointer member
       and named ``ui`` without ``m_`` prefix (default in Qt Creator).
+    * Don't repeat ``includes`` provided by the ``ui`` header.
+
+- Common Qt includes may be omitted,
+  for example, ``QString``, ``QList``, ``QStringList``, and ``QDir``.
 
 
 Monitoring Code Quality
@@ -390,10 +394,10 @@ reST Documentation Style
 - Semantic Linefeeds
 - Two blank lines between sections with bodies
 - One blank line after a header before its body
-- Title '#' overlined and underlined
-- Chapter '*' overlined and underlined
-- Section underlining and order '=', '-', '~', '^', '+'
-- Point nesting and order '-', '*', '+'
+- Title ``#`` overlined and underlined
+- Chapter ``*`` overlined and underlined
+- Section underlining and order ``=``, ``-``, ``~``, ``^``, ``+``
+- Point nesting and order ``-``, ``*``, ``+``
 - 4-space indentation
 - 100 character line limit
   (except for links and paths)
@@ -406,7 +410,7 @@ Core Code Documentation Style
 -----------------------------
 
 - Semantic Linefeeds
-- Doxygen comments with '///' and '///<'
+- Doxygen comments with ``///`` and ``///<``
 - Comment ordering:
 
     #. description
@@ -428,7 +432,7 @@ Core Code Documentation Style
     * The same formatting for template parameters ``@tparam T  Type desc...``
 
 - The two-space formatting for ``@throws Error  Description``
-- In-code TODOs with Doxygen '``/// @todo``'
+- In-code TODOs with Doxygen ``/// @todo``
   so that Doxygen picks them up.
 
 

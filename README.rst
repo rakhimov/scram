@@ -25,7 +25,7 @@ SCRAM
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 This project aims to build a command line tool for probabilistic risk analysis.
-SCRAM is currently capable of performing static fault tree analysis,
+SCRAM is capable of performing static fault tree analysis,
 analysis with common cause failure models,
 probability calculations with importance analysis,
 and uncertainty analysis with Monte Carlo simulations.
@@ -296,7 +296,7 @@ These tools do not need compilation or installation.
 Windows
 =======
 
-Currently the easiest option is
+The easiest option is
 to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
 with `Ubuntu 14.04`_.
 Follow the `Quick Installation`_ guide for this option
@@ -305,7 +305,7 @@ or building and installation instructions for `Linux Systems`_.
 Another option is to use MSYS2_ with Mingw-w64_ or Cygwin_
 to build and install SCRAM on Windows.
 Cygwin_ 64bit has been tested to produce binaries on Windows,
-but currently it is not being tested on a regular basis.
+but it is not being tested on a regular basis.
 The dependencies listed for Linux systems must be installed with Cygwin64.
 
 MSYS2_ with Mingw-w64_, on the other hand,
@@ -367,7 +367,7 @@ Running SCRAM and Tests
 This guide assumes
 that SCRAM *installation* directories are in the global path.
 If this is not the case,
-``path/to/installation/directory/bin/`` must be appended to the command-line calls.
+``path/to/installation/directory/bin/`` must be prepended to the command-line calls.
 However, if SCRAM executables are not in the path,
 some system tests and scripts cannot be initiated.
 
