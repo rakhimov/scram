@@ -74,12 +74,14 @@ Validation Schemas
 Post-processing
 ***************
 
-It is expected that the results of analysis are processed by other tools than SCRAM.
-Python scripts and XML query tools are better suited
+It is expected that the results of analysis
+are processed by other tools than the SCRAM core.
+The GUI front-end, Python scripts, and XML query tools are better suited
 to filter, group, sort, and do other data manipulations and visualization.
 
-Some suggestions:
+Suggested tools:
 
+    - SCRAM GUI front-end
     - `BaseX <http://basex.org>`_
     - Python with `lxml <http://lxml.de/>`_
 
