@@ -24,7 +24,9 @@ namespace scram {
 
 const std::string Error::kPrefix_ = "scram error: ";
 
-Error::Error(std::string msg) : msg_(msg), thrown_(Error::kPrefix_ + msg) {}
+Error::Error(std::string msg)
+    : msg_(std::move(msg)),
+      thrown_(kPrefix_ + msg_) {}
 
 const char* Error::what() const noexcept { return thrown_.c_str(); }
 

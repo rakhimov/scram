@@ -50,8 +50,8 @@ class Error : public std::exception {
   ///
   /// @param[in] msg  The error message.
   void msg(std::string msg) {
-    msg_ = msg;
-    thrown_ = kPrefix_ + msg;
+    msg_ = std::move(msg);
+    thrown_ = kPrefix_ + msg_;
   }
 
  private:
