@@ -35,7 +35,7 @@ SCRAM input and report files are based on OpenPSA_ Model Exchange Format.
 For the current status of the OpenPSA MEF features in SCRAM,
 please see the `MEF Support`_ documentation.
 
-The GUI front-end is provided
+A complementary GUI front-end is provided
 for visualization and manipulation of risk analysis models and reports.
 
 To explore the performance of SCRAM or research fault trees,
@@ -94,6 +94,7 @@ Package                Minimum Version
 `libxml2`              2.8.0
 `libxml++`             2.34.1
 `Python`               2.7.3 or 3.3
+`Qt`                   5.2.1
 ====================   ==================
 
 
@@ -103,7 +104,6 @@ Optional Dependencies
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`Qt`                   5.2.1
 `TCMalloc`             1.7
 ====================   ==================
 
@@ -182,10 +182,10 @@ The minimal list of required library package names is:
 #. libxml2-dev
 #. libxml++2.6-dev
 #. python2.7
+#. qt5-default
 
 and (optionally):
 
-#. qt5-default
 #. libgoogle-perftools-dev
 
 compiler:
@@ -203,13 +203,7 @@ the following line will install all major dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 libgoogle-perftools-dev
-
-The optional installation for GUI:
-
-.. code-block:: bash
-
-    sudo apt-get install -y qt5-default
+    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 libgoogle-perftools-dev qt5-default
 
 
 Mac Systems
@@ -234,10 +228,10 @@ The minimal list of required library package names is:
 #. libxml2
 #. libxmlxx2
 #. python27
+#. qt5-mac
 
 and (optionally):
 
-#. qt5-mac
 #. google-perftools
 
 compiler:
@@ -255,13 +249,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo port install cmake boost libxml2 libxmlxx2 python27 google-perftools
-
-The optional installation for GUI building:
-
-.. code-block:: bash
-
-    sudo port install qt5-mac
+    sudo port install cmake boost libxml2 libxmlxx2 python27 google-perftools qt5-mac
 
 .. _macports: http://www.macports.org/
 .. _homebrew: http://brew.sh/
