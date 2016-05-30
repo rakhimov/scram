@@ -466,8 +466,7 @@ class UniqueTable {
   ///       The release keeps the data about the table,
   ///       such as its size and capacity.
   void Release() {
-    table_.clear();
-    table_.reserve(0);
+    Table().swap(table_);
   }
 
   /// Finds an existing BDD vertex or
@@ -538,7 +537,7 @@ class UniqueTable {
                                ++it_cur);
       }
     }
-    std::swap(table_, new_table);
+    table_.swap(new_table);
     size_ = new_size;
     capacity_ = new_capacity;
   }
@@ -639,7 +638,15 @@ class CacheTable {
   /// Prepares the table for more entries.
   ///
   /// @param[in] n  The number of expected entries.
+  ///
+  /// @post If n is 0 and the table is empty,
+  ///       the memory is freed as much as possible.
+  ///       Using after release of memory is undefined.
   void reserve(int n) {
+    if (size_ == 0 && n == 0) {
+      decltype(table_)().swap(table_);
+      return;
+    }
     if (n <= size_) return;
     CacheTable::Rehash(GetPrimeNumber(n / max_load_factor_ + 1));
   }
@@ -666,6 +673,8 @@ class CacheTable {
   /// @param[in] value  Non-empty result of BDD Apply computations.
   ///
   /// @warning API deviation from STL maps.
+  ///          This function does not return an iterator
+  ///          because it is not needed by computations in BDD.
   void emplace(const key_type& key, const mapped_type& value) {
     assert(value && "Empty computation results!");
 
@@ -695,7 +704,7 @@ class CacheTable {
       new_entry.second.swap(entry.second);
     }
     size_ = new_size;
-    std::swap(table_, new_table);
+    table_.swap(new_table);
   }
 
   int size_;  ///< The total number of elements in the table.
@@ -719,24 +728,6 @@ class Bdd {
   using VertexPtr = IntrusivePtr<Vertex<Ite>>;  ///< BDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<Ite>>;  ///< Terminal vertices.
 
-  /// Constructor with the analysis target.
-  /// Reduced Ordered BDD is produced from a Boolean graph.
-  ///
-  /// @param[in] fault_tree  Preprocessed, partially normalized,
-  ///                        and indexed fault tree.
-  /// @param[in] settings  The analysis settings.
-  ///
-  /// @pre The Boolean graph has variable ordering.
-  ///
-  /// @note BDD construction may take considerable time.
-  Bdd(const BooleanGraph* fault_tree, const Settings& settings);
-
-  Bdd(const Bdd&) = delete;
-  Bdd& operator=(const Bdd&) = delete;
-
-  /// To handle incomplete ZBDD type with unique pointers.
-  ~Bdd() noexcept;
-
   /// @struct Function
   /// Holder of computation resultant functions and gate representations.
   struct Function {
@@ -755,6 +746,24 @@ class Bdd {
       vertex.swap(other.vertex);
     }
   };
+
+  /// Constructor with the analysis target.
+  /// Reduced Ordered BDD is produced from a Boolean graph.
+  ///
+  /// @param[in] fault_tree  Preprocessed, partially normalized,
+  ///                        and indexed fault tree.
+  /// @param[in] settings  The analysis settings.
+  ///
+  /// @pre The Boolean graph has variable ordering.
+  ///
+  /// @note BDD construction may take considerable time.
+  Bdd(const BooleanGraph* fault_tree, const Settings& settings);
+
+  Bdd(const Bdd&) = delete;
+  Bdd& operator=(const Bdd&) = delete;
+
+  /// To handle incomplete ZBDD type with unique pointers.
+  ~Bdd() noexcept;
 
   /// @returns The root function of the ROBDD.
   const Function& root() const { return root_; }

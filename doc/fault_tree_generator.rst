@@ -10,7 +10,7 @@ but it is time consuming to design large and non-trivial fault trees.
 In order to facilitate the creation of complex fault trees,
 a python script is provided that takes into account the factors
 that make a fault tree complex for analysis
-or other types of processing, such as graphical representation and validation.
+or other types of processing, such as visual representation and validation.
 
 
 General Description

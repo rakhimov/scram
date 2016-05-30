@@ -40,7 +40,7 @@ Implemented Features
 - Probability calculations with importance analysis
 - Uncertainty analysis with Monte Carlo simulations
 - Fault tree generator
-- Fault tree graphing with Graphviz Dot tool
+- GUI front-end
 
 
 Installation
@@ -101,7 +101,6 @@ Tools
     :maxdepth: 1
 
     doc/fault_tree_generator
-    doc/fault_tree_graphing
     doc/gui
 
 

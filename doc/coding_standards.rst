@@ -15,35 +15,107 @@ This project adheres to the following coding styles:
     #. `Google Python Style Guide (GPSG)`_
     #. `PEP 8 -- Style Guide for Python Code (PEP8)`_
     #. `KDE CMake Coding Style`_
-    #. `Qt Coding Style`_ for the GUI Development
+    #. `Qt Coding Style`_, `Qt Creator Coding Rules`_ for the GUI Development
     #. `Google Shell Style Guide`_
 
 .. _Google C++ Style Guide (GCSG): https://google.github.io/styleguide/cppguide.html
 .. _Google Python Style Guide (GPSG): https://google.github.io/styleguide/pyguide.html
 .. _PEP 8 -- Style Guide for Python Code (PEP8): https://www.python.org/dev/peps/pep-0008/
 .. _KDE CMake Coding Style: https://techbase.kde.org/Policies/CMake_Coding_Style
-.. _Qt Coding Style: http://qt-project.org/wiki/Qt_Coding_Style
+.. _Qt Coding Style: http://wiki.qt.io/Coding-Conventions
+.. _Qt Creator Coding Rules: https://doc-snapshots.qt.io/qtcreator-extending/coding-style.html
 .. _Google Shell Style Guide: https://google.github.io/styleguide/shell.xml
 
 
 Deviations from the GCSG
 ------------------------
 
-- Exceptions are allowed
-- Prefer streams to ``printf-like`` routines
-- Name mutator functions without ``set_`` prefix
-- Multiple *implementation* inheritance is allowed (mostly for mixins)
+- Exceptions are allowed.
+- Prefer streams to ``printf-like`` routines.
+- Name mutator functions without ``set_`` prefix.
+- Multiple *implementation* inheritance is allowed (mostly for mixins).
+- Lambda expressions used as nested functions follow
+  the function naming conventions.
+
+
+Deviations from the Qt Style
+----------------------------
+
+- 80-character line length limit (vs. 100).
+- Exceptions are allowed.
+- ``using-directives`` are forbidden.
+- Prefer anonymous ``namespace`` to ``static`` keyword.
+- The GCSG style ``include`` of headers:
+
+    * Sections:
+
+        #. Related header (including ``ui`` header)
+        #. C-system headers
+        #. C++ system headers
+        #. Qt headers
+        #. Other libraries' headers
+        #. Project Core headers
+        #. Project GUI headers
+
+    * Sections are grouped by a blank line.
+    * Within each section the includes are ordered alphabetically.
+
+- Class Format:
+
+    * Section order:
+
+        #. ``public:`` member functions
+        #. ``signals:`` (public by default in Qt5)
+        #. ``public slots:``
+        #. ``protected:`` member functions
+        #. ``protected slots:``
+        #. ``private:`` member functions
+        #. ``private slots:``
+        #. ``private:`` all data members
+
+    * No blank lines after access specifiers.
+
+    * One blank line before access specifiers except for the first one.
+
+    * Declaration order (the GCSG style):
+
+        #. Using declarations, Typedefs, Structs/Classes, and Enums.
+        #. Static const data members
+        #. Constructors
+        #. Destructors
+        #. Methods
+        #. Data members
+
+- Automatic connection of signals and slots is forbidden.
+
+- Using literal ``0`` for pointers is forbidden.
+  Only ``nullptr`` is allowed for null pointers.
 
 
 Additional Coding Conventions
 -----------------------------
+
+- Use *modern C++* (C++11).
+  Refer to `C++ Core Guidelines`_ for best practices.
+
+- If API, functionality, class, container, or other constructs mimic the STL constructs,
+  prefer the STL conventions and style.
+  For example, an iterator class for a custom container
+  should be named ``iterator`` instead of ``Iterator``.
+
+- Do not use ``inline``
+  when defining a function in a class definition.
+  It is implicitly ``inline``.
+
+.. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
+
 
 Core C++ Code
 ~~~~~~~~~~~~~
 
 - Exceptions are forbidden in **analysis code**.
 
-- RTTI (typeid, dynamic_cast, dynamic_pointer_cast)
+- RTTI (typeid, dynamic_cast, dynamic_pointer_cast, etc.)
   is forbidden in **analysis code**.
 
 - `Defensive Programming`_.
@@ -59,14 +131,11 @@ Core C++ Code
   Null pointer based logic must be
   rare, localized, and explicit.
 
-- Consider creating a typedef (using declaration/alias)
+- Consider supplying a typedef (using declaration/alias)
   for common smart pointers.
 
     * ``ClassNamePtr`` for shared, unique, and intrusive pointers
     * ``ClassNameWeakPtr`` for weak pointers
-
-- Prefer "modern C++" (C++11).
-  Refer to `C++ Core Guidelines`_ for best practices.
 
 - In definitions of class member functions:
 
@@ -81,10 +150,6 @@ Core C++ Code
 
 - Declare getter and setter functions before other complex member functions.
 
-- Do not use ``inline``
-  when defining a function in a class definition.
-  It is implicitly ``inline``.
-
 - Domain-specific ``Probability`` naming rules:
 
     * If a probability variable is a member variable of a class
@@ -92,7 +157,7 @@ Core C++ Code
       Its getter/setter functions should have
       corresponding names, i.e., ``p()`` and ``p(double value)``.
       Append extra description after ``p_``, i.e., ``p_total_``.
-      Avoid abbreviating the name to ``prob``,
+      Avoid abbreviating the name to ``prob``
       or fully spelling it to ``probability``.
 
     * For non-member probability variables:
@@ -122,8 +187,42 @@ Core C++ Code
       to represent this gate in code and API.
       The code that deals with the OpenPSA MEF may use the "atleast".
 
+- In performance-critical **analysis code**
+  (BDD variable ordering, Boolean formula rewriting/preprocessing, etc.),
+  avoid platform/implementation-dependent constructs
+  (iterating over unordered containers, using an object address as its identity, etc.).
+  The performance profile must be stable across platforms.
+
 .. _Defensive Programming: https://www.youtube.com/watch?v=1QhtXRMp3Hg
-.. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
+
+
+GUI Code
+~~~~~~~~
+
+- Avoid Qt containers whenever possible.
+  Prefer STL/Boost containers and constructs.
+
+- Upon using Qt containers and constructs,
+  stick to their STL API and usage style
+  as much as possible.
+  Avoid Java-style API as much as possible.
+
+- Avoid overloading signals and slots.
+
+- Avoid default arguments in signals and slots.
+
+- Prefer Qt5 style connections without ``SIGNAL``/``SLOT`` macros.
+
+- Prefer normalized signatures in connect statements with ``SIGNAL``/``SLOT`` macros.
+
+- Upon automatic formatting of the source code,
+  beware of ``clang-format`` confusions with ``Q_Object``, ``signals:``, ``slots:``,
+  and other Qt specific macros.
+
+- Prefer Qt Designer UI forms over hand-coded GUI.
+
+    * The UI class member must be aggregated as a private pointer member
+      and named ``ui`` without ``m_`` prefix (default in Qt Creator).
 
 
 Monitoring Code Quality
@@ -337,6 +436,22 @@ GUI Code Documentation Style
 ----------------------------
 
 - Semantic Linefeeds
-- Leverage Qt Creator for auto-documentation
-- Doxygen with C-style comments (default in Qt Creator)
+- Leverage Qt Creator for auto-documentation with Doxygen
+  (Javadoc style and ``///`` for one-liners)
 - The same organization of Doxygen sections as in the core code.
+
+
+********************
+XML Formatting Style
+********************
+
+- 2-space indentation
+- No tabs (spaces only)
+- No trailing whitespace characters
+- No excessive blank lines
+- No spaces around tag opening and closing brackets: ``<``, ``/>``, ``<\``, ``>``.
+- Only one space between attributes
+- No spaces around ``=`` in attribute value assignment
+- Prefer 100 character line limit
+- Avoid putting several elements on the same line
+- UTF-8 encoding

@@ -19,7 +19,8 @@ Technical Issues
 - Role::is_public instead of ``public`` (keyword in C++)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
-- The violation of a basic guarantee (memory leaks)
+- The violation of the basic guarantee (memory leaks)
   due to circular references in incorrect models
   (formulas, parameters, containers).
 - Static variables of class type with dynamic initialization.
+- Performance profile across platforms is not stable.
