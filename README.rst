@@ -31,15 +31,12 @@ probability calculations with importance analysis,
 and uncertainty analysis with Monte Carlo simulations.
 This tool can handle non-coherent fault trees, containing NOT logic.
 
-SCRAM partially supports the OpenPSA_ model exchange format.
-SCRAM input and report files are based on this format.
+SCRAM input and report files are based on OpenPSA_ Model Exchange Format.
 For the current status of the OpenPSA MEF features in SCRAM,
 please see the `MEF Support`_ documentation.
 
-SCRAM generates a Graphviz Dot instruction file
-for a graphical representation of a fault tree.
-An experimental GUI front-end is under development with Qt_
-for better visualization and manipulation of risk analysis models.
+The GUI front-end is provided
+for visualization and manipulation of risk analysis models and reports.
 
 To explore the performance of SCRAM or research fault trees,
 a fault tree generator script is provided,
@@ -51,7 +48,6 @@ its current capabilities, and future additions.
 .. _OpenPSA: http://open-psa.org
 .. _MEF Support: http://scram-pra.org/doc/opsa_support.html
 .. _documentation: http://scram-pra.org
-.. _Qt: http://qt-project.org/
 
 .. contents:: **Table of Contents**
     :depth: 2
@@ -107,7 +103,6 @@ Optional Dependencies
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`Graphviz Dot`         2.26.3
 `Qt`                   5.2.1
 `TCMalloc`             1.7
 ====================   ==================
@@ -190,7 +185,6 @@ The minimal list of required library package names is:
 
 and (optionally):
 
-#. graphviz
 #. qt5-default
 #. libgoogle-perftools-dev
 
@@ -198,18 +192,18 @@ compiler:
 
 - gcc g++
 
-For example, in order to install ``graphviz`` on your system, type:
+For example, in order to install ``Boost`` on your system, type:
 
 .. code-block:: bash
 
-    sudo apt-get install graphviz
+    sudo apt-get install libboost-all-dev
 
 If you'd prefer to copy/paste,
 the following line will install all major dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 graphviz libgoogle-perftools-dev
+    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 libgoogle-perftools-dev
 
 The optional installation for GUI:
 
@@ -243,7 +237,6 @@ The minimal list of required library package names is:
 
 and (optionally):
 
-#. graphviz
 #. qt5-mac
 #. google-perftools
 
@@ -251,18 +244,18 @@ compiler:
 
 - clang/llvm
 
-For example, in order to install ``graphviz`` on your system, type:
+For example, in order to install ``Boost`` on your system, type:
 
 .. code-block:: bash
 
-    sudo port install graphviz
+    sudo port install boost
 
 If you'd prefer to copy/paste,
 the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz google-perftools
+    sudo port install cmake boost libxml2 libxmlxx2 python27 google-perftools
 
 The optional installation for GUI building:
 

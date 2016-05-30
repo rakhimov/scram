@@ -40,7 +40,6 @@ Fault Tree Analysis
 
 #. Validate XML input files against RelaxNG.
 #. Validate the input analysis specifications and instantiations.
-#. Output a graphing dot file per fault tree. *Probability input is optional*
 #. Instantiate the analysis.
    Create the fault trees for the analysis.
 #. Find minimal cut sets or prime implicants. *Probability input is optional*
@@ -82,8 +81,6 @@ Event Tree Analysis *Not implemented*
 =====================================
 
 #. Read input files. Verification of the input.
-#. Upon users' request output instruction file for ``graphviz dot`` to draw the tree.
-   This is for visual verification of the input.
 #. Create the event tree for analysis.
 #. Perform calculations.
 #. Report the results.

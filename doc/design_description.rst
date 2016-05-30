@@ -66,10 +66,6 @@ Design Description
 - Reporter outputs the results of the work of Risk Analyzer
   to specified files or streams in XML format.
 
-- Grapher outputs a fault tree graphing instruction file for Graphviz Dot tool.
-  This can be used before any analysis,
-  but a valid fault tree with or without probability information must be provided.
-
 .. _Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
 .. _Policy-based design: https://en.wikipedia.org/wiki/Policy-based_design
 
