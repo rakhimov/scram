@@ -27,21 +27,21 @@ namespace mef {
 
 CcfGroup::CcfGroup(const std::string& name, const std::string& model,
                    const std::string& base_path, bool is_public)
-    : Role(is_public, base_path),
-      name_(name),
+    : Element(name),
+      Role(is_public, base_path),
       model_(model) {
-  if (name.empty()) throw LogicError("CCF group names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
 }
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
-                           name_ + " CCF group has already been defined.");
+                           Element::name() +
+                           " CCF group has already been defined.");
   }
   if (members_.count(basic_event->name())) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
-                                 " in " + name_ + " CCF group.");
+                                 " in " + Element::name() + " CCF group.");
   }
   members_.emplace(basic_event->name(), basic_event);
 }
@@ -59,7 +59,7 @@ void CcfGroup::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
     std::stringstream msg;
-    msg << name_ << " " << model_ << " CCF group level expected "
+    msg << Element::name() << " " << model_ << " CCF group level expected "
         << factors_.size() + 1 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
@@ -67,23 +67,24 @@ void CcfGroup::CheckLevel(int level) {
 
 void CcfGroup::ValidateDistribution() {
   if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + name_ + " CCF group" +
+    throw ValidationError("Distribution for " + Element::name() + " CCF group" +
                           " has illegal values.");
   }
 }
 
 void CcfGroup::Validate() {
   if (members_.size() < 2) {
-    throw ValidationError(name_ + " CCF group must have at least 2 members.");
+    throw ValidationError(Element::name() +
+                          " CCF group must have at least 2 members.");
   }
 
   if (factors_.back().first > members_.size()) {
-    throw ValidationError("The level of factors for " + name_ + " CCF group" +
-                          " cannot be more than # of members.");
+    throw ValidationError("The level of factors for " + Element::name() +
+                          " CCF group cannot be more than # of members.");
   }
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
     if (f.second->Max() > 1 || f.second->Min() < 0) {
-      throw ValidationError("Factors for " + name_ + " CCF group" +
+      throw ValidationError("Factors for " + Element::name() + " CCF group" +
                             " have illegal values.");
     }
   }

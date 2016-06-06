@@ -31,10 +31,9 @@ namespace mef {
 
 Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
-    : Role(is_public, base_path),
-      name_(name),
+    : Element(name),
+      Role(is_public, base_path),
       orphan_(true) {
-  if (name.empty()) throw LogicError("Event names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
 }
 
@@ -50,10 +49,10 @@ CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
 void Gate::Validate() {
   // Detect inhibit flavor.
   if (formula_->type() == "and" && Element::HasAttribute("flavor")) {
-    const Attribute* attr = &Element::GetAttribute("flavor");
-    if (attr->value == "inhibit") {
+    const Attribute& attr = Element::GetAttribute("flavor");
+    if (attr.value == "inhibit") {
       if (formula_->num_args() != 2) {
-        throw ValidationError(Event::name() +
+        throw ValidationError(Element::name() +
                               "INHIBIT gate must have only 2 children");
       }
       std::stringstream msg;
@@ -65,12 +64,12 @@ void Gate::Validate() {
         if (!conditional_found) {
           conditional_found = true;
         } else {
-          msg << Event::name() << " : INHIBIT gate must have"
+          msg << Element::name() << " : INHIBIT gate must have"
               << " exactly one conditional event.\n";
         }
       }
       if (!conditional_found) {
-        msg << Event::name()
+        msg << Element::name()
             << " : INHIBIT gate is missing a conditional event.\n";
       }
       if (!msg.str().empty()) throw ValidationError(msg.str());

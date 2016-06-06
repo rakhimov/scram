@@ -59,9 +59,6 @@ class CcfGroup : public Element, public Role {
 
   virtual ~CcfGroup() = default;
 
-  /// @returns The name of this CCF group.
-  const std::string& name() const { return name_; }
-
   /// @returns The identifier of this CCF group.
   const std::string& id() const { return id_; }
 
@@ -174,7 +171,6 @@ class CcfGroup : public Element, public Role {
       int max_level,
       std::map<int, ExpressionPtr>* probabilities) = 0;
 
-  std::string name_;  ///< The name of the CCF group.
   std::string id_;  ///< The unique identifier of the CCF group.
   std::string model_;  ///< Common cause model type.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.

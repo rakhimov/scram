@@ -179,9 +179,6 @@ class Parameter : public Expression, public Element, public Role {
   /// @throws LogicError  The parameter expression is already set.
   void expression(const ExpressionPtr& expression);
 
-  /// @returns The name of this variable.
-  const std::string& name() const { return name_; }
-
   /// @returns The unique identifier of this parameter.
   const std::string& id() const { return id_; }
 
@@ -221,7 +218,6 @@ class Parameter : public Expression, public Element, public Role {
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  std::string name_;  ///< Name of this parameter or variable.
   std::string id_;  ///< Identifier of this parameter or variable.
   ExpressionPtr expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.

@@ -30,10 +30,8 @@ namespace mef {
 
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
-    : Role(is_public, base_path),
-      name_(name) {
-  if (name.empty()) throw LogicError("Component names can't be empty");
-}
+    : Element(name),
+      Role(is_public, base_path) {}
 
 void Component::AddGate(const GatePtr& gate) {
   Component::AddEvent(gate, &gates_);

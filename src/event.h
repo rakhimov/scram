@@ -39,13 +39,12 @@ namespace mef {
 class Event : public Element, public Role {
  public:
   /// Constructs a fault tree event with a specific id.
-  /// It is assumed that names
-  /// and other strings do not have
-  /// leading and trailing whitespace characters.
   ///
   /// @param[in] name  The original name.
   /// @param[in] base_path  The series of containers to get this event.
   /// @param[in] is_public  Whether or not the event is public.
+  ///
+  /// @pre The strings do not have leading or trailing whitespace characters.
   ///
   /// @throws LogicError  The name is empty.
   explicit Event(const std::string& name, const std::string& base_path = "",
@@ -59,9 +58,6 @@ class Event : public Element, public Role {
   /// @returns The unique id that is set upon the construction of this event.
   const std::string& id() const { return id_; }
 
-  /// @returns The original name.
-  const std::string& name() const { return name_; }
-
   /// @returns True if this node is orphan.
   bool orphan() const { return orphan_; }
 
@@ -72,7 +68,6 @@ class Event : public Element, public Role {
 
  private:
   std::string id_;  ///< Unique Id name of an event.
-  std::string name_;  ///< Original name.
   bool orphan_;  ///< Indication of an orphan node.
 };
 
@@ -425,6 +420,7 @@ class Formula {
   /// Arguments that are formulas
   /// if this formula is nested.
   std::vector<FormulaPtr> formula_args_;
+
   std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
   std::vector<Formula*> connectors_;  ///< Formulae as connectors.
   bool gather_;  ///< A flag to gather nodes and connectors.

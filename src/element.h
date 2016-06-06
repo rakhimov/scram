@@ -43,6 +43,16 @@ struct Attribute {
 /// such as attributes and a label.
 class Element {
  public:
+  /// Constructs an element with an original name.
+  ///
+  /// @param[in] name  The local identifier name.
+  ///
+  /// @throws LogicError  The name is required and empty.
+  explicit Element(std::string name, bool optional_name = false);
+
+  /// @returns The original name.
+  const std::string& name() const { return kName_; }
+
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
   const std::string& label() const { return label_; }
@@ -81,7 +91,8 @@ class Element {
   ~Element() = default;
 
  private:
-  std::string label_;  ///< The label for the element.
+  const std::string kName_;  ///< The original name of the element.
+  std::string label_;  ///< The label text for the element.
   std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
 };
 

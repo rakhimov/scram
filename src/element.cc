@@ -25,6 +25,12 @@
 namespace scram {
 namespace mef {
 
+Element::Element(std::string name, bool optional_name)
+    : kName_(std::move(name)) {
+  if (!optional_name && kName_.empty())
+    throw LogicError("The element name can't be empty");
+}
+
 void Element::label(const std::string& new_label) {
   if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
   if (new_label.empty()) throw LogicError("Trying to apply empty label");

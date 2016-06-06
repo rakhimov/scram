@@ -70,11 +70,10 @@ void Expression::GatherNodesAndConnectors() {
 Parameter::Parameter(const std::string& name, const std::string& base_path,
                      bool is_public)
     : Expression({}),
+      Element(name),
       Role(is_public, base_path),
-      name_(name),
       unit_(kUnitless),
       unused_(true) {
-  if (name.empty()) throw LogicError("Parameter names can't be empty");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
 }
 

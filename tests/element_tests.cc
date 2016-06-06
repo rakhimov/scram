@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,28 @@ namespace scram {
 namespace mef {
 namespace test {
 
-class TestElement : public Element {};
+namespace {
+
+class TestElement : public Element {
+ public:
+  explicit TestElement() : Element("", /*optional=*/true) {}
+};
+
+class NamedElement : public Element {
+ public:
+  explicit NamedElement(std::string name) : Element(std::move(name)) {}
+};
+
+}
+
+TEST(ElementTest, Name) {
+  EXPECT_NO_THROW(TestElement el1);
+  EXPECT_THROW(NamedElement el2(""), LogicError);
+
+  EXPECT_NO_THROW(NamedElement el3("name"));
+  NamedElement el("name");
+  EXPECT_EQ("name", el.name());
+}
 
 TEST(ElementTest, Label) {
   TestElement el;
