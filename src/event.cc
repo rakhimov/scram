@@ -33,9 +33,8 @@ Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
     : Element(name),
       Role(is_public, base_path),
-      orphan_(true) {
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+      Id(*this, *this),
+      orphan_(true) {}
 
 Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;

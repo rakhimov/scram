@@ -123,6 +123,28 @@ class Role {
   std::string base_path_;  ///< A series of containers leading to this event.
 };
 
+/// @class Id
+/// Mixin class for assigning unique identifiers to elements.
+class Id {
+ public:
+  /// Mangles the element name to be unique.
+  ///
+  /// @param[in] el  The owner of the id.
+  /// @param[in] role  The role of the element.
+  ///
+  /// @throws LogicError if name mangling strings are empty.
+  Id(const Element& el, const Role& role);
+
+  /// @returns The unique id that is set upon the construction of this element.
+  const std::string& id() const { return kId_; }
+
+ protected:
+  ~Id() = default;
+
+ private:
+  const std::string kId_;  ///< Unique Id name of an element.
+};
+
 }  // namespace mef
 }  // namespace scram
 

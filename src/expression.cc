@@ -72,10 +72,9 @@ Parameter::Parameter(const std::string& name, const std::string& base_path,
     : Expression({}),
       Element(name),
       Role(is_public, base_path),
+      Id(*this, *this),
       unit_(kUnitless),
-      unused_(true) {
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+      unused_(true) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
   if (expression_) throw LogicError("Parameter expression is already set.");

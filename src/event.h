@@ -36,15 +36,13 @@ namespace mef {
 
 /// @class Event
 /// Abstract base class for general fault tree events.
-class Event : public Element, public Role {
+class Event : public Element, public Role, public Id {
  public:
   /// Constructs a fault tree event with a specific id.
   ///
   /// @param[in] name  The original name.
   /// @param[in] base_path  The series of containers to get this event.
   /// @param[in] is_public  Whether or not the event is public.
-  ///
-  /// @pre The strings do not have leading or trailing whitespace characters.
   ///
   /// @throws LogicError  The name is empty.
   explicit Event(const std::string& name, const std::string& base_path = "",
@@ -55,9 +53,6 @@ class Event : public Element, public Role {
 
   virtual ~Event() = 0;  ///< Abstract class.
 
-  /// @returns The unique id that is set upon the construction of this event.
-  const std::string& id() const { return id_; }
-
   /// @returns True if this node is orphan.
   bool orphan() const { return orphan_; }
 
@@ -67,7 +62,6 @@ class Event : public Element, public Role {
   void orphan(bool state) { orphan_ = state; }
 
  private:
-  std::string id_;  ///< Unique Id name of an event.
   bool orphan_;  ///< Indication of an orphan node.
 };
 

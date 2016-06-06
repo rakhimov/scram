@@ -40,10 +40,10 @@ class NamedElement : public Element {
 }
 
 TEST(ElementTest, Name) {
-  EXPECT_NO_THROW(TestElement el1);
-  EXPECT_THROW(NamedElement el2(""), LogicError);
+  EXPECT_NO_THROW(TestElement());
+  EXPECT_THROW(NamedElement(""), LogicError);
 
-  EXPECT_NO_THROW(NamedElement el3("name"));
+  EXPECT_NO_THROW(NamedElement("name"));
   NamedElement el("name");
   EXPECT_EQ("name", el.name());
 }
@@ -67,6 +67,26 @@ TEST(ElementTest, Attribute) {
   EXPECT_THROW(el.AddAttribute(attr), LogicError);
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
+}
+
+namespace {
+
+class NameId : public Element, public Role, public Id {
+ public:
+  NameId() : Element("", true), Role(true, "path"), Id(*this, *this) {}
+  explicit NameId(std::string name, bool role = true, std::string path = "")
+      : Element(name), Role(role, path), Id(*this, *this) {}
+};
+
+}
+
+TEST(ElementTest, Id) {
+  EXPECT_THROW(NameId(), LogicError);
+  EXPECT_NO_THROW(NameId("name"));
+  EXPECT_THROW(NameId("name", false, ""), LogicError);
+  NameId id_public("name");
+  NameId id_private("name", false, "path");
+  EXPECT_NE(id_public.id(), id_private.id());
 }
 
 }  // namespace test

@@ -287,16 +287,14 @@ void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
        model.basic_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
-      if (!param->is_public()) out += param->base_path() + ".";
-      out += param->name() + " ";
+      out += param->id() + " ";
     }
   }
   for (const std::pair<const std::string, mef::HouseEventPtr>& entry :
        model.house_events()) {
     const auto& param = entry.second;
     if (param->orphan()) {
-      if (!param->is_public()) out += param->base_path() + ".";
-      out += param->name() + " ";
+      out += param->id() + " ";
     }
   }
   if (!out.empty())
@@ -311,8 +309,7 @@ void Reporter::ReportUnusedParameters(const mef::Model& model,
        model.parameters()) {
     const auto& param = entry.second;
     if (param->unused()) {
-      if (!param->is_public()) out += param->base_path() + ".";
-      out += param->name() + " ";
+      out += param->id() + " ";
     }
   }
   if (!out.empty())
@@ -458,16 +455,13 @@ void Reporter::ReportLiteral(const core::Literal& literal,
 void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
                                 XmlStreamElement* parent) {
   const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
-  std::string prefix =
-        basic_event.is_public() ? "" : basic_event.base_path() + ".";
   if (!ccf_event) {
-    std::string name = prefix + basic_event.name();
     XmlStreamElement element = parent->AddChild("basic-event");
-    element.SetAttribute("name", name);
+    element.SetAttribute("name", basic_event.id());
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
     const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
-    element.SetAttribute("ccf-group", prefix + ccf_group->name());
+    element.SetAttribute("ccf-group", ccf_group->id());
     element.SetAttribute("order", ToString(ccf_event->member_names().size()));
     element.SetAttribute("group-size", ToString(ccf_group->members().size()));
     for (const std::string& name : ccf_event->member_names()) {
@@ -481,12 +475,9 @@ void Reporter::ReportImportantEvent(const mef::BasicEvent& basic_event,
                                     XmlStreamElement* parent) {
   /// @todo Refactor the code duplication.
   const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
-  std::string prefix =
-        basic_event.is_public() ? "" : basic_event.base_path() + ".";
   if (!ccf_event) {
-    std::string name = prefix + basic_event.name();
     XmlStreamElement element = parent->AddChild("basic-event");
-    element.SetAttribute("name", name);
+    element.SetAttribute("name", basic_event.id());
     element.SetAttribute("MIF", ToString(factors.mif, 4));
     element.SetAttribute("CIF", ToString(factors.cif, 4));
     element.SetAttribute("DIF", ToString(factors.dif, 4));
@@ -495,7 +486,7 @@ void Reporter::ReportImportantEvent(const mef::BasicEvent& basic_event,
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
     const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
-    element.SetAttribute("ccf-group", prefix + ccf_group->name());
+    element.SetAttribute("ccf-group", ccf_group->id());
     element.SetAttribute("order", ToString(ccf_event->member_names().size()));
     element.SetAttribute("group-size", ToString(ccf_group->members().size()));
     element.SetAttribute("MIF", ToString(factors.mif, 4));

@@ -41,7 +41,7 @@ namespace mef {
 
 /// @class CcfGroup
 /// Abstract base class for all common cause failure models.
-class CcfGroup : public Element, public Role {
+class CcfGroup : public Element, public Role, public Id {
  public:
   /// Constructor to be used by derived classes.
   ///
@@ -58,9 +58,6 @@ class CcfGroup : public Element, public Role {
   CcfGroup& operator=(const CcfGroup&) = delete;
 
   virtual ~CcfGroup() = default;
-
-  /// @returns The identifier of this CCF group.
-  const std::string& id() const { return id_; }
 
   /// @returns The CCF model applied to this group.
   const std::string& model() const { return model_; }
@@ -171,7 +168,6 @@ class CcfGroup : public Element, public Role {
       int max_level,
       std::map<int, ExpressionPtr>* probabilities) = 0;
 
-  std::string id_;  ///< The unique identifier of the CCF group.
   std::string model_;  ///< Common cause model type.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.

@@ -159,7 +159,7 @@ enum Units {
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
-class Parameter : public Expression, public Element, public Role {
+class Parameter : public Expression, public Element, public Role, public Id {
  public:
   /// Creates a parameter as a variable for future references.
   ///
@@ -178,9 +178,6 @@ class Parameter : public Expression, public Element, public Role {
   ///
   /// @throws LogicError  The parameter expression is already set.
   void expression(const ExpressionPtr& expression);
-
-  /// @returns The unique identifier of this parameter.
-  const std::string& id() const { return id_; }
 
   /// @returns The unit of this parameter.
   Units unit() const { return unit_; }
@@ -218,7 +215,6 @@ class Parameter : public Expression, public Element, public Role {
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  std::string id_;  ///< Identifier of this parameter or variable.
   ExpressionPtr expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.

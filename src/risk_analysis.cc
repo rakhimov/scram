@@ -73,11 +73,9 @@ void RiskAnalysis::Analyze() noexcept {
   for (const std::pair<const std::string, mef::FaultTreePtr>& ft :
        model_->fault_trees()) {
     for (const mef::GatePtr& target : ft.second->top_events()) {
-      std::string name = target->name();  // Analysis ID.
-      if (!target->is_public()) name = target->base_path() + "." + name;
-      LOG(INFO) << "Running analysis: " << name;
-      RiskAnalysis::RunAnalysis(name, target);
-      LOG(INFO) << "Finished analysis: " << name;
+      LOG(INFO) << "Running analysis: " << target->id();
+      RiskAnalysis::RunAnalysis(target->id(), target);
+      LOG(INFO) << "Finished analysis: " << target->id();
     }
   }
 }

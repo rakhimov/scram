@@ -58,5 +58,12 @@ Role::Role(bool is_public, const std::string& base_path)
     : is_public_(is_public),
       base_path_(base_path) {}
 
+Id::Id(const Element& el, const Role& role)
+    : kId_(role.is_public() ? el.name() : role.base_path() + "." + el.name()) {
+  if (el.name().empty()) throw LogicError("The name for an Id is empty!");
+  if (!role.is_public() && role.base_path().empty())
+    throw LogicError("The base path for a private element is empty.");
+}
+
 }  // namespace mef
 }  // namespace scram

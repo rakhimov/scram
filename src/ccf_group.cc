@@ -29,9 +29,8 @@ CcfGroup::CcfGroup(const std::string& name, const std::string& model,
                    const std::string& base_path, bool is_public)
     : Element(name),
       Role(is_public, base_path),
-      model_(model) {
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+      Id(*this, *this),
+      model_(model) {}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
