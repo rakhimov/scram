@@ -148,13 +148,14 @@ Bdd::Function Bdd::ConvertGraph(
     const GatePtr& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  Function result;
-  if (gates->count(gate->index())) {
-    std::pair<Function, int>& entry = gates->find(gate->index())->second;
+  Function result;  // For the NRVO, due to memoization.
+  // Memoization check.
+  auto it_entry = gates->find(gate->index());
+  if (it_entry != gates->end()) {
+    std::pair<Function, int>& entry = it_entry->second;
     result = entry.first;
-    assert(entry.second < gate->parents().size());
-    entry.second++;
-    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    assert(entry.second < gate->parents().size());  // Processed parents.
+    if (++entry.second == gate->parents().size()) gates->erase(it_entry);
     return result;
   }
   std::vector<Function> args;
