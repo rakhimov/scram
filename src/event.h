@@ -264,11 +264,6 @@ class Gate : public Event {
     formula_ = std::move(formula);
   }
 
-  /// This function is for cycle detection.
-  ///
-  /// @returns The connector between gates.
-  Formula* connector() const { return formula_.get(); }
-
   /// Checks if a gate is initialized correctly.
   ///
   /// @throws ValidationError  Errors in the gate's logic or setup.
@@ -367,18 +362,6 @@ class Formula {
   /// @throws ValidationError  Problems with the operator or arguments.
   void Validate();
 
-  /// @returns Gates as nodes.
-  const std::vector<Gate*>& nodes() {
-    if (gather_) Formula::GatherNodesAndConnectors();
-    return nodes_;
-  }
-
-  /// @returns Formulae as connectors.
-  const std::vector<Formula*>& connectors() {
-    if (gather_) Formula::GatherNodesAndConnectors();
-    return connectors_;
-  }
-
  private:
   /// Formula types that require two or more arguments.
   static const std::set<std::string> kTwoOrMore_;
@@ -402,9 +385,6 @@ class Formula {
     if (event->orphan()) event->orphan(false);
   }
 
-  /// Gathers nodes and connectors from arguments of the gate.
-  void GatherNodesAndConnectors();
-
   std::string type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
@@ -414,10 +394,6 @@ class Formula {
   /// Arguments that are formulas
   /// if this formula is nested.
   std::vector<FormulaPtr> formula_args_;
-
-  std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
-  std::vector<Formula*> connectors_;  ///< Formulae as connectors.
-  bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
 }  // namespace mef

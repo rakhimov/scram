@@ -64,6 +64,9 @@ class Expression {
 
   virtual ~Expression() = default;
 
+  /// @returns A set of arguments of the expression.
+  const std::vector<ExpressionPtr>& args() const { return args_; }
+
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
   ///
@@ -101,22 +104,7 @@ class Expression {
   /// @returns Minimum value of this expression.
   virtual double Min() noexcept { return this->Mean(); }
 
-  /// @returns Parameters as nodes.
-  const std::vector<Parameter*>& nodes() {
-    if (gather_) Expression::GatherNodesAndConnectors();
-    return nodes_;
-  }
-
-  /// @returns Non-Parameter Expressions as connectors.
-  const std::vector<Expression*>& connectors() {
-    if (gather_) Expression::GatherNodesAndConnectors();
-    return connectors_;
-  }
-
  protected:
-  /// @returns A set of arguments of the expression.
-  const std::vector<ExpressionPtr>& args() const { return args_; }
-
   /// Registers an additional argument expression.
   ///
   /// @param[in] arg  An argument expression used by this expression.
@@ -129,15 +117,9 @@ class Expression {
   /// @returns A sampled value of this expression.
   virtual double GetSample() noexcept = 0;
 
-  /// Gathers nodes and connectors from arguments of the expression.
-  void GatherNodesAndConnectors();
-
   std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
   double sampled_value_;  ///< The sampled value.
   bool sampled_;  ///< Indication if the expression is already sampled.
-  bool gather_;  ///< A flag to gather nodes and connectors.
-  std::vector<Parameter*> nodes_;  ///< Parameters as nodes.
-  std::vector<Expression*> connectors_;  ///< Expressions as connectors.
 };
 
 /// @enum Units
@@ -197,11 +179,6 @@ class Parameter : public Expression, public Element, public Role, public Id {
   double Mean() noexcept override { return expression_->Mean(); }
   double Max() noexcept override { return expression_->Max(); }
   double Min() noexcept override { return expression_->Min(); }
-
-  /// This function is for cycle detection.
-  ///
-  /// @returns The connector between parameters.
-  Expression* connector() { return this; }
 
   /// @returns The mark of this node.
   const std::string& mark() const { return mark_; }

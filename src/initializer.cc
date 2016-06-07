@@ -896,10 +896,8 @@ void Initializer::ValidateExpressions() {
        model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Parameter, Expression>(p.second.get(), &cycle)) {
-      std::string msg = "Detected a cycle in " + p.second->name() +
-          " parameter:\n";
-      msg += cycle::PrintCycle(cycle);
-      throw ValidationError(msg);
+      throw ValidationError("Detected a cycle in " + p.second->name() +
+                            " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
 

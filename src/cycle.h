@@ -16,7 +16,7 @@
  */
 
 /// @file cycle.h
-/// Facilities to detect and print cycles.
+/// Validation facilities to detect and print cycles in graphs.
 
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
@@ -26,8 +26,72 @@
 #include <string>
 #include <vector>
 
+#include "event.h"
+#include "expression.h"
+
 namespace scram {
 namespace cycle {
+
+/// Determines the connectors between nodes.
+///
+/// @param[in] node  The node under cycle investigation.
+///
+/// @returns The connector belonging to the node.
+///
+/// @{
+inline mef::Formula* GetConnector(mef::Gate* node) {
+  return node->formula().get();
+}
+inline mef::Expression* GetConnector(mef::Parameter* node) { return node; }
+/// @}
+
+/// Retrieves nodes from a connector.
+///
+/// @param[in] connector  The connector starting from another node.
+///
+/// @returns  The iterable collection of nodes on the other end of connection.
+///
+/// @{
+inline std::vector<mef::Gate*> GetNodes(mef::Formula* connector) {
+  std::vector<mef::Gate*> nodes;
+  for (const mef::GatePtr& gate : connector->gate_args()) {
+    nodes.push_back(gate.get());
+  }
+  return nodes;
+}
+inline std::vector<mef::Parameter*> GetNodes(mef::Expression* connector) {
+  std::vector<mef::Parameter*> nodes;
+  for (const mef::ExpressionPtr& arg : connector->args()) {
+    mef::Parameter* ptr = dynamic_cast<mef::Parameter*>(arg.get());
+    if (ptr) nodes.push_back(ptr);
+  }
+  return nodes;
+}
+/// @}
+
+/// Retrieves connectors from a connector.
+///
+/// @param[in] connector  The connector starting from another node.
+///
+/// @returns  The iterable collection of connectors.
+///
+/// @{
+inline std::vector<mef::Formula*> GetConnectors(mef::Formula* connector) {
+  std::vector<mef::Formula*> connectors;
+  for (const mef::FormulaPtr& formula : connector->formula_args()) {
+    connectors.push_back(formula.get());
+  }
+  return connectors;
+}
+inline std::vector<mef::Expression*> GetConnectors(mef::Expression* connector) {
+  std::vector<mef::Expression*> connectors;
+  for (const mef::ExpressionPtr& arg : connector->args()) {
+    if (dynamic_cast<mef::Parameter*>(arg.get()) == nullptr)
+      connectors.push_back(arg.get());
+  }
+  return connectors;
+}
+/// @}
 
 template <class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
@@ -35,6 +99,9 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 /// Traverses nodes with connectors to find a cycle.
 /// Interrupts the detection at first cycle.
 /// Nodes get marked.
+///
+/// The connector of the node is retrieved via unqualified call to
+/// GetConnector(node*).
 ///
 /// @tparam N  Type of nodes in the graph.
 /// @tparam C  Type of connectors (nodes, edges) in the graph.
@@ -50,7 +117,7 @@ template <class N, class C>
 bool DetectCycle(N* node, std::vector<std::string>* cycle) {
   if (node->mark().empty()) {
     node->mark("temporary");
-    if (ContinueConnector<N, C>(node->connector(), cycle)) {
+    if (ContinueConnector<N, C>(GetConnector(node), cycle)) {
       cycle->push_back(node->name());
       return true;
     }
@@ -66,6 +133,9 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// Helper function to check for cyclic references through connectors.
 /// Connectors may get market upon traversal.
 ///
+/// Connectors and nodes of the connector are retrieved via unqualified calls:
+/// GetConnectors(connector*) and GetNodes(connector*).
+///
 /// @tparam N  Type of nodes in the graph.
 /// @tparam C  Type of connectors (nodes, edges) in the graph.
 ///
@@ -75,10 +145,10 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// @returns True if a cycle is detected.
 template <class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle) {
-  for (N* node : connector->nodes()) {
+  for (N* node : GetNodes(connector)) {
     if (DetectCycle<N, C>(node, cycle)) return true;
   }
-  for (C* link : connector->connectors()) {
+  for (C* link : GetConnectors(connector)) {
     if (ContinueConnector<N, C>(link, cycle)) return true;
   }
   return false;

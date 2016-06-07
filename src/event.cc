@@ -82,8 +82,7 @@ const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
 Formula::Formula(const std::string& type)
     : type_(type),
-      vote_number_(0),
-      gather_(true) {}
+      vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_) throw LogicError("Vote number is not set.");
@@ -133,18 +132,6 @@ void Formula::Validate() {
         << vote_number_ << ".";
   }
   if (!msg.str().empty()) throw ValidationError(msg.str());
-}
-
-void Formula::GatherNodesAndConnectors() {
-  assert(nodes_.empty());
-  assert(connectors_.empty());
-  for (const GatePtr& gate : gate_args_) {
-    nodes_.push_back(gate.get());
-  }
-  for (const FormulaPtr& formula : formula_args_) {
-    connectors_.push_back(formula.get());
-  }
-  gather_ = false;
 }
 
 }  // namespace mef

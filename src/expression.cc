@@ -30,8 +30,7 @@ namespace mef {
 Expression::Expression(std::vector<ExpressionPtr> args)
     : args_(std::move(args)),
       sampled_value_(0),
-      sampled_(false),
-      gather_(true) {}
+      sampled_(false) {}
 
 double Expression::Sample() noexcept {
   if (!sampled_) {
@@ -51,20 +50,6 @@ bool Expression::IsConstant() noexcept {
   for (const ExpressionPtr& arg : args_)
     if (!arg->IsConstant()) return false;
   return true;
-}
-
-void Expression::GatherNodesAndConnectors() {
-  assert(nodes_.empty());
-  assert(connectors_.empty());
-  for (const ExpressionPtr& arg : args_) {
-    Parameter* ptr = dynamic_cast<Parameter*>(arg.get());
-    if (ptr) {
-      nodes_.push_back(ptr);
-    } else {
-      connectors_.push_back(arg.get());
-    }
-  }
-  gather_ = false;
 }
 
 Parameter::Parameter(std::string name, std::string base_path,
