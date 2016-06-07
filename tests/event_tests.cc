@@ -96,7 +96,7 @@ TEST(MEFGateTest, Cycle) {
   middle->formula(std::move(formula_two));
   bottom->formula(std::move(formula_three));
   std::vector<std::string> cycle;
-  bool ret = cycle::DetectCycle<Gate, Formula>(top.get(), &cycle);
+  bool ret = cycle::DetectCycle(top, &cycle);
   EXPECT_TRUE(ret);
   std::vector<std::string> print_cycle;
   print_cycle.push_back("Top");

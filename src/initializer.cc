@@ -888,7 +888,7 @@ void Initializer::ValidateInitialization() {
   // Check if all gates have no cycles.
   for (const std::pair<const std::string, GatePtr>& gate : model_->gates()) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Gate, Formula>(gate.second.get(), &cycle)) {
+    if (cycle::DetectCycle(gate.second, &cycle)) {
       std::string msg =
           "Detected a cycle in " + gate.second->name() + " gate:\n";
       msg += cycle::PrintCycle(cycle);
@@ -925,7 +925,7 @@ void Initializer::ValidateExpressions() {
   for (const std::pair<const std::string, ParameterPtr>& p :
        model_->parameters()) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Parameter, Expression>(p.second.get(), &cycle)) {
+    if (cycle::DetectCycle(p.second.get(), &cycle)) {
       throw ValidationError("Detected a cycle in " + p.second->name() +
                             " parameter:\n" + cycle::PrintCycle(cycle));
     }
