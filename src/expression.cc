@@ -67,11 +67,11 @@ void Expression::GatherNodesAndConnectors() {
   gather_ = false;
 }
 
-Parameter::Parameter(const std::string& name, const std::string& base_path,
-                     bool is_public)
+Parameter::Parameter(std::string name, std::string base_path,
+                     RoleSpecifier role)
     : Expression({}),
-      Element(name),
-      Role(is_public, base_path),
+      Element(std::move(name)),
+      Role(role, std::move(base_path)),
       Id(*this, *this),
       unit_(kUnitless),
       unused_(true) {}

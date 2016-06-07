@@ -42,11 +42,11 @@ class Event : public Element, public Role, public Id {
   ///
   /// @param[in] name  The original name.
   /// @param[in] base_path  The series of containers to get this event.
-  /// @param[in] is_public  Whether or not the event is public.
+  /// @param[in] role  The role of the event within the model or container.
   ///
   /// @throws LogicError  The name is empty.
-  explicit Event(const std::string& name, const std::string& base_path = "",
-                 bool is_public = true);
+  explicit Event(std::string name, std::string base_path = "",
+                 RoleSpecifier role = RoleSpecifier::kPublic);
 
   Event(const Event&) = delete;
   Event& operator=(const Event&) = delete;
@@ -224,7 +224,7 @@ class CcfEvent : public BasicEvent {
   /// @param[in] ccf_group  The CCF group that created this event.
   /// @param[in] member_names  The names of members that this CCF event
   ///                          represents as multiple failure.
-  CcfEvent(const std::string& name, const CcfGroup* ccf_group,
+  CcfEvent(std::string name, const CcfGroup* ccf_group,
            const std::vector<std::string>& member_names);
 
   /// @returns Pointer to the CCF group that created this CCF event.

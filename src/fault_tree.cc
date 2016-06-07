@@ -28,10 +28,10 @@
 namespace scram {
 namespace mef {
 
-Component::Component(const std::string& name, const std::string& base_path,
-                     bool is_public)
-    : Element(name),
-      Role(is_public, base_path) {}
+Component::Component(std::string name, std::string base_path,
+                     RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)) {}
 
 void Component::AddGate(const GatePtr& gate) {
   Component::AddEvent(gate, &gates_);

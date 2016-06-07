@@ -46,6 +46,7 @@ class Element {
   /// Constructs an element with an original name.
   ///
   /// @param[in] name  The local identifier name.
+  /// @param[in] optional_name  Allow empty names.
   ///
   /// @throws LogicError  The name is required and empty.
   explicit Element(std::string name, bool optional_name = false);
@@ -96,6 +97,9 @@ class Element {
   std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
 };
 
+/// Role, access attributes for elements.
+enum class RoleSpecifier { kPublic, kPrivate };
+
 /// @class Role
 /// Mixin class that manages private or public roles
 /// for elements as needed.
@@ -105,22 +109,23 @@ class Role {
  public:
   /// Sets the role of an element upon creation.
   ///
-  /// @param[in] is_public  A flag to define public or private role.
+  /// @param[in] role  A role specifier of the element.
   /// @param[in] base_path  The series of containers to get this event.
-  explicit Role(bool is_public = true, const std::string& base_path = "");
+  explicit Role(RoleSpecifier role = RoleSpecifier::kPublic,
+                std::string base_path = "");
 
-  /// @returns True for public roles, or False for private roles.
-  bool is_public() const { return is_public_; }
+  /// @returns The assigned role of the element.
+  RoleSpecifier role() const { return kRole_; }
 
   /// @returns The base path containing ancestor container names.
-  const std::string& base_path() const { return base_path_; }
+  const std::string& base_path() const { return kBasePath_; }
 
  protected:
   ~Role() = default;
 
  private:
-  bool is_public_;  ///< A flag for public and private roles.
-  std::string base_path_;  ///< A series of containers leading to this event.
+  const RoleSpecifier kRole_;  ///< The role of the element.
+  const std::string kBasePath_;  ///< A series of ancestor containers.
 };
 
 /// @class Id

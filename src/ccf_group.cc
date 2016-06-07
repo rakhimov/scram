@@ -25,12 +25,10 @@
 namespace scram {
 namespace mef {
 
-CcfGroup::CcfGroup(const std::string& name, const std::string& model,
-                   const std::string& base_path, bool is_public)
-    : Element(name),
-      Role(is_public, base_path),
-      Id(*this, *this),
-      model_(model) {}
+CcfGroup::CcfGroup(std::string name, std::string base_path, RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      Id(*this, *this) {}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
@@ -58,7 +56,7 @@ void CcfGroup::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
     std::stringstream msg;
-    msg << Element::name() << " " << model_ << " CCF group level expected "
+    msg << Element::name() << " CCF group level expected "
         << factors_.size() + 1 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
@@ -95,7 +93,7 @@ void CcfGroup::ApplyModel() {
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     BasicEventPtr member = mem.second;
     GatePtr new_gate(
-        new Gate(member->name(), member->base_path(), member->is_public()));
+        new Gate(member->name(), member->base_path(), member->role()));
     assert(member->id() == new_gate->id());
     new_gate->formula(FormulaPtr(new Formula("or")));
     gates.emplace(mem.first, new_gate);

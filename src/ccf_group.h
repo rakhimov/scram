@@ -46,21 +46,17 @@ class CcfGroup : public Element, public Role, public Id {
   /// Constructor to be used by derived classes.
   ///
   /// @param[in] name  The name of a CCF group.
-  /// @param[in] model  CCF model of this group.
   /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] is_public  Whether or not the group is public.
+  /// @param[in] role  The role of the CCF group within the model or container.
   ///
   /// @throws LogicError  The name is empty.
-  CcfGroup(const std::string& name, const std::string& model,
-           const std::string& base_path = "", bool is_public = true);
+  explicit CcfGroup(std::string name, std::string base_path = "",
+                    RoleSpecifier role = RoleSpecifier::kPublic);
 
   CcfGroup(const CcfGroup&) = delete;
   CcfGroup& operator=(const CcfGroup&) = delete;
 
   virtual ~CcfGroup() = default;
-
-  /// @returns The CCF model applied to this group.
-  const std::string& model() const { return model_; }
 
   /// @returns Members of the CCF group with original names as keys.
   const std::map<std::string, BasicEventPtr>& members() const {
@@ -168,7 +164,6 @@ class CcfGroup : public Element, public Role, public Id {
       int max_level,
       std::map<int, ExpressionPtr>* probabilities) = 0;
 
-  std::string model_;  ///< Common cause model type.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
@@ -183,15 +178,7 @@ using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
 /// then all components or members fail simultaneously or within short time.
 class BetaFactorModel : public CcfGroup {
  public:
-  /// Constructs the group and sets the model.
-  ///
-  /// @param[in] name  The name for the group.
-  /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] is_public  Whether or not the group is public.
-  explicit BetaFactorModel(const std::string& name,
-                           const std::string& base_path = "",
-                           bool is_public = true)
-      : CcfGroup(name, "beta-factor", base_path, is_public) {}
+  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
 
  private:
   /// Checks a CCF factor level for the beta model.
@@ -220,15 +207,7 @@ class BetaFactorModel : public CcfGroup {
 /// given that (k-1) members failed.
 class MglModel : public CcfGroup {
  public:
-  /// Constructs the group and sets the model.
-  ///
-  /// @param[in] name  The name for the group.
-  /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] is_public  Whether or not the group is public.
-  explicit MglModel(const std::string& name,
-                    const std::string& base_path = "",
-                    bool is_public = true)
-      : CcfGroup(name, "MGL", base_path, is_public) {}
+  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
 
  private:
   /// Checks a CCF factor level for the MGL model.
@@ -251,15 +230,7 @@ class MglModel : public CcfGroup {
 /// the group due to common cause.
 class AlphaFactorModel : public CcfGroup {
  public:
-  /// Constructs the group and sets the model.
-  ///
-  /// @param[in] name  The name for the group.
-  /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] is_public  Whether or not the group is public.
-  explicit AlphaFactorModel(const std::string& name,
-                            const std::string& base_path = "",
-                            bool is_public = true)
-      : CcfGroup(name, "alpha-factor", base_path, is_public) {}
+  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
 
  private:
   void CalculateProbabilities(
@@ -274,15 +245,7 @@ class AlphaFactorModel : public CcfGroup {
 /// This model is described in the OpenPSA Model Exchange Format.
 class PhiFactorModel : public CcfGroup {
  public:
-  /// Constructs the group and sets the model.
-  ///
-  /// @param[in] name  The name for the group.
-  /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] is_public  Whether or not the group is public.
-  explicit PhiFactorModel(const std::string& name,
-                          const std::string& base_path = "",
-                          bool is_public = true)
-      : CcfGroup(name, "phi-factor", base_path, is_public) {}
+  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
 
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.

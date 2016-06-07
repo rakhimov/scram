@@ -73,8 +73,12 @@ namespace {
 
 class NameId : public Element, public Role, public Id {
  public:
-  NameId() : Element("", true), Role(true, "path"), Id(*this, *this) {}
-  explicit NameId(std::string name, bool role = true, std::string path = "")
+  NameId()
+      : Element("", true),
+        Role(RoleSpecifier::kPublic, "path"),
+        Id(*this, *this) {}
+  explicit NameId(std::string name, RoleSpecifier role = RoleSpecifier::kPublic,
+                  std::string path = "")
       : Element(name), Role(role, path), Id(*this, *this) {}
 };
 
@@ -83,9 +87,9 @@ class NameId : public Element, public Role, public Id {
 TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(), LogicError);
   EXPECT_NO_THROW(NameId("name"));
-  EXPECT_THROW(NameId("name", false, ""), LogicError);
+  EXPECT_THROW(NameId("name", RoleSpecifier::kPrivate, ""), LogicError);
   NameId id_public("name");
-  NameId id_private("name", false, "path");
+  NameId id_private("name", RoleSpecifier::kPrivate, "path");
   EXPECT_NE(id_public.id(), id_private.id());
 }
 

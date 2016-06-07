@@ -49,11 +49,11 @@ class Component : public Element, public Role {
   ///
   /// @param[in] name  The name identifier for the component.
   /// @param[in] base_path  The series of containers to get this container.
-  /// @param[in] is_public  A flag to define public or private role for members.
+  /// @param[in] role  The default role for container members.
   ///
   /// @throws LogicError  The name is empty.
-  explicit Component(const std::string& name, const std::string& base_path = "",
-                     bool is_public = true);
+  explicit Component(std::string name, std::string base_path = "",
+                     RoleSpecifier role = RoleSpecifier::kPublic);
 
   Component(const Component&) = delete;
   Component& operator=(const Component&) = delete;
@@ -122,7 +122,7 @@ class Component : public Element, public Role {
 
   /// Adds a member component container into this component container.
   /// Components are unique.
-  /// The ownership is transfered to this component only.
+  /// The ownership is transferred to this component only.
   ///
   /// @param[in] component  The CCF group to be added to this container.
   ///

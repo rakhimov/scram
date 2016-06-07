@@ -29,19 +29,18 @@
 namespace scram {
 namespace mef {
 
-Event::Event(const std::string& name, const std::string& base_path,
-             bool is_public)
-    : Element(name),
-      Role(is_public, base_path),
+Event::Event(std::string name, std::string base_path, RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)),
       Id(*this, *this),
       orphan_(true) {}
 
 Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;
 
-CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
+CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group,
                    const std::vector<std::string>& member_names)
-    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
+    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
       ccf_group_(ccf_group),
       member_names_(member_names) {}
 

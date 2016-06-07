@@ -165,12 +165,11 @@ class Parameter : public Expression, public Element, public Role, public Id {
   ///
   /// @param[in] name  The name of this variable (Case sensitive).
   /// @param[in] base_path  The series of containers to get this parameter.
-  /// @param[in] is_public  Whether or not the parameter is public.
+  /// @param[in] role  The role of the parameter within the model or container.
   ///
   /// @throws LogicError  The name is empty.
-  explicit Parameter(const std::string& name,
-                     const std::string& base_path = "",
-                     bool is_public = true);
+  explicit Parameter(std::string name, std::string base_path = "",
+                     RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// Sets the expression of this parameter.
   ///
