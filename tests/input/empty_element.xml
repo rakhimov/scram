@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<opsa-mef name="EmptyTextLabelModel">
+  <define-fault-tree name="Ex">
+    <define-basic-event name="A">
+      <label> </label>
+      <float value="0.1"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

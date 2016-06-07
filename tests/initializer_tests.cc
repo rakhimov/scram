@@ -71,10 +71,21 @@ TEST(InitializerTest, FailSchemaValidation) {
 // Unsupported operations.
 TEST(InitializerTest, UnsupportedFeature) {
   std::string dir = "./share/scram/input/fta/";
-  std::vector<std::string> incorrect_inputs = {
-      "../unsupported_feature.xml",
-      "../unsupported_gate.xml",
-      "../unsupported_expression.xml"};
+  std::vector<std::string> incorrect_inputs = {"../unsupported_feature.xml",
+                                               "../unsupported_gate.xml",
+                                               "../unsupported_expression.xml"};
+  for (const auto& input : incorrect_inputs) {
+    Initializer* init = new Initializer(core::Settings());
+    EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
+        << " Filename:  " << input;
+    delete init;
+  }
+}
+
+TEST(InitializerTest, EmptyAttributeElementText) {
+  std::string dir = "./share/scram/input/fta/";
+  std::vector<std::string> incorrect_inputs = {"../empty_element.xml",
+                                               "../empty_attribute.xml"};
   for (const auto& input : incorrect_inputs) {
     Initializer* init = new Initializer(core::Settings());
     EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)

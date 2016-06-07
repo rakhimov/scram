@@ -165,7 +165,7 @@
   <define name="phase-definition">
     <element name="define-phase">
       <ref name="name"/>
-      <attribute name="time-fraction"> <data type="float"/> </attribute>
+      <attribute name="time-fraction"> <data type="double"/> </attribute>
       <optional>
         <ref name="label"/>
       </optional>
@@ -1007,7 +1007,7 @@
     <define name="float">
       <element name="float">
         <attribute name="value">
-          <data type="float"/>
+          <data type="double"/>
         </attribute>
       </element>
     </define>

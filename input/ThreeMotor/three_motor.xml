@@ -36,45 +36,35 @@ Transfer symbols are commented only for clarity.
       </or>
     </define-gate>
     <define-gate name="E3">
-      <label>
-        K2 relay contacts fail to open when K5 relay contact  closed for t > 60 sec
-      </label>
+      <label> K2 relay contacts fail to open when K5 relay contact  closed for t > 60 sec </label>
       <or>
         <basic-event name="K2"/>
         <gate name="E5"/>
       </or>
     </define-gate>
     <define-gate name="E5">
-      <label>
-        EMF not removed from K2 relay coil when K5 relay contacts closed for t > 60 sec
-      </label>
+      <label> EMF not removed from K2 relay coil when K5 relay contacts closed for t > 60 sec </label>
       <or>
         <basic-event name="T1"/>
         <gate name="E8"/>
       </or>
     </define-gate>
     <define-gate name="E8">
-      <label>
-        K1 relay contacts fail to open when K5 relay contacts closed for t > 60 sec
-      </label>
+      <label> K1 relay contacts fail to open when K5 relay contacts closed for t > 60 sec </label>
       <or>
         <basic-event name="K1"/>
         <gate name="E9"/>
       </or>
     </define-gate>
     <define-gate name="E9">
-      <label>
-        EMF not removed from K1 relay coil when K5 relay contacts closed for t > 60 sec
-      </label>
+      <label> EMF not removed from K1 relay coil when K5 relay contacts closed for t > 60 sec </label>
       <or>
         <gate name="E10"/>
         <gate name="E11"/>
       </or>
     </define-gate>
     <define-gate name="E10">
-      <label>
-        EMF to K1 coil through timer circuit when K5 contacts closed for t > 60 sec
-      </label>
+      <label> EMF to K1 coil through timer circuit when K5 contacts closed for t > 60 sec </label>
       <and>
         <house-event name="KT1"/>
         <house-event name="KT3"/>
@@ -82,18 +72,14 @@ Transfer symbols are commented only for clarity.
       </and>
     </define-gate>
     <define-gate name="E12">
-      <label>
-        KT2 timer contacts fail to open when K5 relay contacts closed for t > 60 sec
-      </label>
+      <label> KT2 timer contacts fail to open when K5 relay contacts closed for t > 60 sec </label>
       <or>
         <house-event name="KT2"/>
         <basic-event name="T4"/>
       </or>
     </define-gate>
     <define-gate name="E11">
-      <label>
-        EMF to K1 coil through S1 contacts when K5 contacts closed for t > 60 sec
-      </label>
+      <label> EMF to K1 coil through S1 contacts when K5 contacts closed for t > 60 sec </label>
       <or>
         <basic-event name="S1"/>
         <basic-event name="T3"/>
@@ -122,9 +108,7 @@ Transfer symbols are commented only for clarity.
         </or>
       </define-gate>
       <define-gate name="E3">
-        <label>
-          EMF to K1 coil through timer circuit when K3 contacts closed for t > 60 sec
-        </label>
+        <label> EMF to K1 coil through timer circuit when K3 contacts closed for t > 60 sec </label>
         <and>
           <gate name="E5"/>
           <gate name="E6"/>

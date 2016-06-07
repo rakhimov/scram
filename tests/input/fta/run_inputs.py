@@ -64,6 +64,8 @@ BAD_INPUTS = [
     "../unsupported_feature.xml",
     "../unsupported_gate.xml",
     "../unsupported_expression.xml",
+    "../empty_element.xml",
+    "../empty_attribute.xml",
     "nonexistent_file.xml",
     "int_overflow.xml",
     "invalid_probability.xml",

@@ -58,8 +58,14 @@
     </attribute>
   </define>
 
+  <define name="NonEmptyString">  <!-- Texts without LF and other special chars. -->
+    <data type="normalizedString">
+      <param name="pattern">.*\S+.*</param>
+    </data>
+  </define>
+
   <define name="label">
-    <element name="label"> <text/> </element>
+    <element name="label"> <ref name="NonEmptyString"/> </element>
   </define>
 
   <define name="attributes">
@@ -67,9 +73,9 @@
       <zeroOrMore>
         <element name="attribute">
           <ref name="name"/>
-          <attribute name="value"> <data type="string"/> </attribute>
+          <attribute name="value"> <ref name="NonEmptyString"/> </attribute>
           <optional>
-            <attribute name="type"> <data type="string"/> </attribute>
+            <attribute name="type"> <ref name="NonEmptyString"/> </attribute>
           </optional>
         </element>
       </zeroOrMore>
@@ -537,7 +543,7 @@
     <define name="float">
       <element name="float">
         <attribute name="value">
-          <data type="float"/>
+          <data type="double"/>
         </attribute>
       </element>
     </define>
