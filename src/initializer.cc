@@ -76,7 +76,7 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
   return s.empty() ? parent_role : GetRole(s);
 }
 
-}
+}  // namespace
 
 Initializer::Initializer(const core::Settings& settings)
     : settings_(settings),

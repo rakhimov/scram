@@ -29,7 +29,7 @@ namespace {
 
 class TestElement : public Element {
  public:
-  explicit TestElement() : Element("", /*optional=*/true) {}
+  TestElement() : Element("", /*optional=*/true) {}
 };
 
 class NamedElement : public Element {
@@ -37,7 +37,7 @@ class NamedElement : public Element {
   explicit NamedElement(std::string name) : Element(std::move(name)) {}
 };
 
-}
+}  // namespace
 
 TEST(ElementTest, Name) {
   EXPECT_NO_THROW(TestElement());
@@ -82,7 +82,7 @@ class NameId : public Element, public Role, public Id {
       : Element(name), Role(role, path), Id(*this, *this) {}
 };
 
-}
+}  // namespace
 
 TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(), LogicError);
