@@ -137,7 +137,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   explicit ImportanceAnalyzerBase(
       ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : ImportanceAnalysis(prob_analyzer),
-      prob_analyzer_(prob_analyzer) {}
+        prob_analyzer_(prob_analyzer) {}
 
  protected:
   virtual ~ImportanceAnalyzerBase() = default;
