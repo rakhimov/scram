@@ -139,18 +139,6 @@ std::string JoinNames(const std::vector<Gate*>& combination) {
   return name;
 }
 
-/// Collects names of combination proxy gates for later reporting
-/// as part of the CCF event.
-///
-/// @param[in] combination  The combination of events.
-///
-/// @returns The gate names in the same order as in the combination.
-std::vector<std::string> CollectNames(const std::vector<Gate*>& combination) {
-  std::vector<std::string> names;
-  for (const Gate* gate : combination) names.push_back(gate->name());
-  return names;
-}
-
 }  // namespace
 
 void CcfGroup::ApplyModel() {
@@ -176,11 +164,11 @@ void CcfGroup::ApplyModel() {
     std::vector<std::vector<Gate*>> combinations =
         GenerateCombinations(proxy_gates.begin(), proxy_gates.end(), level);
 
-    for (const auto& combination : combinations) {
-      auto new_event = std::make_shared<CcfEvent>(JoinNames(combination), this,
-                                                  CollectNames(combination));
-      new_event->expression(prob);
-      for (Gate* gate : combination) gate->formula()->AddArgument(new_event);
+    for (auto& combination : combinations) {
+      auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
+      ccf_event->expression(prob);
+      for (Gate* gate : combination) gate->formula()->AddArgument(ccf_event);
+      ccf_event->members(std::move(combination));  // Move, at last.
     }
   }
 }

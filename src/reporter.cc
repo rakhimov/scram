@@ -471,13 +471,13 @@ void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
     add_data(&element);
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
-    const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
-    element.SetAttribute("ccf-group", ccf_group->id());
-    element.SetAttribute("order", ToString(ccf_event->member_names().size()));
-    element.SetAttribute("group-size", ToString(ccf_group->members().size()));
+    const mef::CcfGroup& ccf_group = ccf_event->ccf_group();
+    element.SetAttribute("ccf-group", ccf_group.id());
+    element.SetAttribute("order", ToString(ccf_event->members().size()));
+    element.SetAttribute("group-size", ToString(ccf_group.members().size()));
     add_data(&element);
-    for (const std::string& name : ccf_event->member_names()) {
-      element.AddChild("basic-event").SetAttribute("name", name);
+    for (const mef::Gate* member : ccf_event->members()) {
+      element.AddChild("basic-event").SetAttribute("name", member->name());
     }
   }
 }
