@@ -452,7 +452,7 @@ void Reporter::ReportResults(std::string ft_name,
 
 void Reporter::ReportLiteral(const core::Literal& literal,
                              XmlStreamElement* parent) {
-  auto add_data = [](XmlStreamElement*) {};
+  auto add_data = [](XmlStreamElement* /*element*/) {};
   if (literal.complement) {
     XmlStreamElement not_parent = parent->AddChild("not");
     Reporter::ReportBasicEvent(*literal.event, &not_parent, add_data);
