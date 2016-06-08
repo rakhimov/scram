@@ -940,17 +940,22 @@ void Initializer::ValidateExpressions() {
 }
 
 void Initializer::SetupForAnalysis() {
-  // Collecting top events of fault trees.
+  CLOCK(top_time);
+  LOG(DEBUG2) << "Collecting top events of fault trees...";
   for (const std::pair<const std::string, FaultTreePtr>& ft :
        model_->fault_trees()) {
     ft.second->CollectTopEvents();
   }
+  LOG(DEBUG2) << "Top event collection is finished in " << DUR(top_time);
 
+  CLOCK(ccf_time);
+  LOG(DEBUG2) << "Applying CCF models...";
   // CCF groups must apply models to basic event members.
   for (const std::pair<const std::string, CcfGroupPtr>& group :
        model_->ccf_groups()) {
     group.second->ApplyModel();
   }
+  LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
 }
 
 }  // namespace mef

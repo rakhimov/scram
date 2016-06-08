@@ -39,10 +39,10 @@ Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;
 
 CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group,
-                   const std::vector<std::string>& member_names)
+                   std::vector<std::string> member_names)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
       ccf_group_(ccf_group),
-      member_names_(member_names) {}
+      member_names_(std::move(member_names)) {}
 
 void Gate::Validate() {
   // Detect inhibit flavor.

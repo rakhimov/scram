@@ -87,16 +87,83 @@ void CcfGroup::Validate() {
   }
 }
 
+namespace {
+
+/// Generates combinations of elements from a range.
+///
+/// @tparam Iterator  Iterator type of the range.
+///                   Best if it's a random access iterator.
+///
+/// @param[in] first1  The beginning of the range.
+/// @param[in] last1  The end of the range.
+/// @param[in] k  The number of elements to choose into a combination.
+///
+/// @returns  A container of all possible combinations.
+template <typename Iterator>
+std::vector<std::vector<typename Iterator::value_type>>
+GenerateCombinations(Iterator first1, Iterator last1, int k) {
+  assert(k >= 0 && "No negative choice number.");
+
+  auto size = std::distance(first1, last1);
+  assert(size >= 0 && "Invalid iterators.");
+
+  if (k > size) return {};
+  if (k == 0) return {{}};  // The notion of 'nothing'.
+  if (k == size)
+    return {std::vector<typename Iterator::value_type>(first1, last1)};
+
+  auto c = GenerateCombinations(std::next(first1), last1, k - 1);
+  for (auto& v : c) v.push_back(*first1);
+
+  auto rest = GenerateCombinations(std::next(first1), last1, k);
+  c.reserve(c.size() + rest.size());
+  std::move(rest.begin(), rest.end(), std::back_inserter(c));
+  assert(rest.empty() || rest.front().empty());  // Verify the move.
+
+  return c;
+}
+
+/// Joins CCF combination proxy gate names
+/// to create a distinct name for a new CCF event.
+///
+/// @param[in] combination  The combination of events.
+///
+/// @returns A uniquely mangled string for the combination.
+std::string JoinNames(const std::vector<Gate*>& combination) {
+  std::string name = "[";
+  for (auto it = combination.begin(), it_end = std::prev(combination.end());
+       it != it_end; ++it) {
+    name += (*it)->name() + " ";
+  }
+  name += combination.back()->name() + "]";
+  return name;
+}
+
+/// Collects names of combination proxy gates for later reporting
+/// as part of the CCF event.
+///
+/// @param[in] combination  The combination of events.
+///
+/// @returns The gate names in the same order as in the combination.
+std::vector<std::string> CollectNames(const std::vector<Gate*>& combination) {
+  std::vector<std::string> names;
+  for (const Gate* gate : combination) names.push_back(gate->name());
+  return names;
+}
+
+}  // namespace
+
 void CcfGroup::ApplyModel() {
-  // Construct replacement gates for member basic events.
-  std::map<std::string, GatePtr> gates;
+  // Construct replacement proxy gates for member basic events.
+  std::vector<Gate*> proxy_gates;
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-    BasicEventPtr member = mem.second;
+    const BasicEventPtr& member = mem.second;
     GatePtr new_gate(
         new Gate(member->name(), member->base_path(), member->role()));
     assert(member->id() == new_gate->id());
     new_gate->formula(FormulaPtr(new Formula("or")));
-    gates.emplace(mem.first, new_gate);
+
+    proxy_gates.push_back(new_gate.get());
     member->ccf_gate(new_gate);
   }
 
@@ -105,58 +172,18 @@ void CcfGroup::ApplyModel() {
   std::map<int, ExpressionPtr> probabilities;  // The level is position + 1.
   this->CalculateProbabilities(max_level, &probabilities);
 
-  // Mapping of new basic events and their parents.
-  std::map<BasicEventPtr, std::set<std::string>> new_events;
-  this->ConstructCcfBasicEvents(max_level, &new_events);
+  for (auto& entry : probabilities) {
+    int level = entry.first;
+    ExpressionPtr prob = entry.second;
+    std::vector<std::vector<Gate*>> combinations =
+        GenerateCombinations(proxy_gates.begin(), proxy_gates.end(), level);
 
-  assert(!new_events.empty());
-  for (const auto& mem : new_events) {
-    int level = mem.second.size();
-    ExpressionPtr prob = probabilities.find(level)->second;
-    BasicEventPtr new_event = mem.first;
-    new_event->expression(prob);
-    // Add this basic event to the parent gates.
-    for (const std::string& parent : mem.second) {
-      gates.at(parent)->formula()->AddArgument(new_event);
+    for (const auto& combination : combinations) {
+      auto new_event = std::make_shared<CcfEvent>(JoinNames(combination), this,
+                                                  CollectNames(combination));
+      new_event->expression(prob);
+      for (Gate* gate : combination) gate->formula()->AddArgument(new_event);
     }
-  }
-}
-
-void CcfGroup::ConstructCcfBasicEvents(
-    int max_level,
-    std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  assert(max_level > 1);
-  assert(members_.size() > 1);
-  assert(max_level <= members_.size());
-  assert(new_events->empty());
-
-  std::set<std::set<std::string>> combinations = {{}};
-  for (int i = 0; i < max_level; ++i) {
-    std::set<std::set<std::string>> next_level;
-    for (const std::set<std::string>& combination : combinations) {
-      for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-        if (!combination.count(mem.first)) {
-          std::set<std::string> comb(combination);
-          comb.insert(mem.first);
-          next_level.insert(comb);
-        }
-      }
-    }
-    for (const std::set<std::string>& combination : next_level) {
-      std::string name = "[";
-      std::vector<std::string> names;
-      for (auto it_s = combination.begin(); it_s != combination.end();) {
-        std::string member_name = members_.at(*it_s)->name();
-        name += member_name;
-        names.push_back(member_name);
-        ++it_s;
-        if (it_s != combination.end()) name += " ";
-      }
-      name += "]";
-      new_events->emplace(std::make_shared<CcfEvent>(name, this, names),
-                          combination);
-    }
-    combinations = next_level;
   }
 }
 
@@ -170,20 +197,6 @@ void BetaFactorModel::CheckLevel(int level) {
     throw ValidationError(
         "Beta-Factor Model " + CcfGroup::name() + " CCF group" +
         " must have the level matching the number of its members.");
-  }
-}
-
-void BetaFactorModel::ConstructCcfBasicEvents(
-    int max_level,
-    std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  // This function is not optimized or efficient for beta-factor models.
-  assert(CcfGroup::factors().size() == 1);
-  std::map<BasicEventPtr, std::set<std::string>> all_events;
-  CcfGroup::ConstructCcfBasicEvents(max_level, &all_events);  // Standard case.
-
-  for (const auto& event : all_events) {
-    int level = event.second.size();  // Filter out only relevant levels.
-    if (level == 1 || level == max_level) new_events->insert(event);
   }
 }
 

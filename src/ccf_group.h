@@ -29,6 +29,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -129,15 +130,6 @@ class CcfGroup : public Element, public Role, public Id {
     return factors_;
   }
 
-  /// Creates new basic events from members.
-  /// The new basic events are included in the database of new events.
-  ///
-  /// @param[in] max_level  The max level for grouping.
-  /// @param[out] new_events  New basic events and their parents.
-  virtual void ConstructCcfBasicEvents(
-      int max_level,
-      std::map<BasicEventPtr, std::set<std::string> >* new_events);
-
  private:
   /// Checks the level of factors
   /// before the addition of factors.
@@ -189,10 +181,6 @@ class BetaFactorModel : public CcfGroup {
   /// @throws ValidationError  Level is not what is expected.
   /// @throws LogicError  The level is not positive.
   void CheckLevel(int level) override;
-
-  void ConstructCcfBasicEvents(
-      int max_level,
-      std::map<BasicEventPtr, std::set<std::string> >* new_events) override;
 
   void CalculateProbabilities(
       int max_level,

@@ -225,7 +225,7 @@ class CcfEvent : public BasicEvent {
   /// @param[in] member_names  The names of members that this CCF event
   ///                          represents as multiple failure.
   CcfEvent(std::string name, const CcfGroup* ccf_group,
-           const std::vector<std::string>& member_names);
+           std::vector<std::string> member_names);
 
   /// @returns Pointer to the CCF group that created this CCF event.
   const CcfGroup* ccf_group() const { return ccf_group_; }
