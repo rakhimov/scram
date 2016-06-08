@@ -27,7 +27,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -122,13 +121,14 @@ class CcfGroup : public Element, public Role, public Id {
   void ApplyModel();
 
  protected:
+  /// Mapping expressions and their application levels.
+  using ExpressionMap = std::vector<std::pair<int, ExpressionPtr>>;
+
   /// @returns The probability distribution of the events.
   const ExpressionPtr& distribution() const { return distribution_; }
 
   /// @returns CCF factors of the model.
-  const std::vector<std::pair<int, ExpressionPtr>>& factors() const {
-    return factors_;
-  }
+  const ExpressionMap& factors() const { return factors_; }
 
  private:
   /// Checks the level of factors
@@ -149,17 +149,15 @@ class CcfGroup : public Element, public Role, public Id {
   /// must implement this function
   /// with its own specific formulas and assumptions.
   ///
-  /// @param[in] max_level  The max level of grouping.
-  /// @param[out] probabilities  Expressions representing probabilities for
-  ///                            each level of groupings for CCF events.
-  virtual void CalculateProbabilities(
-      int max_level,
-      std::map<int, ExpressionPtr>* probabilities) = 0;
+  /// @returns  Expressions representing probabilities
+  ///           for each level of groupings for CCF events.
+  virtual ExpressionMap CalculateProbabilities() = 0;
 
-  std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
+  /// Members of CCF groups.
+  /// @todo Consider other cross-platform stable data structures or approaches.
+  std::map<std::string, BasicEventPtr> members_;
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
-  /// CCF factors for models to get CCF probabilities.
-  std::vector<std::pair<int, ExpressionPtr>> factors_;
+  ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
 };
 
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
@@ -182,9 +180,7 @@ class BetaFactorModel : public CcfGroup {
   /// @throws LogicError  The level is not positive.
   void CheckLevel(int level) override;
 
-  void CalculateProbabilities(
-      int max_level,
-      std::map<int, ExpressionPtr>* probabilities) override;
+  ExpressionMap CalculateProbabilities() override;
 };
 
 /// @class MglModel
@@ -207,9 +203,7 @@ class MglModel : public CcfGroup {
   /// @throws LogicError  The level is not positive.
   void CheckLevel(int level) override;
 
-  void CalculateProbabilities(
-      int max_level,
-      std::map<int, ExpressionPtr>* probabilities) override;
+  ExpressionMap CalculateProbabilities() override;
 };
 
 /// @class AlphaFactorModel
@@ -221,9 +215,7 @@ class AlphaFactorModel : public CcfGroup {
   using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
 
  private:
-  void CalculateProbabilities(
-      int max_level,
-      std::map<int, ExpressionPtr>* probabilities) override;
+  ExpressionMap CalculateProbabilities() override;
 };
 
 /// @class PhiFactorModel
@@ -245,9 +237,7 @@ class PhiFactorModel : public CcfGroup {
   void Validate() override;
 
  private:
-  void CalculateProbabilities(
-      int max_level,
-      std::map<int, ExpressionPtr>* probabilities) override;
+  ExpressionMap CalculateProbabilities() override;
 };
 
 }  // namespace mef
