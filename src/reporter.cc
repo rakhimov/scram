@@ -345,7 +345,7 @@ void Reporter::ReportResults(std::string ft_name,
       sum += prob;
       probs.push_back(prob);
     }
-  }  // Ugliness because FTA and Probability analysis are not integrated.
+  }  // Ugliness because FTA and Probability analyses are not integrated.
   for (int i = 0; i < fta.products().size(); ++i) {
     const core::Product& product_set = fta.products()[i];
     XmlStreamElement product = sum_of_products.AddChild("product");
@@ -376,7 +376,15 @@ void Reporter::ReportResults(
 
   for (const core::ImportanceAnalysis::ImportanceRecord& entry :
        importance_analysis.important_events()) {
-    Reporter::ReportImportantEvent(*entry.first, entry.second, &importance);
+    const core::ImportanceFactors& factors = entry.second;
+    auto add_data = [&factors](XmlStreamElement* element) {
+      element->SetAttribute("MIF", ToString(factors.mif, 4));
+      element->SetAttribute("CIF", ToString(factors.cif, 4));
+      element->SetAttribute("DIF", ToString(factors.dif, 4));
+      element->SetAttribute("RAW", ToString(factors.raw, 4));
+      element->SetAttribute("RRW", ToString(factors.rrw, 4));
+    };
+    Reporter::ReportBasicEvent(*entry.first, &importance, add_data);
   }
 }
 
@@ -444,56 +452,30 @@ void Reporter::ReportResults(std::string ft_name,
 
 void Reporter::ReportLiteral(const core::Literal& literal,
                              XmlStreamElement* parent) {
+  auto add_data = [](XmlStreamElement*) {};
   if (literal.complement) {
     XmlStreamElement not_parent = parent->AddChild("not");
-    Reporter::ReportBasicEvent(*literal.event, &not_parent);
+    Reporter::ReportBasicEvent(*literal.event, &not_parent, add_data);
   } else {
-    Reporter::ReportBasicEvent(*literal.event, parent);
+    Reporter::ReportBasicEvent(*literal.event, parent, add_data);
   }
 }
 
+template <class T>
 void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
-                                XmlStreamElement* parent) {
+                                XmlStreamElement* parent, const T& add_data) {
   const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
   if (!ccf_event) {
     XmlStreamElement element = parent->AddChild("basic-event");
     element.SetAttribute("name", basic_event.id());
+    add_data(&element);
   } else {
     XmlStreamElement element = parent->AddChild("ccf-event");
     const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
     element.SetAttribute("ccf-group", ccf_group->id());
     element.SetAttribute("order", ToString(ccf_event->member_names().size()));
     element.SetAttribute("group-size", ToString(ccf_group->members().size()));
-    for (const std::string& name : ccf_event->member_names()) {
-      element.AddChild("basic-event").SetAttribute("name", name);
-    }
-  }
-}
-
-void Reporter::ReportImportantEvent(const mef::BasicEvent& basic_event,
-                                    const core::ImportanceFactors& factors,
-                                    XmlStreamElement* parent) {
-  /// @todo Refactor the code duplication.
-  const auto* ccf_event = dynamic_cast<const mef::CcfEvent*>(&basic_event);
-  if (!ccf_event) {
-    XmlStreamElement element = parent->AddChild("basic-event");
-    element.SetAttribute("name", basic_event.id());
-    element.SetAttribute("MIF", ToString(factors.mif, 4));
-    element.SetAttribute("CIF", ToString(factors.cif, 4));
-    element.SetAttribute("DIF", ToString(factors.dif, 4));
-    element.SetAttribute("RAW", ToString(factors.raw, 4));
-    element.SetAttribute("RRW", ToString(factors.rrw, 4));
-  } else {
-    XmlStreamElement element = parent->AddChild("ccf-event");
-    const mef::CcfGroup* ccf_group = ccf_event->ccf_group();
-    element.SetAttribute("ccf-group", ccf_group->id());
-    element.SetAttribute("order", ToString(ccf_event->member_names().size()));
-    element.SetAttribute("group-size", ToString(ccf_group->members().size()));
-    element.SetAttribute("MIF", ToString(factors.mif, 4));
-    element.SetAttribute("CIF", ToString(factors.cif, 4));
-    element.SetAttribute("DIF", ToString(factors.dif, 4));
-    element.SetAttribute("RAW", ToString(factors.raw, 4));
-    element.SetAttribute("RRW", ToString(factors.rrw, 4));
+    add_data(&element);
     for (const std::string& name : ccf_event->member_names()) {
       element.AddChild("basic-event").SetAttribute("name", name);
     }

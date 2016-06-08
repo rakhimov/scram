@@ -145,19 +145,19 @@ class Reporter {
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
   ///
-  /// @param[in] basic_event  A basic event to be reported.
-  /// @param[in,out] parent  A parent element node to have this basic event.
-  void ReportBasicEvent(const mef::BasicEvent& basic_event,
-                        XmlStreamElement* parent);
-
-  /// Reports a basic event with importance factors.
+  /// @tparam T  Function pointer or functor type with XmlStreamElement* param.
   ///
   /// @param[in] basic_event  A basic event to be reported.
-  /// @param[in] factors  Importance factors.
-  /// @param[in,out] parent  A parent element node to have the report.
-  void ReportImportantEvent(const mef::BasicEvent& basic_event,
-                            const core::ImportanceFactors& factors,
-                            XmlStreamElement* parent);
+  /// @param[in,out] parent  A parent element node to have this basic event.
+  /// @param[in] add_data  An additional function to append extra data.
+  ///
+  /// @note The additional function is given
+  ///       due to the streaming nature of the XML reporting.
+  ///       No information can be added after the stream is closed.
+  ///       The callback function puts the extra information in-between.
+  template <class T>
+  void ReportBasicEvent(const mef::BasicEvent& basic_event,
+                        XmlStreamElement* parent, const T& add_data);
 };
 
 }  // namespace scram
