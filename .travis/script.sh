@@ -26,11 +26,18 @@ coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
   --exclude ./build/lib/ --exclude ./build/gui/ \
   --exclude ./build/bin/  --exclude install/include/ \
   --exclude gui/ \
-  --exclude src/error.cc \
-  --exclude src/env.cc \
-  --exclude src/version.cc \
-  --exclude src/logger.cc \
-  --exclude-pattern .*/src/.*\.h$ \
+  --exclude src/error.cc --exclude src/error.h \
+  --exclude src/env.cc --exclude src/env.h \
+  --exclude src/version.cc --exclude src/version.h \
+  --exclude src/logger.cc --exclude src/logger.h \
+  --exclude src/analysis.h --exclude src/risk_analysis.h \
+  --exclude src/event.h --exclude src/mocus.h --exclude src/settings.h \
+  --exclude src/boolean_graph.h --exclude src/expression.h \
+  --exclude src/model.h --exclude src/ccf_group.h --exclude src/preprocessor.h \
+  --exclude src/config.h --exclude src/fault_tree.h --exclude src/xml_parser.h \
+  --exclude src/grapher.h --exclude src/random.h --exclude src/xml_stream.h \
+  --exclude src/element.h --exclude src/relax_ng_validator.h \
+  --exclude src/zbdd.h --exclude src/initializer.h --exclude src/reporter.h \
   > /dev/null
 
 # Submit coverage of Python
