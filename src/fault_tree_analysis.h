@@ -40,7 +40,7 @@ namespace core {
 /// that may appear in products.
 struct Literal {
   bool complement;  ///< Indication of a complement event.
-  std::shared_ptr<mef::BasicEvent> event;  ///< The event in the product.
+  const mef::BasicEvent* event;  ///< The event in the product.
 };
 
 using Product = std::vector<Literal>;  ///< Collection of unique literals.
@@ -233,7 +233,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   const std::vector<Product>& products() const { return products_; }
 
   /// @returns Collection of basic events that are in the products.
-  const std::vector<mef::BasicEventPtr>& product_events() const {
+  const std::vector<const mef::BasicEvent*>& product_events() const {
     return product_events_;
   }
 
@@ -249,7 +249,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 
  private:
   std::vector<Product> products_;  ///< Container of analysis results.
-  std::vector<mef::BasicEventPtr> product_events_;  ///< Events in the results.
+  std::vector<const mef::BasicEvent*> product_events_;  ///< Resultant events.
 };
 
 /// Fault tree analysis facility with specific algorithms.
