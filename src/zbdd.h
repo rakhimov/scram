@@ -36,7 +36,6 @@
 namespace scram {
 namespace core {
 
-/// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
 /// Complement variables are represented with negative indices.
 /// The order of the complement is higher than the order of the variable.
@@ -110,7 +109,6 @@ class SetNode : public NonTerminal<SetNode> {
 
 using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
 
-/// @class PairHash
 /// Function for hashing a pair of ordered numbers.
 struct PairHash {
   /// Operator overload for hashing two ordered numbers.
@@ -131,7 +129,6 @@ using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
 
 using Triplet = std::array<int, 3>;  ///< Triplet of numbers for functions.
 
-/// @struct TripletHash
 /// Functor for hashing triplets of ordered numbers.
 struct TripletHash {
   /// Operator overload for hashing three ordered numbers.
@@ -150,7 +147,6 @@ struct TripletHash {
 template <typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
-/// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
@@ -745,7 +741,6 @@ class Zbdd {
 
 namespace zbdd {
 
-/// @class CutSetContainer
 /// Storage for generated cut sets in MOCUS.
 /// The semantics is similar to a set of cut sets.
 /// The container assumes special variable ordering.

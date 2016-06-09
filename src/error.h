@@ -26,7 +26,6 @@
 
 namespace scram {
 
-/// @class Error
 /// The Error class is the base class
 /// for common exceptions specific to the SCRAM code.
 class Error : public std::exception {
@@ -60,7 +59,6 @@ class Error : public std::exception {
   std::string thrown_;  ///< The message to throw with the prefix.
 };
 
-/// @class ValueError
 /// For values that are not acceptable.
 /// For example, negative probability.
 class ValueError : public Error {
@@ -68,35 +66,30 @@ class ValueError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
-/// @class ValidationError
 /// For validating input parameters or user arguments.
 class ValidationError : public Error {
  public:
   using Error::Error;  ///< An error with a message.
 };
 
-/// @class RedefinitionError
 /// For cases when events or practically anything is redefined.
 class RedefinitionError : public ValidationError {
  public:
   using ValidationError::ValidationError;  ///< An error with a message.
 };
 
-/// @class DuplicateArgumentError
 /// This error indicates that arguments must be unique.
 class DuplicateArgumentError : public ValidationError {
  public:
   using ValidationError::ValidationError;  ///< An error with a message.
 };
 
-/// @class IOError
 /// For input/output related errors.
 class IOError : public Error {
  public:
   using Error::Error;  ///< An error with a message.
 };
 
-/// @class InvalidArgument
 /// This error class can be used
 /// to indicate unacceptable arguments.
 class InvalidArgument : public Error {
@@ -104,7 +97,6 @@ class InvalidArgument : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
-/// @class LogicError
 /// Signals internal logic errors,
 /// for example, pre-condition failure
 /// or use of functionality in ways not designed to.
@@ -113,7 +105,6 @@ class LogicError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
-/// @class IllegalOperation
 /// This error can be used to indicate
 /// that call for a function or operation is not legal.
 /// For example, a derived class can make illegal

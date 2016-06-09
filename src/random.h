@@ -30,7 +30,6 @@
 
 namespace scram {
 
-/// @class Random
 /// This class contains generators for various random distributions.
 /// The values passed to the member functions are asserted
 /// to be in the correct form.

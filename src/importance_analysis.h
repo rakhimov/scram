@@ -35,7 +35,6 @@
 namespace scram {
 namespace core {
 
-/// @struct ImportanceFactors
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
   double mif;  ///< Birnbaum marginal importance factor.
@@ -45,7 +44,6 @@ struct ImportanceFactors {
   double rrw;  ///< Risk reduction worth factor.
 };
 
-/// @class ImportanceAnalysis
 /// Analysis of importance factors of risk model variables.
 class ImportanceAnalysis : public Analysis {
  public:
@@ -116,7 +114,6 @@ class ImportanceAnalysis : public Analysis {
   std::vector<ImportanceRecord> important_events_;
 };
 
-/// @class ImportanceAnalyzerBase
 /// Base class for analyzers of importance factors
 /// with the help from probability analyzers.
 ///
@@ -163,7 +160,6 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-/// @class ImportanceAnalyzer
 /// Analyzer of importance factors
 /// with the help from probability analyzers.
 ///
@@ -198,7 +194,6 @@ double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   return p_e - p_not_e;
 }
 
-/// @class ImportanceAnalyzer<Bdd>
 /// Specialization of importance analyzer with Binary Decision Diagrams.
 template <>
 class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
@@ -210,7 +205,7 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
   explicit ImportanceAnalyzer(ProbabilityAnalyzer<Bdd>* prob_analyzer)
       : ImportanceAnalyzerBase(prob_analyzer),
-      bdd_graph_(prob_analyzer->bdd_graph()) {}
+        bdd_graph_(prob_analyzer->bdd_graph()) {}
 
  private:
   double CalculateMif(int index) noexcept override;

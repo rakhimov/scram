@@ -36,7 +36,6 @@
 
 namespace scram {
 
-/// @class Reporter
 /// This class reports the results of the analyses.
 class Reporter {
  public:

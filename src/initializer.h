@@ -42,7 +42,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Initializer
 /// This class operates on input files
 /// to initialize analysis constructs
 /// like models, fault trees, and events.
@@ -391,7 +390,6 @@ class Initializer {
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;
 
-  /// @struct TbdElements
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
   struct TbdElements {

@@ -28,7 +28,6 @@
 namespace scram {
 namespace mef {
 
-/// @struct Attribute
 /// This struct allows any attribute.
 struct Attribute {
   std::string name;  ///< The name that identifies this attribute.
@@ -36,7 +35,6 @@ struct Attribute {
   std::string type;  ///< Optional type of the attribute.
 };
 
-/// @class Element
 /// Mixin class that represents
 /// any element of analysis
 /// that can have extra descriptions,
@@ -100,7 +98,6 @@ class Element {
 /// Role, access attributes for elements.
 enum class RoleSpecifier { kPublic, kPrivate };
 
-/// @class Role
 /// Mixin class that manages private or public roles
 /// for elements as needed.
 /// Public is the default assumption.
@@ -128,7 +125,6 @@ class Role {
   const std::string kBasePath_;  ///< A series of ancestor containers.
 };
 
-/// @class Id
 /// Mixin class for assigning unique identifiers to elements.
 class Id {
  public:

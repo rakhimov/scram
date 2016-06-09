@@ -43,7 +43,6 @@ using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 class Parameter;  // This is for cycle detection through expressions.
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
 
-/// @class Expression
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
 /// and may create cycles.
@@ -122,7 +121,6 @@ class Expression {
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
 
-/// @enum Units
 /// Provides units for parameters.
 enum Units {
   kUnitless = 0,
@@ -137,7 +135,6 @@ enum Units {
   kDemands
 };
 
-/// @class Parameter
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
@@ -197,7 +194,6 @@ class Parameter : public Expression, public Element, public Role, public Id {
   std::string mark_;  ///< The mark for traversal in cycle detection.
 };
 
-/// @class MissionTime
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
@@ -230,7 +226,6 @@ class MissionTime : public Expression {
   Units unit_;  ///< Units of this parameter.
 };
 
-/// @class ConstantExpression
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
@@ -257,7 +252,6 @@ class ConstantExpression : public Expression {
   double value_;  ///< The Constant value.
 };
 
-/// @class ExponentialExpression
 /// Negative exponential distribution
 /// with hourly failure rate and time.
 class ExponentialExpression : public Expression {
@@ -292,7 +286,6 @@ class ExponentialExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class GlmExpression
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
 ///
@@ -333,7 +326,6 @@ class GlmExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class WeibullExpression
 /// Weibull distribution with scale, shape, time shift, and time.
 class WeibullExpression : public Expression {
  public:
@@ -385,7 +377,6 @@ class WeibullExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class RandomDeviate
 /// Abstract base class for all deviate expressions.
 /// These expressions provide quantification for uncertainty and sensitivity.
 class RandomDeviate : public Expression {
@@ -395,7 +386,6 @@ class RandomDeviate : public Expression {
   bool IsConstant() noexcept override { return false; }
 };
 
-/// @class UniformDeviate
 /// Uniform distribution.
 class UniformDeviate : public RandomDeviate {
  public:
@@ -419,7 +409,6 @@ class UniformDeviate : public RandomDeviate {
   ExpressionPtr max_;  ///< Maximum value of the distribution.
 };
 
-/// @class NormalDeviate
 /// Normal distribution.
 class NormalDeviate : public RandomDeviate {
  public:
@@ -451,7 +440,6 @@ class NormalDeviate : public RandomDeviate {
   ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
 };
 
-/// @class LogNormalDeviate
 /// Log-normal distribution.
 class LogNormalDeviate : public RandomDeviate {
  public:
@@ -503,7 +491,6 @@ class LogNormalDeviate : public RandomDeviate {
   ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
 };
 
-/// @class GammaDeviate
 /// Gamma distribution.
 class GammaDeviate : public RandomDeviate {
  public:
@@ -534,7 +521,6 @@ class GammaDeviate : public RandomDeviate {
   ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
 };
 
-/// @class BetaDeviate
 /// Beta distribution.
 class BetaDeviate : public RandomDeviate {
  public:
@@ -565,7 +551,6 @@ class BetaDeviate : public RandomDeviate {
   ExpressionPtr beta_;  ///< The beta shape parameter.
 };
 
-/// @class Histogram
 /// Histogram distribution.
 class Histogram : public RandomDeviate {
  public:
@@ -627,7 +612,6 @@ class Histogram : public RandomDeviate {
   std::vector<ExpressionPtr> weights_;
 };
 
-/// @class Neg
 /// This class for negation of numerical value or another expression.
 class Neg : public Expression {
  public:
@@ -647,7 +631,6 @@ class Neg : public Expression {
   ExpressionPtr expression_;  ///< Expression that is used for negation.
 };
 
-/// @class Add
 /// This expression adds all the given expressions' values.
 class Add : public Expression {
  public:
@@ -661,7 +644,6 @@ class Add : public Expression {
   double GetSample() noexcept override;
 };
 
-/// @class Sub
 /// This expression performs subtraction operation.
 /// First expression minus the rest of the given expressions' values.
 class Sub : public Expression {
@@ -676,7 +658,6 @@ class Sub : public Expression {
   double GetSample() noexcept override;
 };
 
-/// @class Mul
 /// This expression performs multiplication operation.
 class Mul : public Expression {
  public:
@@ -707,7 +688,6 @@ class Mul : public Expression {
   double GetExtremum(bool maximum) noexcept;
 };
 
-/// @class Div
 /// This expression performs division operation.
 /// The expression divides the first given argument by
 /// the rest of argument expressions.

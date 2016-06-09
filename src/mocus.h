@@ -36,7 +36,6 @@
 namespace scram {
 namespace core {
 
-/// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees
 /// to generate minimal cut sets with the MOCUS algorithm.
 class Mocus {

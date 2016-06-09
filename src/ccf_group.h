@@ -39,7 +39,6 @@
 namespace scram {
 namespace mef {
 
-/// @class CcfGroup
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role, public Id {
  public:
@@ -162,7 +161,6 @@ class CcfGroup : public Element, public Role, public Id {
 
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
 
-/// @class BetaFactorModel
 /// Common cause failure model that assumes,
 /// if common cause failure occurs,
 /// then all components or members fail simultaneously or within short time.
@@ -183,7 +181,6 @@ class BetaFactorModel : public CcfGroup {
   ExpressionMap CalculateProbabilities() override;
 };
 
-/// @class MglModel
 /// Multiple Greek Letters model characterizes failure of
 /// sub-groups of the group due to common cause.
 /// The factor for k-component group defines
@@ -206,7 +203,6 @@ class MglModel : public CcfGroup {
   ExpressionMap CalculateProbabilities() override;
 };
 
-/// @class AlphaFactorModel
 /// Alpha factor model characterizes
 /// failure of exactly k members of
 /// the group due to common cause.
@@ -218,7 +214,6 @@ class AlphaFactorModel : public CcfGroup {
   ExpressionMap CalculateProbabilities() override;
 };
 
-/// @class PhiFactorModel
 /// Phi factor model is a simplification,
 /// where fractions of k-member group failure is given directly.
 /// Thus, Q_k = phi_k * Q_total.

@@ -781,7 +781,6 @@ std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
 
 namespace {
 
-/// @struct FormulaSig
 /// Gate formula signature for printing in the shorthand format.
 struct FormulaSig {
   std::string begin;  ///< Beginning of the formula string.

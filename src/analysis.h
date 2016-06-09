@@ -30,7 +30,6 @@
 namespace scram {
 namespace core {
 
-/// @class Analysis
 /// Base abstract class for all analysis with settings.
 class Analysis {
  public:

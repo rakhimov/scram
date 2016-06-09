@@ -33,7 +33,6 @@
 namespace scram {
 namespace core {
 
-/// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics
 /// for top event or gate probabilities
 /// and probability distributions of basic events.
@@ -108,7 +107,6 @@ class UncertaintyAnalysis : public Analysis {
   std::vector<double> quantiles_;
 };
 
-/// @class UncertaintyAnalyzer
 /// Uncertainty analysis facility.
 ///
 /// @tparam Calculator  Quantitative analysis calculator.

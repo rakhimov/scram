@@ -37,7 +37,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Model
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:

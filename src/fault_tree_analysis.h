@@ -36,7 +36,6 @@
 namespace scram {
 namespace core {
 
-/// @struct Literal
 /// Event or its complement
 /// that may appear in products.
 struct Literal {
@@ -75,7 +74,6 @@ double CalculateProbability(const Product& product);
 /// @note An empty set is assumed to indicate the Base/Unity set.
 int GetOrder(const Product& product);
 
-/// @class FaultTreeDescriptor
 /// Fault tree description gatherer.
 /// General information about a fault tree
 /// described by a gate as its root.
@@ -175,7 +173,6 @@ class FaultTreeDescriptor {
   std::unordered_map<std::string, mef::BasicEventPtr> ccf_events_;
 };
 
-/// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 /// The analysis must be done on
 /// a validated and fully initialized fault trees.
@@ -255,12 +252,10 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   std::vector<mef::BasicEventPtr> product_events_;  ///< Events in the results.
 };
 
-/// @class FaultTreeAnalyzer
-///
-/// @tparam Algorithm  Fault tree analysis algorithm.
-///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.
+///
+/// @tparam Algorithm  Fault tree analysis algorithm.
 template <class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:

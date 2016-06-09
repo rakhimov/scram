@@ -59,7 +59,6 @@ namespace scram {
 #define BLOG(level, cond) \
   if (cond) LOG(level)
 
-/// @enum LogLevel
 /// Levels for log statements.
 enum LogLevel {  // The numbers are used for array indices.
   ERROR = 0,  ///< Non-critical errors only.
@@ -79,7 +78,6 @@ enum LogLevel {  // The numbers are used for array indices.
 
 const int kMaxVerbosity = 7;  ///< The index of the last level.
 
-/// @class Logger
 /// This is a general purpose logger;
 /// however, its main usage is asserted to be for debugging.
 /// All messages are directed to the standard error in a thread-safe way.

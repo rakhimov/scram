@@ -55,7 +55,6 @@ class Gate;  // Indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
 using GateWeakPtr = std::weak_ptr<Gate>;  ///< Acyclic ptr to parent gates.
 
-/// @class NodeParentManager
 /// Manager of information about parents.
 /// Only gates can manipulate the data.
 class NodeParentManager {
@@ -89,7 +88,6 @@ class NodeParentManager {
   std::unordered_map<int, GateWeakPtr> parents_;  ///< Parents.
 };
 
-/// @class Node
 /// An abstract base class that represents a node in a Boolean graph.
 /// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents
@@ -213,7 +211,6 @@ class Node : public NodeParentManager {
   int neg_count_;  ///< The number of occurrences as a negative node.
 };
 
-/// @class Constant
 /// Representation of a node that is a Boolean constant
 /// with True or False state.
 class Constant : public Node {
@@ -230,7 +227,6 @@ class Constant : public Node {
   bool state_;  ///< The Boolean value for the constant state.
 };
 
-/// @class Variable
 /// Boolean variables in a Boolean formula or graph.
 /// Variables can represent the basic events of fault trees.
 ///
@@ -256,7 +252,6 @@ using NodePtr = std::shared_ptr<Node>;  ///< Shared base nodes in the graph.
 using ConstantPtr = std::shared_ptr<Constant>;  ///< Shared Boolean constants.
 using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 
-/// @enum Operator
 /// Boolean operators of gates
 /// for representation, preprocessing, and analysis purposes.
 /// The operator defines a type and logic of a gate.
@@ -282,7 +277,6 @@ enum Operator {
 /// This number is useful for optimizations and algorithms.
 const int kNumOperators = 8;  // Update this number if operators change.
 
-/// @enum State
 /// State of a gate as a set of Boolean variables.
 /// This state helps detect null and unity sets
 /// that are formed upon Boolean operations.
@@ -292,7 +286,6 @@ enum State {
   kUnityState  ///< The set is unity. This set guarantees failure.
 };
 
-/// @class Gate
 /// Indexed gate for use in BooleanGraph.
 /// Initially this gate can represent any type of gate or logic;
 /// however, this gate can be only of OR and AND type
@@ -717,7 +710,6 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   std::unordered_map<int, ConstantPtr> constant_args_;
 };
 
-/// @class GateSet
 /// Container of unique gates.
 /// This container acts like an unordered set of gates.
 /// The gates are equivalent
@@ -739,7 +731,6 @@ class GateSet {
   }
 
  private:
-  /// @struct Hash
   /// Functor for hashing gates by their arguments.
   ///
   /// @note The hashing discards the logic of the gate.
@@ -754,7 +745,6 @@ class GateSet {
       return boost::hash_value(gate->args());
     }
   };
-  /// @struct Equal
   /// Functor for equality test for gates by their arguments.
   ///
   /// @note The equality discards the logic of the gate.
@@ -779,7 +769,6 @@ class GateSet {
 
 class Preprocessor;
 
-/// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
 /// This class provides a simpler representation of a fault tree
 /// that takes into account the indices of events
@@ -871,7 +860,6 @@ class BooleanGraph {
   /// @param[in] gate  Replacement root gate.
   void root(const GatePtr& gate) { root_ = gate; }
 
-  /// @struct ProcessedNodes
   /// Holder for nodes that are created from fault tree events.
   /// This is a helper structure
   /// for functions that transform a fault tree into a Boolean graph.
@@ -1038,7 +1026,6 @@ class BooleanGraph {
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeOrders(const GatePtr& gate) noexcept;
 
-  /// @class GraphLogger
   /// Container for properties of Boolean Graphs.
   struct GraphLogger {
     /// Special handling of the root gate

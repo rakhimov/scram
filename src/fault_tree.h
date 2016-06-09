@@ -35,7 +35,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Component
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
@@ -163,7 +162,6 @@ class Component : public Element, public Role {
 
 using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 
-/// @class FaultTree
 /// Fault tree representation as a container of
 /// gates, basic and house events, and other information.
 /// Additional functionality of a fault tree includes

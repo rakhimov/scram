@@ -34,7 +34,6 @@
 
 namespace scram {
 
-/// @class XmlParser
 /// A helper class to hold XML file data
 /// and provide automatic validation.
 class XmlParser {

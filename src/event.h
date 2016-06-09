@@ -34,7 +34,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Event
 /// Abstract base class for general fault tree events.
 class Event : public Element, public Role, public Id {
  public:
@@ -65,7 +64,6 @@ class Event : public Element, public Role, public Id {
   bool orphan_;  ///< Indication of an orphan node.
 };
 
-/// @class PrimaryEvent
 /// This is an abstract base class for events
 /// that can cause failures.
 /// This class represents Base, House, Undeveloped, and other events.
@@ -88,7 +86,6 @@ class PrimaryEvent : public Event {
   bool has_expression_ = false;
 };
 
-/// @class HouseEvent
 /// Representation of a house event in a fault tree.
 class HouseEvent : public PrimaryEvent {
  public:
@@ -114,7 +111,6 @@ class HouseEvent : public PrimaryEvent {
 class Gate;
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
-/// @class BasicEvent
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
@@ -206,7 +202,6 @@ class BasicEvent : public PrimaryEvent {
 
 class CcfGroup;
 
-/// @class CcfEvent
 /// A basic event that represents a multiple failure of
 /// a group of events due to a common cause.
 /// This event is generated out of a common cause group.
@@ -258,7 +253,6 @@ using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
-/// @class Gate
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
@@ -292,7 +286,6 @@ class Gate : public Event {
   std::string mark_;  ///< The mark for traversal or toposort.
 };
 
-/// @class Formula
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
 class Formula {
