@@ -35,7 +35,6 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -852,7 +851,7 @@ class BooleanGraph {
 
  private:
   /// Mapping to string gate types to enum gate types.
-  static const std::map<std::string, Operator> kStringToType_;
+  static const std::unordered_map<std::string, Operator> kStringToType_;
 
   /// Sets the root gate.
   /// This function is helpful for preprocessing.
@@ -863,14 +862,11 @@ class BooleanGraph {
   /// Holder for nodes that are created from fault tree events.
   /// This is a helper structure
   /// for functions that transform a fault tree into a Boolean graph.
-  struct ProcessedNodes {
-    /// Mapping of gate IDs and Boolean graph gates.
-    std::unordered_map<std::string, GatePtr> gates;
-    /// Mapping of basic event IDs and Boolean graph variables.
-    std::unordered_map<std::string, VariablePtr> variables;
-    /// Mapping of house event IDs and Boolean graph constants.
-    std::unordered_map<std::string, ConstantPtr> constants;
-  };
+  struct ProcessedNodes {  /// @{
+    std::unordered_map<const mef::Gate*, GatePtr> gates;
+    std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
+    std::unordered_map<const mef::HouseEvent*, ConstantPtr> constants;
+  };  /// @}
 
   /// Processes a Boolean formula of a gate into a Boolean graph.
   ///
