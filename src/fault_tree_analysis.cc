@@ -136,11 +136,11 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     product.reserve(result_set.size());
     for (int index : result_set) {
       int abs_index = std::abs(index);
-      const mef::BasicEventPtr& basic_event = graph->GetBasicEvent(abs_index);
-      product.push_back({index < 0, basic_event.get()});
+      const mef::BasicEvent* basic_event = graph->GetBasicEvent(abs_index);
+      product.push_back({index < 0, basic_event});
       if (unique_events.count(abs_index)) continue;
       unique_events.insert(abs_index);
-      product_events_.push_back(basic_event.get());
+      product_events_.push_back(basic_event);
     }
     products_.emplace_back(std::move(product));
   }

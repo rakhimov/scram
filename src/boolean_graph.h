@@ -824,7 +824,7 @@ class BooleanGraph {
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
-  const std::vector<mef::BasicEventPtr>& basic_events() const {
+  const std::vector<mef::BasicEvent*>& basic_events() const {
     return basic_events_;
   }
 
@@ -837,7 +837,7 @@ class BooleanGraph {
   /// @param[in] index  Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  const mef::BasicEventPtr& GetBasicEvent(int index) const {
+  mef::BasicEvent* GetBasicEvent(int index) const {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
@@ -1096,7 +1096,7 @@ class BooleanGraph {
   int root_sign_;  ///< The negative or positive sign of the root node.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
-  std::vector<mef::BasicEventPtr> basic_events_;  ///< Mapping for basic events.
+  std::vector<mef::BasicEvent*> basic_events_;  ///< Mapping for basic events.
   /// Registered house events upon the creation of the Boolean graph.
   std::vector<std::weak_ptr<Constant>> constants_;
   /// Registered NULL type gates upon the creation of the Boolean graph.

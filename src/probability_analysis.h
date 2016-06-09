@@ -183,7 +183,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
   p_vars_.push_back(-1);  // Padding.
-  for (const mef::BasicEventPtr& event : graph_->basic_events()) {
+  for (const mef::BasicEvent* event : graph_->basic_events()) {
     p_vars_.push_back(event->p());
   }
 }

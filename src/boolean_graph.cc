@@ -518,7 +518,7 @@ void BooleanGraph::ProcessBasicEvents(
         VariablePtr var = nodes->variables.find(basic_event->id())->second;
         parent->AddArg(var->index(), var);
       } else {
-        basic_events_.push_back(basic_event);
+        basic_events_.push_back(basic_event.get());
         auto new_basic = std::make_shared<Variable>();  // Sequential indices.
         assert(basic_events_.size() == new_basic->index());
         parent->AddArg(new_basic->index(), new_basic);

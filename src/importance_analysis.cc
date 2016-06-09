@@ -35,7 +35,7 @@ ImportanceAnalysis::ImportanceAnalysis(const ProbabilityAnalysis* prob_analysis)
 void ImportanceAnalysis::Analyze() noexcept {
   CLOCK(imp_time);
   LOG(DEBUG3) << "Calculating importance factors...";
-  std::vector<std::pair<int, mef::BasicEventPtr>> target_events =
+  std::vector<std::pair<int, const mef::BasicEvent*>> target_events =
       this->GatherImportantEvents();
   double p_total = this->p_total();
   for (const auto& event : target_events) {
@@ -53,16 +53,16 @@ void ImportanceAnalysis::Analyze() noexcept {
   Analysis::AddAnalysisTime(DUR(imp_time));
 }
 
-std::vector<std::pair<int, mef::BasicEventPtr>>
+std::vector<std::pair<int, const mef::BasicEvent*>>
 ImportanceAnalysis::GatherImportantEvents(
     const BooleanGraph* graph,
     const std::vector<std::vector<int>>& products) noexcept {
-  std::vector<std::pair<int, mef::BasicEventPtr>> important_events;
+  std::vector<std::pair<int, const mef::BasicEvent*>> important_events;
   std::unordered_set<int> unique_indices;
   for (const auto& product : products) {
     for (int index : product) {
-      if (unique_indices.count(std::abs(index))) continue;  // Most likely.
       int pos_index = std::abs(index);
+      if (unique_indices.count(pos_index)) continue;  // Most likely.
       unique_indices.insert(pos_index);
       important_events.emplace_back(pos_index,
                                     graph->GetBasicEvent(pos_index));

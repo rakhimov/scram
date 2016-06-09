@@ -48,7 +48,7 @@ struct ImportanceFactors {
 class ImportanceAnalysis : public Analysis {
  public:
   /// Mapping of an event and its importance.
-  using ImportanceRecord = std::pair<mef::BasicEventPtr, ImportanceFactors>;
+  using ImportanceRecord = std::pair<const mef::BasicEvent*, ImportanceFactors>;
 
   /// Importance analysis
   /// on the fault tree represented by
@@ -87,7 +87,7 @@ class ImportanceAnalysis : public Analysis {
   /// @param[in] products  Products with basic event indices.
   ///
   /// @returns A unique collection of important basic events.
-  std::vector<std::pair<int, mef::BasicEventPtr>> GatherImportantEvents(
+  std::vector<std::pair<int, const mef::BasicEvent*>> GatherImportantEvents(
       const BooleanGraph* graph,
       const std::vector<std::vector<int>>& products) noexcept;
 
@@ -98,7 +98,7 @@ class ImportanceAnalysis : public Analysis {
   /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
-  virtual std::vector<std::pair<int, mef::BasicEventPtr>>
+  virtual std::vector<std::pair<int, const mef::BasicEvent*>>
   GatherImportantEvents() noexcept = 0;
 
   /// Calculates Marginal Importance Factor.
@@ -149,7 +149,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
-  std::vector<std::pair<int, mef::BasicEventPtr>>
+  std::vector<std::pair<int, const mef::BasicEvent*>>
   GatherImportantEvents() noexcept override {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
