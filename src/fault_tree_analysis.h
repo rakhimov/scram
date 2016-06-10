@@ -21,6 +21,8 @@
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
+#include <cstdint>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -44,7 +46,116 @@ struct Literal {
   const mef::BasicEvent& event;  ///< The event in the product.
 };
 
-using Product = std::vector<Literal>;  ///< Collection of unique literals.
+/// Collection of unique literals.
+/// This collection is designed as a space-efficient drop-in replacement
+/// for const std::vector<const Literal>.
+///
+/// The major differences from std::vector:
+///
+///     1. Iterators are proxies.
+///     2. The size is fixed upon construction.
+///     3. The size is limited to 32 literals.
+///     4. Only necessary and required API is provided for the use-cases.
+///     5. The construction is handled differently.
+class Product {
+ public:
+  /// Read iterator over Product Literals.
+  class iterator {
+    /// Equality test operators.
+    /// @{
+    friend bool operator==(const iterator& lhs, const iterator& rhs) {
+      return &lhs.product_ == &rhs.product_ && lhs.pos_ == rhs.pos_;
+    }
+    friend bool operator!=(const iterator& lhs, const iterator& rhs) {
+      return !(lhs == rhs);
+    }
+    /// @}
+
+   public:
+    /// Constructs an iterator on a position in a specific product.
+    ///
+    /// @param[in] pos  Valid position.
+    /// @param[in] product  The host container.
+    iterator(int pos, const Product& product) : pos_(pos), product_(product) {}
+
+    /// @returns The literal at the position.
+    Literal operator*() const {
+      return {product_.GetComplement(pos_), *product_.data_[pos_]};
+    }
+
+    /// Pre-increment operator for for-range loops.
+    iterator& operator++() {
+      ++pos_;
+      return *this;
+    }
+
+   private:
+    int pos_;  ///< The current position of the iterator.
+    const Product& product_;  ///< The container to be iterated over.
+  };
+
+  /// Initializes product literals.
+  ///
+  /// @tparam GeneratorIterator  Iterator type with its operator* returning
+  ///                            std::pair or struct with
+  ///                            ``first`` being complement flag of the Literal,
+  ///                            ``second`` being pointer to the event.
+  ///
+  /// @param[in] size  The number of literals in the product.
+  /// @param[in] it  The generator of literals for this product.
+  template <class GeneratorIterator>
+  Product(int size, GeneratorIterator it) noexcept
+      : size_(size),
+        complement_vector_(0) {
+    assert(size >= 0 && size <= 32);
+    data_ = new const mef::BasicEvent*[size];
+    for (int i = 0; i < size; ++i, ++it) {
+      const auto& literal = *it;
+      if (literal.first) complement_vector_ |= 1 << i;  // The complement flag.
+      data_[i] = literal.second;  // The variable itself.
+    }
+  }
+
+  /// Move constructor for products to store in a database.
+  ///
+  /// @param[in] other  Fully initialized product.
+  Product(Product&& other) noexcept
+      : size_(other.size_),
+        complement_vector_(other.complement_vector_),
+        data_(other.data_) {
+    other.size_ = other.complement_vector_ = 0;
+    other.data_ = nullptr;
+  }
+
+  /// Frees the underlying data containers.
+  ~Product() noexcept { delete[] data_; }
+
+  /// @returns true for unity product with no literals.
+  bool empty() const { return size_ == 0; }
+
+  /// @returns The number of literals in the product.
+  int size() const { return size_; }
+
+  /// @returns A read proxy iterator that points to the first element.
+  iterator begin() const { return iterator(0, *this); }
+
+  /// @returns A sentinel iterator signifying the end of iteration.
+  iterator end() const { return iterator(size_, *this); }
+
+ private:
+  /// Determines if the literal is complement.
+  ///
+  /// @param[in] pos  The position of the literal.
+  ///
+  /// @returns true if the literal is complement.
+  bool GetComplement(int pos) const {
+    return complement_vector_ & (1 << pos);
+  }
+
+  uint8_t size_;  ///< The number of literals in the product.
+  uint32_t complement_vector_;  ///< The complement flags of the literals.
+  const mef::BasicEvent** data_;  ///< The collection of literal events.
+};
 
 /// Prints a collection of products to the standard error.
 /// This is a helper function for easier debugging

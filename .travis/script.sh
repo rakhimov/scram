@@ -70,6 +70,7 @@ sed -i '/^Ignoring/d' style.txt
 sed -i '/^Skipping/d' style.txt
 sed -i '/stream&/d' style.txt
 sed -i '/is an unapproved C++11 header/d' style.txt
+sed -i '/RValue references are an unapproved C++ feature/d' style.txt
 if [[ -s style.txt ]]; then
   echo "Style errors:" >&2
   cat style.txt >&2

@@ -23,6 +23,8 @@
 #include <set>
 #include <utility>
 
+#include <boost/generator_iterator.hpp>
+
 namespace scram {
 namespace core {
 
@@ -128,18 +130,28 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
   } else if (results.size() == 1 && results.back().empty()) {
     Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
   }
+  assert(products_.empty());
+  products_.reserve(results.size());
+
+  struct GeneratorIterator {
+    void operator++() { ++it; }
+    /// Populates the Product with Literals.
+    std::pair<bool, const mef::BasicEvent*> operator*() {
+      const mef::BasicEvent* basic_event = graph.GetBasicEvent(std::abs(*it));
+      product_events.insert(basic_event);
+      return {*it < 0, basic_event};
+    }
+    std::vector<int>::const_iterator it;
+    const BooleanGraph& graph;
+    decltype(product_events_)& product_events;
+  };
+
   for (const auto& result_set : results) {
     assert(result_set.size() <= Analysis::settings().limit_order() &&
            "Miscalculated product sets with larger-than-required order.");
-    Product product;
-    product.reserve(result_set.size());
-    for (int index : result_set) {
-      const mef::BasicEvent* basic_event =
-          graph->GetBasicEvent(std::abs(index));
-      product.push_back({index < 0, *basic_event});
-      product_events_.insert(basic_event);
-    }
-    products_.emplace_back(std::move(product));
+    products_.emplace_back(
+        result_set.size(),
+        GeneratorIterator{result_set.begin(), *graph, product_events_});
   }
 #ifndef NDEBUG
   if (Analysis::settings().print) Print(products_);

@@ -189,9 +189,9 @@ Release build:
 - # of ZBDD vertices created: 42919
 - # of Nodes in ZBDD: 10790
 - ZBDD Cut set extraction memory: 100
-- Cut set indices to pointers memory: 150
+- Cut set indices to pointers memory: 90
 
-- Memory: 450
+- Memory: 390
 
 - Cache-misses:  34 %
 
@@ -209,10 +209,10 @@ Release build:
 - # of ZBDD vertices created: 218856
 - # of Nodes in ZBDD: 21706
 - ZBDD Cut set extraction memory: 800
-- Cut set indices to pointers memory: 1100
-- Cut set indices to pointers time: 1.9
+- Cut set indices to pointers memory: 600
+- Cut set indices to pointers time: 0.95
 
-- Memory:   1920
+- Memory:   1350
 
 
 Uncertainty Analysis
