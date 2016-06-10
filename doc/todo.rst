@@ -52,20 +52,6 @@ Minor Enhancements and Capabilities
     * Cardinality/Imply/IFF gates. *Low*
 
 
-GUI Development: Moderate Importance
-====================================
-
-- Layout
-- Fault Tree Construction and Representation
-- Description of events
-- Event Tree Construction and Representation
-- Analysis configuration
-- Running analyses
-- View of analysis results
-- Common cause group construction
-- Arithmetic equation converter for expressions.
-
-
 Platform Support
 ================
 

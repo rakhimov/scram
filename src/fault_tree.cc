@@ -28,12 +28,10 @@
 namespace scram {
 namespace mef {
 
-Component::Component(const std::string& name, const std::string& base_path,
-                     bool is_public)
-    : Role(is_public, base_path),
-      name_(name) {
-  if (name.empty()) throw LogicError("Component names can't be empty");
-}
+Component::Component(std::string name, std::string base_path,
+                     RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)) {}
 
 void Component::AddGate(const GatePtr& gate) {
   Component::AddEvent(gate, &gates_);

@@ -36,7 +36,6 @@
 namespace scram {
 namespace core {
 
-/// @class Preprocessor
 /// The class provides main preprocessing operations
 /// over a Boolean graph
 /// to simplify the fault tree
@@ -532,7 +531,6 @@ class Preprocessor {
   /// @warning Gate marks are used for linear traversal.
   void MarkCommonArgs(const GatePtr& gate, Operator op) noexcept;
 
-  /// @struct MergeTable
   /// Helper struct for algorithms
   /// that must make an optimal decision
   /// how to merge or factor out
@@ -919,7 +917,6 @@ class Preprocessor {
   /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
 
-  /// @class DecompositionProcessor
   /// Functor for processing of decomposition setups with common nodes.
   class DecompositionProcessor {
    public:
@@ -1106,18 +1103,15 @@ class Preprocessor {
   std::vector<GateWeakPtr> null_gates_;
 };
 
-/// @class CustomPreprocessor
-///
-/// @tparam Algorithm  The target algorithm for the preprocessor.
-///
 /// Undefined template class for specialization of Preprocessor
 /// for needs of specific analysis algorithms.
+///
+/// @tparam Algorithm  The target algorithm for the preprocessor.
 template <class Algorithm>
 class CustomPreprocessor;
 
 class Bdd;
 
-/// @class CustomPreprocessor<Bdd>
 /// Specialization of preprocessing for BDD based analyses.
 template <>
 class CustomPreprocessor<Bdd> : public Preprocessor {
@@ -1131,7 +1125,6 @@ class CustomPreprocessor<Bdd> : public Preprocessor {
 
 class Zbdd;
 
-/// @class CustomPreprocessor<Zbdd>
 /// Specialization of preprocessing for ZBDD based analyses.
 template <>
 class CustomPreprocessor<Zbdd> : public Preprocessor {
@@ -1147,7 +1140,6 @@ class CustomPreprocessor<Zbdd> : public Preprocessor {
 
 class Mocus;
 
-/// @class CustomPreprocessor<Mocus>
 /// Specialization of preprocessing for MOCUS based analyses.
 template <>
 class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {

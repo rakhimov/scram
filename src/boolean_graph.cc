@@ -434,7 +434,7 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
+const std::unordered_map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"and", kAnd},
     {"or", kOr},
     {"atleast", kVote},
@@ -503,27 +503,20 @@ void BooleanGraph::ProcessBasicEvents(
     ProcessedNodes* nodes) noexcept {
   for (const auto& basic_event : basic_events) {
     if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-      if (nodes->gates.count(basic_event->id())) {
-        GatePtr ccf_gate = nodes->gates.find(basic_event->id())->second;
-        parent->AddArg(ccf_gate->index(), ccf_gate);
-      } else {
-        GatePtr new_gate =
-            BooleanGraph::ProcessFormula(basic_event->ccf_gate()->formula(),
-                                         ccf, nodes);
-        parent->AddArg(new_gate->index(), new_gate);
-        nodes->gates.emplace(basic_event->id(), new_gate);
+      GatePtr& ccf_gate = nodes->gates[basic_event->ccf_gate().get()];
+      if (!ccf_gate) {
+        ccf_gate = BooleanGraph::ProcessFormula(
+            basic_event->ccf_gate()->formula(), ccf, nodes);
       }
+      parent->AddArg(ccf_gate->index(), ccf_gate);
     } else {
-      if (nodes->variables.count(basic_event->id())) {
-        VariablePtr var = nodes->variables.find(basic_event->id())->second;
-        parent->AddArg(var->index(), var);
-      } else {
-        basic_events_.push_back(basic_event);
-        auto new_basic = std::make_shared<Variable>();  // Sequential indices.
-        assert(basic_events_.size() == new_basic->index());
-        parent->AddArg(new_basic->index(), new_basic);
-        nodes->variables.emplace(basic_event->id(), new_basic);
+      VariablePtr& var = nodes->variables[basic_event.get()];
+      if (!var) {
+        basic_events_.push_back(basic_event.get());
+        var = std::make_shared<Variable>();  // Sequential indices.
+        assert(basic_events_.size() == var->index());
       }
+      parent->AddArg(var->index(), var);
     }
   }
 }
@@ -533,15 +526,12 @@ void BooleanGraph::ProcessHouseEvents(
     const std::vector<mef::HouseEventPtr>& house_events,
     ProcessedNodes* nodes) noexcept {
   for (const auto& house : house_events) {
-    if (nodes->constants.count(house->id())) {
-      ConstantPtr constant = nodes->constants.find(house->id())->second;
-      parent->AddArg(constant->index(), constant);
-    } else {
-      auto constant = std::make_shared<Constant>(house->state());
-      parent->AddArg(constant->index(), constant);
-      nodes->constants.emplace(house->id(), constant);
+    ConstantPtr& constant = nodes->constants[house.get()];
+    if (!constant) {
+      constant = std::make_shared<Constant>(house->state());
       constants_.push_back(constant);
     }
+    parent->AddArg(constant->index(), constant);
   }
 }
 
@@ -549,16 +539,12 @@ void BooleanGraph::ProcessGates(const GatePtr& parent,
                                 const std::vector<mef::GatePtr>& gates,
                                 bool ccf,
                                 ProcessedNodes* nodes) noexcept {
-  for (const auto& gate : gates) {
-    if (nodes->gates.count(gate->id())) {
-      GatePtr node = nodes->gates.find(gate->id())->second;
-      parent->AddArg(node->index(), node);
-    } else {
-      GatePtr new_gate =
-          BooleanGraph::ProcessFormula(gate->formula(), ccf, nodes);
-      parent->AddArg(new_gate->index(), new_gate);
-      nodes->gates.emplace(gate->id(), new_gate);
+  for (const auto& mef_gate : gates) {
+    GatePtr& pdag_gate = nodes->gates[mef_gate.get()];
+    if (!pdag_gate) {
+      pdag_gate = BooleanGraph::ProcessFormula(mef_gate->formula(), ccf, nodes);
     }
+    parent->AddArg(pdag_gate->index(), pdag_gate);
   }
 }
 
@@ -781,7 +767,6 @@ std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
 
 namespace {
 
-/// @struct FormulaSig
 /// Gate formula signature for printing in the shorthand format.
 struct FormulaSig {
   std::string begin;  ///< Beginning of the formula string.

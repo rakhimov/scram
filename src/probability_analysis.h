@@ -34,7 +34,6 @@
 namespace scram {
 namespace core {
 
-/// @class ProbabilityAnalysis
 /// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
@@ -68,7 +67,6 @@ class ProbabilityAnalysis : public Analysis {
   double p_total_;  ///< Total probability of the top event.
 };
 
-/// @class CutSetProbabilityCalculator
 /// Quantitative calculator of a probability value of a single cut set.
 class CutSetProbabilityCalculator {
  public:
@@ -102,7 +100,6 @@ class CutSetProbabilityCalculator {
   }
 };
 
-/// @class RareEventCalculator
 /// Quantitative calculator of probability values
 /// with the Rare-Event approximation.
 class RareEventCalculator : private CutSetProbabilityCalculator {
@@ -125,7 +122,6 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
                    const std::vector<double>& p_vars) noexcept;
 };
 
-/// @class McubCalculator
 /// Quantitative calculator of probability values
 /// with the Min-Cut-Upper Bound approximation.
 class McubCalculator : private CutSetProbabilityCalculator {
@@ -141,7 +137,6 @@ class McubCalculator : private CutSetProbabilityCalculator {
                    const std::vector<double>& p_vars) noexcept;
 };
 
-/// @class ProbabilityAnalyzerBase
 /// Base class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
@@ -188,12 +183,11 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
   p_vars_.push_back(-1);  // Padding.
-  for (const mef::BasicEventPtr& event : graph_->basic_events()) {
+  for (const mef::BasicEvent* event : graph_->basic_events()) {
     p_vars_.push_back(event->p());
   }
 }
 
-/// @class ProbabilityAnalyzer
 /// Fault-tree-analysis-aware probability analyzer.
 /// Probability analyzer provides the main engine for probability analysis.
 ///
@@ -215,7 +209,6 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   Calculator calc_;  ///< Provider of the calculation logic.
 };
 
-/// @class ProbabilityAnalyzer<Bdd>
 /// Specialization of probability analyzer with Binary Decision Diagrams.
 /// The quantitative analysis is done with BDD.
 template <>

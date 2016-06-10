@@ -43,7 +43,6 @@ using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 class Parameter;  // This is for cycle detection through expressions.
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
 
-/// @class Expression
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
 /// and may create cycles.
@@ -63,6 +62,9 @@ class Expression {
   Expression& operator=(const Expression&) = delete;
 
   virtual ~Expression() = default;
+
+  /// @returns A set of arguments of the expression.
+  const std::vector<ExpressionPtr>& args() const { return args_; }
 
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
@@ -101,22 +103,7 @@ class Expression {
   /// @returns Minimum value of this expression.
   virtual double Min() noexcept { return this->Mean(); }
 
-  /// @returns Parameters as nodes.
-  const std::vector<Parameter*>& nodes() {
-    if (gather_) Expression::GatherNodesAndConnectors();
-    return nodes_;
-  }
-
-  /// @returns Non-Parameter Expressions as connectors.
-  const std::vector<Expression*>& connectors() {
-    if (gather_) Expression::GatherNodesAndConnectors();
-    return connectors_;
-  }
-
  protected:
-  /// @returns A set of arguments of the expression.
-  const std::vector<ExpressionPtr>& args() const { return args_; }
-
   /// Registers an additional argument expression.
   ///
   /// @param[in] arg  An argument expression used by this expression.
@@ -129,18 +116,11 @@ class Expression {
   /// @returns A sampled value of this expression.
   virtual double GetSample() noexcept = 0;
 
-  /// Gathers nodes and connectors from arguments of the expression.
-  void GatherNodesAndConnectors();
-
   std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
   double sampled_value_;  ///< The sampled value.
   bool sampled_;  ///< Indication if the expression is already sampled.
-  bool gather_;  ///< A flag to gather nodes and connectors.
-  std::vector<Parameter*> nodes_;  ///< Parameters as nodes.
-  std::vector<Expression*> connectors_;  ///< Expressions as connectors.
 };
 
-/// @enum Units
 /// Provides units for parameters.
 enum Units {
   kUnitless = 0,
@@ -155,22 +135,20 @@ enum Units {
   kDemands
 };
 
-/// @class Parameter
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
-class Parameter : public Expression, public Element, public Role {
+class Parameter : public Expression, public Element, public Role, public Id {
  public:
   /// Creates a parameter as a variable for future references.
   ///
   /// @param[in] name  The name of this variable (Case sensitive).
   /// @param[in] base_path  The series of containers to get this parameter.
-  /// @param[in] is_public  Whether or not the parameter is public.
+  /// @param[in] role  The role of the parameter within the model or container.
   ///
   /// @throws LogicError  The name is empty.
-  explicit Parameter(const std::string& name,
-                     const std::string& base_path = "",
-                     bool is_public = true);
+  explicit Parameter(std::string name, std::string base_path = "",
+                     RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// Sets the expression of this parameter.
   ///
@@ -178,12 +156,6 @@ class Parameter : public Expression, public Element, public Role {
   ///
   /// @throws LogicError  The parameter expression is already set.
   void expression(const ExpressionPtr& expression);
-
-  /// @returns The name of this variable.
-  const std::string& name() const { return name_; }
-
-  /// @returns The unique identifier of this parameter.
-  const std::string& id() const { return id_; }
 
   /// @returns The unit of this parameter.
   Units unit() const { return unit_; }
@@ -205,11 +177,6 @@ class Parameter : public Expression, public Element, public Role {
   double Max() noexcept override { return expression_->Max(); }
   double Min() noexcept override { return expression_->Min(); }
 
-  /// This function is for cycle detection.
-  ///
-  /// @returns The connector between parameters.
-  Expression* connector() { return this; }
-
   /// @returns The mark of this node.
   const std::string& mark() const { return mark_; }
 
@@ -221,15 +188,12 @@ class Parameter : public Expression, public Element, public Role {
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  std::string name_;  ///< Name of this parameter or variable.
-  std::string id_;  ///< Identifier of this parameter or variable.
   ExpressionPtr expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.
   std::string mark_;  ///< The mark for traversal in cycle detection.
 };
 
-/// @class MissionTime
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
@@ -262,7 +226,6 @@ class MissionTime : public Expression {
   Units unit_;  ///< Units of this parameter.
 };
 
-/// @class ConstantExpression
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
@@ -289,7 +252,6 @@ class ConstantExpression : public Expression {
   double value_;  ///< The Constant value.
 };
 
-/// @class ExponentialExpression
 /// Negative exponential distribution
 /// with hourly failure rate and time.
 class ExponentialExpression : public Expression {
@@ -324,7 +286,6 @@ class ExponentialExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class GlmExpression
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
 ///
@@ -365,7 +326,6 @@ class GlmExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class WeibullExpression
 /// Weibull distribution with scale, shape, time shift, and time.
 class WeibullExpression : public Expression {
  public:
@@ -417,7 +377,6 @@ class WeibullExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
-/// @class RandomDeviate
 /// Abstract base class for all deviate expressions.
 /// These expressions provide quantification for uncertainty and sensitivity.
 class RandomDeviate : public Expression {
@@ -427,7 +386,6 @@ class RandomDeviate : public Expression {
   bool IsConstant() noexcept override { return false; }
 };
 
-/// @class UniformDeviate
 /// Uniform distribution.
 class UniformDeviate : public RandomDeviate {
  public:
@@ -451,7 +409,6 @@ class UniformDeviate : public RandomDeviate {
   ExpressionPtr max_;  ///< Maximum value of the distribution.
 };
 
-/// @class NormalDeviate
 /// Normal distribution.
 class NormalDeviate : public RandomDeviate {
  public:
@@ -483,7 +440,6 @@ class NormalDeviate : public RandomDeviate {
   ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
 };
 
-/// @class LogNormalDeviate
 /// Log-normal distribution.
 class LogNormalDeviate : public RandomDeviate {
  public:
@@ -535,7 +491,6 @@ class LogNormalDeviate : public RandomDeviate {
   ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
 };
 
-/// @class GammaDeviate
 /// Gamma distribution.
 class GammaDeviate : public RandomDeviate {
  public:
@@ -566,7 +521,6 @@ class GammaDeviate : public RandomDeviate {
   ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
 };
 
-/// @class BetaDeviate
 /// Beta distribution.
 class BetaDeviate : public RandomDeviate {
  public:
@@ -597,7 +551,6 @@ class BetaDeviate : public RandomDeviate {
   ExpressionPtr beta_;  ///< The beta shape parameter.
 };
 
-/// @class Histogram
 /// Histogram distribution.
 class Histogram : public RandomDeviate {
  public:
@@ -659,7 +612,6 @@ class Histogram : public RandomDeviate {
   std::vector<ExpressionPtr> weights_;
 };
 
-/// @class Neg
 /// This class for negation of numerical value or another expression.
 class Neg : public Expression {
  public:
@@ -679,7 +631,6 @@ class Neg : public Expression {
   ExpressionPtr expression_;  ///< Expression that is used for negation.
 };
 
-/// @class Add
 /// This expression adds all the given expressions' values.
 class Add : public Expression {
  public:
@@ -693,7 +644,6 @@ class Add : public Expression {
   double GetSample() noexcept override;
 };
 
-/// @class Sub
 /// This expression performs subtraction operation.
 /// First expression minus the rest of the given expressions' values.
 class Sub : public Expression {
@@ -708,7 +658,6 @@ class Sub : public Expression {
   double GetSample() noexcept override;
 };
 
-/// @class Mul
 /// This expression performs multiplication operation.
 class Mul : public Expression {
  public:
@@ -739,7 +688,6 @@ class Mul : public Expression {
   double GetExtremum(bool maximum) noexcept;
 };
 
-/// @class Div
 /// This expression performs division operation.
 /// The expression divides the first given argument by
 /// the rest of argument expressions.

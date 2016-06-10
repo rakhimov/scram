@@ -39,7 +39,6 @@
 namespace scram {
 namespace core {
 
-/// @struct ControlBlock
 /// Control flags and pointers for communication
 /// between BDD vertex pointers and BDD tables.
 struct ControlBlock {
@@ -121,7 +120,6 @@ class WeakIntrusivePtr final {
 template <class T>
 class Terminal;  // Forward declaration for Vertex to manage.
 
-/// @class Vertex
 /// Representation of a vertex in BDD graphs.
 /// This is a base class for all BDD vertices;
 /// however, it is NOT polymorphic for performance reasons.
@@ -205,7 +203,6 @@ class Vertex {
   ControlBlock* control_block_;  ///< Communication channel for pointers.
 };
 
-/// @class Terminal
 /// Representation of terminal vertices in BDD graphs.
 /// It is expected
 /// that in reduced BDD graphs,
@@ -237,7 +234,6 @@ class Terminal : public Vertex<T> {
   }
 };
 
-/// @class NonTerminal
 /// Representation of non-terminal vertices in BDD graphs.
 /// This class is a base class for various BDD-specific vertices.
 /// however, as Vertex, NonTerminal is not polymorphic.
@@ -342,7 +338,6 @@ class NonTerminal : public Vertex<T> {
   bool mark_;  ///< Traversal mark.
 };
 
-/// @class Ite
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
 /// This class is designed to help construct and manipulate BDD graphs.
 ///
@@ -412,7 +407,6 @@ using ItePtr = IntrusivePtr<Ite>;  ///< Shared if-then-else vertices.
 /// @returns Probable prime number >= n.
 int GetPrimeNumber(int n);
 
-/// @class UniqueTable
 /// A hash table for keeping BDD reduced.
 /// The management of the hash table is intrusive;
 /// that is, it relies on BDD vertices to provide necessary information.
@@ -585,7 +579,6 @@ class UniqueTable {
   Table table_;
 };
 
-/// @class CacheTable
 /// A hash table without collision resolution.
 /// Instead of resolving the collision,
 /// the existing value is purged and replaced by the new entry.
@@ -714,7 +707,6 @@ class CacheTable {
 
 class Zbdd;  // For analysis purposes.
 
-/// @class Bdd
 /// Analysis of Boolean graphs with Binary Decision Diagrams.
 /// This binary decision diagram data structure
 /// represents Reduced Ordered BDD with attributed edges.
@@ -728,7 +720,6 @@ class Bdd {
   using VertexPtr = IntrusivePtr<Vertex<Ite>>;  ///< BDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<Ite>>;  ///< Terminal vertices.
 
-  /// @struct Function
   /// Holder of computation resultant functions and gate representations.
   struct Function {
     bool complement;  ///< The interpretation of the function.

@@ -37,7 +37,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Model
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
@@ -48,9 +47,6 @@ class Model : public Element {
 
   Model(const Model&) = delete;
   Model& operator=(const Model&) = delete;
-
-  /// @returns The name of the model.
-  const std::string& name() const { return name_; }
 
   /// @returns Defined constructs in the model.
   /// @{
@@ -168,8 +164,6 @@ class Model : public Element {
   ///
   /// @throws std::out_of_range  There's a missing container in the path.
   const Component& GetContainer(const std::vector<std::string>& path);
-
-  std::string name_;  ///< The name of the model.
 
   /// A collection of defined constructs in the model.
   /// @{

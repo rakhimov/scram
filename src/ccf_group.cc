@@ -25,23 +25,20 @@
 namespace scram {
 namespace mef {
 
-CcfGroup::CcfGroup(const std::string& name, const std::string& model,
-                   const std::string& base_path, bool is_public)
-    : Role(is_public, base_path),
-      name_(name),
-      model_(model) {
-  if (name.empty()) throw LogicError("CCF group names can't be empty");
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+CcfGroup::CcfGroup(std::string name, std::string base_path, RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      Id(*this, *this) {}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
-                           name_ + " CCF group has already been defined.");
+                           Element::name() +
+                           " CCF group has already been defined.");
   }
   if (members_.count(basic_event->name())) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
-                                 " in " + name_ + " CCF group.");
+                                 " in " + Element::name() + " CCF group.");
   }
   members_.emplace(basic_event->name(), basic_event);
 }
@@ -59,7 +56,7 @@ void CcfGroup::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
     std::stringstream msg;
-    msg << name_ << " " << model_ << " CCF group level expected "
+    msg << Element::name() << " CCF group level expected "
         << factors_.size() + 1 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
@@ -67,98 +64,112 @@ void CcfGroup::CheckLevel(int level) {
 
 void CcfGroup::ValidateDistribution() {
   if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + name_ + " CCF group" +
+    throw ValidationError("Distribution for " + Element::name() + " CCF group" +
                           " has illegal values.");
   }
 }
 
 void CcfGroup::Validate() {
   if (members_.size() < 2) {
-    throw ValidationError(name_ + " CCF group must have at least 2 members.");
+    throw ValidationError(Element::name() +
+                          " CCF group must have at least 2 members.");
   }
 
   if (factors_.back().first > members_.size()) {
-    throw ValidationError("The level of factors for " + name_ + " CCF group" +
-                          " cannot be more than # of members.");
+    throw ValidationError("The level of factors for " + Element::name() +
+                          " CCF group cannot be more than # of members.");
   }
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
     if (f.second->Max() > 1 || f.second->Min() < 0) {
-      throw ValidationError("Factors for " + name_ + " CCF group" +
+      throw ValidationError("Factors for " + Element::name() + " CCF group" +
                             " have illegal values.");
     }
   }
 }
 
+namespace {
+
+/// Generates combinations of elements from a range.
+///
+/// @tparam Iterator  Iterator type of the range.
+///                   Best if it's a random access iterator.
+///
+/// @param[in] first1  The beginning of the range.
+/// @param[in] last1  The end of the range.
+/// @param[in] k  The number of elements to choose into a combination.
+///
+/// @returns  A container of all possible combinations.
+template <typename Iterator>
+std::vector<std::vector<typename Iterator::value_type>>
+GenerateCombinations(Iterator first1, Iterator last1, int k) {
+  assert(k >= 0 && "No negative choice number.");
+
+  auto size = std::distance(first1, last1);
+  assert(size >= 0 && "Invalid iterators.");
+
+  if (k > size) return {};
+  if (k == 0) return {{}};  // The notion of 'nothing'.
+  if (k == size)
+    return {std::vector<typename Iterator::value_type>(first1, last1)};
+
+  auto c = GenerateCombinations(std::next(first1), last1, k - 1);
+  for (auto& v : c) v.push_back(*first1);
+
+  auto rest = GenerateCombinations(std::next(first1), last1, k);
+  c.reserve(c.size() + rest.size());
+  std::move(rest.begin(), rest.end(), std::back_inserter(c));
+  assert(rest.empty() || rest.front().empty());  // Verify the move.
+
+  return c;
+}
+
+/// Joins CCF combination proxy gate names
+/// to create a distinct name for a new CCF event.
+///
+/// @param[in] combination  The combination of events.
+///
+/// @returns A uniquely mangled string for the combination.
+std::string JoinNames(const std::vector<Gate*>& combination) {
+  std::string name = "[";
+  for (auto it = combination.begin(), it_end = std::prev(combination.end());
+       it != it_end; ++it) {
+    name += (*it)->name() + " ";
+  }
+  name += combination.back()->name() + "]";
+  return name;
+}
+
+}  // namespace
+
 void CcfGroup::ApplyModel() {
-  // Construct replacement gates for member basic events.
-  std::map<std::string, GatePtr> gates;
+  // Construct replacement proxy gates for member basic events.
+  std::vector<Gate*> proxy_gates;
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-    BasicEventPtr member = mem.second;
+    const BasicEventPtr& member = mem.second;
     GatePtr new_gate(
-        new Gate(member->name(), member->base_path(), member->is_public()));
+        new Gate(member->name(), member->base_path(), member->role()));
     assert(member->id() == new_gate->id());
     new_gate->formula(FormulaPtr(new Formula("or")));
-    gates.emplace(mem.first, new_gate);
+
+    proxy_gates.push_back(new_gate.get());
     member->ccf_gate(new_gate);
   }
 
-  int max_level = factors_.back().first;  // Assumes that factors are
-                                          // sequential.
-  std::map<int, ExpressionPtr> probabilities;  // The level is position + 1.
-  this->CalculateProbabilities(max_level, &probabilities);
+  ExpressionMap probabilities = this->CalculateProbabilities();
+  assert(probabilities.size() > 1);
 
-  // Mapping of new basic events and their parents.
-  std::map<BasicEventPtr, std::set<std::string>> new_events;
-  this->ConstructCcfBasicEvents(max_level, &new_events);
+  for (auto& entry : probabilities) {
+    int level = entry.first;
+    ExpressionPtr prob = entry.second;
+    std::vector<std::vector<Gate*>> combinations =
+        GenerateCombinations(proxy_gates.begin(), proxy_gates.end(), level);
 
-  assert(!new_events.empty());
-  for (const auto& mem : new_events) {
-    int level = mem.second.size();
-    ExpressionPtr prob = probabilities.find(level)->second;
-    BasicEventPtr new_event = mem.first;
-    new_event->expression(prob);
-    // Add this basic event to the parent gates.
-    for (const std::string& parent : mem.second) {
-      gates.at(parent)->formula()->AddArgument(new_event);
+    for (auto& combination : combinations) {
+      auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
+      ccf_event->expression(prob);
+      for (Gate* gate : combination) gate->formula()->AddArgument(ccf_event);
+      ccf_event->members(std::move(combination));  // Move, at last.
     }
-  }
-}
-
-void CcfGroup::ConstructCcfBasicEvents(
-    int max_level,
-    std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  assert(max_level > 1);
-  assert(members_.size() > 1);
-  assert(max_level <= members_.size());
-  assert(new_events->empty());
-
-  std::set<std::set<std::string>> combinations = {{}};
-  for (int i = 0; i < max_level; ++i) {
-    std::set<std::set<std::string>> next_level;
-    for (const std::set<std::string>& combination : combinations) {
-      for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-        if (!combination.count(mem.first)) {
-          std::set<std::string> comb(combination);
-          comb.insert(mem.first);
-          next_level.insert(comb);
-        }
-      }
-    }
-    for (const std::set<std::string>& combination : next_level) {
-      std::string name = "[";
-      std::vector<std::string> names;
-      for (auto it_s = combination.begin(); it_s != combination.end();) {
-        std::string member_name = members_.at(*it_s)->name();
-        name += member_name;
-        names.push_back(member_name);
-        ++it_s;
-        if (it_s != combination.end()) name += " ";
-      }
-      name += "]";
-      new_events->emplace(std::make_shared<CcfEvent>(name, this, names),
-                          combination);
-    }
-    combinations = next_level;
   }
 }
 
@@ -175,34 +186,23 @@ void BetaFactorModel::CheckLevel(int level) {
   }
 }
 
-void BetaFactorModel::ConstructCcfBasicEvents(
-    int max_level,
-    std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  // This function is not optimized or efficient for beta-factor models.
+CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
   assert(CcfGroup::factors().size() == 1);
-  std::map<BasicEventPtr, std::set<std::string>> all_events;
-  CcfGroup::ConstructCcfBasicEvents(max_level, &all_events);  // Standard case.
+  assert(CcfGroup::members().size() == CcfGroup::factors().front().first);
 
-  for (const auto& event : all_events) {
-    int level = event.second.size();  // Filter out only relevant levels.
-    if (level == 1 || level == max_level) new_events->insert(event);
-  }
-}
+  ExpressionMap probabilities;
 
-void BetaFactorModel::CalculateProbabilities(
-    int max_level,
-    std::map<int, ExpressionPtr>* probabilities) {
-  assert(probabilities->empty());
   ExpressionPtr one(new ConstantExpression(1.0));
   ExpressionPtr beta = CcfGroup::factors().begin()->second;
   ExpressionPtr indep_factor(new Sub({one, beta}));  // (1 - beta)
-  probabilities->emplace(  // (1 - beta) * Q
+  probabilities.emplace_back(  // (1 - beta) * Q
       1,
       ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution()})));
 
-  probabilities->emplace(  // beta * Q
-      max_level,
+  probabilities.emplace_back(  // beta * Q
+      CcfGroup::factors().front().first,
       ExpressionPtr(new Mul({beta, CcfGroup::distribution()})));
+  return probabilities;
 }
 
 void MglModel::CheckLevel(int level) {
@@ -238,9 +238,9 @@ double CalculateCombinationReciprocal(int n, int k) {
 
 }  // namespace
 
-void MglModel::CalculateProbabilities(
-    int max_level,
-    std::map<int, ExpressionPtr>* probabilities) {
+CcfGroup::ExpressionMap MglModel::CalculateProbabilities() {
+  ExpressionMap probabilities;
+  int max_level = CcfGroup::factors().back().first;
   assert(CcfGroup::factors().size() == max_level - 1);
 
   ExpressionPtr one(new ConstantExpression(1.0));
@@ -257,21 +257,21 @@ void MglModel::CalculateProbabilities(
           ExpressionPtr(new Sub({one, CcfGroup::factors()[i].second})));
     }
     args.push_back(CcfGroup::distribution());
-    probabilities->emplace(i + 1, ExpressionPtr(new Mul(args)));
+    probabilities.emplace_back(i + 1, ExpressionPtr(new Mul(args)));
   }
-  assert(probabilities->size() == max_level);
+  assert(probabilities.size() == max_level);
+  return probabilities;
 }
 
-void AlphaFactorModel::CalculateProbabilities(
-    int max_level,
-    std::map<int, ExpressionPtr>* probabilities) {
-  assert(probabilities->empty());
+CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
+  ExpressionMap probabilities;
+  int max_level = CcfGroup::factors().back().first;
   assert(CcfGroup::factors().size() == max_level);
   std::vector<ExpressionPtr> sum_args;
   for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     sum_args.push_back(factor.second);
   }
-  ExpressionPtr sum(new Add(sum_args));
+  ExpressionPtr sum(new Add(std::move(sum_args)));
   int num_members = CcfGroup::members().size();
 
   for (int i = 0; i < max_level; ++i) {
@@ -279,9 +279,10 @@ void AlphaFactorModel::CalculateProbabilities(
     ExpressionPtr k(new ConstantExpression(mult));
     ExpressionPtr fraction(new Div({CcfGroup::factors()[i].second, sum}));
     ExpressionPtr prob(new Mul({k, fraction, CcfGroup::distribution()}));
-    probabilities->emplace(i + 1, prob);
+    probabilities.emplace_back(i + 1, prob);
   }
-  assert(probabilities->size() == max_level);
+  assert(probabilities.size() == max_level);
+  return probabilities;
 }
 
 void PhiFactorModel::Validate() {
@@ -307,15 +308,15 @@ void PhiFactorModel::Validate() {
   }
 }
 
-void PhiFactorModel::CalculateProbabilities(
-    int max_level,
-    std::map<int, ExpressionPtr>* probabilities) {
-  assert(probabilities->empty());
+CcfGroup::ExpressionMap PhiFactorModel::CalculateProbabilities() {
+  ExpressionMap probabilities;
+  int max_level = CcfGroup::factors().back().first;
   for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     ExpressionPtr prob(new Mul({factor.second, CcfGroup::distribution()}));
-    probabilities->emplace(factor.first, prob);
+    probabilities.emplace_back(factor.first, prob);
   }
-  assert(probabilities->size() == max_level);
+  assert(probabilities.size() == max_level);
+  return probabilities;
 }
 
 }  // namespace mef

@@ -53,6 +53,31 @@ const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
 
 std::stringstream Initializer::schema_;
 
+namespace {
+
+/// Maps string to the role specifier.
+///
+/// @param[in] s  Non-empty, valid role specifier string.
+///
+/// @returns Role specifier attribute for elements.
+RoleSpecifier GetRole(const std::string& s) {
+  assert(!s.empty());
+  assert(s == "public" || s == "private");
+  return s == "public" ? RoleSpecifier::kPublic : RoleSpecifier::kPrivate;
+}
+
+/// Takes into account the parent role upon producing element role.
+///
+/// @param[in] s  Potentially empty role specifier string.
+/// @param[in] parent_role  The role to be inherited.
+///
+/// @returns The role for the element under consideration.
+RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
+  return s.empty() ? parent_role : GetRole(s);
+}
+
+}  // namespace
+
 Initializer::Initializer(const core::Settings& settings)
     : settings_(settings),
       mission_time_(std::make_shared<MissionTime>()) {
@@ -156,8 +181,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   if (!model_) {  // Create only one model for multiple files.
     const xmlpp::Element* root_element = XmlElement(root);
-    std::string model_name = GetAttributeValue(root_element, "name");
-    model_ = std::make_shared<Model>(model_name);
+    model_ = std::make_shared<Model>(GetAttributeValue(root_element, "name"));
     Initializer::AttachLabelAndAttributes(root_element, model_.get());
   }
 
@@ -166,7 +190,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   }
 
   for (const xmlpp::Node* node : root->find("./define-CCF-group")) {
-    Initializer::RegisterCcfGroup(XmlElement(node));
+    Initializer::RegisterCcfGroup(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 
   for (const xmlpp::Node* node : root->find("./model-data")) {
@@ -231,7 +255,6 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
 
 void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   std::string name = GetAttributeValue(ft_node, "name");
-  assert(!name.empty());
   FaultTreePtr fault_tree(new FaultTree(name));
   Initializer::RegisterFaultTreeData(ft_node, name, fault_tree.get());
   try {
@@ -246,14 +269,11 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
 
 ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
                                           const std::string& base_path,
-                                          bool public_container) {
+                                          RoleSpecifier container_role) {
   std::string name = GetAttributeValue(component_node, "name");
-  assert(!name.empty());
   std::string role = GetAttributeValue(component_node, "role");
-  bool component_role = public_container;  // Inherited role by default.
-  // Overwrite the role explicitly.
-  if (!role.empty()) component_role = role == "public";
-  ComponentPtr component(new Component(name, base_path, component_role));
+  ComponentPtr component(new Component(name, base_path,
+                                       GetRole(role, container_role)));
   Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
                                      component.get());
   return component;
@@ -267,35 +287,35 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   for (const xmlpp::Node* node : ft_node->find("./define-house-event")) {
     component->AddHouseEvent(
         Initializer::DefineHouseEvent(XmlElement(node), base_path,
-                                      component->is_public()));
+                                      component->role()));
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
     component->AddBasicEvent(
         Initializer::RegisterBasicEvent(XmlElement(node), base_path,
-                                        component->is_public()));
+                                        component->role()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-parameter")) {
     component->AddParameter(
         Initializer::RegisterParameter(XmlElement(node), base_path,
-                                       component->is_public()));
+                                       component->role()));
   }
 
   CLOCK(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-gate")) {
     component->AddGate(Initializer::RegisterGate(XmlElement(node), base_path,
-                                                 component->is_public()));
+                                                 component->role()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-CCF-group")) {
     component->AddCcfGroup(
         Initializer::RegisterCcfGroup(XmlElement(node), base_path,
-                                      component->is_public()));
+                                      component->role()));
   }
   for (const xmlpp::Node* node : ft_node->find("./define-component")) {
     ComponentPtr sub = Initializer::DefineComponent(XmlElement(node), base_path,
-                                                    component->is_public());
+                                                    component->role());
     try {
       component->AddComponent(std::move(sub));
     } catch (ValidationError& err) {
@@ -309,26 +329,27 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   for (const xmlpp::Node* node : model_data->find("./define-house-event")) {
-    Initializer::DefineHouseEvent(XmlElement(node));
+    Initializer::DefineHouseEvent(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-basic-event")) {
-    Initializer::RegisterBasicEvent(XmlElement(node));
+    Initializer::RegisterBasicEvent(XmlElement(node), "",
+                                    RoleSpecifier::kPublic);
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-parameter")) {
-    Initializer::RegisterParameter(XmlElement(node));
+    Initializer::RegisterParameter(XmlElement(node), "",
+                                   RoleSpecifier::kPublic);
   }
 }
 
 GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
                                   const std::string& base_path,
-                                  bool public_container) {
+                                  RoleSpecifier container_role) {
   std::string name = GetAttributeValue(gate_node, "name");
   std::string role = GetAttributeValue(gate_node, "role");
-  bool gate_role = public_container;  // Inherited role by default.
-  if (!role.empty()) gate_role = role == "public";
-  auto gate = std::make_shared<Gate>(name, base_path, gate_role);
+  auto gate = std::make_shared<Gate>(name, base_path,
+                                     GetRole(role, container_role));
   try {
     model_->AddGate(gate);
   } catch (ValidationError& err) {
@@ -450,12 +471,13 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 
 BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
                                               const std::string& base_path,
-                                              bool public_container) {
+                                              RoleSpecifier container_role) {
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
-  bool event_role = public_container;  // Inherited role by default.
-  if (!role.empty()) event_role = role == "public";
-  auto basic_event = std::make_shared<BasicEvent>(name, base_path, event_role);
+  auto basic_event = std::make_shared<BasicEvent>(
+      name,
+      base_path,
+      GetRole(role, container_role));
   try {
     model_->AddBasicEvent(basic_event);
   } catch (ValidationError& err) {
@@ -484,12 +506,13 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
 
 HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
                                             const std::string& base_path,
-                                            bool public_container) {
+                                            RoleSpecifier container_role) {
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
-  bool event_role = public_container;  // Inherited role by default.
-  if (!role.empty()) event_role = role == "public";
-  auto house_event = std::make_shared<HouseEvent>(name, base_path, event_role);
+  auto house_event = std::make_shared<HouseEvent>(
+      name,
+      base_path,
+      GetRole(role, container_role));
   try {
     model_->AddHouseEvent(house_event);
   } catch (ValidationError& err) {
@@ -516,12 +539,11 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
 
 ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
                                             const std::string& base_path,
-                                            bool public_container) {
+                                            RoleSpecifier container_role) {
   std::string name = GetAttributeValue(param_node, "name");
   std::string role = GetAttributeValue(param_node, "role");
-  bool param_role = public_container;  // Inherited role by default.
-  if (!role.empty()) param_role = role == "public";
-  auto parameter = std::make_shared<Parameter>(name, base_path, param_role);
+  auto parameter = std::make_shared<Parameter>(name, base_path,
+                                               GetRole(role, container_role));
   try {
     model_->AddParameter(parameter);
   } catch (ValidationError& err) {
@@ -720,7 +742,7 @@ ExpressionPtr Initializer::GetParameterExpression(
 
 CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
                                           const std::string& base_path,
-                                          bool public_container) {
+                                          RoleSpecifier container_role) {
   std::string name = GetAttributeValue(ccf_node, "name");
   std::string model = GetAttributeValue(ccf_node, "model");
   assert(model == "beta-factor" || model == "alpha-factor" || model == "MGL" ||
@@ -729,18 +751,18 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
   CcfGroupPtr ccf_group;
   if (model == "beta-factor") {
     ccf_group =
-        std::make_shared<BetaFactorModel>(name, base_path, public_container);
+        std::make_shared<BetaFactorModel>(name, base_path, container_role);
 
   } else if (model == "MGL") {
-    ccf_group = std::make_shared<MglModel>(name, base_path, public_container);
+    ccf_group = std::make_shared<MglModel>(name, base_path, container_role);
 
   } else if (model == "alpha-factor") {
     ccf_group =
-        std::make_shared<AlphaFactorModel>(name, base_path, public_container);
+        std::make_shared<AlphaFactorModel>(name, base_path, container_role);
 
   } else if (model == "phi-factor") {
     ccf_group =
-        std::make_shared<PhiFactorModel>(name, base_path, public_container);
+        std::make_shared<PhiFactorModel>(name, base_path, container_role);
   }
 
   try {
@@ -794,7 +816,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     std::string name = GetAttributeValue(event_node, "name");
     auto basic_event = std::make_shared<BasicEvent>(name,
                                                     ccf_group->base_path(),
-                                                    ccf_group->is_public());
+                                                    ccf_group->role());
     try {
       ccf_group->AddMember(basic_event);
       model_->AddBasicEvent(basic_event);
@@ -874,10 +896,8 @@ void Initializer::ValidateExpressions() {
        model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Parameter, Expression>(p.second.get(), &cycle)) {
-      std::string msg = "Detected a cycle in " + p.second->name() +
-          " parameter:\n";
-      msg += cycle::PrintCycle(cycle);
-      throw ValidationError(msg);
+      throw ValidationError("Detected a cycle in " + p.second->name() +
+                            " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
 
@@ -920,17 +940,22 @@ void Initializer::ValidateExpressions() {
 }
 
 void Initializer::SetupForAnalysis() {
-  // Collecting top events of fault trees.
+  CLOCK(top_time);
+  LOG(DEBUG2) << "Collecting top events of fault trees...";
   for (const std::pair<const std::string, FaultTreePtr>& ft :
        model_->fault_trees()) {
     ft.second->CollectTopEvents();
   }
+  LOG(DEBUG2) << "Top event collection is finished in " << DUR(top_time);
 
+  CLOCK(ccf_time);
+  LOG(DEBUG2) << "Applying CCF models...";
   // CCF groups must apply models to basic event members.
   for (const std::pair<const std::string, CcfGroupPtr>& group :
        model_->ccf_groups()) {
     group.second->ApplyModel();
   }
+  LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
 }
 
 }  // namespace mef

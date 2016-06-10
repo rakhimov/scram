@@ -29,31 +29,26 @@
 namespace scram {
 namespace mef {
 
-Event::Event(const std::string& name, const std::string& base_path,
-             bool is_public)
-    : Role(is_public, base_path),
-      name_(name),
-      orphan_(true) {
-  if (name.empty()) throw LogicError("Event names can't be empty");
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+Event::Event(std::string name, std::string base_path, RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      Id(*this, *this),
+      orphan_(true) {}
 
 Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;
 
-CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
-                   const std::vector<std::string>& member_names)
-    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
-      ccf_group_(ccf_group),
-      member_names_(member_names) {}
+CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
+    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
+      ccf_group_(*ccf_group) {}
 
 void Gate::Validate() {
   // Detect inhibit flavor.
   if (formula_->type() == "and" && Element::HasAttribute("flavor")) {
-    const Attribute* attr = &Element::GetAttribute("flavor");
-    if (attr->value == "inhibit") {
+    const Attribute& attr = Element::GetAttribute("flavor");
+    if (attr.value == "inhibit") {
       if (formula_->num_args() != 2) {
-        throw ValidationError(Event::name() +
+        throw ValidationError(Element::name() +
                               "INHIBIT gate must have only 2 children");
       }
       std::stringstream msg;
@@ -65,12 +60,12 @@ void Gate::Validate() {
         if (!conditional_found) {
           conditional_found = true;
         } else {
-          msg << Event::name() << " : INHIBIT gate must have"
+          msg << Element::name() << " : INHIBIT gate must have"
               << " exactly one conditional event.\n";
         }
       }
       if (!conditional_found) {
-        msg << Event::name()
+        msg << Element::name()
             << " : INHIBIT gate is missing a conditional event.\n";
       }
       if (!msg.str().empty()) throw ValidationError(msg.str());
@@ -85,8 +80,7 @@ const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
 Formula::Formula(const std::string& type)
     : type_(type),
-      vote_number_(0),
-      gather_(true) {}
+      vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_) throw LogicError("Vote number is not set.");
@@ -136,18 +130,6 @@ void Formula::Validate() {
         << vote_number_ << ".";
   }
   if (!msg.str().empty()) throw ValidationError(msg.str());
-}
-
-void Formula::GatherNodesAndConnectors() {
-  assert(nodes_.empty());
-  assert(connectors_.empty());
-  for (const GatePtr& gate : gate_args_) {
-    nodes_.push_back(gate.get());
-  }
-  for (const FormulaPtr& formula : formula_args_) {
-    connectors_.push_back(formula.get());
-  }
-  gather_ = false;
 }
 
 }  // namespace mef

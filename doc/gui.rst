@@ -17,7 +17,7 @@ GUI Concerns
 
 - Delegation of the analysis to the core.
 
-- Processing of the analysis results.
+- Presentation of the analysis results.
 
 
 Design Goals/Principles

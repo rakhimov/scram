@@ -110,7 +110,6 @@ void Preprocessor::Run() noexcept {
 
 namespace {  // Boolean graph structure verification tools.
 
-/// @class TestGateMarks
 /// Functor to sanity check the marks of Boolean graph gates.
 class TestGateMarks {
  public:
@@ -134,7 +133,6 @@ class TestGateMarks {
   std::unordered_set<int> tested_gates_;  ///< Alternative to gate marking.
 };
 
-/// @class TestGateStructure
 /// Functor to sanity check the structure of Boolean graph gates.
 class TestGateStructure {
  public:

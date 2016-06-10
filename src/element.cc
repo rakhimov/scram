@@ -25,6 +25,12 @@
 namespace scram {
 namespace mef {
 
+Element::Element(std::string name, bool optional_name)
+    : kName_(std::move(name)) {
+  if (!optional_name && kName_.empty())
+    throw LogicError("The element name can't be empty");
+}
+
 void Element::label(const std::string& new_label) {
   if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
   if (new_label.empty()) throw LogicError("Trying to apply empty label");
@@ -48,9 +54,18 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
   }
 }
 
-Role::Role(bool is_public, const std::string& base_path)
-    : is_public_(is_public),
-      base_path_(base_path) {}
+Role::Role(RoleSpecifier role, std::string base_path)
+    : kRole_(role),
+      kBasePath_(std::move(base_path)) {}
+
+Id::Id(const Element& el, const Role& role)
+    : kId_(role.role() == RoleSpecifier::kPublic
+               ? el.name()
+               : role.base_path() + "." + el.name()) {
+  if (el.name().empty()) throw LogicError("The name for an Id is empty!");
+  if (role.role() == RoleSpecifier::kPrivate && role.base_path().empty())
+    throw LogicError("The base path for a private element is empty.");
+}
 
 }  // namespace mef
 }  // namespace scram

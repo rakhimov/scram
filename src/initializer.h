@@ -42,7 +42,6 @@
 namespace scram {
 namespace mef {
 
-/// @class Initializer
 /// This class operates on input files
 /// to initialize analysis constructs
 /// like models, fault trees, and events.
@@ -159,7 +158,7 @@ class Initializer {
   ///
   /// @param[in] component_node  XML element defining the component.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Component that is ready for registration.
   ///
@@ -168,7 +167,7 @@ class Initializer {
   ///                          like gates and events.
   ComponentPtr DefineComponent(const xmlpp::Element* component_node,
                                const std::string& base_path,
-                               bool public_container = true);
+                               RoleSpecifier container_role);
 
   /// Registers fault tree and component data
   /// like gates, events, parameters.
@@ -193,14 +192,14 @@ class Initializer {
   ///
   /// @param[in] gate_node  XML element defining the gate.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Pointer to the registered gate.
   ///
   /// @throws ValidationError  An event with the same name is already defined.
   GatePtr RegisterGate(const xmlpp::Element* gate_node,
-                       const std::string& base_path = "",
-                       bool public_container = true);
+                       const std::string& base_path,
+                       RoleSpecifier container_role);
 
   /// Defines a gate for this analysis.
   ///
@@ -235,14 +234,14 @@ class Initializer {
   ///
   /// @param[in] event_node  XML element defining the event.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Pointer to the registered basic event.
   ///
   /// @throws ValidationError  An event with the same name is already defined.
   BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
-                                   const std::string& base_path = "",
-                                   bool public_container = true);
+                                   const std::string& base_path,
+                                   RoleSpecifier container_role);
 
   /// Defines a basic event for this analysis.
   ///
@@ -255,27 +254,27 @@ class Initializer {
   ///
   /// @param[in] event_node  XML element defining the event.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Pointer to the registered house event.
   ///
   /// @throws ValidationError  An event with the same name is already defined.
   HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
-                                 const std::string& base_path = "",
-                                 bool public_container = true);
+                                 const std::string& base_path,
+                                 RoleSpecifier container_role);
 
   /// Registers a variable or parameter.
   ///
   /// @param[in] param_node  XML element defining the parameter.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Pointer to the registered parameter.
   ///
   /// @throws ValidationError  The parameter is already registered.
   ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
-                                 const std::string& base_path = "",
-                                 bool public_container = true);
+                                 const std::string& base_path,
+                                 RoleSpecifier container_role);
 
   /// Defines a variable or parameter.
   ///
@@ -317,7 +316,7 @@ class Initializer {
   ///
   /// @param[in] ccf_node  XML element defining CCF group.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] public_container  A flag for the parent container's role.
+  /// @param[in] container_role  The parent container's role.
   ///
   /// @returns Pointer to the registered CCF group.
   ///
@@ -325,8 +324,8 @@ class Initializer {
   ///                          the group and its members,
   ///                          for example, duplications or missing information.
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
-                               const std::string& base_path = "",
-                               bool public_container = true);
+                               const std::string& base_path,
+                               RoleSpecifier container_role);
 
   /// Defines a common cause failure group for the analysis.
   ///
@@ -391,7 +390,6 @@ class Initializer {
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;
 
-  /// @struct TbdElements
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
   struct TbdElements {

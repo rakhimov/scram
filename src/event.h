@@ -34,33 +34,23 @@
 namespace scram {
 namespace mef {
 
-/// @class Event
 /// Abstract base class for general fault tree events.
-class Event : public Element, public Role {
+class Event : public Element, public Role, public Id {
  public:
   /// Constructs a fault tree event with a specific id.
-  /// It is assumed that names
-  /// and other strings do not have
-  /// leading and trailing whitespace characters.
   ///
   /// @param[in] name  The original name.
   /// @param[in] base_path  The series of containers to get this event.
-  /// @param[in] is_public  Whether or not the event is public.
+  /// @param[in] role  The role of the event within the model or container.
   ///
   /// @throws LogicError  The name is empty.
-  explicit Event(const std::string& name, const std::string& base_path = "",
-                 bool is_public = true);
+  explicit Event(std::string name, std::string base_path = "",
+                 RoleSpecifier role = RoleSpecifier::kPublic);
 
   Event(const Event&) = delete;
   Event& operator=(const Event&) = delete;
 
   virtual ~Event() = 0;  ///< Abstract class.
-
-  /// @returns The unique id that is set upon the construction of this event.
-  const std::string& id() const { return id_; }
-
-  /// @returns The original name.
-  const std::string& name() const { return name_; }
 
   /// @returns True if this node is orphan.
   bool orphan() const { return orphan_; }
@@ -71,12 +61,9 @@ class Event : public Element, public Role {
   void orphan(bool state) { orphan_ = state; }
 
  private:
-  std::string id_;  ///< Unique Id name of an event.
-  std::string name_;  ///< Original name.
   bool orphan_;  ///< Indication of an orphan node.
 };
 
-/// @class PrimaryEvent
 /// This is an abstract base class for events
 /// that can cause failures.
 /// This class represents Base, House, Undeveloped, and other events.
@@ -99,7 +86,6 @@ class PrimaryEvent : public Event {
   bool has_expression_ = false;
 };
 
-/// @class HouseEvent
 /// Representation of a house event in a fault tree.
 class HouseEvent : public PrimaryEvent {
  public:
@@ -125,7 +111,6 @@ class HouseEvent : public PrimaryEvent {
 class Gate;
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
-/// @class BasicEvent
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
@@ -217,7 +202,6 @@ class BasicEvent : public PrimaryEvent {
 
 class CcfGroup;
 
-/// @class CcfEvent
 /// A basic event that represents a multiple failure of
 /// a group of events due to a common cause.
 /// This event is generated out of a common cause group.
@@ -233,21 +217,32 @@ class CcfEvent : public BasicEvent {
   ///
   /// @param[in] name  The identifying name of this CCF event.
   /// @param[in] ccf_group  The CCF group that created this event.
-  /// @param[in] member_names  The names of members that this CCF event
-  ///                          represents as multiple failure.
-  CcfEvent(const std::string& name, const CcfGroup* ccf_group,
-           const std::vector<std::string>& member_names);
+  CcfEvent(std::string name, const CcfGroup* ccf_group);
 
-  /// @returns Pointer to the CCF group that created this CCF event.
-  const CcfGroup* ccf_group() const { return ccf_group_; }
+  /// @returns The CCF group that created this CCF event.
+  const CcfGroup& ccf_group() const { return ccf_group_; }
 
-  /// @returns Original names of members of this CCF event.
-  const std::vector<std::string>& member_names() const { return member_names_; }
+  /// @returns Members of this CCF event.
+  ///          The members also own this CCF event through parentship.
+  const std::vector<Gate*>& members() const { return members_; }
+
+  /// Sets the member parents.
+  ///
+  /// @param[in] members  The members that this CCF event
+  ///                     represents as multiple failure.
+  ///
+  /// @note The reason for late setting of members
+  ///       instead of in the constructor is moveability.
+  ///       The container of member gates can only move
+  ///       after the creation of the event.
+  void members(std::vector<Gate*> members) {
+    assert(members_.empty() && "Resetting members.");
+    members_ = std::move(members);
+  }
 
  private:
-  const CcfGroup* ccf_group_;  ///< Pointer to the CCF group.
-  /// Original names of basic events in this CCF event.
-  std::vector<std::string> member_names_;
+  const CcfGroup& ccf_group_;  ///< The originating CCF group.
+  std::vector<Gate*> members_;  ///< Member parent gates of this CCF event.
 };
 
 using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
@@ -258,7 +253,6 @@ using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
-/// @class Gate
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
@@ -274,11 +268,6 @@ class Gate : public Event {
     assert(!formula_);
     formula_ = std::move(formula);
   }
-
-  /// This function is for cycle detection.
-  ///
-  /// @returns The connector between gates.
-  Formula* connector() const { return formula_.get(); }
 
   /// Checks if a gate is initialized correctly.
   ///
@@ -297,7 +286,6 @@ class Gate : public Event {
   std::string mark_;  ///< The mark for traversal or toposort.
 };
 
-/// @class Formula
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
 class Formula {
@@ -378,18 +366,6 @@ class Formula {
   /// @throws ValidationError  Problems with the operator or arguments.
   void Validate();
 
-  /// @returns Gates as nodes.
-  const std::vector<Gate*>& nodes() {
-    if (gather_) Formula::GatherNodesAndConnectors();
-    return nodes_;
-  }
-
-  /// @returns Formulae as connectors.
-  const std::vector<Formula*>& connectors() {
-    if (gather_) Formula::GatherNodesAndConnectors();
-    return connectors_;
-  }
-
  private:
   /// Formula types that require two or more arguments.
   static const std::set<std::string> kTwoOrMore_;
@@ -413,9 +389,6 @@ class Formula {
     if (event->orphan()) event->orphan(false);
   }
 
-  /// Gathers nodes and connectors from arguments of the gate.
-  void GatherNodesAndConnectors();
-
   std::string type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
@@ -425,9 +398,6 @@ class Formula {
   /// Arguments that are formulas
   /// if this formula is nested.
   std::vector<FormulaPtr> formula_args_;
-  std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
-  std::vector<Formula*> connectors_;  ///< Formulae as connectors.
-  bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
 }  // namespace mef

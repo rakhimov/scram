@@ -26,7 +26,6 @@
 namespace scram {
 namespace core {
 
-/// @class Settings
 /// Builder for analysis settings.
 /// Analysis facilities are guaranteed not to throw or fail
 /// with an instance of this class.

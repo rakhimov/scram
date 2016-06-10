@@ -30,8 +30,7 @@ namespace mef {
 Expression::Expression(std::vector<ExpressionPtr> args)
     : args_(std::move(args)),
       sampled_value_(0),
-      sampled_(false),
-      gather_(true) {}
+      sampled_(false) {}
 
 double Expression::Sample() noexcept {
   if (!sampled_) {
@@ -53,30 +52,14 @@ bool Expression::IsConstant() noexcept {
   return true;
 }
 
-void Expression::GatherNodesAndConnectors() {
-  assert(nodes_.empty());
-  assert(connectors_.empty());
-  for (const ExpressionPtr& arg : args_) {
-    Parameter* ptr = dynamic_cast<Parameter*>(arg.get());
-    if (ptr) {
-      nodes_.push_back(ptr);
-    } else {
-      connectors_.push_back(arg.get());
-    }
-  }
-  gather_ = false;
-}
-
-Parameter::Parameter(const std::string& name, const std::string& base_path,
-                     bool is_public)
+Parameter::Parameter(std::string name, std::string base_path,
+                     RoleSpecifier role)
     : Expression({}),
-      Role(is_public, base_path),
-      name_(name),
+      Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      Id(*this, *this),
       unit_(kUnitless),
-      unused_(true) {
-  if (name.empty()) throw LogicError("Parameter names can't be empty");
-  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
-}
+      unused_(true) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
   if (expression_) throw LogicError("Parameter expression is already set.");

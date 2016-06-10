@@ -38,7 +38,6 @@
 namespace scram {
 namespace core {
 
-/// @class RiskAnalysis
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
  public:

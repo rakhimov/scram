@@ -28,14 +28,12 @@
 
 namespace scram {
 
-/// @class XmlStreamError
 /// Errors in using XML streaming facilities.
 class XmlStreamError : public Error {
  public:
   using Error::Error;  ///< Constructor with a message.
 };
 
-/// @class XmlStreamElement
 /// Writer of data formed as an XML element to a stream.
 /// This class relies on the RAII to put the closing tags.
 /// It is designed for stack-based use

@@ -32,7 +32,6 @@
 
 namespace scram {
 
-/// @class Grapher
 /// Provides graphing instruction output to other tools.
 /// Currently operates with Fault Trees only.
 class Grapher {

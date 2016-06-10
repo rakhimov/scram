@@ -55,12 +55,13 @@ void Print(const std::vector<Product>& products) {
   for (const auto& product : to_print) distribution[product.size() - 1]++;
   std::cerr << " " << to_print.size() << " : {";
   for (int i : distribution) std::cerr << " " << i;
-  std::cerr << " }" << std::endl << std::endl;
+  std::cerr << " }\n\n";
 
   for (const auto& product : to_print) {
     for (const auto& id : product) std::cerr << " " << id;
-    std::cerr << std::endl;
+    std::cerr << "\n";
   }
+  std::cerr << std::flush;
 }
 
 double CalculateProbability(const Product& product) {
@@ -135,7 +136,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     product.reserve(result_set.size());
     for (int index : result_set) {
       int abs_index = std::abs(index);
-      const mef::BasicEventPtr& basic_event = graph->GetBasicEvent(abs_index);
+      const mef::BasicEvent* basic_event = graph->GetBasicEvent(abs_index);
       product.push_back({index < 0, basic_event});
       if (unique_events.count(abs_index)) continue;
       unique_events.insert(abs_index);

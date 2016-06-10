@@ -25,7 +25,6 @@
 
 namespace scram {
 
-/// @class Env
 /// Provides environmental variables.
 class Env {
  public:

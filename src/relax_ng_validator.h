@@ -35,7 +35,6 @@
 
 namespace scram {
 
-/// @class RelaxNGValidator
 /// This class provides a simple interface
 /// to validate XML documents
 /// against a given RelaxNG schema.

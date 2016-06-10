@@ -31,7 +31,6 @@
 
 namespace scram {
 
-/// @class Config
 /// This class processes configuration files for analysis.
 /// The class contains all the setup and state
 /// to initialize general analysis.

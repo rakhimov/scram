@@ -134,7 +134,8 @@ void Grapher::FormatTopEvent(const mef::GatePtr& top_event, std::ostream& out) {
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
       << "label=\"" << top_event->name() << "\\n";
-  if (!top_event->is_public()) out << "-- private --\\n";
+  if (top_event->role() == mef::RoleSpecifier::kPrivate)
+    out << "-- private --\\n";
   out << "{ " << gate;
   if (gate == "VOTE") {
     out << " " << top_event->formula()->vote_number()
@@ -170,7 +171,8 @@ void Grapher::FormatIntermediateEvents(
       out << "fontsize=10, fontcolor=black, "
           << "color=" << gate_color << ", "
           << "label=\"" << name << "\\n";  // This is a new line in the label.
-      if (!it->second->is_public()) out << "-- private --\\n";
+      if (it->second->role() == mef::RoleSpecifier::kPrivate)
+        out << "-- private --\\n";
       out << "{ " << gate;
       if (gate == "VOTE") {
         out << " " << it->second->formula()->vote_number()
@@ -234,7 +236,8 @@ void Grapher::FormatPrimaryEvent(const mef::PrimaryEventPtr& primary_event,
         << "height=1, fontsize=10, fixedsize=true, "
         << "fontcolor=" << color
         << ", " << "label=\"" << primary_event->name() << "\\n";
-    if (!primary_event->is_public()) out << "-- private --\\n";
+    if (primary_event->role() == mef::RoleSpecifier::kPrivate)
+      out << "-- private --\\n";
     out << "[" << type << "]" << prob_msg << "\"]\n";
   }
 }
