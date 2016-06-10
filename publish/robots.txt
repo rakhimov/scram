@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /api/
 
 Sitemap: http://scram-pra.org/sitemap.xml
