@@ -23,8 +23,7 @@ Implemented Features
 --------------------
 
 - Static fault tree analysis (MOCUS/BDD/ZBDD)
-- Non-coherent analysis containing NOT logic or complements
-  (Minimal Cut Sets / Prime Implicants)
+- Non-coherent analysis (Minimal Cut Sets / Prime Implicants)
 - Analysis with common-cause failure models
 - Probability calculations with importance analysis
 - Uncertainty analysis with Monte Carlo simulations
