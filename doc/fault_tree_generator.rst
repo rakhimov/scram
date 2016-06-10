@@ -70,10 +70,8 @@ the generation time scales linearly with the number of basic events.
 
 It is possible to generate a 100,000-basic-event fault tree in less than a minute;
 however, to generate more complex fault trees,
-it is recommended to use Cython_.
-Cython can convert the fault tree generator script into C code,
-which can be compiled into a faster executable.
-This faster executable is capable of generating million-basic-event fault trees in few minutes.
+the Python code can be converted into C with Cython_,
+which is capable of generating million-basic-event fault trees in few minutes.
 
 .. _Cython:
     http://cython.org/

@@ -190,7 +190,8 @@ Core C++ Code
 - In performance-critical **analysis code**
   (BDD variable ordering, Boolean formula rewriting/preprocessing, etc.),
   avoid platform/implementation-dependent constructs
-  (iterating over unordered containers, using an object address as its identity, etc.).
+  (iterating over unordered containers, unstable sorts,
+  using an object address as its identity, etc.).
   The performance profile must be stable across platforms.
 
 .. _Defensive Programming: https://www.youtube.com/watch?v=1QhtXRMp3Hg
@@ -227,6 +228,9 @@ GUI Code
 
 - Common Qt includes may be omitted,
   for example, ``QString``, ``QList``, ``QStringList``, and ``QDir``.
+
+- Avoid using forward declaration of Qt library classes.
+  Just include the needed headers.
 
 
 Monitoring Code Quality

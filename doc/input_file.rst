@@ -50,7 +50,7 @@ Steps in XML Input Validation
       and private names must be unique locally within containers.
     - References are followed according to the public and private roles
       described in the OpenPSA MEF section
-      "IV.3.2. Solving Name Conflicts: Public versus Private Elements".
+      *IV.3.2. Solving Name Conflicts: Public versus Private Elements*.
 
 #. Additional validation of fault trees and values of parameters is performed:
 
@@ -85,17 +85,17 @@ names must conform to the following rules.
 - Consistent with `XML NCName datatype`_
 
     * The first character must be alphabetic.
-    * May contain alphanumeric characters and special characters like "_", "-".
-    * No whitespace or other special characters like ":", ",", "/", etc.
+    * May contain alphanumeric characters and special characters like ``_``, ``-``.
+    * No whitespace or other special characters like ``:``, ``,``, ``/``, etc.
 
-- No double dashes ("--")
+- No double dashes ``--``
 - No trailing dash
-- No periods (".")
+- No periods ``.``
 
 References to constructs, such as gates, events, and parameters,
 may include names of fault trees or components to access public or private members.
-This feature requires a period (".") between names;
-thus references may follow the pattern ("fault_tree.component.event").
+This feature requires a period ``.`` between names;
+thus references may follow the pattern ``fault_tree.component.event``.
 
 .. _XML NCName datatype:
     http://stackoverflow.com/questions/1631396/what-is-an-xsncname-type-and-when-should-it-be-used
@@ -115,7 +115,7 @@ Shorthand Input Format
 ======================
 
 A more convenient format than the XML for writing simple fault trees
-utilizes a shorter notation for gates, operators ('&', '|', '@', '~', '^'), and events
+utilizes a shorter notation for gates, operators (``&``, ``|``, ``@``, ``~``, ``^``), and events
 to create a collection of Boolean equations.
 The shorthand format can be converted into the XML format with `this script`_.
 
