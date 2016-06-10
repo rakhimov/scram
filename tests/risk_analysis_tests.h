@@ -193,13 +193,12 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   /// Converts a set of pointers to events with complement flags
   /// into readable and testable strings.
-  /// Complements are communicated by "not" word.
+  /// Complements are communicated with "not" prefix.
   std::set<std::string> Convert(const Product& product) {
     std::set<std::string> string_set;
     for (const Literal& literal : product) {
-      std::string id = literal.event->id();
-      if (literal.complement) id = "not " + id;
-      string_set.insert(id);
+      string_set.insert((literal.complement ? "not " : "") +
+                        literal.event.id());
     }
     return string_set;
   }

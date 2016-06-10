@@ -40,7 +40,7 @@ namespace core {
 /// that may appear in products.
 struct Literal {
   bool complement;  ///< Indication of a complement event.
-  const mef::BasicEvent* event;  ///< The event in the product.
+  const mef::BasicEvent& event;  ///< The event in the product.
 };
 
 using Product = std::vector<Literal>;  ///< Collection of unique literals.

@@ -40,7 +40,7 @@ void Print(const std::vector<Product>& products) {
   for (const auto& product : products) {
     std::set<std::string> ids;
     for (const auto& literal : product) {
-      ids.insert((literal.complement ? "~" : "") + literal.event->name());
+      ids.insert((literal.complement ? "~" : "") + literal.event.name());
     }
     to_print.push_back(ids);
   }
@@ -67,7 +67,7 @@ void Print(const std::vector<Product>& products) {
 double CalculateProbability(const Product& product) {
   double p = 1;
   for (const Literal& literal : product) {
-    p *= literal.complement ? 1 - literal.event->p() : literal.event->p();
+    p *= literal.complement ? 1 - literal.event.p() : literal.event.p();
   }
   return p;
 }
@@ -137,7 +137,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     for (int index : result_set) {
       int abs_index = std::abs(index);
       const mef::BasicEvent* basic_event = graph->GetBasicEvent(abs_index);
-      product.push_back({index < 0, basic_event});
+      product.push_back({index < 0, *basic_event});
       if (unique_events.count(abs_index)) continue;
       unique_events.insert(abs_index);
       product_events_.push_back(basic_event);

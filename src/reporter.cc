@@ -455,9 +455,9 @@ void Reporter::ReportLiteral(const core::Literal& literal,
   auto add_data = [](XmlStreamElement* /*element*/) {};
   if (literal.complement) {
     XmlStreamElement not_parent = parent->AddChild("not");
-    Reporter::ReportBasicEvent(*literal.event, &not_parent, add_data);
+    Reporter::ReportBasicEvent(literal.event, &not_parent, add_data);
   } else {
-    Reporter::ReportBasicEvent(*literal.event, parent, add_data);
+    Reporter::ReportBasicEvent(literal.event, parent, add_data);
   }
 }
 
