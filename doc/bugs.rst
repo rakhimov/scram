@@ -15,7 +15,7 @@ Technical Issues
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers).
   Pollution of function interfaces.
-- mef::Gate and mef::Formula have 'type' field instead of 'operator' (reserved in C++)
+- mef::Gate and mef::Formula have ``type`` field instead of ``operator`` (reserved in C++)
 - Bdd and Zbdd friendship is a design smell.
   (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
 - The violation of the basic guarantee (memory leaks)
