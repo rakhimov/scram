@@ -128,19 +128,16 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
   } else if (results.size() == 1 && results.back().empty()) {
     Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
   }
-  std::unordered_set<int> unique_events;
   for (const auto& result_set : results) {
     assert(result_set.size() <= Analysis::settings().limit_order() &&
            "Miscalculated product sets with larger-than-required order.");
     Product product;
     product.reserve(result_set.size());
     for (int index : result_set) {
-      int abs_index = std::abs(index);
-      const mef::BasicEvent* basic_event = graph->GetBasicEvent(abs_index);
+      const mef::BasicEvent* basic_event =
+          graph->GetBasicEvent(std::abs(index));
       product.push_back({index < 0, *basic_event});
-      if (unique_events.count(abs_index)) continue;
-      unique_events.insert(abs_index);
-      product_events_.push_back(basic_event);
+      product_events_.insert(basic_event);
     }
     products_.emplace_back(std::move(product));
   }

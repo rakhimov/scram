@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "analysis.h"
@@ -233,7 +234,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   const std::vector<Product>& products() const { return products_; }
 
   /// @returns Collection of basic events that are in the products.
-  const std::vector<const mef::BasicEvent*>& product_events() const {
+  const std::unordered_set<const mef::BasicEvent*>& product_events() const {
     return product_events_;
   }
 
@@ -249,7 +250,8 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 
  private:
   std::vector<Product> products_;  ///< Container of analysis results.
-  std::vector<const mef::BasicEvent*> product_events_;  ///< Resultant events.
+  /// The set of events in the resultant products.
+  std::unordered_set<const mef::BasicEvent*> product_events_;
 };
 
 /// Fault tree analysis facility with specific algorithms.
