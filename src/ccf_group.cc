@@ -109,8 +109,7 @@ GenerateCombinations(Iterator first1, Iterator last1, int k) {
 
   if (k > size) return {};
   if (k == 0) return {{}};  // The notion of 'nothing'.
-  if (k == size)
-    return {std::vector<typename Iterator::value_type>(first1, last1)};
+  if (k == size) return {{first1, last1}};
 
   auto c = GenerateCombinations(std::next(first1), last1, k - 1);
   for (auto& v : c) v.push_back(*first1);
