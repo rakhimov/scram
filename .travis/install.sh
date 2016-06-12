@@ -22,3 +22,4 @@ sudo pip install lizard
 sudo pip install codecov
 sudo pip install coverage
 sudo pip install cpplint
+sudo pip install prospector

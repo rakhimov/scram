@@ -207,6 +207,7 @@ def cross_validate(input_file):
 
     Returns:
         0 for successful runs.
+        1 for failed runs.
     """
     cmd = generate_analysis_call(input_file)
     print(cmd)
@@ -236,14 +237,17 @@ def cross_validate(input_file):
         log_file.write(" Hash: " + str(md5_hash) + "\n")
         result.add((summary, md5_hash))
         return 0
-    ret = get_result("bdd") | get_result("zbdd") | get_result("mocus")
-    if ret:
+
+    if get_result("bdd") | get_result("zbdd") | get_result("mocus"):
         log_file.write("Analysis failed!\n")
         return 1
+
     assert result
     if len(result) > 1:
         log_file.write("Disagreement between algorithms!\n")
         return 1
+
+    return 0
 
 
 def main():
@@ -251,7 +255,8 @@ def main():
 
     Returns:
         0 if tests finished without failures.
-        1 for failures.
+        1 for test failures.
+        2 for system failures.
     """
     parser = ap.ArgumentParser(description="SCRAM Fuzz Tester")
     parser.add_argument("-n", "--num-runs", type=int, help="# of SCRAM runs",
@@ -281,6 +286,7 @@ def main():
     if args.output_dir and not os.path.isdir(args.output_dir):
         print("The output directory doesn't exist.")
         return 2
+
     if args.time_limit:
         resource.setrlimit(resource.RLIMIT_CPU,
                            (args.time_limit, args.time_limit))

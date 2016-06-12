@@ -76,3 +76,6 @@ if [[ -s style.txt ]]; then
   cat style.txt >&2
   exit 1
 fi
+
+# Python linting
+prospector -P .landscape ./*.py scripts/*.py

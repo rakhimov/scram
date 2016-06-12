@@ -159,7 +159,8 @@ class LateBindingFaultTree(FaultTree):
             return [gate.name]  # a cycle is detected
         return None  # the permanent mark
 
-    def __raise_cycle(self, cycle):
+    @staticmethod
+    def __raise_cycle(cycle):
         """Prints the detected cycle with the error.
 
         Args:
@@ -183,7 +184,7 @@ class LateBindingFaultTree(FaultTree):
         for top_gate in self.top_gates:
             cycle = self.__visit(top_gate)
             if cycle:
-                self.__raise_cycle(cycle)
+                LateBindingFaultTree.__raise_cycle(cycle)
 
         detached_gates = [x for x in self.gates if not x.mark]
         if detached_gates:
@@ -193,7 +194,7 @@ class LateBindingFaultTree(FaultTree):
                 for gate in detached_gates:
                     cycle = self.__visit(gate)
                     if cycle:
-                        self.__raise_cycle(cycle)
+                        LateBindingFaultTree.__raise_cycle(cycle)
             except FaultTreeError as error:
                 error_msg += "\n" + str(error)
                 raise FaultTreeError(error_msg)

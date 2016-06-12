@@ -42,7 +42,7 @@ class Event(object):
         return len(self.parents) > 1
 
     def is_orphan(self):
-        """Determines if the node is parentless."""
+        """Determines if the node has no parents."""
         return not self.parents
 
     def num_parents(self):
@@ -115,7 +115,7 @@ class HouseEvent(Event):
         return "s(" + self.name + ") = " + str(self.state) + "\n"
 
 
-class Gate(Event):
+class Gate(Event):  # pylint: disable=too-many-instance-attributes
     """Representation of a fault tree gate.
 
     Attributes:
@@ -252,14 +252,18 @@ class Gate(Event):
         """
         assert not self.complement_arguments
         assert not self.u_arguments
+
+        def get_format(operator):
+            """Determins formatting for the gate operator."""
+            if operator == "atleast":
+                return "@(" + str(self.k_num) + ", [", ", ", "])"
+            return {"and": ("(", " & ", ")"),
+                    "or": ("(", " | ", ")"),
+                    "xor": ("(", " ^ ", ")"),
+                    "not": ("~(", "", ")")}[operator]
+
         line = [self.name, " := "]
-        line_start, div, line_end = {
-            "and": ("(", " & ", ")"),
-            "or": ("(", " | ", ")"),
-            "xor": ("(", " ^ ", ")"),
-            "not": ("~", "", ""),
-            "atleast": ("@(" + str(self.k_num) + ", [", ", ", "])")
-            }[self.operator]
+        line_start, div, line_end = get_format(self.operator)
         line.append(line_start)
         args = []
         for h_arg in self.h_arguments:
@@ -275,7 +279,7 @@ class Gate(Event):
         return "".join(line) + "\n"
 
 
-class CcfGroup(object):
+class CcfGroup(object):  # pylint: disable=too-few-public-methods
     """Representation of CCF groups in a fault tree.
 
     Attributes:
@@ -319,7 +323,7 @@ class CcfGroup(object):
         return mef_xml
 
 
-class FaultTree(object):
+class FaultTree(object):  # pylint: disable=too-many-instance-attributes
     """Representation of a fault tree for general purposes.
 
     Attributes:
@@ -351,7 +355,7 @@ class FaultTree(object):
     def to_xml(self, nest=0):
         """Produces OpenPSA MEF XML definition of the fault tree.
 
-        The fault tree is produces breadth-first.
+        The fault tree is produced breadth-first.
         The output XML representation is not formatted for human readability.
         The fault tree must be valid and well-formed.
 
