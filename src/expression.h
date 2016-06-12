@@ -40,9 +40,6 @@ namespace mef {
 class Expression;
 using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 
-class Parameter;  // This is for cycle detection through expressions.
-using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
-
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
 /// and may create cycles.
@@ -188,11 +185,13 @@ class Parameter : public Expression, public Element, public Role, public Id {
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  ExpressionPtr expression_;  ///< Expression for this parameter.
+  Expression* expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.
   std::string mark_;  ///< The mark for traversal in cycle detection.
 };
+
+using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
 
 /// This is for the system mission time.
 class MissionTime : public Expression {
@@ -266,24 +265,24 @@ class ExponentialExpression : public Expression {
   void Validate() override;
 
   double Mean() noexcept override {
-    return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
+    return 1 - std::exp(-(lambda_.Mean() * time_.Mean()));
   }
 
   double Max() noexcept override {
-    return 1 - std::exp(-(lambda_->Max() * time_->Max()));
+    return 1 - std::exp(-(lambda_.Max() * time_.Max()));
   }
 
   double Min() noexcept override {
-    return 1 - std::exp(-(lambda_->Min() * time_->Min()));
+    return 1 - std::exp(-(lambda_.Min() * time_.Min()));
   }
 
  private:
   double GetSample() noexcept override {
-    return 1 - std::exp(-(lambda_->Sample() * time_->Sample()));
+    return 1 - std::exp(-(lambda_.Sample() * time_.Sample()));
   }
 
-  ExpressionPtr lambda_;  ///< Failure rate in hours.
-  ExpressionPtr time_;  ///< Mission time in hours.
+  Expression& lambda_;  ///< Failure rate in hours.
+  Expression& time_;  ///< Mission time in hours.
 };
 
 /// Exponential with probability of failure on demand,
@@ -320,10 +319,10 @@ class GlmExpression : public Expression {
   /// @returns Probability of failure on demand.
   double Compute(double gamma, double lambda, double mu, double time) noexcept;
 
-  ExpressionPtr gamma_;  ///< Probability of failure on demand.
-  ExpressionPtr lambda_;  ///< Failure rate in hours.
-  ExpressionPtr mu_;  ///< Repair rate in hours.
-  ExpressionPtr time_;  ///< Mission time in hours.
+  Expression& gamma_;  ///< Probability of failure on demand.
+  Expression& lambda_;  ///< Failure rate in hours.
+  Expression& mu_;  ///< Repair rate in hours.
+  Expression& time_;  ///< Mission time in hours.
 };
 
 /// Weibull distribution with scale, shape, time shift, and time.
@@ -341,24 +340,24 @@ class WeibullExpression : public Expression {
   void Validate() override;
 
   double Mean() noexcept override {
-    return WeibullExpression::Compute(alpha_->Mean(), beta_->Mean(),
-                                      t0_->Mean(), time_->Mean());
+    return WeibullExpression::Compute(alpha_.Mean(), beta_.Mean(),
+                                      t0_.Mean(), time_.Mean());
   }
 
   double Max() noexcept override {
-    return WeibullExpression::Compute(alpha_->Min(), beta_->Max(),
-                                      t0_->Min(), time_->Max());
+    return WeibullExpression::Compute(alpha_.Min(), beta_.Max(),
+                                      t0_.Min(), time_.Max());
   }
 
   double Min() noexcept override {
-    return WeibullExpression::Compute(alpha_->Max(), beta_->Min(),
-                                      t0_->Max(), time_->Min());
+    return WeibullExpression::Compute(alpha_.Max(), beta_.Min(),
+                                      t0_.Max(), time_.Min());
   }
 
  private:
   double GetSample() noexcept override {
-    return WeibullExpression::Compute(alpha_->Sample(), beta_->Sample(),
-                                      t0_->Sample(), time_->Sample());
+    return WeibullExpression::Compute(alpha_.Sample(), beta_.Sample(),
+                                      t0_.Sample(), time_.Sample());
   }
 
   /// Calculates Weibull expression.
@@ -371,10 +370,10 @@ class WeibullExpression : public Expression {
   /// @returns Calculated value.
   double Compute(double alpha, double beta, double t0, double time) noexcept;
 
-  ExpressionPtr alpha_;  ///< Scale parameter.
-  ExpressionPtr beta_;  ///< Shape parameter.
-  ExpressionPtr t0_;  ///< Time shift in hours.
-  ExpressionPtr time_;  ///< Mission time in hours.
+  Expression& alpha_;  ///< Scale parameter.
+  Expression& beta_;  ///< Shape parameter.
+  Expression& t0_;  ///< Time shift in hours.
+  Expression& time_;  ///< Mission time in hours.
 };
 
 /// Abstract base class for all deviate expressions.
@@ -398,15 +397,15 @@ class UniformDeviate : public RandomDeviate {
   /// @throws InvalidArgument  The min value is more or equal to max value.
   void Validate() override;
 
-  double Mean() noexcept override { return (min_->Mean() + max_->Mean()) / 2; }
-  double Max() noexcept override { return max_->Max(); }
-  double Min() noexcept override { return min_->Min(); }
+  double Mean() noexcept override { return (min_.Mean() + max_.Mean()) / 2; }
+  double Max() noexcept override { return max_.Max(); }
+  double Min() noexcept override { return min_.Min(); }
 
  private:
   double GetSample() noexcept override;
 
-  ExpressionPtr min_;  ///< Minimum value of the distribution.
-  ExpressionPtr max_;  ///< Maximum value of the distribution.
+  Expression& min_;  ///< Minimum value of the distribution.
+  Expression& max_;  ///< Maximum value of the distribution.
 };
 
 /// Normal distribution.
@@ -421,23 +420,23 @@ class NormalDeviate : public RandomDeviate {
   /// @throws InvalidArgument  The sigma is negative or zero.
   void Validate() override;
 
-  double Mean() noexcept override { return mean_->Mean(); }
+  double Mean() noexcept override { return mean_.Mean(); }
 
   /// @returns ~99.9% percentile value.
   ///
   /// @warning This is only an approximation of the maximum value.
-  double Max() noexcept override { return mean_->Max() + 6 * sigma_->Max(); }
+  double Max() noexcept override { return mean_.Max() + 6 * sigma_.Max(); }
 
   /// @returns Less than 0.1% percentile value.
   ///
   /// @warning This is only an approximation.
-  double Min() noexcept override { return mean_->Min() - 6 * sigma_->Max(); }
+  double Min() noexcept override { return mean_.Min() - 6 * sigma_.Max(); }
 
  private:
   double GetSample() noexcept override;
 
-  ExpressionPtr mean_;  ///< Mean value of normal distribution.
-  ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
+  Expression& mean_;  ///< Mean value of normal distribution.
+  Expression& sigma_;  ///< Standard deviation of normal distribution.
 };
 
 /// Log-normal distribution.
@@ -460,7 +459,7 @@ class LogNormalDeviate : public RandomDeviate {
   /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
   void Validate() override;
 
-  double Mean() noexcept override { return mean_->Mean(); }
+  double Mean() noexcept override { return mean_.Mean(); }
 
   /// 99 percentile estimate.
   double Max() noexcept override;
@@ -486,9 +485,9 @@ class LogNormalDeviate : public RandomDeviate {
   /// @returns Value of location parameter (mu) value.
   double ComputeLocation(double mean, double sigma) noexcept;
 
-  ExpressionPtr mean_;  ///< Mean value of the log-normal distribution.
-  ExpressionPtr ef_;  ///< Error factor of the log-normal distribution.
-  ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
+  Expression& mean_;  ///< Mean value of the log-normal distribution.
+  Expression& ef_;  ///< Error factor of the log-normal distribution.
+  Expression& level_;  ///< Confidence level of the log-normal distribution.
 };
 
 /// Gamma distribution.
@@ -503,13 +502,14 @@ class GammaDeviate : public RandomDeviate {
   /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
   void Validate() override;
 
-  double Mean() noexcept override { return k_->Mean() * theta_->Mean(); }
+  double Mean() noexcept override { return k_.Mean() * theta_.Mean(); }
 
   /// @returns 99 percentile.
   double Max() noexcept override {
     using boost::math::gamma_q;
-    return theta_->Max() *
-        std::pow(gamma_q(k_->Max(), gamma_q(k_->Max(), 0) - 0.99), -1);
+    double k_max = k_.Max();
+    return theta_.Max() *
+           std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
   }
 
   double Min() noexcept override { return 0; }
@@ -517,8 +517,8 @@ class GammaDeviate : public RandomDeviate {
  private:
   double GetSample() noexcept override;
 
-  ExpressionPtr k_;  ///< The shape parameter of the gamma distribution.
-  ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
+  Expression& k_;  ///< The shape parameter of the gamma distribution.
+  Expression& theta_;  ///< The scale factor of the gamma distribution.
 };
 
 /// Beta distribution.
@@ -534,12 +534,13 @@ class BetaDeviate : public RandomDeviate {
   void Validate() override;
 
   double Mean() noexcept override {
-    return alpha_->Mean() / (alpha_->Mean() + beta_->Mean());
+    double alpha_mean = alpha_.Mean();
+    return alpha_mean / (alpha_mean + beta_.Mean());
   }
 
   /// @returns 99 percentile.
   double Max() noexcept override {
-    return std::pow(boost::math::ibeta(alpha_->Max(), beta_->Max(), 0.99), -1);
+    return std::pow(boost::math::ibeta(alpha_.Max(), beta_.Max(), 0.99), -1);
   }
 
   double Min() noexcept override { return 0; }
@@ -547,8 +548,8 @@ class BetaDeviate : public RandomDeviate {
  private:
   double GetSample() noexcept override;
 
-  ExpressionPtr alpha_;  ///< The alpha shape parameter.
-  ExpressionPtr beta_;  ///< The beta shape parameter.
+  Expression& alpha_;  ///< The alpha shape parameter.
+  Expression& beta_;  ///< The beta shape parameter.
 };
 
 /// Histogram distribution.
@@ -621,14 +622,14 @@ class Neg : public Expression {
   /// @param[in] expression  The expression to be negated.
   explicit Neg(const ExpressionPtr& expression);
 
-  double Mean() noexcept override { return -expression_->Mean(); }
-  double Max() noexcept override { return -expression_->Min(); }
-  double Min() noexcept override { return -expression_->Max(); }
+  double Mean() noexcept override { return -expression_.Mean(); }
+  double Max() noexcept override { return -expression_.Min(); }
+  double Min() noexcept override { return -expression_.Max(); }
 
  private:
-  double GetSample() noexcept override { return -expression_->Sample(); }
+  double GetSample() noexcept override { return -expression_.Sample(); }
 
-  ExpressionPtr expression_;  ///< Expression that is used for negation.
+  Expression& expression_;  ///< Expression that is used for negation.
 };
 
 /// This expression adds all the given expressions' values.

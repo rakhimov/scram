@@ -58,12 +58,13 @@ Parameter::Parameter(std::string name, std::string base_path,
       Element(std::move(name)),
       Role(role, std::move(base_path)),
       Id(*this, *this),
+      expression_(nullptr),
       unit_(kUnitless),
       unused_(true) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
   if (expression_) throw LogicError("Parameter expression is already set.");
-  expression_ = expression;
+  expression_ = expression.get();
   Expression::AddArg(expression);
 }
 
@@ -87,17 +88,17 @@ ConstantExpression::ConstantExpression(bool val)
 ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
                                              const ExpressionPtr& t)
     : Expression({lambda, t}),
-      lambda_(lambda),
-      time_(t) {}
+      lambda_(*lambda),
+      time_(*t) {}
 
 void ExponentialExpression::Validate() {
-  if (lambda_->Mean() < 0) {
+  if (lambda_.Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (time_->Mean() < 0) {
+  } else if (time_.Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
-  } else if (lambda_->Min() < 0) {
+  } else if (lambda_.Min() < 0) {
     throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (time_->Min() < 0) {
+  } else if (time_.Min() < 0) {
     throw InvalidArgument("The sampled mission time cannot be negative.");
   }
 }
@@ -107,39 +108,39 @@ GlmExpression::GlmExpression(const ExpressionPtr& gamma,
                              const ExpressionPtr& mu,
                              const ExpressionPtr& t)
     : Expression({gamma, lambda, mu, t}),
-      gamma_(gamma),
-      lambda_(lambda),
-      mu_(mu),
-      time_(t) {}
+      gamma_(*gamma),
+      lambda_(*lambda),
+      mu_(*mu),
+      time_(*t) {}
 
 void GlmExpression::Validate() {
-  if (lambda_->Mean() < 0) {
+  if (lambda_.Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (mu_->Mean() < 0) {
+  } else if (mu_.Mean() < 0) {
     throw InvalidArgument("The rate of repair cannot be negative.");
-  } else if (gamma_->Mean() < 0 || gamma_->Mean() > 1) {
+  } else if (gamma_.Mean() < 0 || gamma_.Mean() > 1) {
     throw InvalidArgument("Invalid value for probability.");
-  } else if (time_->Mean() < 0) {
+  } else if (time_.Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
-  } else if (lambda_->Min() < 0) {
+  } else if (lambda_.Min() < 0) {
     throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (mu_->Min() < 0) {
+  } else if (mu_.Min() < 0) {
     throw InvalidArgument("The sampled rate of repair cannot be negative.");
-  } else if (gamma_->Min() < 0 || gamma_->Max() > 1) {
+  } else if (gamma_.Min() < 0 || gamma_.Max() > 1) {
     throw InvalidArgument("Invalid sampled gamma value for probability.");
-  } else if (time_->Min() < 0) {
+  } else if (time_.Min() < 0) {
     throw InvalidArgument("The sampled mission time cannot be negative.");
   }
 }
 
 double GlmExpression::Mean() noexcept {
-  return GlmExpression::Compute(gamma_->Mean(), lambda_->Mean(), mu_->Mean(),
-                                time_->Mean());
+  return GlmExpression::Compute(gamma_.Mean(), lambda_.Mean(), mu_.Mean(),
+                                time_.Mean());
 }
 
 double GlmExpression::GetSample() noexcept {
-  return GlmExpression::Compute(gamma_->Sample(), lambda_->Sample(),
-                                mu_->Sample(), time_->Sample());
+  return GlmExpression::Compute(gamma_.Sample(), lambda_.Sample(),
+                                mu_.Sample(), time_.Sample());
 }
 
 double GlmExpression::Compute(double gamma, double lambda, double mu,
@@ -153,35 +154,35 @@ WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
                                      const ExpressionPtr& t0,
                                      const ExpressionPtr& time)
     : Expression({alpha, beta, t0, time}),
-      alpha_(alpha),
-      beta_(beta),
-      t0_(t0),
-      time_(time) {}
+      alpha_(*alpha),
+      beta_(*beta),
+      t0_(*t0),
+      time_(*time) {}
 
 void WeibullExpression::Validate() {
-  if (alpha_->Mean() <= 0) {
+  if (alpha_.Mean() <= 0) {
     throw InvalidArgument("The scale parameter for Weibull distribution must"
                           " be positive.");
-  } else if (beta_->Mean() <= 0) {
+  } else if (beta_.Mean() <= 0) {
     throw InvalidArgument("The shape parameter for Weibull distribution must"
                           " be positive.");
-  } else if (t0_->Mean() < 0) {
+  } else if (t0_.Mean() < 0) {
     throw InvalidArgument("Invalid value for time shift.");
-  } else if (time_->Mean() < 0) {
+  } else if (time_.Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
-  } else if (time_->Mean() < t0_->Mean()) {
+  } else if (time_.Mean() < t0_.Mean()) {
     throw InvalidArgument("The mission time must be longer than time shift.");
-  } else if (alpha_->Min() <= 0) {
+  } else if (alpha_.Min() <= 0) {
     throw InvalidArgument("The scale parameter for Weibull distribution must"
                           " be positive for sampled values.");
-  } else if (beta_->Min() <= 0) {
+  } else if (beta_.Min() <= 0) {
     throw InvalidArgument("The shape parameter for Weibull distribution must"
                           " be positive for sampled values.");
-  } else if (t0_->Min() < 0) {
+  } else if (t0_.Min() < 0) {
     throw InvalidArgument("Invalid value for time shift in sampled values.");
-  } else if (time_->Min() < 0) {
+  } else if (time_.Min() < 0) {
     throw InvalidArgument("The sampled mission time cannot be negative.");
-  } else if (time_->Min() < t0_->Max()) {
+  } else if (time_.Min() < t0_.Max()) {
     throw InvalidArgument("The sampled mission time must be"
                           " longer than time shift.");
   }
@@ -195,80 +196,79 @@ double WeibullExpression::Compute(double alpha, double beta,
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                                const ExpressionPtr& max)
     : RandomDeviate({min, max}),
-      min_(min),
-      max_(max) {}
+      min_(*min),
+      max_(*max) {}
 
 void UniformDeviate::Validate() {
-  if (min_->Mean() >= max_->Mean()) {
+  if (min_.Mean() >= max_.Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
                           " distribution.");
-  } else if (min_->Max() >= max_->Min()) {
+  } else if (min_.Max() >= max_.Min()) {
     throw InvalidArgument("Sampled min value is more than sampled max"
                           " for Uniform distribution.");
   }
 }
 
 double UniformDeviate::GetSample() noexcept {
-  return Random::UniformRealGenerator(min_->Sample(), max_->Sample());
+  return Random::UniformRealGenerator(min_.Sample(), max_.Sample());
 }
 
 NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
                              const ExpressionPtr& sigma)
     : RandomDeviate({mean, sigma}),
-      mean_(mean),
-      sigma_(sigma) {}
+      mean_(*mean),
+      sigma_(*sigma) {}
 
 void NormalDeviate::Validate() {
-  if (sigma_->Mean() <= 0) {
+  if (sigma_.Mean() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
-  } else if (sigma_->Min() <= 0) {
+  } else if (sigma_.Min() <= 0) {
     throw InvalidArgument("Sampled standard deviation is negative or zero.");
   }
 }
 
 double NormalDeviate::GetSample() noexcept {
-  return Random::NormalGenerator(mean_->Sample(), sigma_->Sample());
+  return Random::NormalGenerator(mean_.Sample(), sigma_.Sample());
 }
 
 LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
                                    const ExpressionPtr& ef,
                                    const ExpressionPtr& level)
     : RandomDeviate({mean, ef, level}),
-      mean_(mean),
-      ef_(ef),
-      level_(level) {}
+      mean_(*mean),
+      ef_(*ef),
+      level_(*level) {}
 
 void LogNormalDeviate::Validate() {
-  if (level_->Mean() <= 0 || level_->Mean() >= 1) {
+  if (level_.Mean() <= 0 || level_.Mean() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
-  } else if (ef_->Mean() <= 1) {
+  } else if (ef_.Mean() <= 1) {
     throw InvalidArgument("The Error Factor for Log-Normal distribution"
                           " cannot be less than 1.");
-  } else if (mean_->Mean() <= 0) {
+  } else if (mean_.Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
-  } else if (level_->Min() <= 0 || level_->Max() >= 1) {
+  } else if (level_.Min() <= 0 || level_.Max() >= 1) {
     throw InvalidArgument("The confidence level doesn't sample within (0, 1).");
 
-  } else if (ef_->Min() <= 1) {
+  } else if (ef_.Min() <= 1) {
     throw InvalidArgument("The Sampled Error Factor for Log-Normal"
                           " distribution cannot be less than 1.");
-  } else if (mean_->Min() <= 0) {
+  } else if (mean_.Min() <= 0) {
     throw InvalidArgument("The sampled mean of Log-Normal distribution"
                           " cannot be negative or zero.");
   }
 }
 
 double LogNormalDeviate::GetSample() noexcept {
-  double sigma =
-      LogNormalDeviate::ComputeScale(level_->Sample(), ef_->Sample());
-  double mu = LogNormalDeviate::ComputeLocation(mean_->Sample(), sigma);
+  double sigma = LogNormalDeviate::ComputeScale(level_.Sample(), ef_.Sample());
+  double mu = LogNormalDeviate::ComputeLocation(mean_.Sample(), sigma);
   return Random::LogNormalGenerator(mu, sigma);
 }
 
 double LogNormalDeviate::Max() noexcept {
-  double sigma = LogNormalDeviate::ComputeScale(level_->Mean(), ef_->Mean());
-  double mu = LogNormalDeviate::ComputeLocation(mean_->Max(), sigma);
+  double sigma = LogNormalDeviate::ComputeScale(level_.Mean(), ef_.Mean());
+  double mu = LogNormalDeviate::ComputeLocation(mean_.Max(), sigma);
   return std::exp(
       std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
 }
@@ -283,54 +283,54 @@ double LogNormalDeviate::ComputeLocation(double mean, double sigma) noexcept {
   return std::log(mean) - std::pow(sigma, 2) / 2;
 }
 
+GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
+    : RandomDeviate({k, theta}),
+      k_(*k),
+      theta_(*theta) {}
+
 void GammaDeviate::Validate() {
-  if (k_->Mean() <= 0) {
+  if (k_.Mean() <= 0) {
     throw InvalidArgument("The k shape parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (theta_->Mean() <= 0) {
+  } else if (theta_.Mean() <= 0) {
     throw InvalidArgument("The theta scale parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (k_->Min() <= 0) {
+  } else if (k_.Min() <= 0) {
     throw InvalidArgument("Sampled k shape parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (theta_->Min() <= 0) {
+  } else if (theta_.Min() <= 0) {
     throw InvalidArgument("Sampled theta scale parameter for Gamma "
                           "distribution cannot be negative or zero.");
   }
 }
 
-GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
-    : RandomDeviate({k, theta}),
-      k_(k),
-      theta_(theta) {}
-
 double GammaDeviate::GetSample() noexcept {
-  return Random::GammaGenerator(k_->Sample(), theta_->Sample());
+  return Random::GammaGenerator(k_.Sample(), theta_.Sample());
 }
 
 BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
     : RandomDeviate({alpha, beta}),
-      alpha_(alpha),
-      beta_(beta) {}
+      alpha_(*alpha),
+      beta_(*beta) {}
 
 void BetaDeviate::Validate() {
-  if (alpha_->Mean() <= 0) {
+  if (alpha_.Mean() <= 0) {
     throw InvalidArgument("The alpha shape parameter for Beta distribution"
                           " cannot be negative or zero.");
-  } else if (beta_->Mean() <= 0) {
+  } else if (beta_.Mean() <= 0) {
     throw InvalidArgument("The beta shape parameter for Beta distribution"
                           " cannot be negative or zero.");
-  } else if (alpha_->Min() <= 0) {
+  } else if (alpha_.Min() <= 0) {
     throw InvalidArgument("Sampled alpha shape parameter for"
                           " Beta distribution cannot be negative or zero.");
-  } else if (beta_->Min() <= 0) {
+  } else if (beta_.Min() <= 0) {
     throw InvalidArgument("Sampled beta shape parameter for Beta"
                           " distribution cannot be negative or zero.");
   }
 }
 
 double BetaDeviate::GetSample() noexcept {
-  return Random::BetaGenerator(alpha_->Sample(), beta_->Sample());
+  return Random::BetaGenerator(alpha_.Sample(), beta_.Sample());
 }
 
 Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
@@ -402,7 +402,7 @@ void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
 
 Neg::Neg(const ExpressionPtr& expression)
     : Expression({expression}),
-      expression_(expression) {}
+      expression_(*expression) {}
 
 double Add::Mean() noexcept {
   assert(!Expression::args().empty());
@@ -420,16 +420,16 @@ double Add::GetSample() noexcept {
 
 double Add::Max() noexcept {
   assert(!Expression::args().empty());
-  double max = 0;
-  for (const ExpressionPtr& arg : Expression::args()) max += arg->Max();
-  return max;
+  double max_value = 0;
+  for (const ExpressionPtr& arg : Expression::args()) max_value += arg->Max();
+  return max_value;
 }
 
 double Add::Min() noexcept {
   assert(!Expression::args().empty());
-  double min = 0;
-  for (const ExpressionPtr& arg : Expression::args()) min += arg->Min();
-  return min;
+  double min_value = 0;
+  for (const ExpressionPtr& arg : Expression::args()) min_value += arg->Min();
+  return min_value;
 }
 
 double Sub::Mean() noexcept {
@@ -453,21 +453,21 @@ double Sub::GetSample() noexcept {
 double Sub::Max() noexcept {
   assert(!Expression::args().empty());
   auto it = Expression::args().begin();
-  double max = (*it)->Max();
+  double max_value = (*it)->Max();
   for (++it; it != Expression::args().end(); ++it) {
-    max -= (*it)->Min();
+    max_value -= (*it)->Min();
   }
-  return max;
+  return max_value;
 }
 
 double Sub::Min() noexcept {
   assert(!Expression::args().empty());
   auto it = Expression::args().begin();
-  double min = (*it)->Min();
+  double min_value = (*it)->Min();
   for (++it; it != Expression::args().end(); ++it) {
-    min -= (*it)->Max();
+    min_value -= (*it)->Max();
   }
-  return min;
+  return min_value;
 }
 
 double Mul::Mean() noexcept {
