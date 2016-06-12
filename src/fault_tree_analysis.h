@@ -106,9 +106,9 @@ class Product {
   template <class GeneratorIterator>
   Product(int size, GeneratorIterator it) noexcept
       : size_(size),
-        complement_vector_(0) {
+        complement_vector_(0),
+        data_(new const mef::BasicEvent*[size]) {
     assert(size >= 0 && size <= 32);
-    data_ = new const mef::BasicEvent*[size];
     for (int i = 0; i < size; ++i, ++it) {
       const auto& literal = *it;
       if (literal.first) complement_vector_ |= 1 << i;  // The complement flag.
@@ -122,13 +122,9 @@ class Product {
   Product(Product&& other) noexcept
       : size_(other.size_),
         complement_vector_(other.complement_vector_),
-        data_(other.data_) {
+        data_(std::move(other.data_)) {
     other.size_ = other.complement_vector_ = 0;
-    other.data_ = nullptr;
   }
-
-  /// Frees the underlying data containers.
-  ~Product() noexcept { delete[] data_; }
 
   /// @returns true for unity product with no literals.
   bool empty() const { return size_ == 0; }
@@ -154,7 +150,8 @@ class Product {
 
   uint8_t size_;  ///< The number of literals in the product.
   uint32_t complement_vector_;  ///< The complement flags of the literals.
-  const mef::BasicEvent** data_;  ///< The collection of literal events.
+  /// The collection of literal events.
+  std::unique_ptr<const mef::BasicEvent*[]> data_;
 };
 
 /// Prints a collection of products to the standard error.
