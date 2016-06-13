@@ -632,37 +632,87 @@ class Neg : public Expression {
   Expression& expression_;  ///< Expression that is used for negation.
 };
 
-/// This expression adds all the given expressions' values.
-class Add : public Expression {
+/// Base class for expressions that require 2 or more arguments.
+class BinaryExpression : public Expression {
  public:
-  using Expression::Expression;  // Base class constructors with arguments.
+  /// Checks the number of provided arguments upon initialization.
+  ///
+  /// @param[in] args  Arguments of this expression.
+  ///
+  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  explicit BinaryExpression(std::vector<ExpressionPtr> args);
+};
 
-  double Mean() noexcept override;
-  double Max() noexcept override;
-  double Min() noexcept override;
+/// This expression adds all the given expressions' values.
+class Add : public BinaryExpression {
+ public:
+  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+
+  double Mean() noexcept override { return Add::Compute(&Expression::Mean); }
+  double Max() noexcept override { return Add::Compute(&Expression::Max); }
+  double Min() noexcept override { return Add::Compute(&Expression::Min); }
 
  private:
-  double GetSample() noexcept override;
+  double GetSample() noexcept override {
+    return Add::Compute(&Expression::Sample);
+  }
+
+  /// Adds all argument expression values.
+  ///
+  /// @param[in] value  The getter function for the arg expression value.
+  ///
+  /// @returns The sum of the expression values.
+  double Compute(double (Expression::*value)()) {
+    double result = 0;
+    for (const ExpressionPtr& arg : Expression::args())
+      result += ((*arg).*value)();
+    return result;
+  }
 };
 
 /// This expression performs subtraction operation.
 /// First expression minus the rest of the given expressions' values.
-class Sub : public Expression {
+class Sub : public BinaryExpression {
  public:
-  using Expression::Expression;  // Base class constructors with arguments.
+  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
 
-  double Mean() noexcept override;
-  double Max() noexcept override;
-  double Min() noexcept override;
+  double Mean() noexcept override { return Sub::Compute(&Expression::Mean); }
+  double Max() noexcept override {
+    return Sub::Compute(&Expression::Max, &Expression::Min);
+  }
+  double Min() noexcept override {
+    return Sub::Compute(&Expression::Min, &Expression::Max);
+  }
 
  private:
-  double GetSample() noexcept override;
+  double GetSample() noexcept override {
+    return Sub::Compute(&Expression::Sample);
+  }
+
+  /// Performs the subtraction of all argument expression values.
+  ///
+  /// @param[in] first_value  The getter function for the first arg expression.
+  /// @param[in] rest_value  The getter function for the rest arg expressions.
+  ///                        If not given, it is equal to first_value.
+  ///
+  /// @returns first_value() - sum(rest_value()).
+  double Compute(double (Expression::*first_value)(),
+                 double (Expression::*rest_value)() = nullptr) {
+    if (!rest_value) rest_value = first_value;
+
+    auto it = Expression::args().begin();
+    double result = ((**it).*first_value)();
+    for (++it; it != Expression::args().end(); ++it) {
+      result -= ((**it).*rest_value)();
+    }
+    return result;
+  }
 };
 
 /// This expression performs multiplication operation.
-class Mul : public Expression {
+class Mul : public BinaryExpression {
  public:
-  using Expression::Expression;  // Base class constructors with arguments.
+  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
 
   double Mean() noexcept override;
 
@@ -692,9 +742,9 @@ class Mul : public Expression {
 /// This expression performs division operation.
 /// The expression divides the first given argument by
 /// the rest of argument expressions.
-class Div : public Expression {
+class Div : public BinaryExpression {
  public:
-  using Expression::Expression;  // Base class constructors with arguments.
+  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
 
   /// @throws InvalidArgument  Division by 0.
   void Validate() override;

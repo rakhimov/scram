@@ -404,81 +404,19 @@ Neg::Neg(const ExpressionPtr& expression)
     : Expression({expression}),
       expression_(*expression) {}
 
-double Add::Mean() noexcept {
-  assert(!Expression::args().empty());
-  double mean = 0;
-  for (const ExpressionPtr& arg : Expression::args()) mean += arg->Mean();
-  return mean;
-}
-
-double Add::GetSample() noexcept {
-  assert(!Expression::args().empty());
-  double sum = 0;
-  for (const ExpressionPtr& arg : Expression::args()) sum += arg->Sample();
-  return sum;
-}
-
-double Add::Max() noexcept {
-  assert(!Expression::args().empty());
-  double max_value = 0;
-  for (const ExpressionPtr& arg : Expression::args()) max_value += arg->Max();
-  return max_value;
-}
-
-double Add::Min() noexcept {
-  assert(!Expression::args().empty());
-  double min_value = 0;
-  for (const ExpressionPtr& arg : Expression::args()) min_value += arg->Min();
-  return min_value;
-}
-
-double Sub::Mean() noexcept {
-  assert(!Expression::args().empty());
-  auto it = Expression::args().begin();
-  double mean = (*it)->Mean();
-  for (++it; it != Expression::args().end(); ++it) {
-    mean -= (*it)->Mean();
-  }
-  return mean;
-}
-
-double Sub::GetSample() noexcept {
-  assert(!Expression::args().empty());
-  auto it = Expression::args().begin();
-  double result = (*it)->Sample();
-  for (++it; it != Expression::args().end(); ++it) result -= (*it)->Sample();
-  return result;
-}
-
-double Sub::Max() noexcept {
-  assert(!Expression::args().empty());
-  auto it = Expression::args().begin();
-  double max_value = (*it)->Max();
-  for (++it; it != Expression::args().end(); ++it) {
-    max_value -= (*it)->Min();
-  }
-  return max_value;
-}
-
-double Sub::Min() noexcept {
-  assert(!Expression::args().empty());
-  auto it = Expression::args().begin();
-  double min_value = (*it)->Min();
-  for (++it; it != Expression::args().end(); ++it) {
-    min_value -= (*it)->Max();
-  }
-  return min_value;
+BinaryExpression::BinaryExpression(std::vector<ExpressionPtr> args)
+    : Expression(std::move(args)) {
+  if (Expression::args().size() < 2)
+    throw InvalidArgument("Expression requires 2 or more arguments.");
 }
 
 double Mul::Mean() noexcept {
-  assert(!Expression::args().empty());
   double mean = 1;
   for (const ExpressionPtr& arg : Expression::args()) mean *= arg->Mean();
   return mean;
 }
 
 double Mul::GetSample() noexcept {
-  assert(!Expression::args().empty());
   double result = 1;
   for (const ExpressionPtr& arg : Expression::args()) result *= arg->Sample();
   return result;
@@ -497,12 +435,10 @@ double Mul::GetExtremum(bool maximum) noexcept {
     max_val = std::max({max_max, max_min, min_max, min_min});
     min_val = std::min({max_max, max_min, min_max, min_min});
   }
-  if (maximum) return max_val;
-  return min_val;
+  return maximum ? max_val : min_val;
 }
 
 void Div::Validate() {
-  assert(!Expression::args().empty());
   auto it = Expression::args().begin();
   for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;
@@ -512,7 +448,6 @@ void Div::Validate() {
 }
 
 double Div::Mean() noexcept {
-  assert(!Expression::args().empty());
   auto it = Expression::args().begin();
   double mean = (*it)->Mean();
   for (++it; it != Expression::args().end(); ++it) {
@@ -522,7 +457,6 @@ double Div::Mean() noexcept {
 }
 
 double Div::GetSample() noexcept {
-  assert(!Expression::args().empty());
   auto it = Expression::args().begin();
   double result = (*it)->Sample();
   for (++it; it != Expression::args().end(); ++it) result /= (*it)->Sample();
@@ -530,7 +464,6 @@ double Div::GetSample() noexcept {
 }
 
 double Div::GetExtremum(bool maximum) noexcept {
-  assert(!Expression::args().empty());
   auto it = Expression::args().begin();
   double max_value = (*it)->Max();  // Maximum possible result.
   double min_value = (*it)->Min();  // Minimum possible result.
@@ -544,8 +477,7 @@ double Div::GetExtremum(bool maximum) noexcept {
     max_value = std::max({max_max, max_min, min_max, min_min});
     min_value = std::min({max_max, max_min, min_max, min_min});
   }
-  if (maximum) return max_value;
-  return min_value;
+  return maximum ? max_value : min_value;
 }
 
 }  // namespace mef

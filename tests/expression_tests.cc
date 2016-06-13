@@ -502,6 +502,19 @@ TEST(ExpressionTest, Neg) {
   EXPECT_DOUBLE_EQ(-100, dev->Min());
 }
 
+// Test expression initialization with 2 or more arguments.
+TEST(ExpressionTest, BinaryExpression) {
+  std::vector<ExpressionPtr> arguments;
+  ExpressionPtr dev;
+  EXPECT_THROW(dev = ExpressionPtr(new Add(arguments)), InvalidArgument);
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(10, 20)));
+  EXPECT_THROW(dev = ExpressionPtr(new Add(arguments)), InvalidArgument);
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(30, 40)));
+  EXPECT_NO_THROW(dev = ExpressionPtr(new Add(arguments)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(30, 40)));
+  EXPECT_NO_THROW(dev = ExpressionPtr(new Add(arguments)));
+}
+
 // Test for addition of expressions.
 TEST(ExpressionTest, Add) {
   std::vector<ExpressionPtr> arguments;
