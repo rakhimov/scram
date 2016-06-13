@@ -73,6 +73,9 @@ MissionTime::MissionTime()
       mission_time_(-1),
       unit_(kHours) {}
 
+const ExpressionPtr ConstantExpression::kOne(new ConstantExpression(1));
+const ExpressionPtr ConstantExpression::kZero(new ConstantExpression(0));
+
 ConstantExpression::ConstantExpression(double val)
     : Expression({}),
       value_(val) {}

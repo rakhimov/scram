@@ -229,6 +229,9 @@ class MissionTime : public Expression {
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
+  static const ExpressionPtr kOne;  ///< Constant 1 or True.
+  static const ExpressionPtr kZero;  ///< Constant 0 or False.
+
   /// Constructor for numerical values.
   ///
   /// @param[in] val  Float numerical value.

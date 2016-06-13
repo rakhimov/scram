@@ -191,9 +191,8 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 
   ExpressionMap probabilities;
 
-  ExpressionPtr one(new ConstantExpression(1.0));
   ExpressionPtr beta = CcfGroup::factors().begin()->second;
-  ExpressionPtr indep_factor(new Sub({one, beta}));  // (1 - beta)
+  ExpressionPtr indep_factor(new Sub({ConstantExpression::kOne, beta}));
   probabilities.emplace_back(  // (1 - beta) * Q
       1,
       ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution()})));
@@ -242,18 +241,17 @@ CcfGroup::ExpressionMap MglModel::CalculateProbabilities() {
   int max_level = CcfGroup::factors().back().first;
   assert(CcfGroup::factors().size() == max_level - 1);
 
-  ExpressionPtr one(new ConstantExpression(1.0));
   int num_members = CcfGroup::members().size();
   for (int i = 0; i < max_level; ++i) {
     double mult = CalculateCombinationReciprocal(num_members - 1, i);
     std::vector<ExpressionPtr> args;
-    args.push_back(ExpressionPtr(new ConstantExpression(mult)));
+    args.emplace_back(new ConstantExpression(mult));
     for (int j = 0; j < i; ++j) {
       args.push_back(CcfGroup::factors()[j].second);
     }
     if (i < max_level - 1) {
-      args.push_back(
-          ExpressionPtr(new Sub({one, CcfGroup::factors()[i].second})));
+      args.emplace_back(
+          new Sub({ConstantExpression::kOne, CcfGroup::factors()[i].second}));
     }
     args.push_back(CcfGroup::distribution());
     probabilities.emplace_back(i + 1, ExpressionPtr(new Mul(args)));

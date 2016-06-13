@@ -642,9 +642,7 @@ struct Initializer::Extractor<Histogram, N> {
   std::shared_ptr<Histogram> operator()(const xmlpp::NodeSet& args,
                                         const std::string& base_path,
                                         Initializer* init) {
-    std::vector<ExpressionPtr> boundaries = {
-        ExpressionPtr{new ConstantExpression(0)}};
-
+    std::vector<ExpressionPtr> boundaries = {ConstantExpression::kZero};
     std::vector<ExpressionPtr> weights;
     for (const xmlpp::Node* node : args) {
       const xmlpp::Element* el = XmlElement(node);
@@ -701,7 +699,7 @@ ExpressionPtr Initializer::GetConstantExpression(
   } else {
     assert(expr_name == "bool");
     std::string val = GetAttributeValue(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val == "true");
+    return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
   }
 }
 
