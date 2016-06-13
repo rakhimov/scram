@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/math/special_functions/beta.hpp>
@@ -557,14 +558,14 @@ class Histogram : public RandomDeviate {
  public:
   /// Histogram distribution setup.
   ///
-  /// @param[in] boundaries  The upper bounds of intervals.
+  /// @param[in] boundaries  The bounds of intervals.
   /// @param[in] weights  The positive weights of intervals
   ///                     restricted by the upper boundaries.
   ///                     Therefore, the number of weights must be
-  ///                     equal to the number of boundaries.
+  ///                     equal to the number of intervals.
   ///
   /// @throws InvalidArgument  The boundaries container size is not equal to
-  ///                          weights container size.
+  ///                          weights container size + 1.
   ///
   /// @note This description of histogram sampling is mostly for probabilities.
   ///       Therefore, it is not flexible.
@@ -582,35 +583,35 @@ class Histogram : public RandomDeviate {
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
-  void Validate() override;
+  void Validate() override {
+    Histogram::CheckBoundaries();
+    Histogram::CheckWeights();
+  }
 
   double Mean() noexcept override;
-  double Max() noexcept override { return boundaries_.back()->Max(); }
-  double Min() noexcept override { return boundaries_.front()->Min(); }
+  double Max() noexcept override {
+    return (*std::prev(boundaries_.second))->Max();
+  }
+  double Min() noexcept override { return 0; }
 
  private:
+  /// Access to args.
+  using Iterator = std::vector<ExpressionPtr>::const_iterator;
+
   double GetSample() noexcept override;
 
-  /// Checks if mean values of expressions are strictly increasing.
-  ///
-  /// @param[in] boundaries  The upper bounds of intervals.
+  /// Checks if values of boundary expressions are strictly increasing.
   ///
   /// @throws InvalidArgument  The mean values are not strictly increasing.
-  void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
+  void CheckBoundaries();
 
-  /// Checks if mean values of boundaries are non-negative.
-  ///
-  /// @param[in] weights  The positive weights of intervals restricted by
-  ///                     the upper boundaries.
+  /// Checks if values of weights are non-negative.
   ///
   /// @throws InvalidArgument  The mean values are negative.
-  void CheckWeights(const std::vector<ExpressionPtr>& weights);
+  void CheckWeights();
 
-  /// Upper boundaries of the histogram.
-  std::vector<ExpressionPtr> boundaries_;
-
-  /// Weights of intervals described by boundaries.
-  std::vector<ExpressionPtr> weights_;
+  std::pair<Iterator, Iterator> boundaries_;  ///< Boundaries of the intervals.
+  std::pair<Iterator, Iterator> weights_;  ///< Weights of the intervals.
 };
 
 /// This class for negation of numerical value or another expression.

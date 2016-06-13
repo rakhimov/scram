@@ -642,7 +642,9 @@ struct Initializer::Extractor<Histogram, N> {
   std::shared_ptr<Histogram> operator()(const xmlpp::NodeSet& args,
                                         const std::string& base_path,
                                         Initializer* init) {
-    std::vector<ExpressionPtr> boundaries;
+    std::vector<ExpressionPtr> boundaries = {
+        ExpressionPtr{new ConstantExpression(0)}};
+
     std::vector<ExpressionPtr> weights;
     for (const xmlpp::Node* node : args) {
       const xmlpp::Element* el = XmlElement(node);

@@ -82,7 +82,7 @@ class Random {
   ///                       The values must be strictly increasing.
   /// @param[in] weights  Weights at the boundaries.
   ///                     The number of weights must be equal to
-  ///                     the number of points.
+  ///                     the number of intervals (points - 1).
   ///                     Extra weights are ignored.
   ///
   /// @returns A sampled value.
@@ -101,7 +101,7 @@ class Random {
   ///                       The values must be strictly increasing.
   /// @param[in] weights  Weights at the boundaries.
   ///                     The number of weights must be equal to
-  ///                     the number of points.
+  ///                     the number of intervals (points - 1).
   ///                     Extra weights are ignored.
   ///
   /// @returns A sampled value.

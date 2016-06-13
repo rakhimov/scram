@@ -335,67 +335,72 @@ double BetaDeviate::GetSample() noexcept {
 
 Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
                      std::vector<ExpressionPtr> weights)
-    : RandomDeviate(boundaries),  // Partial registration!
-      boundaries_(std::move(boundaries)),
-      weights_(std::move(weights)) {
-  if (weights_.size() != boundaries_.size())
+    : RandomDeviate(std::move(boundaries)) {  // Partial registration!
+  int num_intervals = Expression::args().size() - 1;
+  if (weights.size() != num_intervals)
     throw InvalidArgument("The number of weights is not equal to the number"
-                          " of boundaries.");
-  // Complete the argument registration.
-  for (const ExpressionPtr& arg : weights_) Expression::AddArg(arg);
-}
+                          " of intervals.");
 
-void Histogram::Validate() {
-  Histogram::CheckBoundaries(boundaries_);
-  Histogram::CheckWeights(weights_);
+  // Complete the argument registration.
+  for (const ExpressionPtr& arg : weights) Expression::AddArg(arg);
+
+  boundaries_.first = Expression::args().begin();
+  boundaries_.second = std::next(boundaries_.first, num_intervals + 1);
+  weights_.first = boundaries_.second;
+  weights_.second = Expression::args().end();
 }
 
 double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
-  double lower_bound = 0;
-  for (int i = 0; i < boundaries_.size(); ++i) {
-    sum_product += (boundaries_[i]->Mean() - lower_bound) * weights_[i]->Mean();
-    sum_weights += weights_[i]->Mean();
-    lower_bound = boundaries_[i]->Mean();
+  auto it_b = boundaries_.first;
+  double prev_bound = (*it_b++)->Mean();
+  for (auto it_w = weights_.first; it_w != weights_.second; ++it_w, ++it_b) {
+    double cur_bound = (*it_b)->Mean();
+    double cur_weight = (*it_w)->Mean();
+    sum_product += (cur_bound - prev_bound) * cur_weight;
+    sum_weights += cur_weight;
+    prev_bound = cur_bound;
   }
-  return sum_product / (lower_bound * sum_weights);
+  return sum_product / (prev_bound * sum_weights);
 }
 
 double Histogram::GetSample() noexcept {
   std::vector<double> sampled_boundaries;
-  sampled_boundaries.push_back(0);  // The initial point.
   std::vector<double> sampled_weights;
-  for (int i = 0; i < boundaries_.size(); ++i) {
-    sampled_boundaries.push_back(boundaries_[i]->Sample());
-    sampled_weights.push_back(weights_[i]->Sample());
+  for (auto it = boundaries_.first; it != boundaries_.second; ++it) {
+    sampled_boundaries.push_back((*it)->Sample());
+  }
+  for (auto it = weights_.first; it != weights_.second; ++it) {
+    sampled_weights.push_back((*it)->Sample());
   }
   return Random::HistogramGenerator(sampled_boundaries, sampled_weights);
 }
 
-void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
-  if (boundaries[0]->Mean() <= 0) {
-    throw InvalidArgument("Histogram lower boundary must be positive.");
-  } else if (boundaries[0]->Min() <= 0) {
-    throw InvalidArgument("Histogram sampled lower boundary must be positive.");
+void Histogram::CheckBoundaries() {
+  auto it = boundaries_.first;
+  if ((*it)->IsConstant() == false || (*it)->Mean() != 0) {
+    throw InvalidArgument("Histogram lower boundary must be 0.");
   }
-  for (int i = 1; i < boundaries.size(); ++i) {
-    if (boundaries[i-1]->Mean() >= boundaries[i]->Mean()) {
+  for (++it; it != boundaries_.second; ++it) {
+    const auto& prev_expr = *std::prev(it);
+    const auto& cur_expr = *it;
+    if (prev_expr->Mean() >= cur_expr->Mean()) {
       throw InvalidArgument("Histogram upper boundaries are not strictly"
-                            " increasing.");
-    } else if (boundaries[i-1]->Max() >= boundaries[i]->Min()) {
+                            " increasing and positive.");
+    } else if (prev_expr->Max() >= cur_expr->Min()) {
       throw InvalidArgument("Histogram sampled upper boundaries must"
-                            " be strictly increasing.");
+                            " be strictly increasing and positive.");
     }
   }
 }
 
-void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
-  for (int i = 0; i < weights.size(); ++i) {
-    if (weights[i]->Mean() < 0) {
-      throw InvalidArgument("Histogram weights are negative.");
-    } else if (weights[i]->Min() < 0) {
-      throw InvalidArgument("Histogram sampled weights are negative.");
+void Histogram::CheckWeights() {
+  for (auto it = weights_.first; it != weights_.second; ++it) {
+    if ((*it)->Mean() < 0) {
+      throw InvalidArgument("Histogram weights can't be negative.");
+    } else if ((*it)->Min() < 0) {
+      throw InvalidArgument("Histogram sampled weights can't be negative.");
     }
   }
 }
