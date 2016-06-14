@@ -468,6 +468,7 @@
     <choice>
       <ref name="constant"/>
       <ref name="parameter"/>
+      <ref name="operation"/>
       <ref name="built-in"/>
       <ref name="random-deviate"/>
     </choice>
@@ -498,6 +499,12 @@
           </attribute>
         </optional>
       </element>
+    </choice>
+  </define>
+
+  <define name="operation">
+    <choice>
+      <ref name="numerical-operation"/>
     </choice>
   </define>
 
@@ -552,6 +559,33 @@
     <!-- V.2.3. Numerical Expressions -->
     <!-- *********************************************************** -->
 
+  <define name="numerical-operation">
+    <choice>
+      <element name="neg">
+        <ref name="expression"/>
+      </element>
+      <element name="add">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="sub">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="mul">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="div">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+    </choice>
+  </define>
 
     <!-- *********************************************************** -->
     <!-- V.2.4. Boolean Expressions -->

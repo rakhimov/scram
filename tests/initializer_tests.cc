@@ -162,6 +162,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "missing_gate_definition.xml",
       "missing_ccf_level_number.xml",
       "missing_ccf_members.xml",
+      "missing_arg_expression.xml",
       "undefined_event.xml",
       "undefined_basic_event.xml",
       "undefined_house_event.xml",

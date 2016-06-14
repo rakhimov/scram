@@ -118,5 +118,32 @@ The input tries to utilize all the functionality including optional cases.
         </bin>
       </histogram>
     </define-basic-event>
+    <define-basic-event name="Negative">
+      <neg><neg><float value="0.5"/></neg></neg>
+    </define-basic-event>
+    <define-basic-event name="Add">
+      <add>
+        <float value="0.1"/>
+        <float value="0.2"/>
+      </add>
+    </define-basic-event>
+    <define-basic-event name="Sub">
+      <sub>
+        <float value="0.2"/>
+        <float value="0.1"/>
+      </sub>
+    </define-basic-event>
+    <define-basic-event name="Mul">
+      <mul>
+        <float value="0.1"/>
+        <float value="0.2"/>
+      </mul>
+    </define-basic-event>
+    <define-basic-event name="Div">
+      <div>
+        <float value="0.5"/>
+        <int value="5"/>
+      </div>
+    </define-basic-event>
   </model-data>
 </opsa-mef>

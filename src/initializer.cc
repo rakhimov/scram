@@ -626,11 +626,30 @@ struct Initializer::Extractor<T, 0> {
   }
 };
 
-/// Partial specialization for Extractor of Histogram expressions.
-///
-/// @tparam N  Irrelevant request for this expression.
-template <int N>
-struct Initializer::Extractor<Histogram, N> {
+/// Specialization of Extractor to extract all expressions into arg vector.
+template <class T>
+struct Initializer::Extractor<T, -1> {
+  /// Constructs an expression with a variable number of arguments.
+  ///
+  /// @param[in] args  A vector of XML elements containing the arguments.
+  /// @param[in] base_path  Series of ancestor containers in the path with dots.
+  /// @param[in,out] init  The host Initializer.
+  ///
+  /// @returns A shared pointer to the constructed expression.
+  std::shared_ptr<T> operator()(const xmlpp::NodeSet& args,
+                                const std::string& base_path,
+                                Initializer* init) {
+    std::vector<ExpressionPtr> expr_args;
+    for (const xmlpp::Node* node : args) {
+      expr_args.push_back(init->GetExpression(XmlElement(node), base_path));
+    }
+    return std::make_shared<T>(std::move(expr_args));
+  }
+};
+
+/// Full specialization for Extractor of Histogram expressions.
+template <>
+struct Initializer::Extractor<Histogram, -1> {
   /// Constructs Histogram deviate expression
   /// expression arguments in XML elements.
   ///
@@ -665,7 +684,12 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"lognormal-deviate", Extractor<LogNormalDeviate, 3>()},
     {"gamma-deviate", Extractor<GammaDeviate, 2>()},
     {"beta-deviate", Extractor<BetaDeviate, 2>()},
-    {"histogram", Extractor<Histogram, -1>()}};
+    {"histogram", Extractor<Histogram, -1>()},
+    {"neg", Extractor<Neg, 1>()},
+    {"add", Extractor<Add, -1>()},
+    {"sub", Extractor<Sub, -1>()},
+    {"mul", Extractor<Mul, -1>()},
+    {"div", Extractor<Div, -1>()}};
 
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
@@ -678,10 +702,16 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   if (param_expr.count(expr_element->get_name()))
     return Initializer::GetParameterExpression(expr_element, base_path);
 
-  ExpressionPtr expression = kExpressionExtractors_.at(
-      expr_element->get_name())(expr_element->find("./*"), base_path, this);
-  expressions_.push_back(expression);  // For late validation.
-  return expression;
+  try {
+    ExpressionPtr expression = kExpressionExtractors_.at(
+        expr_element->get_name())(expr_element->find("./*"), base_path, this);
+    expressions_.push_back(expression);  // For late validation.
+    return expression;
+  } catch (InvalidArgument& err) {
+    std::stringstream msg;
+    msg << "Line " << expr_element->get_line() << ":\n";
+    throw ValidationError(msg.str() + err.msg());
+  }
 }
 
 ExpressionPtr Initializer::GetConstantExpression(
