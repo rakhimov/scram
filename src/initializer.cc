@@ -693,18 +693,18 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
 
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
-  static const std::set<std::string> const_expr = {"int", "float", "bool"};
-  static const std::set<std::string> param_expr = {"parameter",
-                                                   "system-mission-time"};
-  if (const_expr.count(expr_element->get_name()))
+  std::string expr_name = expr_element->get_name();
+  if (expr_name == "int" || expr_name == "float" || expr_name == "bool")
     return Initializer::GetConstantExpression(expr_element);
 
-  if (param_expr.count(expr_element->get_name()))
+  if (expr_name == "parameter" || expr_name == "system-mission-time")
     return Initializer::GetParameterExpression(expr_element, base_path);
 
+  if (expr_name == "pi") return ConstantExpression::kPi;
+
   try {
-    ExpressionPtr expression = kExpressionExtractors_.at(
-        expr_element->get_name())(expr_element->find("./*"), base_path, this);
+    ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
+        expr_element->find("./*"), base_path, this);
     expressions_.push_back(expression);  // For late validation.
     return expression;
   } catch (InvalidArgument& err) {

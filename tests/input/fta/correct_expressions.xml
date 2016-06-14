@@ -145,5 +145,8 @@ The input tries to utilize all the functionality including optional cases.
         <int value="5"/>
       </div>
     </define-basic-event>
+    <define-parameter name="Pi">
+      <pi/>
+    </define-parameter>
   </model-data>
 </opsa-mef>

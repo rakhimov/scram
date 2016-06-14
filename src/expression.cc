@@ -21,6 +21,8 @@
 
 #include "expression.h"
 
+#include <boost/math/constants/constants.hpp>
+
 #include "error.h"
 #include "random.h"
 
@@ -75,6 +77,8 @@ MissionTime::MissionTime()
 
 const ExpressionPtr ConstantExpression::kOne(new ConstantExpression(1));
 const ExpressionPtr ConstantExpression::kZero(new ConstantExpression(0));
+const ExpressionPtr ConstantExpression::kPi(
+    new ConstantExpression(boost::math::constants::pi<double>()));
 
 ConstantExpression::ConstantExpression(double val)
     : Expression({}),

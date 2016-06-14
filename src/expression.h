@@ -231,6 +231,7 @@ class ConstantExpression : public Expression {
  public:
   static const ExpressionPtr kOne;  ///< Constant 1 or True.
   static const ExpressionPtr kZero;  ///< Constant 0 or False.
+  static const ExpressionPtr kPi;  ///< Constant PI value.
 
   /// Constructor for numerical values.
   ///

@@ -584,6 +584,7 @@
           <ref name="expression"/>
         </oneOrMore>
       </element>
+      <element name="pi"> <empty/> </element>
     </choice>
   </define>
 
