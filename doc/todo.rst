@@ -74,4 +74,3 @@ Code
 - Benchmark tests:
 
     * HIPPS (periodic tests)
-    * BSCU (numerical expressions)
