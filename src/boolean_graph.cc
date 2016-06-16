@@ -555,7 +555,7 @@ void BooleanGraph::ClearGateMarks() noexcept {
 void BooleanGraph::ClearGateMarks(const GatePtr& gate) noexcept {
   if (!gate->mark()) return;
   gate->mark(false);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearGateMarks(arg.second);
   }
 }
@@ -574,13 +574,13 @@ void BooleanGraph::ClearNodeVisits(const GatePtr& gate) noexcept {
 
   if (gate->Visited()) gate->ClearVisits();
 
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearNodeVisits(arg.second);
   }
-  for (const auto& arg : gate->variable_args()) {
+  for (const auto& arg : gate->args<Variable>()) {
     if (arg.second->Visited()) arg.second->ClearVisits();
   }
-  for (const auto& arg : gate->constant_args()) {
+  for (const auto& arg : gate->args<Constant>()) {
     if (arg.second->Visited()) arg.second->ClearVisits();
   }
 }
@@ -598,13 +598,13 @@ void BooleanGraph::ClearOptiValues(const GatePtr& gate) noexcept {
   gate->mark(true);
 
   gate->opti_value(0);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearOptiValues(arg.second);
   }
-  for (const auto& arg : gate->variable_args()) {
+  for (const auto& arg : gate->args<Variable>()) {
     arg.second->opti_value(0);
   }
-  assert(gate->constant_args().empty());
+  assert(gate->args<Constant>().empty());
 }
 
 void BooleanGraph::ClearNodeCounts() noexcept {
@@ -620,13 +620,13 @@ void BooleanGraph::ClearNodeCounts(const GatePtr& gate) noexcept {
   gate->mark(true);
 
   gate->ResetCount();
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearNodeCounts(arg.second);
   }
-  for (const auto& arg : gate->variable_args()) {
+  for (const auto& arg : gate->args<Variable>()) {
     arg.second->ResetCount();
   }
-  assert(gate->constant_args().empty());
+  assert(gate->args<Constant>().empty());
 }
 
 void BooleanGraph::ClearDescendantMarks() noexcept {
@@ -641,7 +641,7 @@ void BooleanGraph::ClearDescendantMarks(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   gate->descendant(0);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearDescendantMarks(arg.second);
   }
 }
@@ -658,7 +658,7 @@ void BooleanGraph::ClearAncestorMarks(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   gate->ancestor(0);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearAncestorMarks(arg.second);
   }
 }
@@ -675,13 +675,13 @@ void BooleanGraph::ClearNodeOrders(const GatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   if (gate->order()) gate->order(0);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::ClearNodeOrders(arg.second);
   }
-  for (const auto& arg : gate->variable_args()) {
+  for (const auto& arg : gate->args<Variable>()) {
     if (arg.second->order()) arg.second->order(0);
   }
-  assert(gate->constant_args().empty());
+  assert(gate->args<Constant>().empty());
 }
 
 void BooleanGraph::GraphLogger::RegisterRoot(const GatePtr& gate) noexcept {
@@ -691,9 +691,9 @@ void BooleanGraph::GraphLogger::RegisterRoot(const GatePtr& gate) noexcept {
 void BooleanGraph::GraphLogger::Log(const GatePtr& gate) noexcept {
   ++gate_types[gate->type()];
   if (gate->module()) ++num_modules;
-  for (const auto& arg : gate->gate_args()) gates.insert(arg.first);
-  for (const auto& arg : gate->variable_args()) variables.insert(arg.first);
-  for (const auto& arg : gate->constant_args()) constants.insert(arg.first);
+  for (const auto& arg : gate->args<Gate>()) gates.insert(arg.first);
+  for (const auto& arg : gate->args<Variable>()) variables.insert(arg.first);
+  for (const auto& arg : gate->args<Constant>()) constants.insert(arg.first);
 }
 
 void BooleanGraph::Log() noexcept {
@@ -745,7 +745,7 @@ void BooleanGraph::GatherInformation(const GatePtr& gate,
   if (gate->mark()) return;
   gate->mark(true);
   logger->Log(gate);
-  for (const auto& arg : gate->gate_args()) {
+  for (const auto& arg : gate->args<Gate>()) {
     BooleanGraph::GatherInformation(arg.second, logger);
   }
 }
@@ -842,21 +842,21 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  for (const auto& node : gate->gate_args()) {
+  for (const auto& node : gate->args<Gate>()) {
     if (node.first < 0) formula += "~";  // Negation.
     formula += GetName(node.second);
     if (--num_args) formula += sig.op;
     os << node.second;
   }
 
-  for (const auto& basic : gate->variable_args()) {
+  for (const auto& basic : gate->args<Variable>()) {
     if (basic.first < 0) formula += "~";  // Negation.
     formula += "B" + std::to_string(basic.second->index());
     if (--num_args) formula += sig.op;
     os << basic.second;
   }
 
-  for (const auto& constant : gate->constant_args()) {
+  for (const auto& constant : gate->args<Constant>()) {
     if (constant.first < 0) formula += "~";  // Negation.
     formula += "H" + std::to_string(constant.second->index());
     if (--num_args) formula += sig.op;

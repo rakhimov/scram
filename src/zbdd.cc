@@ -71,12 +71,12 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   } else if (fault_tree->root()->type() == kNull) {
     GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
-    assert(top->gate_args().empty());
+    assert(top->args<Gate>().empty());
     int child = *top->args().begin();
     if (child < 0) {
       root_ = kBase_;
     } else {
-      VariablePtr var = top->variable_args().begin()->second;
+      VariablePtr var = top->args<Variable>().begin()->second;
       root_ =
           Zbdd::FindOrAddVertex(var->index(), kBase_, kEmpty_, var->order());
     }
@@ -340,11 +340,11 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     return result;
   }
   std::vector<VertexPtr> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     if (arg.second->module()) {
       module_gates->insert(arg);
@@ -879,14 +879,14 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
 
 Zbdd::VertexPtr CutSetContainer::ConvertGate(const GatePtr& gate) noexcept {
   assert(gate->type() == kAnd || gate->type() == kOr);
-  assert(gate->constant_args().empty());
+  assert(gate->args<Constant>().empty());
   assert(gate->args().size() > 1);
   std::vector<SetNodePtr> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     args.push_back(Zbdd::FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }

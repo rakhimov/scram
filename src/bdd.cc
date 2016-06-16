@@ -53,9 +53,9 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   } else if (fault_tree->root()->type() == kNull) {
     GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
-    assert(top->gate_args().empty());
+    assert(top->args<Gate>().empty());
     int child = *top->args().begin();
-    VariablePtr var = top->variable_args().begin()->second;
+    VariablePtr var = top->args<Variable>().begin()->second;
     root_ = {child < 0, Bdd::FindOrAddVertex(var->index(), kOne_, kOne_, true,
                                              var->order())};
   } else {
@@ -159,13 +159,13 @@ Bdd::Function Bdd::ConvertGraph(
     return result;
   }
   std::vector<Function> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back({arg.first < 0,
                     Bdd::FindOrAddVertex(arg.second->index(), kOne_, kOne_,
                                          true, arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->module()) {
       args.push_back({arg.first < 0,

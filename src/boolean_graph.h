@@ -60,6 +60,8 @@ class NodeParentManager {
   friend class Gate;  ///< The main manipulator of parent information.
 
  public:
+  using Parent = std::pair<const int, GateWeakPtr>;  ///< Parent index and ptr.
+
   /// Map of parent gate positive indices and weak pointers to them.
   using ParentMap = std::unordered_map<int, GateWeakPtr>;
 
@@ -372,13 +374,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns true if this gate has become constant.
   bool IsConstant() const { return state_ != kNormalState; }
 
-  /// @returns Arguments of this gate.
-  /// @{
+  /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
-  const ArgMap<Gate>& gate_args() const { return gate_args_; }
-  const ArgMap<Variable>& variable_args() const { return variable_args_; }
-  const ArgMap<Constant>& constant_args() const { return constant_args_; }
-  /// @}
 
   /// Generic accessor to the gate argument containers.
   ///
@@ -538,7 +535,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     if (args_.count(-index)) return Gate::ProcessComplementArg(index);
 
     args_.insert(index);
-    Gate::args<T>().emplace(index, arg);
+    Gate::mutable_args<T>().emplace(index, arg);
     arg->AddParent(shared_from_this());
   }
 
@@ -639,7 +636,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @returns The map container of the argument nodes with the given type.
   template <class T>
-  ArgMap<T>& args() {
+  ArgMap<T>& mutable_args() {
     return const_cast<ArgMap<T>&>(static_cast<const Gate*>(this)->args<T>());
   }
 
