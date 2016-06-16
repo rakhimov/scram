@@ -547,17 +547,23 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  A new parent for the argument.
+  ///
+  /// @pre No constant arguments are present.
   void TransferArg(int index, const GatePtr& recipient) noexcept;
 
   /// Shares this gate's argument with another gate.
   ///
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  Another parent for the argument.
+  ///
+  /// @pre No constant arguments are present.
   void ShareArg(int index, const GatePtr& recipient) noexcept;
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
   /// and apply the De Morgan's Law.
+  ///
+  /// @pre No constant arguments are present.
   void InvertArgs() noexcept;
 
   /// Replaces an argument with the complement of it.
@@ -565,6 +571,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// and apply the De Morgan's Law.
   ///
   /// @param[in] existing_arg  Positive or negative index of the argument.
+  ///
+  /// @pre No constant arguments are present.
   void InvertArg(int existing_arg) noexcept;
 
   /// Adds arguments of an argument gate to this gate.
@@ -574,6 +582,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// The sign of the argument gate is expected to be positive.
   ///
   /// @param[in] arg_gate  The gate which arguments to be added to this gate.
+  ///
+  /// @pre No constant arguments are present.
   ///
   /// @warning This function does not test
   ///          if the parent and argument logics are

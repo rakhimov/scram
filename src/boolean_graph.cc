@@ -83,41 +83,39 @@ GatePtr Gate::Clone() noexcept {
 }
 
 void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
+  assert(constant_args_.empty() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
-  NodePtr node;
-  if (gate_args_.count(index)) {
-    node = gate_args_.find(index)->second;
-    recipient->AddArg(index, gate_args_.find(index)->second);
-    gate_args_.erase(index);
-  } else if (variable_args_.count(index)) {
-    node = variable_args_.find(index)->second;
-    recipient->AddArg(index, variable_args_.find(index)->second);
-    variable_args_.erase(index);
+
+  auto it_g = gate_args_.find(index);
+  if (it_g != gate_args_.end()) {
+    it_g->second->EraseParent(Node::index());
+    recipient->AddArg(index, it_g->second);
+    gate_args_.erase(it_g);
+
   } else {
-    assert(constant_args_.count(index));
-    node = constant_args_.find(index)->second;
-    recipient->AddArg(index, constant_args_.find(index)->second);
-    constant_args_.erase(index);
+    auto it_v = variable_args_.find(index);
+    it_v->second->EraseParent(Node::index());
+    recipient->AddArg(index, it_v->second);
+    variable_args_.erase(it_v);
   }
-  node->EraseParent(Node::index());
 }
 
 void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
+  assert(constant_args_.empty() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
-  if (gate_args_.count(index)) {
-    recipient->AddArg(index, gate_args_.find(index)->second);
-  } else if (variable_args_.count(index)) {
-    recipient->AddArg(index, variable_args_.find(index)->second);
+  auto it_g = gate_args_.find(index);
+  if (it_g != gate_args_.end()) {
+    recipient->AddArg(index, it_g->second);
   } else {
-    assert(constant_args_.count(index));
-    recipient->AddArg(index, constant_args_.find(index)->second);
+    recipient->AddArg(index, variable_args_.find(index)->second);
   }
 }
 
 void Gate::InvertArgs() noexcept {
+  assert(constant_args_.empty() && "Improper use case.");
   ArgSet inverted_args;
   for (auto it = args_.rbegin(); it != args_.rend(); ++it)
     inverted_args.insert(inverted_args.end(), -*it);
@@ -132,34 +130,32 @@ void Gate::InvertArgs() noexcept {
   for (const auto& arg : variable_args_)
     inverted_vars.emplace(-arg.first, arg.second);
   variable_args_ = std::move(inverted_vars);
-
-  ArgMap<Constant> inverted_consts;
-  for (const auto& arg : constant_args_)
-    inverted_consts.emplace(-arg.first, arg.second);
-  constant_args_ = std::move(inverted_consts);
 }
 
 void Gate::InvertArg(int existing_arg) noexcept {
+  assert(constant_args_.empty() && "Improper use case.");
   assert(args_.count(existing_arg));
   assert(!args_.count(-existing_arg));
+
   args_.erase(existing_arg);
   args_.insert(-existing_arg);
-  if (gate_args_.count(existing_arg)) {
-    GatePtr arg = gate_args_.find(existing_arg)->second;
-    gate_args_.erase(existing_arg);
+
+  auto it_g = gate_args_.find(existing_arg);
+  if (it_g != gate_args_.end()) {
+    GatePtr arg = it_g->second;
+    gate_args_.erase(it_g);
     gate_args_.emplace(-existing_arg, arg);
-  } else if (variable_args_.count(existing_arg)) {
-    VariablePtr arg = variable_args_.find(existing_arg)->second;
-    variable_args_.erase(existing_arg);
-    variable_args_.emplace(-existing_arg, arg);
+
   } else {
-    ConstantPtr arg = constant_args_.find(existing_arg)->second;
-    constant_args_.erase(existing_arg);
-    constant_args_.emplace(-existing_arg, arg);
+    auto it_v = variable_args_.find(existing_arg);
+    VariablePtr arg = it_v->second;
+    variable_args_.erase(it_v);
+    variable_args_.emplace(-existing_arg, arg);
   }
 }
 
 void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
+  assert(constant_args_.empty() && "Improper use case.");
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
   assert(arg_gate->state() == kNormalState && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
@@ -169,10 +165,6 @@ void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
     if (state_ != kNormalState) return;
   }
   for (const auto& arg : arg_gate->variable_args_) {
-    Gate::AddArg(arg.first, arg.second);
-    if (state_ != kNormalState) return;
-  }
-  for (const auto& arg : arg_gate->constant_args_) {
     Gate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
@@ -188,8 +180,9 @@ void Gate::JoinNullGate(int index) noexcept {
   assert(gate_args_.count(index));
 
   args_.erase(index);
-  GatePtr null_gate = gate_args_.find(index)->second;
-  gate_args_.erase(index);
+  auto it_g = gate_args_.find(index);
+  GatePtr null_gate = it_g->second;
+  gate_args_.erase(it_g);
   null_gate->EraseParent(Node::index());
 
   assert(null_gate->type_ == kNull);
@@ -295,19 +288,24 @@ void Gate::EraseArg(int index) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
-  NodePtr node;
-  if (gate_args_.count(index)) {
-    node = gate_args_.find(index)->second;
-    gate_args_.erase(index);
-  } else if (variable_args_.count(index)) {
-    node = variable_args_.find(index)->second;
-    variable_args_.erase(index);
+
+  auto it_g = gate_args_.find(index);
+  if (it_g != gate_args_.end()) {
+    it_g->second->EraseParent(Node::index());
+    gate_args_.erase(it_g);
+
   } else {
-    assert(constant_args_.count(index));
-    node = constant_args_.find(index)->second;
-    constant_args_.erase(index);
+    auto it_v = variable_args_.find(index);
+    if (it_v != variable_args_.end()) {
+      it_v->second->EraseParent(Node::index());
+      variable_args_.erase(it_v);
+
+    } else {
+      auto it_c = constant_args_.find(index);
+      it_c->second->EraseParent(Node::index());
+      constant_args_.erase(it_c);
+    }
   }
-  node->EraseParent(Node::index());
 }
 
 void Gate::EraseAllArgs() noexcept {
