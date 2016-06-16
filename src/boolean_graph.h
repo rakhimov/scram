@@ -60,10 +60,11 @@ class NodeParentManager {
   friend class Gate;  ///< The main manipulator of parent information.
 
  public:
+  /// Map of parent gate positive indices and weak pointers to them.
+  using ParentMap = std::unordered_map<int, GateWeakPtr>;
+
   /// @returns Parents of a node.
-  const std::unordered_map<int, GateWeakPtr>& parents() const {
-    return parents_;
-  }
+  const ParentMap& parents() const { return parents_; }
 
  protected:
   ~NodeParentManager() = default;
@@ -84,7 +85,7 @@ class NodeParentManager {
     parents_.erase(index);
   }
 
-  std::unordered_map<int, GateWeakPtr> parents_;  ///< Parents.
+  ParentMap parents_;  ///< All registered parents of this node.
 };
 
 /// An abstract base class that represents a node in a Boolean graph.
@@ -293,6 +294,25 @@ enum State {
 /// before any complex analysis is done.
 class Gate : public Node, public std::enable_shared_from_this<Gate> {
  public:
+  /// Argument entry type in the gate's argument containers.
+  /// The entry contains
+  /// the positive or negative index (indicating a complement)
+  /// and a pointer to the argument node.
+  ///
+  /// @tparam T  The type of the argument node.
+  template <class T>
+  using Arg = std::pair<const int, std::shared_ptr<T>>;
+
+  /// The associative container type to store the gate arguments.
+  /// This container type maps the index of the argument to a pointer to it.
+  ///
+  /// @tparam T  The type of the argument node.
+  template <class T>
+  using ArgMap = std::unordered_map<int, std::shared_ptr<T>>;
+
+  /// The ordered set of gate argument indices.
+  using ArgSet = std::set<int>;
+
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
   /// and one shared pointer exists for this gate
@@ -354,16 +374,10 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
 
   /// @returns Arguments of this gate.
   /// @{
-  const std::set<int>& args() const { return args_; }
-  const std::unordered_map<int, GatePtr>& gate_args() const {
-    return gate_args_;
-  }
-  const std::unordered_map<int, VariablePtr>& variable_args() const {
-    return variable_args_;
-  }
-  const std::unordered_map<int, ConstantPtr>& constant_args() const {
-    return constant_args_;
-  }
+  const ArgSet& args() const { return args_; }
+  const ArgMap<Gate>& gate_args() const { return gate_args_; }
+  const ArgMap<Variable>& variable_args() const { return variable_args_; }
+  const ArgMap<Constant>& constant_args() const { return constant_args_; }
   /// @}
 
   /// Marks are used for linear traversal of graphs.
@@ -700,13 +714,13 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
-  std::set<int> args_;  ///< Arguments of the gate.
-  /// Arguments that are gates.
-  std::unordered_map<int, GatePtr> gate_args_;
-  /// Arguments that are variables.
-  std::unordered_map<int, VariablePtr> variable_args_;
-  /// Arguments that are constant like house events.
-  std::unordered_map<int, ConstantPtr> constant_args_;
+  ArgSet args_;  ///< Argument indices of the gate.
+  /// Associative containers of gate arguments of certain type.
+  /// @{
+  ArgMap<Gate> gate_args_;
+  ArgMap<Variable> variable_args_;
+  ArgMap<Constant> constant_args_;
+  /// @}
 };
 
 /// Container of unique gates.
