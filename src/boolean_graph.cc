@@ -119,7 +119,8 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
 
 void Gate::InvertArgs() noexcept {
   ArgSet inverted_args;
-  for (int index : args_) inverted_args.insert(inverted_args.begin(), -index);
+  for (auto it = args_.rbegin(); it != args_.rend(); ++it)
+    inverted_args.insert(inverted_args.end(), -*it);
   args_ = std::move(inverted_args);
 
   ArgMap<Gate> inverted_gates;

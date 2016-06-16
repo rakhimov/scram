@@ -36,13 +36,13 @@
 #include <array>
 #include <iostream>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
 
 #include "event.h"
@@ -313,7 +313,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   using ArgMap = std::unordered_map<int, std::shared_ptr<T>>;
 
   /// The ordered set of gate argument indices.
-  using ArgSet = std::set<int>;
+  using ArgSet = boost::container::flat_set<int>;
 
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
@@ -486,8 +486,12 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          that will avoid any need for the RTTI or other hacks.
   NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
-    if (gate_args_.count(index)) return gate_args_.find(index)->second;
-    if (variable_args_.count(index)) return variable_args_.find(index)->second;
+    auto it_g = gate_args_.find(index);
+    if (it_g != gate_args_.end()) return it_g->second;
+
+    auto it_v = variable_args_.find(index);
+    if (it_v != variable_args_.end()) return it_v->second;
+
     return constant_args_.find(index)->second;
   }
 
@@ -768,7 +772,7 @@ class GateSet {
     /// @returns Hash value of the gate
     ///          from its arguments but not logic.
     std::size_t operator()(const GatePtr& gate) const noexcept {
-      return boost::hash_value(gate->args());
+      return boost::hash_range(gate->args().begin(), gate->args().end());
     }
   };
   /// Functor for equality test for gates by their arguments.

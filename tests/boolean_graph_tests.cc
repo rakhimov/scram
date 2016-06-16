@@ -194,7 +194,7 @@ TEST_F(GateTest, DuplicateArgVoteToAnd) {
   GatePtr sub = g->args<Gate>().begin()->second;
   EXPECT_EQ(kOr, sub->type());  // Special case. K/N is in general.
   EXPECT_EQ(1, sub->vote_number());  // This is the reason.
-  std::set<int> vars = {var_two->index(), var_three->index()};
+  Gate::ArgSet vars = {var_two->index(), var_three->index()};
   EXPECT_EQ(vars, sub->args());
   EXPECT_EQ(2, sub->args<Variable>().size());
 }
@@ -214,7 +214,7 @@ TEST_F(GateTest, DuplicateArgVoteToOrWithOneClone) {
   EXPECT_EQ(kAnd, sub->type());  // Special case. K/N is in general.
   EXPECT_EQ(2, sub->vote_number());
   EXPECT_EQ(2, sub->args().size());  // This is the reason.
-  std::set<int> vars = {var_two->index(), var_three->index()};
+  Gate::ArgSet vars = {var_two->index(), var_three->index()};
   EXPECT_EQ(vars, sub->args());
   EXPECT_EQ(2, sub->args<Variable>().size());
 }

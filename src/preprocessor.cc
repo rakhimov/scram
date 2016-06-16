@@ -645,7 +645,7 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   gate_two->mark(true);
 
   gate->type(kOr);
-  std::set<int>::const_iterator it = gate->args().begin();
+  auto it = gate->args().begin();
   gate->ShareArg(*it, gate_one);
   gate->ShareArg(*it, gate_two);
   gate_two->InvertArg(*it);
