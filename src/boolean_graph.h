@@ -380,6 +380,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   const ArgMap<Constant>& constant_args() const { return constant_args_; }
   /// @}
 
+  /// Generic accessor to the gate argument containers.
+  ///
+  /// @tparam T  The type of the argument nodes.
+  ///
+  /// @returns The map container of the gate arguments with the given type.
+  template <class T>
+  const ArgMap<T>& args() const;
+
   /// Marks are used for linear traversal of graphs.
   /// This can be an alternative
   /// to visit information provided by the base Node class.
@@ -497,6 +505,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
   ///
+  /// @tparam T  The type of the argument node.
+  ///
   /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] arg  A pointer to the argument node.
   ///
@@ -515,17 +525,22 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  /// @{
-  void AddArg(int index, const GatePtr& arg) noexcept {
-    AddArg(index, arg, &gate_args_);
+  template <class T>
+  void AddArg(int index, const std::shared_ptr<T>& arg) noexcept {
+    assert(index);
+    assert(std::abs(index) == arg->index());
+    assert(state_ == kNormalState);
+    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
+    assert(!(type_ == kXor && args_.size() > 1));
+    assert(vote_number_ >= 0);
+
+    if (args_.count(index)) return Gate::ProcessDuplicateArg(index);
+    if (args_.count(-index)) return Gate::ProcessComplementArg(index);
+
+    args_.insert(index);
+    Gate::args<T>().emplace(index, arg);
+    arg->AddParent(shared_from_this());
   }
-  void AddArg(int index, const VariablePtr& arg) noexcept {
-    AddArg(index, arg, &variable_args_);
-  }
-  void AddArg(int index, const ConstantPtr& arg) noexcept {
-    AddArg(index, arg, &constant_args_);
-  }
-  /// @}
 
   /// Transfers this gate's argument to another gate.
   ///
@@ -618,29 +633,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   }
 
  private:
-  /// Handles addition of arguments to the gate.
+  /// Mutable getter for the gate arguments.
   ///
-  /// @tparam Ptr  Shared pointer type to the argument.
-  /// @tparam Container  Type of the destination container.
+  /// @tparam T  The type of the argument nodes.
   ///
-  /// @param[in] index  Positive or negative index of the argument.
-  /// @param[in,out] arg  Pointer to the argument.
-  /// @param[in,out] container  The final destination to save the argument.
-  template <class Ptr, class Container>
-  void AddArg(int index, const Ptr& arg, Container* container) noexcept {
-    assert(index != 0);
-    assert(std::abs(index) == arg->index());
-    assert(state_ == kNormalState);
-    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
-    assert(!(type_ == kXor && args_.size() > 1));
-    assert(vote_number_ >= 0);
-
-    if (args_.count(index)) return Gate::ProcessDuplicateArg(index);
-    if (args_.count(-index)) return Gate::ProcessComplementArg(index);
-
-    args_.insert(index);
-    container->emplace(index, arg);
-    arg->AddParent(shared_from_this());
+  /// @returns The map container of the argument nodes with the given type.
+  template <class T>
+  ArgMap<T>& args() {
+    return const_cast<ArgMap<T>&>(static_cast<const Gate*>(this)->args<T>());
   }
 
   /// Process an addition of an argument
@@ -722,6 +722,22 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ArgMap<Constant> constant_args_;
   /// @}
 };
+
+/// @returns The Gate type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Gate>& Gate::args<Gate>() const { return gate_args_; }
+
+/// @returns The Variable type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
+  return variable_args_;
+}
+
+/// @returns The Constant type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
+  return constant_args_;
+}
 
 /// Container of unique gates.
 /// This container acts like an unordered set of gates.
