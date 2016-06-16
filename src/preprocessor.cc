@@ -122,8 +122,7 @@ class TestGateMarks {
   ///
   /// @returns true if the job is done.
   bool operator()(const std::shared_ptr<const Gate>& gate, bool mark) noexcept {
-    if (tested_gates_.count(gate->index())) return false;
-    tested_gates_.insert(gate->index());
+    if (tested_gates_.insert(gate->index()).second == false) return false;
     assert(gate->mark() == mark && "Found discontinuous gate mark.");
     for (const auto& arg : gate->args<Gate>()) (*this)(arg.second, mark);
     return true;
@@ -144,8 +143,7 @@ class TestGateStructure {
   ///
   /// @returns true if the job is done.
   bool operator()(const std::shared_ptr<const Gate>& gate) noexcept {
-    if (tested_gates_.count(gate->index())) return false;
-    tested_gates_.insert(gate->index());
+    if (tested_gates_.insert(gate->index()).second == false) return false;
     assert(!gate->IsConstant() && "Constant gates are not clear!");
     switch (gate->type()) {
       case kNull:
@@ -721,40 +719,41 @@ void Preprocessor::PropagateComplements(
   // for optimization of repeated complements.
   std::vector<std::pair<int, GatePtr>> to_swap;  // Gate args with negation.
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
-    if ((arg.first < 0) && !(keep_modules && arg_gate->module())) {
-      GatePtr complement;
-      if (complements->count(arg_gate->index())) {
-        complement = complements->find(arg_gate->index())->second;
-        to_swap.emplace_back(arg.first, complement);
-        assert(complement->mark());
-        continue;  // Existing complements are already processed.
-      }
-      Operator type = arg_gate->type();
-      assert(type == kAnd || type == kOr);
-      Operator complement_type = type == kOr ? kAnd : kOr;
-      if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
-        arg_gate->type(complement_type);
-        arg_gate->InvertArgs();
-        complement = arg_gate;
-      } else {
-        complement = arg_gate->Clone();
-        if (arg_gate->module()) arg_gate->module(false);  // Not good.
-        complement->type(complement_type);
-        complement->InvertArgs();
-        complements->emplace(arg_gate->index(), complement);
-      }
-      to_swap.emplace_back(arg.first, complement);
-      arg_gate = complement;  // Needed for further propagation.
+    const GatePtr& arg_gate = arg.second;
+    if ((arg.first > 0) || (keep_modules && arg_gate->module())) {
+      Preprocessor::PropagateComplements(arg_gate, keep_modules, complements);
+      continue;
+    }  // arg is complement and (not keep_modules or arg is not module).
+    auto it_c = complements->find(arg_gate->index());
+    if (it_c != complements->end()) {
+      to_swap.emplace_back(arg.first, it_c->second);
+      assert(it_c->second->mark());
+      continue;  // Existing complements are already processed.
     }
-    Preprocessor::PropagateComplements(arg_gate, keep_modules, complements);
+    Operator type = arg_gate->type();
+    assert(type == kAnd || type == kOr);
+    Operator complement_type = type == kOr ? kAnd : kOr;
+    GatePtr complement;
+    if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
+      arg_gate->type(complement_type);
+      arg_gate->InvertArgs();
+      complement = arg_gate;
+    } else {
+      complement = arg_gate->Clone();
+      if (arg_gate->module()) arg_gate->module(false);  // Not good.
+      complement->type(complement_type);
+      complement->InvertArgs();
+      complements->emplace(arg_gate->index(), complement);
+    }
+    to_swap.emplace_back(arg.first, complement);
+    Preprocessor::PropagateComplements(complement, keep_modules, complements);
   }
 
   for (const auto& arg : to_swap) {
     assert(arg.first < 0);
     gate->EraseArg(arg.first);
     gate->AddArg(arg.second->index(), arg.second);
-    assert(!gate->IsConstant());  // No duplicates.
+    assert(!gate->IsConstant() && "No duplicates are expected.");
   }
 }
 
@@ -1660,8 +1659,7 @@ bool Preprocessor::HandleDistributiveArgs(
       gate->EraseArg(gates.first->index());
       gate->AddArg(gates.second->index(), gates.second);
       for (MergeTable::Option& option : group) {
-        if (option.second.count(gates.first)) {
-          option.second.erase(gates.first);
+        if (option.second.erase(gates.first)) {
           option.second.insert(gates.second);
         }
       }
@@ -1812,15 +1810,7 @@ void Preprocessor::TransformDistributiveArgs(
 
   GatePtr rep = *gates.begin();  // Representative of common parents.
   // Getting the common part of the distributive equation.
-  for (int index : args) {  // May be negative.
-    if (rep->args<Gate>().count(index)) {
-      GatePtr common = rep->args<Gate>().find(index)->second;
-      new_parent->AddArg(index, common);
-    } else {
-      VariablePtr common = rep->args<Variable>().find(index)->second;
-      new_parent->AddArg(index, common);
-    }
-  }
+  for (int index : args) rep->ShareArg(index, new_parent);  // May be negative.
 
   // Removing the common part from the sub-equations.
   for (const GatePtr& member : gates) {
@@ -1828,9 +1818,8 @@ void Preprocessor::TransformDistributiveArgs(
     gate->EraseArg(member->index());
 
     sub_parent->AddArg(member->index(), member);
-    for (int index : args) {
-      member->EraseArg(index);
-    }
+    for (int index : args) member->EraseArg(index);
+
     assert(!member->args().empty());  // Assumes that filtering is done.
     if (member->args().size() == 1) {
       member->type(kNull);
@@ -1838,12 +1827,11 @@ void Preprocessor::TransformDistributiveArgs(
     }
   }
   // Cleaning the arguments from the group.
-  MergeTable::MergeGroup::iterator it = group->begin();
-  for (++it; it != group->end(); ++it) {
+  for (auto it = std::next(group->begin()); it != group->end(); ++it) {
     MergeTable::Option& super = *it;
     MergeTable::CommonArgs& super_args = super.first;
     for (int index : args) {
-      std::vector<int>::iterator it_index =
+      auto it_index =
           std::lower_bound(super_args.begin(), super_args.end(), index);
       assert(it_index != super_args.end());  // The index should exist.
       super_args.erase(it_index);
@@ -2087,11 +2075,12 @@ void Preprocessor::CollectRedundantParents(
     if (parent->opti_value() == 2) continue;  // Non-redundant parent.
     if (parent->opti_value()) {
       assert(parent->opti_value() == 1 || parent->opti_value() == -1);
-      if (destinations->count(parent->index())) {
+      auto it = destinations->find(parent->index());
+      if (it != destinations->end()) {
         Operator type = parent->opti_value() == 1 ? kOr : kAnd;
         if (parent->type() == type &&
             parent->opti_value() == parent->GetArgSign(node)) {
-          destinations->erase(parent->index());
+          destinations->erase(it);
           continue;  // Destination and redundancy collision.
         }
         assert(!(graph_->coherent() && parent->type() == type));
