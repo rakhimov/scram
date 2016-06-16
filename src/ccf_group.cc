@@ -36,11 +36,10 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (members_.count(basic_event->name())) {
+  if (members_.emplace(basic_event->name(), basic_event).second == false) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + Element::name() + " CCF group.");
   }
-  members_.emplace(basic_event->name(), basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {

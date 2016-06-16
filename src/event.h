@@ -359,7 +359,9 @@ class Formula {
   /// Formulas are unique.
   ///
   /// @param[in] formula  A pointer to an argument formula.
-  void AddArgument(FormulaPtr formula);
+  void AddArgument(FormulaPtr formula) {
+    formula_args_.emplace_back(std::move(formula));
+  }
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
@@ -382,9 +384,8 @@ class Formula {
   /// @throws DuplicateArgumentError  The argument even tis duplicate.
   template <class Ptr>
   void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
-    if (event_args_.count(event->id()))
+    if (event_args_.emplace(event->id(), event).second == false)
       throw DuplicateArgumentError("Duplicate argument " + event->name());
-    event_args_.emplace(event->id(), event);
     container->emplace_back(event);
     if (event->orphan()) event->orphan(false);
   }

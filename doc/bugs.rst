@@ -23,10 +23,3 @@ Technical Issues
   (formulas, parameters, containers).
 - Static variables of class type with dynamic initialization.
 - Performance profile across platforms is not stable.
-- Inefficient double-lookup anti-pattern for containers.
-
-.. code-block:: cpp
-
-  if (map.count(key))
-    throw error();
-  map.emplace(key, value);

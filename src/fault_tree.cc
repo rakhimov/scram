@@ -46,10 +46,9 @@ void Component::AddHouseEvent(const HouseEventPtr& house_event) {
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
-  if (parameters_.count(parameter->name())) {
+  if (parameters_.emplace(parameter->name(), parameter).second == false) {
     throw ValidationError("Duplicate parameter " + parameter->name());
   }
-  parameters_.emplace(parameter->name(), parameter);
 }
 
 void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
