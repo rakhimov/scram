@@ -331,12 +331,12 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     std::unordered_map<int, GatePtr>* module_gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   VertexPtr result;
-  if (gates->count(gate->index())) {
-    std::pair<VertexPtr, int>& entry = gates->find(gate->index())->second;
+  auto it_entry = gates->find(gate->index());
+  if (it_entry != gates->end()) {
+    std::pair<VertexPtr, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate->parents().size());
-    entry.second++;
-    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    if (++entry.second == gate->parents().size()) gates->erase(it_entry);
     return result;
   }
   std::vector<VertexPtr> args;
@@ -360,8 +360,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     return SetNode::Ptr(lhs)->order() > SetNode::Ptr(rhs)->order();
   });
   auto it = args.cbegin();
-  result = *it;
-  for (++it; it != args.cend(); ++it) {
+  for (result = *it++; it != args.cend(); ++it) {
     result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
   }
   Zbdd::ClearTables();
@@ -710,12 +709,13 @@ int Zbdd::GatherModules(
   if (node->module()) {
     int module_order = kSettings_.limit_order() - min_high - current_order;
     assert(module_order >= 0 && "Improper application of a cut-off.");
-    if (!modules->count(node->index())) {
-      modules->insert({node->index(), {node->coherent(), module_order}});
-    } else {
-      std::pair<bool, int>& entry = modules->find(node->index())->second;
+    auto it = modules->find(node->index());
+    if (it != modules->end()) {
+      std::pair<bool, int>& entry = it->second;
       assert(entry.first == node->coherent() && "Inconsistent flags.");
       entry.second = std::max(entry.second, module_order);
+    } else {
+      modules->insert({node->index(), {node->coherent(), module_order}});
     }
   }
   int min_low = Zbdd::GatherModules(node->low(), current_order, modules);

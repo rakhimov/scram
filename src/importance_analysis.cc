@@ -62,8 +62,7 @@ ImportanceAnalysis::GatherImportantEvents(
   for (const auto& product : products) {
     for (int index : product) {
       int pos_index = std::abs(index);
-      if (unique_indices.count(pos_index)) continue;  // Most likely.
-      unique_indices.insert(pos_index);
+      if (unique_indices.insert(pos_index).second == false) continue;
       important_events.emplace_back(pos_index,
                                     graph->GetBasicEvent(pos_index));
     }

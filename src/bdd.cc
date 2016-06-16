@@ -182,8 +182,7 @@ Bdd::Function Bdd::ConvertGraph(
     return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
   });
   auto it = args.cbegin();
-  result = *it;
-  for (++it; it != args.cend(); ++it) {
+  for (result = *it++; it != args.cend(); ++it) {
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
