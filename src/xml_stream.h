@@ -84,13 +84,23 @@ class XmlStreamElement {
 
   /// Sets the attributes for the element.
   ///
+  /// @tparam T  Streamable type supporting operator<<.
+  ///
   /// @param[in] name  Non-empty name for the attribute.
   /// @param[in] value  The value of the attribute.
   ///
   /// @throws XmlStreamError  Invalid setup for the attribute.
-  void SetAttribute(const std::string& name, const std::string& value);
+  template <typename T>
+  void SetAttribute(const std::string& name, T&& value) {
+    if (!active_) throw XmlStreamError("The element is inactive.");
+    if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
+    if (name.empty()) throw XmlStreamError("Attribute name can't be empty.");
+    out_ << " " << name << "=\"" << value << "\"";
+  }
 
   /// Adds text to the element.
+  ///
+  /// @tparam T  Streamable type supporting operator<<.
   ///
   /// @param[in] text  Non-empty text.
   ///
@@ -98,7 +108,17 @@ class XmlStreamElement {
   /// @post More text can be added.
   ///
   /// @throws XmlStreamError  Invalid setup or state for text addition.
-  void AddChildText(const std::string& text);
+  template <typename T>
+  void AddChildText(T&& text) {
+    if (!active_) throw XmlStreamError("The element is inactive.");
+    if (!accept_text_) throw XmlStreamError("Too late to put text.");
+    if (accept_elements_) accept_elements_ = false;
+    if (accept_attributes_) {
+      accept_attributes_ = false;
+      out_ << ">";
+    }
+    out_ << text;
+  }
 
   /// Adds a child element to the element.
   ///

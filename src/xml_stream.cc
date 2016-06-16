@@ -60,26 +60,6 @@ XmlStreamElement::~XmlStreamElement() noexcept {
   }
 }
 
-void XmlStreamElement::SetAttribute(const std::string& name,
-                                    const std::string& value) {
-  if (!active_) throw XmlStreamError("The element is inactive.");
-  if (!accept_attributes_) throw XmlStreamError("Too late to set attributes.");
-  if (name.empty()) throw XmlStreamError("Attribute name can't be empty.");
-  out_ << " " << name << "=\"" << value << "\"";
-}
-
-void XmlStreamElement::AddChildText(const std::string& text) {
-  if (!active_) throw XmlStreamError("The element is inactive.");
-  if (!accept_text_) throw XmlStreamError("Too late to put text.");
-  if (text.empty()) throw XmlStreamError("Text can't be empty.");
-  if (accept_elements_) accept_elements_ = false;
-  if (accept_attributes_) {
-    accept_attributes_ = false;
-    out_ << ">";
-  }
-  out_ << text;
-}
-
 XmlStreamElement XmlStreamElement::AddChild(std::string name) {
   if (!active_) throw XmlStreamError("The element is inactive.");
   if (!accept_elements_) throw XmlStreamError("Too late to add elements.");

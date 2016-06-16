@@ -35,37 +35,6 @@
 
 namespace scram {
 
-namespace {
-
-/// A generic function to convert numbers to string.
-///
-/// @tparam T  Numerical type.
-///
-/// @param[in] num  The number to be converted.
-///
-/// @returns Formatted string that represents the number.
-template <typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
-ToString(T num) {
-  std::stringstream ss;  // Gets better formatting than std::to_string.
-  ss << num;
-  return ss.str();
-}
-
-/// A helper function to convert a floating point number to string.
-///
-/// @param[in] num  The number to be converted.
-/// @param[in] precision  Decimal precision for reporting.
-///
-/// @returns Formatted string that represents the floating point number.
-inline std::string ToString(double num, int precision) {
-  std::stringstream ss;
-  ss << std::setprecision(precision) << num;
-  return ss.str();
-}
-
-}  // namespace
-
 void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   XmlStreamElement report("report", out);
@@ -119,7 +88,7 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
       methods.SetAttribute("name", "MOCUS");
     }
     methods.AddChild("limits").AddChild("product-order").AddChildText(
-        ToString(settings.limit_order()));
+        settings.limit_order());
   }
   if (settings.ccf_analysis()) {
     XmlStreamElement ccf_quant = information->AddChild("calculated-quantity");
@@ -152,8 +121,7 @@ void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
     methods.SetAttribute("name", "Binary Decision Diagram");
   }
   XmlStreamElement limits = methods.AddChild("limits");
-  limits.AddChild("mission-time")
-      .AddChildText(ToString(settings.mission_time()));
+  limits.AddChild("mission-time").AddChildText(settings.mission_time());
 }
 
 /// Describes the importance analysis and techniques.
@@ -184,10 +152,9 @@ void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
   XmlStreamElement methods = information->AddChild("calculation-method");
   methods.SetAttribute("name", "Monte Carlo");
   XmlStreamElement limits = methods.AddChild("limits");
-  limits.AddChild("number-of-trials")
-      .AddChildText(ToString(settings.num_trials()));
+  limits.AddChild("number-of-trials").AddChildText(settings.num_trials());
   if (settings.seed() >= 0) {
-    limits.AddChild("seed").AddChildText(ToString(settings.seed()));
+    limits.AddChild("seed").AddChildText(settings.seed());
   }
 }
 
@@ -241,15 +208,14 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   XmlStreamElement model_features = information->AddChild("model-features");
   if (!model.name().empty())
     model_features.SetAttribute("name", model.name());
-  model_features.AddChild("gates").AddChildText(ToString(model.gates().size()));
+  model_features.AddChild("gates").AddChildText(model.gates().size());
   model_features.AddChild("basic-events")
-      .AddChildText(ToString(model.basic_events().size()));
+      .AddChildText(model.basic_events().size());
   model_features.AddChild("house-events")
-      .AddChildText(ToString(model.house_events().size()));
-  model_features.AddChild("ccf-groups")
-      .AddChildText(ToString(model.ccf_groups().size()));
+      .AddChildText(model.house_events().size());
+  model_features.AddChild("ccf-groups").AddChildText(model.ccf_groups().size());
   model_features.AddChild("fault-trees")
-      .AddChildText(ToString(model.fault_trees().size()));
+      .AddChildText(model.fault_trees().size());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
@@ -260,22 +226,21 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
     XmlStreamElement calc_time = performance.AddChild("calculation-time");
     std::string id = fta.first;
     calc_time.SetAttribute("name", id);
-    calc_time.AddChild("products")
-        .AddChildText(ToString(fta.second->analysis_time(), 5));
+    calc_time.AddChild("products").AddChildText(fta.second->analysis_time());
 
     if (risk_an.settings().probability_analysis()) {
-      calc_time.AddChild("probability").AddChildText(
-          ToString(risk_an.probability_analyses().at(id)->analysis_time(), 5));
+      calc_time.AddChild("probability")
+          .AddChildText(risk_an.probability_analyses().at(id)->analysis_time());
     }
 
     if (risk_an.settings().importance_analysis()) {
-      calc_time.AddChild("importance").AddChildText(
-          ToString(risk_an.importance_analyses().at(id)->analysis_time(), 5));
+      calc_time.AddChild("importance")
+          .AddChildText(risk_an.importance_analyses().at(id)->analysis_time());
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
-      calc_time.AddChild("uncertainty").AddChildText(
-          ToString(risk_an.uncertainty_analyses().at(id)->analysis_time(), 5));
+      calc_time.AddChild("uncertainty")
+          .AddChildText(risk_an.uncertainty_analyses().at(id)->analysis_time());
     }
   }
 }
@@ -322,13 +287,11 @@ void Reporter::ReportResults(std::string ft_name,
                              XmlStreamElement* results) {
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
   sum_of_products.SetAttribute("name", ft_name);
-  sum_of_products.SetAttribute("basic-events",
-                               ToString(fta.product_events().size()));
-  sum_of_products.SetAttribute("products", ToString(fta.products().size()));
+  sum_of_products.SetAttribute("basic-events", fta.product_events().size());
+  sum_of_products.SetAttribute("products", fta.products().size());
   std::string warning = fta.warnings();
   if (prob_analysis) {
-    sum_of_products.SetAttribute("probability",
-                                 ToString(prob_analysis->p_total(), 7));
+    sum_of_products.SetAttribute("probability", prob_analysis->p_total());
     warning += prob_analysis->warnings();
   }
   if (!warning.empty()) {
@@ -349,11 +312,11 @@ void Reporter::ReportResults(std::string ft_name,
   for (int i = 0; i < fta.products().size(); ++i) {
     const core::Product& product_set = fta.products()[i];
     XmlStreamElement product = sum_of_products.AddChild("product");
-    product.SetAttribute("order", ToString(GetOrder(product_set)));
+    product.SetAttribute("order", GetOrder(product_set));
     if (prob_analysis) {
       double prob = probs[i];
-      product.SetAttribute("probability", ToString(prob, 7));
-      product.SetAttribute("contribution", ToString(prob / sum, 7));
+      product.SetAttribute("probability", prob);
+      product.SetAttribute("contribution", prob / sum);
     }
     for (const core::Literal& literal : product_set) {
       Reporter::ReportLiteral(literal, &product);
@@ -369,7 +332,7 @@ void Reporter::ReportResults(
   XmlStreamElement importance = results->AddChild("importance");
   importance.SetAttribute("name", ft_name);
   importance.SetAttribute("basic-events",
-                          ToString(importance_analysis.importance().size()));
+                          importance_analysis.importance().size());
   if (!importance_analysis.warnings().empty()) {
     importance.AddChild("warning").AddChildText(importance_analysis.warnings());
   }
@@ -378,11 +341,11 @@ void Reporter::ReportResults(
        importance_analysis.important_events()) {
     const core::ImportanceFactors& factors = entry.second;
     auto add_data = [&factors](XmlStreamElement* element) {
-      element->SetAttribute("MIF", ToString(factors.mif, 4));
-      element->SetAttribute("CIF", ToString(factors.cif, 4));
-      element->SetAttribute("DIF", ToString(factors.dif, 4));
-      element->SetAttribute("RAW", ToString(factors.raw, 4));
-      element->SetAttribute("RRW", ToString(factors.rrw, 4));
+      element->SetAttribute("MIF", factors.mif);
+      element->SetAttribute("CIF", factors.cif);
+      element->SetAttribute("DIF", factors.dif);
+      element->SetAttribute("RAW", factors.raw);
+      element->SetAttribute("RRW", factors.rrw);
     };
     Reporter::ReportBasicEvent(*entry.first, &importance, add_data);
   }
@@ -396,56 +359,53 @@ void Reporter::ReportResults(std::string ft_name,
   if (!uncert_analysis.warnings().empty()) {
     measure.AddChild("warning").AddChildText(uncert_analysis.warnings());
   }
-  measure.AddChild("mean")
-      .SetAttribute("value", ToString(uncert_analysis.mean(), 7));
+  measure.AddChild("mean").SetAttribute("value", uncert_analysis.mean());
   measure.AddChild("standard-deviation")
-      .SetAttribute("value", ToString(uncert_analysis.sigma(), 7));
+      .SetAttribute("value", uncert_analysis.sigma());
   {
     XmlStreamElement confidence = measure.AddChild("confidence-range");
     confidence.SetAttribute("percentage", "95");
-    confidence.SetAttribute(
-        "lower-bound",
-        ToString(uncert_analysis.confidence_interval().first, 7));
-    confidence.SetAttribute(
-        "upper-bound",
-        ToString(uncert_analysis.confidence_interval().second, 7));
+    confidence.SetAttribute("lower-bound",
+                            uncert_analysis.confidence_interval().first);
+    confidence.SetAttribute("upper-bound",
+                            uncert_analysis.confidence_interval().second);
   }
   {
     XmlStreamElement error_factor = measure.AddChild("error-factor");
     error_factor.SetAttribute("percentage", "95");
     error_factor.SetAttribute("value",
-                              ToString(uncert_analysis.error_factor(), 7));
+                              uncert_analysis.error_factor());
   }
   {
     XmlStreamElement quantiles = measure.AddChild("quantiles");
     int num_quantiles = uncert_analysis.quantiles().size();
-    quantiles.SetAttribute("number", ToString(num_quantiles));
-    double lower_bound = 0;
+    quantiles.SetAttribute("number", num_quantiles);
+    double prev_bound = 0;
     double delta = 1.0 / num_quantiles;
     for (int i = 0; i < num_quantiles; ++i) {
       XmlStreamElement quant = quantiles.AddChild("quantile");
-      quant.SetAttribute("number", ToString(i + 1));
+      quant.SetAttribute("number", i + 1);
       double upper = uncert_analysis.quantiles()[i];
       double value = delta * (i + 1);
-      quant.SetAttribute("value", ToString(value, 7));
-      quant.SetAttribute("lower-bound", ToString(lower_bound, 7));
-      quant.SetAttribute("upper-bound", ToString(upper, 7));
-      lower_bound = upper;
+      quant.SetAttribute("value", value);
+      quant.SetAttribute("lower-bound", prev_bound);
+      quant.SetAttribute("upper-bound", upper);
+      prev_bound = upper;
     }
   }
   {
     XmlStreamElement hist = measure.AddChild("histogram");
     int num_bins = uncert_analysis.distribution().size() - 1;
-    hist.SetAttribute("number", ToString(num_bins));
+    hist.SetAttribute("number", num_bins);
     for (int i = 0; i < num_bins; ++i) {
       XmlStreamElement bin = hist.AddChild("bin");
-      bin.SetAttribute("number", ToString(i + 1));
+      bin.SetAttribute("number", i + 1);
       double lower = uncert_analysis.distribution()[i].first;
       double upper = uncert_analysis.distribution()[i + 1].first;
       double value = uncert_analysis.distribution()[i].second;
-      bin.SetAttribute("value", ToString(value, 7));
-      bin.SetAttribute("lower-bound", ToString(lower, 7));
-      bin.SetAttribute("upper-bound", ToString(upper, 7));
+      bin.SetAttribute("value", value);
+      bin.SetAttribute("lower-bound", lower);
+      bin.SetAttribute("upper-bound", upper);
     }
   }
 }
@@ -473,8 +433,8 @@ void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
     XmlStreamElement element = parent->AddChild("ccf-event");
     const mef::CcfGroup& ccf_group = ccf_event->ccf_group();
     element.SetAttribute("ccf-group", ccf_group.id());
-    element.SetAttribute("order", ToString(ccf_event->members().size()));
-    element.SetAttribute("group-size", ToString(ccf_group.members().size()));
+    element.SetAttribute("order", ccf_event->members().size());
+    element.SetAttribute("group-size", ccf_group.members().size());
     add_data(&element);
     for (const mef::Gate* member : ccf_event->members()) {
       element.AddChild("basic-event").SetAttribute("name", member->name());

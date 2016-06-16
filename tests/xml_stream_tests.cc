@@ -32,12 +32,13 @@ TEST(XmlStreamTest, SetAttribute) {
   EXPECT_THROW(el.SetAttribute("", "value"), XmlStreamError);
   EXPECT_NO_THROW(el.SetAttribute("attr1", "value"));
   EXPECT_NO_THROW(el.SetAttribute("attr2", ""));
+  EXPECT_NO_THROW(el.SetAttribute("attr3", 7));
 }
 
 TEST(XmlStreamTest, AddChildText) {
   XmlStreamElement el("element", std::cerr);
-  EXPECT_THROW(el.AddChildText(""), XmlStreamError);
   EXPECT_NO_THROW(el.AddChildText("text"));
+  EXPECT_NO_THROW(el.AddChildText(7));
 }
 
 TEST(XmlStreamTest, AddChild) {
