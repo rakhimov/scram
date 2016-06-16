@@ -45,6 +45,12 @@ template class scram::LinearMap<KeyClass, std::string>;
 // Passing another underlying container types.
 template class scram::LinearMap<int, int, boost::container::vector>;
 
+// Move erase policy instantiation.
+template class scram::LinearMap<KeyClass, std::string, std::vector,
+                                scram::MoveEraser>;
+template class scram::LinearMap<KeyClass, std::string, boost::container::vector,
+                                scram::MoveEraser>;
+
 namespace scram {
 namespace test {
 
@@ -182,7 +188,7 @@ TEST(LinearMapTest, Swap) {
   EXPECT_EQ(m2, ms2);
 }
 
-TEST(LinearMapTest, Erase) {
+TEST(LinearMapTest, DefaultErase) {
   IntMap m = {{1, -1}, {2, -2}, {3, -3}};
   m.erase(1);
   IntMap m_expected = {{2, -2}, {3, -3}};
@@ -190,6 +196,21 @@ TEST(LinearMapTest, Erase) {
 
   m.erase(m.begin());
   m_expected = {{3, -3}};
+  EXPECT_EQ(m_expected, m);
+
+  m.erase(m.cbegin());
+  EXPECT_TRUE(m.empty());
+}
+
+TEST(LinearMapTest, MoveErase) {
+  using MoveMap = LinearMap<int, int, std::vector, scram::MoveEraser>;
+  MoveMap m = {{1, -1}, {2, -2}, {3, -3}};
+  m.erase(1);
+  MoveMap m_expected = {{3, -3}, {2, -2}};
+  EXPECT_EQ(m_expected, m);
+
+  m.erase(m.begin());
+  m_expected = {{2, -2}};
   EXPECT_EQ(m_expected, m);
 
   m.erase(m.cbegin());

@@ -31,7 +31,57 @@
 
 namespace scram {
 
-/// @class LinearMap
+/// Default erase policy for containers with iterators.
+struct DefaultEraser {
+  /// Erases an element from a container with its default ``erase`` API.
+  ///
+  /// @tparam T  The container type.
+  /// @tparam Iterator  The iterator type belonging to the container.
+  ///
+  /// @param[in] it  The iterator pointing to the element.
+  /// @param[in,out] container  The host container.
+  ///
+  /// @returns The iterator as the result of call to the container's ``erase``.
+  template <class T, class Iterator>
+  static typename T::iterator erase(Iterator it, T* container) {
+    return container->erase(it);
+  }
+};
+
+/// Erase policy based on moving the last element to the erased element.
+struct MoveEraser {
+  /// Moves the last element into the to-be-erased element.
+  /// Then, the last element is popped back.
+  /// This is an efficient, constant time operation for contiguous containers.
+  ///
+  /// @tparam T  The container type.
+  ///
+  /// @param[in] it  The iterator pointing to the element.
+  /// @param[in,out] container  The host container.
+  ///
+  /// @returns The iterator pointing to the original position.
+  ///
+  /// @warning The order of elements is changed after this erase.
+  ///
+  /// @{
+  template <class T>
+  static typename T::iterator erase(typename T::iterator it, T* container) {
+    if (it != std::prev(container->end())) {  // Prevent move into itself.
+      *it = std::move(container->back());
+    }
+    container->pop_back();
+    return it;
+  }
+  template <class T>
+  static typename T::iterator erase(typename T::const_iterator it,
+                                    T* container) {
+    return MoveEraser::erase(
+        std::next(container->begin(), std::distance(container->cbegin(), it)),
+        container);
+  }
+  /// @}
+};
+
 /// An adaptor map with lookup complexity O(N)
 /// based on sequence (contiguous structure by default).
 /// This map is designed for a small number of elements
@@ -73,11 +123,18 @@ namespace scram {
 /// @tparam Key  The type of the unique keys.
 /// @tparam Value  The type of the values associated with the keys.
 /// @tparam Sequence  The underlying container type.
+/// @tparam ErasePolicy  The policy class that provides
+///                      ``erase(it, *container)`` static member function
+///                      to control the element erasure from the container.
 template <typename Key, typename Value,
-          template <typename...> class Sequence = std::vector>
+          template <typename...> class Sequence = std::vector,
+          class ErasePolicy = DefaultEraser>
 class LinearMap {
   /// Non-member equality test operators.
   /// The complexity is O(N^2).
+  ///
+  /// @param[in] lhs  First map.
+  /// @param[in] rhs  Second map.
   ///
   /// @note The order of elements is not relevant.
   ///       If the order matters for equality,
@@ -281,8 +338,8 @@ class LinearMap {
   /// @returns An iterator pointing after the entry.
   ///
   /// @{
-  iterator erase(const_iterator pos) { return map_.erase(pos); }
-  iterator erase(iterator pos) { return map_.erase(pos); }
+  iterator erase(const_iterator pos) { return ErasePolicy::erase(pos, &map_); }
+  iterator erase(iterator pos) { return ErasePolicy::erase(pos, &map_); }
   /// @}
 
   /// Erases the entry with a key.
@@ -294,7 +351,7 @@ class LinearMap {
   size_type erase(const key_type& key) {
     iterator it = LinearMap::find(key);
     if (it == map_.end()) return 0;
-    map_.erase(it);
+    LinearMap::erase(it);
     return 1;
   }
 
