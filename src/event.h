@@ -44,6 +44,7 @@ class Event : public Element, public Role, public Id {
   /// @param[in] role  The role of the event within the model or container.
   ///
   /// @throws LogicError  The name is empty.
+  /// @throws InvalidArgument  The name or reference paths are malformed.
   explicit Event(std::string name, std::string base_path = "",
                  RoleSpecifier role = RoleSpecifier::kPublic);
 

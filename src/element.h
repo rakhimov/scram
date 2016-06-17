@@ -42,11 +42,14 @@ struct Attribute {
 class Element {
  public:
   /// Constructs an element with an original name.
+  /// The name is expected to be a conform to identifier requirements
+  /// described in the MEF documentation and additions.
   ///
   /// @param[in] name  The local identifier name.
   /// @param[in] optional_name  Allow empty names.
   ///
   /// @throws LogicError  The name is required and empty.
+  /// @throws InvalidArgument  The name is malformed.
   explicit Element(std::string name, bool optional_name = false);
 
   /// @returns The original name.
@@ -105,9 +108,13 @@ enum class RoleSpecifier { kPublic, kPrivate };
 class Role {
  public:
   /// Sets the role of an element upon creation.
+  /// The base reference path must be formatted
+  /// according to the MEF documentation and additions.
   ///
   /// @param[in] role  A role specifier of the element.
   /// @param[in] base_path  The series of containers to get this event.
+  ///
+  /// @throws InvalidArgument  The base path string is malformed.
   explicit Role(RoleSpecifier role = RoleSpecifier::kPublic,
                 std::string base_path = "");
 
@@ -129,11 +136,13 @@ class Role {
 class Id {
  public:
   /// Mangles the element name to be unique.
+  /// Private elements get their full path as their ids,
+  /// while public elements retain their name as ids.
   ///
   /// @param[in] el  The owner of the id.
   /// @param[in] role  The role of the element.
   ///
-  /// @throws LogicError if name mangling strings are empty.
+  /// @throws LogicError  The name mangling strings are empty.
   Id(const Element& el, const Role& role);
 
   /// @returns The unique id that is set upon the construction of this element.

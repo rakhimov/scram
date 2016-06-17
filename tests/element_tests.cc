@@ -43,9 +43,20 @@ TEST(ElementTest, Name) {
   EXPECT_NO_THROW(TestElement());
   EXPECT_THROW(NamedElement(""), LogicError);
 
+  EXPECT_THROW(NamedElement(".name"), InvalidArgument);
+  EXPECT_THROW(NamedElement("na.me"), InvalidArgument);
+  EXPECT_THROW(NamedElement("name."), InvalidArgument);
+
   EXPECT_NO_THROW(NamedElement("name"));
   NamedElement el("name");
   EXPECT_EQ("name", el.name());
+
+  // Illegal names by MEF.
+  // However, this names don't mess with class and reference invariants.
+  EXPECT_NO_THROW(NamedElement("na me"));
+  EXPECT_NO_THROW(NamedElement("na\nme"));
+  EXPECT_NO_THROW(NamedElement("\tname"));
+  EXPECT_NO_THROW(NamedElement("name?"));
 }
 
 TEST(ElementTest, Label) {
@@ -67,6 +78,21 @@ TEST(ElementTest, Attribute) {
   EXPECT_THROW(el.AddAttribute(attr), LogicError);
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
+}
+
+namespace {
+
+class TestRole : public Role {
+ public:
+  using Role::Role;
+};
+
+}  // namespace
+
+TEST(ElementTest, Role) {
+  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), InvalidArgument);
+  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), InvalidArgument);
+  EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
 }
 
 namespace {

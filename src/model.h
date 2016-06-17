@@ -43,6 +43,8 @@ class Model : public Element {
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.
+  ///
+  /// @throws InvalidArgument  The name is malformed.
   explicit Model(std::string name = "");
 
   Model(const Model&) = delete;
