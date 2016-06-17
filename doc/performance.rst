@@ -236,13 +236,13 @@ Fault tree generator flags to get the model.
 Debug build:
 ~~~~~~~~~~~~
 
-- Initialization and Validation    37  |  40
+- Initialization and Validation    29
 
 
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    20
+- Initialization and Validation    18
 
 - Memory:   1100
 

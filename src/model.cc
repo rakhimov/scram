@@ -20,8 +20,6 @@
 
 #include "model.h"
 
-#include <boost/algorithm/string.hpp>
-
 namespace scram {
 namespace mef {
 
@@ -35,8 +33,7 @@ void Model::AddFaultTree(FaultTreePtr fault_tree) {
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
-  bool original = parameters_.emplace(parameter->id(), parameter).second;
-  if (!original) {
+  if (!parameters_.Add(parameter)) {
     throw RedefinitionError("Redefinition of parameter " + parameter->name());
   }
 }
@@ -46,7 +43,7 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   if (!original) {
     throw RedefinitionError("Redefinition of event " + house_event->name());
   }
-  house_events_.emplace(house_event->id(), house_event);
+  house_events_.Add(house_event);
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
@@ -54,7 +51,7 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   if (!original) {
     throw RedefinitionError("Redefinition of event " + basic_event->name());
   }
-  basic_events_.emplace(basic_event->id(), basic_event);
+  basic_events_.Add(basic_event);
 }
 
 void Model::AddGate(const GatePtr& gate) {
@@ -62,7 +59,7 @@ void Model::AddGate(const GatePtr& gate) {
   if (!original) {
     throw RedefinitionError("Redefinition of event " + gate->name());
   }
-  gates_.emplace(gate->id(), gate);
+  gates_.Add(gate);
 }
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
@@ -70,72 +67,6 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (!original) {
     throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
   }
-}
-
-ParameterPtr Model::GetParameter(const std::string& reference,
-                                 const std::string& base_path) {
-  return Model::GetEntity(reference, base_path, parameters_,
-                          &Component::parameters);
-}
-
-HouseEventPtr Model::GetHouseEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  return Model::GetEntity(reference, base_path, house_events_,
-                          &Component::house_events);
-}
-
-BasicEventPtr Model::GetBasicEvent(const std::string& reference,
-                                   const std::string& base_path) {
-  return Model::GetEntity(reference, base_path, basic_events_,
-                          &Component::basic_events);
-}
-
-GatePtr Model::GetGate(const std::string& reference,
-                       const std::string& base_path) {
-  return Model::GetEntity(reference, base_path, gates_, &Component::gates);
-}
-
-namespace {
-
-/// @param[in] string_path  The reference string formatted with ".".
-///
-/// @returns A set of names in the reference path.
-std::vector<std::string> GetPath(std::string string_path) {
-  std::vector<std::string> path;
-  return boost::split(path, string_path, boost::is_any_of("."));
-}
-
-}  // namespace
-
-template <class Container>
-typename Container::mapped_type Model::GetEntity(
-    const std::string& reference,
-    const std::string& base_path,
-    const Container& public_container,
-    const Container& (Component::*getter)() const) {
-  assert(!reference.empty());
-  std::vector<std::string> path = GetPath(reference);
-  std::string target_name = path.back();
-  path.pop_back();
-  if (!base_path.empty()) {  // Check the local scope.
-    std::vector<std::string> full_path = GetPath(base_path);
-    full_path.insert(full_path.end(), path.begin(), path.end());
-    try {
-      return (Model::GetContainer(full_path).*getter)().at(target_name);
-    } catch (std::out_of_range&) {}  // Continue searching.
-  }
-  if (path.empty()) return public_container.at(target_name);  // Public entity.
-  return (Model::GetContainer(path).*getter)().at(target_name);  // Direct call.
-}
-
-const Component& Model::GetContainer(const std::vector<std::string>& path) {
-  assert(!path.empty());
-  auto it = path.begin();  // The path starts with a fault tree.
-  const Component* container = fault_trees_.at(*it).get();
-  for (++it; it != path.end(); ++it) {
-    container = container->components().at(*it).get();
-  }
-  return *container;
 }
 
 }  // namespace mef
