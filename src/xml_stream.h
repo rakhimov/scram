@@ -102,7 +102,7 @@ class XmlStreamElement {
     if (!active_) throw XmlStreamError("The element is inactive.");
     if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
     if (*name == '\0') throw XmlStreamError("Attribute name can't be empty.");
-    out_ << " " << name << "=\"" << value << "\"";
+    out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
   }
 
   /// Adds text to the element.
@@ -124,7 +124,7 @@ class XmlStreamElement {
       accept_attributes_ = false;
       out_ << ">";
     }
-    out_ << text;
+    out_ << std::forward<T>(text);
   }
 
   /// Adds a child element to the element.

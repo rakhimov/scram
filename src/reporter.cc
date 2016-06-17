@@ -20,9 +20,6 @@
 
 #include "reporter.h"
 
-#include <iomanip>
-#include <sstream>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -44,7 +41,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   LOG(DEBUG1) << "Reporting analysis results...";
   XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
-    std::string id = fta.first;
+    const std::string& id = fta.first;
     core::ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
     if (risk_an.settings().probability_analysis()) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
@@ -198,9 +195,8 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
     software.SetAttribute("name", "SCRAM");
     software.SetAttribute("version", version::core());
   }
-  std::stringstream time;
-  time << boost::posix_time::second_clock::local_time();
-  information->AddChild("time").AddChildText(time.str());
+  information->AddChild("time").AddChildText(
+      boost::posix_time::second_clock::local_time());
 }
 
 void Reporter::ReportModelFeatures(const mef::Model& model,
@@ -224,7 +220,7 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
   XmlStreamElement performance = information->AddChild("performance");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     XmlStreamElement calc_time = performance.AddChild("calculation-time");
-    std::string id = fta.first;
+    const std::string& id = fta.first;
     calc_time.SetAttribute("name", id);
     calc_time.AddChild("products").AddChildText(fta.second->analysis_time());
 
@@ -281,7 +277,7 @@ void Reporter::ReportUnusedParameters(const mef::Model& model,
     information->AddChild("warning").AddChildText("Unused Parameters: " + out);
 }
 
-void Reporter::ReportResults(std::string ft_name,
+void Reporter::ReportResults(const std::string& ft_name,
                              const core::FaultTreeAnalysis& fta,
                              const core::ProbabilityAnalysis* prob_analysis,
                              XmlStreamElement* results) {
@@ -326,7 +322,7 @@ void Reporter::ReportResults(std::string ft_name,
 }
 
 void Reporter::ReportResults(
-    std::string ft_name,
+    const std::string& ft_name,
     const core::ImportanceAnalysis& importance_analysis,
     XmlStreamElement* results) {
   XmlStreamElement importance = results->AddChild("importance");
@@ -351,7 +347,7 @@ void Reporter::ReportResults(
   }
 }
 
-void Reporter::ReportResults(std::string ft_name,
+void Reporter::ReportResults(const std::string& ft_name,
                              const core::UncertaintyAnalysis& uncert_analysis,
                              XmlStreamElement* results) {
   XmlStreamElement measure = results->AddChild("measure");

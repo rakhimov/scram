@@ -21,7 +21,7 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <memory>
+#include <ostream>
 #include <string>
 
 #include "event.h"
@@ -113,7 +113,8 @@ class Reporter {
   /// @param[in] prob_analysis  Probability Analysis with results.
   ///                           Null pointer for no probability analysis.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(std::string ft_name, const core::FaultTreeAnalysis& fta,
+  void ReportResults(const std::string& ft_name,
+                     const core::FaultTreeAnalysis& fta,
                      const core::ProbabilityAnalysis* prob_analysis,
                      XmlStreamElement* results);
 
@@ -122,7 +123,7 @@ class Reporter {
   /// @param[in] ft_name  The original name of a fault tree.
   /// @param[in] importance_analysis  Importance analysis with results.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(std::string ft_name,
+  void ReportResults(const std::string& ft_name,
                      const core::ImportanceAnalysis& importance_analysis,
                      XmlStreamElement* results);
 
@@ -131,7 +132,7 @@ class Reporter {
   /// @param[in] ft_name  The original name of a fault tree.
   /// @param[in] uncert_analysis  Uncertainty analysis with results.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(std::string ft_name,
+  void ReportResults(const std::string& ft_name,
                      const core::UncertaintyAnalysis& uncert_analysis,
                      XmlStreamElement* results);
 
