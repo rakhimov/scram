@@ -39,10 +39,10 @@
 namespace scram {
 namespace core {
 
-RiskAnalysis::RiskAnalysis(const std::shared_ptr<const mef::Model>& model,
+RiskAnalysis::RiskAnalysis(std::shared_ptr<const mef::Model> model,
                            const Settings& settings)
     : Analysis(settings),
-      model_(model) {}
+      model_(std::move(model)) {}
 
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);

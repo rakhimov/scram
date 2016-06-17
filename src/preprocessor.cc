@@ -121,10 +121,10 @@ class TestGateMarks {
   /// @param[in] mark  Assumed mark of the whole graph.
   ///
   /// @returns true if the job is done.
-  bool operator()(const std::shared_ptr<const Gate>& gate, bool mark) noexcept {
-    if (tested_gates_.insert(gate->index()).second == false) return false;
-    assert(gate->mark() == mark && "Found discontinuous gate mark.");
-    for (const auto& arg : gate->args<Gate>()) (*this)(arg.second, mark);
+  bool operator()(const Gate& gate, bool mark) noexcept {
+    if (tested_gates_.insert(gate.index()).second == false) return false;
+    assert(gate.mark() == mark && "Found discontinuous gate mark.");
+    for (const auto& arg : gate.args<Gate>()) (*this)(*arg.second, mark);
     return true;
   }
 
@@ -142,25 +142,25 @@ class TestGateStructure {
   /// @param[in] gate  The starting gate to traverse.
   ///
   /// @returns true if the job is done.
-  bool operator()(const std::shared_ptr<const Gate>& gate) noexcept {
-    if (tested_gates_.insert(gate->index()).second == false) return false;
-    assert(!gate->IsConstant() && "Constant gates are not clear!");
-    switch (gate->type()) {
+  bool operator()(const Gate& gate) noexcept {
+    if (tested_gates_.insert(gate.index()).second == false) return false;
+    assert(!gate.IsConstant() && "Constant gates are not clear!");
+    switch (gate.type()) {
       case kNull:
       case kNot:
-        assert(gate->args().size() == 1 && "Malformed one-arg gate!");
+        assert(gate.args().size() == 1 && "Malformed one-arg gate!");
         break;
       case kXor:
-        assert(gate->args().size() == 2 && "Malformed XOR gate!");
+        assert(gate.args().size() == 2 && "Malformed XOR gate!");
         break;
       case kVote:
-        assert(gate->vote_number() > 1 && "K/N has wrong K!");
-        assert(gate->args().size() > gate->vote_number() && "K/N has wrong N!");
+        assert(gate.vote_number() > 1 && "K/N has wrong K!");
+        assert(gate.args().size() > gate.vote_number() && "K/N has wrong N!");
         break;
       default:
-        assert(gate->args().size() > 1 && "Missing arguments!");
+        assert(gate.args().size() > 1 && "Missing arguments!");
     }
-    for (const auto& arg : gate->args<Gate>()) (*this)(arg.second);
+    for (const auto& arg : gate.args<Gate>()) (*this)(*arg.second);
     return true;
   }
 
@@ -178,8 +178,8 @@ class TestGateStructure {
   assert(!(graph_->coherent() && graph_->complement()));                      \
   assert(const_gates_.empty() && "Const gate cleanup contracts are broken!"); \
   assert(null_gates_.empty() && "Null gate cleanup contracts are broken!");   \
-  assert(TestGateStructure()(graph_->root()));                                \
-  assert(TestGateMarks()(graph_->root(), graph_->root()->mark()))
+  assert(TestGateStructure()(*graph_->root()));                               \
+  assert(TestGateMarks()(*graph_->root(), graph_->root()->mark()))
 
 void Preprocessor::RunPhaseOne() noexcept {
   SANITY_ASSERT;

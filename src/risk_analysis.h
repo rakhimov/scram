@@ -53,7 +53,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
-  RiskAnalysis(const std::shared_ptr<const mef::Model>& model,
+  RiskAnalysis(std::shared_ptr<const mef::Model> model,
                const Settings& settings);
 
   /// @returns The model under analysis.

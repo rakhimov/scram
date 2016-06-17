@@ -778,10 +778,10 @@ struct FormulaSig {
 /// @param[in] gate  The gate with the formula to be printed.
 ///
 /// @returns The beginning, operator, and end strings for the formula.
-FormulaSig GetFormulaSig(const std::shared_ptr<const Gate>& gate) {
+FormulaSig GetFormulaSig(const Gate& gate) {
   FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
 
-  switch (gate->type()) {
+  switch (gate.type()) {
     case kNand:
       sig.begin = "~(";  // Fall-through to AND gate.
     case kAnd:
@@ -803,7 +803,7 @@ FormulaSig GetFormulaSig(const std::shared_ptr<const Gate>& gate) {
       sig.end = "";
       break;
     case kVote:
-      sig.begin = "@(" + std::to_string(gate->vote_number()) + ", [";
+      sig.begin = "@(" + std::to_string(gate.vote_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";
       break;
@@ -816,14 +816,14 @@ FormulaSig GetFormulaSig(const std::shared_ptr<const Gate>& gate) {
 /// @param[in] gate  The gate which name must be created.
 ///
 /// @returns The name of the gate with extra information about its state.
-std::string GetName(const std::shared_ptr<const Gate>& gate) {
+std::string GetName(const Gate& gate) {
   std::string name = "G";
-  if (gate->state() == kNormalState) {
-    if (gate->module()) name += "M";
+  if (gate.state() == kNormalState) {
+    if (gate.module()) name += "M";
   } else {  // This gate has become constant.
     name += "C";
   }
-  name += std::to_string(gate->index());
+  name += std::to_string(gate.index());
   return name;
 }
 
@@ -834,16 +834,16 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   gate->Visit(1);
   if (gate->IsConstant()) {
     std::string state = gate->state() == kNullState ? "false" : "true";
-    os << "s(" << GetName(gate) << ") = " << state << "\n";
+    os << "s(" << GetName(*gate) << ") = " << state << "\n";
     return os;
   }
   std::string formula;  // The formula of the gate for printing.
-  const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
+  const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
   for (const auto& node : gate->args<Gate>()) {
     if (node.first < 0) formula += "~";  // Negation.
-    formula += GetName(node.second);
+    formula += GetName(*node.second);
     if (--num_args) formula += sig.op;
     os << node.second;
   }
@@ -861,7 +861,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
     if (--num_args) formula += sig.op;
     os << constant.second;
   }
-  os << GetName(gate) << " := " << sig.begin << formula << sig.end << "\n";
+  os << GetName(*gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;
 }
 
