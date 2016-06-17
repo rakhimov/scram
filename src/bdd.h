@@ -714,8 +714,6 @@ class Zbdd;  // For analysis purposes.
 /// @note The low/else edge is chosen to have the attribute for an ITE vertex.
 ///       There is only one terminal vertex of value 1/True.
 class Bdd {
-  friend class Zbdd;  // Direct access for calculation of prime implicants.
-
  public:
   using VertexPtr = IntrusivePtr<Vertex<Ite>>;  ///< BDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<Ite>>;  ///< Terminal vertices.
@@ -735,6 +733,23 @@ class Bdd {
     void swap(Function& other) noexcept {
       std::swap(complement, other.complement);
       vertex.swap(other.vertex);
+    }
+  };
+
+  /// Provides access to consensus calculation private facilities.
+  class Consensus {
+    friend class Zbdd;  // Access for calculation of prime implicants.
+
+    /// Calculates consensus of high and low of an if-then-else BDD vertex.
+    ///
+    /// @param[in,out] bdd  The host BDD.
+    /// @param[in] ite  The BDD vertex with the input.
+    /// @param[in] complement  Interpretation of the BDD vertex.
+    ///
+    /// @returns The consensus BDD function.
+    static Function Calculate(Bdd* bdd, const ItePtr& ite,
+                              bool complement) noexcept {
+      return bdd->CalculateConsensus(ite, complement);
     }
   };
 
@@ -766,6 +781,9 @@ class Bdd {
   const std::unordered_map<int, int>& index_to_order() const {
     return index_to_order_;
   }
+
+  /// @returns true if the BDD has been constructed from a coherent PDAG.
+  bool coherent() const { return coherent_; }
 
   /// Helper function to clear and set vertex marks.
   ///

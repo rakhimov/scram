@@ -55,7 +55,7 @@ void Zbdd::Log() noexcept {
 }
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
-    : Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
+    : Zbdd(bdd->root(), bdd->coherent(), bdd, settings) {
   CHECK_ZBDD(true);
 }
 
@@ -303,7 +303,7 @@ Zbdd::VertexPtr
 Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
                                 Bdd* bdd_graph, int limit_order,
                                 PairTable<VertexPtr>* ites) noexcept {
-  Bdd::Function common = bdd_graph->CalculateConsensus(ite, complement);
+  Bdd::Function common = Bdd::Consensus::Calculate(bdd_graph, ite, complement);
   VertexPtr consensus = Zbdd::ConvertBdd(common.vertex, common.complement,
                                          bdd_graph, limit_order, ites);
   if (limit_order == 0) {  // Cut-off on the product order.
