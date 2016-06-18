@@ -86,7 +86,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
 Bdd::~Bdd() noexcept = default;
 
 void Bdd::Analyze() noexcept {
-  zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(this, kSettings_));
+  zbdd_ = ext::make_unique<Zbdd>(this, kSettings_);
   zbdd_->Analyze();
   if (!coherent_) {  // The BDD has been used by the ZBDD.
     Bdd::ClearTables();

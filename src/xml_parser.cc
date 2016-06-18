@@ -27,7 +27,7 @@
 namespace scram {
 
 XmlParser::XmlParser(const std::stringstream& xml_input_snippet)
-    : parser_(std::unique_ptr<xmlpp::DomParser>(new xmlpp::DomParser())) {
+    : parser_(new xmlpp::DomParser()) {
   try {
     parser_->parse_memory(xml_input_snippet.str());
     assert(parser_->get_document());

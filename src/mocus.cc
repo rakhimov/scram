@@ -27,6 +27,7 @@
 
 #include "mocus.h"
 
+#include "ext.h"
 #include "logger.h"
 
 namespace scram {
@@ -39,7 +40,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
   GatePtr top = fault_tree->root();
   if (top->IsConstant() || top->type() == kNull) {
     constant_graph_ = true;
-    zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(fault_tree, settings));
+    zbdd_ = ext::make_unique<Zbdd>(fault_tree, settings);
     zbdd_->Analyze();
   }
 }
@@ -68,9 +69,8 @@ Mocus::AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept {
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, GatePtr> gates = gate->args<Gate>();
-  std::unique_ptr<zbdd::CutSetContainer> container(
-      new zbdd::CutSetContainer(kSettings_, gate->index(),
-                                graph_->basic_events().size()));
+  auto container = ext::make_unique<zbdd::CutSetContainer>(
+      kSettings_, gate->index(), graph_->basic_events().size());
   container->Merge(container->ConvertGate(gate));
   while (int next_gate_index = container->GetNextGate()) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate_index;
@@ -96,9 +96,8 @@ Mocus::AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept {
     assert(limit >= 0 && "Order cut-off is not strict.");
     bool coherent = entry.second.first;
     if (limit == 0 && coherent) {  // Unity is impossible.
-      std::unique_ptr<zbdd::CutSetContainer> empty_zbdd(
-          new zbdd::CutSetContainer(kSettings_, index,
-                                    graph_->basic_events().size()));
+      auto empty_zbdd = ext::make_unique<zbdd::CutSetContainer>(
+          kSettings_, index, graph_->basic_events().size());
       container->JoinModule(index, std::move(empty_zbdd));
       continue;
     }

@@ -28,6 +28,7 @@
 
 #include "config.h"
 #include "error.h"
+#include "ext.h"
 #include "initializer.h"
 #include "logger.h"
 #include "risk_analysis.h"
@@ -211,8 +212,8 @@ int RunScram(const po::variables_map& vm) {
   // Get configurations if any.
   // Invalid configurations will throw.
   if (vm.count("config-file")) {
-    std::unique_ptr<scram::Config> config(
-        new scram::Config(vm["config-file"].as<std::string>()));
+    auto config =
+        ext::make_unique<scram::Config>(vm["config-file"].as<std::string>());
     settings = config->settings();
     input_files = config->input_files();
     output_path = config->output_path();
@@ -229,14 +230,13 @@ int RunScram(const po::variables_map& vm) {
   }
   // Process input files
   // into valid analysis containers and constructs.
-  std::unique_ptr<scram::mef::Initializer> init(
-      new scram::mef::Initializer(settings));
+  auto init = ext::make_unique<scram::mef::Initializer>(settings);
   init->ProcessInputFiles(input_files);  // Throws if anything is invalid.
   if (vm.count("validate")) return 0;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
-  std::unique_ptr<scram::core::RiskAnalysis> ran(
-      new scram::core::RiskAnalysis(init->model(), settings));
+  auto ran =
+      ext::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
   init.reset();  // Remove extra reference counts to shared objects.
 
   // Graph if requested.

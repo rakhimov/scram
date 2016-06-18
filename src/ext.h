@@ -21,7 +21,9 @@
 #ifndef SCRAM_SRC_EXT_H_
 #define SCRAM_SRC_EXT_H_
 
-namespace scram {
+#include <memory>
+#include <type_traits>
+
 namespace ext {
 
 /// Iterator adaptor for indication of container ``find`` call results.
@@ -63,7 +65,14 @@ auto find(T&& container, Ts&&... args)
   return find_iterator<decltype(it)>(std::move(it), container.end());
 }
 
+/// C++14 make_unique substitute for non-array types.
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+  static_assert(std::is_array<T>::value == false,
+                "This extension make_unique doesn't support arrays.");
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 }  // namespace ext
-}  // namespace scram
 
 #endif  // SCRAM_SRC_EXT_H_
