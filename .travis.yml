@@ -20,11 +20,11 @@ matrix:
     include:
         - os: osx
           compiler: clang
-          osx_image: xcode6.4
+          osx_image: xcode7.3
           env: RELEASE=
         - os: osx
           compiler: clang
-          osx_image: xcode6.4
+          osx_image: xcode7.3
           env: RELEASE=true
 
 env:
