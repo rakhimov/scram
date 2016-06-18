@@ -77,6 +77,8 @@
 #include <queue>
 #include <unordered_set>
 
+#include <boost/math/special_functions/sign.hpp>
+
 #include "ext.h"
 #include "logger.h"
 
@@ -332,14 +334,6 @@ void Preprocessor::RunPhaseFive() noexcept {
 
 namespace {  // Helper functions for all preprocessing algorithms.
 
-/// @param[in] num  Signed non-zero integer or index.
-///
-/// @returns -1 for negative numbers and 1 for positive ones.
-int GetSign(int num) noexcept {
-  assert(num);
-  return num > 0 ? 1 : -1;
-}
-
 /// Detects overlap in ranges.
 ///
 /// @param[in] a_min  The lower boundary of the first range.
@@ -446,7 +440,7 @@ bool Preprocessor::CheckRootGate() noexcept {
       root = root->args<Gate>().begin()->second;
       graph_->root(root);  // Destroy the previous root.
       assert(root->parents().empty());
-      graph_->root_sign_ *= GetSign(signed_index);
+      graph_->root_sign_ *= boost::math::sign(signed_index);
     } else {
       LOG(DEBUG4) << "The root NULL gate has only single variable!";
       assert(root->args<Variable>().size() == 1);
@@ -1966,7 +1960,7 @@ int Preprocessor::PropagateState(const GatePtr& gate,
     GatePtr arg_gate = arg.second;
     mult_tot += Preprocessor::PropagateState(arg_gate, node);
     assert(!arg_gate->mark());
-    int failed = arg_gate->opti_value() * GetSign(arg.first);
+    int failed = arg_gate->opti_value() * boost::math::sign(arg.first);
     assert(!failed || failed == -1 || failed == 1);
     if (failed == 1) {
       ++num_failure;
@@ -2332,7 +2326,8 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   }
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
-    ancestor->AddArg(GetSign(arg.first) * arg.second->index(), arg.second);
+    ancestor->AddArg(boost::math::sign(arg.first) * arg.second->index(),
+                     arg.second);
   }
   if (!node_->parents().count(ancestor->index()) &&
       std::none_of(ancestor->args<Gate>().begin(), ancestor->args<Gate>().end(),

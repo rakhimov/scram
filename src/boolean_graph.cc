@@ -24,6 +24,8 @@
 
 #include "boolean_graph.h"
 
+#include <boost/math/special_functions/sign.hpp>
+
 #include "logger.h"
 
 namespace scram {
@@ -186,7 +188,7 @@ void Gate::JoinNullGate(int index) noexcept {
   assert(null_gate->args_.size() == 1);
 
   int arg_index = *null_gate->args_.begin();
-  arg_index *= index > 0 ? 1 : -1;  // Carry the parent's sign.
+  arg_index *= boost::math::sign(index);  // Carry the parent's sign.
 
   if (!null_gate->gate_args_.empty()) {
     Gate::AddArg(arg_index, null_gate->gate_args_.begin()->second);
