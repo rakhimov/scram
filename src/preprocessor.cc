@@ -77,6 +77,7 @@
 #include <queue>
 #include <unordered_set>
 
+#include "ext.h"
 #include "logger.h"
 
 namespace scram {
@@ -724,10 +725,9 @@ void Preprocessor::PropagateComplements(
       Preprocessor::PropagateComplements(arg_gate, keep_modules, complements);
       continue;
     }  // arg is complement and (not keep_modules or arg is not module).
-    auto it_c = complements->find(arg_gate->index());
-    if (it_c != complements->end()) {
-      to_swap.emplace_back(arg.first, it_c->second);
-      assert(it_c->second->mark());
+    if (auto it = ext::find(*complements, arg_gate->index())) {
+      to_swap.emplace_back(arg.first, it->second);
+      assert(it->second->mark());
       continue;  // Existing complements are already processed.
     }
     Operator type = arg_gate->type();
@@ -2075,8 +2075,7 @@ void Preprocessor::CollectRedundantParents(
     if (parent->opti_value() == 2) continue;  // Non-redundant parent.
     if (parent->opti_value()) {
       assert(parent->opti_value() == 1 || parent->opti_value() == -1);
-      auto it = destinations->find(parent->index());
-      if (it != destinations->end()) {
+      if (auto it = ext::find(*destinations, parent->index())) {
         Operator type = parent->opti_value() == 1 ? kOr : kAnd;
         if (parent->type() == type &&
             parent->opti_value() == parent->GetArgSign(node)) {

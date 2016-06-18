@@ -22,6 +22,7 @@
 
 #include <algorithm>
 
+#include "ext.h"
 #include "logger.h"
 
 namespace scram {
@@ -331,8 +332,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     std::unordered_map<int, GatePtr>* module_gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   VertexPtr result;
-  auto it_entry = gates->find(gate->index());
-  if (it_entry != gates->end()) {
+  if (auto it_entry = ext::find(*gates, gate->index())) {
     std::pair<VertexPtr, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate->parents().size());
@@ -709,8 +709,7 @@ int Zbdd::GatherModules(
   if (node->module()) {
     int module_order = kSettings_.limit_order() - min_high - current_order;
     assert(module_order >= 0 && "Improper application of a cut-off.");
-    auto it = modules->find(node->index());
-    if (it != modules->end()) {
+    if (auto it = ext::find(*modules, node->index())) {
       std::pair<bool, int>& entry = it->second;
       assert(entry.first == node->coherent() && "Inconsistent flags.");
       entry.second = std::max(entry.second, module_order);

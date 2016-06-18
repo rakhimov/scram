@@ -23,6 +23,7 @@
 #include <boost/multiprecision/miller_rabin.hpp>
 
 #include "event.h"
+#include "ext.h"
 #include "logger.h"
 #include "zbdd.h"
 
@@ -150,8 +151,7 @@ Bdd::Function Bdd::ConvertGraph(
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   Function result;  // For the NRVO, due to memoization.
   // Memoization check.
-  auto it_entry = gates->find(gate->index());
-  if (it_entry != gates->end()) {
+  if (auto it_entry = ext::find(*gates, gate->index())) {
     std::pair<Function, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate->parents().size());  // Processed parents.
@@ -226,8 +226,7 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
   }
   std::pair<int, int> min_max_id =
       Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  auto it = and_table_.find(min_max_id);
-  if (it != and_table_.end()) return it->second;
+  if (auto it = ext::find(and_table_, min_max_id)) return it->second;
   Function result = Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                      complement_one, complement_two);
   and_table_.emplace(min_max_id, result);
@@ -254,8 +253,7 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
   }
   std::pair<int, int> min_max_id =
       Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  auto it = or_table_.find(min_max_id);
-  if (it != or_table_.end()) return it->second;
+  if (auto it = ext::find(or_table_, min_max_id)) return it->second;
   Function result = Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                     complement_one, complement_two);
   or_table_.emplace(min_max_id, result);

@@ -88,8 +88,7 @@ void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
   assert(args_.count(index));
   args_.erase(index);
 
-  auto it_g = gate_args_.find(index);
-  if (it_g != gate_args_.end()) {
+  if (auto it_g = ext::find(gate_args_, index)) {
     it_g->second->EraseParent(Node::index());
     recipient->AddArg(index, it_g->second);
     gate_args_.erase(it_g);
@@ -106,8 +105,7 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
   assert(constant_args_.empty() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
-  auto it_g = gate_args_.find(index);
-  if (it_g != gate_args_.end()) {
+  if (auto it_g = ext::find(gate_args_, index)) {
     recipient->AddArg(index, it_g->second);
   } else {
     recipient->AddArg(index, variable_args_.find(index)->second);
@@ -140,8 +138,7 @@ void Gate::InvertArg(int existing_arg) noexcept {
   args_.erase(existing_arg);
   args_.insert(-existing_arg);
 
-  auto it_g = gate_args_.find(existing_arg);
-  if (it_g != gate_args_.end()) {
+  if (auto it_g = ext::find(gate_args_, existing_arg)) {
     GatePtr arg = it_g->second;
     gate_args_.erase(it_g);
     gate_args_.emplace(-existing_arg, arg);
@@ -289,22 +286,18 @@ void Gate::EraseArg(int index) noexcept {
   assert(args_.count(index));
   args_.erase(index);
 
-  auto it_g = gate_args_.find(index);
-  if (it_g != gate_args_.end()) {
+  if (auto it_g = ext::find(gate_args_, index)) {
     it_g->second->EraseParent(Node::index());
     gate_args_.erase(it_g);
 
-  } else {
-    auto it_v = variable_args_.find(index);
-    if (it_v != variable_args_.end()) {
-      it_v->second->EraseParent(Node::index());
-      variable_args_.erase(it_v);
+  } else if (auto it_v = ext::find(variable_args_, index)) {
+    it_v->second->EraseParent(Node::index());
+    variable_args_.erase(it_v);
 
-    } else {
-      auto it_c = constant_args_.find(index);
-      it_c->second->EraseParent(Node::index());
-      constant_args_.erase(it_c);
-    }
+  } else {
+    auto it_c = constant_args_.find(index);
+    it_c->second->EraseParent(Node::index());
+    constant_args_.erase(it_c);
   }
 }
 

@@ -46,6 +46,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "event.h"
+#include "ext.h"
 
 namespace scram {
 namespace core {
@@ -486,11 +487,9 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          that will avoid any need for the RTTI or other hacks.
   NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
-    auto it_g = gate_args_.find(index);
-    if (it_g != gate_args_.end()) return it_g->second;
+    if (auto it = ext::find(gate_args_, index)) return it->second;
 
-    auto it_v = variable_args_.find(index);
-    if (it_v != variable_args_.end()) return it_v->second;
+    if (auto it = ext::find(variable_args_, index)) return it->second;
 
     return constant_args_.find(index)->second;
   }

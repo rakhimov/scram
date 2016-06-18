@@ -32,6 +32,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "ext.h"
 #include "expression.h"
 #include "fault_tree.h"
 
@@ -190,9 +191,9 @@ class Model : public Element {
                                const Lookup<T>& container) {
     assert(!entity_reference.empty());
     if (!base_path.empty()) {  // Check the local scope.
-      auto it =
-          container.entities_by_path.find(base_path + "." + entity_reference);
-      if (it != container.entities_by_path.end()) return it->second;
+      if (auto it = ext::find(container.entities_by_path,
+                              base_path + "." + entity_reference))
+        return it->second;
     }
 
     if (entity_reference.find('.') == std::string::npos)  // Public entity.
