@@ -97,20 +97,24 @@ class Random {
 
   /// RNG from a histogram distribution.
   ///
-  /// @param[in] intervals  Interval points for the distribution.
-  ///                       The values must be strictly increasing.
-  /// @param[in] weights  Weights at the boundaries.
-  ///                     The number of weights must be equal to
-  ///                     the number of intervals (points - 1).
-  ///                     Extra weights are ignored.
+  /// @tparam IteratorB  Input iterator of interval boundaries returning double.
+  /// @tparam IteratorW  Input iterator of weights returning double.
   ///
-  /// @returns A sampled value.
-  static double HistogramGenerator(
-      const std::vector<double>& intervals,
-      const std::vector<double>& weights) noexcept {
-    std::piecewise_constant_distribution<double> dist(intervals.begin(),
-                                                      intervals.end(),
-                                                      weights.begin());
+  /// @param[in] first_b  The begin of the interval boundaries.
+  /// @param[in] last_b  The sentinel end of the interval boundaries.
+  /// @param[in] first_w  The begin of the interval weights.
+  ///
+  /// @returns A sampled value from the interval.
+  ///
+  /// @pre Interval points for the distribution must be strictly increasing.
+  ///
+  /// @pre The number of weights must be equal to
+  ///      the number of intervals (boundaries - 1).
+  ///      Extra weights are ignored.
+  template <class IteratorB, class IteratorW>
+  static double HistogramGenerator(IteratorB first_b, IteratorB last_b,
+                                   IteratorW first_w) noexcept {
+    std::piecewise_constant_distribution<double> dist(first_b, last_b, first_w);
     return dist(rng_);
   }
 
@@ -261,7 +265,7 @@ class Random {
   /// @param[in] weights  Weights for the range [0, n),
   ///                     where n is the size of the vector.
   ///
-  /// @returns Integer in the range [0, 1).
+  /// @returns Integer in the range [0, n).
   static int DiscreteGenerator(const std::vector<double>& weights) noexcept {
     std::discrete_distribution<int> dist(weights.begin(), weights.end());
     return dist(rng_);

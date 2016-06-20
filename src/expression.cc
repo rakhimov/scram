@@ -374,16 +374,33 @@ double Histogram::Mean() noexcept {
   return sum_product / (prev_bound * sum_weights);
 }
 
+namespace {
+
+/// Iterator adaptor for retrieving sampled values.
+template <class Iterator>
+class sampler_iterator : public Iterator {
+ public:
+  /// Initializes the wrapper with to-be-sampled iterator.
+  explicit sampler_iterator(const Iterator& it) : Iterator(it) {}
+
+  /// Hides the wrapped iterator' operator*.
+  ///
+  /// @returns The sampled value of the expression under the iterator.
+  double operator*() { return Iterator::operator*()->Sample(); }
+};
+
+/// Helper function for type deduction upon sampler_iterator construction.
+template <class Iterator>
+sampler_iterator<Iterator> make_sampler(const Iterator& it) {
+  return sampler_iterator<Iterator>(it);
+}
+
+}  // namespace
+
 double Histogram::GetSample() noexcept {
-  std::vector<double> sampled_boundaries;
-  std::vector<double> sampled_weights;
-  for (auto it = boundaries_.first; it != boundaries_.second; ++it) {
-    sampled_boundaries.push_back((*it)->Sample());
-  }
-  for (auto it = weights_.first; it != weights_.second; ++it) {
-    sampled_weights.push_back((*it)->Sample());
-  }
-  return Random::HistogramGenerator(sampled_boundaries, sampled_weights);
+  return Random::HistogramGenerator(make_sampler(boundaries_.first),
+                                    make_sampler(boundaries_.second),
+                                    make_sampler(weights_.first));
 }
 
 void Histogram::CheckBoundaries() {
