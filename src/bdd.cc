@@ -21,6 +21,7 @@
 #include "bdd.h"
 
 #include <boost/multiprecision/miller_rabin.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "event.h"
 #include "ext.h"
@@ -175,8 +176,7 @@ Bdd::Function Bdd::ConvertGraph(
       args.push_back({complement, res.vertex});
     }
   }
-  std::sort(args.begin(), args.end(),
-            [](const Function& lhs, const Function& rhs) {
+  boost::sort(args, [](const Function& lhs, const Function& rhs) {
     if (lhs.vertex->terminal()) return true;
     if (rhs.vertex->terminal()) return false;
     return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();

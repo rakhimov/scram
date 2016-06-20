@@ -21,6 +21,8 @@
 
 #include "expression.h"
 
+#include <algorithm>
+
 #include <boost/math/constants/constants.hpp>
 
 #include "error.h"

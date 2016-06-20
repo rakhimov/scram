@@ -20,12 +20,10 @@
 
 #include "initializer.h"
 
-#include <algorithm>
 #include <fstream>
-#include <set>
-#include <unordered_map>
 
 #include <boost/filesystem.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "cycle.h"
 #include "env.h"
@@ -136,18 +134,16 @@ void Initializer::CheckDuplicateFiles(
   using Path = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
   std::vector<Path> files;
-  auto Comparator = [](const Path& lhs,
-                       const Path& rhs) { return lhs.first < rhs.first; };
+  auto Comparator = [](const Path& lhs, const Path& rhs) {
+    return lhs.first < rhs.first;
+  };
 
   for (auto& xml_file : xml_files)
     files.emplace_back(fs::canonical(xml_file), xml_file);
 
-  std::sort(files.begin(), files.end(), Comparator);
-
-  auto it = std::adjacent_find(files.begin(), files.end(),
-                               [](const Path& lhs, const Path& rhs) {
-    return lhs.first == rhs.first;
-  });
+  auto it = boost::adjacent_find(
+      boost::sort(files, Comparator),  // NOLINT(build/include_what_you_use)
+      [](const Path& lhs, const Path& rhs) { return lhs.first == rhs.first; });
 
   if (it != files.end()) {
     std::stringstream msg;

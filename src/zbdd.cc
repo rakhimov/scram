@@ -22,6 +22,8 @@
 
 #include <algorithm>
 
+#include <boost/range/algorithm.hpp>
+
 #include "ext.h"
 #include "logger.h"
 
@@ -150,11 +152,9 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(
             new Zbdd(sub, module_coherence, bdd, adjusted, index)));
   }
-  if (std::any_of(
-          modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& member) {
-            return member.second->root_->terminal();
-          })) {
+  if (ext::any_of(modules_, [](const ModuleEntry& member) {
+        return member.second->root_->terminal();
+      })) {
     LOG(DEBUG4) << "Eliminating constant modules from ZBDD...";
     std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
@@ -353,8 +353,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
       args.push_back(Zbdd::ConvertGraph(arg.second, gates, module_gates));
     }
   }
-  std::sort(args.begin(), args.end(),
-            [](const VertexPtr& lhs, const VertexPtr& rhs) {
+  boost::sort(args, [](const VertexPtr& lhs, const VertexPtr& rhs) {
     if (lhs->terminal()) return true;
     if (rhs->terminal()) return false;
     return SetNode::Ptr(lhs)->order() > SetNode::Ptr(rhs)->order();
@@ -568,11 +567,9 @@ Zbdd::VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
 }
 
 void Zbdd::EliminateConstantModules() noexcept {
-  if (std::any_of(
-          modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
-            return module.second->root_->terminal();
-          })) {
+  if (ext::any_of(modules_, [](const ModuleEntry& module) {
+        return module.second->root_->terminal();
+      })) {
     LOG(DEBUG4) << "Eliminating constant modules from ZBDD: G" << module_index_;
     std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
@@ -889,8 +886,7 @@ Zbdd::VertexPtr CutSetContainer::ConvertGate(const GatePtr& gate) noexcept {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     args.push_back(Zbdd::FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }
-  std::sort(args.begin(), args.end(),
-            [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
+  boost::sort(args, [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
     return lhs->order() > rhs->order();
   });
   auto it = args.cbegin();

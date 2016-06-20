@@ -44,6 +44,7 @@
 
 #include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "event.h"
 #include "ext.h"
@@ -1081,8 +1082,7 @@ class BooleanGraph {
     ///
     /// @returns The total number of unique elements.
     int Count(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [&container](int index) {
+      return boost::count_if(container, [&container](int index) {
         return index > 0 || !container.count(-index);
       });
     }
@@ -1091,16 +1091,14 @@ class BooleanGraph {
     ///
     /// @returns The total number of complement elements.
     int CountComplements(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [](int index) { return index < 0; });
+      return boost::count_if(container, [](int index) { return index < 0; });
     }
 
     /// @param[in] container  Collection of indices of elements.
     ///
     /// @returns The number of literals appearing as positive and negative.
     int CountOverlap(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [&container](int index) {
+      return boost::count_if(container, [&container](int index) {
         return index < 0 && container.count(-index);
       });
     }

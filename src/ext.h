@@ -21,8 +21,11 @@
 #ifndef SCRAM_SRC_EXT_H_
 #define SCRAM_SRC_EXT_H_
 
+#include <algorithm>
 #include <memory>
 #include <type_traits>
+
+#include <boost/range/algorithm/find_if.hpp>
 
 namespace ext {
 
@@ -72,6 +75,64 @@ std::unique_ptr<T> make_unique(Args&&... args) {
                 "This extension make_unique doesn't support arrays.");
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+/// Determines if two sorted ranges intersect.
+/// This function is complementary to std::set_intersection
+/// when the actual intersection container is not needed.
+///
+/// @tparam Iterator1  Forward iterator type of the first range.
+/// @tparam Iterator2  Forward iterator type of the second range.
+///
+/// @param[in] first1  Start of the first range.
+/// @param[in] last1  End of the first range.
+/// @param[in] first2  Start of the second range.
+/// @param[in] last2  End of the second range.
+///
+/// @returns true if the [first1, last1) and [first2, last2) ranges intersect.
+template <typename Iterator1, typename Iterator2>
+bool intersects(Iterator1 first1, Iterator1 last1,
+                Iterator2 first2, Iterator2 last2) noexcept {
+  while (first1 != last1 && first2 != last2) {
+    if (*first1 < *first2) {
+      ++first1;
+    } else if (*first2 < *first1) {
+      ++first2;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Range-based version of ``intersects``.
+template <class SinglePassRange1, class SinglePassRange2>
+bool intersects(const SinglePassRange1& rng1, const SinglePassRange2& rng2) {
+  BOOST_RANGE_CONCEPT_ASSERT(
+      (boost::SinglePassRangeConcept<const SinglePassRange1>));
+  BOOST_RANGE_CONCEPT_ASSERT(
+      (boost::SinglePassRangeConcept<const SinglePassRange2>));
+  return intersects(boost::begin(rng1), boost::end(rng1),
+                    boost::begin(rng2), boost::end(rng2));
+}
+
+/// Range-based versions of std algorithms missing in Boost.
+/// @{
+template <class SinglePassRange, class UnaryPredicate>
+bool none_of(const SinglePassRange& rng, UnaryPredicate pred) {
+  return boost::end(rng) == boost::find_if(rng, pred);
+}
+template <class SinglePassRange, class UnaryPredicate>
+bool any_of(const SinglePassRange& rng, UnaryPredicate pred) {
+  return !none_of(rng, pred);
+}
+template <class SinglePassRange, class UnaryPredicate>
+bool all_of(const SinglePassRange& rng, UnaryPredicate pred) {
+  BOOST_RANGE_CONCEPT_ASSERT(
+      (boost::SinglePassRangeConcept<const SinglePassRange>));
+  return boost::end(rng) ==
+         std::find_if_not(boost::begin(rng), boost::end(rng), pred);
+}
+/// @}
 
 }  // namespace ext
 

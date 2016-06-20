@@ -73,11 +73,14 @@
 #include "preprocessor.h"
 
 #include <algorithm>
+#include <array>
 #include <list>
 #include <queue>
 #include <unordered_set>
 
 #include <boost/math/special_functions/sign.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/algorithm_ext.hpp>
 
 #include "ext.h"
 #include "logger.h"
@@ -382,34 +385,6 @@ bool IsSubgraphWithinGraph(const GatePtr& root, int enter_time,
   return root->min_time() > enter_time && root->max_time() < exit_time;
 }
 
-/// Determines if two sorted ranges intersect.
-/// This function is complementary to std::set_intersection
-/// when the actual intersection container is not needed.
-///
-/// @tparam Iterator1  Forward iterator type of the first range.
-/// @tparam Iterator2  Forward iterator type of the second range.
-///
-/// @param[in] first1  Start of the first range.
-/// @param[in] last1  End of the first range.
-/// @param[in] first2  Start of the second range.
-/// @param[in] last2  End of the second range.
-///
-/// @returns true if the [first1, last1) and [first2, last2) ranges intersect.
-template <typename Iterator1, typename Iterator2>
-bool Intersects(Iterator1 first1, Iterator1 last1,
-                Iterator2 first2, Iterator2 last2) noexcept {
-  while (first1 != last1 && first2 != last2) {
-    if (*first1 < *first2) {
-      ++first1;
-    } else if (*first2 < *first1) {
-      ++first2;
-    } else {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 bool Preprocessor::CheckRootGate() noexcept {
@@ -667,8 +642,7 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
     return;
   }
 
-  auto it = std::max_element(gate->args().cbegin(), gate->args().cend(),
-                             [&gate](int lhs, int rhs) {
+  auto it = boost::max_element(gate->args(), [&gate](int lhs, int rhs) {
     return gate->GetArg(lhs)->order() < gate->GetArg(rhs)->order();
   });
   assert(it != gate->args().cend());
@@ -682,9 +656,9 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   auto second_arg = std::make_shared<Gate>(kVote);
   second_arg->vote_number(vote_number);
 
-  for (it = gate->args().cbegin(); it != gate->args().cend(); ++it) {
-    gate->ShareArg(*it, grand_arg);
-    gate->ShareArg(*it, second_arg);
+  for (int index : gate->args()) {
+    gate->ShareArg(index, grand_arg);
+    gate->ShareArg(index, second_arg);
   }
 
   first_arg->mark(true);
@@ -841,7 +815,7 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
 
 void Preprocessor::DetectMultipleDefinitions(
     const GatePtr& gate,
-    std::unordered_map<GatePtr, std::vector<GateWeakPtr> >* multi_def,
+    std::unordered_map<GatePtr, std::vector<GateWeakPtr>>* multi_def,
     GateSet* unique_gates) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
@@ -1062,9 +1036,8 @@ void Preprocessor::GroupModularArgs(
   assert(modular_args->size() > 1);
   assert(groups->empty());
   // Group nodes by the intersection of their visit ranges.
-  std::sort(modular_args->begin(), modular_args->end(),
-            [](const std::pair<int, NodePtr>& lhs_pair,
-               const std::pair<int, NodePtr>& rhs_pair) {
+  boost::sort(*modular_args, [](const std::pair<int, NodePtr>& lhs_pair,
+                                const std::pair<int, NodePtr>& rhs_pair) {
     const NodePtr& lhs_node = lhs_pair.second;
     const NodePtr& rhs_node = rhs_pair.second;
     if (lhs_node->max_time() < rhs_node->min_time()) return true;
@@ -1260,21 +1233,20 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
 
   if (common_args.size() < 2) return;  // Can't be merged anyway.
 
-  std::sort(common_args.begin(), common_args.end());  // Unique and stable.
+  boost::sort(common_args);  // Unique and stable.
   group->emplace_back(gate, common_args);
 }
 
 void Preprocessor::FilterMergeCandidates(
     MergeTable::Candidates* candidates) noexcept {
   assert(candidates->size() > 1);
-  std::stable_sort(
-      candidates->begin(), candidates->end(),
-      [](const MergeTable::Candidate& lhs, const MergeTable::Candidate& rhs) {
-        return lhs.second.size() < rhs.second.size();
-      });
+  boost::stable_sort(*candidates, [](const MergeTable::Candidate& lhs,
+                                     const MergeTable::Candidate& rhs) {
+    return lhs.second.size() < rhs.second.size();
+  });
   bool cleanup = false;  // Clean constant or NULL type gates.
   for (auto it = candidates->begin(); it != candidates->end(); ++it) {
-    GatePtr gate = it->first;
+    const GatePtr& gate = it->first;
     MergeTable::CommonArgs& common_args = it->second;
     if (gate->args().size() == 1) continue;
     if (gate->IsConstant()) continue;
@@ -1282,21 +1254,17 @@ void Preprocessor::FilterMergeCandidates(
     if (gate->args().size() != common_args.size()) continue;  // Not perfect.
     auto it_next = it;
     for (++it_next; it_next != candidates->end(); ++it_next) {
-      GatePtr comp_gate = it_next->first;
+      const GatePtr& comp_gate = it_next->first;
       MergeTable::CommonArgs& comp_args = it_next->second;
       if (comp_args.size() < common_args.size()) continue;  // Changed gate.
       assert(!comp_gate->IsConstant());
-      if (!std::includes(comp_args.begin(), comp_args.end(),
-                         common_args.begin(), common_args.end())) continue;
+      if (!boost::includes(comp_args, common_args)) continue;
 
       MergeTable::CommonArgs diff;
-      std::set_difference(comp_args.begin(), comp_args.end(),
-                          common_args.begin(), common_args.end(),
-                          std::back_inserter(diff));
+      boost::set_difference(comp_args, common_args, std::back_inserter(diff));
       diff.push_back(gate->index());
-      std::sort(diff.begin(), diff.end());
-      diff.erase(std::unique(diff.begin(), diff.end()), diff.end());
-      comp_args = diff;
+      diff.erase(boost::unique(boost::sort(diff)).end(), diff.end());
+      comp_args = std::move(diff);
       for (int index : common_args) comp_gate->EraseArg(index);
       comp_gate->AddArg(gate->index(), gate);
       if (comp_gate->IsConstant()) {  // Complement of gate is arg.
@@ -1314,13 +1282,10 @@ void Preprocessor::FilterMergeCandidates(
     }
   }
   if (!cleanup) return;
-  candidates->erase(std::remove_if(candidates->begin(), candidates->end(),
-                                   [](const MergeTable::Candidate& mem) {
-                      return mem.first->IsConstant() ||
-                             mem.first->type() == kNull ||
-                             mem.second.size() == 1;
-                    }),
-                    candidates->end());
+  boost::remove_erase_if(*candidates, [](const MergeTable::Candidate& mem) {
+    return mem.first->IsConstant() || mem.first->type() == kNull ||
+           mem.second.size() == 1;
+  });
 }
 
 void Preprocessor::GroupCandidatesByArgs(
@@ -1330,9 +1295,8 @@ void Preprocessor::GroupCandidatesByArgs(
   assert(candidates->size() > 1);
   assert(groups->empty());
   // Group candidates by the intersection of their [min_arg, max_arg] ranges.
-  std::sort(candidates->begin(), candidates->end(),
-            [](const MergeTable::Candidate& lhs_candidate,
-               const MergeTable::Candidate& rhs_candidate) {
+  boost::sort(*candidates, [](const MergeTable::Candidate& lhs_candidate,
+                              const MergeTable::Candidate& rhs_candidate) {
     const MergeTable::CommonArgs& lhs_args = lhs_candidate.second;
     const MergeTable::CommonArgs& rhs_args = rhs_candidate.second;
     if (lhs_args.back() < rhs_args.front()) return true;
@@ -1369,8 +1333,7 @@ void Preprocessor::GroupCandidatesByArgs(
         prev_size = group_args.size();
         for (auto it = super_group.begin(); it != super_group.end();) {
           const MergeTable::CommonArgs& member_args = (*it)->second;
-          if (Intersects(member_args.begin(), member_args.end(),
-                         group_args.begin(), group_args.end())) {
+          if (ext::intersects(member_args, group_args)) {
             group.push_back(**it);
             group_args.insert(member_args.begin(), member_args.end());
             super_group.erase(it++);
@@ -1399,9 +1362,7 @@ void Preprocessor::GroupCommonParents(
       assert(args_comp.size() > 1);
 
       std::vector<int> common;
-      std::set_intersection(args_gate.begin(), args_gate.end(),
-                            args_comp.begin(), args_comp.end(),
-                            std::back_inserter(common));
+      boost::set_intersection(args_gate, args_comp, std::back_inserter(common));
       if (common.size() < num_common_args) continue;  // Doesn't satisfy.
       MergeTable::CommonParents& common_parents = (*parents)[common];
       common_parents.insert(group[i].first);
@@ -1414,11 +1375,10 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
                                    MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  std::stable_sort(
-      all_options.begin(), all_options.end(),
-      [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-        return lhs.first.size() < rhs.first.size();
-      });
+  boost::stable_sort(all_options, [](const MergeTable::Option& lhs,
+                                     const MergeTable::Option& rhs) {
+    return lhs.first.size() < rhs.first.size();
+  });
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
@@ -1436,17 +1396,14 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
     ///       The intersections must be considered for each option.
     const MergeTable::CommonArgs& args = merge_group.back().first;
     for (MergeTable::Option& option : all_options) {
-      if (!Intersects(option.first.begin(), option.first.end(),
-                      args.begin(), args.end()))
+      if (!ext::intersects(option.first, args))
         continue;  // Doesn't affect this option.
       MergeTable::CommonParents& parents = option.second;
       for (const GatePtr& gate : gates) parents.erase(gate);
     }
-    all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
-                                     [](const MergeTable::Option& option) {
-                        return option.second.size() < 2;
-                      }),
-                      all_options.end());
+    boost::remove_erase_if(all_options, [](const MergeTable::Option& option) {
+      return option.second.size() < 2;
+    });
   }
 }
 
@@ -1464,15 +1421,9 @@ void Preprocessor::FindOptionGroup(
     auto it_next = it;
     for (++it_next; it_next != all_options->end(); ++it_next) {
       MergeTable::Option* candidate = &*it_next;
-      bool superset = std::includes(candidate->first.begin(),
-                                    candidate->first.end(),
-                                    group.back()->first.begin(),
-                                    group.back()->first.end());
+      bool superset = boost::includes(candidate->first, group.back()->first);
       if (!superset) continue;  // Does not include all the arguments.
-      bool parents = std::includes(group.back()->second.begin(),
-                                   group.back()->second.end(),
-                                   candidate->second.begin(),
-                                   candidate->second.end());
+      bool parents = boost::includes(group.back()->second, candidate->second);
       if (!parents) continue;  // Parents do not match.
       group.push_back(candidate);
     }
@@ -1490,12 +1441,12 @@ void Preprocessor::FindBaseOption(
     MergeTable::MergeGroup* all_options,
     MergeTable::MergeGroup::iterator* best_option) noexcept {
   *best_option = all_options->end();
-  int best_counts[3] = {};  // The number of extra parents.
+  std::array<int, 3> best_counts{};  // The number of extra parents.
   for (auto it = all_options->begin(); it != all_options->end(); ++it) {
     int num_parents = it->second.size();
     const GatePtr& parent = *it->second.begin();  // Representative.
     const MergeTable::CommonArgs& args = it->first;
-    int cur_counts[3] = {};
+    std::array<int, 3> cur_counts{};
     for (int index : args) {
       NodePtr arg = parent->GetArg(index);
       int extra_count = arg->parents().size() - num_parents;
@@ -1512,9 +1463,7 @@ void Preprocessor::FindBaseOption(
         (cur_counts[0] == best_counts[0] && cur_counts[1] == best_counts[1] &&
          cur_counts[2] > best_counts[2])) {
       *best_option = it;
-      best_counts[0] = cur_counts[0];
-      best_counts[1] = cur_counts[1];
-      best_counts[2] = cur_counts[2];
+      best_counts = cur_counts;
     }
   }
 }
@@ -1553,9 +1502,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
       assert(set_args.size() > common_args.size());
       // Note: it is assumed that common_args is a proper subset of set_args.
       std::vector<int> diff;
-      std::set_difference(set_args.begin(), set_args.end(),
-                          common_args.begin(), common_args.end(),
-                          std::back_inserter(diff));
+      boost::set_difference(set_args, common_args, std::back_inserter(diff));
       assert(diff.size() == (set_args.size() - common_args.size()));
       assert(merge_gate->index() > diff.back());
       diff.push_back(merge_gate->index());  // Assumes sequential indexing.
@@ -1674,44 +1621,37 @@ bool Preprocessor::FilterDistributiveArgs(
   // Handling a special case of fast constant propagation.
   std::vector<int> to_erase;  // Late erase for more opportunities.
   for (const GatePtr& candidate : *candidates) {  // All of them are positive.
-    if (Intersects(candidate->args().begin(), candidate->args().end(),
-                   gate->args().begin(), gate->args().end()))
+    if (ext::intersects(candidate->args(), gate->args()))
       to_erase.push_back(candidate->index());
   }
   bool changed = !to_erase.empty();
   for (int index : to_erase) {
     gate->EraseArg(index);
-    candidates->erase(std::find_if(candidates->begin(), candidates->end(),
-                                   [&index](const GatePtr& candidate) {
-      return candidate->index() == index;
-    }));
+    candidates->erase(
+        boost::find_if(*candidates, [&index](const GatePtr& candidate) {
+          return candidate->index() == index;
+        }));
   }
   // Sort in descending size of gate arguments.
-  std::sort(candidates->begin(), candidates->end(),
-            [](const GatePtr& lhs, const GatePtr rhs) {
+  boost::sort(*candidates, [](const GatePtr& lhs, const GatePtr rhs) {
     return lhs->args().size() > rhs->args().size();
   });
   std::vector<GatePtr> exclusive;  // No candidate is a subset of another.
   while (!candidates->empty()) {
-    GatePtr sub = candidates->back();
+    GatePtr sub = std::move(candidates->back());
     candidates->pop_back();
     exclusive.push_back(sub);
     for (const GatePtr& super : *candidates) {
-      if (std::includes(super->args().begin(), super->args().end(),
-                        sub->args().begin(), sub->args().end())) {
+      if (boost::includes(super->args(), sub->args())) {
         changed = true;
         gate->EraseArg(super->index());
       }
     }
-    candidates->erase(std::remove_if(candidates->begin(), candidates->end(),
-                                     [&sub](const GatePtr& super) {
-                        return std::includes(
-                            super->args().begin(), super->args().end(),
-                            sub->args().begin(), sub->args().end());
-                      }),
-                      candidates->end());
+    boost::remove_erase_if(*candidates, [&sub](const GatePtr& super) {
+      return boost::includes(super->args(), sub->args());
+    });
   }
-  *candidates = exclusive;
+  *candidates = std::move(exclusive);
   assert(!gate->args().empty());
   if (gate->args().size() == 1) {
     switch (gate->type()) {
@@ -1736,11 +1676,10 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
                                          MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  std::stable_sort(
-      all_options.begin(), all_options.end(),
-      [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-        return lhs.first.size() < rhs.first.size();
-      });
+  boost::stable_sort(all_options, [](const MergeTable::Option& lhs,
+                                     const MergeTable::Option& rhs) {
+    return lhs.first.size() < rhs.first.size();
+  });
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
@@ -1757,11 +1696,9 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
       MergeTable::CommonParents& parents = option.second;
       for (const GatePtr& gate : gates) parents.erase(gate);
     }
-    all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
-                                     [](const MergeTable::Option& option) {
-                        return option.second.size() < 2;
-                      }),
-                      all_options.end());
+    boost::remove_erase_if(all_options, [](const MergeTable::Option& option) {
+      return option.second.size() < 2;
+    });
   }
 }
 
@@ -1825,8 +1762,7 @@ void Preprocessor::TransformDistributiveArgs(
     MergeTable::Option& super = *it;
     MergeTable::CommonArgs& super_args = super.first;
     for (int index : args) {
-      auto it_index =
-          std::lower_bound(super_args.begin(), super_args.end(), index);
+      auto it_index = boost::lower_bound(super_args, index);
       assert(it_index != super_args.end());  // The index should exist.
       super_args.erase(it_index);
     }
@@ -2198,17 +2134,14 @@ bool Preprocessor::DecompositionProcessor::operator()(
     }
   };
   // Determine if the decomposition setups are possible.
-  auto it =
-      std::find_if(node_->parents().begin(), node_->parents().end(),
-                   [&IsDecompositionType](const Node::Parent& member) {
-                     return IsDecompositionType(member.second.lock()->type());
-                   });
+  auto it = boost::find_if(
+      node_->parents(), [&IsDecompositionType](const Node::Parent& member) {
+        return IsDecompositionType(member.second.lock()->type());
+      });
   if (it == node_->parents().end()) return false;  // No setups possible.
 
-  assert(2 >
-         std::count_if(node_->parents().begin(), node_->parents().end(),
-                       [](const Node::Parent& member) {
-               return member.second.lock()->module();
+  assert(2 > boost::count_if(node_->parents(), [](const Node::Parent& member) {
+           return member.second.lock()->module();
          }));
 
   // Mark parents and ancestors.
@@ -2330,9 +2263,8 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
                      arg.second);
   }
   if (!node_->parents().count(ancestor->index()) &&
-      std::none_of(ancestor->args<Gate>().begin(), ancestor->args<Gate>().end(),
-                   [this](const Gate::Arg<Gate>& arg) {
-            return arg.second->descendant() == this->node_->index();
+      ext::none_of(ancestor->args<Gate>(), [this](const Gate::Arg<Gate>& arg) {
+        return arg.second->descendant() == this->node_->index();
       })) {
     ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
@@ -2347,8 +2279,7 @@ bool Preprocessor::DecompositionProcessor::IsAncestryWithinGraph(
   if (gate->ancestor() == -root->index()) return false;
 
   if (IsNodeWithinGraph(gate, root->EnterTime(), root->ExitTime()) &&
-      std::all_of(gate->parents().begin(), gate->parents().end(),
-                  [&root](const Node::Parent& member) {
+      ext::all_of(gate->parents(), [&root](const Node::Parent& member) {
         return DecompositionProcessor::IsAncestryWithinGraph(
             member.second.lock(),
             root);
@@ -2518,9 +2449,8 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
   std::vector<GatePtr> gates;
   std::vector<VariablePtr> variables;
   Preprocessor::GatherNodes(&gates, &variables);
-  auto middle =
-      std::partition(gates.begin(), gates.end(),
-                     [](const GatePtr& gate) { return gate->module(); });
+  auto middle = boost::partition(
+      gates, [](const GatePtr& gate) { return gate->module(); });
 
   std::sort(middle, gates.end(), [](const GatePtr& lhs, const GatePtr& rhs) {
     return lhs->order() < rhs->order();

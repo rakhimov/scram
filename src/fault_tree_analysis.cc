@@ -20,10 +20,11 @@
 
 #include "fault_tree_analysis.h"
 
-#include <set>
+#include <algorithm>
 #include <utility>
 
-#include <boost/generator_iterator.hpp>
+#include <boost/container/flat_set.hpp>
+#include <boost/range/algorithm.hpp>
 
 namespace scram {
 namespace core {
@@ -38,20 +39,19 @@ void Print(const std::vector<Product>& products) {
     std::cerr << "Single Unity product." << std::endl;
     return;
   }
-  std::vector<std::set<std::string>> to_print;
+  using ProductSet = boost::container::flat_set<std::string>;
+  std::vector<ProductSet> to_print;
   for (const auto& product : products) {
-    std::set<std::string> ids;
+    ProductSet ids;
     for (const auto& literal : product) {
       ids.insert((literal.complement ? "~" : "") + literal.event.name());
     }
-    to_print.push_back(ids);
+    to_print.push_back(std::move(ids));
   }
-  std::sort(
-      to_print.begin(), to_print.end(),
-      [](const std::set<std::string>& lhs, const std::set<std::string>& rhs) {
-        if (lhs.size() == rhs.size()) return lhs < rhs;
-        return lhs.size() < rhs.size();
-      });
+  boost::sort(to_print, [](const ProductSet& lhs, const ProductSet& rhs) {
+    if (lhs.size() == rhs.size()) return lhs < rhs;
+    return lhs.size() < rhs.size();
+  });
   assert(!to_print.front().empty() && "Failure of the analysis with Unity!");
   std::vector<int> distribution(to_print.back().size());
   for (const auto& product : to_print) distribution[product.size() - 1]++;
