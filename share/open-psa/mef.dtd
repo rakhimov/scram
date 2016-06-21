@@ -40,7 +40,7 @@
 <!ENTITY % instruction "(%set; | %collect; | if | block | rule | event-tree)">
 
 
-<!-- I. Report/Calculation Layer -->
+<!-- I. Calculation Layer -->
 
 <!-- I.1. Models -->
 
