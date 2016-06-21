@@ -8,6 +8,7 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew install qt5
   brew install graphviz
   brew install python
+  brew install cmake
 fi
 
 sudo pip install nose
