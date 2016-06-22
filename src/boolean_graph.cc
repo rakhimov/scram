@@ -438,14 +438,14 @@ const std::unordered_map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"nor", kNor},
     {"null", kNull}};
 
-BooleanGraph::BooleanGraph(const mef::GatePtr& root, bool ccf) noexcept
+BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();
   ProcessedNodes nodes;
-  root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &nodes);
+  root_ = BooleanGraph::ProcessFormula(*root.formula(), ccf, &nodes);
 }
 
 void BooleanGraph::Print() {
@@ -453,9 +453,9 @@ void BooleanGraph::Print() {
   std::cerr << "\n" << this << std::endl;
 }
 
-GatePtr BooleanGraph::ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
+GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
                                      ProcessedNodes* nodes) noexcept {
-  Operator type = kStringToType_.find(formula->type())->second;
+  Operator type = kStringToType_.find(formula.type())->second;
   auto parent = std::make_shared<Gate>(type);
 
   if (type != kOr && type != kAnd) normal_ = false;
@@ -468,7 +468,7 @@ GatePtr BooleanGraph::ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
       coherent_ = false;
       break;
     case kVote:
-      parent->vote_number(formula->vote_number());
+      parent->vote_number(formula.vote_number());
       break;
     case kNull:
       null_gates_.push_back(parent);
@@ -476,70 +476,64 @@ GatePtr BooleanGraph::ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  BooleanGraph::ProcessBasicEvents(parent, formula->basic_event_args(), ccf,
-                                   nodes);
+  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
+    BooleanGraph::ProcessBasicEvent(parent, basic_event.get(), ccf, nodes);
+  }
 
-  BooleanGraph::ProcessHouseEvents(parent, formula->house_event_args(), nodes);
+  for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
+    BooleanGraph::ProcessHouseEvent(parent, *house_event, nodes);
+  }
 
-  BooleanGraph::ProcessGates(parent, formula->gate_args(), ccf, nodes);
+  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
+    BooleanGraph::ProcessGate(parent, *mef_gate, ccf, nodes);
+  }
 
-  for (const mef::FormulaPtr& sub_form : formula->formula_args()) {
-    GatePtr new_gate = BooleanGraph::ProcessFormula(sub_form, ccf, nodes);
+  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
+    GatePtr new_gate = BooleanGraph::ProcessFormula(*sub_form, ccf, nodes);
     parent->AddArg(new_gate->index(), new_gate);
   }
   return parent;
 }
 
-void BooleanGraph::ProcessBasicEvents(
-    const GatePtr& parent,
-    const std::vector<mef::BasicEventPtr>& basic_events,
-    bool ccf,
-    ProcessedNodes* nodes) noexcept {
-  for (const auto& basic_event : basic_events) {
-    if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-      GatePtr& ccf_gate = nodes->gates[basic_event->ccf_gate().get()];
-      if (!ccf_gate) {
-        ccf_gate = BooleanGraph::ProcessFormula(
-            basic_event->ccf_gate()->formula(), ccf, nodes);
-      }
-      parent->AddArg(ccf_gate->index(), ccf_gate);
-    } else {
-      VariablePtr& var = nodes->variables[basic_event.get()];
-      if (!var) {
-        basic_events_.push_back(basic_event.get());
-        var = std::make_shared<Variable>();  // Sequential indices.
-        assert(basic_events_.size() == var->index());
-      }
-      parent->AddArg(var->index(), var);
+void BooleanGraph::ProcessBasicEvent(const GatePtr& parent,
+                                     mef::BasicEvent* basic_event, bool ccf,
+                                     ProcessedNodes* nodes) noexcept {
+  if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
+    GatePtr& ccf_gate = nodes->gates[basic_event->ccf_gate().get()];
+    if (!ccf_gate) {
+      ccf_gate = BooleanGraph::ProcessFormula(
+          *basic_event->ccf_gate()->formula(), ccf, nodes);
     }
+    parent->AddArg(ccf_gate->index(), ccf_gate);
+  } else {
+    VariablePtr& var = nodes->variables[basic_event];
+    if (!var) {
+      basic_events_.push_back(basic_event);
+      var = std::make_shared<Variable>();  // Sequential indices.
+      assert(basic_events_.size() == var->index());
+    }
+    parent->AddArg(var->index(), var);
   }
 }
 
-void BooleanGraph::ProcessHouseEvents(
-    const GatePtr& parent,
-    const std::vector<mef::HouseEventPtr>& house_events,
-    ProcessedNodes* nodes) noexcept {
-  for (const auto& house : house_events) {
-    ConstantPtr& constant = nodes->constants[house.get()];
-    if (!constant) {
-      constant = std::make_shared<Constant>(house->state());
-      constants_.push_back(constant);
-    }
-    parent->AddArg(constant->index(), constant);
+void BooleanGraph::ProcessHouseEvent(const GatePtr& parent,
+                                     const mef::HouseEvent& house_event,
+                                     ProcessedNodes* nodes) noexcept {
+  ConstantPtr& constant = nodes->constants[&house_event];
+  if (!constant) {
+    constant = std::make_shared<Constant>(house_event.state());
+    constants_.push_back(constant);
   }
+  parent->AddArg(constant->index(), constant);
 }
 
-void BooleanGraph::ProcessGates(const GatePtr& parent,
-                                const std::vector<mef::GatePtr>& gates,
-                                bool ccf,
-                                ProcessedNodes* nodes) noexcept {
-  for (const auto& mef_gate : gates) {
-    GatePtr& pdag_gate = nodes->gates[mef_gate.get()];
-    if (!pdag_gate) {
-      pdag_gate = BooleanGraph::ProcessFormula(mef_gate->formula(), ccf, nodes);
-    }
-    parent->AddArg(pdag_gate->index(), pdag_gate);
+void BooleanGraph::ProcessGate(const GatePtr& parent, const mef::Gate& gate,
+                               bool ccf, ProcessedNodes* nodes) noexcept {
+  GatePtr& pdag_gate = nodes->gates[&gate];
+  if (!pdag_gate) {
+    pdag_gate = BooleanGraph::ProcessFormula(*gate.formula(), ccf, nodes);
   }
+  parent->AddArg(pdag_gate->index(), pdag_gate);
 }
 
 void BooleanGraph::ClearGateMarks() noexcept {

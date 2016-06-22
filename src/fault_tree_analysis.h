@@ -396,7 +396,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = ext::make_unique<BooleanGraph>(FaultTreeDescriptor::top_event(),
+  graph_ = ext::make_unique<BooleanGraph>(*FaultTreeDescriptor::top_event(),
                                           Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 
