@@ -85,15 +85,15 @@ FaultTreeDescriptor::FaultTreeDescriptor(const mef::Gate& root)
 
 void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
   for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    basic_events_.emplace(basic_event->id(), basic_event);
+    basic_events_.emplace(basic_event->id(), basic_event.get());
     if (basic_event->HasCcf())
-      ccf_events_.emplace(basic_event->id(), basic_event);
+      ccf_events_.emplace(basic_event->id(), basic_event.get());
   }
   for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
-    house_events_.emplace(house_event->id(), house_event);
+    house_events_.emplace(house_event->id(), house_event.get());
   }
   for (const mef::GatePtr& gate : formula.gate_args()) {
-    bool unvisited = inter_events_.emplace(gate->id(), gate).second;
+    bool unvisited = inter_events_.emplace(gate->id(), gate.get()).second;
     if (unvisited) FaultTreeDescriptor::GatherEvents(gate->formula());
   }
   for (const mef::FormulaPtr& arg : formula.formula_args()) {

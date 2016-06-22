@@ -61,8 +61,8 @@ class Grapher {
   void GraphFormula(
       const std::string& formula_name,
       const mef::Formula& formula,
-      std::vector<std::pair<std::string, const mef::Formula*> >* formulas,
-      std::unordered_map<mef::EventPtr, int>* node_repeat,
+      std::vector<std::pair<std::string, const mef::Formula*>>* formulas,
+      std::unordered_map<const mef::Event*, int>* node_repeat,
       std::ostream& out);
 
   /// Provides formatting information for top gate.
@@ -77,8 +77,8 @@ class Grapher {
   /// @param[in] node_repeat  The number of times a node is repeated.
   /// @param[out] out  The output stream.
   void FormatIntermediateEvents(
-      const std::unordered_map<std::string, mef::GatePtr>& inter_events,
-      const std::unordered_map<mef::EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, const mef::Gate*>& inter_events,
+      const std::unordered_map<const mef::Event*, int>& node_repeat,
       std::ostream& out);
 
   /// Provides formatting information for basic events.
@@ -88,8 +88,9 @@ class Grapher {
   /// @param[in] prob_requested  Indication to include probability numbers.
   /// @param[out] out  The output stream.
   void FormatBasicEvents(
-      const std::unordered_map<std::string, mef::BasicEventPtr>& basic_events,
-      const std::unordered_map<mef::EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, const mef::BasicEvent*>&
+          basic_events,
+      const std::unordered_map<const mef::Event*, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -100,8 +101,9 @@ class Grapher {
   /// @param[in] prob_requested  Indication to include probability numbers.
   /// @param[out] out  The output stream.
   void FormatHouseEvents(
-      const std::unordered_map<std::string, mef::HouseEventPtr>& house_events,
-      const std::unordered_map<mef::EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, const mef::HouseEvent*>&
+          house_events,
+      const std::unordered_map<const mef::Event*, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -112,7 +114,7 @@ class Grapher {
   /// @param[in] type  Type information message with flavors.
   /// @param[in] prob_msg  Probability information message.
   /// @param[out] out  The output stream.
-  void FormatPrimaryEvent(const mef::PrimaryEventPtr& primary_event,
+  void FormatPrimaryEvent(const mef::PrimaryEvent& primary_event,
                           int repetition,
                           const std::string& type,
                           const std::string& prob_msg,
@@ -125,7 +127,7 @@ class Grapher {
   /// @param[in] formulas  The container with registered nested formulas.
   /// @param[out] out  The output stream.
   void FormatFormulas(
-      const std::vector<std::pair<std::string, const mef::Formula*> >& formulas,
+      const std::vector<std::pair<std::string, const mef::Formula*>>& formulas,
       std::ostream& out);
 };
 

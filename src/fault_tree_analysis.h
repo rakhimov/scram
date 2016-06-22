@@ -189,6 +189,10 @@ int GetOrder(const Product& product);
 /// described by a gate as its root.
 class FaultTreeDescriptor {
  public:
+  /// Table of fault tree events with their ids as keys.
+  template <typename T>
+  using Table = std::unordered_map<std::string, const T*>;
+
   /// Gathers all information about a fault tree with a root gate.
   ///
   /// @param[in] root  The root gate of a fault tree.
@@ -203,40 +207,16 @@ class FaultTreeDescriptor {
   /// @returns The top gate that is passed to the analysis.
   const mef::Gate& top_event() const { return top_event_; }
 
-  /// @returns The container of intermediate events.
+  /// @returns The container of fault tree events.
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, mef::GatePtr>& inter_events() const {
-    return inter_events_;
-  }
-
-  /// @returns The container of all basic events of this tree.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, mef::BasicEventPtr>&
-  basic_events() const {
-    return basic_events_;
-  }
-
-  /// @returns Basic events that are in some CCF groups.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, mef::BasicEventPtr>&
-  ccf_events() const {
-    return ccf_events_;
-  }
-
-  /// @returns The container of house events of the fault tree.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  const std::unordered_map<std::string, mef::HouseEventPtr>&
-  house_events() const {
-    return house_events_;
-  }
+  /// @{
+  const Table<mef::Gate>& inter_events() const { return inter_events_; }
+  const Table<mef::BasicEvent>& basic_events() const { return basic_events_; }
+  const Table<mef::BasicEvent>& ccf_events() const { return ccf_events_; }
+  const Table<mef::HouseEvent>& house_events() const { return house_events_; }
+  /// @}
 
  private:
   /// Traverses formulas recursively to find all events.
@@ -255,18 +235,16 @@ class FaultTreeDescriptor {
 
   const mef::Gate& top_event_;  ///< Top event of this fault tree.
 
-  /// Container for intermediate events.
-  std::unordered_map<std::string, mef::GatePtr> inter_events_;
-
-  /// Container for basic events.
-  std::unordered_map<std::string, mef::BasicEventPtr> basic_events_;
-
-  /// Container for house events of the tree.
-  std::unordered_map<std::string, mef::HouseEventPtr> house_events_;
+  /// Containers of gathered fault tree events.
+  /// @{
+  Table<mef::Gate> inter_events_;
+  Table<mef::BasicEvent> basic_events_;
+  Table<mef::HouseEvent> house_events_;
+  /// @}
 
   /// Container for basic events that are identified to be in some CCF group.
   /// These basic events are not necessarily in the same CCF group.
-  std::unordered_map<std::string, mef::BasicEventPtr> ccf_events_;
+  Table<mef::BasicEvent> ccf_events_;
 };
 
 /// Fault tree analysis functionality.
