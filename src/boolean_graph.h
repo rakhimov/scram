@@ -36,16 +36,18 @@
 #include <array>
 #include <iostream>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "event.h"
+#include "ext.h"
 
 namespace scram {
 namespace core {
@@ -60,10 +62,13 @@ class NodeParentManager {
   friend class Gate;  ///< The main manipulator of parent information.
 
  public:
+  using Parent = std::pair<const int, GateWeakPtr>;  ///< Parent index and ptr.
+
+  /// Map of parent gate positive indices and weak pointers to them.
+  using ParentMap = std::unordered_map<int, GateWeakPtr>;
+
   /// @returns Parents of a node.
-  const std::unordered_map<int, GateWeakPtr>& parents() const {
-    return parents_;
-  }
+  const ParentMap& parents() const { return parents_; }
 
  protected:
   ~NodeParentManager() = default;
@@ -84,7 +89,7 @@ class NodeParentManager {
     parents_.erase(index);
   }
 
-  std::unordered_map<int, GateWeakPtr> parents_;  ///< Parents.
+  ParentMap parents_;  ///< All registered parents of this node.
 };
 
 /// An abstract base class that represents a node in a Boolean graph.
@@ -293,6 +298,25 @@ enum State {
 /// before any complex analysis is done.
 class Gate : public Node, public std::enable_shared_from_this<Gate> {
  public:
+  /// Argument entry type in the gate's argument containers.
+  /// The entry contains
+  /// the positive or negative index (indicating a complement)
+  /// and a pointer to the argument node.
+  ///
+  /// @tparam T  The type of the argument node.
+  template <class T>
+  using Arg = std::pair<const int, std::shared_ptr<T>>;
+
+  /// The associative container type to store the gate arguments.
+  /// This container type maps the index of the argument to a pointer to it.
+  ///
+  /// @tparam T  The type of the argument node.
+  template <class T>
+  using ArgMap = std::unordered_map<int, std::shared_ptr<T>>;
+
+  /// The ordered set of gate argument indices.
+  using ArgSet = boost::container::flat_set<int>;
+
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
   /// and one shared pointer exists for this gate
@@ -352,19 +376,16 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns true if this gate has become constant.
   bool IsConstant() const { return state_ != kNormalState; }
 
-  /// @returns Arguments of this gate.
-  /// @{
-  const std::set<int>& args() const { return args_; }
-  const std::unordered_map<int, GatePtr>& gate_args() const {
-    return gate_args_;
-  }
-  const std::unordered_map<int, VariablePtr>& variable_args() const {
-    return variable_args_;
-  }
-  const std::unordered_map<int, ConstantPtr>& constant_args() const {
-    return constant_args_;
-  }
-  /// @}
+  /// @returns The ordered set of argument indices of this gate.
+  const ArgSet& args() const { return args_; }
+
+  /// Generic accessor to the gate argument containers.
+  ///
+  /// @tparam T  The type of the argument nodes.
+  ///
+  /// @returns The map container of the gate arguments with the given type.
+  template <class T>
+  const ArgMap<T>& args() const;
 
   /// Marks are used for linear traversal of graphs.
   /// This can be an alternative
@@ -467,8 +488,10 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          that will avoid any need for the RTTI or other hacks.
   NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
-    if (gate_args_.count(index)) return gate_args_.find(index)->second;
-    if (variable_args_.count(index)) return variable_args_.find(index)->second;
+    if (auto it = ext::find(gate_args_, index)) return it->second;
+
+    if (auto it = ext::find(variable_args_, index)) return it->second;
+
     return constant_args_.find(index)->second;
   }
 
@@ -482,6 +505,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// The duplicates are handled according to the logic of the gate.
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
+  ///
+  /// @tparam T  The type of the argument node.
   ///
   /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] arg  A pointer to the argument node.
@@ -501,33 +526,44 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  /// @{
-  void AddArg(int index, const GatePtr& arg) noexcept {
-    AddArg(index, arg, &gate_args_);
+  template <class T>
+  void AddArg(int index, const std::shared_ptr<T>& arg) noexcept {
+    assert(index);
+    assert(std::abs(index) == arg->index());
+    assert(state_ == kNormalState);
+    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
+    assert(!(type_ == kXor && args_.size() > 1));
+    assert(vote_number_ >= 0);
+
+    if (args_.count(index)) return Gate::ProcessDuplicateArg(index);
+    if (args_.count(-index)) return Gate::ProcessComplementArg(index);
+
+    args_.insert(index);
+    Gate::mutable_args<T>().emplace(index, arg);
+    arg->AddParent(shared_from_this());
   }
-  void AddArg(int index, const VariablePtr& arg) noexcept {
-    AddArg(index, arg, &variable_args_);
-  }
-  void AddArg(int index, const ConstantPtr& arg) noexcept {
-    AddArg(index, arg, &constant_args_);
-  }
-  /// @}
 
   /// Transfers this gate's argument to another gate.
   ///
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  A new parent for the argument.
+  ///
+  /// @pre No constant arguments are present.
   void TransferArg(int index, const GatePtr& recipient) noexcept;
 
   /// Shares this gate's argument with another gate.
   ///
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  Another parent for the argument.
+  ///
+  /// @pre No constant arguments are present.
   void ShareArg(int index, const GatePtr& recipient) noexcept;
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
   /// and apply the De Morgan's Law.
+  ///
+  /// @pre No constant arguments are present.
   void InvertArgs() noexcept;
 
   /// Replaces an argument with the complement of it.
@@ -535,6 +571,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// and apply the De Morgan's Law.
   ///
   /// @param[in] existing_arg  Positive or negative index of the argument.
+  ///
+  /// @pre No constant arguments are present.
   void InvertArg(int existing_arg) noexcept;
 
   /// Adds arguments of an argument gate to this gate.
@@ -544,6 +582,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// The sign of the argument gate is expected to be positive.
   ///
   /// @param[in] arg_gate  The gate which arguments to be added to this gate.
+  ///
+  /// @pre No constant arguments are present.
   ///
   /// @warning This function does not test
   ///          if the parent and argument logics are
@@ -604,29 +644,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   }
 
  private:
-  /// Handles addition of arguments to the gate.
+  /// Mutable getter for the gate arguments.
   ///
-  /// @tparam Ptr  Shared pointer type to the argument.
-  /// @tparam Container  Type of the destination container.
+  /// @tparam T  The type of the argument nodes.
   ///
-  /// @param[in] index  Positive or negative index of the argument.
-  /// @param[in,out] arg  Pointer to the argument.
-  /// @param[in,out] container  The final destination to save the argument.
-  template <class Ptr, class Container>
-  void AddArg(int index, const Ptr& arg, Container* container) noexcept {
-    assert(index != 0);
-    assert(std::abs(index) == arg->index());
-    assert(state_ == kNormalState);
-    assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
-    assert(!(type_ == kXor && args_.size() > 1));
-    assert(vote_number_ >= 0);
-
-    if (args_.count(index)) return Gate::ProcessDuplicateArg(index);
-    if (args_.count(-index)) return Gate::ProcessComplementArg(index);
-
-    args_.insert(index);
-    container->emplace(index, arg);
-    arg->AddParent(shared_from_this());
+  /// @returns The map container of the argument nodes with the given type.
+  template <class T>
+  ArgMap<T>& mutable_args() {
+    return const_cast<ArgMap<T>&>(static_cast<const Gate*>(this)->args<T>());
   }
 
   /// Process an addition of an argument
@@ -700,14 +725,30 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
-  std::set<int> args_;  ///< Arguments of the gate.
-  /// Arguments that are gates.
-  std::unordered_map<int, GatePtr> gate_args_;
-  /// Arguments that are variables.
-  std::unordered_map<int, VariablePtr> variable_args_;
-  /// Arguments that are constant like house events.
-  std::unordered_map<int, ConstantPtr> constant_args_;
+  ArgSet args_;  ///< Argument indices of the gate.
+  /// Associative containers of gate arguments of certain type.
+  /// @{
+  ArgMap<Gate> gate_args_;
+  ArgMap<Variable> variable_args_;
+  ArgMap<Constant> constant_args_;
+  /// @}
 };
+
+/// @returns The Gate type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Gate>& Gate::args<Gate>() const { return gate_args_; }
+
+/// @returns The Variable type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
+  return variable_args_;
+}
+
+/// @returns The Constant type arguments of a gate.
+template <>
+inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
+  return constant_args_;
+}
 
 /// Container of unique gates.
 /// This container acts like an unordered set of gates.
@@ -741,7 +782,7 @@ class GateSet {
     /// @returns Hash value of the gate
     ///          from its arguments but not logic.
     std::size_t operator()(const GatePtr& gate) const noexcept {
-      return boost::hash_value(gate->args());
+      return boost::hash_range(gate->args().begin(), gate->args().end());
     }
   };
   /// Functor for equality test for gates by their arguments.
@@ -803,7 +844,7 @@ class BooleanGraph {
   ///       the argument fault tree and its underlying containers are stable.
   ///       If the fault tree has been manipulated (event addition, etc.),
   ///       its BooleanGraph representation is not guaranteed to be the same.
-  explicit BooleanGraph(const mef::GatePtr& root, bool ccf = false) noexcept;
+  explicit BooleanGraph(const mef::Gate& root, bool ccf = false) noexcept;
 
   BooleanGraph(const BooleanGraph&) = delete;
   BooleanGraph& operator=(const BooleanGraph&) = delete;
@@ -875,43 +916,40 @@ class BooleanGraph {
   /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
-  GatePtr ProcessFormula(const mef::FormulaPtr& formula, bool ccf,
+  GatePtr ProcessFormula(const mef::Formula& formula, bool ccf,
                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's basic events
-  /// into variable arguments of an indexed gate of the Boolean graph.
+  /// into variable arguments of an indexed gate in the Boolean graph.
+  /// Basic events are saved for reference in analysis.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] basic_events  The collection of basic events of the formula.
+  /// @param[in] basic_event  The basic event argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessBasicEvents(const GatePtr& parent,
-                          const std::vector<mef::BasicEventPtr>& basic_events,
-                          bool ccf,
-                          ProcessedNodes* nodes) noexcept;
+  void ProcessBasicEvent(const GatePtr& parent, mef::BasicEvent* basic_event,
+                         bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the Boolean graph.
   /// Newly created constants are registered for removal for Preprocessor.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] house_events  The collection of house events of the formula.
+  /// @param[in] house_event  The house event argument of the formula.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessHouseEvents(const GatePtr& parent,
-                          const std::vector<mef::HouseEventPtr>& house_events,
-                          ProcessedNodes* nodes) noexcept;
+  void ProcessHouseEvent(const GatePtr& parent,
+                         const mef::HouseEvent& house_event,
+                         ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the Boolean graph.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] gates  The collection of gates of the formula.
+  /// @param[in] gate  The gate argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessGates(const GatePtr& parent,
-                    const std::vector<mef::GatePtr>& gates,
-                    bool ccf,
-                    ProcessedNodes* nodes) noexcept;
+  void ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+                   ProcessedNodes* nodes) noexcept;
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,
@@ -1041,8 +1079,7 @@ class BooleanGraph {
     ///
     /// @returns The total number of unique elements.
     int Count(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [&container](int index) {
+      return boost::count_if(container, [&container](int index) {
         return index > 0 || !container.count(-index);
       });
     }
@@ -1051,16 +1088,14 @@ class BooleanGraph {
     ///
     /// @returns The total number of complement elements.
     int CountComplements(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [](int index) { return index < 0; });
+      return boost::count_if(container, [](int index) { return index < 0; });
     }
 
     /// @param[in] container  Collection of indices of elements.
     ///
     /// @returns The number of literals appearing as positive and negative.
     int CountOverlap(const std::unordered_set<int>& container) noexcept {
-      return std::count_if(container.begin(), container.end(),
-                           [&container](int index) {
+      return boost::count_if(container, [&container](int index) {
         return index < 0 && container.count(-index);
       });
     }

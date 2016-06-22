@@ -12,7 +12,6 @@ lizard -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert \
   relax_ng_validator.cc \
   xml_stream.cc \
   xml_parser.cc \
-  grapher.cc \
   reporter.cc \
   element.cc \
   expression.cc \

@@ -393,6 +393,8 @@ class Zbdd {
   using SetNodeWeakPtr = WeakIntrusivePtr<SetNode>;  ///< Pointer for tables.
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
   using Product = std::vector<int>;  ///< For clarity of expected results.
+  /// Module entry in the tables with its original gate index.
+  using ModuleEntry = std::pair<const int, std::unique_ptr<Zbdd>>;
 
   /// Converts a modular BDD function
   /// into Zero-Suppressed BDD.

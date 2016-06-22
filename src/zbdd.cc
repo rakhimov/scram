@@ -22,6 +22,9 @@
 
 #include <algorithm>
 
+#include <boost/range/algorithm.hpp>
+
+#include "ext.h"
 #include "logger.h"
 
 namespace scram {
@@ -55,7 +58,7 @@ void Zbdd::Log() noexcept {
 }
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
-    : Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
+    : Zbdd(bdd->root(), bdd->coherent(), bdd, settings) {
   CHECK_ZBDD(true);
 }
 
@@ -71,12 +74,12 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   } else if (fault_tree->root()->type() == kNull) {
     GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
-    assert(top->gate_args().empty());
+    assert(top->args<Gate>().empty());
     int child = *top->args().begin();
     if (child < 0) {
       root_ = kBase_;
     } else {
-      VariablePtr var = top->variable_args().begin()->second;
+      VariablePtr var = top->args<Variable>().begin()->second;
       root_ =
           Zbdd::FindOrAddVertex(var->index(), kBase_, kEmpty_, var->order());
     }
@@ -149,11 +152,9 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(
             new Zbdd(sub, module_coherence, bdd, adjusted, index)));
   }
-  if (std::any_of(
-          modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& member) {
-            return member.second->root_->terminal();
-          })) {
+  if (ext::any_of(modules_, [](const ModuleEntry& member) {
+        return member.second->root_->terminal();
+      })) {
     LOG(DEBUG4) << "Eliminating constant modules from ZBDD...";
     std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
@@ -303,7 +304,7 @@ Zbdd::VertexPtr
 Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
                                 Bdd* bdd_graph, int limit_order,
                                 PairTable<VertexPtr>* ites) noexcept {
-  Bdd::Function common = bdd_graph->CalculateConsensus(ite, complement);
+  Bdd::Function common = Bdd::Consensus::Calculate(bdd_graph, ite, complement);
   VertexPtr consensus = Zbdd::ConvertBdd(common.vertex, common.complement,
                                          bdd_graph, limit_order, ites);
   if (limit_order == 0) {  // Cut-off on the product order.
@@ -331,20 +332,19 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     std::unordered_map<int, GatePtr>* module_gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   VertexPtr result;
-  if (gates->count(gate->index())) {
-    std::pair<VertexPtr, int>& entry = gates->find(gate->index())->second;
+  if (auto it_entry = ext::find(*gates, gate->index())) {
+    std::pair<VertexPtr, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate->parents().size());
-    entry.second++;
-    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    if (++entry.second == gate->parents().size()) gates->erase(it_entry);
     return result;
   }
   std::vector<VertexPtr> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     if (arg.second->module()) {
       module_gates->insert(arg);
@@ -353,15 +353,13 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
       args.push_back(Zbdd::ConvertGraph(arg.second, gates, module_gates));
     }
   }
-  std::sort(args.begin(), args.end(),
-            [](const VertexPtr& lhs, const VertexPtr& rhs) {
+  boost::sort(args, [](const VertexPtr& lhs, const VertexPtr& rhs) {
     if (lhs->terminal()) return true;
     if (rhs->terminal()) return false;
     return SetNode::Ptr(lhs)->order() > SetNode::Ptr(rhs)->order();
   });
   auto it = args.cbegin();
-  result = *it;
-  for (++it; it != args.cend(); ++it) {
+  for (result = *it++; it != args.cend(); ++it) {
     result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
   }
   Zbdd::ClearTables();
@@ -569,11 +567,9 @@ Zbdd::VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
 }
 
 void Zbdd::EliminateConstantModules() noexcept {
-  if (std::any_of(
-          modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
-            return module.second->root_->terminal();
-          })) {
+  if (ext::any_of(modules_, [](const ModuleEntry& module) {
+        return module.second->root_->terminal();
+      })) {
     LOG(DEBUG4) << "Eliminating constant modules from ZBDD: G" << module_index_;
     std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
@@ -710,12 +706,12 @@ int Zbdd::GatherModules(
   if (node->module()) {
     int module_order = kSettings_.limit_order() - min_high - current_order;
     assert(module_order >= 0 && "Improper application of a cut-off.");
-    if (!modules->count(node->index())) {
-      modules->insert({node->index(), {node->coherent(), module_order}});
-    } else {
-      std::pair<bool, int>& entry = modules->find(node->index())->second;
+    if (auto it = ext::find(*modules, node->index())) {
+      std::pair<bool, int>& entry = it->second;
       assert(entry.first == node->coherent() && "Inconsistent flags.");
       entry.second = std::max(entry.second, module_order);
+    } else {
+      modules->insert({node->index(), {node->coherent(), module_order}});
     }
   }
   int min_low = Zbdd::GatherModules(node->low(), current_order, modules);
@@ -879,19 +875,18 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
 
 Zbdd::VertexPtr CutSetContainer::ConvertGate(const GatePtr& gate) noexcept {
   assert(gate->type() == kAnd || gate->type() == kOr);
-  assert(gate->constant_args().empty());
+  assert(gate->args<Constant>().empty());
   assert(gate->args().size() > 1);
   std::vector<SetNodePtr> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back(
         Zbdd::FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     args.push_back(Zbdd::FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }
-  std::sort(args.begin(), args.end(),
-            [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
+  boost::sort(args, [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
     return lhs->order() > rhs->order();
   });
   auto it = args.cbegin();

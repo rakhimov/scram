@@ -251,7 +251,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @param[in] root  The root gate of the fault tree.
   ///
   /// @pre The function is called in the constructor only once.
-  void CreateBdd(const mef::GatePtr& root) noexcept;
+  void CreateBdd(const mef::Gate& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.

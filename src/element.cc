@@ -29,6 +29,8 @@ Element::Element(std::string name, bool optional_name)
     : kName_(std::move(name)) {
   if (!optional_name && kName_.empty())
     throw LogicError("The element name can't be empty");
+  if (!kName_.empty() && kName_.find('.') != std::string::npos)
+    throw InvalidArgument("The element name is malformed.");
 }
 
 void Element::label(const std::string& new_label) {
@@ -56,7 +58,11 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
 
 Role::Role(RoleSpecifier role, std::string base_path)
     : kRole_(role),
-      kBasePath_(std::move(base_path)) {}
+      kBasePath_(std::move(base_path)) {
+  if (!kBasePath_.empty() &&
+      (kBasePath_.front() == '.' || kBasePath_.back() == '.'))
+    throw InvalidArgument("Element reference base path is malformed.");
+}
 
 Id::Id(const Element& el, const Role& role)
     : kId_(role.role() == RoleSpecifier::kPublic

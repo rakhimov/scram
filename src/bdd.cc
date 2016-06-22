@@ -21,8 +21,10 @@
 #include "bdd.h"
 
 #include <boost/multiprecision/miller_rabin.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "event.h"
+#include "ext.h"
 #include "logger.h"
 #include "zbdd.h"
 
@@ -53,9 +55,9 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   } else if (fault_tree->root()->type() == kNull) {
     GatePtr top = fault_tree->root();
     assert(top->args().size() == 1);
-    assert(top->gate_args().empty());
+    assert(top->args<Gate>().empty());
     int child = *top->args().begin();
-    VariablePtr var = top->variable_args().begin()->second;
+    VariablePtr var = top->args<Variable>().begin()->second;
     root_ = {child < 0, Bdd::FindOrAddVertex(var->index(), kOne_, kOne_, true,
                                              var->order())};
   } else {
@@ -85,7 +87,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
 Bdd::~Bdd() noexcept = default;
 
 void Bdd::Analyze() noexcept {
-  zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(this, kSettings_));
+  zbdd_ = ext::make_unique<Zbdd>(this, kSettings_);
   zbdd_->Analyze();
   if (!coherent_) {  // The BDD has been used by the ZBDD.
     Bdd::ClearTables();
@@ -150,8 +152,7 @@ Bdd::Function Bdd::ConvertGraph(
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   Function result;  // For the NRVO, due to memoization.
   // Memoization check.
-  auto it_entry = gates->find(gate->index());
-  if (it_entry != gates->end()) {
+  if (auto it_entry = ext::find(*gates, gate->index())) {
     std::pair<Function, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate->parents().size());  // Processed parents.
@@ -159,13 +160,13 @@ Bdd::Function Bdd::ConvertGraph(
     return result;
   }
   std::vector<Function> args;
-  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     args.push_back({arg.first < 0,
                     Bdd::FindOrAddVertex(arg.second->index(), kOne_, kOne_,
                                          true, arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
-  for (const std::pair<const int, GatePtr>& arg : gate->gate_args()) {
+  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->module()) {
       args.push_back({arg.first < 0,
@@ -175,15 +176,13 @@ Bdd::Function Bdd::ConvertGraph(
       args.push_back({complement, res.vertex});
     }
   }
-  std::sort(args.begin(), args.end(),
-            [](const Function& lhs, const Function& rhs) {
+  boost::sort(args, [](const Function& lhs, const Function& rhs) {
     if (lhs.vertex->terminal()) return true;
     if (rhs.vertex->terminal()) return false;
     return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
   });
   auto it = args.cbegin();
-  result = *it;
-  for (++it; it != args.cend(); ++it) {
+  for (result = *it++; it != args.cend(); ++it) {
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
@@ -227,8 +226,7 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
   }
   std::pair<int, int> min_max_id =
       Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  auto it = and_table_.find(min_max_id);
-  if (it != and_table_.end()) return it->second;
+  if (auto it = ext::find(and_table_, min_max_id)) return it->second;
   Function result = Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                      complement_one, complement_two);
   and_table_.emplace(min_max_id, result);
@@ -255,8 +253,7 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
   }
   std::pair<int, int> min_max_id =
       Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  auto it = or_table_.find(min_max_id);
-  if (it != or_table_.end()) return it->second;
+  if (auto it = ext::find(or_table_, min_max_id)) return it->second;
   Function result = Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                     complement_one, complement_two);
   or_table_.emplace(min_max_id, result);

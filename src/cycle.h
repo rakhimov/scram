@@ -39,8 +39,8 @@ namespace cycle {
 /// @returns The connector belonging to the node.
 ///
 /// @{
-inline mef::Formula* GetConnector(mef::Gate* node) {
-  return node->formula().get();
+inline const mef::Formula* GetConnector(const mef::GatePtr& node) {
+  return &node->formula();
 }
 inline mef::Expression* GetConnector(mef::Parameter* node) { return node; }
 /// @}
@@ -52,12 +52,13 @@ inline mef::Expression* GetConnector(mef::Parameter* node) { return node; }
 /// @returns  The iterable collection of nodes on the other end of connection.
 ///
 /// @{
-inline std::vector<mef::Gate*> GetNodes(mef::Formula* connector) {
-  std::vector<mef::Gate*> nodes;
-  for (const mef::GatePtr& gate : connector->gate_args()) {
-    nodes.push_back(gate.get());
-  }
-  return nodes;
+inline
+const std::vector<mef::GatePtr>& GetNodes(const mef::FormulaPtr& connector) {
+  return connector->gate_args();
+}
+inline
+const std::vector<mef::GatePtr>& GetNodes(const mef::Formula* connector) {
+  return connector->gate_args();
 }
 inline std::vector<mef::Parameter*> GetNodes(mef::Expression* connector) {
   std::vector<mef::Parameter*> nodes;
@@ -76,12 +77,13 @@ inline std::vector<mef::Parameter*> GetNodes(mef::Expression* connector) {
 /// @returns  The iterable collection of connectors.
 ///
 /// @{
-inline std::vector<mef::Formula*> GetConnectors(mef::Formula* connector) {
-  std::vector<mef::Formula*> connectors;
-  for (const mef::FormulaPtr& formula : connector->formula_args()) {
-    connectors.push_back(formula.get());
-  }
-  return connectors;
+inline const std::vector<mef::FormulaPtr>&
+GetConnectors(const mef::FormulaPtr& connector) {
+  return connector->formula_args();
+}
+inline const std::vector<mef::FormulaPtr>&
+GetConnectors(const mef::Formula* connector) {
+  return connector->formula_args();
 }
 inline std::vector<mef::Expression*> GetConnectors(mef::Expression* connector) {
   std::vector<mef::Expression*> connectors;
@@ -93,18 +95,17 @@ inline std::vector<mef::Expression*> GetConnectors(mef::Expression* connector) {
 }
 /// @}
 
-template <class N, class C>
-bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
+template <class Ptr>
+bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
 /// Interrupts the detection at first cycle.
 /// Nodes get marked.
 ///
 /// The connector of the node is retrieved via unqualified call to
-/// GetConnector(node*).
+/// GetConnector(node).
 ///
-/// @tparam N  Type of nodes in the graph.
-/// @tparam C  Type of connectors (nodes, edges) in the graph.
+/// @tparam Ptr  The pointer type managing nodes in the graph.
 ///
 /// @param[in,out] node  The node to start with.
 /// @param[out] cycle  If a cycle is detected,
@@ -113,11 +114,11 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 ///                    This is for printing errors and efficiency.
 ///
 /// @returns True if a cycle is found.
-template <class N, class C>
-bool DetectCycle(N* node, std::vector<std::string>* cycle) {
+template <class Ptr>
+bool DetectCycle(const Ptr& node, std::vector<std::string>* cycle) {
   if (node->mark().empty()) {
     node->mark("temporary");
-    if (ContinueConnector<N, C>(GetConnector(node), cycle)) {
+    if (ContinueConnector(GetConnector(node), cycle)) {
       cycle->push_back(node->name());
       return true;
     }
@@ -134,22 +135,21 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// Connectors may get market upon traversal.
 ///
 /// Connectors and nodes of the connector are retrieved via unqualified calls:
-/// GetConnectors(connector*) and GetNodes(connector*).
+/// GetConnectors(connector) and GetNodes(connector).
 ///
-/// @tparam N  Type of nodes in the graph.
-/// @tparam C  Type of connectors (nodes, edges) in the graph.
+/// @tparam Ptr  The pointer type managing the connectors (nodes, edges).
 ///
 /// @param[in,out] connector  Connector to nodes.
 /// @param[out] cycle  The cycle path if detected.
 ///
 /// @returns True if a cycle is detected.
-template <class N, class C>
-bool ContinueConnector(C* connector, std::vector<std::string>* cycle) {
-  for (N* node : GetNodes(connector)) {
-    if (DetectCycle<N, C>(node, cycle)) return true;
+template <class Ptr>
+bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle) {
+  for (const auto& node : GetNodes(connector)) {
+    if (DetectCycle(node, cycle)) return true;
   }
-  for (C* link : GetConnectors(connector)) {
-    if (ContinueConnector<N, C>(link, cycle)) return true;
+  for (const auto& link : GetConnectors(connector)) {
+    if (ContinueConnector(link, cycle)) return true;
   }
   return false;
 }

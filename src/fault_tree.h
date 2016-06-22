@@ -51,6 +51,7 @@ class Component : public Element, public Role {
   /// @param[in] role  The default role for container members.
   ///
   /// @throws LogicError  The name is empty.
+  /// @throws InvalidArgument  The name or reference paths are malformed.
   explicit Component(std::string name, std::string base_path = "",
                      RoleSpecifier role = RoleSpecifier::kPublic);
 
@@ -133,8 +134,8 @@ class Component : public Element, public Role {
   /// to gather gates relevant to the whole component.
   ///
   /// @param[out] gates  Gates belonging to this component
-  ///                   and its subcomponents.
-  void GatherGates(std::unordered_set<GatePtr>* gates);
+  ///                    and its subcomponents.
+  void GatherGates(std::unordered_set<Gate*>* gates);
 
  private:
   /// Adds an event into this component container.
@@ -175,7 +176,7 @@ class FaultTree : public Component {
   explicit FaultTree(const std::string& name);
 
   /// @returns The collected top events of this fault tree.
-  const std::vector<GatePtr>& top_events() const { return top_events_; }
+  const std::vector<const Gate*>& top_events() const { return top_events_; }
 
   /// Collects top event gates in this fault tree with components.
   /// This function is essential to guess the analysis targets
@@ -188,19 +189,18 @@ class FaultTree : public Component {
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
   ///
-  /// @param[in] gate  The ancestor gate.
+  /// @param[in,out] gate  The ancestor gate.
   /// @param[in] gates  Gates belonging to the whole fault tree with components.
-  void MarkNonTopGates(const GatePtr& gate,
-                       const std::unordered_set<GatePtr>& gates);
+  void MarkNonTopGates(Gate* gate, const std::unordered_set<Gate*>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   ///
   /// @param[in] formula  The formula of a gate or another formula.
   /// @param[in] gates  Gates belonging to the whole fault tree with components.
-  void MarkNonTopGates(const FormulaPtr& formula,
-                       const std::unordered_set<GatePtr>& gates);
+  void MarkNonTopGates(const Formula& formula,
+                       const std::unordered_set<Gate*>& gates);
 
-  std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
+  std::vector<const Gate*> top_events_;  ///< Top events of this fault tree.
 };
 
 using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.

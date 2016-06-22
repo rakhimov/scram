@@ -20,12 +20,10 @@
 
 #include "initializer.h"
 
-#include <algorithm>
 #include <fstream>
-#include <set>
-#include <unordered_map>
 
 #include <boost/filesystem.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "cycle.h"
 #include "env.h"
@@ -136,18 +134,16 @@ void Initializer::CheckDuplicateFiles(
   using Path = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
   std::vector<Path> files;
-  auto Comparator = [](const Path& lhs,
-                       const Path& rhs) { return lhs.first < rhs.first; };
+  auto Comparator = [](const Path& lhs, const Path& rhs) {
+    return lhs.first < rhs.first;
+  };
 
   for (auto& xml_file : xml_files)
     files.emplace_back(fs::canonical(xml_file), xml_file);
 
-  std::sort(files.begin(), files.end(), Comparator);
-
-  auto it = std::adjacent_find(files.begin(), files.end(),
-                               [](const Path& lhs, const Path& rhs) {
-    return lhs.first == rhs.first;
-  });
+  auto it = boost::adjacent_find(
+      boost::sort(files, Comparator),  // NOLINT(build/include_what_you_use)
+      [](const Path& lhs, const Path& rhs) { return lhs.first == rhs.first; });
 
   if (it != files.end()) {
     std::stringstream msg;
@@ -626,11 +622,30 @@ struct Initializer::Extractor<T, 0> {
   }
 };
 
-/// Partial specialization for Extractor of Histogram expressions.
-///
-/// @tparam N  Irrelevant request for this expression.
-template <int N>
-struct Initializer::Extractor<Histogram, N> {
+/// Specialization of Extractor to extract all expressions into arg vector.
+template <class T>
+struct Initializer::Extractor<T, -1> {
+  /// Constructs an expression with a variable number of arguments.
+  ///
+  /// @param[in] args  A vector of XML elements containing the arguments.
+  /// @param[in] base_path  Series of ancestor containers in the path with dots.
+  /// @param[in,out] init  The host Initializer.
+  ///
+  /// @returns A shared pointer to the constructed expression.
+  std::shared_ptr<T> operator()(const xmlpp::NodeSet& args,
+                                const std::string& base_path,
+                                Initializer* init) {
+    std::vector<ExpressionPtr> expr_args;
+    for (const xmlpp::Node* node : args) {
+      expr_args.push_back(init->GetExpression(XmlElement(node), base_path));
+    }
+    return std::make_shared<T>(std::move(expr_args));
+  }
+};
+
+/// Full specialization for Extractor of Histogram expressions.
+template <>
+struct Initializer::Extractor<Histogram, -1> {
   /// Constructs Histogram deviate expression
   /// expression arguments in XML elements.
   ///
@@ -642,7 +657,7 @@ struct Initializer::Extractor<Histogram, N> {
   std::shared_ptr<Histogram> operator()(const xmlpp::NodeSet& args,
                                         const std::string& base_path,
                                         Initializer* init) {
-    std::vector<ExpressionPtr> boundaries;
+    std::vector<ExpressionPtr> boundaries = {ConstantExpression::kZero};
     std::vector<ExpressionPtr> weights;
     for (const xmlpp::Node* node : args) {
       const xmlpp::Element* el = XmlElement(node);
@@ -665,23 +680,34 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"lognormal-deviate", Extractor<LogNormalDeviate, 3>()},
     {"gamma-deviate", Extractor<GammaDeviate, 2>()},
     {"beta-deviate", Extractor<BetaDeviate, 2>()},
-    {"histogram", Extractor<Histogram, -1>()}};
+    {"histogram", Extractor<Histogram, -1>()},
+    {"neg", Extractor<Neg, 1>()},
+    {"add", Extractor<Add, -1>()},
+    {"sub", Extractor<Sub, -1>()},
+    {"mul", Extractor<Mul, -1>()},
+    {"div", Extractor<Div, -1>()}};
 
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
-  static const std::set<std::string> const_expr = {"int", "float", "bool"};
-  static const std::set<std::string> param_expr = {"parameter",
-                                                   "system-mission-time"};
-  if (const_expr.count(expr_element->get_name()))
+  std::string expr_name = expr_element->get_name();
+  if (expr_name == "int" || expr_name == "float" || expr_name == "bool")
     return Initializer::GetConstantExpression(expr_element);
 
-  if (param_expr.count(expr_element->get_name()))
+  if (expr_name == "parameter" || expr_name == "system-mission-time")
     return Initializer::GetParameterExpression(expr_element, base_path);
 
-  ExpressionPtr expression = kExpressionExtractors_.at(
-      expr_element->get_name())(expr_element->find("./*"), base_path, this);
-  expressions_.push_back(expression);  // For late validation.
-  return expression;
+  if (expr_name == "pi") return ConstantExpression::kPi;
+
+  try {
+    ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
+        expr_element->find("./*"), base_path, this);
+    expressions_.push_back(expression);  // For late validation.
+    return expression;
+  } catch (InvalidArgument& err) {
+    std::stringstream msg;
+    msg << "Line " << expr_element->get_line() << ":\n";
+    throw ValidationError(msg.str() + err.msg());
+  }
 }
 
 ExpressionPtr Initializer::GetConstantExpression(
@@ -699,7 +725,7 @@ ExpressionPtr Initializer::GetConstantExpression(
   } else {
     assert(expr_name == "bool");
     std::string val = GetAttributeValue(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val == "true");
+    return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
   }
 }
 
@@ -858,7 +884,7 @@ void Initializer::ValidateInitialization() {
   // Check if all gates have no cycles.
   for (const std::pair<const std::string, GatePtr>& gate : model_->gates()) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Gate, Formula>(gate.second.get(), &cycle)) {
+    if (cycle::DetectCycle(gate.second, &cycle)) {
       std::string msg =
           "Detected a cycle in " + gate.second->name() + " gate:\n";
       msg += cycle::PrintCycle(cycle);
@@ -895,7 +921,7 @@ void Initializer::ValidateExpressions() {
   for (const std::pair<const std::string, ParameterPtr>& p :
        model_->parameters()) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Parameter, Expression>(p.second.get(), &cycle)) {
+    if (cycle::DetectCycle(p.second.get(), &cycle)) {
       throw ValidationError("Detected a cycle in " + p.second->name() +
                             " parameter:\n" + cycle::PrintCycle(cycle));
     }

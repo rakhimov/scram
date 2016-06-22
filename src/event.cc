@@ -44,33 +44,24 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
 
 void Gate::Validate() {
   // Detect inhibit flavor.
-  if (formula_->type() == "and" && Element::HasAttribute("flavor")) {
-    const Attribute& attr = Element::GetAttribute("flavor");
-    if (attr.value == "inhibit") {
-      if (formula_->num_args() != 2) {
-        throw ValidationError(Element::name() +
-                              "INHIBIT gate must have only 2 children");
-      }
-      std::stringstream msg;
-      bool conditional_found = false;
-      for (const BasicEventPtr& event : formula_->basic_event_args()) {
-        if (!event->HasAttribute("flavor")) continue;
-        std::string type = event->GetAttribute("flavor").value;
-        if (type != "conditional") continue;
-        if (!conditional_found) {
-          conditional_found = true;
-        } else {
-          msg << Element::name() << " : INHIBIT gate must have"
-              << " exactly one conditional event.\n";
-        }
-      }
-      if (!conditional_found) {
-        msg << Element::name()
-            << " : INHIBIT gate is missing a conditional event.\n";
-      }
-      if (!msg.str().empty()) throw ValidationError(msg.str());
-    }
+  if (formula_->type() != "and" || !Element::HasAttribute("flavor") ||
+      Element::GetAttribute("flavor").value != "inhibit")
+    return;
+
+  if (formula_->num_args() != 2) {
+    throw ValidationError(Element::name() +
+                          "INHIBIT gate must have only 2 children");
   }
+  int num_conditional = std::count_if(
+      formula_->basic_event_args().begin(),
+      formula_->basic_event_args().end(),
+      [](const BasicEventPtr& event) {
+        return event->HasAttribute("flavor") &&
+               event->GetAttribute("flavor").value == "conditional";
+      });
+  if (num_conditional != 1)
+    throw ValidationError(Element::name() + " : INHIBIT gate must have" +
+                          " exactly one conditional event.");
 }
 
 const std::set<std::string> Formula::kTwoOrMore_ = {{"and"}, {"or"}, {"nand"},
@@ -98,10 +89,6 @@ void Formula::vote_number(int number) {
     throw LogicError("Trying to re-assign a vote number");
   }
   vote_number_ = number;
-}
-
-void Formula::AddArgument(FormulaPtr formula) {
-  formula_args_.emplace_back(std::move(formula));
 }
 
 void Formula::Validate() {

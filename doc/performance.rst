@@ -184,14 +184,14 @@ Release build:
 
 - ZBDD Time: 2.0
 
-- Reporting (/dev/null): 3.8
+- Reporting (/dev/null): 2.6
 
 - # of ZBDD vertices created: 42919
 - # of Nodes in ZBDD: 10790
 - ZBDD Cut set extraction memory: 100
-- Cut set indices to pointers memory: 150
+- Cut set indices to pointers memory: 90
 
-- Memory: 450
+- Memory: 390
 
 - Cache-misses:  34 %
 
@@ -204,15 +204,15 @@ Release build:
 
 - ZBDD Time: 11
 
-- Reporting (/dev/null): 25
+- Reporting (/dev/null): 17.5
 
 - # of ZBDD vertices created: 218856
 - # of Nodes in ZBDD: 21706
 - ZBDD Cut set extraction memory: 800
-- Cut set indices to pointers memory: 1100
-- Cut set indices to pointers time: 1.9
+- Cut set indices to pointers memory: 600
+- Cut set indices to pointers time: 0.95
 
-- Memory:   1920
+- Memory:   1350
 
 
 Uncertainty Analysis
@@ -236,13 +236,13 @@ Fault tree generator flags to get the model.
 Debug build:
 ~~~~~~~~~~~~
 
-- Initialization and Validation    37  |  40
+- Initialization and Validation    29
 
 
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    20
+- Initialization and Validation    18
 
 - Memory:   1100
 

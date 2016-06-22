@@ -22,14 +22,16 @@
 
 #include <cassert>
 
+#include <string>
+
 namespace scram {
 
-XmlStreamElement::XmlStreamElement(std::string name, std::ostream& out)
-    : XmlStreamElement(std::move(name), 0, nullptr, out) {}
+XmlStreamElement::XmlStreamElement(const char* name, std::ostream& out)
+    : XmlStreamElement(name, 0, nullptr, out) {}
 
-XmlStreamElement::XmlStreamElement(std::string name, int indent,
+XmlStreamElement::XmlStreamElement(const char* name, int indent,
                                    XmlStreamElement* parent, std::ostream& out)
-    : kName_(std::move(name)),
+    : kName_(name),
       kIndent_(indent),
       accept_attributes_(true),
       accept_elements_(true),
@@ -37,7 +39,7 @@ XmlStreamElement::XmlStreamElement(std::string name, int indent,
       active_(true),
       parent_(parent),
       out_(out) {
-  if (kName_.empty()) throw XmlStreamError("The element name can't be empty.");
+  if (*kName_ == '\0') throw XmlStreamError("The element name can't be empty.");
   if (kIndent_ < 0) throw XmlStreamError("Negative indentation.");
   if (parent_) {
     if (!parent_->active_) throw XmlStreamError("The parent is inactive.");
@@ -60,36 +62,16 @@ XmlStreamElement::~XmlStreamElement() noexcept {
   }
 }
 
-void XmlStreamElement::SetAttribute(const std::string& name,
-                                    const std::string& value) {
-  if (!active_) throw XmlStreamError("The element is inactive.");
-  if (!accept_attributes_) throw XmlStreamError("Too late to set attributes.");
-  if (name.empty()) throw XmlStreamError("Attribute name can't be empty.");
-  out_ << " " << name << "=\"" << value << "\"";
-}
-
-void XmlStreamElement::AddChildText(const std::string& text) {
-  if (!active_) throw XmlStreamError("The element is inactive.");
-  if (!accept_text_) throw XmlStreamError("Too late to put text.");
-  if (text.empty()) throw XmlStreamError("Text can't be empty.");
-  if (accept_elements_) accept_elements_ = false;
-  if (accept_attributes_) {
-    accept_attributes_ = false;
-    out_ << ">";
-  }
-  out_ << text;
-}
-
-XmlStreamElement XmlStreamElement::AddChild(std::string name) {
+XmlStreamElement XmlStreamElement::AddChild(const char* name) {
   if (!active_) throw XmlStreamError("The element is inactive.");
   if (!accept_elements_) throw XmlStreamError("Too late to add elements.");
-  if (name.empty()) throw XmlStreamError("Element name can't be empty.");
+  if (*name == '\0') throw XmlStreamError("Element name can't be empty.");
   if (accept_text_) accept_text_ = false;
   if (accept_attributes_) {
     accept_attributes_ = false;
     out_ << ">\n";
   }
-  return XmlStreamElement(std::move(name), kIndent_ + 2, this, out_);
+  return XmlStreamElement(name, kIndent_ + 2, this, out_);
 }
 
 }  // namespace scram

@@ -22,7 +22,6 @@
 #define SCRAM_SRC_XML_STREAM_H_
 
 #include <ostream>
-#include <string>
 
 #include "error.h"
 
@@ -49,6 +48,14 @@ class XmlStreamError : public Error {
 ///          are NOT fully validated to be proper XML.
 ///          It is up to the caller
 ///          to sanitize the input text.
+///
+/// @warning The API works with C strings,
+///          but this class does not manage the string lifetime.
+///          It doesn't own any strings.
+///          The provider of the strings must make sure
+///          the lifetime of the string is long enough for streaming.
+///          It is the most common case that strings are literals,
+///          so there's no need to worry about dynamic lifetime.
 class XmlStreamElement {
  public:
   /// Constructs a root streamer for the XML element data
@@ -58,7 +65,7 @@ class XmlStreamElement {
   /// @param[in,out] out  The destination stream.
   ///
   /// @throws XmlStreamError  Invalid setup for the element.
-  XmlStreamElement(std::string name, std::ostream& out);
+  XmlStreamElement(const char* name, std::ostream& out);
 
   XmlStreamElement& operator=(const XmlStreamElement&) = delete;
 
@@ -84,13 +91,23 @@ class XmlStreamElement {
 
   /// Sets the attributes for the element.
   ///
+  /// @tparam T  Streamable type supporting operator<<.
+  ///
   /// @param[in] name  Non-empty name for the attribute.
   /// @param[in] value  The value of the attribute.
   ///
   /// @throws XmlStreamError  Invalid setup for the attribute.
-  void SetAttribute(const std::string& name, const std::string& value);
+  template <typename T>
+  void SetAttribute(const char* name, T&& value) {
+    if (!active_) throw XmlStreamError("The element is inactive.");
+    if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
+    if (*name == '\0') throw XmlStreamError("Attribute name can't be empty.");
+    out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
+  }
 
   /// Adds text to the element.
+  ///
+  /// @tparam T  Streamable type supporting operator<<.
   ///
   /// @param[in] text  Non-empty text.
   ///
@@ -98,7 +115,17 @@ class XmlStreamElement {
   /// @post More text can be added.
   ///
   /// @throws XmlStreamError  Invalid setup or state for text addition.
-  void AddChildText(const std::string& text);
+  template <typename T>
+  void AddChildText(T&& text) {
+    if (!active_) throw XmlStreamError("The element is inactive.");
+    if (!accept_text_) throw XmlStreamError("Too late to put text.");
+    if (accept_elements_) accept_elements_ = false;
+    if (accept_attributes_) {
+      accept_attributes_ = false;
+      out_ << ">";
+    }
+    out_ << std::forward<T>(text);
+  }
 
   /// Adds a child element to the element.
   ///
@@ -112,7 +139,7 @@ class XmlStreamElement {
   ///       while the child element is alive.
   ///
   /// @throws XmlStreamError  Invalid setup or state for element addition.
-  XmlStreamElement AddChild(std::string name);
+  XmlStreamElement AddChild(const char* name);
 
  private:
   /// Private constructor for a streamer
@@ -125,10 +152,10 @@ class XmlStreamElement {
   /// @param[in,out] out  The destination stream.
   ///
   /// @throws XmlStreamError  Invalid setup for the element.
-  XmlStreamElement(std::string name, int indent, XmlStreamElement* parent,
+  XmlStreamElement(const char* name, int indent, XmlStreamElement* parent,
                    std::ostream& out);
 
-  const std::string kName_;  ///< The name of the element.
+  const char* kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.
   bool accept_attributes_;  ///< Flag for preventing late attributes.
   bool accept_elements_;  ///< Flag for preventing late elements.

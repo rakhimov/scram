@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -31,6 +32,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "ext.h"
 #include "expression.h"
 #include "fault_tree.h"
 
@@ -40,9 +42,17 @@ namespace mef {
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
+  /// Table for constructs in the model identified by names or ids.
+  ///
+  /// @tparam T  The type of a stored value.
+  template <typename T>
+  using Table = std::unordered_map<std::string, T>;
+
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.
+  ///
+  /// @throws InvalidArgument  The name is malformed.
   explicit Model(std::string name = "");
 
   Model(const Model&) = delete;
@@ -50,24 +60,18 @@ class Model : public Element {
 
   /// @returns Defined constructs in the model.
   /// @{
-  const std::unordered_map<std::string, FaultTreePtr>& fault_trees() const {
-    return fault_trees_;
+  const Table<FaultTreePtr>& fault_trees() const { return fault_trees_; }
+  const Table<ParameterPtr>& parameters() const {
+    return parameters_.entities_by_id;
   }
-  const std::unordered_map<std::string, ParameterPtr>& parameters() const {
-    return parameters_;
+  const Table<HouseEventPtr>& house_events() const {
+    return house_events_.entities_by_id;
   }
-  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
-    return house_events_;
+  const Table<BasicEventPtr>& basic_events() const {
+    return basic_events_.entities_by_id;
   }
-  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
-    return basic_events_;
-  }
-  const std::unordered_map<std::string, GatePtr>& gates() const {
-    return gates_;
-  }
-  const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
-    return ccf_groups_;
-  }
+  const Table<GatePtr>& gates() const { return gates_.entities_by_id; }
+  const Table<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
 
   /// Adds a fault tree into the model container.
@@ -114,67 +118,100 @@ class Model : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
+  /// The reference is case sensitive
+  /// and can contain an identifier, full path, or local path.
   ///
-  /// @param[in] reference  Reference string to the entity.
+  /// @param[in] entity_reference  Reference string to the entity.
   /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns Pointer to the entity found by following the given reference.
   ///
   /// @throws std::out_of_range  The entity cannot be found.
   /// @{
-  ParameterPtr GetParameter(const std::string& reference,
-                            const std::string& base_path);
-  HouseEventPtr GetHouseEvent(const std::string& reference,
-                              const std::string& base_path);
-  BasicEventPtr GetBasicEvent(const std::string& reference,
-                              const std::string& base_path);
-  GatePtr GetGate(const std::string& reference, const std::string& base_path);
+  ParameterPtr GetParameter(const std::string& entity_reference,
+                            const std::string& base_path) {
+    return Model::GetEntity(entity_reference, base_path, parameters_);
+  }
+  HouseEventPtr GetHouseEvent(const std::string& entity_reference,
+                              const std::string& base_path) {
+    return Model::GetEntity(entity_reference, base_path, house_events_);
+  }
+  BasicEventPtr GetBasicEvent(const std::string& entity_reference,
+                              const std::string& base_path) {
+    return Model::GetEntity(entity_reference, base_path, basic_events_);
+  }
+  GatePtr GetGate(const std::string& entity_reference,
+                  const std::string& base_path) {
+    return Model::GetEntity(entity_reference, base_path, gates_);
+  }
   /// @}
 
  private:
+  /// Lookup containers for model entities with roles.
+  ///
+  /// @tparam T  Type of an entity with a role.
+  template <typename T>
+  struct Lookup {
+    static_assert(std::is_base_of<Role, T>::value, "Entity without a role!");
+
+    /// Adds an entry with an entity into lookup containers.
+    ///
+    /// @param[in] entity  The candidate entity.
+    ///
+    /// @returns false if the entity is duplicate and hasn't been added.
+    bool Add(const std::shared_ptr<T>& entity) {
+      if (entities_by_id.emplace(entity->id(), entity).second == false)
+        return false;
+
+      entities_by_path.emplace(entity->base_path() + "." + entity->name(),
+                               entity);
+      return true;
+    }
+
+    Table<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.
+    Table<std::shared_ptr<T>> entities_by_path;  ///< Full path as a key.
+  };
+
   /// Generic helper function to find an entity from a reference.
-  /// The reference is not case sensitive
-  /// and can contain the identifier, full path, or local path.
+  /// The reference is case sensitive
+  /// and can contain an identifier, full path, or local path.
   ///
   /// @tparam Container  Map of name and entity pairs.
   ///
-  /// @param[in] reference  Reference string to the entity.
+  /// @param[in] entity_reference  Reference string to the entity.
   /// @param[in] base_path  The series of containers indicating the scope.
-  /// @param[in] public_container  Model's container for public entities.
-  /// @param[in] getter  The getter function to access
-  ///                    the components' container of private entities.
+  /// @param[in] container  Model's lookup container for entities.
   ///
   /// @returns Pointer to the requested entity.
   ///
   /// @throws std::out_of_range  The entity cannot be found.
-  template <class Container>
-  typename Container::mapped_type GetEntity(
-      const std::string& reference,
-      const std::string& base_path,
-      const Container& public_container,
-      const Container& (Component::*getter)() const);
+  template <class T>
+  std::shared_ptr<T> GetEntity(const std::string& entity_reference,
+                               const std::string& base_path,
+                               const Lookup<T>& container) {
+    assert(!entity_reference.empty());
+    if (!base_path.empty()) {  // Check the local scope.
+      if (auto it = ext::find(container.entities_by_path,
+                              base_path + "." + entity_reference))
+        return it->second;
+    }
 
-  /// Helper function to find the container for references.
-  ///
-  /// @param[in] path  The ancestor container names chained with ".".
-  ///
-  /// @returns A fault tree or component from the path.
-  ///
-  /// @throws std::out_of_range  There's a missing container in the path.
-  const Component& GetContainer(const std::vector<std::string>& path);
+    if (entity_reference.find('.') == std::string::npos)  // Public entity.
+      return container.entities_by_id.at(entity_reference);
+
+    return container.entities_by_path.at(entity_reference);  // Direct access.
+  }
 
   /// A collection of defined constructs in the model.
   /// @{
-  std::unordered_map<std::string, FaultTreePtr> fault_trees_;
-  std::unordered_map<std::string, GatePtr> gates_;
-  std::unordered_map<std::string, HouseEventPtr> house_events_;
-  std::unordered_map<std::string, BasicEventPtr> basic_events_;
-  std::unordered_map<std::string, ParameterPtr> parameters_;
-  std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  Table<FaultTreePtr> fault_trees_;
+  Lookup<Gate> gates_;
+  Lookup<HouseEvent> house_events_;
+  Lookup<BasicEvent> basic_events_;
+  Lookup<Parameter> parameters_;
+  Table<CcfGroupPtr> ccf_groups_;
   /// @}
-  std::unordered_set<std::string> event_ids_;  ///< For faster lookup.
+  std::unordered_set<std::string> event_ids_;  ///< All event ids.
 };
 
 }  // namespace mef

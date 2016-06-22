@@ -386,7 +386,7 @@ class Preprocessor {
   /// @warning Gate marks must be clear.
   void DetectMultipleDefinitions(
       const GatePtr& gate,
-      std::unordered_map<GatePtr, std::vector<GateWeakPtr> >* multi_def,
+      std::unordered_map<GatePtr, std::vector<GateWeakPtr>>* multi_def,
       GateSet* unique_gates) noexcept;
 
   /// Traverses the Boolean graph to detect modules.

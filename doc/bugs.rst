@@ -15,18 +15,9 @@ Technical Issues
 - Copying Settings around is expensive (~100B)
 - Abuse of smart pointers (shared pointers).
   Pollution of function interfaces.
-- mef::Gate and mef::Formula have 'type' field instead of 'operator' (reserved in C++)
-- Bdd and Zbdd friendship is a design smell.
-  (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
+- mef::Gate and mef::Formula have ``type`` field instead of ``operator`` (reserved in C++)
 - The violation of the basic guarantee (memory leaks)
   due to circular references in incorrect models
   (formulas, parameters, containers).
 - Static variables of class type with dynamic initialization.
 - Performance profile across platforms is not stable.
-- Inefficient double-lookup anti-pattern for containers.
-
-.. code-block:: cpp
-
-  if (map.count(key))
-    throw error();
-  map.emplace(key, value);

@@ -53,23 +53,11 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
-  RiskAnalysis(const std::shared_ptr<const mef::Model>& model,
+  RiskAnalysis(std::shared_ptr<const mef::Model> model,
                const Settings& settings);
 
   /// @returns The model under analysis.
   const mef::Model& model() const { return *model_; }
-
-  /// Provides graphing instructions
-  /// for each fault tree initialized in the analysis.
-  /// All top events from fault trees are processed
-  /// into output files named with fault tree and top event names.
-  ///
-  /// @throws IOError  The output file cannot be accessed for writing.
-  ///
-  /// @note This function must be called
-  ///       only after initializing the tree
-  ///       with or without its probabilities.
-  void GraphingInstructions();
 
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
@@ -136,8 +124,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
-  void RunAnalysis(const std::string& name,
-                   const mef::GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name, const mef::Gate& target) noexcept;
 
   /// Defines and runs Qualitative analysis on the target.
   /// Calls the Quantitative analysis if requested in settings.
@@ -147,8 +134,7 @@ class RiskAnalysis : public Analysis {
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
   template <class Algorithm>
-  void RunAnalysis(const std::string& name,
-                   const mef::GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name, const mef::Gate& target) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
   ///

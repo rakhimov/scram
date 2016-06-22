@@ -22,6 +22,8 @@
 
 #include <sstream>
 
+#include "ext.h"
+
 namespace scram {
 namespace mef {
 
@@ -36,11 +38,10 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (members_.count(basic_event->name())) {
+  if (members_.emplace(basic_event->name(), basic_event).second == false) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + Element::name() + " CCF group.");
   }
-  members_.emplace(basic_event->name(), basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
@@ -109,8 +110,7 @@ GenerateCombinations(Iterator first1, Iterator last1, int k) {
 
   if (k > size) return {};
   if (k == 0) return {{}};  // The notion of 'nothing'.
-  if (k == size)
-    return {std::vector<typename Iterator::value_type>(first1, last1)};
+  if (k == size) return {{first1, last1}};
 
   auto c = GenerateCombinations(std::next(first1), last1, k - 1);
   for (auto& v : c) v.push_back(*first1);
@@ -146,13 +146,13 @@ void CcfGroup::ApplyModel() {
   std::vector<Gate*> proxy_gates;
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     const BasicEventPtr& member = mem.second;
-    GatePtr new_gate(
-        new Gate(member->name(), member->base_path(), member->role()));
+    auto new_gate = ext::make_unique<Gate>(member->name(), member->base_path(),
+                                           member->role());
     assert(member->id() == new_gate->id());
-    new_gate->formula(FormulaPtr(new Formula("or")));
+    new_gate->formula(ext::make_unique<Formula>("or"));
 
     proxy_gates.push_back(new_gate.get());
-    member->ccf_gate(new_gate);
+    member->ccf_gate(std::move(new_gate));
   }
 
   ExpressionMap probabilities = this->CalculateProbabilities();
@@ -167,7 +167,7 @@ void CcfGroup::ApplyModel() {
     for (auto& combination : combinations) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
-      for (Gate* gate : combination) gate->formula()->AddArgument(ccf_event);
+      for (Gate* gate : combination) gate->formula().AddArgument(ccf_event);
       ccf_event->members(std::move(combination));  // Move, at last.
     }
   }
@@ -192,9 +192,8 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 
   ExpressionMap probabilities;
 
-  ExpressionPtr one(new ConstantExpression(1.0));
   ExpressionPtr beta = CcfGroup::factors().begin()->second;
-  ExpressionPtr indep_factor(new Sub({one, beta}));  // (1 - beta)
+  ExpressionPtr indep_factor(new Sub({ConstantExpression::kOne, beta}));
   probabilities.emplace_back(  // (1 - beta) * Q
       1,
       ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution()})));
@@ -243,18 +242,17 @@ CcfGroup::ExpressionMap MglModel::CalculateProbabilities() {
   int max_level = CcfGroup::factors().back().first;
   assert(CcfGroup::factors().size() == max_level - 1);
 
-  ExpressionPtr one(new ConstantExpression(1.0));
   int num_members = CcfGroup::members().size();
   for (int i = 0; i < max_level; ++i) {
     double mult = CalculateCombinationReciprocal(num_members - 1, i);
     std::vector<ExpressionPtr> args;
-    args.push_back(ExpressionPtr(new ConstantExpression(mult)));
+    args.emplace_back(new ConstantExpression(mult));
     for (int j = 0; j < i; ++j) {
       args.push_back(CcfGroup::factors()[j].second);
     }
     if (i < max_level - 1) {
-      args.push_back(
-          ExpressionPtr(new Sub({one, CcfGroup::factors()[i].second})));
+      args.emplace_back(
+          new Sub({ConstantExpression::kOne, CcfGroup::factors()[i].second}));
     }
     args.push_back(CcfGroup::distribution());
     probabilities.emplace_back(i + 1, ExpressionPtr(new Mul(args)));
