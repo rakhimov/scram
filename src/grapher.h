@@ -42,7 +42,7 @@ class Grapher {
   /// @param[in] top_event  The root node for the fault tree to draw.
   /// @param[in] prob_requested  Should probabilities be included.
   /// @param[out] out  The output stream.
-  void GraphFaultTree(const mef::GatePtr& top_event, bool prob_requested,
+  void GraphFaultTree(const mef::Gate& top_event, bool prob_requested,
                       std::ostream& out);
 
  private:
@@ -69,7 +69,7 @@ class Grapher {
   ///
   /// @param[in] top_event  The top event to be formatted.
   /// @param[out] out  The output stream.
-  void FormatTopEvent(const mef::GatePtr& top_event, std::ostream& out);
+  void FormatTopEvent(const mef::Gate& top_event, std::ostream& out);
 
   /// Provides formatting information for each gate intermediate event.
   ///

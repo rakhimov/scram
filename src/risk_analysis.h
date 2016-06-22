@@ -136,8 +136,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
-  void RunAnalysis(const std::string& name,
-                   const mef::GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name, const mef::Gate& target) noexcept;
 
   /// Defines and runs Qualitative analysis on the target.
   /// Calls the Quantitative analysis if requested in settings.
@@ -147,8 +146,7 @@ class RiskAnalysis : public Analysis {
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
   template <class Algorithm>
-  void RunAnalysis(const std::string& name,
-                   const mef::GatePtr& target) noexcept;
+  void RunAnalysis(const std::string& name, const mef::Gate& target) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
   ///

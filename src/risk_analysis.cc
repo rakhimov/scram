@@ -49,7 +49,7 @@ void RiskAnalysis::GraphingInstructions() {
   LOG(DEBUG1) << "Producing graphing instructions";
   for (const std::pair<const std::string, mef::FaultTreePtr>& fault_tree :
        model_->fault_trees()) {
-    for (const mef::GatePtr& top_event : fault_tree.second->top_events()) {
+    for (const mef::Gate* top_event : fault_tree.second->top_events()) {
       std::string output =
           fault_tree.second->name() + "_" + top_event->name() + ".dot";
       std::ofstream of(output.c_str());
@@ -57,7 +57,7 @@ void RiskAnalysis::GraphingInstructions() {
         throw IOError(output +  " : Cannot write the graphing file.");
       }
       Grapher gr = Grapher();
-      gr.GraphFaultTree(top_event, Analysis::settings().probability_analysis(),
+      gr.GraphFaultTree(*top_event, Analysis::settings().probability_analysis(),
                         of);
       of.flush();
     }
@@ -67,21 +67,21 @@ void RiskAnalysis::GraphingInstructions() {
 
 void RiskAnalysis::Analyze() noexcept {
   // Set the seed for the pseudo-random number generator if given explicitly.
-  // Otherwise it defaults to the current time.
+  // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
   for (const std::pair<const std::string, mef::FaultTreePtr>& ft :
        model_->fault_trees()) {
-    for (const mef::GatePtr& target : ft.second->top_events()) {
+    for (const mef::Gate* target : ft.second->top_events()) {
       LOG(INFO) << "Running analysis: " << target->id();
-      RiskAnalysis::RunAnalysis(target->id(), target);
+      RiskAnalysis::RunAnalysis(target->id(), *target);
       LOG(INFO) << "Finished analysis: " << target->id();
     }
   }
 }
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const mef::GatePtr& target) noexcept {
+                               const mef::Gate& target) noexcept {
   if (Analysis::settings().algorithm() == "bdd") {
     RiskAnalysis::RunAnalysis<Bdd>(name, target);
   } else if (Analysis::settings().algorithm() == "zbdd") {
@@ -94,7 +94,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 
 template <class Algorithm>
 void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const mef::GatePtr& target) noexcept {
+                               const mef::Gate& target) noexcept {
   auto* fta = new FaultTreeAnalyzer<Algorithm>(target, Analysis::settings());
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {

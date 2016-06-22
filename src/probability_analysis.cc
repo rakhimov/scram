@@ -103,10 +103,10 @@ double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
   return prob;
 }
 
-void ProbabilityAnalyzer<Bdd>::CreateBdd(const mef::GatePtr& root) noexcept {
+void ProbabilityAnalyzer<Bdd>::CreateBdd(const mef::Gate& root) noexcept {
   CLOCK(ft_creation);
   BooleanGraph* bool_graph =
-      new BooleanGraph(*root, Analysis::settings().ccf_analysis());
+      new BooleanGraph(root, Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";

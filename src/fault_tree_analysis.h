@@ -193,17 +193,15 @@ class FaultTreeDescriptor {
   ///
   /// @param[in] root  The root gate of a fault tree.
   ///
-  /// @pre Gate marks must be clear.
-  ///
   /// @warning If the fault tree structure is changed,
   ///          this description does not incorporate the changed structure.
   ///          Moreover, the data may get corrupted.
-  explicit FaultTreeDescriptor(const mef::GatePtr& root);
+  explicit FaultTreeDescriptor(const mef::Gate& root);
 
   virtual ~FaultTreeDescriptor() = default;
 
   /// @returns The top gate that is passed to the analysis.
-  const mef::GatePtr& top_event() const { return top_event_; }
+  const mef::Gate& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
   ///
@@ -241,6 +239,7 @@ class FaultTreeDescriptor {
   }
 
  private:
+  /// Traverses formulas recursively to find all events.
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated
   /// to best reflect the state and structure of the fault tree.
@@ -250,24 +249,11 @@ class FaultTreeDescriptor {
   /// available for analysis like primary events of this fault tree.
   /// Moreover, all the nodes of this fault tree
   /// are expected to be defined fully and correctly.
-  /// Gates are marked upon visit.
-  /// The mark is checked to prevent revisiting.
-  ///
-  /// @param[in] gate  The gate to start traversal from.
-  void GatherEvents(const mef::GatePtr& gate) noexcept;
-
-  /// Traverses formulas recursively to find all events.
   ///
   /// @param[in] formula  The formula to get events from.
   void GatherEvents(const mef::Formula& formula) noexcept;
 
-  /// Clears marks from gates that were traversed.
-  /// Marks are set to empty strings.
-  /// This is important
-  /// because other code may assume that marks are empty.
-  void ClearMarks() noexcept;
-
-  mef::GatePtr top_event_;  ///< Top event of this fault tree.
+  const mef::Gate& top_event_;  ///< Top event of this fault tree.
 
   /// Container for intermediate events.
   std::unordered_map<std::string, mef::GatePtr> inter_events_;
@@ -313,14 +299,12 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @param[in] root  The top event of the fault tree to analyze.
   /// @param[in] settings  Analysis settings for all calculations.
   ///
-  /// @pre The gates' visit marks are clean.
-  ///
   /// @note It is assumed that analysis is done only once.
   ///
   /// @warning If the fault tree structure is changed,
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
-  FaultTreeAnalysis(const mef::GatePtr& root, const Settings& settings);
+  FaultTreeAnalysis(const mef::Gate& root, const Settings& settings);
 
   virtual ~FaultTreeAnalysis() = default;
 
@@ -396,7 +380,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = ext::make_unique<BooleanGraph>(*FaultTreeDescriptor::top_event(),
+  graph_ = ext::make_unique<BooleanGraph>(FaultTreeDescriptor::top_event(),
                                           Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 

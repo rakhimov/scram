@@ -43,14 +43,14 @@ const std::map<std::string, std::string> Grapher::kEventColors_ = {
     {"house", "green"},
     {"conditional", "red"}};
 
-void Grapher::GraphFaultTree(const mef::GatePtr& top_event, bool prob_requested,
+void Grapher::GraphFaultTree(const mef::Gate& top_event, bool prob_requested,
                              std::ostream& out) {
   // The structure of the output:
   // List gates with their children.
   // List common intermediate events as transfer symbols.
   // List gates and primary events' descriptions.
 
-  out << "digraph " << top_event->name() << " {\n";
+  out << "digraph " << top_event.name() << " {\n";
 
   auto* fta = new core::FaultTreeDescriptor(top_event);
 
@@ -63,8 +63,8 @@ void Grapher::GraphFaultTree(const mef::GatePtr& top_event, bool prob_requested,
   std::unordered_map<mef::EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.
-  Grapher::GraphFormula(fta->top_event()->id() + "_R0",
-                        fta->top_event()->formula(),
+  Grapher::GraphFormula(fta->top_event().id() + "_R0",
+                        fta->top_event().formula(),
                         &formulas, &node_repeat, out);
   // Do the same for all intermediate events.
   for (auto it_inter = fta->inter_events().begin();
@@ -119,27 +119,27 @@ void Grapher::GraphFormula(
   }
 }
 
-void Grapher::FormatTopEvent(const mef::GatePtr& top_event, std::ostream& out) {
-  std::string gate = top_event->formula().type();
+void Grapher::FormatTopEvent(const mef::Gate& top_event, std::ostream& out) {
+  std::string gate = top_event.formula().type();
   if (gate == "atleast") gate = "vote";
   // Special case for inhibit gate.
-  if (gate == "and" && top_event->HasAttribute("flavor"))
-    gate = top_event->GetAttribute("flavor").value;
+  if (gate == "and" && top_event.HasAttribute("flavor"))
+    gate = top_event.GetAttribute("flavor").value;
 
   std::string gate_color = kGateColors_.at(gate);
 
   boost::to_upper(gate);
-  out << "\"" <<  top_event->id()
+  out << "\"" <<  top_event.id()
       << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
-      << "label=\"" << top_event->name() << "\\n";
-  if (top_event->role() == mef::RoleSpecifier::kPrivate)
+      << "label=\"" << top_event.name() << "\\n";
+  if (top_event.role() == mef::RoleSpecifier::kPrivate)
     out << "-- private --\\n";
   out << "{ " << gate;
   if (gate == "VOTE") {
-    out << " " << top_event->formula().vote_number()
-        << "/" << top_event->formula().num_args();
+    out << " " << top_event.formula().vote_number()
+        << "/" << top_event.formula().num_args();
   }
   out << " }\"]\n";
 }

@@ -78,16 +78,9 @@ int GetOrder(const Product& product) {
   return product.empty() ? 1 : product.size();
 }
 
-FaultTreeDescriptor::FaultTreeDescriptor(const mef::GatePtr& root)
+FaultTreeDescriptor::FaultTreeDescriptor(const mef::Gate& root)
     : top_event_(root) {
-  FaultTreeDescriptor::GatherEvents(top_event_);
-  FaultTreeDescriptor::ClearMarks();
-}
-
-void FaultTreeDescriptor::GatherEvents(const mef::GatePtr& gate) noexcept {
-  if (gate->mark() == "visited") return;
-  gate->mark("visited");
-  FaultTreeDescriptor::GatherEvents(gate->formula());
+  FaultTreeDescriptor::GatherEvents(top_event_.formula());
 }
 
 void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
@@ -100,23 +93,15 @@ void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
     house_events_.emplace(house_event->id(), house_event);
   }
   for (const mef::GatePtr& gate : formula.gate_args()) {
-    inter_events_.emplace(gate->id(), gate);
-    FaultTreeDescriptor::GatherEvents(gate);
+    bool unvisited = inter_events_.emplace(gate->id(), gate).second;
+    if (unvisited) FaultTreeDescriptor::GatherEvents(gate->formula());
   }
   for (const mef::FormulaPtr& arg : formula.formula_args()) {
     FaultTreeDescriptor::GatherEvents(*arg);
   }
 }
 
-void FaultTreeDescriptor::ClearMarks() noexcept {
-  top_event_->mark("");
-  for (const std::pair<const std::string, mef::GatePtr>& member :
-       inter_events_) {
-    member.second->mark("");
-  }
-}
-
-FaultTreeAnalysis::FaultTreeAnalysis(const mef::GatePtr& root,
+FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
                                      const Settings& settings)
     : Analysis(settings),
       FaultTreeDescriptor(root) {}
