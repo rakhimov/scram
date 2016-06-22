@@ -67,7 +67,7 @@ class Expression {
   /// This late validation is due to parameters that are defined late.
   ///
   /// @throws InvalidArgument  The arguments are invalid for setup.
-  virtual void Validate() {}
+  virtual void Validate() const {}
 
   /// @returns The mean value of this expression.
   virtual double Mean() noexcept = 0;
@@ -267,7 +267,7 @@ class ExponentialExpression : public Expression {
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t);
 
   /// @throws InvalidArgument  The failure rate or time is negative.
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override {
     return 1 - std::exp(-(lambda_.Mean() * time_.Mean()));
@@ -305,7 +305,7 @@ class GlmExpression : public Expression {
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t);
 
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override;
   double Max() noexcept override { return 1; }
@@ -342,7 +342,7 @@ class WeibullExpression : public Expression {
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
                     const ExpressionPtr& t0, const ExpressionPtr& time);
 
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override {
     return WeibullExpression::Compute(alpha_.Mean(), beta_.Mean(),
@@ -400,7 +400,7 @@ class UniformDeviate : public RandomDeviate {
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max);
 
   /// @throws InvalidArgument  The min value is more or equal to max value.
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override { return (min_.Mean() + max_.Mean()) / 2; }
   double Max() noexcept override { return max_.Max(); }
@@ -423,7 +423,7 @@ class NormalDeviate : public RandomDeviate {
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma);
 
   /// @throws InvalidArgument  The sigma is negative or zero.
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override { return mean_.Mean(); }
 
@@ -462,7 +462,7 @@ class LogNormalDeviate : public RandomDeviate {
                    const ExpressionPtr& level);
 
   /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override { return mean_.Mean(); }
 
@@ -505,7 +505,7 @@ class GammaDeviate : public RandomDeviate {
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta);
 
   /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override { return k_.Mean() * theta_.Mean(); }
 
@@ -536,7 +536,7 @@ class BetaDeviate : public RandomDeviate {
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta);
 
   /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override {
     double alpha_mean = alpha_.Mean();
@@ -587,7 +587,7 @@ class Histogram : public RandomDeviate {
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
-  void Validate() override {
+  void Validate() const override {
     Histogram::CheckBoundaries();
     Histogram::CheckWeights();
   }
@@ -607,12 +607,12 @@ class Histogram : public RandomDeviate {
   /// Checks if values of boundary expressions are strictly increasing.
   ///
   /// @throws InvalidArgument  The mean values are not strictly increasing.
-  void CheckBoundaries();
+  void CheckBoundaries() const;
 
   /// Checks if values of weights are non-negative.
   ///
   /// @throws InvalidArgument  The mean values are negative.
-  void CheckWeights();
+  void CheckWeights() const;
 
   std::pair<Iterator, Iterator> boundaries_;  ///< Boundaries of the intervals.
   std::pair<Iterator, Iterator> weights_;  ///< Weights of the intervals.
@@ -752,7 +752,7 @@ class Div : public BinaryExpression {
   using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
 
   /// @throws InvalidArgument  Division by 0.
-  void Validate() override;
+  void Validate() const override;
 
   double Mean() noexcept override;
 

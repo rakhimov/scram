@@ -70,7 +70,7 @@ void CcfGroup::ValidateDistribution() {
   }
 }
 
-void CcfGroup::Validate() {
+void CcfGroup::Validate() const {
   if (members_.size() < 2) {
     throw ValidationError(Element::name() +
                           " CCF group must have at least 2 members.");
@@ -283,7 +283,7 @@ CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
   return probabilities;
 }
 
-void PhiFactorModel::Validate() {
+void PhiFactorModel::Validate() const {
   CcfGroup::Validate();
   double sum = 0;
   double sum_min = 0;

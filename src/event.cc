@@ -42,7 +42,7 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
       ccf_group_(*ccf_group) {}
 
-void Gate::Validate() {
+void Gate::Validate() const {
   // Detect inhibit flavor.
   if (formula_->type() != "and" || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit")
@@ -91,7 +91,7 @@ void Formula::vote_number(int number) {
   vote_number_ = number;
 }
 
-void Formula::Validate() {
+void Formula::Validate() const {
   assert(kTwoOrMore_.count(type_) || kSingle_.count(type_) ||
          type_ == "atleast" || type_ == "xor");
 
