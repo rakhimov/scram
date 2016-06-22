@@ -40,16 +40,16 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   if (gates().count("TopEvent")) {
     mef::GatePtr top = gates().at("TopEvent");
     EXPECT_EQ("TopEvent", top->id());
-    ASSERT_NO_THROW(top->formula()->type());
-    EXPECT_EQ("and", top->formula()->type());
-    EXPECT_EQ(2, top->formula()->event_args().size());
+    ASSERT_NO_THROW(top->formula().type());
+    EXPECT_EQ("and", top->formula().type());
+    EXPECT_EQ(2, top->formula().event_args().size());
   }
   if (gates().count("TrainOne")) {
     mef::GatePtr inter = gates().at("TrainOne");
     EXPECT_EQ("TrainOne", inter->id());
-    ASSERT_NO_THROW(inter->formula()->type());
-    EXPECT_EQ("or", inter->formula()->type());
-    EXPECT_EQ(2, inter->formula()->event_args().size());
+    ASSERT_NO_THROW(inter->formula().type());
+    EXPECT_EQ("or", inter->formula().type());
+    EXPECT_EQ(2, inter->formula().event_args().size());
   }
   if (basic_events().count("ValveOne")) {
     mef::BasicEventPtr primary = basic_events().at("ValveOne");

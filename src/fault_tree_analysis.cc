@@ -90,22 +90,21 @@ void FaultTreeDescriptor::GatherEvents(const mef::GatePtr& gate) noexcept {
   FaultTreeDescriptor::GatherEvents(gate->formula());
 }
 
-void FaultTreeDescriptor::GatherEvents(
-    const mef::FormulaPtr& formula) noexcept {
-  for (const mef::BasicEventPtr& basic_event : formula->basic_event_args()) {
+void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
+  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
     basic_events_.emplace(basic_event->id(), basic_event);
     if (basic_event->HasCcf())
       ccf_events_.emplace(basic_event->id(), basic_event);
   }
-  for (const mef::HouseEventPtr& house_event : formula->house_event_args()) {
+  for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
     house_events_.emplace(house_event->id(), house_event);
   }
-  for (const mef::GatePtr& gate : formula->gate_args()) {
+  for (const mef::GatePtr& gate : formula.gate_args()) {
     inter_events_.emplace(gate->id(), gate);
     FaultTreeDescriptor::GatherEvents(gate);
   }
-  for (const mef::FormulaPtr& arg : formula->formula_args()) {
-    FaultTreeDescriptor::GatherEvents(arg);
+  for (const mef::FormulaPtr& arg : formula.formula_args()) {
+    FaultTreeDescriptor::GatherEvents(*arg);
   }
 }
 

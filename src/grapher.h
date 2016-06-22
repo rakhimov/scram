@@ -60,7 +60,7 @@ class Grapher {
   /// @note The repetition information is important to avoid clashes.
   void GraphFormula(
       const std::string& formula_name,
-      const mef::FormulaPtr& formula,
+      const mef::Formula& formula,
       std::vector<std::pair<std::string, const mef::Formula*> >* formulas,
       std::unordered_map<mef::EventPtr, int>* node_repeat,
       std::ostream& out);

@@ -39,8 +39,8 @@ namespace cycle {
 /// @returns The connector belonging to the node.
 ///
 /// @{
-inline const mef::FormulaPtr& GetConnector(const mef::GatePtr& node) {
-  return node->formula();
+inline const mef::Formula* GetConnector(const mef::GatePtr& node) {
+  return &node->formula();
 }
 inline mef::Expression* GetConnector(mef::Parameter* node) { return node; }
 /// @}
@@ -54,6 +54,10 @@ inline mef::Expression* GetConnector(mef::Parameter* node) { return node; }
 /// @{
 inline
 const std::vector<mef::GatePtr>& GetNodes(const mef::FormulaPtr& connector) {
+  return connector->gate_args();
+}
+inline
+const std::vector<mef::GatePtr>& GetNodes(const mef::Formula* connector) {
   return connector->gate_args();
 }
 inline std::vector<mef::Parameter*> GetNodes(mef::Expression* connector) {
@@ -75,6 +79,10 @@ inline std::vector<mef::Parameter*> GetNodes(mef::Expression* connector) {
 /// @{
 inline const std::vector<mef::FormulaPtr>&
 GetConnectors(const mef::FormulaPtr& connector) {
+  return connector->formula_args();
+}
+inline const std::vector<mef::FormulaPtr>&
+GetConnectors(const mef::Formula* connector) {
   return connector->formula_args();
 }
 inline std::vector<mef::Expression*> GetConnectors(mef::Expression* connector) {

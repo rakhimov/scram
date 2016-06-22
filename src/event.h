@@ -260,7 +260,10 @@ class Gate : public Event {
   using Event::Event;  // Construction with unique identification.
 
   /// @returns The formula of this gate.
-  const FormulaPtr& formula() const { return formula_; }
+  /// @{
+  const Formula& formula() const { return *formula_; }
+  Formula& formula() { return *formula_; }
+  /// @}
 
   /// Sets the formula of this gate.
   ///

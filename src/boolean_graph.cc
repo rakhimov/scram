@@ -445,7 +445,7 @@ BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
   Node::ResetIndex();
   Variable::ResetIndex();
   ProcessedNodes nodes;
-  root_ = BooleanGraph::ProcessFormula(*root.formula(), ccf, &nodes);
+  root_ = BooleanGraph::ProcessFormula(root.formula(), ccf, &nodes);
 }
 
 void BooleanGraph::Print() {
@@ -501,8 +501,8 @@ void BooleanGraph::ProcessBasicEvent(const GatePtr& parent,
   if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
     GatePtr& ccf_gate = nodes->gates[&basic_event->ccf_gate()];
     if (!ccf_gate) {
-      ccf_gate = BooleanGraph::ProcessFormula(
-          *basic_event->ccf_gate().formula(), ccf, nodes);
+      ccf_gate = BooleanGraph::ProcessFormula(basic_event->ccf_gate().formula(),
+                                              ccf, nodes);
     }
     parent->AddArg(ccf_gate->index(), ccf_gate);
   } else {
@@ -531,7 +531,7 @@ void BooleanGraph::ProcessGate(const GatePtr& parent, const mef::Gate& gate,
                                bool ccf, ProcessedNodes* nodes) noexcept {
   GatePtr& pdag_gate = nodes->gates[&gate];
   if (!pdag_gate) {
-    pdag_gate = BooleanGraph::ProcessFormula(*gate.formula(), ccf, nodes);
+    pdag_gate = BooleanGraph::ProcessFormula(gate.formula(), ccf, nodes);
   }
   parent->AddArg(pdag_gate->index(), pdag_gate);
 }

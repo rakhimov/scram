@@ -259,7 +259,7 @@ class FaultTreeDescriptor {
   /// Traverses formulas recursively to find all events.
   ///
   /// @param[in] formula  The formula to get events from.
-  void GatherEvents(const mef::FormulaPtr& formula) noexcept;
+  void GatherEvents(const mef::Formula& formula) noexcept;
 
   /// Clears marks from gates that were traversed.
   /// Marks are set to empty strings.

@@ -167,7 +167,7 @@ void CcfGroup::ApplyModel() {
     for (auto& combination : combinations) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
-      for (Gate* gate : combination) gate->formula()->AddArgument(ccf_event);
+      for (Gate* gate : combination) gate->formula().AddArgument(ccf_event);
       ccf_event->members(std::move(combination));  // Move, at last.
     }
   }

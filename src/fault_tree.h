@@ -198,7 +198,7 @@ class FaultTree : public Component {
   ///
   /// @param[in] formula  The formula of a gate or another formula.
   /// @param[in] gates  Gates belonging to the whole fault tree with components.
-  void MarkNonTopGates(const FormulaPtr& formula,
+  void MarkNonTopGates(const Formula& formula,
                        const std::unordered_set<GatePtr>& gates);
 
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
