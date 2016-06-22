@@ -173,9 +173,9 @@ class BasicEvent : public PrimaryEvent {
   bool HasCcf() const { return ccf_gate_ != nullptr; }
 
   /// @returns CCF group gate representing this basic event.
-  const GatePtr& ccf_gate() const {
+  const Gate& ccf_gate() const {
     assert(ccf_gate_);
-    return ccf_gate_;
+    return *ccf_gate_;
   }
 
   /// Sets the common cause failure group gate
@@ -185,9 +185,9 @@ class BasicEvent : public PrimaryEvent {
   /// CCF group application.
   ///
   /// @param[in] gate  CCF group gate.
-  void ccf_gate(const GatePtr& gate) {
+  void ccf_gate(std::unique_ptr<Gate> gate) {
     assert(!ccf_gate_);
-    ccf_gate_ = gate;
+    ccf_gate_ = std::move(gate);
   }
 
  private:
@@ -198,7 +198,7 @@ class BasicEvent : public PrimaryEvent {
   /// If this basic event is in a common cause group,
   /// CCF gate can serve as a replacement for the basic event
   /// for common cause analysis.
-  GatePtr ccf_gate_;
+  std::unique_ptr<Gate> ccf_gate_;
 };
 
 class CcfGroup;

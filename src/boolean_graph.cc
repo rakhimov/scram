@@ -499,10 +499,10 @@ void BooleanGraph::ProcessBasicEvent(const GatePtr& parent,
                                      mef::BasicEvent* basic_event, bool ccf,
                                      ProcessedNodes* nodes) noexcept {
   if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-    GatePtr& ccf_gate = nodes->gates[basic_event->ccf_gate().get()];
+    GatePtr& ccf_gate = nodes->gates[&basic_event->ccf_gate()];
     if (!ccf_gate) {
       ccf_gate = BooleanGraph::ProcessFormula(
-          *basic_event->ccf_gate()->formula(), ccf, nodes);
+          *basic_event->ccf_gate().formula(), ccf, nodes);
     }
     parent->AddArg(ccf_gate->index(), ccf_gate);
   } else {
