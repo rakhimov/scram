@@ -13,8 +13,6 @@ Technical Issues
           low-level technical issues.
 
 - Copying Settings around is expensive (~100B)
-- Abuse of smart pointers (shared pointers).
-  Pollution of function interfaces.
 - mef::Gate and mef::Formula have ``type`` field instead of ``operator`` (reserved in C++)
 - The violation of the basic guarantee (memory leaks)
   due to circular references in incorrect models

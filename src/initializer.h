@@ -206,7 +206,7 @@ class Initializer {
   ///
   /// @param[in] gate_node  XML element defining the gate.
   /// @param[in,out] gate  Registered gate ready to be defined.
-  void DefineGate(const xmlpp::Element* gate_node, const GatePtr& gate);
+  void DefineGate(const xmlpp::Element* gate_node, Gate* gate);
 
   /// Creates a Boolean formula from the XML elements
   /// describing the formula with events and other nested formulas.
@@ -249,7 +249,7 @@ class Initializer {
   /// @param[in] event_node  XML element defining the event.
   /// @param[in,out] basic_event  Registered basic event ready to be defined.
   void DefineBasicEvent(const xmlpp::Element* event_node,
-                        const BasicEventPtr& basic_event);
+                        BasicEvent* basic_event);
 
   /// Defines and adds a house event for this analysis.
   ///
@@ -281,8 +281,7 @@ class Initializer {
   ///
   /// @param[in] param_node  XML element defining the parameter.
   /// @param[in,out] parameter  Registered parameter to be defined.
-  void DefineParameter(const xmlpp::Element* param_node,
-                       const ParameterPtr& parameter);
+  void DefineParameter(const xmlpp::Element* param_node, Parameter* parameter);
 
   /// Processes Expression definitions in input file.
   ///
@@ -332,8 +331,7 @@ class Initializer {
   ///
   /// @param[in] ccf_node  XML element defining CCF group.
   /// @param[in,out] ccf_group  Registered CCF group to be defined.
-  void DefineCcfGroup(const xmlpp::Element* ccf_node,
-                      const CcfGroupPtr& ccf_group);
+  void DefineCcfGroup(const xmlpp::Element* ccf_node, CcfGroup* ccf_group);
 
   /// Processes common cause failure group members as defined basic events.
   ///
@@ -344,7 +342,7 @@ class Initializer {
   ///                          or there are other setup issues
   ///                          with the CCF group.
   void ProcessCcfMembers(const xmlpp::Element* members_node,
-                         const CcfGroupPtr& ccf_group);
+                         CcfGroup* ccf_group);
 
   /// Defines factor and adds it to CCF group.
   ///
@@ -353,8 +351,7 @@ class Initializer {
   ///
   /// @throws ValidationError  There are problems with level numbers
   ///                          or factors for specific CCF models.
-  void DefineCcfFactor(const xmlpp::Element* factor_node,
-                       const CcfGroupPtr& ccf_group);
+  void DefineCcfFactor(const xmlpp::Element* factor_node, CcfGroup* ccf_group);
 
   /// Validates if the initialization of the analysis is successful.
   /// This validation process also generates optional warnings.
@@ -393,19 +390,19 @@ class Initializer {
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
-  struct TbdElements {
+  struct {
     /// Parameters rely on parameter registration.
-    std::vector<std::pair<ParameterPtr, const xmlpp::Element*>> parameters;
+    std::vector<std::pair<Parameter*, const xmlpp::Element*>> parameters;
     /// Basic events rely on parameter registration.
-    std::vector<std::pair<BasicEventPtr, const xmlpp::Element*>> basic_events;
+    std::vector<std::pair<BasicEvent*, const xmlpp::Element*>> basic_events;
     /// Gates rely on gate, basic event, and house event registrations.
-    std::vector<std::pair<GatePtr, const xmlpp::Element*>> gates;
+    std::vector<std::pair<Gate*, const xmlpp::Element*>> gates;
     /// CCF groups rely on both parameter and basic event registration.
-    std::vector<std::pair<CcfGroupPtr, const xmlpp::Element*>> ccf_groups;
+    std::vector<std::pair<CcfGroup*, const xmlpp::Element*>> ccf_groups;
   } tbd_;  ///< Elements are assumed to be unique.
 
   /// Container for defined expressions for later validation.
-  std::vector<ExpressionPtr> expressions_;
+  std::vector<Expression*> expressions_;
 };
 
 }  // namespace mef
