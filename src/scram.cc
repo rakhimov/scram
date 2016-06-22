@@ -50,7 +50,6 @@ po::options_description ConstructOptions() {
       ("config-file", po::value<std::string>(),
        "XML file with analysis configurations")
       ("validate", "Validate input files without analysis")
-      ("graph", "Validate and produce graph without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
       ("zbdd", "Perform qualitative analysis with ZBDD")
       ("mocus", "Perform qualitative analysis with MOCUS")
@@ -239,11 +238,6 @@ int RunScram(const po::variables_map& vm) {
       ext::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
   init.reset();  // Remove extra reference counts to shared objects.
 
-  // Graph if requested.
-  if (vm.count("graph")) {
-    ran->GraphingInstructions();
-    return 0;
-  }
   ran->Analyze();
 #ifndef NDEBUG
   if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))

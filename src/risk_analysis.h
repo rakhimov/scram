@@ -59,18 +59,6 @@ class RiskAnalysis : public Analysis {
   /// @returns The model under analysis.
   const mef::Model& model() const { return *model_; }
 
-  /// Provides graphing instructions
-  /// for each fault tree initialized in the analysis.
-  /// All top events from fault trees are processed
-  /// into output files named with fault tree and top event names.
-  ///
-  /// @throws IOError  The output file cannot be accessed for writing.
-  ///
-  /// @note This function must be called
-  ///       only after initializing the tree
-  ///       with or without its probabilities.
-  void GraphingInstructions();
-
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
   ///

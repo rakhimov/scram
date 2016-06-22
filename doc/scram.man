@@ -1,4 +1,4 @@
-.TH SCRAM "1" "April 2016" "SCRAM 0.11.2" "SCRAM Manual"
+.TH SCRAM "1" "June 2016" "SCRAM 0.11.2" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
@@ -31,9 +31,6 @@ Run analysis with configurations from XML configuration file
 .TP
 \fB\-\-validate\fR
 Validate input and configuration files without analysis
-.TP
-\fB\-\-graph\fR
-Validate and produce graph without analysis
 .TP
 \fB\-\-bdd\fR
 Perform qualitative analysis with Binary Decision Diagrams

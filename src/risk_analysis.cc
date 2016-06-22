@@ -28,7 +28,6 @@
 #include "error.h"
 #include "expression.h"
 #include "fault_tree.h"
-#include "grapher.h"
 #include "logger.h"
 #include "mocus.h"
 #include "model.h"
@@ -43,27 +42,6 @@ RiskAnalysis::RiskAnalysis(std::shared_ptr<const mef::Model> model,
                            const Settings& settings)
     : Analysis(settings),
       model_(std::move(model)) {}
-
-void RiskAnalysis::GraphingInstructions() {
-  CLOCK(graph_time);
-  LOG(DEBUG1) << "Producing graphing instructions";
-  for (const std::pair<const std::string, mef::FaultTreePtr>& fault_tree :
-       model_->fault_trees()) {
-    for (const mef::Gate* top_event : fault_tree.second->top_events()) {
-      std::string output =
-          fault_tree.second->name() + "_" + top_event->name() + ".dot";
-      std::ofstream of(output.c_str());
-      if (!of.good()) {
-        throw IOError(output +  " : Cannot write the graphing file.");
-      }
-      Grapher gr = Grapher();
-      gr.GraphFaultTree(*top_event, Analysis::settings().probability_analysis(),
-                        of);
-      of.flush();
-    }
-  }
-  LOG(DEBUG1) << "Graphing instructions are produced in " << DUR(graph_time);
-}
 
 void RiskAnalysis::Analyze() noexcept {
   // Set the seed for the pseudo-random number generator if given explicitly.

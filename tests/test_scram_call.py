@@ -135,23 +135,3 @@ def test_logging():
     yield assert_not_equal, 0, call(cmd)
     cmd = ["scram", fta_input, "--verbosity", "7"]
     yield assert_equal, 0, call(cmd)
-
-
-def test_graph_call():
-    """Tests the calls for graphing instructions for a fault tree."""
-    fta_input = "./input/fta/correct_tree_input_with_probs.xml"
-    # Test graph only
-    cmd = ["scram", fta_input, "--graph"]
-    yield assert_equal, 0, call(cmd)
-    graph_file = "TwoTrains_TopEvent.dot"
-    cmd = ["scram", fta_input, "--graph"]
-    yield assert_equal, 0, call(cmd)
-    # Test if output is created
-    yield assert_true, os.path.isfile(graph_file)
-    # Changing permission
-    cmd = ["chmod", "a-w", graph_file]
-    call(cmd)
-    cmd = ["scram", fta_input, "--graph"]
-    yield assert_not_equal, 0, call(cmd)
-    if os.path.isfile(graph_file):
-        os.remove(graph_file)

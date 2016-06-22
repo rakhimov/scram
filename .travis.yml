@@ -45,7 +45,6 @@ addons:
             - libxml++2.6-dev
             - libgoogle-perftools-dev
             - qt5-default
-            - graphviz
 
 install:
     - .travis/install.sh
