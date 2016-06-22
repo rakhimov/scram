@@ -398,9 +398,18 @@ sampler_iterator<Iterator> make_sampler(const Iterator& it) {
 }  // namespace
 
 double Histogram::GetSample() noexcept {
+#ifdef _LIBCPP_VERSION  // libc++ chokes on iterator categories.
+  std::vector<double> samples;
+  for (auto it = boundaries_.first; it != boundaries_.second; ++it) {
+    samples.push_back((*it)->Sample());
+  }
+  return Random::HistogramGenerator(
+      samples.begin(), samples.end(), make_sampler(weights_.first));
+#else
   return Random::HistogramGenerator(make_sampler(boundaries_.first),
                                     make_sampler(boundaries_.second),
                                     make_sampler(weights_.first));
+#endif
 }
 
 void Histogram::CheckBoundaries() const {
