@@ -45,7 +45,7 @@ class find_iterator : public Iterator {
         found_(it != it_end) {}
 
   /// @returns true if the iterator indicates that the item is found.
-  operator bool() { return found_; }
+  explicit operator bool() { return found_; }
 
  private:
   bool found_;  ///< Indicator of the lookup result.
