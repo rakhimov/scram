@@ -35,10 +35,10 @@ TEST(XmlStreamTest, SetAttribute) {
   EXPECT_NO_THROW(el.SetAttribute("attr3", 7));
 }
 
-TEST(XmlStreamTest, AddChildText) {
+TEST(XmlStreamTest, AddText) {
   XmlStreamElement el("element", std::cerr);
-  EXPECT_NO_THROW(el.AddChildText("text"));
-  EXPECT_NO_THROW(el.AddChildText(7));
+  EXPECT_NO_THROW(el.AddText("text"));
+  EXPECT_NO_THROW(el.AddText(7));
 }
 
 TEST(XmlStreamTest, AddChild) {
@@ -51,7 +51,7 @@ TEST(XmlStreamTest, StateAfterSetAttribute) {
   {
     XmlStreamElement el("element", std::cerr);
     EXPECT_NO_THROW(el.SetAttribute("attr", "value"));
-    EXPECT_NO_THROW(el.AddChildText("text"));
+    EXPECT_NO_THROW(el.AddText("text"));
   }
   {
     XmlStreamElement el("element", std::cerr);
@@ -60,19 +60,19 @@ TEST(XmlStreamTest, StateAfterSetAttribute) {
   }
 }
 
-TEST(XmlStreamTest, StateAfterAddChildText) {
+TEST(XmlStreamTest, StateAfterAddText) {
   XmlStreamElement el("element", std::cerr);
-  EXPECT_NO_THROW(el.AddChildText("text"));  // Locks on text.
+  EXPECT_NO_THROW(el.AddText("text"));  // Locks on text.
   EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
   EXPECT_THROW(el.AddChild("another_child"), XmlStreamError);
-  EXPECT_NO_THROW(el.AddChildText(" and continuation..."));
+  EXPECT_NO_THROW(el.AddText(" and continuation..."));
 }
 
 TEST(XmlStreamTest, StateAfterAddChild) {
   XmlStreamElement el("element", std::cerr);
   EXPECT_NO_THROW(el.AddChild("child"));  // Locks on elements.
   EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-  EXPECT_THROW(el.AddChildText("text"), XmlStreamError);
+  EXPECT_THROW(el.AddText("text"), XmlStreamError);
   EXPECT_NO_THROW(el.AddChild("another_child"));
 }
 
@@ -81,7 +81,7 @@ TEST(XmlStreamTest, InactiveParent) {
   {
     XmlStreamElement child = el.AddChild("child");  // Make the parent inactive.
     EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-    EXPECT_THROW(el.AddChildText("text"), XmlStreamError);
+    EXPECT_THROW(el.AddText("text"), XmlStreamError);
     EXPECT_THROW(el.AddChild("another_child"), XmlStreamError);
     // Child must be active without problems.
     EXPECT_NO_THROW(child.SetAttribute("sub_attr", "value"));

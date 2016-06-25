@@ -119,7 +119,7 @@ class XmlStreamElement {
   ///
   /// @throws XmlStreamError  Invalid setup or state for text addition.
   template <typename T>
-  void AddChildText(T&& text) {
+  void AddText(T&& text) {
     if (!active_) throw XmlStreamError("The element is inactive.");
     if (!accept_text_) throw XmlStreamError("Too late to put text.");
     if (accept_elements_) accept_elements_ = false;

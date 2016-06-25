@@ -84,8 +84,9 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
       assert(settings.algorithm() == "mocus");
       methods.SetAttribute("name", "MOCUS");
     }
-    methods.AddChild("limits").AddChild("product-order").AddChildText(
-        settings.limit_order());
+    methods.AddChild("limits")
+        .AddChild("product-order")
+        .AddText(settings.limit_order());
   }
   if (settings.ccf_analysis()) {
     information->AddChild("calculated-quantity")
@@ -116,7 +117,7 @@ void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
     methods.SetAttribute("name", "Binary Decision Diagram");
   }
   XmlStreamElement limits = methods.AddChild("limits");
-  limits.AddChild("mission-time").AddChildText(settings.mission_time());
+  limits.AddChild("mission-time").AddText(settings.mission_time());
 }
 
 /// Describes the importance analysis and techniques.
@@ -144,9 +145,9 @@ void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
   XmlStreamElement methods = information->AddChild("calculation-method");
   methods.SetAttribute("name", "Monte Carlo");
   XmlStreamElement limits = methods.AddChild("limits");
-  limits.AddChild("number-of-trials").AddChildText(settings.num_trials());
+  limits.AddChild("number-of-trials").AddText(settings.num_trials());
   if (settings.seed() >= 0) {
-    limits.AddChild("seed").AddChildText(settings.seed());
+    limits.AddChild("seed").AddText(settings.seed());
   }
 }
 
@@ -188,7 +189,7 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
   information->AddChild("software")
       .SetAttribute("name", "SCRAM")
       .SetAttribute("version", version::core());
-  information->AddChild("time").AddChildText(
+  information->AddChild("time").AddText(
       boost::posix_time::second_clock::local_time());
 }
 
@@ -197,14 +198,11 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   XmlStreamElement model_features = information->AddChild("model-features");
   if (!model.name().empty())
     model_features.SetAttribute("name", model.name());
-  model_features.AddChild("gates").AddChildText(model.gates().size());
-  model_features.AddChild("basic-events")
-      .AddChildText(model.basic_events().size());
-  model_features.AddChild("house-events")
-      .AddChildText(model.house_events().size());
-  model_features.AddChild("ccf-groups").AddChildText(model.ccf_groups().size());
-  model_features.AddChild("fault-trees")
-      .AddChildText(model.fault_trees().size());
+  model_features.AddChild("gates").AddText(model.gates().size());
+  model_features.AddChild("basic-events").AddText(model.basic_events().size());
+  model_features.AddChild("house-events").AddText(model.house_events().size());
+  model_features.AddChild("ccf-groups").AddText(model.ccf_groups().size());
+  model_features.AddChild("fault-trees").AddText(model.fault_trees().size());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
@@ -215,21 +213,21 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
     XmlStreamElement calc_time = performance.AddChild("calculation-time");
     const std::string& id = fta.first;
     calc_time.SetAttribute("name", id);
-    calc_time.AddChild("products").AddChildText(fta.second->analysis_time());
+    calc_time.AddChild("products").AddText(fta.second->analysis_time());
 
     if (risk_an.settings().probability_analysis()) {
       calc_time.AddChild("probability")
-          .AddChildText(risk_an.probability_analyses().at(id)->analysis_time());
+          .AddText(risk_an.probability_analyses().at(id)->analysis_time());
     }
 
     if (risk_an.settings().importance_analysis()) {
       calc_time.AddChild("importance")
-          .AddChildText(risk_an.importance_analyses().at(id)->analysis_time());
+          .AddText(risk_an.importance_analyses().at(id)->analysis_time());
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
       calc_time.AddChild("uncertainty")
-          .AddChildText(risk_an.uncertainty_analyses().at(id)->analysis_time());
+          .AddText(risk_an.uncertainty_analyses().at(id)->analysis_time());
     }
   }
 }
@@ -252,8 +250,7 @@ void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
     }
   }
   if (!out.empty())
-    information->AddChild("warning")
-        .AddChildText("Orphan Primary Events: " + out);
+    information->AddChild("warning").AddText("Orphan Primary Events: " + out);
 }
 
 void Reporter::ReportUnusedParameters(const mef::Model& model,
@@ -267,7 +264,7 @@ void Reporter::ReportUnusedParameters(const mef::Model& model,
     }
   }
   if (!out.empty())
-    information->AddChild("warning").AddChildText("Unused Parameters: " + out);
+    information->AddChild("warning").AddText("Unused Parameters: " + out);
 }
 
 void Reporter::ReportResults(const std::string& ft_name,
@@ -285,7 +282,7 @@ void Reporter::ReportResults(const std::string& ft_name,
     warning += prob_analysis->warnings();
   }
   if (!warning.empty()) {
-    sum_of_products.AddChild("warning").AddChildText(warning);
+    sum_of_products.AddChild("warning").AddText(warning);
   }
 
   CLOCK(cs_time);
@@ -324,7 +321,7 @@ void Reporter::ReportResults(
   importance.SetAttribute("basic-events",
                           importance_analysis.importance().size());
   if (!importance_analysis.warnings().empty()) {
-    importance.AddChild("warning").AddChildText(importance_analysis.warnings());
+    importance.AddChild("warning").AddText(importance_analysis.warnings());
   }
 
   for (const core::ImportanceAnalysis::ImportanceRecord& entry :
@@ -347,7 +344,7 @@ void Reporter::ReportResults(const std::string& ft_name,
   XmlStreamElement measure = results->AddChild("measure");
   measure.SetAttribute("name", ft_name);
   if (!uncert_analysis.warnings().empty()) {
-    measure.AddChild("warning").AddChildText(uncert_analysis.warnings());
+    measure.AddChild("warning").AddText(uncert_analysis.warnings());
   }
   measure.AddChild("mean").SetAttribute("value", uncert_analysis.mean());
   measure.AddChild("standard-deviation")
