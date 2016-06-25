@@ -96,13 +96,16 @@ class XmlStreamElement {
   /// @param[in] name  Non-empty name for the attribute.
   /// @param[in] value  The value of the attribute.
   ///
+  /// @returns The reference to this element.
+  ///
   /// @throws XmlStreamError  Invalid setup for the attribute.
   template <typename T>
-  void SetAttribute(const char* name, T&& value) {
+  XmlStreamElement& SetAttribute(const char* name, T&& value) {
     if (!active_) throw XmlStreamError("The element is inactive.");
     if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
     if (*name == '\0') throw XmlStreamError("Attribute name can't be empty.");
     out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
+    return *this;
   }
 
   /// Adds text to the element.

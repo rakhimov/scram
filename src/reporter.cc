@@ -88,10 +88,10 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
         settings.limit_order());
   }
   if (settings.ccf_analysis()) {
-    XmlStreamElement ccf_quant = information->AddChild("calculated-quantity");
-    ccf_quant.SetAttribute("name", "Common Cause Failure Analysis");
-    ccf_quant.SetAttribute("definition",
-                           "Incorporation of common cause failure models");
+    information->AddChild("calculated-quantity")
+        .SetAttribute("name", "Common Cause Failure Analysis")
+        .SetAttribute("definition",
+                      "Incorporation of common cause failure models");
   }
 }
 
@@ -100,13 +100,11 @@ template <>
 void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
-  {
-    XmlStreamElement quant = information->AddChild("calculated-quantity");
-    quant.SetAttribute("name", "Probability Analysis");
-    quant.SetAttribute("definition",
-                       "Quantitative analysis of failure probability");
-    quant.SetAttribute("approximation", settings.approximation());
-  }
+  information->AddChild("calculated-quantity")
+      .SetAttribute("name", "Probability Analysis")
+      .SetAttribute("definition",
+                    "Quantitative analysis of failure probability")
+      .SetAttribute("approximation", settings.approximation());
 
   XmlStreamElement methods = information->AddChild("calculation-method");
   if (settings.approximation() == "rare-event") {
@@ -126,11 +124,11 @@ template <>
 void Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(
     const core::Settings& /*settings*/,
     XmlStreamElement* information) {
-  XmlStreamElement quant = information->AddChild("calculated-quantity");
-  quant.SetAttribute("name", "Importance Analysis");
-  quant.SetAttribute("definition",
-                     "Quantitative analysis of contributions and "
-                     "importance factors of events.");
+  information->AddChild("calculated-quantity")
+      .SetAttribute("name", "Importance Analysis")
+      .SetAttribute("definition",
+                    "Quantitative analysis of contributions and "
+                    "importance factors of events.");
 }
 
 /// Describes the uncertainty analysis and techniques.
@@ -138,13 +136,10 @@ template <>
 void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
-  {
-    XmlStreamElement quant = information->AddChild("calculated-quantity");
-    quant.SetAttribute("name", "Uncertainty Analysis");
-    quant.SetAttribute(
-        "definition",
-        "Calculation of uncertainties with the Monte Carlo method");
-  }
+  information->AddChild("calculated-quantity")
+      .SetAttribute("name", "Uncertainty Analysis")
+      .SetAttribute("definition",
+                    "Calculation of uncertainties with the Monte Carlo method");
 
   XmlStreamElement methods = information->AddChild("calculation-method");
   methods.SetAttribute("name", "Monte Carlo");
@@ -190,11 +185,9 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
 }
 
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
-  {
-    XmlStreamElement software = information->AddChild("software");
-    software.SetAttribute("name", "SCRAM");
-    software.SetAttribute("version", version::core());
-  }
+  information->AddChild("software")
+      .SetAttribute("name", "SCRAM")
+      .SetAttribute("version", version::core());
   information->AddChild("time").AddChildText(
       boost::posix_time::second_clock::local_time());
 }
@@ -282,9 +275,10 @@ void Reporter::ReportResults(const std::string& ft_name,
                              const core::ProbabilityAnalysis* prob_analysis,
                              XmlStreamElement* results) {
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
-  sum_of_products.SetAttribute("name", ft_name);
-  sum_of_products.SetAttribute("basic-events", fta.product_events().size());
-  sum_of_products.SetAttribute("products", fta.products().size());
+  sum_of_products.SetAttribute("name", ft_name)
+      .SetAttribute("basic-events", fta.product_events().size())
+      .SetAttribute("products", fta.products().size());
+
   std::string warning = fta.warnings();
   if (prob_analysis) {
     sum_of_products.SetAttribute("probability", prob_analysis->p_total());
@@ -337,11 +331,11 @@ void Reporter::ReportResults(
        importance_analysis.important_events()) {
     const core::ImportanceFactors& factors = entry.second;
     auto add_data = [&factors](XmlStreamElement* element) {
-      element->SetAttribute("MIF", factors.mif);
-      element->SetAttribute("CIF", factors.cif);
-      element->SetAttribute("DIF", factors.dif);
-      element->SetAttribute("RAW", factors.raw);
-      element->SetAttribute("RRW", factors.rrw);
+      element->SetAttribute("MIF", factors.mif)
+          .SetAttribute("CIF", factors.cif)
+          .SetAttribute("DIF", factors.dif)
+          .SetAttribute("RAW", factors.raw)
+          .SetAttribute("RRW", factors.rrw);
     };
     Reporter::ReportBasicEvent(*entry.first, &importance, add_data);
   }
@@ -358,20 +352,16 @@ void Reporter::ReportResults(const std::string& ft_name,
   measure.AddChild("mean").SetAttribute("value", uncert_analysis.mean());
   measure.AddChild("standard-deviation")
       .SetAttribute("value", uncert_analysis.sigma());
-  {
-    XmlStreamElement confidence = measure.AddChild("confidence-range");
-    confidence.SetAttribute("percentage", "95");
-    confidence.SetAttribute("lower-bound",
-                            uncert_analysis.confidence_interval().first);
-    confidence.SetAttribute("upper-bound",
-                            uncert_analysis.confidence_interval().second);
-  }
-  {
-    XmlStreamElement error_factor = measure.AddChild("error-factor");
-    error_factor.SetAttribute("percentage", "95");
-    error_factor.SetAttribute("value",
-                              uncert_analysis.error_factor());
-  }
+
+  measure.AddChild("confidence-range")
+      .SetAttribute("percentage", "95")
+      .SetAttribute("lower-bound", uncert_analysis.confidence_interval().first)
+      .SetAttribute("upper-bound",
+                    uncert_analysis.confidence_interval().second);
+
+  measure.AddChild("error-factor")
+      .SetAttribute("percentage", "95")
+      .SetAttribute("value", uncert_analysis.error_factor());
   {
     XmlStreamElement quantiles = measure.AddChild("quantiles");
     int num_quantiles = uncert_analysis.quantiles().size();
@@ -379,13 +369,13 @@ void Reporter::ReportResults(const std::string& ft_name,
     double prev_bound = 0;
     double delta = 1.0 / num_quantiles;
     for (int i = 0; i < num_quantiles; ++i) {
-      XmlStreamElement quant = quantiles.AddChild("quantile");
-      quant.SetAttribute("number", i + 1);
       double upper = uncert_analysis.quantiles()[i];
       double value = delta * (i + 1);
-      quant.SetAttribute("value", value);
-      quant.SetAttribute("lower-bound", prev_bound);
-      quant.SetAttribute("upper-bound", upper);
+      quantiles.AddChild("quantile")
+          .SetAttribute("number", i + 1)
+          .SetAttribute("value", value)
+          .SetAttribute("lower-bound", prev_bound)
+          .SetAttribute("upper-bound", upper);
       prev_bound = upper;
     }
   }
@@ -394,14 +384,14 @@ void Reporter::ReportResults(const std::string& ft_name,
     int num_bins = uncert_analysis.distribution().size() - 1;
     hist.SetAttribute("number", num_bins);
     for (int i = 0; i < num_bins; ++i) {
-      XmlStreamElement bin = hist.AddChild("bin");
-      bin.SetAttribute("number", i + 1);
       double lower = uncert_analysis.distribution()[i].first;
       double upper = uncert_analysis.distribution()[i + 1].first;
       double value = uncert_analysis.distribution()[i].second;
-      bin.SetAttribute("value", value);
-      bin.SetAttribute("lower-bound", lower);
-      bin.SetAttribute("upper-bound", upper);
+      hist.AddChild("bin")
+          .SetAttribute("number", i + 1)
+          .SetAttribute("value", value)
+          .SetAttribute("lower-bound", lower)
+          .SetAttribute("upper-bound", upper);
     }
   }
 }
@@ -426,11 +416,11 @@ void Reporter::ReportBasicEvent(const mef::BasicEvent& basic_event,
     element.SetAttribute("name", basic_event.id());
     add_data(&element);
   } else {
-    XmlStreamElement element = parent->AddChild("ccf-event");
     const mef::CcfGroup& ccf_group = ccf_event->ccf_group();
-    element.SetAttribute("ccf-group", ccf_group.id());
-    element.SetAttribute("order", ccf_event->members().size());
-    element.SetAttribute("group-size", ccf_group.members().size());
+    XmlStreamElement element = parent->AddChild("ccf-event");
+    element.SetAttribute("ccf-group", ccf_group.id())
+        .SetAttribute("order", ccf_event->members().size())
+        .SetAttribute("group-size", ccf_group.members().size());
     add_data(&element);
     for (const mef::Gate* member : ccf_event->members()) {
       element.AddChild("basic-event").SetAttribute("name", member->name());
