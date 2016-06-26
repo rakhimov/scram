@@ -42,10 +42,20 @@ struct DefaultEraser {
   /// @param[in,out] container  The host container.
   ///
   /// @returns The iterator as the result of call to the container's ``erase``.
-  template <class T, class Iterator>
-  static typename T::iterator erase(Iterator it, T* container) {
+  ///
+  /// @{
+  template <class T>
+  static typename T::iterator erase(typename T::iterator it, T* container) {
     return container->erase(it);
   }
+  template <class T>  // Workaround for the C++11 bug in libstdc++ 4.8.
+  static typename T::iterator erase(typename T::const_iterator it,
+                                    T* container) {
+    return DefaultEraser::erase(
+        std::next(container->begin(), std::distance(container->cbegin(), it)),
+        container);
+  }
+  /// @}
 };
 
 /// Erase policy based on moving the last element to the erased element.

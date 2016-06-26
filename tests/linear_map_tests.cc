@@ -150,7 +150,7 @@ TEST(LinearMapTest, Iterators) {
   int key_sum = 0;
   int value_sum = 0;
   for (const auto& entry : m) {
-    *it_c++ == entry;
+    EXPECT_EQ(*it_c++, entry);
     ++num_elements;
     key_sum += entry.first;
     value_sum += entry.second;
