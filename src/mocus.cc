@@ -68,7 +68,8 @@ Mocus::AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept {
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
-  std::unordered_map<int, GatePtr> gates = gate->args<Gate>();
+  std::unordered_map<int, GatePtr> gates(gate->args<Gate>().begin(),
+                                         gate->args<Gate>().end());
   auto container = ext::make_unique<zbdd::CutSetContainer>(
       kSettings_, gate->index(), graph_->basic_events().size());
   container->Merge(container->ConvertGate(gate));

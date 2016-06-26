@@ -38,7 +38,7 @@ coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
   --exclude src/random.h --exclude src/xml_stream.h \
   --exclude src/element.h --exclude src/relax_ng_validator.h \
   --exclude src/zbdd.h --exclude src/initializer.h --exclude src/reporter.h \
-  --exclude src/ext.h \
+  --exclude src/ext.h --exclude src/linear_map.h \
   > /dev/null
 
 # Submit coverage of Python

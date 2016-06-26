@@ -48,6 +48,7 @@
 
 #include "event.h"
 #include "ext.h"
+#include "linear_map.h"
 
 namespace scram {
 namespace core {
@@ -305,14 +306,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
-  using Arg = std::pair<const int, std::shared_ptr<T>>;
+  using Arg = std::pair<int, std::shared_ptr<T>>;
 
   /// The associative container type to store the gate arguments.
   /// This container type maps the index of the argument to a pointer to it.
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
-  using ArgMap = std::unordered_map<int, std::shared_ptr<T>>;
+  using ArgMap = LinearMap<int, std::shared_ptr<T>, std::vector, MoveEraser>;
 
   /// The ordered set of gate argument indices.
   using ArgSet = boost::container::flat_set<int>;
