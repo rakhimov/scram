@@ -61,47 +61,40 @@ class Error : public std::exception {
 
 /// For values that are not acceptable.
 /// For example, negative probability.
-class ValueError : public Error {
- public:
+struct ValueError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
 /// For validating input parameters or user arguments.
-class ValidationError : public Error {
- public:
+struct ValidationError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
 /// For cases when events or practically anything is redefined.
-class RedefinitionError : public ValidationError {
- public:
+struct RedefinitionError : public ValidationError {
   using ValidationError::ValidationError;  ///< An error with a message.
 };
 
 /// This error indicates that arguments must be unique.
-class DuplicateArgumentError : public ValidationError {
- public:
+struct DuplicateArgumentError : public ValidationError {
   using ValidationError::ValidationError;  ///< An error with a message.
 };
 
 /// For input/output related errors.
-class IOError : public Error {
- public:
+struct IOError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
 /// This error class can be used
 /// to indicate unacceptable arguments.
-class InvalidArgument : public Error {
- public:
+struct InvalidArgument : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
 /// Signals internal logic errors,
 /// for example, pre-condition failure
 /// or use of functionality in ways not designed to.
-class LogicError : public Error {
- public:
+struct LogicError : public Error {
   using Error::Error;  ///< An error with a message.
 };
 
@@ -109,8 +102,7 @@ class LogicError : public Error {
 /// that call for a function or operation is not legal.
 /// For example, a derived class can make illegal
 /// the call of the virtual function of the base class.
-class IllegalOperation : public Error {
- public:
+struct IllegalOperation : public Error {
   using Error::Error;  ///< An error with a message.
 };
 

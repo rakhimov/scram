@@ -28,8 +28,7 @@
 namespace scram {
 
 /// Errors in using XML streaming facilities.
-class XmlStreamError : public Error {
- public:
+struct XmlStreamError : public Error {
   using Error::Error;  ///< Constructor with a message.
 };
 
