@@ -34,7 +34,8 @@ namespace core {
 int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
 
 void NodeParentManager::AddParent(const GatePtr& gate) {
-  parents_.emplace(gate->index(), gate);
+  assert(!parents_.count(gate->index()) && "Adding an existing parent.");
+  parents_.data().emplace_back(gate->index(), gate);
 }
 
 Node::Node() noexcept : Node(next_index_++) {}

@@ -389,7 +389,10 @@ class LinearMap {
 
   /// @returns The underlying data container.
   ///          The container elements are ordered exactly as inserted.
+  /// @{
+  container_type& data() { return map_; }
   const container_type& data() const { return map_; }
+  /// @}
 
   /// @returns A read/write iterator pointing to the first entry.
   iterator begin() { return map_.begin(); }
