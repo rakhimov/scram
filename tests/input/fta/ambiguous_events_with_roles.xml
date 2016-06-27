@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+This input mixes roles and event types to stress the "event" lookup codes.
+If the order of "event" type lookup is separated,
+the results will be wrong.
+
+Only two cut sets are expected: {G, Private.A, Private.B}
+                                {C, Private.A, Private.B}
+-->
+<opsa-mef>
+  <define-fault-tree name="Ambiguous">
+    <define-gate name="public-root">
+      <and>
+        <gate name="Private.private-root"/>
+        <gate name="A"/>
+      </and>
+    </define-gate>
+
+    <define-gate name="A">
+      <or>
+        <event name="G"/>
+        <event name="B"/>
+        <event name="C"/>
+      </or>
+    </define-gate>
+
+    <define-basic-event name="G"/>  <!-- Swap gate and basic event -->
+
+    <define-component name="Private" role="private">
+      <define-gate name="private-root">
+        <event name="G"/>
+      </define-gate>
+      <define-gate name="G">
+        <and>
+          <event name="A"/>
+          <event name="B"/>
+          <event name="C"/>
+        </and>
+      </define-gate>
+      <define-basic-event name="A"/>
+      <define-basic-event name="B"/>
+      <define-house-event name="C">
+        <constant value="true"/>
+      </define-house-event>
+    </define-component>
+
+    <!-- Swap house and basic event -->
+    <define-house-event name="B"/>
+    <define-basic-event name="C"/>
+  </define-fault-tree>
+</opsa-mef>

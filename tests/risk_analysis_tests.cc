@@ -379,6 +379,18 @@ TEST_P(RiskAnalysisTest, ConstantGates) {
   EXPECT_EQ(mcs, products());
 }
 
+// Mixed roles with undefined event types
+TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
+  std::string tree_input =
+      "./share/scram/input/fta/ambiguous_events_with_roles.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> mcs = {
+      {"C", "Ambiguous.Private.A", "Ambiguous.Private.B"},
+      {"G", "Ambiguous.Private.A", "Ambiguous.Private.B"}};
+  EXPECT_EQ(mcs, products());
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

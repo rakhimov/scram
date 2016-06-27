@@ -426,15 +426,8 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        try {  // Let's play some baseball.
-          try {
-            formula->AddArgument(model_->GetBasicEvent(name, base_path));
-          } catch (std::out_of_range&) {
-            formula->AddArgument(model_->GetGate(name, base_path));
-          }
-        } catch (std::out_of_range&) {
-          formula->AddArgument(model_->GetHouseEvent(name, base_path));
-        }
+        model_->BindEvent(name, base_path, formula);
+
       } else if (element_type == "gate") {
         formula->AddArgument(model_->GetGate(name, base_path));
 
