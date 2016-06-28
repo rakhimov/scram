@@ -851,7 +851,7 @@ class Bdd {
   /// @pre The gate is a module.
   ///
   /// @warning This function is not aware of reduction rules.
-  ItePtr FindOrAddVertex(const GatePtr& gate, const VertexPtr& high,
+  ItePtr FindOrAddVertex(const Gate& gate, const VertexPtr& high,
                          const VertexPtr& low, bool complement_edge) noexcept;
 
   /// Converts all gates in the Boolean graph
@@ -865,7 +865,7 @@ class Bdd {
   ///
   /// @pre The memoization container is not used outside of this function.
   Function ConvertGraph(
-      const GatePtr& gate,
+      const Gate& gate,
       std::unordered_map<int, std::pair<Function, int>>* gates) noexcept;
 
   /// Computes minimum and maximum ids for keys in computation tables.

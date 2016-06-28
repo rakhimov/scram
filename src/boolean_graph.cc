@@ -24,6 +24,8 @@
 
 #include "boolean_graph.h"
 
+#include <string>
+
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/range/algorithm.hpp>
 
@@ -419,16 +421,6 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-const std::unordered_map<std::string, Operator> BooleanGraph::kStringToType_ = {
-    {"and", kAnd},
-    {"or", kOr},
-    {"atleast", kVote},
-    {"xor", kXor},
-    {"not", kNot},
-    {"nand", kNand},
-    {"nor", kNor},
-    {"null", kNull}};
-
 BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
@@ -446,7 +438,12 @@ void BooleanGraph::Print() {
 
 GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
                                      ProcessedNodes* nodes) noexcept {
-  Operator type = kStringToType_.find(formula.type())->second;
+  static_assert(kNumOperators == 8, "Unspecified formula operators.");
+  static const std::unordered_map<std::string, Operator> kStringToType = {
+      {"and", kAnd}, {"or", kOr},     {"atleast", kVote}, {"xor", kXor},
+      {"not", kNot}, {"nand", kNand}, {"nor", kNor},      {"null", kNull}};
+
+  Operator type = kStringToType.find(formula.type())->second;
   auto parent = std::make_shared<Gate>(type);
 
   if (type != kOr && type != kAnd) normal_ = false;

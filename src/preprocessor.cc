@@ -296,7 +296,7 @@ void Preprocessor::RunPhaseFour() noexcept {
   assert(!graph_->coherent());
   LOG(DEBUG3) << "Propagating complements...";
   if (graph_->root_sign_ < 0) {
-    GatePtr root = graph_->root();
+    const GatePtr& root = graph_->root();
     assert(root->type() == kOr || root->type() == kAnd ||
            root->type() == kNull);
     if (root->type() == kOr || root->type() == kAnd)
@@ -517,7 +517,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
     graph_->ClearNodeOrders();
     Preprocessor::AssignOrder();  // K/N gates need order.
   }
-  GatePtr root_gate = graph_->root();
+  const GatePtr& root_gate = graph_->root();
   Operator type = root_gate->type();
   switch (type) {  // Handle special case for the root gate.
     case kNor:
@@ -759,7 +759,7 @@ bool Preprocessor::CoalesceGates(const GatePtr& gate, bool common) noexcept {
   std::vector<GatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the graph is changed.
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
+    const GatePtr& arg_gate = arg.second;
     changed |= Preprocessor::CoalesceGates(arg_gate, common);
 
     if (target_type == kNull) continue;  // Coalescing is impossible.
@@ -839,7 +839,7 @@ void Preprocessor::DetectMultipleDefinitions(
 void Preprocessor::DetectModules() noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  GatePtr root_gate = graph_->root();  // Does not change in this algorithm.
+  const GatePtr& root_gate = graph_->root();  // No change in this algorithm.
   // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
   LOG(DEBUG4) << "Assigning timings to nodes...";
@@ -884,7 +884,7 @@ void Preprocessor::FindModules(const GatePtr& gate) noexcept {
   std::vector<std::pair<int, NodePtr>> non_modular_args;
 
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
+    const GatePtr& arg_gate = arg.second;
     Preprocessor::FindModules(arg_gate);
     if (arg_gate->module() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
@@ -904,7 +904,7 @@ void Preprocessor::FindModules(const GatePtr& gate) noexcept {
   }
 
   for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
-    VariablePtr var = arg.second;
+    const VariablePtr& var = arg.second;
     if (var->parents().size() == 1) {
       assert(IsNodeWithinGraph(var, enter_time, exit_time));
       assert(var->parents().count(gate->index()));
@@ -1097,24 +1097,24 @@ void Preprocessor::CreateNewModules(
 
 std::vector<GateWeakPtr> Preprocessor::GatherModules() noexcept {
   graph_->ClearGateMarks();
-  GatePtr root = graph_->root();
+  const GatePtr& root = graph_->root();
   assert(!root->mark());
   assert(root->module());
   root->mark(true);
   std::vector<GateWeakPtr> modules;
   modules.push_back(root);
-  std::queue<GatePtr> gates_queue;
-  gates_queue.push(root);
+  std::queue<Gate*> gates_queue;
+  gates_queue.push(root.get());
   while (!gates_queue.empty()) {
-    GatePtr gate = gates_queue.front();
+    Gate* gate = gates_queue.front();
     gates_queue.pop();
     assert(gate->mark());
     for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-      GatePtr arg_gate = arg.second;
+      const GatePtr& arg_gate = arg.second;
       assert(!arg_gate->IsConstant());
       if (arg_gate->mark()) continue;
       arg_gate->mark(true);
-      gates_queue.push(arg_gate);
+      gates_queue.push(arg_gate.get());
       if (arg_gate->module()) modules.push_back(arg_gate);
     }
   }
@@ -1190,7 +1190,7 @@ void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
   bool in_group = gate->type() == op;
 
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
+    const GatePtr& arg_gate = arg.second;
     assert(!arg_gate->IsConstant());
     Preprocessor::MarkCommonArgs(arg_gate, op);
     if (in_group) arg_gate->AddCount(arg.first > 0);
@@ -1213,7 +1213,7 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
 
   std::vector<int> common_args;
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
+    const GatePtr& arg_gate = arg.second;
     assert(!arg_gate->IsConstant());
     if (!arg_gate->module())
       Preprocessor::GatherCommonArgs(arg_gate, op, group);
@@ -1225,7 +1225,7 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
   if (!in_group) return;  // No need to check variables.
 
   for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
-    VariablePtr var = arg.second;
+    const VariablePtr& var = arg.second;
     int count = arg.first > 0 ? var->pos_count() : var->neg_count();
     if (count > 1) common_args.push_back(arg.first);
   }
@@ -1543,7 +1543,7 @@ bool Preprocessor::DetectDistributivity(const GatePtr& gate) noexcept {
   std::vector<GatePtr> candidates;
   // Collect child gates of distributivity type.
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr child_gate = arg.second;
+    const GatePtr& child_gate = arg.second;
     changed |= Preprocessor::DetectDistributivity(child_gate);
     assert(!child_gate->IsConstant() && "Impossible state.");
     if (distr_type == kNull) continue;  // Distributivity is not possible.
@@ -1737,7 +1737,7 @@ void Preprocessor::TransformDistributiveArgs(
   sub_parent->mark(true);
   new_parent->AddArg(sub_parent->index(), sub_parent);
 
-  GatePtr rep = *gates.begin();  // Representative of common parents.
+  const GatePtr& rep = *gates.begin();  // Representative of common parents.
   // Getting the common part of the distributive equation.
   for (int index : args) rep->ShareArg(index, new_parent);  // May be negative.
 
@@ -1788,21 +1788,21 @@ void Preprocessor::GatherCommonNodes(
       std::vector<GateWeakPtr>* common_gates,
       std::vector<std::weak_ptr<Variable>>* common_variables) noexcept {
   graph_->ClearNodeVisits();
-  std::queue<GatePtr> gates_queue;
-  gates_queue.push(graph_->root());
+  std::queue<Gate*> gates_queue;
+  gates_queue.push(graph_->root().get());
   while (!gates_queue.empty()) {
-    GatePtr gate = gates_queue.front();
+    Gate* gate = gates_queue.front();
     gates_queue.pop();
     for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-      GatePtr arg_gate = arg.second;
+      const GatePtr& arg_gate = arg.second;
       assert(!arg_gate->IsConstant());
       if (arg_gate->Visited()) continue;
       arg_gate->Visit(1);
-      gates_queue.push(arg_gate);
+      gates_queue.push(arg_gate.get());
       if (arg_gate->parents().size() > 1) common_gates->push_back(arg_gate);
     }
     for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
-      VariablePtr var = arg.second;
+      const VariablePtr& var = arg.second;
       if (var->Visited()) continue;
       var->Visit(1);
       if (var->parents().size() > 1) common_variables->push_back(var);
@@ -1891,7 +1891,7 @@ int Preprocessor::PropagateState(const GatePtr& gate,
   int num_failure = 0;  // The number of failed arguments.
   int num_success = 0;  // The number of success arguments.
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    GatePtr arg_gate = arg.second;
+    const GatePtr& arg_gate = arg.second;
     mult_tot += Preprocessor::PropagateState(arg_gate, node);
     assert(!arg_gate->mark());
     int failed = arg_gate->opti_value() * boost::math::sign(arg.first);
@@ -1980,7 +1980,7 @@ int Preprocessor::CollectStateDestinations(
   gate->opti_value(2);
   int num_dest = 0;
   for (const Gate::Arg<Gate>& member : gate->args<Gate>()) {
-    GatePtr arg = member.second;
+    const GatePtr& arg = member.second;
     num_dest +=
         Preprocessor::CollectStateDestinations(arg, index, destinations);
     if (arg->index() == index) continue;  // The state source.

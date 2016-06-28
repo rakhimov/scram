@@ -252,7 +252,7 @@ class Zbdd {
   /// @returns SetNode for a replacement.
   ///
   /// @warning This function is not aware of reduction rules.
-  SetNodePtr FindOrAddVertex(const GatePtr& gate, const VertexPtr& high,
+  SetNodePtr FindOrAddVertex(const Gate& gate, const VertexPtr& high,
                              const VertexPtr& low) noexcept;
 
   /// Applies Boolean operation to two vertices representing sets.
@@ -428,7 +428,7 @@ class Zbdd {
   ///
   /// @post The root vertex pointer is uninitialized
   ///       if the Boolean graph is constant or single variable.
-  Zbdd(const GatePtr& gate, const Settings& settings) noexcept;
+  Zbdd(const Gate& gate, const Settings& settings) noexcept;
 
   /// Finds a replacement for an existing node
   /// or adds a new node based on an existing node.
@@ -543,9 +543,9 @@ class Zbdd {
   ///
   /// @post Sub-module gates are not processed.
   VertexPtr ConvertGraph(
-      const GatePtr& gate,
+      const Gate& gate,
       std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
-      std::unordered_map<int, GatePtr>* module_gates) noexcept;
+      std::unordered_map<int, const Gate*>* module_gates) noexcept;
 
   /// Processes complements in a SetNode with processed high/low edges.
   ///
@@ -768,7 +768,7 @@ class CutSetContainer : public Zbdd {
   /// @param[in] gate  The target AND/OR gate with arguments.
   ///
   /// @returns The root vertex of the ZBDD representing the gate cut sets.
-  VertexPtr ConvertGate(const GatePtr& gate) noexcept;
+  VertexPtr ConvertGate(const Gate& gate) noexcept;
 
   /// Finds a gate in intermediate cut sets.
   ///

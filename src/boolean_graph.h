@@ -36,7 +36,6 @@
 #include <array>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -903,9 +902,6 @@ class BooleanGraph {
   void Log() noexcept;
 
  private:
-  /// Mapping to string gate types to enum gate types.
-  static const std::unordered_map<std::string, Operator> kStringToType_;
-
   /// Sets the root gate.
   /// This function is helpful for preprocessing.
   ///
