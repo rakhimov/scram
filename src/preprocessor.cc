@@ -1625,13 +1625,11 @@ bool Preprocessor::FilterDistributiveArgs(
       to_erase.push_back(candidate->index());
   }
   bool changed = !to_erase.empty();
-  for (int index : to_erase) {
-    gate->EraseArg(index);
-    candidates->erase(
-        boost::find_if(*candidates, [&index](const GatePtr& candidate) {
-          return candidate->index() == index;
-        }));
-  }
+  boost::remove_erase_if(*candidates, [&to_erase](const GatePtr& candidate) {
+    return boost::find(to_erase, candidate->index()) != to_erase.end();
+  });
+  for (int index : to_erase) gate->EraseArg(index);
+
   // Sort in descending size of gate arguments.
   boost::sort(*candidates, [](const GatePtr& lhs, const GatePtr rhs) {
     return lhs->args().size() > rhs->args().size();
