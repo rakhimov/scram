@@ -132,7 +132,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
   Zbdd::Log();
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
-  std::unordered_map<int, std::pair<bool, int>> sub_modules;
+  std::map<int, std::pair<bool, int>> sub_modules;
   Zbdd::GatherModules(root_, 0, &sub_modules);
   for (const auto& entry : sub_modules) {
     int index = entry.first;
@@ -181,7 +181,7 @@ Zbdd::Zbdd(const Gate& gate, const Settings& settings) noexcept
   root_ = Zbdd::Minimize(root_);
   Zbdd::Log();
   LOG(DEBUG3) << "Finished module conversion to ZBDD in " << DUR(init_time);
-  std::unordered_map<int, std::pair<bool, int>> sub_modules;
+  std::map<int, std::pair<bool, int>> sub_modules;
   Zbdd::GatherModules(root_, 0, &sub_modules);
   for (const auto& entry : sub_modules) {
     int index = entry.first;
@@ -691,10 +691,9 @@ bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {
   return false;  // Positive non-gate variable.
 }
 
-int Zbdd::GatherModules(
-    const VertexPtr& vertex,
-    int current_order,
-    std::unordered_map<int, std::pair<bool, int>>* modules) noexcept {
+int Zbdd::GatherModules(const VertexPtr& vertex,
+                        int current_order,
+                        std::map<int, std::pair<bool, int>>* modules) noexcept {
   assert(current_order >= 0);
   if (vertex->terminal())
     return Terminal<SetNode>::Ptr(vertex)->value() ? 0 : -1;

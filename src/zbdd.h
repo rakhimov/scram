@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include <array>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -216,7 +217,7 @@ class Zbdd {
   const Settings& settings() const { return kSettings_; }
 
   /// @returns A set of registered and fully processed modules;
-  const std::unordered_map<int, std::unique_ptr<Zbdd>>& modules() const {
+  const std::map<int, std::unique_ptr<Zbdd>>& modules() const {
     return modules_;
   }
 
@@ -345,10 +346,9 @@ class Zbdd {
   /// @returns -1 if the vertex is terminal Empty on low branch only.
   ///
   /// @pre The ZBDD is minimal.
-  int GatherModules(
-      const VertexPtr& vertex,
-      int current_order,
-      std::unordered_map<int, std::pair<bool, int>>* modules) noexcept;
+  int GatherModules(const VertexPtr& vertex,
+                    int current_order,
+                    std::map<int, std::pair<bool, int>>* modules) noexcept;
 
   /// Clears all memoization tables.
   void ClearTables() noexcept {
@@ -736,7 +736,7 @@ class Zbdd {
   /// The results of pruning operations.
   PairTable<VertexPtr> prune_results_;
 
-  std::unordered_map<int, std::unique_ptr<Zbdd>> modules_;  ///< Module graphs.
+  std::map<int, std::unique_ptr<Zbdd>> modules_;  ///< Module graphs.
   int set_id_;  ///< Identification assignment for new set graphs.
   std::vector<Product> products_;  ///< Generated products.
 };
@@ -841,9 +841,9 @@ class CutSetContainer : public Zbdd {
   /// Gathers all module indices in the cut sets.
   ///
   /// @returns An unordered map module of indices, coherence, and cut-offs.
-  std::unordered_map<int, std::pair<bool, int>> GatherModules() noexcept {
+  std::map<int, std::pair<bool, int>> GatherModules() noexcept {
     assert(Zbdd::modules().empty() && "Unexpected call with defined modules?!");
-    std::unordered_map<int, std::pair<bool, int>> modules;
+    std::map<int, std::pair<bool, int>> modules;
     Zbdd::GatherModules(Zbdd::root(), 0, &modules);
     return modules;
   }
