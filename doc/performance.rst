@@ -66,23 +66,23 @@ Fault Tree Analysis (MOCUS)
 Baobab1 -l 7 (mcs = 17432)
 --------------------------
 
-Debug build:  1.8  |  2.0
+Debug build:  1.8  |  2.1
 
-Release build:  0.25
+Release build:  0.25  |  0.35
 
-- # of ZBDD nodes created: 34966  |  36909
-- # of SetNodes in ZBDD: 2073
+- # of ZBDD nodes created: 31859
+- # of SetNodes in ZBDD: 2073  |  3059
 
 
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  1.9  |  2.4
+Debug build:  1.9  |  2.0
 
-Release build: 0.30
+Release build: 0.30  |  0.35
 
-- # of ZBDD nodes created: 34862  |  35240
-- # of SetNodes in ZBDD: 3333  |  4207
+- # of ZBDD nodes created: 30140
+- # of SetNodes in ZBDD: 3333  |  3653
 
 - Memory:   23
 
@@ -92,7 +92,7 @@ Release build: 0.30
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 1593  |  1843
+- # of ZBDD nodes created: 1593  |  1612
 - # of SetNodes in ZBDD: 160  |  168
 
 - Memory:   15
@@ -104,14 +104,14 @@ Fault Tree Analysis (ZBDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-Debug build:  1.4  |  2.3
+Debug build:  0.95
 
-Release build:  0.30  |  0.46
+Release build:  0.16
 
-- # of ZBDD nodes created: 79264  |  138128
-- # of SetNodes in ZBDD: 3333  |  4207
+- # of ZBDD nodes created: 47702
+- # of SetNodes in ZBDD: 3333  |  3653
 
-- Memory:   48  |  64
+- Memory:   25
 
 - Cache-misses:  28 %
 
@@ -119,7 +119,7 @@ Release build:  0.30  |  0.46
 Baobab2 (mcs = 4805)
 --------------------
 
-- # of ZBDD nodes created: 33297  |  54944
+- # of ZBDD nodes created: 33297  |  37871
 - # of SetNodes in ZBDD: 160  |  168
 
 
@@ -131,8 +131,8 @@ Release build:
 
 - ZBDD Time: 1.4  |  1.55
 
-- # of ZBDD nodes created: 170713  |  173565
-- # of SetNodes in ZBDD: 75  |  79
+- # of ZBDD nodes created: 170713  |  230904
+- # of SetNodes in ZBDD: 65
 
 - Memory:   100
 
@@ -143,10 +143,11 @@ Fault Tree Analysis (BDD)
 Baobab1 (mcs = 46188)
 ---------------------
 
-- # of BDD vertices created: 8289  |  13501
-- # of ITE in BDD: 3349  |  4266
-- # of ZBDD nodes created: 18099  |  19481
-- # of SetNodes in ZBDD: 3338  |  3836
+- # of BDD vertices created: 8289  |  15545
+- # of ITE int unique table: 13218
+- # of ITE in BDD: 3349  |  6162
+- # of ZBDD nodes created: 18099  |  25406
+- # of SetNodes in ZBDD: 3338  |  3580
 
 - Memory:   23
 
@@ -159,19 +160,20 @@ CEA9601 -l 4 (mcs = 54436)
 Debug build:
 ~~~~~~~~~~~~
 
-- BDD Time: 8.7
+- BDD Time: 6.7
 - ZBDD Time: 1.0
 
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 2.0
+- BDD Time: 1.6
 - ZBDD Time: 0.20
 
-- # of BDD vertices created: 2884142  |  2887410
-- # of ITE in BDD: 1123292
+- # of BDD vertices created: 2652730
+- # of ITE in unique table: 2370567
+- # of ITE in BDD: 1123292 | 1160828
 
-- Memory:   290
+- Memory:   250
 
 - Cache-misses:  46 %  |  50 %
 
@@ -186,12 +188,12 @@ Release build:
 
 - Reporting (/dev/null): 2.6
 
-- # of ZBDD vertices created: 42919
-- # of Nodes in ZBDD: 10790
+- # of ZBDD vertices created: 42580
+- # of Nodes in ZBDD: 10621
 - ZBDD Cut set extraction memory: 100
 - Cut set indices to pointers memory: 90
 
-- Memory: 390
+- Memory: 375
 
 - Cache-misses:  34 %
 
@@ -206,8 +208,8 @@ Release build:
 
 - Reporting (/dev/null): 17.5
 
-- # of ZBDD vertices created: 218856
-- # of Nodes in ZBDD: 21706
+- # of ZBDD vertices created: 213970
+- # of Nodes in ZBDD: 20426
 - ZBDD Cut set extraction memory: 800
 - Cut set indices to pointers memory: 600
 - Cut set indices to pointers time: 0.95

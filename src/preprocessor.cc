@@ -2371,20 +2371,32 @@ bool Preprocessor::RegisterToClear(const GatePtr& gate) noexcept {
 
 void Preprocessor::AssignOrder() noexcept {
   graph_->ClearNodeOrders();
-  Preprocessor::TopologicalOrder(graph_->root(), 0);
+  Preprocessor::TopologicalOrder(graph_->root().get(), 0);
 }
 
-int Preprocessor::TopologicalOrder(const GatePtr& root, int order) noexcept {
+int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
   if (root->order()) return order;
-  for (const Gate::Arg<Gate>& arg : root->args<Gate>()) {
-    order = Preprocessor::TopologicalOrder(arg.second, order);
+  for (Gate* arg : Preprocessor::OrderArguments<Gate>(*root)) {
+    order = Preprocessor::TopologicalOrder(arg, order);
   }
-  for (const Gate::Arg<Variable>& arg : root->args<Variable>()) {
-    if (!arg.second->order()) arg.second->order(++order);
+  for (Variable* arg : Preprocessor::OrderArguments<Variable>(*root)) {
+    if (!arg->order()) arg->order(++order);
   }
   assert(root->args<Constant>().empty());
   root->order(++order);
   return order;
+}
+
+template <class T>
+std::vector<T*> Preprocessor::OrderArguments(const Gate& gate) noexcept {
+  std::vector<T*> args;
+  for (const Gate::Arg<T>& arg : gate.args<T>()) {
+    args.push_back(arg.second.get());
+  }
+  boost::sort(args, [](T* lhs, T* rhs) {
+    return lhs->parents().size() > rhs->parents().size();
+  });
+  return args;
 }
 
 void Preprocessor::GatherNodes(std::vector<GatePtr>* gates,
@@ -2393,10 +2405,9 @@ void Preprocessor::GatherNodes(std::vector<GatePtr>* gates,
   Preprocessor::GatherNodes(graph_->root(), gates, variables);
 }
 
-void Preprocessor::GatherNodes(
-    const GatePtr& gate,
-    std::vector<GatePtr>* gates,
-    std::vector<VariablePtr>* variables) noexcept {
+void Preprocessor::GatherNodes(const GatePtr& gate,
+                               std::vector<GatePtr>* gates,
+                               std::vector<VariablePtr>* variables) noexcept {
   if (gate->Visited()) return;
   gate->Visit(1);
   gates->push_back(gate);

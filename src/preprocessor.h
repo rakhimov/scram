@@ -25,7 +25,6 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -1061,13 +1060,24 @@ class Preprocessor {
   /// The nodes are sorted in descending optimization value.
   /// The highest order value belongs to the root.
   ///
-  /// @param[in] root  The root or current parent gate of the graph.
+  /// @param[in,out] root  The root or current parent gate of the graph.
   /// @param[in] order  The current order value.
   ///
   /// @returns The final order value.
   ///
   /// @post The root and descendant node order marks contain the ordering.
-  int TopologicalOrder(const GatePtr& root, int order) noexcept;
+  int TopologicalOrder(Gate* root, int order) noexcept;
+
+  /// Determines the order of traversal for gate arguments.
+  /// This function does assign the order of nodes.
+  ///
+  /// @tparam T  Type of the arguments.
+  ///
+  /// @param[in] gate  The host gate parent.
+  ///
+  /// @returns An ordered, stable list of arguments.
+  template <class T>
+  std::vector<T*> OrderArguments(const Gate& gate) noexcept;
 
   /// Gathers all nodes in the Boolean graph.
   ///
