@@ -68,7 +68,7 @@ class Mocus {
   ///
   /// @returns Fully processed, minimized Zbdd cut set container.
   std::unique_ptr<zbdd::CutSetContainer>
-  AnalyzeModule(const GatePtr& gate, const Settings& settings) noexcept;
+  AnalyzeModule(const Gate& gate, const Settings& settings) noexcept;
 
   bool constant_graph_;  ///< No need for analysis.
   const BooleanGraph* graph_;  ///< The analysis PDAG.

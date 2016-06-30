@@ -112,7 +112,7 @@ class CcfGroup : public Element, public Role, public Id {
   /// before initiating the CCF validation.
   ///
   /// @throws ValidationError  There is an issue with the setup.
-  virtual void Validate();
+  virtual void Validate() const;
 
   /// Processes the given factors and members
   /// to create common cause failure probabilities and new events
@@ -229,7 +229,7 @@ class PhiFactorModel : public CcfGroup {
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.
-  void Validate() override;
+  void Validate() const override;
 
  private:
   ExpressionMap CalculateProbabilities() override;

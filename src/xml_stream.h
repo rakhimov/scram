@@ -28,8 +28,7 @@
 namespace scram {
 
 /// Errors in using XML streaming facilities.
-class XmlStreamError : public Error {
- public:
+struct XmlStreamError : public Error {
   using Error::Error;  ///< Constructor with a message.
 };
 
@@ -96,13 +95,16 @@ class XmlStreamElement {
   /// @param[in] name  Non-empty name for the attribute.
   /// @param[in] value  The value of the attribute.
   ///
+  /// @returns The reference to this element.
+  ///
   /// @throws XmlStreamError  Invalid setup for the attribute.
   template <typename T>
-  void SetAttribute(const char* name, T&& value) {
+  XmlStreamElement& SetAttribute(const char* name, T&& value) {
     if (!active_) throw XmlStreamError("The element is inactive.");
     if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
     if (*name == '\0') throw XmlStreamError("Attribute name can't be empty.");
     out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
+    return *this;
   }
 
   /// Adds text to the element.
@@ -116,7 +118,7 @@ class XmlStreamElement {
   ///
   /// @throws XmlStreamError  Invalid setup or state for text addition.
   template <typename T>
-  void AddChildText(T&& text) {
+  void AddText(T&& text) {
     if (!active_) throw XmlStreamError("The element is inactive.");
     if (!accept_text_) throw XmlStreamError("Too late to put text.");
     if (accept_elements_) accept_elements_ = false;

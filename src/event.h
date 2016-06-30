@@ -161,7 +161,7 @@ class BasicEvent : public PrimaryEvent {
   /// Validates the probability expressions for the primary event.
   ///
   /// @throws ValidationError  The expression for the basic event is invalid.
-  void Validate() {
+  void Validate() const {
     if (expression_->Min() < 0 || expression_->Max() > 1) {
       throw ValidationError("Expression value is invalid.");
     }
@@ -276,7 +276,7 @@ class Gate : public Event {
   /// Checks if a gate is initialized correctly.
   ///
   /// @throws ValidationError  Errors in the gate's logic or setup.
-  void Validate();
+  void Validate() const;
 
   /// @returns The mark of this gate node.
   /// @returns Empty string for no mark.
@@ -370,7 +370,7 @@ class Formula {
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
   /// @throws ValidationError  Problems with the operator or arguments.
-  void Validate();
+  void Validate() const;
 
  private:
   /// Formula types that require two or more arguments.

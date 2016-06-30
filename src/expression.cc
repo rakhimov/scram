@@ -100,7 +100,7 @@ ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
       lambda_(*lambda),
       time_(*t) {}
 
-void ExponentialExpression::Validate() {
+void ExponentialExpression::Validate() const {
   if (lambda_.Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
   } else if (time_.Mean() < 0) {
@@ -122,7 +122,7 @@ GlmExpression::GlmExpression(const ExpressionPtr& gamma,
       mu_(*mu),
       time_(*t) {}
 
-void GlmExpression::Validate() {
+void GlmExpression::Validate() const {
   if (lambda_.Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
   } else if (mu_.Mean() < 0) {
@@ -168,7 +168,7 @@ WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
       t0_(*t0),
       time_(*time) {}
 
-void WeibullExpression::Validate() {
+void WeibullExpression::Validate() const {
   if (alpha_.Mean() <= 0) {
     throw InvalidArgument("The scale parameter for Weibull distribution must"
                           " be positive.");
@@ -208,7 +208,7 @@ UniformDeviate::UniformDeviate(const ExpressionPtr& min,
       min_(*min),
       max_(*max) {}
 
-void UniformDeviate::Validate() {
+void UniformDeviate::Validate() const {
   if (min_.Mean() >= max_.Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
                           " distribution.");
@@ -228,7 +228,7 @@ NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
       mean_(*mean),
       sigma_(*sigma) {}
 
-void NormalDeviate::Validate() {
+void NormalDeviate::Validate() const {
   if (sigma_.Mean() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
   } else if (sigma_.Min() <= 0) {
@@ -248,7 +248,7 @@ LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
       ef_(*ef),
       level_(*level) {}
 
-void LogNormalDeviate::Validate() {
+void LogNormalDeviate::Validate() const {
   if (level_.Mean() <= 0 || level_.Mean() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
   } else if (ef_.Mean() <= 1) {
@@ -297,7 +297,7 @@ GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
       k_(*k),
       theta_(*theta) {}
 
-void GammaDeviate::Validate() {
+void GammaDeviate::Validate() const {
   if (k_.Mean() <= 0) {
     throw InvalidArgument("The k shape parameter for Gamma distribution"
                           " cannot be negative or zero.");
@@ -322,7 +322,7 @@ BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
       alpha_(*alpha),
       beta_(*beta) {}
 
-void BetaDeviate::Validate() {
+void BetaDeviate::Validate() const {
   if (alpha_.Mean() <= 0) {
     throw InvalidArgument("The alpha shape parameter for Beta distribution"
                           " cannot be negative or zero.");
@@ -398,12 +398,21 @@ sampler_iterator<Iterator> make_sampler(const Iterator& it) {
 }  // namespace
 
 double Histogram::GetSample() noexcept {
+#ifdef _LIBCPP_VERSION  // libc++ chokes on iterator categories.
+  std::vector<double> samples;
+  for (auto it = boundaries_.first; it != boundaries_.second; ++it) {
+    samples.push_back((*it)->Sample());
+  }
+  return Random::HistogramGenerator(
+      samples.begin(), samples.end(), make_sampler(weights_.first));
+#else
   return Random::HistogramGenerator(make_sampler(boundaries_.first),
                                     make_sampler(boundaries_.second),
                                     make_sampler(weights_.first));
+#endif
 }
 
-void Histogram::CheckBoundaries() {
+void Histogram::CheckBoundaries() const {
   auto it = boundaries_.first;
   if ((*it)->IsConstant() == false || (*it)->Mean() != 0) {
     throw InvalidArgument("Histogram lower boundary must be 0.");
@@ -421,7 +430,7 @@ void Histogram::CheckBoundaries() {
   }
 }
 
-void Histogram::CheckWeights() {
+void Histogram::CheckWeights() const {
   for (auto it = weights_.first; it != weights_.second; ++it) {
     if ((*it)->Mean() < 0) {
       throw InvalidArgument("Histogram weights can't be negative.");
@@ -469,7 +478,7 @@ double Mul::GetExtremum(bool maximum) noexcept {
   return maximum ? max_val : min_val;
 }
 
-void Div::Validate() {
+void Div::Validate() const {
   auto it = Expression::args().begin();
   for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;

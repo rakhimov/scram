@@ -106,6 +106,32 @@ Additional Coding Conventions
 - Do not use ``inline``
   when defining a function in a class definition.
   It is implicitly ``inline``.
+  Do not use ``inline`` as an optimization hint for the compiler.
+  Only reasonable use of ``inline`` is for the linker to avoid violating the ODR.
+
+- ``!bool`` vs. ``bool == false``
+
+    1. Prefer using the negation and implicit conversions to ``bool``
+       only with Boolean or Boolean-like values
+       (``bool``, ``nullptr``, ``0`` for non-existence, etc.).
+       An example abuse of the negation and implicit conversion to ``bool`` would be:
+
+    .. code-block:: cpp
+
+        double checked_div(double x, double y) {
+            if (!y) throw domain_error("");  // Bad. Looks like 'if (no y) then fail'.
+                                             // More explicit (y == 0) is better.
+            return x / y;
+        }
+
+    2. However, if the expression is long (3 or more parts),
+       prefer comparing with the value (``false``, ``0``, etc.) explicitly for readability:
+
+    .. code-block:: cpp
+
+       if (var.getter().data().empty() == false);
+
+    3. Avoid inverted or negated logic if possible.
 
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
@@ -131,13 +157,13 @@ Core C++ Code
   Null pointer based logic must be
   rare, localized, and explicit.
 
-- Consider supplying a typedef (using declaration/alias)
+- Consider supplying a typedef or alias declaration
   for common smart pointers.
 
     * ``ClassNamePtr`` for shared, unique, and intrusive pointers
     * ``ClassNameWeakPtr`` for weak pointers
 
-- In definitions of class member functions:
+- Function call qualifications in definitions of class member functions:
 
     * Explicitly qualify non-virtual member and inherited function calls
       with the corresponding class names, i.e., ``ClassName::Foo()``.
@@ -445,7 +471,7 @@ GUI Code Documentation Style
 
 - Semantic Linefeeds
 - Leverage Qt Creator for auto-documentation with Doxygen
-  (Javadoc style and ``///`` for one-liners)
+  (Javadoc style and ``///<`` for one-liners)
 - The same organization of Doxygen sections as in the core code.
 
 

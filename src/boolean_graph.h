@@ -36,7 +36,6 @@
 #include <array>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -44,10 +43,10 @@
 
 #include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/range/algorithm.hpp>
 
 #include "event.h"
 #include "ext.h"
+#include "linear_map.h"
 
 namespace scram {
 namespace core {
@@ -62,10 +61,10 @@ class NodeParentManager {
   friend class Gate;  ///< The main manipulator of parent information.
 
  public:
-  using Parent = std::pair<const int, GateWeakPtr>;  ///< Parent index and ptr.
+  using Parent = std::pair<int, GateWeakPtr>;  ///< Parent index and ptr.
 
   /// Map of parent gate positive indices and weak pointers to them.
-  using ParentMap = std::unordered_map<int, GateWeakPtr>;
+  using ParentMap = LinearMap<int, GateWeakPtr, std::vector, MoveEraser>;
 
   /// @returns Parents of a node.
   const ParentMap& parents() const { return parents_; }
@@ -77,6 +76,8 @@ class NodeParentManager {
   /// Adds a new parent of a node.
   ///
   /// @param[in] gate  Pointer to the parent gate.
+  ///
+  /// @pre The parent is not in the container.
   void AddParent(const GatePtr& gate);
 
   /// Removes a parent from the node.
@@ -305,14 +306,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
-  using Arg = std::pair<const int, std::shared_ptr<T>>;
+  using Arg = std::pair<int, std::shared_ptr<T>>;
 
   /// The associative container type to store the gate arguments.
   /// This container type maps the index of the argument to a pointer to it.
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
-  using ArgMap = std::unordered_map<int, std::shared_ptr<T>>;
+  using ArgMap = LinearMap<int, std::shared_ptr<T>, std::vector, MoveEraser>;
 
   /// The ordered set of gate argument indices.
   using ArgSet = boost::container::flat_set<int>;
@@ -539,7 +540,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     if (args_.count(-index)) return Gate::ProcessComplementArg(index);
 
     args_.insert(index);
-    Gate::mutable_args<T>().emplace(index, arg);
+    Gate::mutable_args<T>().data().emplace_back(index, arg);
     arg->AddParent(shared_from_this());
   }
 
@@ -890,10 +891,17 @@ class BooleanGraph {
   /// @warning Node visits are used.
   void Print();
 
- private:
-  /// Mapping to string gate types to enum gate types.
-  static const std::unordered_map<std::string, Operator> kStringToType_;
+  /// Writes Boolean graph properties into logs.
+  ///
+  /// @pre The graph is valid and well formed.
+  /// @pre Logging cutoff level is Debug 4 or higher.
+  ///
+  /// @post Gate marks are clear.
+  ///
+  /// @warning Gate marks are manipulated.
+  void Log() noexcept;
 
+ private:
   /// Sets the root gate.
   /// This function is helpful for preprocessing.
   ///
@@ -1059,69 +1067,6 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeOrders(const GatePtr& gate) noexcept;
-
-  /// Container for properties of Boolean Graphs.
-  struct GraphLogger {
-    /// Special handling of the root gate
-    /// because it doesn't have parents.
-    ///
-    /// @param[in] gate  The root gate of the Boolean graph.
-    void RegisterRoot(const GatePtr& gate) noexcept;
-
-    /// Collects data from a gate.
-    ///
-    /// @param[in] gate  Valid gate with arguments.
-    ///
-    /// @pre The gate has not been passed before.
-    void Log(const GatePtr& gate) noexcept;
-
-    /// @param[in] container  Collection of indices of elements.
-    ///
-    /// @returns The total number of unique elements.
-    int Count(const std::unordered_set<int>& container) noexcept {
-      return boost::count_if(container, [&container](int index) {
-        return index > 0 || !container.count(-index);
-      });
-    }
-
-    /// @param[in] container  Collection of indices of elements.
-    ///
-    /// @returns The total number of complement elements.
-    int CountComplements(const std::unordered_set<int>& container) noexcept {
-      return boost::count_if(container, [](int index) { return index < 0; });
-    }
-
-    /// @param[in] container  Collection of indices of elements.
-    ///
-    /// @returns The number of literals appearing as positive and negative.
-    int CountOverlap(const std::unordered_set<int>& container) noexcept {
-      return boost::count_if(container, [&container](int index) {
-        return index < 0 && container.count(-index);
-      });
-    }
-
-    int num_modules = 0;  ///< The number of module gates.
-    std::unordered_set<int> gates;  ///< Collection of gates.
-    std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
-    std::unordered_set<int> variables;  ///< Collection of variables.
-    std::unordered_set<int> constants;  ///< Collection of constants.
-  };
-
-  /// Writes Boolean graph properties into logs.
-  ///
-  /// @pre The graph is valid and well formed.
-  /// @pre Logging cutoff level is Debug 4 or higher.
-  ///
-  /// @post Gate marks are clear.
-  ///
-  /// @warning Gate marks are manipulated.
-  void Log() noexcept;
-
-  /// Traverses a Boolean graph to collect information.
-  ///
-  /// @param[in] gate  The starting gate for traversal.
-  /// @param[in,out] logger  A container with properties of the graph.
-  void GatherInformation(const GatePtr& gate, GraphLogger* logger) noexcept;
 
   GatePtr root_;  ///< The root gate of this graph.
   int root_sign_;  ///< The negative or positive sign of the root node.

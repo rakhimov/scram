@@ -53,16 +53,16 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
       root_ = {false, kOne_};
     }
   } else if (fault_tree->root()->type() == kNull) {
-    GatePtr top = fault_tree->root();
-    assert(top->args().size() == 1);
-    assert(top->args<Gate>().empty());
-    int child = *top->args().begin();
-    VariablePtr var = top->args<Variable>().begin()->second;
+    const GatePtr& top_gate = fault_tree->root();
+    assert(top_gate->args().size() == 1);
+    assert(top_gate->args<Gate>().empty());
+    int child = *top_gate->args().begin();
+    VariablePtr var = top_gate->args<Variable>().begin()->second;
     root_ = {child < 0, Bdd::FindOrAddVertex(var->index(), kOne_, kOne_, true,
                                              var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = Bdd::ConvertGraph(fault_tree->root(), &gates);
+    root_ = Bdd::ConvertGraph(*fault_tree->root(), &gates);
     root_.complement ^= fault_tree->complement();
   }
   Bdd::ClearMarks(false);
@@ -131,46 +131,46 @@ ItePtr Bdd::FindOrAddVertex(const ItePtr& ite, const VertexPtr& high,
   return in_table;
 }
 
-ItePtr Bdd::FindOrAddVertex(const GatePtr& gate, const VertexPtr& high,
+ItePtr Bdd::FindOrAddVertex(const Gate& gate, const VertexPtr& high,
                             const VertexPtr& low,
                             bool complement_edge) noexcept {
-  assert(gate->module() && "Only module gates are expected for proxies.");
-  ItePtr in_table = Bdd::FindOrAddVertex(gate->index(), high, low,
-                                         complement_edge, gate->order());
+  assert(gate.module() && "Only module gates are expected for proxies.");
+  ItePtr in_table = Bdd::FindOrAddVertex(gate.index(), high, low,
+                                         complement_edge, gate.order());
   if (in_table->unique()) {
-    in_table->module(gate->module());
-    in_table->coherent(gate->coherent());
+    in_table->module(gate.module());
+    in_table->coherent(gate.coherent());
   }
-  assert(in_table->module() == gate->module());
-  assert(in_table->coherent() == gate->coherent());
+  assert(in_table->module() == gate.module());
+  assert(in_table->coherent() == gate.coherent());
   return in_table;
 }
 
 Bdd::Function Bdd::ConvertGraph(
-    const GatePtr& gate,
+    const Gate& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
-  assert(!gate->IsConstant() && "Unexpected constant gate!");
+  assert(!gate.IsConstant() && "Unexpected constant gate!");
   Function result;  // For the NRVO, due to memoization.
   // Memoization check.
-  if (auto it_entry = ext::find(*gates, gate->index())) {
+  if (auto it_entry = ext::find(*gates, gate.index())) {
     std::pair<Function, int>& entry = it_entry->second;
     result = entry.first;
-    assert(entry.second < gate->parents().size());  // Processed parents.
-    if (++entry.second == gate->parents().size()) gates->erase(it_entry);
+    assert(entry.second < gate.parents().size());  // Processed parents.
+    if (++entry.second == gate.parents().size()) gates->erase(it_entry);
     return result;
   }
   std::vector<Function> args;
-  for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
+  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
     args.push_back({arg.first < 0,
                     Bdd::FindOrAddVertex(arg.second->index(), kOne_, kOne_,
                                          true, arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
-  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    Function res = Bdd::ConvertGraph(arg.second, gates);
+  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
+    Function res = Bdd::ConvertGraph(*arg.second, gates);
     if (arg.second->module()) {
       args.push_back({arg.first < 0,
-                      Bdd::FindOrAddVertex(arg.second, kOne_, kOne_, true)});
+                      Bdd::FindOrAddVertex(*arg.second, kOne_, kOne_, true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});
@@ -183,13 +183,13 @@ Bdd::Function Bdd::ConvertGraph(
   });
   auto it = args.cbegin();
   for (result = *it++; it != args.cend(); ++it) {
-    result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
+    result = Bdd::Apply(gate.type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
   Bdd::ClearTables();
   assert(result.vertex);
-  if (gate->module()) modules_.emplace(gate->index(), result);
-  if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
+  if (gate.module()) modules_.emplace(gate.index(), result);
+  if (gate.parents().size() > 1) gates->insert({gate.index(), {result, 1}});
   return result;
 }
 

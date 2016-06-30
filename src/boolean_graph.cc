@@ -24,7 +24,10 @@
 
 #include "boolean_graph.h"
 
+#include <string>
+
 #include <boost/math/special_functions/sign.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "logger.h"
 
@@ -34,7 +37,8 @@ namespace core {
 int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
 
 void NodeParentManager::AddParent(const GatePtr& gate) {
-  parents_.emplace(gate->index(), gate);
+  assert(!parents_.count(gate->index()) && "Adding an existing parent.");
+  parents_.data().emplace_back(gate->index(), gate);
 }
 
 Node::Node() noexcept : Node(next_index_++) {}
@@ -121,15 +125,8 @@ void Gate::InvertArgs() noexcept {
     inverted_args.insert(inverted_args.end(), -*it);
   args_ = std::move(inverted_args);
 
-  ArgMap<Gate> inverted_gates;
-  for (const auto& arg : gate_args_)
-    inverted_gates.emplace(-arg.first, arg.second);
-  gate_args_ = std::move(inverted_gates);
-
-  ArgMap<Variable> inverted_vars;
-  for (const auto& arg : variable_args_)
-    inverted_vars.emplace(-arg.first, arg.second);
-  variable_args_ = std::move(inverted_vars);
+  for (auto& arg : gate_args_) arg.first *= -1;
+  for (auto& arg : variable_args_) arg.first *= -1;
 }
 
 void Gate::InvertArg(int existing_arg) noexcept {
@@ -141,15 +138,11 @@ void Gate::InvertArg(int existing_arg) noexcept {
   args_.insert(-existing_arg);
 
   if (auto it_g = ext::find(gate_args_, existing_arg)) {
-    GatePtr arg = it_g->second;
-    gate_args_.erase(it_g);
-    gate_args_.emplace(-existing_arg, arg);
+    it_g->first *= -1;
 
   } else {
     auto it_v = variable_args_.find(existing_arg);
-    VariablePtr arg = it_v->second;
-    variable_args_.erase(it_v);
-    variable_args_.emplace(-existing_arg, arg);
+    it_v->first *= -1;
   }
 }
 
@@ -428,16 +421,6 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-const std::unordered_map<std::string, Operator> BooleanGraph::kStringToType_ = {
-    {"and", kAnd},
-    {"or", kOr},
-    {"atleast", kVote},
-    {"xor", kXor},
-    {"not", kNot},
-    {"nand", kNand},
-    {"nor", kNor},
-    {"null", kNull}};
-
 BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
@@ -455,7 +438,12 @@ void BooleanGraph::Print() {
 
 GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
                                      ProcessedNodes* nodes) noexcept {
-  Operator type = kStringToType_.find(formula.type())->second;
+  static_assert(kNumOperators == 8, "Unspecified formula operators.");
+  static const std::unordered_map<std::string, Operator> kStringToType = {
+      {"and", kAnd}, {"or", kOr},     {"atleast", kVote}, {"xor", kXor},
+      {"not", kNot}, {"nand", kNand}, {"nor", kNor},      {"null", kNull}};
+
+  Operator type = kStringToType.find(formula.type())->second;
   auto parent = std::make_shared<Gate>(type);
 
   if (type != kOr && type != kAnd) normal_ = false;
@@ -672,70 +660,119 @@ void BooleanGraph::ClearNodeOrders(const GatePtr& gate) noexcept {
   assert(gate->args<Constant>().empty());
 }
 
-void BooleanGraph::GraphLogger::RegisterRoot(const GatePtr& gate) noexcept {
-  gates.insert(gate->index());
-}
+namespace {  // Helper facilities to log the BooleanGraph.
 
-void BooleanGraph::GraphLogger::Log(const GatePtr& gate) noexcept {
-  ++gate_types[gate->type()];
-  if (gate->module()) ++num_modules;
-  for (const auto& arg : gate->args<Gate>()) gates.insert(arg.first);
-  for (const auto& arg : gate->args<Variable>()) variables.insert(arg.first);
-  for (const auto& arg : gate->args<Constant>()) constants.insert(arg.first);
-}
+/// Container for properties of Boolean Graphs.
+struct GraphLogger {
+  /// Special handling of the root gate
+  /// because it doesn't have parents.
+  ///
+  /// @param[in] gate  The root gate of the Boolean graph.
+  explicit GraphLogger(const GatePtr& gate) noexcept {
+    gates.insert(gate->index());
+  }
+
+  /// Traverses a Boolean graph to collect information.
+  ///
+  /// @param[in] gate  The starting gate for traversal.
+  /// @param[in,out] logger  A container with properties of the graph.
+  static void GatherInformation(const GatePtr& gate,
+                                GraphLogger* logger) noexcept {
+    if (gate->mark()) return;
+    gate->mark(true);
+    logger->Log(gate);
+    for (const auto& arg : gate->args<Gate>()) {
+      GraphLogger::GatherInformation(arg.second, logger);
+    }
+  }
+
+  /// Collects data from a gate.
+  ///
+  /// @param[in] gate  Valid gate with arguments.
+  ///
+  /// @pre The gate has not been passed before.
+  void Log(const GatePtr& gate) noexcept {
+    ++gate_types[gate->type()];
+    if (gate->module()) ++num_modules;
+    for (const auto& arg : gate->args<Gate>()) gates.insert(arg.first);
+    for (const auto& arg : gate->args<Variable>()) variables.insert(arg.first);
+    for (const auto& arg : gate->args<Constant>()) constants.insert(arg.first);
+  }
+
+  /// @param[in] container  Collection of indices of elements.
+  ///
+  /// @returns The total number of unique elements.
+  int Count(const std::unordered_set<int>& container) noexcept {
+    return boost::count_if(container, [&container](int index) {
+      return index > 0 || !container.count(-index);
+    });
+  }
+
+  /// @param[in] container  Collection of indices of elements.
+  ///
+  /// @returns The total number of complement elements.
+  int CountComplements(const std::unordered_set<int>& container) noexcept {
+    return boost::count_if(container, [](int index) { return index < 0; });
+  }
+
+  /// @param[in] container  Collection of indices of elements.
+  ///
+  /// @returns The number of literals appearing as positive and negative.
+  int CountOverlap(const std::unordered_set<int>& container) noexcept {
+    return boost::count_if(container, [&container](int index) {
+      return index < 0 && container.count(-index);
+    });
+  }
+
+  int num_modules = 0;  ///< The number of module gates.
+  std::unordered_set<int> gates;  ///< Collection of gates.
+  std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
+  std::unordered_set<int> variables;  ///< Collection of variables.
+  std::unordered_set<int> constants;  ///< Collection of constants.
+};
+
+}  // namespace
 
 void BooleanGraph::Log() noexcept {
   if (DEBUG4 > scram::Logger::report_level()) return;
   BooleanGraph::ClearGateMarks();
-  GraphLogger* logger = new GraphLogger();
-  logger->RegisterRoot(root_);
-  BooleanGraph::GatherInformation(root_, logger);
+  GraphLogger logger(root_);
+  GraphLogger::GatherInformation(root_, &logger);
   LOG(DEBUG4) << "Boolean graph with root G" << root_->index();
-  LOG(DEBUG4) << "Total # of gates: " << logger->Count(logger->gates);
-  LOG(DEBUG4) << "# of modules: " << logger->num_modules;
+  LOG(DEBUG4) << "Total # of gates: " << logger.Count(logger.gates);
+  LOG(DEBUG4) << "# of modules: " << logger.num_modules;
   LOG(DEBUG4) << "# of gates with negative indices: "
-              << logger->CountComplements(logger->gates);
+              << logger.CountComplements(logger.gates);
   LOG(DEBUG4) << "# of gates with positive and negative indices: "
-              << logger->CountOverlap(logger->gates);
+              << logger.CountOverlap(logger.gates);
 
-  BLOG(DEBUG5, logger->gate_types[kAnd]) << "AND gates: "
-                                         << logger->gate_types[kAnd];
-  BLOG(DEBUG5, logger->gate_types[kOr]) << "OR gates: "
-                                        << logger->gate_types[kOr];
-  BLOG(DEBUG5, logger->gate_types[kVote])
-      << "K/N gates: " << logger->gate_types[kVote];
-  BLOG(DEBUG5, logger->gate_types[kXor]) << "XOR gates: "
-                                         << logger->gate_types[kXor];
-  BLOG(DEBUG5, logger->gate_types[kNot]) << "NOT gates: "
-                                         << logger->gate_types[kNot];
-  BLOG(DEBUG5, logger->gate_types[kNand])
-      << "NAND gates: " << logger->gate_types[kNand];
-  BLOG(DEBUG5, logger->gate_types[kNor]) << "NOR gates: "
-                                         << logger->gate_types[kNor];
-  BLOG(DEBUG5, logger->gate_types[kNull])
-      << "NULL gates: " << logger->gate_types[kNull];
+  BLOG(DEBUG5, logger.gate_types[kAnd]) << "AND gates: "
+                                        << logger.gate_types[kAnd];
+  BLOG(DEBUG5, logger.gate_types[kOr]) << "OR gates: "
+                                       << logger.gate_types[kOr];
+  BLOG(DEBUG5, logger.gate_types[kVote]) << "K/N gates: "
+                                         << logger.gate_types[kVote];
+  BLOG(DEBUG5, logger.gate_types[kXor]) << "XOR gates: "
+                                        << logger.gate_types[kXor];
+  BLOG(DEBUG5, logger.gate_types[kNot]) << "NOT gates: "
+                                        << logger.gate_types[kNot];
+  BLOG(DEBUG5, logger.gate_types[kNand]) << "NAND gates: "
+                                         << logger.gate_types[kNand];
+  BLOG(DEBUG5, logger.gate_types[kNor]) << "NOR gates: "
+                                        << logger.gate_types[kNor];
+  BLOG(DEBUG5, logger.gate_types[kNull]) << "NULL gates: "
+                                         << logger.gate_types[kNull];
 
-  LOG(DEBUG4) << "Total # of variables: " << logger->Count(logger->variables);
+  LOG(DEBUG4) << "Total # of variables: " << logger.Count(logger.variables);
   LOG(DEBUG4) << "# of variables with negative indices: "
-              << logger->CountComplements(logger->variables);
+              << logger.CountComplements(logger.variables);
   LOG(DEBUG4) << "# of variables with positive and negative indices: "
-              << logger->CountOverlap(logger->variables);
+              << logger.CountOverlap(logger.variables);
 
-  BLOG(DEBUG4, !logger->constants.empty())
-      << "Total # of constants: " << logger->Count(logger->constants);
+  BLOG(DEBUG4, !logger.constants.empty()) << "Total # of constants: "
+                                          << logger.Count(logger.constants);
 
-  delete logger;
   BooleanGraph::ClearGateMarks();
-}
-
-void BooleanGraph::GatherInformation(const GatePtr& gate,
-                                     GraphLogger* logger) noexcept {
-  if (gate->mark()) return;
-  gate->mark(true);
-  logger->Log(gate);
-  for (const auto& arg : gate->args<Gate>()) {
-    BooleanGraph::GatherInformation(arg.second, logger);
-  }
 }
 
 std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {

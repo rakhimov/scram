@@ -4,7 +4,7 @@
 # Exludes env.cc, version.cc, and other irrelevant for CCN files.
 # This script must be run in scram/src directory
 
-lizard -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert \
+lizard -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert -Ens \
   scram.cc \
   cycle.cc \
   error.cc \

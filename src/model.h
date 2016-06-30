@@ -146,6 +146,18 @@ class Model : public Element {
   }
   /// @}
 
+  /// Binds a formula with its argument event.
+  /// This is a special handling for undefined event types
+  /// with mixed roles.
+  ///
+  /// @param[in] entity_reference  Reference string to the entity.
+  /// @param[in] base_path  The series of containers indicating the scope.
+  /// @param[out] formula  The host formula for the event.
+  ///
+  /// @throws std::out_of_range  The entity cannot be found.
+  void BindEvent(const std::string& entity_reference,
+                 const std::string& base_path, Formula* formula);
+
  private:
   /// Lookup containers for model entities with roles.
   ///
