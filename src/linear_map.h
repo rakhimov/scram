@@ -29,7 +29,7 @@
 #include <vector>
 #include <utility>
 
-namespace scram {
+namespace ext {
 
 /// Default erase policy for containers with iterators.
 struct DefaultEraser {
@@ -118,28 +118,28 @@ struct MoveEraser {
 ///
 /// The performance of the map critically depends on the number of entries,
 /// the size of the key-value pair, and the cost of comparing keys for equality.
-/// The advantage of the LinearMap comes from cache-friendliness,
+/// The advantage of the linear_map comes from cache-friendliness,
 /// and fewer CPU front-end and back-end stalls.
 ///
 /// From crude experimental results with random entries
 /// comparing with std::map, std::unordered_map, boost::flat_map:
 ///
 ///   1. For Key=int, Value=Object, sizeof(Object)=24,
-///      the LinearMap outperforms up to 50 entries.
+///      the linear_map outperforms up to 50 entries.
 ///
 ///   2. For Key=std::string(20 char), Value=Object, sizeof(Object)=24,
-///      the LinearMap performs equally well up to 10 entries.
+///      the linear_map performs equally well up to 10 entries.
 ///
 /// @tparam Key  The type of the unique keys.
 /// @tparam Value  The type of the values associated with the keys.
-/// @tparam Sequence  The underlying container type.
 /// @tparam ErasePolicy  The policy class that provides
 ///                      ``erase(it, *container)`` static member function
 ///                      to control the element erasure from the container.
+/// @tparam Sequence  The underlying container type.
 template <typename Key, typename Value,
-          template <typename...> class Sequence = std::vector,
-          class ErasePolicy = DefaultEraser>
-class LinearMap {
+          class ErasePolicy = DefaultEraser,
+          template <typename...> class Sequence = std::vector>
+class linear_map {
   /// Non-member equality test operators.
   /// The complexity is O(N^2).
   ///
@@ -151,20 +151,20 @@ class LinearMap {
   ///       compare the underlying data containers directly.
   ///
   /// @{
-  friend bool operator==(const LinearMap& lhs, const LinearMap& rhs) {
+  friend bool operator==(const linear_map& lhs, const linear_map& rhs) {
     if (lhs.size() != rhs.size()) return false;
     for (const auto& entry : lhs) {
        if (std::find(rhs.begin(), rhs.end(), entry) == rhs.end()) return false;
     }
     return true;
   }
-  friend bool operator!=(const LinearMap& lhs, const LinearMap& rhs) {
+  friend bool operator!=(const linear_map& lhs, const linear_map& rhs) {
     return !(lhs == rhs);
   }
   /// @}
 
   /// Friend swap definition for convenience sake.
-  friend void swap(LinearMap& lhs, LinearMap& rhs) noexcept { lhs.swap(rhs); }
+  friend void swap(linear_map& lhs, linear_map& rhs) noexcept { lhs.swap(rhs); }
 
  public:
   /// Public typedefs.
@@ -192,24 +192,24 @@ class LinearMap {
 
   /// Standard constructors and assignment operators.
   /// @{
-  LinearMap() = default;
-  LinearMap(std::initializer_list<value_type> init_list) {
-    LinearMap::insert(init_list.begin(), init_list.end());
+  linear_map() = default;
+  linear_map(std::initializer_list<value_type> init_list) {
+    linear_map::insert(init_list.begin(), init_list.end());
   }
 
   template <typename Iterator>
-  LinearMap(Iterator first1, Iterator last1) {
-    LinearMap::insert(first1, last1);
+  linear_map(Iterator first1, Iterator last1) {
+    linear_map::insert(first1, last1);
   }
 
-  LinearMap(const LinearMap& lm) : map_(lm.map_) {}
-  LinearMap(LinearMap&& lm) noexcept : map_(std::move(lm.map_)) {}
+  linear_map(const linear_map& lm) : map_(lm.map_) {}
+  linear_map(linear_map&& lm) noexcept : map_(std::move(lm.map_)) {}
 
-  LinearMap& operator=(const LinearMap& lm) {
+  linear_map& operator=(const linear_map& lm) {
     map_ = lm.map_;
     return *this;
   }
-  LinearMap& operator=(LinearMap&& lm) noexcept {
+  linear_map& operator=(linear_map&& lm) noexcept {
     assert(this != &lm && "Move into itself is undefined.");
     map_ = std::move(lm.map_);
     return *this;
@@ -241,7 +241,7 @@ class LinearMap {
   /// @returns 1 if there's an entry,
   ///          0 otherwise.
   size_type count(const key_type& key) const {
-    return LinearMap::find(key) != map_.end();
+    return linear_map::find(key) != map_.end();
   }
 
   /// Accesses an existing or default constructed entry.
@@ -252,14 +252,14 @@ class LinearMap {
   ///
   /// @{
   mapped_type& operator[](const key_type& key) {
-    auto it = LinearMap::find(key);
+    auto it = linear_map::find(key);
     if (it != map_.end()) return it->second;
     map_.emplace_back(key, mapped_type());
     return std::prev(map_.end())->second;
   }
 
   mapped_type& operator[](key_type&& key) {
-    auto it = LinearMap::find(key);
+    auto it = linear_map::find(key);
     if (it != map_.end()) return it->second;
     map_.emplace_back(std::move(key), mapped_type());
     return std::prev(map_.end())->second;
@@ -276,14 +276,14 @@ class LinearMap {
   ///
   /// @{
   const mapped_type& at(const key_type& key) const {
-    auto it = LinearMap::find(key);
+    auto it = linear_map::find(key);
     if (it == map_.end()) throw std::out_of_range("Key is not found.");
     return it->second;
   }
 
   mapped_type& at(const key_type& key) {
     return const_cast<mapped_type&>(
-        static_cast<const LinearMap*>(this)->at(key));
+        static_cast<const linear_map*>(this)->at(key));
   }
   /// @}
 
@@ -297,14 +297,14 @@ class LinearMap {
   ///          and the flag indicates whether the entry is actually inserted.
   /// @{
   std::pair<iterator, bool> insert(const value_type& p) {
-    auto it = LinearMap::find(p.first);
+    auto it = linear_map::find(p.first);
     if (it != map_.end()) return {it, false};
     map_.push_back(p);
     return {std::prev(map_.end()), true};
   }
 
   std::pair<iterator, bool> insert(value_type&& p) {
-    auto it = LinearMap::find(p.first);
+    auto it = linear_map::find(p.first);
     if (it != map_.end()) return {it, false};
     map_.emplace_back(std::forward<value_type>(p));
     return {std::prev(map_.end()), true};
@@ -321,7 +321,7 @@ class LinearMap {
   template <typename Iterator>
   void insert(Iterator first1, Iterator last1) {
     for (; first1 != last1; ++first1) {
-      if (LinearMap::find(first1->first) == map_.end())
+      if (linear_map::find(first1->first) == map_.end())
         map_.push_back(*first1);
     }
   }
@@ -335,7 +335,7 @@ class LinearMap {
   template <typename... Ts>
   std::pair<iterator, bool> emplace(Ts&&... args) {
     value_type p(std::forward<Ts>(args)...);
-    auto it = LinearMap::find(p.first);
+    auto it = linear_map::find(p.first);
     if (it != map_.end()) return {it, false};
     map_.emplace_back(std::move(p));
     return {std::prev(map_.end()), true};
@@ -359,16 +359,16 @@ class LinearMap {
   /// @returns 1 if the existing entry has been removed,
   ///          0 if there's no entry with the given key.
   size_type erase(const key_type& key) {
-    iterator it = LinearMap::find(key);
+    iterator it = linear_map::find(key);
     if (it == map_.end()) return 0;
-    LinearMap::erase(it);
+    linear_map::erase(it);
     return 1;
   }
 
   /// Swaps data with another linear map.
   ///
   /// @param[in] other  Another linear map.
-  void swap(LinearMap& other) noexcept { map_.swap(other.map_); }
+  void swap(linear_map& other) noexcept { map_.swap(other.map_); }
 
   /// @returns The number of entries in the map.
   size_type size() const { return map_.size(); }
@@ -428,6 +428,6 @@ class LinearMap {
   container_type map_;  ///< The main underlying data container.
 };
 
-}  // namespace scram
+}  // namespace ext
 
 #endif  // SCRAM_SRC_LINEAR_MAP_H_

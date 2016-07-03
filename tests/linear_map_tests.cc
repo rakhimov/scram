@@ -24,10 +24,10 @@
 #include <gtest/gtest.h>
 
 // Explicit instantiations with some common types.
-template class scram::LinearMap<int, int>;
-template class scram::LinearMap<int, double>;
-template class scram::LinearMap<int, std::string>;
-template class scram::LinearMap<std::string, std::string>;
+template class ext::linear_map<int, int>;
+template class ext::linear_map<int, double>;
+template class ext::linear_map<int, std::string>;
+template class ext::linear_map<std::string, std::string>;
 
 namespace {
 // The bare minimum class to be a key type for the linear map.
@@ -40,21 +40,21 @@ class KeyClass {
   std::string b;
 };
 }  // namespace
-template class scram::LinearMap<KeyClass, std::string>;
+template class ext::linear_map<KeyClass, std::string>;
 
 // Passing another underlying container types.
-template class scram::LinearMap<int, int, boost::container::vector>;
+template class ext::linear_map<int, int, ext::DefaultEraser,
+                               boost::container::vector>;
 
 // Move erase policy instantiation.
-template class scram::LinearMap<KeyClass, std::string, std::vector,
-                                scram::MoveEraser>;
-template class scram::LinearMap<KeyClass, std::string, boost::container::vector,
-                                scram::MoveEraser>;
+template class ext::linear_map<KeyClass, std::string, ext::MoveEraser>;
+template class ext::linear_map<KeyClass, std::string, ext::MoveEraser,
+                               boost::container::vector>;
 
 namespace scram {
 namespace test {
 
-using IntMap = LinearMap<int, int>;
+using IntMap = ext::linear_map<int, int>;
 
 TEST(LinearMapTest, Constructors) {
   IntMap m_default;
@@ -203,7 +203,7 @@ TEST(LinearMapTest, DefaultErase) {
 }
 
 TEST(LinearMapTest, MoveErase) {
-  using MoveMap = LinearMap<int, int, std::vector, scram::MoveEraser>;
+  using MoveMap = ext::linear_map<int, int, ext::MoveEraser>;
   MoveMap m = {{1, -1}, {2, -2}, {3, -3}};
   m.erase(1);
   MoveMap m_expected = {{3, -3}, {2, -2}};

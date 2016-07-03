@@ -64,7 +64,7 @@ class NodeParentManager {
   using Parent = std::pair<int, GateWeakPtr>;  ///< Parent index and ptr.
 
   /// Map of parent gate positive indices and weak pointers to them.
-  using ParentMap = LinearMap<int, GateWeakPtr, std::vector, MoveEraser>;
+  using ParentMap = ext::linear_map<int, GateWeakPtr, ext::MoveEraser>;
 
   /// @returns Parents of a node.
   const ParentMap& parents() const { return parents_; }
@@ -313,7 +313,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
-  using ArgMap = LinearMap<int, std::shared_ptr<T>, std::vector, MoveEraser>;
+  using ArgMap = ext::linear_map<int, std::shared_ptr<T>, ext::MoveEraser>;
 
   /// The ordered set of gate argument indices.
   using ArgSet = boost::container::flat_set<int>;
