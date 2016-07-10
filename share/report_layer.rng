@@ -37,22 +37,22 @@
               <attribute name="name"> <data type="NCName"/> </attribute>
               <optional>
                 <element name="products">
-                  <data type="float"/>
+                  <data type="double"/>
                 </element>
               </optional>
               <optional>
                 <element name="probability">
-                  <data type="float"/>
+                  <data type="double"/>
                 </element>
               </optional>
               <optional>
                 <element name="importance">
-                  <data type="float"/>
+                  <data type="double"/>
                 </element>
               </optional>
               <optional>
                 <element name="uncertainty">
-                  <data type="float"/>
+                  <data type="double"/>
                 </element>
               </optional>
             </element>
@@ -85,7 +85,7 @@
                   </element>
                 </optional>
                 <optional>
-                  <element name="cut-off"> <data type="float"/> </element>
+                  <element name="cut-off"> <data type="double"/> </element>
                 </optional>
                 <optional>
                   <element name="number-of-sums">
@@ -106,7 +106,7 @@
             </optional>
             <optional>
               <element name="calculation-time">
-                <data type="float"/>
+                <data type="double"/>
               </element>
             </optional>
             <optional>
@@ -211,7 +211,7 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="probability"> <data type="float"/> </attribute>
+        <attribute name="probability"> <data type="double"/> </attribute>
       </optional>
       <optional>
         <element name="warning"> <text/> </element>
@@ -230,10 +230,10 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="probability"> <data type="float"/> </attribute>
+        <attribute name="probability"> <data type="double"/> </attribute>
       </optional>
       <optional>
-        <attribute name="contribution"> <data type="float"/> </attribute>
+        <attribute name="contribution"> <data type="double"/> </attribute>
       </optional>
       <zeroOrMore>
         <ref name="literal"/>
@@ -287,25 +287,25 @@
       </optional>
       <optional>
         <element name="mean">
-          <attribute name="value"> <data type="float"/> </attribute>
+          <attribute name="value"> <data type="double"/> </attribute>
         </element>
       </optional>
       <optional>
         <element name="standard-deviation">
-          <attribute name="value"> <data type="float"/> </attribute>
+          <attribute name="value"> <data type="double"/> </attribute>
         </element>
       </optional>
       <optional>
         <element name="confidence-range">
-          <attribute name="percentage"> <data type="float"/> </attribute>
-          <attribute name="lower-bound"> <data type="float"/> </attribute>
-          <attribute name="upper-bound"> <data type="float"/> </attribute>
+          <attribute name="percentage"> <data type="double"/> </attribute>
+          <attribute name="lower-bound"> <data type="double"/> </attribute>
+          <attribute name="upper-bound"> <data type="double"/> </attribute>
         </element>
       </optional>
       <optional>
         <element name="error-factor">
-          <attribute name="percentage"> <data type="float"/> </attribute>
-          <attribute name="value"> <data type="float"/> </attribute>
+          <attribute name="percentage"> <data type="double"/> </attribute>
+          <attribute name="value"> <data type="double"/> </attribute>
         </element>
       </optional>
       <optional>
@@ -330,13 +330,13 @@
     <element name="quantile">
       <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
       <optional>
-        <attribute name="value"> <data type="float"/> </attribute>
+        <attribute name="value"> <data type="double"/> </attribute>
       </optional>
       <optional>
-        <attribute name="lower-bound"> <data type="float"/> </attribute>
+        <attribute name="lower-bound"> <data type="double"/> </attribute>
       </optional>
       <optional>
-        <attribute name="upper-bound"> <data type="float"/> </attribute>
+        <attribute name="upper-bound"> <data type="double"/> </attribute>
       </optional>
     </element>
   </define>
@@ -354,13 +354,13 @@
     <element name="bin">
       <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
       <optional>
-        <attribute name="value"> <data type="float"/> </attribute>
+        <attribute name="value"> <data type="double"/> </attribute>
       </optional>
       <optional>
-        <attribute name="lower-bound"> <data type="float"/> </attribute>
+        <attribute name="lower-bound"> <data type="double"/> </attribute>
       </optional>
       <optional>
-        <attribute name="upper-bound"> <data type="float"/> </attribute>
+        <attribute name="upper-bound"> <data type="double"/> </attribute>
       </optional>
     </element>
   </define>
@@ -393,10 +393,10 @@
       </optional>
       <zeroOrMore>
         <element name="point">
-          <attribute name="X"> <data type="float"/> </attribute>
-          <attribute name="Y"> <data type="float"/> </attribute>
+          <attribute name="X"> <data type="double"/> </attribute>
+          <attribute name="Y"> <data type="double"/> </attribute>
           <optional>
-            <attribute name="Z"> <data type="float"/> </attribute>
+            <attribute name="Z"> <data type="double"/> </attribute>
           </optional>
         </element>
       </zeroOrMore>
@@ -458,19 +458,19 @@
 
   <define name="importance-factors">
     <optional>
-      <attribute name="DIF"> <data type="float"/> </attribute>
+      <attribute name="DIF"> <data type="double"/> </attribute>
     </optional>
     <optional>
-      <attribute name="MIF"> <data type="float"/> </attribute>
+      <attribute name="MIF"> <data type="double"/> </attribute>
     </optional>
     <optional>
-      <attribute name="CIF"> <data type="float"/> </attribute>
+      <attribute name="CIF"> <data type="double"/> </attribute>
     </optional>
     <optional>
-      <attribute name="RRW"> <data type="float"/> </attribute>
+      <attribute name="RRW"> <data type="double"/> </attribute>
     </optional>
     <optional>
-      <attribute name="RAW"> <data type="float"/> </attribute>
+      <attribute name="RAW"> <data type="double"/> </attribute>
     </optional>
   </define>
 

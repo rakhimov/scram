@@ -74,12 +74,12 @@
             </optional>
             <optional>
               <element name="mission-time">
-                <data type="float"/>
+                <data type="double"/>
               </element>
             </optional>
             <optional>
               <element name="cut-off">
-                <data type="float"/>
+                <data type="double"/>
               </element>
             </optional>
             <optional>
