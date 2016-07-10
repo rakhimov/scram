@@ -20,8 +20,6 @@
 
 #include "ccf_group.h"
 
-#include <sstream>
-
 #include "ext.h"
 
 namespace scram {
@@ -56,10 +54,9 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 void CcfGroup::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
-    std::stringstream msg;
-    msg << Element::name() << " CCF group level expected "
-        << factors_.size() + 1 << ". Instead was given " << level;
-    throw ValidationError(msg.str());
+    throw ValidationError(Element::name() + " CCF group level expected " +
+                          std::to_string(factors_.size() + 1) +
+                          ". Instead was given " + std::to_string(level));
   }
 }
 
@@ -207,10 +204,10 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 void MglModel::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != CcfGroup::factors().size() + 2) {
-    std::stringstream msg;
-    msg << CcfGroup::name() << " MGL model CCF group level expected "
-        << CcfGroup::factors().size() + 2 << ". Instead was given " << level;
-    throw ValidationError(msg.str());
+    throw ValidationError(CcfGroup::name() +
+                          " MGL model CCF group level expected " +
+                          std::to_string(CcfGroup::factors().size() + 2) +
+                          ". Instead was given " + std::to_string(level));
   }
 }
 
