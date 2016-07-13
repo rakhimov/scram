@@ -22,7 +22,7 @@
 
 namespace scram {
 
-const std::string Error::kPrefix_ = "scram error: ";
+const char Error::kPrefix_[] = "scram error: ";
 
 Error::Error(std::string msg)
     : msg_(std::move(msg)),
