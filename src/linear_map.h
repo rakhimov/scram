@@ -255,14 +255,14 @@ class linear_map {
     auto it = linear_map::find(key);
     if (it != map_.end()) return it->second;
     map_.emplace_back(key, mapped_type());
-    return std::prev(map_.end())->second;
+    return map_.back().second;
   }
 
   mapped_type& operator[](key_type&& key) {
     auto it = linear_map::find(key);
     if (it != map_.end()) return it->second;
     map_.emplace_back(std::move(key), mapped_type());
-    return std::prev(map_.end())->second;
+    return map_.back().second;
   }
   /// @}
 
