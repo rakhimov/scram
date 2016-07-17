@@ -25,6 +25,9 @@ namespace scram {
 namespace core {
 namespace test {
 
+const std::set<std::set<std::string>> RiskAnalysisTest::kUnity = {
+    std::set<std::string>{}};
+
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -356,8 +359,7 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
         {"not PumpOne", "not ValveTwo", "not ValveOne"}};
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
@@ -375,8 +377,7 @@ TEST_P(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{}};
-  EXPECT_EQ(mcs, products());
+  EXPECT_EQ(kUnity, products());
 }
 
 // Mixed roles with undefined event types

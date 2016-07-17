@@ -5,27 +5,16 @@ language: cpp
 
 os:
     - linux
+    - osx
 
 compiler:
     - gcc
     - clang
 
-# This explicit matrix inclusion is provided
-# to work around the default beta-xcode6.1 clang,
-# which is having a trouble with C++11 features.
-# There seems not to be a way to use 'osx_image' multiplier
-# outside of this matrix
-# without messing with Linux builds.
 matrix:
-    include:
+    exclude:
         - os: osx
-          compiler: clang
-          osx_image: xcode6.4
-          env: RELEASE=
-        - os: osx
-          compiler: clang
-          osx_image: xcode6.4
-          env: RELEASE=true
+          compiler: gcc  # GCC is Clang on OS X.
 
 env:
     global:

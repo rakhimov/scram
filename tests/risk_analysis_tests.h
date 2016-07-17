@@ -40,6 +40,8 @@ namespace test {
 
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
+  static const std::set<std::set<std::string>> kUnity;  ///< Special unity set.
+
   void SetUp() override {
     if (HasParam()) {
       std::string param = GetParam();

@@ -130,8 +130,7 @@ TEST_P(RiskAnalysisTest, AorNotB) {
     EXPECT_EQ(2, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
@@ -220,9 +219,7 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(1, products().size());
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
@@ -236,9 +233,7 @@ TEST_P(RiskAnalysisTest, Nand) {
     EXPECT_EQ(2, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(1, products().size());
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
@@ -251,9 +246,7 @@ TEST_P(RiskAnalysisTest, Nor) {
     std::set<std::set<std::string>> pi = {{"not A", "not B"}};
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(1, products().size());
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
@@ -324,8 +317,6 @@ TEST_P(RiskAnalysisTest, SubtleNull) {
   std::string tree_input = "./share/scram/input/core/subtle_null.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {};
-  EXPECT_EQ(mcs, products());
   EXPECT_TRUE(products().empty());
 }
 
@@ -375,9 +366,7 @@ TEST_P(RiskAnalysisTest, NotA) {
     EXPECT_EQ(1, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{}};
-    EXPECT_EQ(1, products().size());
-    EXPECT_EQ(mcs, products());
+    EXPECT_EQ(kUnity, products());
   }
 }
 
