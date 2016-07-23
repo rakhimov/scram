@@ -20,10 +20,10 @@
 #include <string>
 #include <vector>
 
+#include <QApplication>
+
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
-
-#include <QApplication>
 
 #include "src/config.h"
 #include "src/error.h"
