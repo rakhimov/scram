@@ -16,6 +16,20 @@ set(SCRAM_VERSION_MAJOR 0)  # Indicate major API change after 1.0.0
 set(SCRAM_VERSION_MINOR 11)  # New features and improvements.
 set(SCRAM_VERSION_MICRO 3)  # Bug fixes.
 
+####################### Begin Options ###################
+
+set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
+
+# Linking of external libraries, such as BOOST.
+option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
+
+option(WITH_TCMALLOC "Use TCMalloc" ON)
+
+option(BUILD_GUI "Build the GUI front-end" ON)
+option(BUILD_TESTS "Build the tests" ON)
+
+####################### End Options ###################
+
 ####################### Begin compiler configurations ###################
 
 # Default to C++11.
@@ -24,7 +38,7 @@ CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(NOT COMPILER_SUPPORTS_CXX11)
   message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+add_definitions("-std=c++11")
 
 set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
@@ -55,11 +69,6 @@ set(SCRAM_GUI_DIR "${PROJECT_SOURCE_DIR}/gui")
 set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(SCRAM_INPUT_DIR "${PROJECT_SOURCE_DIR}/input")
-
-set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
-
-# Linking of external libraries, such as BOOST.
-set(USE_STATIC_LIBS OFF)  # Change this for static building
 
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -99,7 +108,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(LIBS "")
 
 # Optional TCMalloc for optimization.
-if(NOT NTCMALLOC)
+if(WITH_TCMALLOC)
   find_package(Tcmalloc)
   set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
 endif()
@@ -119,8 +128,8 @@ message(STATUS ${LIBS})
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
 set(BOOST_MIN_VERSION "1.54.0")
-set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
-set(Boost_USE_STATIC_RUNTIME ${USE_STATIC_LIBS})
+set(Boost_USE_STATIC_LIBS ${WITH_STATIC_LIBS})
+set(Boost_USE_STATIC_RUNTIME ${WITH_STATIC_LIBS})
 
 if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
@@ -132,7 +141,7 @@ find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
   program_options filesystem system
   REQUIRED)
 
-if(USE_STATIC_LIBS)
+if(Boost_USE_STATIC_LIBS)
   message(STATUS "Linking against boost static libraries")
 else()
   message(STATUS "Linking against boost dynamic libraries")
@@ -151,7 +160,7 @@ message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
-if(NOT NGUI)
+if(BUILD_GUI)
   # Find the QtWidgets library.
   if(APPLE)
     # Qt5 with Homebrew.
@@ -177,11 +186,14 @@ include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
-add_subdirectory("${SCRAM_TEST_DIR}")
 add_subdirectory("${SCRAM_INPUT_DIR}")
 
-if(NOT NGUI)
+if(BUILD_GUI)
   add_subdirectory("${SCRAM_GUI_DIR}")
+endif()
+
+if(BUILD_TESTS)
+  add_subdirectory("${SCRAM_TEST_DIR}")
 endif()
 
 ####################### End includes ####################################
