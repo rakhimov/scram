@@ -44,8 +44,12 @@ set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.3)
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wsuggest-override")
+  endif()
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6)
+    # TODO: Boost sign bit shift fails to compile on GCC 6.1
+    add_definitions("-fpermissive")
   endif()
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
