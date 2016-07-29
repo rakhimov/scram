@@ -3,6 +3,8 @@ dist: trusty
 
 language: cpp
 
+cache: ccache
+
 os:
     - linux
     - osx
@@ -19,6 +21,7 @@ matrix:
 env:
     global:
         - PATH=$PATH:`pwd`/install/bin
+        - CCACHE_CPP2=true
     matrix:
         - RELEASE=
         - RELEASE=true
