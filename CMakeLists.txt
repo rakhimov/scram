@@ -142,7 +142,7 @@ endif()
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
 find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
-  program_options filesystem system
+  program_options filesystem system date_time
   REQUIRED)
 
 if(Boost_USE_STATIC_LIBS)
@@ -163,6 +163,8 @@ set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
 message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
+set(LIBS ${LIBS} ${Boost_DATE_TIME_LIBRARY})
+message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 
 if(BUILD_GUI)
   # Find the QtWidgets library.

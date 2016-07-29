@@ -64,6 +64,14 @@ SCRAM results are reported with the UTF-8 character set
 regardless of what the input file encodings are.
 
 
+Time
+====
+
+Reporting of analysis time and duration is not specified in the MEF standard.
+For informational purposes, SCRAM reports analysis duration in seconds,
+and the UTC date-time is formatted in ISO 8601 extended form.
+
+
 Validation Schemas
 ==================
 

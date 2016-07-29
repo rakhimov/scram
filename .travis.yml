@@ -30,6 +30,7 @@ addons:
             - libboost-filesystem-dev
             - libboost-system-dev
             - libboost-math-dev
+            - libboost-date-time-dev
             - libxml2-dev
             - libxml++2.6-dev
             - libgoogle-perftools-dev
