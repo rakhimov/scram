@@ -62,6 +62,16 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-error")
 endif()
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+  if(NOT "$ENV{CCACHE_CPP2}" MATCHES "yes|true|1")
+    message(FATAL_ERROR "CCACHE_CPP2 configuration needs to be true.")
+  endif()
+
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
+
 ######################## End compiler configurations ####################
 
 ##################### Begin cmake configuration ###################
