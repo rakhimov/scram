@@ -210,7 +210,6 @@ class linear_map {
     return *this;
   }
   linear_map& operator=(linear_map&& lm) noexcept {
-    assert(this != &lm && "Move into itself is undefined.");
     map_ = std::move(lm.map_);
     return *this;
   }

@@ -82,18 +82,6 @@ TEST(LinearMapTest, Constructors) {
   EXPECT_FALSE(m_move.empty());
   EXPECT_EQ(m_init_list, m_move);
 
-#ifndef NDEBUG
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wself-move"  // GCC doesn't warn yet!
-#endif
-  // Move into itself is undefined behavior!
-  EXPECT_DEATH(m_move = std::move(m_move), "");
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-#endif
-
   // Assignments.
   IntMap m_assign_copy;
   m_assign_copy = m_init_list;
