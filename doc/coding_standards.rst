@@ -21,7 +21,7 @@ This project adheres to the following coding styles:
 .. _Google C++ Style Guide (GCSG): https://google.github.io/styleguide/cppguide.html
 .. _Google Python Style Guide (GPSG): https://google.github.io/styleguide/pyguide.html
 .. _PEP 8 -- Style Guide for Python Code (PEP8): https://www.python.org/dev/peps/pep-0008/
-.. _KDE CMake Coding Style: https://techbase.kde.org/Policies/CMake_Coding_Style
+.. _KDE CMake Coding Style: https://community.kde.org/Policies/CMake_Coding_Style
 .. _Qt Coding Style: http://wiki.qt.io/Coding-Conventions
 .. _Qt Creator Coding Rules: https://doc-snapshots.qt.io/qtcreator-extending/coding-style.html
 .. _Google Shell Style Guide: https://google.github.io/styleguide/shell.xml
