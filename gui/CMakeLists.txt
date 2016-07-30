@@ -27,3 +27,9 @@ install(TARGETS scram-gui
   RUNTIME DESTINATION bin
   COMPONENT gui
   )
+
+set(SCRAM_GUI_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+
+if(BUILD_TESTS)
+  add_subdirectory("${SCRAM_GUI_TEST_DIR}")
+endif()
