@@ -2,13 +2,18 @@
 
 set -ev
 
+ccache -s
+
+install_cmd="time -p ./install.py --prefix=./install --threads 2"
 if [[ -n "${RELEASE}" ]]; then
-  ./install.py -r --prefix=./install --threads 2
+  ${install_cmd} --release
 elif [[ "$CXX" = "g++" ]]; then
-  ./install.py -p --prefix=./install --threads 2
+  ${install_cmd} --profile
 else
-  ./install.py -d --prefix=./install --threads 2
+  ${install_cmd} --debug
 fi
+
+ccache -s
 
 ./.travis/run_tests.sh
 
