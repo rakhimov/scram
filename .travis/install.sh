@@ -6,6 +6,7 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew install libxml++
   brew install gperftools
   brew install qt5
+  brew install ccache
 fi
 
 sudo pip install nose
