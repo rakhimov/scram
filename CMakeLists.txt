@@ -28,6 +28,8 @@ option(WITH_TCMALLOC "Use TCMalloc" ON)
 option(BUILD_GUI "Build the GUI front-end" ON)
 option(BUILD_TESTS "Build the tests" ON)
 
+option(PACKAGE "Package for distribution" OFF)
+
 ####################### End Options ###################
 
 ####################### Begin compiler configurations ###################
@@ -229,26 +231,28 @@ add_custom_target(uninstall
 
 ###################### Begin CPACK configurations ###########################
 
-if(WIN32)
-  set(CPACK_GENERATOR "NSIS")
-  # TODO: Find a way to programmatically detect shared libraries and add to installation.
-  # The following configuration assumes MinGW64 is setup specifically for this project.
-  get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
-  message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
-  file(GLOB all_libs "${MINGW_DLL_DIR}/lib*.dll")
-  install(FILES
-    ${all_libs}
-    ${MINGW_DLL_DIR}/zlib1.dll
-    DESTINATION bin COMPONENT libraries
-  )
+if(PACKAGE)
+  if(WIN32)
+    set(CPACK_GENERATOR "NSIS")
+    # TODO: Find a way to programmatically detect shared libraries and add to installation.
+    # The following configuration assumes MinGW64 is setup specifically for this project.
+    get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
+    message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
+    file(GLOB all_libs "${MINGW_DLL_DIR}/lib*.dll")
+    install(FILES
+      ${all_libs}
+      ${MINGW_DLL_DIR}/zlib1.dll
+      DESTINATION bin COMPONENT libraries
+    )
 
-  # Qt Libraries
-  install(FILES
-    ${MINGW_DLL_DIR}/Qt5Core.dll
-    ${MINGW_DLL_DIR}/Qt5Gui.dll
-    ${MINGW_DLL_DIR}/Qt5Widgets.dll
-    DESTINATION bin COMPONENT libraries
-  )
+    # Qt Libraries
+    install(FILES
+      ${MINGW_DLL_DIR}/Qt5Core.dll
+      ${MINGW_DLL_DIR}/Qt5Gui.dll
+      ${MINGW_DLL_DIR}/Qt5Widgets.dll
+      DESTINATION bin COMPONENT libraries
+    )
+  endif()
 endif()
 
 set(CPACK_PACKAGE_VENDOR "Olzhas Rakhimov")
