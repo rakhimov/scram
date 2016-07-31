@@ -343,7 +343,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    pacman --noconfirm -S python mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libxml++2.6 mingw-w64-x86_64-qt5
+    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,libxml++2.6,qt5}
 
 The building and installation can be done with the ``install.py`` script
 in the root directory.
