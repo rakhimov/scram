@@ -1,3 +1,4 @@
+# Configuration for Qt style code for the GUI
 BasedOnStyle: llvm
 AccessModifierOffset: -4
 BreakBeforeBinaryOperators: true
