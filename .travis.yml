@@ -56,3 +56,6 @@ before_script:
 
 script:
     - .travis/script.sh
+
+after_script:
+    - if [[ -n "${INTEL_COMPILER}" ]]; then ${HOME}/intel/parallel_studio*/uninstall.sh --silent; fi
