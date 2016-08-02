@@ -61,6 +61,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-error")
+
+  add_definitions(-D_GLIB_TEST_OVERFLOW_FALLBACK)  # TODO: Remove after glib2 version 2.48
 endif()
 
 if(WIN32)
