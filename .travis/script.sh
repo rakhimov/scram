@@ -2,6 +2,10 @@
 
 set -ev
 
+if [[ "${CXX}" = "icpc" ]]; then
+  source ~/.bashrc
+fi
+
 ccache -s
 
 install_cmd="time -p ./install.py --prefix=./install --threads 2"

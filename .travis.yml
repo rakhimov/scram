@@ -13,18 +13,24 @@ compiler:
     - gcc
     - clang
 
-matrix:
-    exclude:
-        - os: osx
-          compiler: gcc  # GCC is Clang on OS X.
-
 env:
     global:
         - PATH=$PATH:`pwd`/install/bin
         - CCACHE_CPP2=true
+        # Intel Parallel Studio
+        - secure: "BM1aLsCy0NYk1TCCMeQH6H1O9B+NmZeO6QzRTjy1Xrs8wvoKsuBiazjxSZ6nVWP3F+JtjsOLzeFyELmCf4lobcw8bhzgLZ7ZFaDJl4DC31w+87RdQFYzMe5t53SfflkfBDYkbpbUrt1B7qPk5r0nYDG+QzO3T/XnvSN/0HvmEBQ="
     matrix:
         - RELEASE=
         - RELEASE=true
+
+matrix:
+    exclude:
+        - os: osx
+          compiler: gcc  # GCC is Clang on OS X.
+    include:
+        - os: linux
+          compiler: icc
+          env: INTEL_COMPILER=true
 
 addons:
     apt:
@@ -38,6 +44,9 @@ addons:
             - libxml++2.6-dev
             - libgoogle-perftools-dev
             - qt5-default
+
+before_install:
+    - if [[ -n "${INTEL_COMPILER}" ]]; then export CC=icc; export CXX=icpc; export RELEASE=true; fi
 
 install:
     - .travis/install.sh

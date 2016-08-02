@@ -13,6 +13,12 @@ sudo pip install nose
 sudo pip install lxml
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
+
+if [[ "$CXX" == "icpc" ]]; then
+  git clone https://github.com/nemequ/icc-travis.git
+  ./icc-travis/install-icc.sh
+fi
+
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq doxygen
