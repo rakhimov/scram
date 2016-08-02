@@ -92,6 +92,12 @@ struct MoveEraser {
   /// @}
 };
 
+/// @todo Bug in Intel compiler with variadic-template-template arguments.
+#ifdef __INTEL_COMPILER
+template <typename T>
+using DefaultSequence = std::vector<T>;
+#endif
+
 /// An adaptor map with lookup complexity O(N)
 /// based on sequence (contiguous structure by default).
 /// This map is designed for a small number of elements
@@ -138,7 +144,11 @@ struct MoveEraser {
 /// @tparam Sequence  The underlying container type.
 template <typename Key, typename Value,
           class ErasePolicy = DefaultEraser,
+#ifdef __INTEL_COMPILER
+          template <typename> class Sequence = DefaultSequence>
+#else
           template <typename...> class Sequence = std::vector>
+#endif
 class linear_map {
   /// Non-member equality test operators.
   /// The complexity is O(N^2).
