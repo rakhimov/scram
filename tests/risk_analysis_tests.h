@@ -30,7 +30,6 @@
 #include <gtest/gtest.h>
 
 #include "env.h"
-#include "ext.h"
 #include "initializer.h"
 #include "xml_parser.h"
 
@@ -65,13 +64,13 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Resets the initializer with the settings of the object.
   void ResetInitializer() {
-    init = ext::make_unique<mef::Initializer>(settings);
+    init = std::make_unique<mef::Initializer>(settings);
   }
 
   // Resets the risk analysis with the initialized model and settings.
   void ResetRiskAnalysis() {
     assert(init && "Missing initializer");
-    ran = ext::make_unique<RiskAnalysis>(init->model(), settings);
+    ran = std::make_unique<RiskAnalysis>(init->model(), settings);
   }
 
   // Parsing an input file to get the model.
@@ -96,7 +95,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     ASSERT_NO_THROW(ran->Report(output));
 
     std::unique_ptr<XmlParser> parser;
-    ASSERT_NO_THROW(parser = ext::make_unique<XmlParser>(output));
+    ASSERT_NO_THROW(parser = std::make_unique<XmlParser>(output));
     ASSERT_NO_THROW(parser->Validate(schema));
   }
 

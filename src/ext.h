@@ -68,14 +68,6 @@ auto find(T&& container, Ts&&... args)
   return find_iterator<decltype(it)>(std::move(it), container.end());
 }
 
-/// C++14 make_unique substitute for non-array types.
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-  static_assert(std::is_array<T>::value == false,
-                "This extension make_unique doesn't support arrays.");
-  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-
 /// Determines if two sorted ranges intersect.
 /// This function is complementary to std::set_intersection
 /// when the actual intersection container is not needed.

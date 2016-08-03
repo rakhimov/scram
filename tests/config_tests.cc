@@ -22,7 +22,6 @@
 #include <gtest/gtest.h>
 
 #include "error.h"
-#include "ext.h"
 
 namespace scram {
 namespace test {
@@ -48,7 +47,7 @@ TEST(ConfigTest, NumericalErros) {
 // Tests all settings with one file.
 TEST(ConfigTest, FullSettings) {
   std::string config_file = "./share/scram/input/fta/full_configuration.xml";
-  auto config = ext::make_unique<Config>(config_file);
+  auto config = std::make_unique<Config>(config_file);
   // Check the input files.
   EXPECT_EQ(config->input_files().size(), 1);
   if (!config->input_files().empty())
@@ -76,7 +75,7 @@ TEST(ConfigTest, FullSettings) {
 
 TEST(ConfigTest, PrimeImplicantsSettings) {
   std::string config_file = "./share/scram/input/fta/pi_configuration.xml";
-  auto config = ext::make_unique<Config>(config_file);
+  auto config = std::make_unique<Config>(config_file);
   // Check the input files.
   EXPECT_EQ(config->input_files().size(), 1);
   if (!config->input_files().empty())

@@ -28,7 +28,6 @@
 
 #include "env.h"
 #include "error.h"
-#include "ext.h"
 #include "xml_parser.h"
 
 namespace scram {
@@ -45,7 +44,7 @@ Config::Config(const std::string& config_file) {
 
   std::unique_ptr<XmlParser> parser;
   try {
-    parser = ext::make_unique<XmlParser>(stream);
+    parser = std::make_unique<XmlParser>(stream);
     std::stringstream schema;
     std::string schema_path = Env::config_schema();
     std::ifstream schema_stream(schema_path.c_str());

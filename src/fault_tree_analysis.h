@@ -32,7 +32,6 @@
 #include "analysis.h"
 #include "boolean_graph.h"
 #include "event.h"
-#include "ext.h"
 #include "logger.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -358,7 +357,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = ext::make_unique<BooleanGraph>(FaultTreeDescriptor::top_event(),
+  graph_ = std::make_unique<BooleanGraph>(FaultTreeDescriptor::top_event(),
                                           Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 
@@ -373,7 +372,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
 #endif
   CLOCK(algo_time);
   LOG(DEBUG2) << "Launching the algorithm...";
-  algorithm_ = ext::make_unique<Algorithm>(graph_.get(), Analysis::settings());
+  algorithm_ = std::make_unique<Algorithm>(graph_.get(), Analysis::settings());
   algorithm_->Analyze();
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
   LOG(DEBUG2) << "# of products: " << algorithm_->products().size();
