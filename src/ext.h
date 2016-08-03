@@ -62,8 +62,7 @@ class find_iterator : public Iterator {
 ///
 /// @returns find_iterator wrapping the resultant iterator.
 template <class T, typename... Ts>
-auto find(T&& container, Ts&&... args)
-    -> find_iterator<decltype(container.end())> {
+auto find(T&& container, Ts&&... args) {
   auto it = container.find(std::forward<Ts>(args)...);
   return find_iterator<decltype(it)>(std::move(it), container.end());
 }
