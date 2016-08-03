@@ -60,7 +60,7 @@ Quick Installation
 The fastest and easiest way to install SCRAM is
 to have a Linux distribution with ``apt-get`` as the package manager
 that can install packages from Personal Package Archives.
-For example, `Ubuntu 14.04`_ and later releases are tested to work.
+For example, Ubuntu_ 14.04 and later releases are tested to work.
 
 On these machines, run the following commands to get SCRAM from its PPA_.
 
@@ -72,7 +72,7 @@ On these machines, run the following commands to get SCRAM from its PPA_.
 
     sudo apt-get install scram
 
-.. _Ubuntu 14.04: http://www.ubuntu.com/download
+.. _Ubuntu: http://www.ubuntu.com/download
 .. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
 
 If you want to get more tools and run tests under current development,
@@ -165,7 +165,7 @@ or has some other suitable method of automatically installing libraries.
 Linux Systems
 -------------
 
-This process is tested on Ubuntu 14.04 LTS
+This process is tested on Ubuntu 16.04 LTS
 using ``apt-get`` as the package manager.
 
 The command to install a dependency takes the form of:
@@ -299,7 +299,7 @@ Windows
 
 The easiest option is
 to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
-with `Ubuntu 14.04`_.
+with Ubuntu_ 16.04.
 Follow the `Quick Installation`_ guide for this option
 or building and installation instructions for `Linux Systems`_.
 
