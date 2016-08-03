@@ -95,7 +95,7 @@ Deviations from the Qt Style
 Additional Coding Conventions
 -----------------------------
 
-- Use *modern C++* (C++11).
+- Use *modern C++* (C++14).
   Refer to `C++ Core Guidelines`_ for best practices.
 
 - If API, functionality, class, container, or other constructs mimic the STL constructs,
