@@ -20,6 +20,7 @@ if [[ "$CXX" == "icpc" ]]; then
 fi
 
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
+sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq doxygen
 sudo pip install cpp-coveralls
