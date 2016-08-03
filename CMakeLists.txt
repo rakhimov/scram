@@ -34,13 +34,13 @@ option(PACKAGE "Package for distribution" OFF)
 
 ####################### Begin compiler configurations ###################
 
-# Default to C++11.
+# Default to C++14.
 include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(NOT COMPILER_SUPPORTS_CXX11)
-  message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
+CHECK_CXX_COMPILER_FLAG("-std=c++1y" COMPILER_SUPPORTS_CXX14)
+if(NOT COMPILER_SUPPORTS_CXX14)
+  message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support.")
 endif()
-add_definitions("-std=c++11")
+add_definitions("-std=c++1y")
 
 set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
