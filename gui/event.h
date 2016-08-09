@@ -18,8 +18,12 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include <memory>
+
 #include <QGraphicsItem>
 #include <QGraphicsView>
+
+#include "gate.h"
 
 namespace scram {
 namespace gui {
@@ -85,6 +89,34 @@ public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
+};
+
+/**
+ * @brief Intermediate fault events with gates.
+ */
+class IntermediateEvent : public Event
+{
+public:
+    using Event::Event;
+
+    /**
+     * @brief Sets the Boolean logic for the intermediate event inputs.
+     *
+     * @param gate  The logic gate of the intermediate event.
+     */
+    void setGate(std::unique_ptr<Gate> gate) { m_gate = std::move(gate); }
+
+    /**
+     * @return The logic gate of the intermediate event.
+     */
+    Gate* getGate() const { return m_gate.get(); }
+
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget) override;
+
+private:
+    std::unique_ptr<Gate> m_gate; ///< The logic of the intermediate event.
 };
 
 } // namespace gui
