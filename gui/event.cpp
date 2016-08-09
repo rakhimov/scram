@@ -68,5 +68,21 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/,
     painter->drawLine(QPointF(0, 5 * h), QPointF(0, 5.5 * h));
 }
 
+QRectF BasicEvent::boundingRect() const
+{
+    QRectF eventRect = Event::boundingRect();
+    eventRect.setHeight(eventRect.height() + 10 * units().width());
+    return eventRect;
+}
+
+void BasicEvent::paint(QPainter *painter,
+                       const QStyleOptionGraphicsItem *option,
+                       QWidget *widget)
+{
+    Event::paint(painter, option, widget);
+    double r = 5 * units().width();
+    painter->drawEllipse(QPointF(0, Event::boundingRect().bottom() + r), r, r);
+}
+
 } // namespace gui
 } // namespace scram

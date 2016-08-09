@@ -25,7 +25,7 @@ namespace scram {
 namespace gui {
 
 /**
- * @brief The abstract base class for probabilistic events in a fault tree.
+ * @brief The base class for probabilistic events in a fault tree.
  */
 class Event : public QGraphicsItem
 {
@@ -72,6 +72,19 @@ public:
 private:
     QString m_name;  ///< Identifying name of the event.
     QString m_description;  ///< Description of the event.
+};
+
+/**
+ * @brief Representation of a fault tree basic event.
+ */
+class BasicEvent : public Event
+{
+public:
+    using Event::Event;
+
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget) override;
 };
 
 } // namespace gui
