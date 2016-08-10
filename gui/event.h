@@ -39,7 +39,7 @@ public:
      *
      * @param view  The host view.
      */
-    explicit Event(QGraphicsView */*view*/);
+    explicit Event(QGraphicsView *view);
 
     /**
      * @brief Assigns the short name or ID for the event.
@@ -69,13 +69,20 @@ public:
      */
     const QString& getDescription() { return m_description; }
 
-    QRectF boundingRect() const override;
+    QRectF boundingRect() const final;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
 
+protected:
+    /**
+     * @return Unit width (x) and height (y) for shapes.
+     */
+    QSize units() const;
+
 private:
-    QString m_name;  ///< Identifying name of the event.
-    QString m_description;  ///< Description of the event.
+    QGraphicsView *m_view; ///< The host view.
+    QString m_name;        ///< Identifying name of the event.
+    QString m_description; ///< Description of the event.
 };
 
 /**
@@ -86,7 +93,6 @@ class BasicEvent : public Event
 public:
     using Event::Event;
 
-    QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
 };
@@ -111,7 +117,6 @@ public:
      */
     Gate* getGate() const { return m_gate.get(); }
 
-    QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) override;
 

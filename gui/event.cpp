@@ -17,7 +17,6 @@
 
 #include "event.h"
 
-#include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
 #include <QPainterPath>
@@ -28,26 +27,21 @@
 namespace scram {
 namespace gui {
 
-Event::Event(QGraphicsView */*view*/) {}
-
-namespace {
-
-/**
- * @return Unit width (x) and height (y) for shapes.
- */
-QSize units()
-{
-    QFontMetrics font = QApplication::fontMetrics();
-    return {font.averageCharWidth(), font.height()};
+Event::Event(QGraphicsView *view) : m_view(view) {
+    m_view->scene()->addItem(this);
 }
 
-} // namespace
+QSize Event::units() const
+{
+    QFontMetrics font = m_view->fontMetrics();
+    return {font.averageCharWidth(), font.height()};
+}
 
 QRectF Event::boundingRect() const
 {
     int w = units().width();
     int h = units().height();
-    return QRectF(-8 * w, 0, 16 * w, 5.5 * h);
+    return QRectF(-8 * w, 0, 16 * w, 5.5 * h + 10 * w);
 }
 
 void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/,
@@ -68,27 +62,13 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/,
     painter->drawLine(QPointF(0, 5 * h), QPointF(0, 5.5 * h));
 }
 
-QRectF BasicEvent::boundingRect() const
-{
-    QRectF eventRect = Event::boundingRect();
-    eventRect.setHeight(eventRect.height() + 10 * units().width());
-    return eventRect;
-}
-
 void BasicEvent::paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
                        QWidget *widget)
 {
     Event::paint(painter, option, widget);
     double r = 5 * units().width();
-    painter->drawEllipse(QPointF(0, Event::boundingRect().bottom() + r), r, r);
-}
-
-QRectF IntermediateEvent::boundingRect() const
-{
-    QRectF eventRect = Event::boundingRect();
-    eventRect.setHeight(eventRect.height() + 10 * units().width());
-    return eventRect;
+    painter->drawEllipse(QPointF(0, 5.5 * units().height() + r), r, r);
 }
 
 void IntermediateEvent::paint(QPainter *painter,
