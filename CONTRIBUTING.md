@@ -9,6 +9,7 @@ Best practices are encouraged:
 * [Branching Model](http://nvie.com/posts/a-successful-git-branching-model/)
 * [Writing Good Commit Messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages)
 * [On Commit Messages](http://who-t.blogspot.com/2009/12/on-commit-messages.html)
+* [Atomic Commit](https://en.wikipedia.org/wiki/Atomic_commit#Atomic_commit_convention)
 
 
 ## Developer Workflow

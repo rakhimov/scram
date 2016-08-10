@@ -43,7 +43,7 @@ Design Constraints
 
 - Functionality
 
-- Efficiency and Performance
+- Efficiency and Performance (Soft = 50ms)
 
 - Continuous validation and verification.
   Guaranteed validity upon model construction

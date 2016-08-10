@@ -242,10 +242,6 @@ GUI Code
 
 - Prefer normalized signatures in connect statements with ``SIGNAL``/``SLOT`` macros.
 
-- Upon automatic formatting of the source code,
-  beware of ``clang-format`` confusions with ``Q_Object``, ``signals:``, ``slots:``,
-  and other Qt specific macros.
-
 - Prefer Qt Designer UI forms over hand-coded GUI.
 
     * The UI class member must be aggregated as a private pointer member
@@ -367,18 +363,23 @@ Version control and Versioning
 - `Branching Model`_
 - `Writing Good Commit Messages`_
 - `On Commit Messages`_
+- `Atomic Commit`_
 - `Semantic Versioning`_
 
 .. _Git SCM: http://git-scm.com/
 .. _Branching Model: http://nvie.com/posts/a-successful-git-branching-model/
 .. _Writing Good Commit Messages: https://github.com/erlang/otp/wiki/Writing-good-commit-messages
 .. _On Commit Messages: http://who-t.blogspot.com/2009/12/on-commit-messages.html
+.. _Atomic Commit: https://en.wikipedia.org/wiki/Atomic_commit#Atomic_commit_convention
 .. _Semantic Versioning: http://semver.org/
 
 
 *************
 Documentation
 *************
+
+.. image:: http://www.osnews.com/images/comics/wtfm.jpg
+    :align: center
 
 Good documentation of the code and functionality is
 the requirement for maintainability and evolution of the project.
