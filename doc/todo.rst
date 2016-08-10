@@ -17,8 +17,11 @@ Low Hanging Fruits
 .. note:: Relative, subjective importance within groups is tagged in *italics*.
 
 
-Major Enhancements and Capabilities
-===================================
+Enhancements and Capabilities
+=============================
+
+Major
+-----
 
 - Incorporation of an event tree analysis. *Moderate*
 - Event tree chaining. *Moderate*
@@ -35,8 +38,8 @@ Major Enhancements and Capabilities
 - Dynamic Fault Tree Analysis. *Moderate*
 
 
-Minor Enhancements and Capabilities
-===================================
+Minor
+-----
 
 - Incorporation of cut-offs for ZBDD. *High*
 - Advanced variable ordering and reordering heuristics for BDD. *Low*
@@ -60,6 +63,8 @@ Platform Support
     * Migrate "Quick Installation" in ``README.rst`` to "Installation" web page.
 
 - Installation Package for Mac OS X.
+
+- Compilation and testing on ARM
 
 
 Code
