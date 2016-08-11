@@ -43,9 +43,10 @@ endif()
 add_definitions("-std=c++1y")
 
 set(CMAKE_CXX_FLAGS_DEBUG
-  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
+  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wpedantic")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wsuggest-override")
   endif()
@@ -60,8 +61,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-error")
-
+  # TODO: Bug in Intel compiler '-Wnon-virtual-dtor' side effect on implicit ctors.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=2304")
+  # TODO: Bug in Intel compiler with multi-initialization with auto.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373")
+  # TODO: Bug in Intel compiler w/o GCC 5 built-in math with overlflow.
   add_definitions(-D_GLIB_TEST_OVERFLOW_FALLBACK)  # TODO: Remove after glib2 version 2.48
 endif()
 
@@ -71,13 +75,9 @@ endif()
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-  if(NOT "$ENV{CCACHE_CPP2}" MATCHES "yes|true|1")
-    message(FATAL_ERROR "CCACHE_CPP2 configuration needs to be true.")
-  endif()
-
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-endif(CCACHE_FOUND)
+endif()
 
 ######################## End compiler configurations ####################
 
