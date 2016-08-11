@@ -189,8 +189,9 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
   information->AddChild("software")
       .SetAttribute("name", "SCRAM")
       .SetAttribute("version", version::core());
+  namespace pt = boost::posix_time;
   information->AddChild("time").AddText(
-      boost::posix_time::second_clock::local_time());
+      pt::to_iso_extended_string(pt::second_clock::universal_time()));
 }
 
 void Reporter::ReportModelFeatures(const mef::Model& model,

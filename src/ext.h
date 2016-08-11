@@ -62,18 +62,9 @@ class find_iterator : public Iterator {
 ///
 /// @returns find_iterator wrapping the resultant iterator.
 template <class T, typename... Ts>
-auto find(T&& container, Ts&&... args)
-    -> find_iterator<decltype(container.end())> {
+auto find(T&& container, Ts&&... args) {
   auto it = container.find(std::forward<Ts>(args)...);
   return find_iterator<decltype(it)>(std::move(it), container.end());
-}
-
-/// C++14 make_unique substitute for non-array types.
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-  static_assert(std::is_array<T>::value == false,
-                "This extension make_unique doesn't support arrays.");
-  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 /// Determines if two sorted ranges intersect.
@@ -104,13 +95,24 @@ bool intersects(Iterator1 first1, Iterator1 last1,
   return false;
 }
 
+/// False positive Clang warning in 3.8.
+#define CLANG_UNUSED_TYPEDEF_BUG \
+  defined(__clang__) && __clang_major__ == 3 && __clang_minor__ == 8
+
 /// Range-based version of ``intersects``.
 template <class SinglePassRange1, class SinglePassRange2>
 bool intersects(const SinglePassRange1& rng1, const SinglePassRange2& rng2) {
+#if CLANG_UNUSED_TYPEDEF_BUG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#endif
   BOOST_RANGE_CONCEPT_ASSERT(
       (boost::SinglePassRangeConcept<const SinglePassRange1>));
   BOOST_RANGE_CONCEPT_ASSERT(
       (boost::SinglePassRangeConcept<const SinglePassRange2>));
+#if CLANG_UNUSED_TYPEDEF_BUG
+#pragma clang diagnostic pop
+#endif
   return intersects(boost::begin(rng1), boost::end(rng1),
                     boost::begin(rng2), boost::end(rng2));
 }
@@ -127,12 +129,21 @@ bool any_of(const SinglePassRange& rng, UnaryPredicate pred) {
 }
 template <class SinglePassRange, class UnaryPredicate>
 bool all_of(const SinglePassRange& rng, UnaryPredicate pred) {
+#if CLANG_UNUSED_TYPEDEF_BUG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
+#endif
   BOOST_RANGE_CONCEPT_ASSERT(
       (boost::SinglePassRangeConcept<const SinglePassRange>));
+#if CLANG_UNUSED_TYPEDEF_BUG
+#pragma clang diagnostic pop
+#endif
   return boost::end(rng) ==
          std::find_if_not(boost::begin(rng), boost::end(rng), pred);
 }
 /// @}
+
+#undef CONCEPT_ASSERT
 
 }  // namespace ext
 

@@ -28,7 +28,6 @@
 
 #include "config.h"
 #include "error.h"
-#include "ext.h"
 #include "initializer.h"
 #include "logger.h"
 #include "risk_analysis.h"
@@ -195,13 +194,10 @@ void ConstructSettings(const po::variables_map& vm,
 ///
 /// @param[in] vm  Variables map of program options.
 ///
-/// @returns 0 for success.
-/// @returns 1 for errored state.
-///
 /// @throws Error  Exceptions specific to SCRAM.
 /// @throws boost::exception  Boost errors.
 /// @throws std::exception  All other problems.
-int RunScram(const po::variables_map& vm) {
+void RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     scram::Logger::SetVerbosity(vm["verbosity"].as<int>());
   }
@@ -212,7 +208,7 @@ int RunScram(const po::variables_map& vm) {
   // Invalid configurations will throw.
   if (vm.count("config-file")) {
     auto config =
-        ext::make_unique<scram::Config>(vm["config-file"].as<std::string>());
+        std::make_unique<scram::Config>(vm["config-file"].as<std::string>());
     settings = config->settings();
     input_files = config->input_files();
     output_path = config->output_path();
@@ -229,29 +225,37 @@ int RunScram(const po::variables_map& vm) {
   }
   // Process input files
   // into valid analysis containers and constructs.
-  auto init = ext::make_unique<scram::mef::Initializer>(settings);
+  auto init = std::make_unique<scram::mef::Initializer>(settings);
   init->ProcessInputFiles(input_files);  // Throws if anything is invalid.
-  if (vm.count("validate")) return 0;  // Stop if only validation is requested.
+  if (vm.count("validate")) return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
   auto ran =
-      ext::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
+      std::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
   init.reset();  // Remove extra reference counts to shared objects.
 
   ran->Analyze();
 #ifndef NDEBUG
   if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
-    return 0;
+    return;
 #endif
   if (output_path.empty()) {
     ran->Report(std::cout);
   } else {
     ran->Report(output_path);
   }
-  return 0;
 }
 
 }  // namespace
+
+/// Catches an exception,
+/// prints its message to the standard error,
+/// and returns error code of 1 to exit from the main function.
+#define CATCH(exception_type, header)                        \
+  catch (const exception_type& err) {                        \
+    std::cerr << header << ":\n" << err.what() << std::endl; \
+    return 1;                                                \
+  }
 
 /// Command-line SCRAM entrance.
 ///
@@ -269,40 +273,23 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;
     int ret = ParseArguments(argc, argv, &vm);
     if (ret == 1) return 1;
-    if (ret == -1) return 0;
-
-    return RunScram(vm);
+    if (ret == 0) RunScram(vm);
 
 #ifdef NDEBUG
-  } catch (scram::IOError& io_err) {
-    std::cerr << "SCRAM I/O Error:\n" << io_err.what() << std::endl;
-    return 1;
-  } catch (scram::ValidationError& vld_err) {
-    std::cerr << "SCRAM Validation Error:\n" << vld_err.what() << std::endl;
-    return 1;
-  } catch (scram::ValueError& val_err) {
-    std::cerr << "SCRAM Value Error:\n" << val_err.what() << std::endl;
-    return 1;
-  } catch (scram::LogicError& logic_err) {
-    std::cerr << "SCRAM Logic Error:\n" << logic_err.what() << std::endl;
-    return 1;
-  } catch (scram::IllegalOperation& iopp_err) {
-    std::cerr << "SCRAM Illegal Operation:\n" << iopp_err.what() << std::endl;
-    return 1;
-  } catch (scram::InvalidArgument& iarg_err) {
-    std::cerr << "SCRAM Invalid Argument Error:\n" << iarg_err.what()
-              << std::endl;
-    return 1;
-  } catch (scram::Error& scram_err) {
-    std::cerr << "SCRAM Error:\n" << scram_err.what() << std::endl;
-    return 1;
-  } catch (boost::exception& boost_err) {
+  }
+  CATCH(scram::IOError, "SCRAM I/O Error")
+  CATCH(scram::ValidationError, "SCRAM Validation Error")
+  CATCH(scram::ValueError, "SCRAM Value Error")
+  CATCH(scram::LogicError, "SCRAM Logic Error")
+  CATCH(scram::IllegalOperation, "SCRAM Illegal Operation")
+  CATCH(scram::InvalidArgument, "SCRAM Invalid Argument Error")
+  CATCH(scram::Error, "SCRAM Error")
+  catch (boost::exception& boost_err) {
     std::cerr << "Boost Exception:\n"
               << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
-  } catch (std::exception& std_err) {
-    std::cerr << "Standard Exception:\n" << std_err.what() << std::endl;
-    return 1;
   }
+  CATCH(std::exception, "Standard Exception")
 #endif
 }  // End of main.
+#undef CATCH

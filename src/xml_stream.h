@@ -43,6 +43,13 @@ struct XmlStreamError : public Error {
 /// the parent element is put into an inactive state
 /// while its child element is alive.
 ///
+/// @note The stream is designed to prevent mixing XML text and elements
+///       due to the absence of the use case or need.
+///       However, there's no fundamental design or technical issue
+///       restricting the introduction of this feature.
+///       As a workaround, markup elements in the text (e.g., ``<br/>``)
+///       can be fed directly as a raw text.
+///
 /// @warning The names of elements and contents of XML data
 ///          are NOT fully validated to be proper XML.
 ///          It is up to the caller

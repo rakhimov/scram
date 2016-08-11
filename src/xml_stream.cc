@@ -54,11 +54,13 @@ XmlStreamElement::~XmlStreamElement() noexcept {
   if (parent_) parent_->active_ = true;
   if (accept_attributes_) {
     out_ << "/>\n";
-  } else if (accept_text_) {
+  } else if (accept_elements_) {
+    out_ << std::string(kIndent_, ' ');
+closing_tag:
     out_ << "</" << kName_ << ">\n";
   } else {
-    assert(accept_elements_ && "The element is in unspecified state.");
-    out_ << std::string(kIndent_, ' ') << "</" << kName_ << ">\n";
+    assert(accept_text_ && "The element is in unspecified state.");
+    goto closing_tag;
   }
 }
 

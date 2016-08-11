@@ -20,10 +20,6 @@
 
 #include "ccf_group.h"
 
-#include <sstream>
-
-#include "ext.h"
-
 namespace scram {
 namespace mef {
 
@@ -56,10 +52,9 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 void CcfGroup::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
-    std::stringstream msg;
-    msg << Element::name() << " CCF group level expected "
-        << factors_.size() + 1 << ". Instead was given " << level;
-    throw ValidationError(msg.str());
+    throw ValidationError(Element::name() + " CCF group level expected " +
+                          std::to_string(factors_.size() + 1) +
+                          ". Instead was given " + std::to_string(level));
   }
 }
 
@@ -146,10 +141,10 @@ void CcfGroup::ApplyModel() {
   std::vector<Gate*> proxy_gates;
   for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     const BasicEventPtr& member = mem.second;
-    auto new_gate = ext::make_unique<Gate>(member->name(), member->base_path(),
+    auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
-    new_gate->formula(ext::make_unique<Formula>("or"));
+    new_gate->formula(std::make_unique<Formula>("or"));
 
     proxy_gates.push_back(new_gate.get());
     member->ccf_gate(std::move(new_gate));
@@ -207,10 +202,10 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 void MglModel::CheckLevel(int level) {
   if (level <= 0) throw LogicError("CCF group level is not positive.");
   if (level != CcfGroup::factors().size() + 2) {
-    std::stringstream msg;
-    msg << CcfGroup::name() << " MGL model CCF group level expected "
-        << CcfGroup::factors().size() + 2 << ". Instead was given " << level;
-    throw ValidationError(msg.str());
+    throw ValidationError(CcfGroup::name() +
+                          " MGL model CCF group level expected " +
+                          std::to_string(CcfGroup::factors().size() + 2) +
+                          ". Instead was given " + std::to_string(level));
   }
 }
 

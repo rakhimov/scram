@@ -54,7 +54,7 @@ class Error : public std::exception {
   }
 
  private:
-  static const std::string kPrefix_;  ///< Prefix specific to SCRAM.
+  static const char kPrefix_[];  ///< Prefix specific to SCRAM.
   std::string msg_;  ///< The error message.
   std::string thrown_;  ///< The message to throw with the prefix.
 };

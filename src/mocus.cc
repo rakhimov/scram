@@ -27,7 +27,6 @@
 
 #include "mocus.h"
 
-#include "ext.h"
 #include "logger.h"
 
 namespace scram {
@@ -40,7 +39,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
   const GatePtr& top_gate = fault_tree->root();
   if (top_gate->IsConstant() || top_gate->type() == kNull) {
     constant_graph_ = true;
-    zbdd_ = ext::make_unique<Zbdd>(fault_tree, settings);
+    zbdd_ = std::make_unique<Zbdd>(fault_tree, settings);
     zbdd_->Analyze();
   }
 }
@@ -75,7 +74,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   };
   AddGates(gate.args<Gate>());
 
-  auto container = ext::make_unique<zbdd::CutSetContainer>(
+  auto container = std::make_unique<zbdd::CutSetContainer>(
       kSettings_, gate.index(), graph_->basic_events().size());
   container->Merge(container->ConvertGate(gate));
   while (int next_gate_index = container->GetNextGate()) {
@@ -102,7 +101,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
     assert(limit >= 0 && "Order cut-off is not strict.");
     bool coherent = entry.second.first;
     if (limit == 0 && coherent) {  // Unity is impossible.
-      auto empty_zbdd = ext::make_unique<zbdd::CutSetContainer>(
+      auto empty_zbdd = std::make_unique<zbdd::CutSetContainer>(
           kSettings_, index, graph_->basic_events().size());
       container->JoinModule(index, std::move(empty_zbdd));
       continue;

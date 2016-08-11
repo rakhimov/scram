@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
   <information>
-    <software name="SCRAM" version="0.11.1"/>
-    <time>2016-Apr-05 07:34:14</time>
+    <software name="SCRAM" version="0.11.3"/>
+    <time>2016-07-29T02:53:20</time>
     <performance>
       <calculation-time name="TopEvent">
-        <products>0.001879</products>
-        <probability>5e-06</probability>
-        <importance>8.5e-05</importance>
+        <products>0.00854954</products>
+        <probability>1.8715e-05</probability>
+        <importance>0.000380985</importance>
       </calculation-time>
     </performance>
     <calculated-quantity name="Minimal Cut Sets"/>
@@ -33,28 +33,28 @@
   </information>
   <results>
     <sum-of-products name="TopEvent" basic-events="4" products="4" probability="0.7225">
-      <product order="2" probability="0.25" contribution="0.1736111">
-        <basic-event name="ValveOne"/>
-        <basic-event name="ValveTwo"/>
-      </product>
-      <product order="2" probability="0.35" contribution="0.2430556">
-        <basic-event name="ValveOne"/>
+      <product order="2" probability="0.49" contribution="0.340278">
         <basic-event name="PumpTwo"/>
-      </product>
-      <product order="2" probability="0.35" contribution="0.2430556">
         <basic-event name="PumpOne"/>
-        <basic-event name="ValveTwo"/>
       </product>
-      <product order="2" probability="0.49" contribution="0.3402778">
-        <basic-event name="PumpOne"/>
+      <product order="2" probability="0.35" contribution="0.243056">
         <basic-event name="PumpTwo"/>
+        <basic-event name="ValveOne"/>
+      </product>
+      <product order="2" probability="0.35" contribution="0.243056">
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpOne"/>
+      </product>
+      <product order="2" probability="0.25" contribution="0.173611">
+        <basic-event name="ValveTwo"/>
+        <basic-event name="ValveOne"/>
       </product>
     </sum-of-products>
     <importance name="TopEvent" basic-events="4">
-      <basic-event name="ValveOne" MIF="0.255" CIF="0.1765" DIF="0.5882" RAW="1.176" RRW="1.214"/>
-      <basic-event name="ValveTwo" MIF="0.255" CIF="0.1765" DIF="0.5882" RAW="1.176" RRW="1.214"/>
-      <basic-event name="PumpTwo" MIF="0.425" CIF="0.4118" DIF="0.8235" RAW="1.176" RRW="1.7"/>
-      <basic-event name="PumpOne" MIF="0.425" CIF="0.4118" DIF="0.8235" RAW="1.176" RRW="1.7"/>
+      <basic-event name="PumpTwo" MIF="0.425" CIF="0.411765" DIF="0.823529" RAW="1.17647" RRW="1.7"/>
+      <basic-event name="PumpOne" MIF="0.425" CIF="0.411765" DIF="0.823529" RAW="1.17647" RRW="1.7"/>
+      <basic-event name="ValveOne" MIF="0.255" CIF="0.176471" DIF="0.588235" RAW="1.17647" RRW="1.21429"/>
+      <basic-event name="ValveTwo" MIF="0.255" CIF="0.176471" DIF="0.588235" RAW="1.17647" RRW="1.21429"/>
     </importance>
   </results>
 </report>
