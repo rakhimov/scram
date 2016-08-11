@@ -28,6 +28,7 @@
 #include "src/config.h"
 #include "src/error.h"
 #include "src/initializer.h"
+#include "src/model.h"
 #include "src/settings.h"
 
 #include "mainwindow.h"
@@ -53,11 +54,10 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     po::options_description desc("Options");
     desc.add_options()
             ("help", "Display this help message")
-            ("input-files", po::value< std::vector<std::string> >(),
+            ("input-files", po::value<std::vector<std::string>>(),
              "XML input files with analysis constructs")
             ("config-file", po::value<std::string>(),
-             "XML file with analysis configurations")
-            ("probability", po::value<bool>(), "Use probability information");
+             "XML file with analysis configurations");
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
     } catch (std::exception &err) {
@@ -72,8 +72,9 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     po::positional_options_description p;
     p.add("input-files", -1);
 
-    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
-              run(), *vm);
+    po::store(
+        po::command_line_parser(argc, argv).options(desc).positional(p).run(),
+        *vm);
     po::notify(*vm);
 
     // Process command-line arguments.
@@ -83,8 +84,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     }
 
     if (!vm->count("input-files") && !vm->count("config-file")) {
-        std::string msg = "No input or configuration file is given.\n";
-        std::cerr << msg << std::endl;
+        std::cerr << "No input or configuration file is given.\n\n";
         std::cerr << usage << "\n\n" << desc << "\n";
         return 1;
     }
@@ -96,48 +96,44 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
  *
  * @param[in] vm  Variables map of program options.
  *
- * @returns 0 for success.
- * @returns 1 for errored state.
+ * @return The initialized model with analysis containers.
  *
  * @throws Error  Internal problems specific to SCRAM like validation.
  * @throws boost::exception  Boost errors.
  * @throws std::exception  All other problems.
  */
-int acceptCmdLine(const po::variables_map &vm)
+std::shared_ptr<scram::mef::Model> acceptCmdLine(const po::variables_map &vm)
 {
     scram::core::Settings settings;
     std::vector<std::string> inputFiles;
     // Get configurations if any.
     // Invalid configurations will throw.
     if (vm.count("config-file")) {
-        std::unique_ptr<scram::Config> config(
-            new scram::Config(vm["config-file"].as<std::string>()));
+        auto config = std::make_unique<scram::Config>(
+            vm["config-file"].as<std::string>());
         settings = config->settings();
         inputFiles = config->input_files();
     }
 
-    if (vm.count("probability"))
-        settings.probability_analysis(vm["probability"].as<bool>());
     // Add input files from the command-line.
     if (vm.count("input-files")) {
-        std::vector<std::string> cmdInput
-            = vm["input-files"].as<std::vector<std::string>>();
+        auto cmdInput = vm["input-files"].as<std::vector<std::string>>();
         inputFiles.insert(inputFiles.end(), cmdInput.begin(), cmdInput.end());
     }
     // Process input files
     // into valid analysis containers and constructs.
-    std::unique_ptr<scram::mef::Initializer> init(
-        new scram::mef::Initializer(settings));
+    auto init = std::make_unique<scram::mef::Initializer>(settings);
+
     // Validation phase happens upon processing.
     init->ProcessInputFiles(inputFiles);
-
-    return 0;
+    return init->model();
 }
 
 } // namespace
 
 int main(int argc, char *argv[])
 {
+    std::shared_ptr<scram::mef::Model> model;
     if (argc > 1) {
         try {
             po::variables_map vm;
@@ -146,24 +142,23 @@ int main(int argc, char *argv[])
                 return 1;
             if (ret == -1)
                 return 0;
-            acceptCmdLine(vm);
+            model = acceptCmdLine(vm);
         } catch (scram::Error &scramErr) {
-            std::cerr << "SCRAM Error\n" << std::endl;
-            std::cerr << scramErr.what() << std::endl;
+            std::cerr << "SCRAM Error\n" << scramErr.what() << std::endl;
             return 1;
         } catch (boost::exception &boostErr) {
-            std::cerr << "Boost Exception:\n" << std::endl;
-            std::cerr << boost::diagnostic_information(boostErr) << std::endl;
+            std::cerr << "Boost Exception:\n"
+                      << boost::diagnostic_information(boostErr) << std::endl;
             return 1;
         } catch (std::exception &stdErr) {
-            std::cerr << "Standard Exception:\n" << std::endl;
-            std::cerr << stdErr.what() << std::endl;
+            std::cerr << "Standard Exception:\n" << stdErr.what() << std::endl;
             return 1;
         }
     }
 
     QApplication a(argc, argv);
     scram::gui::MainWindow w;
+    w.setModel(std::move(model));
     w.show();
 
     return a.exec();

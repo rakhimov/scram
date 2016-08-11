@@ -18,7 +18,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
+
 #include <QMainWindow>
+
+#include "src/model.h"
 
 namespace Ui {
 class MainWindow;
@@ -35,8 +39,21 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    /**
+     * @brief Sets the model to display in the window.
+     *
+     * @param model  Fully initialized and validated model.
+     *               nullptr if no model present,
+     *               or to remove the current model.
+     */
+    void setModel(std::shared_ptr<mef::Model> model)
+    {
+        m_model = std::move(model);
+    }
+
 private:
     Ui::MainWindow *ui;
+    std::shared_ptr<mef::Model> m_model; ///< The main model to display.
 };
 
 } // namespace gui
