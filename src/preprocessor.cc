@@ -1336,7 +1336,7 @@ void Preprocessor::GroupCandidatesByArgs(
           if (ext::intersects(member_args, group_args)) {
             group.push_back(**it);
             group_args.insert(member_args.begin(), member_args.end());
-            super_group.erase(it++);
+            it = super_group.erase(it);
           } else {
             ++it;
           }
@@ -1759,11 +1759,9 @@ void Preprocessor::TransformDistributiveArgs(
   for (auto it = std::next(group->begin()); it != group->end(); ++it) {
     MergeTable::Option& super = *it;
     MergeTable::CommonArgs& super_args = super.first;
-    for (int index : args) {
-      auto it_index = boost::lower_bound(super_args, index);
-      assert(it_index != super_args.end());  // The index should exist.
-      super_args.erase(it_index);
-    }
+    boost::remove_erase_if(super_args, [&args](int index) {
+      return boost::binary_search(args, index);
+    });
   }
   group->erase(group->begin());
   Preprocessor::TransformDistributiveArgs(sub_parent, distr_type, group);
