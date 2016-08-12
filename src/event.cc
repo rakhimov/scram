@@ -42,7 +42,7 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
 
 void Gate::Validate() const {
   // Detect inhibit flavor.
-  if (formula_->type() != "and" || !Element::HasAttribute("flavor") ||
+  if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit") {
     return;
   }

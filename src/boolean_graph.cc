@@ -436,14 +436,25 @@ void BooleanGraph::Print() {
   std::cerr << "\n" << this << std::endl;
 }
 
+namespace {
+/// Compares operator enums from mef::Operator and core::Operator
+#define Equal(op) static_cast<int>(op) == static_cast<int>(mef::op)
+
+/// @returns true if mef::Operator enum maps exactly to core::Operator enum.
+constexpr bool CheckOperatorEnums() {
+  return Equal(kAnd) && Equal(kOr) && Equal(kVote) && Equal(kXor) &&
+         Equal(kNot) && Equal(kNand) && Equal(kNor) && Equal(kNull);
+}
+#undef OperatorEqual
+}  // namespace
+
 GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
                                      ProcessedNodes* nodes) noexcept {
   static_assert(kNumOperators == 8, "Unspecified formula operators.");
-  static const std::unordered_map<std::string, Operator> kStringToType = {
-      {"and", kAnd}, {"or", kOr},     {"atleast", kVote}, {"xor", kXor},
-      {"not", kNot}, {"nand", kNand}, {"nor", kNor},      {"null", kNull}};
+  static_assert(kNumOperators == mef::kNumOperators, "Operator mismatch.");
+  static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
 
-  Operator type = kStringToType.find(formula.type())->second;
+  Operator type = static_cast<Operator>(formula.type());
   auto parent = std::make_shared<Gate>(type);
 
   if (type != kOr && type != kAnd) normal_ = false;

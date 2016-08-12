@@ -34,12 +34,12 @@ TEST(EventTest, Id) {
 
 TEST(FormulaTest, VoteNumber) {
   FormulaPtr top(new Formula(kAnd));
-  EXPECT_EQ("and", top->type());
+  EXPECT_EQ(kAnd, top->type());
   // Setting a vote number for non-Vote formula is an error.
   EXPECT_THROW(top->vote_number(2), LogicError);
   // Resetting to VOTE formula.
   top = FormulaPtr(new Formula(kVote));
-  EXPECT_EQ("atleast", top->type());
+  EXPECT_EQ(kVote, top->type());
   // No vote number.
   EXPECT_THROW(top->vote_number(), LogicError);
   // Illegal vote number.

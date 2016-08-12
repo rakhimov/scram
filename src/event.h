@@ -290,6 +290,7 @@ class Gate : public Event {
 };
 
 /// Operators for formulas.
+/// The ordering is the same as analysis operators in the Boolean graph.
 enum Operator {
   kAnd = 0,
   kOr,
@@ -300,6 +301,9 @@ enum Operator {
   kNor,  ///< Not OR.
   kNull  ///< Single argument pass-through without logic.
 };
+
+/// The number of operators in the enum.
+const int kNumOperators = 8;
 
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
@@ -314,7 +318,7 @@ class Formula {
   Formula& operator=(const Formula&) = delete;
 
   /// @returns The type of this formula.
-  std::string type() const { return kOperatorToString_[type_]; }
+  Operator type() const { return type_; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///

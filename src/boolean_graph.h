@@ -924,6 +924,8 @@ class BooleanGraph {
   /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
+  ///
+  /// @pre The Operator enum in the MEF is the same as in Boolean graph.
   GatePtr ProcessFormula(const mef::Formula& formula, bool ccf,
                          ProcessedNodes* nodes) noexcept;
 
