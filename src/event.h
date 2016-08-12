@@ -290,6 +290,18 @@ class Gate : public Event {
   std::string mark_;  ///< The mark for traversal or toposort.
 };
 
+/// Operators for formulas.
+enum Operator {
+  kAnd = 0,
+  kOr,
+  kVote,  ///< Combination, K/N, atleast, or Vote gate representation.
+  kXor,  ///< Exclusive OR gate with two inputs only.
+  kNot,  ///< Boolean negation.
+  kNand,  ///< Not AND.
+  kNor,  ///< Not OR.
+  kNull  ///< Single argument pass-through without logic.
+};
+
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
 class Formula {
@@ -297,15 +309,16 @@ class Formula {
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
+  /// @{
   explicit Formula(const std::string& type);
+  explicit Formula(Operator type);
+  /// @}
 
   Formula(const Formula&) = delete;
   Formula& operator=(const Formula&) = delete;
 
   /// @returns The type of this formula.
-  ///
-  /// @throws LogicError  The gate is not yet assigned.
-  const std::string& type() const { return type_; }
+  std::string type() const { return kOperatorToString_[k_type_]; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///
@@ -377,6 +390,17 @@ class Formula {
   static const std::set<std::string> kTwoOrMore_;
   /// Formula types that require exactly one argument.
   static const std::set<std::string> kSingle_;
+  /// String representations of the operators.
+  static const char* const kOperatorToString_[];
+
+  /// Converts string to an operator.
+  ///
+  /// @param[in] type  The type of the formula operator in lowercase string.
+  ///
+  /// @returns Corresponding operator.
+  ///
+  /// @todo Consider relocation.
+  static Operator FromString(const std::string& type);
 
   /// Handles addition of an event to the formula.
   ///
@@ -395,6 +419,7 @@ class Formula {
   }
 
   std::string type_;  ///< Logical operator.
+  Operator k_type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.

@@ -66,8 +66,17 @@ const std::set<std::string> Formula::kTwoOrMore_ = {{"and"}, {"or"}, {"nand"},
 
 const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
+const char* const Formula::kOperatorToString_[] = {
+    "and", "or", "atleast", "xor", "not", "nand", "nor", "null"};
+
+Operator Formula::FromString(const std::string& type) {
+  return static_cast<Operator>(boost::find(kOperatorToString_, type) -
+                               kOperatorToString_);
+}
+
 Formula::Formula(const std::string& type)
     : type_(type),
+      k_type_(Formula::FromString(type)),
       vote_number_(0) {}
 
 int Formula::vote_number() const {
