@@ -21,7 +21,6 @@
 #ifndef SCRAM_SRC_INITIALIZER_H_
 #define SCRAM_SRC_INITIALIZER_H_
 
-#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -83,10 +82,6 @@ class Initializer {
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
 
-  /// Map of valid units for parameters.
-  static const std::map<std::string, Units> kUnits_;
-  /// String representation of units.
-  static const char* const kUnitToString_[];
   /// Expressions mapped to their extraction functions.
   static const ExtractorMap kExpressionExtractors_;
 
@@ -386,7 +381,7 @@ class Initializer {
   std::vector<std::unique_ptr<XmlParser>> parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
-  std::map<const xmlpp::Node*, std::string> doc_to_file_;
+  std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.

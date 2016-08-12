@@ -33,22 +33,6 @@
 namespace scram {
 namespace mef {
 
-const std::map<std::string, Units> Initializer::kUnits_ = {
-    {"bool", kBool},
-    {"int", kInt},
-    {"float", kFloat},
-    {"hours", kHours},
-    {"hours-1", kInverseHours},
-    {"years", kYears},
-    {"years-1", kInverseYears},
-    {"fit", kFit},
-    {"demands", kDemands}};
-
-const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
-                                                   "float", "hours", "hours-1",
-                                                   "years", "years-1", "fit",
-                                                   "demands"};
-
 std::stringstream Initializer::schema_;
 
 namespace {
@@ -549,8 +533,9 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
   if (!unit.empty()) {
-    assert(kUnits_.count(unit));
-    parameter->unit(kUnits_.at(unit));
+    int pos = boost::find(kUnitsToString, unit) - kUnitsToString.begin();
+    assert(pos < kNumUnits && "Unexpected unit kind.");
+    parameter->unit(static_cast<Units>(pos));
   }
   Initializer::AttachLabelAndAttributes(param_node, parameter.get());
   return parameter;
@@ -737,7 +722,7 @@ ExpressionPtr Initializer::GetParameterExpression(
     try {
       ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
-      param_unit = kUnitToString_[param->unit()];
+      param_unit = kUnitsToString[param->unit()];
       expression = param;
     } catch (std::out_of_range&) {
       std::stringstream msg;
@@ -747,7 +732,7 @@ ExpressionPtr Initializer::GetParameterExpression(
     }
   } else {
     assert(expr_name == "system-mission-time");
-    param_unit = kUnitToString_[mission_time_->unit()];
+    param_unit = kUnitsToString[mission_time_->unit()];
     expression = mission_time_;
   }
   // Check units.

@@ -23,6 +23,7 @@
 
 #include <cmath>
 
+#include <array>
 #include <memory>
 #include <string>
 #include <utility>
@@ -131,6 +132,14 @@ enum Units {
   kFit,
   kDemands
 };
+
+/// The number of elements in the Units enum.
+const int kNumUnits = 10;
+
+/// String representations of the Units in the same order as the enum.
+const std::array<const char*, kNumUnits> kUnitsToString = {
+    "unitless", "bool",  "int",     "float", "hours",
+    "hours-1",  "years", "years-1", "fit",   "demands"};
 
 /// This class provides a representation of a variable
 /// in basic event description.
