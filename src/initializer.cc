@@ -383,7 +383,11 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
       type == "house-event") {
     type = "null";
   }
-  FormulaPtr formula(new Formula(Formula::FromString(type)));
+
+  int pos = boost::find(kOperatorToString, type) - kOperatorToString.begin();
+  assert(pos < kNumOperators && "Unexpected operator type.");
+
+  FormulaPtr formula(new Formula(static_cast<Operator>(pos)));
   if (type == "atleast") {
     int vote_number = CastAttributeValue<int>(formula_node, "min");
     formula->vote_number(vote_number);

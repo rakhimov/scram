@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_EVENT_H_
 #define SCRAM_SRC_EVENT_H_
 
+#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -305,6 +306,11 @@ enum Operator {
 /// The number of operators in the enum.
 const int kNumOperators = 8;
 
+/// String representations of the operators.
+/// The ordering is the same as the Operator enum.
+const std::array<const char*, kNumOperators> kOperatorToString = {
+    "and", "or", "atleast", "xor", "not", "nand", "nor", "null"};
+
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
 class Formula {
@@ -385,19 +391,7 @@ class Formula {
   /// @throws ValidationError  Problems with the operator or arguments.
   void Validate() const;
 
-  /// Converts string to an operator.
-  ///
-  /// @param[in] type  The type of the formula operator in lowercase string.
-  ///
-  /// @returns Corresponding operator.
-  ///
-  /// @todo Consider relocation.
-  static Operator FromString(const std::string& type);
-
  private:
-  /// String representations of the operators.
-  static const char* const kOperatorToString_[];
-
   /// Handles addition of an event to the formula.
   ///
   /// @tparam Ptr  Shared pointer type to the event.

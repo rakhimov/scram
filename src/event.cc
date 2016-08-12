@@ -61,14 +61,6 @@ void Gate::Validate() const {
                           " exactly one conditional event.");
 }
 
-const char* const Formula::kOperatorToString_[] = {
-    "and", "or", "atleast", "xor", "not", "nand", "nor", "null"};
-
-Operator Formula::FromString(const std::string& type) {
-  return static_cast<Operator>(boost::find(kOperatorToString_, type) -
-                               kOperatorToString_);
-}
-
 Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
 
 int Formula::vote_number() const {
@@ -81,7 +73,7 @@ void Formula::vote_number(int number) {
     throw LogicError(
         "The vote number can only be defined for 'atleast' formulas. "
         "The operator of this formula is '" +
-        std::string(kOperatorToString_[type_]) + "'.");
+        std::string(kOperatorToString[type_]) + "'.");
   }
   if (number < 2) throw InvalidArgument("Vote number cannot be less than 2.");
   if (vote_number_) throw LogicError("Trying to re-assign a vote number");
@@ -97,13 +89,13 @@ void Formula::Validate() const {
     case kNand:
     case kNor:
       if (size < 2)
-        throw ValidationError("\"" + std::string(kOperatorToString_[type_]) +
+        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
                               "\" formula must have 2 or more arguments.");
       break;
     case kNot:
     case kNull:
       if (size != 1)
-        throw ValidationError("\"" + std::string(kOperatorToString_[type_]) +
+        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
                               "\" formula must have only one argument.");
       break;
     case kXor:
