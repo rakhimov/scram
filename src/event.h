@@ -309,10 +309,7 @@ class Formula {
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
-  /// @{
-  explicit Formula(const std::string& type);
   explicit Formula(Operator type);
-  /// @}
 
   Formula(const Formula&) = delete;
   Formula& operator=(const Formula&) = delete;
@@ -385,14 +382,6 @@ class Formula {
   /// @throws ValidationError  Problems with the operator or arguments.
   void Validate() const;
 
- private:
-  /// Formula types that require two or more arguments.
-  static const std::set<std::string> kTwoOrMore_;
-  /// Formula types that require exactly one argument.
-  static const std::set<std::string> kSingle_;
-  /// String representations of the operators.
-  static const char* const kOperatorToString_[];
-
   /// Converts string to an operator.
   ///
   /// @param[in] type  The type of the formula operator in lowercase string.
@@ -401,6 +390,14 @@ class Formula {
   ///
   /// @todo Consider relocation.
   static Operator FromString(const std::string& type);
+
+ private:
+  /// Formula types that require two or more arguments.
+  static const std::set<std::string> kTwoOrMore_;
+  /// Formula types that require exactly one argument.
+  static const std::set<std::string> kSingle_;
+  /// String representations of the operators.
+  static const char* const kOperatorToString_[];
 
   /// Handles addition of an event to the formula.
   ///

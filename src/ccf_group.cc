@@ -144,7 +144,7 @@ void CcfGroup::ApplyModel() {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
-    new_gate->formula(std::make_unique<Formula>("or"));
+    new_gate->formula(std::make_unique<Formula>(kOr));
 
     proxy_gates.push_back(new_gate.get());
     member->ccf_gate(std::move(new_gate));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,12 +33,12 @@ TEST(EventTest, Id) {
 }
 
 TEST(FormulaTest, VoteNumber) {
-  FormulaPtr top(new Formula("and"));
+  FormulaPtr top(new Formula(kAnd));
   EXPECT_EQ("and", top->type());
   // Setting a vote number for non-Vote formula is an error.
   EXPECT_THROW(top->vote_number(2), LogicError);
   // Resetting to VOTE formula.
-  top = FormulaPtr(new Formula("atleast"));
+  top = FormulaPtr(new Formula(kVote));
   EXPECT_EQ("atleast", top->type());
   // No vote number.
   EXPECT_THROW(top->vote_number(), LogicError);
@@ -54,7 +54,7 @@ TEST(FormulaTest, VoteNumber) {
 }
 
 TEST(FormulaTest, EventArguments) {
-  FormulaPtr top(new Formula("and"));
+  FormulaPtr top(new Formula(kAnd));
   std::map<std::string, EventPtr> children;
   BasicEventPtr first_child(new BasicEvent("first"));
   BasicEventPtr second_child(new BasicEvent("second"));
@@ -73,8 +73,8 @@ TEST(FormulaTest, EventArguments) {
 }
 
 TEST(FormulaTest, FormulaArguments) {
-  FormulaPtr top(new Formula("and"));
-  FormulaPtr arg(new Formula("or"));
+  FormulaPtr top(new Formula(kAnd));
+  FormulaPtr arg(new Formula(kOr));
   EXPECT_EQ(0, top->num_args());
   Formula* shadow = arg.get();
   // Adding first child.
@@ -86,11 +86,11 @@ TEST(MEFGateTest, Cycle) {
   GatePtr top(new Gate("Top"));
   GatePtr middle(new Gate("Middle"));
   GatePtr bottom(new Gate("Bottom"));
-  FormulaPtr formula_one(new Formula("not"));
+  FormulaPtr formula_one(new Formula(kNot));
   formula_one->AddArgument(middle);
-  FormulaPtr formula_two(new Formula("not"));
+  FormulaPtr formula_two(new Formula(kNot));
   formula_two->AddArgument(bottom);
-  FormulaPtr formula_three(new Formula("not"));
+  FormulaPtr formula_three(new Formula(kNot));
   formula_three->AddArgument(top);  // Looping here.
   top->formula(std::move(formula_one));
   middle->formula(std::move(formula_two));
@@ -109,7 +109,7 @@ TEST(MEFGateTest, Cycle) {
 
 // Test gate type validation.
 TEST(FormulaTest, Validate) {
-  FormulaPtr top(new Formula("and"));
+  FormulaPtr top(new Formula(kAnd));
   BasicEventPtr A(new BasicEvent("a"));
   BasicEventPtr B(new BasicEvent("b"));
   BasicEventPtr C(new BasicEvent("c"));
@@ -124,7 +124,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_NO_THROW(top->Validate());
 
   // OR Formula tests.
-  top = FormulaPtr(new Formula("or"));
+  top = FormulaPtr(new Formula(kOr));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
@@ -134,7 +134,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_NO_THROW(top->Validate());
 
   // NOT Formula tests.
-  top = FormulaPtr(new Formula("not"));
+  top = FormulaPtr(new Formula(kNot));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_NO_THROW(top->Validate());
@@ -142,7 +142,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_THROW(top->Validate(), ValidationError);
 
   // NULL Formula tests.
-  top = FormulaPtr(new Formula("null"));
+  top = FormulaPtr(new Formula(kNull));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_NO_THROW(top->Validate());
@@ -150,7 +150,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_THROW(top->Validate(), ValidationError);
 
   // NOR Formula tests.
-  top = FormulaPtr(new Formula("nor"));
+  top = FormulaPtr(new Formula(kNor));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
@@ -160,7 +160,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_NO_THROW(top->Validate());
 
   // NAND Formula tests.
-  top = FormulaPtr(new Formula("nand"));
+  top = FormulaPtr(new Formula(kNand));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
@@ -170,7 +170,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_NO_THROW(top->Validate());
 
   // XOR Formula tests.
-  top = FormulaPtr(new Formula("xor"));
+  top = FormulaPtr(new Formula(kXor));
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
@@ -180,7 +180,7 @@ TEST(FormulaTest, Validate) {
   EXPECT_THROW(top->Validate(), ValidationError);
 
   // VOTE/ATLEAST formula tests.
-  top = FormulaPtr(new Formula("atleast"));
+  top = FormulaPtr(new Formula(kVote));
   top->vote_number(2);
   EXPECT_THROW(top->Validate(), ValidationError);
   top->AddArgument(A);
@@ -200,7 +200,7 @@ TEST(MEFGateTest, Inhibit) {
   inh_attr.name = "flavor";
   inh_attr.value = "inhibit";
   GatePtr top(new Gate("top"));
-  top->formula(FormulaPtr(new Formula("and")));
+  top->formula(FormulaPtr(new Formula(kAnd)));
   top->AddAttribute(inh_attr);
   EXPECT_THROW(top->Validate(), ValidationError);
   top->formula().AddArgument(A);
@@ -212,7 +212,7 @@ TEST(MEFGateTest, Inhibit) {
   EXPECT_THROW(top->Validate(), ValidationError);
 
   top = GatePtr(new Gate("top"));
-  top->formula(FormulaPtr(new Formula("and")));
+  top->formula(FormulaPtr(new Formula(kAnd)));
   top->AddAttribute(inh_attr);
 
   Attribute cond;

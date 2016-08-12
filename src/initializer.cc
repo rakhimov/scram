@@ -383,7 +383,7 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
       type == "house-event") {
     type = "null";
   }
-  FormulaPtr formula(new Formula(type));
+  FormulaPtr formula(new Formula(Formula::FromString(type)));
   if (type == "atleast") {
     int vote_number = CastAttributeValue<int>(formula_node, "min");
     formula->vote_number(vote_number);
