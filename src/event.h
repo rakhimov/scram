@@ -23,7 +23,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -315,7 +314,7 @@ class Formula {
   Formula& operator=(const Formula&) = delete;
 
   /// @returns The type of this formula.
-  std::string type() const { return kOperatorToString_[k_type_]; }
+  std::string type() const { return kOperatorToString_[type_]; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///
@@ -392,10 +391,6 @@ class Formula {
   static Operator FromString(const std::string& type);
 
  private:
-  /// Formula types that require two or more arguments.
-  static const std::set<std::string> kTwoOrMore_;
-  /// Formula types that require exactly one argument.
-  static const std::set<std::string> kSingle_;
   /// String representations of the operators.
   static const char* const kOperatorToString_[];
 
@@ -415,8 +410,7 @@ class Formula {
     if (event->orphan()) event->orphan(false);
   }
 
-  std::string type_;  ///< Logical operator.
-  Operator k_type_;  ///< Logical operator.
+  Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
