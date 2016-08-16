@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -40,7 +42,7 @@ namespace scram {
 namespace mef {
 
 /// This class represents a risk analysis model.
-class Model : public Element {
+class Model : public Element, boost::noncopyable {
  public:
   /// Table for constructs in the model identified by names or ids.
   ///
@@ -54,9 +56,6 @@ class Model : public Element {
   ///
   /// @throws InvalidArgument  The name is malformed.
   explicit Model(std::string name = "");
-
-  Model(const Model&) = delete;
-  Model& operator=(const Model&) = delete;
 
   /// @returns Defined constructs in the model.
   /// @{

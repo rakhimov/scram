@@ -73,9 +73,7 @@ class XmlStreamElement {
   /// @throws XmlStreamError  Invalid setup for the element.
   XmlStreamElement(const char* name, std::ostream& out);
 
-  XmlStreamElement& operator=(const XmlStreamElement&) = delete;
-
-  /// Copy constructor is only declared
+  /// Move constructor is only declared
   /// to make the compiler happy.
   /// The code must rely on the RVO, NRVO, and copy elision
   /// instead of this constructor.

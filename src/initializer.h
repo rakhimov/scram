@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <libxml++/libxml++.h>
 
 #include "ccf_group.h"
@@ -48,7 +49,7 @@ namespace mef {
 /// The initialization phase includes
 /// validation and proper setup of the constructs
 /// for future use or analysis.
-class Initializer {
+class Initializer : private boost::noncopyable {
  public:
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -56,9 +57,6 @@ class Initializer {
   ///
   /// @param[in] settings  Analysis settings.
   explicit Initializer(const core::Settings& settings);
-
-  Initializer(const Initializer&) = delete;
-  Initializer& operator=(const Initializer&) = delete;
 
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.

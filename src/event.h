@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "element.h"
 #include "error.h"
 #include "expression.h"
@@ -35,7 +37,10 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Element, public Role, public Id {
+class Event : public Element,
+              public Role,
+              public Id,
+              private boost::noncopyable {
  public:
   /// Constructs a fault tree event with a specific id.
   ///
@@ -47,9 +52,6 @@ class Event : public Element, public Role, public Id {
   /// @throws InvalidArgument  The name or reference paths are malformed.
   explicit Event(std::string name, std::string base_path = "",
                  RoleSpecifier role = RoleSpecifier::kPublic);
-
-  Event(const Event&) = delete;
-  Event& operator=(const Event&) = delete;
 
   virtual ~Event() = 0;  ///< Abstract class.
 
@@ -313,15 +315,12 @@ const std::array<const char*, kNumOperators> kOperatorToString = {
 
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
-class Formula {
+class Formula : private boost::noncopyable {
  public:
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
   explicit Formula(Operator type);
-
-  Formula(const Formula&) = delete;
-  Formula& operator=(const Formula&) = delete;
 
   /// @returns The type of this formula.
   Operator type() const { return type_; }

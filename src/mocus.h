@@ -29,6 +29,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "boolean_graph.h"
 #include "settings.h"
 #include "zbdd.h"
@@ -38,7 +40,7 @@ namespace core {
 
 /// This class analyzes normalized, preprocessed, and indexed fault trees
 /// to generate minimal cut sets with the MOCUS algorithm.
-class Mocus {
+class Mocus : private boost::noncopyable {
  public:
   /// Prepares a Boolean graph for analysis with the MOCUS algorithm.
   ///
@@ -49,9 +51,6 @@ class Mocus {
   /// @pre The Boolean graph is in negation normal form;
   ///      that is, it contains only positive AND/OR gates.
   Mocus(const BooleanGraph* fault_tree, const Settings& settings);
-
-  Mocus(const Mocus&) = delete;
-  Mocus& operator=(const Mocus&) = delete;
 
   /// Finds minimal cut sets from the Boolean graph.
   void Analyze();

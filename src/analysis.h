@@ -25,19 +25,18 @@
 
 #include <string>
 
+#include <boost/noncopyable.hpp>
+
 #include "settings.h"
 
 namespace scram {
 namespace core {
 
 /// Base abstract class for all analysis with settings.
-class Analysis {
+class Analysis : private boost::noncopyable {
  public:
   /// @param[in] settings  Analysis settings for all calculations.
   explicit Analysis(const Settings& settings);
-
-  Analysis(const Analysis&) = delete;
-  Analysis& operator=(const Analysis&) = delete;
 
   virtual ~Analysis() = 0;  ///< Abstract class.
 

@@ -28,6 +28,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/noncopyable.hpp>
 #include <libxml++/libxml++.h>
 
 #include "error.h"
@@ -36,7 +37,7 @@ namespace scram {
 
 /// A helper class to hold XML file data
 /// and provide automatic validation.
-class XmlParser {
+class XmlParser : private boost::noncopyable {
  public:
   /// Initializes a parser with an XML snippet.
   ///
@@ -44,9 +45,6 @@ class XmlParser {
   ///
   /// @throws ValidationError  There are problems loading the XML snippet.
   explicit XmlParser(const std::stringstream& xml_input_snippet);
-
-  XmlParser(const XmlParser&) = delete;
-  XmlParser& operator=(const XmlParser&) = delete;
 
   /// Resets the parser.
   ~XmlParser() noexcept { parser_.reset(); }

@@ -283,8 +283,6 @@ void PhiFactorModel::Validate() const {
   double sum = 0;
   double sum_min = 0;
   double sum_max = 0;
-  /// @todo How to assure that the sum will be 1 in sampling.
-  ///       Is it allowed to have a factor sampling for Uncertainty analysis.
   for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     sum += factor.second->Mean();
     sum_min += factor.second->Min();

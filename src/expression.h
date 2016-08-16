@@ -32,6 +32,7 @@
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/special_functions/gamma.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "element.h"
 
@@ -48,16 +49,13 @@ using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 /// except for parameters.
 /// In addition, expressions are not expected to be changed
 /// after validation phases.
-class Expression {
+class Expression : private boost::noncopyable {
  public:
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///
   /// @param[in] args  Arguments of this expression.
   explicit Expression(std::vector<ExpressionPtr> args);
-
-  Expression(const Expression&) = delete;
-  Expression& operator=(const Expression&) = delete;
 
   virtual ~Expression() = default;
 

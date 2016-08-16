@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "bdd.h"
 
@@ -149,7 +150,7 @@ template <typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
-class Zbdd {
+class Zbdd : private boost::noncopyable {
  public:
   using VertexPtr = IntrusivePtr<Vertex<SetNode>>;  ///< ZBDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<SetNode>>;  ///< Terminal vertex.
@@ -179,9 +180,6 @@ class Zbdd {
   /// @pre The passed Boolean graph already has variable ordering.
   /// @note The construction may take considerable time.
   Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept;
-
-  Zbdd(const Zbdd&) = delete;
-  Zbdd& operator=(const Zbdd&) = delete;
 
   virtual ~Zbdd() noexcept = default;
 

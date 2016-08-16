@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "boolean_graph.h"
@@ -39,7 +40,7 @@ namespace core {
 /// over a Boolean graph
 /// to simplify the fault tree
 /// and to help analysis run more efficiently.
-class Preprocessor {
+class Preprocessor : private boost::noncopyable {
  public:
   /// Constructs a preprocessor of a Boolean graph
   /// representing a fault tree.
@@ -55,9 +56,6 @@ class Preprocessor {
   ///          as expected by the preprocessing algorithms,
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
-
-  Preprocessor(const Preprocessor&) = delete;
-  Preprocessor& operator=(const Preprocessor&) = delete;
 
   virtual ~Preprocessor() = default;
 
