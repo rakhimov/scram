@@ -21,11 +21,13 @@
 #ifndef SCRAM_SRC_EVENT_H_
 #define SCRAM_SRC_EVENT_H_
 
+#include <array>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
+
+#include <boost/noncopyable.hpp>
 
 #include "element.h"
 #include "error.h"
@@ -35,7 +37,10 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Element, public Role, public Id {
+class Event : public Element,
+              public Role,
+              public Id,
+              private boost::noncopyable {
  public:
   /// Constructs a fault tree event with a specific id.
   ///
@@ -47,9 +52,6 @@ class Event : public Element, public Role, public Id {
   /// @throws InvalidArgument  The name or reference paths are malformed.
   explicit Event(std::string name, std::string base_path = "",
                  RoleSpecifier role = RoleSpecifier::kPublic);
-
-  Event(const Event&) = delete;
-  Event& operator=(const Event&) = delete;
 
   virtual ~Event() = 0;  ///< Abstract class.
 
@@ -290,22 +292,38 @@ class Gate : public Event {
   std::string mark_;  ///< The mark for traversal or toposort.
 };
 
+/// Operators for formulas.
+/// The ordering is the same as analysis operators in the Boolean graph.
+enum Operator {
+  kAnd = 0,
+  kOr,
+  kVote,  ///< Combination, K/N, atleast, or Vote gate representation.
+  kXor,  ///< Exclusive OR gate with two inputs only.
+  kNot,  ///< Boolean negation.
+  kNand,  ///< Not AND.
+  kNor,  ///< Not OR.
+  kNull  ///< Single argument pass-through without logic.
+};
+
+/// The number of operators in the enum.
+const int kNumOperators = 8;
+
+/// String representations of the operators.
+/// The ordering is the same as the Operator enum.
+const std::array<const char*, kNumOperators> kOperatorToString = {
+    "and", "or", "atleast", "xor", "not", "nand", "nor", "null"};
+
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
-class Formula {
+class Formula : private boost::noncopyable {
  public:
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
-  explicit Formula(const std::string& type);
-
-  Formula(const Formula&) = delete;
-  Formula& operator=(const Formula&) = delete;
+  explicit Formula(Operator type);
 
   /// @returns The type of this formula.
-  ///
-  /// @throws LogicError  The gate is not yet assigned.
-  const std::string& type() const { return type_; }
+  Operator type() const { return type_; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///
@@ -373,11 +391,6 @@ class Formula {
   void Validate() const;
 
  private:
-  /// Formula types that require two or more arguments.
-  static const std::set<std::string> kTwoOrMore_;
-  /// Formula types that require exactly one argument.
-  static const std::set<std::string> kSingle_;
-
   /// Handles addition of an event to the formula.
   ///
   /// @tparam Ptr  Shared pointer type to the event.
@@ -394,7 +407,7 @@ class Formula {
     if (event->orphan()) event->orphan(false);
   }
 
-  std::string type_;  ///< Logical operator.
+  Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.

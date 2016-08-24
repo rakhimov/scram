@@ -144,7 +144,7 @@ void CcfGroup::ApplyModel() {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
-    new_gate->formula(std::make_unique<Formula>("or"));
+    new_gate->formula(std::make_unique<Formula>(kOr));
 
     proxy_gates.push_back(new_gate.get());
     member->ccf_gate(std::move(new_gate));
@@ -283,8 +283,6 @@ void PhiFactorModel::Validate() const {
   double sum = 0;
   double sum_min = 0;
   double sum_max = 0;
-  /// @todo How to assure that the sum will be 1 in sampling.
-  ///       Is it allowed to have a factor sampling for Uncertainty analysis.
   for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     sum += factor.second->Mean();
     sum_min += factor.second->Min();

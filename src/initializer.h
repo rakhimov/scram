@@ -21,7 +21,6 @@
 #ifndef SCRAM_SRC_INITIALIZER_H_
 #define SCRAM_SRC_INITIALIZER_H_
 
-#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -29,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
 #include <libxml++/libxml++.h>
 
 #include "ccf_group.h"
@@ -49,7 +49,7 @@ namespace mef {
 /// The initialization phase includes
 /// validation and proper setup of the constructs
 /// for future use or analysis.
-class Initializer {
+class Initializer : private boost::noncopyable {
  public:
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -57,9 +57,6 @@ class Initializer {
   ///
   /// @param[in] settings  Analysis settings.
   explicit Initializer(const core::Settings& settings);
-
-  Initializer(const Initializer&) = delete;
-  Initializer& operator=(const Initializer&) = delete;
 
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.
@@ -83,10 +80,6 @@ class Initializer {
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
 
-  /// Map of valid units for parameters.
-  static const std::map<std::string, Units> kUnits_;
-  /// String representation of units.
-  static const char* const kUnitToString_[];
   /// Expressions mapped to their extraction functions.
   static const ExtractorMap kExpressionExtractors_;
 
@@ -386,7 +379,7 @@ class Initializer {
   std::vector<std::unique_ptr<XmlParser>> parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
-  std::map<const xmlpp::Node*, std::string> doc_to_file_;
+  std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.

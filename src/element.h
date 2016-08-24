@@ -42,7 +42,7 @@ struct Attribute {
 class Element {
  public:
   /// Constructs an element with an original name.
-  /// The name is expected to be a conform to identifier requirements
+  /// The name is expected to conform to identifier requirements
   /// described in the MEF documentation and additions.
   ///
   /// @param[in] name  The local identifier name.

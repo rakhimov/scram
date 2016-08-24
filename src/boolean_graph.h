@@ -43,6 +43,7 @@
 
 #include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "event.h"
 #include "ext.h"
@@ -57,7 +58,7 @@ using GateWeakPtr = std::weak_ptr<Gate>;  ///< Acyclic ptr to parent gates.
 
 /// Manager of information about parents.
 /// Only gates can manipulate the data.
-class NodeParentManager {
+class NodeParentManager : private boost::noncopyable {
   friend class Gate;  ///< The main manipulator of parent information.
 
  public:
@@ -108,9 +109,6 @@ class Node : public NodeParentManager {
   ///
   /// @warning The index is not validated upon instantiation.
   explicit Node(int index) noexcept;
-
-  Node(const Node&) = delete;
-  Node& operator=(const Node&) = delete;
 
   virtual ~Node() = 0;  ///< Abstract class.
 
@@ -828,7 +826,7 @@ class Preprocessor;
 ///          a multiple-top-event fault tree,
 ///          which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
-class BooleanGraph {
+class BooleanGraph : private boost::noncopyable {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
@@ -846,9 +844,6 @@ class BooleanGraph {
   ///       If the fault tree has been manipulated (event addition, etc.),
   ///       its BooleanGraph representation is not guaranteed to be the same.
   explicit BooleanGraph(const mef::Gate& root, bool ccf = false) noexcept;
-
-  BooleanGraph(const BooleanGraph&) = delete;
-  BooleanGraph& operator=(const BooleanGraph&) = delete;
 
   /// @returns true if the fault tree is coherent.
   bool coherent() const { return coherent_; }
@@ -924,6 +919,8 @@ class BooleanGraph {
   /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
+  ///
+  /// @pre The Operator enum in the MEF is the same as in Boolean graph.
   GatePtr ProcessFormula(const mef::Formula& formula, bool ccf,
                          ProcessedNodes* nodes) noexcept;
 

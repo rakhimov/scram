@@ -27,6 +27,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -36,7 +38,7 @@ namespace scram {
 namespace mef {
 
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public Element, public Role {
+class Component : public Element, public Role, private boost::noncopyable {
  public:
   /// Constructs a component assuming
   /// that it exists within some fault tree.
@@ -55,10 +57,7 @@ class Component : public Element, public Role {
   explicit Component(std::string name, std::string base_path = "",
                      RoleSpecifier role = RoleSpecifier::kPublic);
 
-  Component(const Component&) = delete;
-  Component& operator=(const Component&) = delete;
-
-  virtual ~Component() {}
+  virtual ~Component() = default;
 
   /// @returns The container of component constructs of specific kind
   ///          with construct original names as keys.

@@ -36,6 +36,8 @@
 #include <sstream>
 #include <string>
 
+#include <boost/noncopyable.hpp>
+
 namespace scram {
 
 /// Takes a current time stamp in nanoseconds.
@@ -91,13 +93,8 @@ const int kMaxVerbosity = 7;  ///< The index of the last level.
 ///
 /// @warning Do not place leading spaces, newline, or tabs in messages
 ///          because it will mess up the level-dependent printing.
-class Logger {
+class Logger : private boost::noncopyable {
  public:
-  Logger() {}
-
-  Logger(const Logger&) = delete;
-  Logger& operator=(const Logger&) = delete;
-
   /// Flashes all the logs into the standard error upon destruction.
   ~Logger() noexcept {
     os_ << std::endl;

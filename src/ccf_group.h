@@ -32,6 +32,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -40,7 +42,10 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for all common cause failure models.
-class CcfGroup : public Element, public Role, public Id {
+class CcfGroup : public Element,
+                 public Role,
+                 public Id,
+                 private boost::noncopyable {
  public:
   /// Constructor to be used by derived classes.
   ///
@@ -51,9 +56,6 @@ class CcfGroup : public Element, public Role, public Id {
   /// @throws LogicError  The name is empty.
   explicit CcfGroup(std::string name, std::string base_path = "",
                     RoleSpecifier role = RoleSpecifier::kPublic);
-
-  CcfGroup(const CcfGroup&) = delete;
-  CcfGroup& operator=(const CcfGroup&) = delete;
 
   virtual ~CcfGroup() = default;
 
@@ -228,7 +230,6 @@ class PhiFactorModel : public CcfGroup {
   /// @throws ValidationError  There is an issue with the setup.
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
-  ///       Currently only accepts constant expressions.
   void Validate() const override;
 
  private:

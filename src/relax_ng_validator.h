@@ -29,6 +29,7 @@
 #ifndef SCRAM_SRC_RELAX_NG_VALIDATOR_H_
 #define SCRAM_SRC_RELAX_NG_VALIDATOR_H_
 
+#include <boost/noncopyable.hpp>
 #include <glibmm/ustring.h>
 #include <libxml++/document.h>
 #include <libxml/relaxng.h>
@@ -38,12 +39,8 @@ namespace scram {
 /// This class provides a simple interface
 /// to validate XML documents
 /// against a given RelaxNG schema.
-class RelaxNGValidator {
+class RelaxNGValidator : private boost::noncopyable {
  public:
-  RelaxNGValidator() = default;
-  RelaxNGValidator(const RelaxNGValidator&) = delete;
-  RelaxNGValidator& operator=(const RelaxNGValidator&) = delete;
-
   /// Releases XML related memory.
   ~RelaxNGValidator() noexcept { RelaxNGValidator::ReleaseUnderlying(); }
 
@@ -59,7 +56,7 @@ class RelaxNGValidator {
   /// @param[in] doc  The XML file document.
   ///
   /// @throws ValidationError  The XML snippet failed schema validation.
-  /// @throws InvalidArgrument  The pointer to the doc cannot be NULL.
+  /// @throws InvalidArgument  The pointer to the doc cannot be NULL.
   /// @throws LogicError  There is no schema to validate against.
   /// @throws Error  Could not create validating context.
   void Validate(const xmlpp::Document* doc);

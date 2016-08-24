@@ -42,7 +42,7 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
 
 void Gate::Validate() const {
   // Detect inhibit flavor.
-  if (formula_->type() != "and" || !Element::HasAttribute("flavor") ||
+  if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit") {
     return;
   }
@@ -61,14 +61,7 @@ void Gate::Validate() const {
                           " exactly one conditional event.");
 }
 
-const std::set<std::string> Formula::kTwoOrMore_ = {{"and"}, {"or"}, {"nand"},
-                                                    {"nor"}};
-
-const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
-
-Formula::Formula(const std::string& type)
-    : type_(type),
-      vote_number_(0) {}
+Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_) throw LogicError("Vote number is not set.");
@@ -76,9 +69,11 @@ int Formula::vote_number() const {
 }
 
 void Formula::vote_number(int number) {
-  if (type_ != "atleast") {
-    throw LogicError("Vote number can only be defined for 'atleast' formulas. "
-                     "The operator of this formula is '" + type_ + "'.");
+  if (type_ != kVote) {
+    throw LogicError(
+        "The vote number can only be defined for 'atleast' formulas. "
+        "The operator of this formula is '" +
+        std::string(kOperatorToString[type_]) + "'.");
   }
   if (number < 2) throw InvalidArgument("Vote number cannot be less than 2.");
   if (vote_number_) throw LogicError("Trying to re-assign a vote number");
@@ -87,25 +82,32 @@ void Formula::vote_number(int number) {
 }
 
 void Formula::Validate() const {
-  assert(kTwoOrMore_.count(type_) || kSingle_.count(type_) ||
-         type_ == "atleast" || type_ == "xor");
-
   int size = Formula::num_args();
-  std::string msg;
-  if (kTwoOrMore_.count(type_) && size < 2) {
-    msg += "\"" + type_ + "\" formula must have 2 or more arguments.";
-
-  } else if (kSingle_.count(type_) && size != 1) {
-    msg += "\"" + type_ + "\" formula must have only one argument.";
-
-  } else if (type_ == "xor" && size != 2) {
-    msg += "\"" + type_ + "\" formula must have exactly 2 arguments.";
-
-  } else if (type_ == "atleast" && size <= vote_number_) {
-    msg += "\"" + type_ + "\" formula must have more arguments "
-           "than its vote number " + std::to_string(vote_number_) + ".";
+  switch (type_) {
+    case kAnd:
+    case kOr:
+    case kNand:
+    case kNor:
+      if (size < 2)
+        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
+                              "\" formula must have 2 or more arguments.");
+      break;
+    case kNot:
+    case kNull:
+      if (size != 1)
+        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
+                              "\" formula must have only one argument.");
+      break;
+    case kXor:
+      if (size != 2)
+        throw ValidationError("\"xor\" formula must have exactly 2 arguments.");
+      break;
+    case kVote:
+      if (size <= vote_number_)
+        throw ValidationError("\"atleast\" formula must have more arguments "
+                              "than its vote number " +
+                              std::to_string(vote_number_) + ".");
   }
-  if (!msg.empty()) throw ValidationError(msg);
 }
 
 }  // namespace mef

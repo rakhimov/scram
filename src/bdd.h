@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "boolean_graph.h"
@@ -58,13 +59,10 @@ using IntrusivePtr = boost::intrusive_ptr<T>;
 ///
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
-class WeakIntrusivePtr final {
+class WeakIntrusivePtr final : private boost::noncopyable {
  public:
   /// Default constructor is to allow initialization in tables.
   WeakIntrusivePtr() noexcept : control_block_(nullptr) {}
-
-  WeakIntrusivePtr(const WeakIntrusivePtr&) = delete;
-  WeakIntrusivePtr& operator=(const WeakIntrusivePtr&) = delete;
 
   /// Constructs from the shared pointer.
   /// However, there is no weak-to-shared constructor.
@@ -130,7 +128,7 @@ class Terminal;  // Forward declaration for Vertex to manage.
 ///      provided by this class' interface.
 /// @pre Vertices are not shared among separate BDD instances.
 template <class T>
-class Vertex {
+class Vertex : private boost::noncopyable {
   /// @param[in] ptr  Vertex pointer managed by intrusive pointers.
   ///
   /// @returns The control block of intrusive counting for tables.
@@ -167,9 +165,6 @@ class Vertex {
       : id_(id),
         use_count_(0),
         control_block_(new ControlBlock{this}) {}
-
-  Vertex(const Vertex&) = delete;
-  Vertex& operator=(const Vertex&) = delete;
 
   /// @returns Identifier of the BDD graph rooted by this vertex.
   int id() const { return id_; }
@@ -713,7 +708,7 @@ class Zbdd;  // For analysis purposes.
 ///
 /// @note The low/else edge is chosen to have the attribute for an ITE vertex.
 ///       There is only one terminal vertex of value 1/True.
-class Bdd {
+class Bdd : private boost::noncopyable {
  public:
   using VertexPtr = IntrusivePtr<Vertex<Ite>>;  ///< BDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<Ite>>;  ///< Terminal vertices.
@@ -764,9 +759,6 @@ class Bdd {
   ///
   /// @note BDD construction may take considerable time.
   Bdd(const BooleanGraph* fault_tree, const Settings& settings);
-
-  Bdd(const Bdd&) = delete;
-  Bdd& operator=(const Bdd&) = delete;
 
   /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;
