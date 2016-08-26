@@ -143,8 +143,6 @@ bool all_of(const SinglePassRange& rng, UnaryPredicate pred) {
 }
 /// @}
 
-#undef CONCEPT_ASSERT
-
 }  // namespace ext
 
 #endif  // SCRAM_SRC_EXT_H_
