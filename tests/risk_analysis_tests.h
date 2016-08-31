@@ -104,15 +104,13 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     return *init->model()->fault_trees().begin();
   }
 
-  const std::unordered_map<std::string, mef::GatePtr>& gates() {
-    return init->model()->gates();
-  }
+  const mef::IdTable<mef::GatePtr>& gates() { return init->model()->gates(); }
 
-  const std::unordered_map<std::string, mef::HouseEventPtr>& house_events() {
+  const mef::IdTable<mef::HouseEventPtr>& house_events() {
     return init->model()->house_events();
   }
 
-  const std::unordered_map<std::string, mef::BasicEventPtr>& basic_events() {
+  const mef::IdTable<mef::BasicEventPtr>& basic_events() {
     return init->model()->basic_events();
   }
 

@@ -145,6 +145,18 @@ class Role {
   const std::string kBasePath_;  ///< A series of ancestor containers.
 };
 
+/// Computes the full path of an element.
+///
+/// @tparam T  Pointer to Element type deriving from Role.
+///
+/// @param[in] element  A valid element with a name and base path.
+///
+/// @returns A string representation of the full path.
+template <typename T>
+std::string GetFullPath(const T& element) {
+  return element->base_path() + "." + element->name();
+}
+
 /// Mixin class for assigning unique identifiers to elements.
 class Id {
  public:

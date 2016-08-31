@@ -71,11 +71,11 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
 /// Helper macro for Model::BindEvent event discovery.
 #define BIND_EVENT(access, path_reference)                       \
   if (auto it = ext::find(gates_.access, path_reference))        \
-    return formula->AddArgument(it->second);                     \
+    return formula->AddArgument(*it);                            \
   if (auto it = ext::find(basic_events_.access, path_reference)) \
-    return formula->AddArgument(it->second);                     \
+    return formula->AddArgument(*it);                            \
   if (auto it = ext::find(house_events_.access, path_reference)) \
-    return formula->AddArgument(it->second)
+    return formula->AddArgument(*it)
 
 void Model::BindEvent(const std::string& entity_reference,
                       const std::string& base_path, Formula* formula) {

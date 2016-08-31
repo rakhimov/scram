@@ -40,24 +40,24 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, basic_events().count("PumpTwo"));
   EXPECT_EQ(1, basic_events().count("ValveOne"));
   EXPECT_EQ(1, basic_events().count("ValveTwo"));
-  if (gates().count("TopEvent")) {
-    mef::GatePtr top = gates().at("TopEvent");
-    EXPECT_EQ("TopEvent", top->id());
-    ASSERT_NO_THROW(top->formula().type());
-    EXPECT_EQ(kAnd, top->formula().type());
-    EXPECT_EQ(2, top->formula().event_args().size());
-  }
-  if (gates().count("TrainOne")) {
-    mef::GatePtr inter = gates().at("TrainOne");
-    EXPECT_EQ("TrainOne", inter->id());
-    ASSERT_NO_THROW(inter->formula().type());
-    EXPECT_EQ(kOr, inter->formula().type());
-    EXPECT_EQ(2, inter->formula().event_args().size());
-  }
-  if (basic_events().count("ValveOne")) {
-    mef::BasicEventPtr primary = basic_events().at("ValveOne");
-    EXPECT_EQ("ValveOne", primary->id());
-  }
+
+  ASSERT_TRUE(gates().count("TopEvent"));
+  mef::GatePtr top = *gates().find("TopEvent");
+  EXPECT_EQ("TopEvent", top->id());
+  ASSERT_NO_THROW(top->formula().type());
+  EXPECT_EQ(kAnd, top->formula().type());
+  EXPECT_EQ(2, top->formula().event_args().size());
+
+  ASSERT_TRUE(gates().count("TrainOne"));
+  mef::GatePtr inter = *gates().find("TrainOne");
+  EXPECT_EQ("TrainOne", inter->id());
+  ASSERT_NO_THROW(inter->formula().type());
+  EXPECT_EQ(kOr, inter->formula().type());
+  EXPECT_EQ(2, inter->formula().event_args().size());
+
+  ASSERT_TRUE(basic_events().count("ValveOne"));
+  mef::BasicEventPtr primary = *basic_events().find("ValveOne");
+  EXPECT_EQ("ValveOne", primary->id());
 }
 
 // Test Probability Assignment
@@ -71,14 +71,20 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   ASSERT_EQ(1, basic_events().count("PumpTwo"));
   ASSERT_EQ(1, basic_events().count("ValveOne"));
   ASSERT_EQ(1, basic_events().count("ValveTwo"));
-  ASSERT_NO_THROW(basic_events().at("PumpOne")->p());
-  ASSERT_NO_THROW(basic_events().at("PumpTwo")->p());
-  ASSERT_NO_THROW(basic_events().at("ValveOne")->p());
-  ASSERT_NO_THROW(basic_events().at("ValveTwo")->p());
-  EXPECT_EQ(0.6, basic_events().at("PumpOne")->p());
-  EXPECT_EQ(0.7, basic_events().at("PumpTwo")->p());
-  EXPECT_EQ(0.4, basic_events().at("ValveOne")->p());
-  EXPECT_EQ(0.5, basic_events().at("ValveTwo")->p());
+
+  mef::BasicEventPtr p1 = *basic_events().find("PumpOne");
+  mef::BasicEventPtr p2 = *basic_events().find("PumpTwo");
+  mef::BasicEventPtr v1 = *basic_events().find("ValveOne");
+  mef::BasicEventPtr v2 = *basic_events().find("ValveTwo");
+
+  ASSERT_NO_THROW(p1->p());
+  ASSERT_NO_THROW(p2->p());
+  ASSERT_NO_THROW(v1->p());
+  ASSERT_NO_THROW(v2->p());
+  EXPECT_EQ(0.6, p1->p());
+  EXPECT_EQ(0.7, p2->p());
+  EXPECT_EQ(0.4, v1->p());
+  EXPECT_EQ(0.5, v2->p());
 }
 
 // Test Analysis of Two train system.

@@ -20,7 +20,6 @@
 
 #include "reporter.h"
 
-#include <utility>
 #include <vector>
 
 #include <boost/date_time.hpp>
@@ -236,19 +235,11 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
 void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
                                          XmlStreamElement* information) {
   std::string out;
-  for (const std::pair<const std::string, mef::BasicEventPtr>& entry :
-       model.basic_events()) {
-    const auto& param = entry.second;
-    if (param->orphan()) {
-      out += param->id() + " ";
-    }
+  for (const mef::BasicEventPtr& param : model.basic_events()) {
+    if (param->orphan()) out += param->id() + " ";
   }
-  for (const std::pair<const std::string, mef::HouseEventPtr>& entry :
-       model.house_events()) {
-    const auto& param = entry.second;
-    if (param->orphan()) {
-      out += param->id() + " ";
-    }
+  for (const mef::HouseEventPtr& param : model.house_events()) {
+    if (param->orphan()) out += param->id() + " ";
   }
   if (!out.empty())
     information->AddChild("warning").AddText("Orphan Primary Events: " + out);
@@ -257,12 +248,8 @@ void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
 void Reporter::ReportUnusedParameters(const mef::Model& model,
                                       XmlStreamElement* information) {
   std::string out;
-  for (const std::pair<const std::string, mef::ParameterPtr>& entry :
-       model.parameters()) {
-    const auto& param = entry.second;
-    if (param->unused()) {
-      out += param->id() + " ";
-    }
+  for (const mef::ParameterPtr& param : model.parameters()) {
+    if (param->unused()) out += param->id() + " ";
   }
   if (!out.empty())
     information->AddChild("warning").AddText("Unused Parameters: " + out);
