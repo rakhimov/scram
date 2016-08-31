@@ -25,6 +25,10 @@
 #include <map>
 #include <string>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
+
 namespace scram {
 namespace mef {
 
@@ -98,6 +102,15 @@ class Element {
   std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
 };
 
+/// Table of elements with unique names.
+///
+/// @tparam T  Value or (smart/raw) pointer type deriving from Element class.
+template <typename T>
+using ElementTable = boost::multi_index_container<
+    T, boost::multi_index::indexed_by<
+           boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
+               Element, const std::string&, &Element::name>>>>;
+
 /// Role, access attributes for elements.
 enum class RoleSpecifier { kPublic, kPrivate };
 
@@ -154,6 +167,15 @@ class Id {
  private:
   const std::string kId_;  ///< Unique Id name of an element.
 };
+
+/// Table of elements with unique ids.
+///
+/// @tparam T  Value or (smart/raw) pointer type deriving from Id class.
+template <typename T>
+using IdTable = boost::multi_index_container<
+    T,
+    boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+        boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
 
 }  // namespace mef
 }  // namespace scram
