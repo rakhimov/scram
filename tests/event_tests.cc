@@ -55,7 +55,7 @@ TEST(FormulaTest, VoteNumber) {
 
 TEST(FormulaTest, EventArguments) {
   FormulaPtr top(new Formula(kAnd));
-  std::map<std::string, EventPtr> children;
+  IdTable<Event*> children;
   BasicEventPtr first_child(new BasicEvent("first"));
   BasicEventPtr second_child(new BasicEvent("second"));
   EXPECT_EQ(0, top->num_args());
@@ -64,11 +64,11 @@ TEST(FormulaTest, EventArguments) {
   // Re-adding a child must cause an error.
   EXPECT_THROW(top->AddArgument(first_child), ValidationError);
   // Check the contents of the children container.
-  children.insert(std::make_pair(first_child->id(), first_child));
+  children.insert(first_child.get());
   EXPECT_EQ(children, top->event_args());
   // Adding another child.
   EXPECT_NO_THROW(top->AddArgument(second_child));
-  children.insert(std::make_pair(second_child->id(), second_child));
+  children.insert(second_child.get());
   EXPECT_EQ(children, top->event_args());
 }
 

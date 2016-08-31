@@ -22,7 +22,6 @@
 #define SCRAM_SRC_EVENT_H_
 
 #include <array>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -343,9 +342,7 @@ class Formula : private boost::noncopyable {
 
   /// @returns The arguments of this formula of specific type.
   /// @{
-  const std::map<std::string, EventPtr>& event_args() const {
-    return event_args_;
-  }
+  const IdTable<Event*>& event_args() const { return event_args_; }
   const std::vector<HouseEventPtr>& house_event_args() const {
     return house_event_args_;
   }
@@ -401,7 +398,7 @@ class Formula : private boost::noncopyable {
   /// @throws DuplicateArgumentError  The argument even tis duplicate.
   template <class Ptr>
   void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
-    if (event_args_.emplace(event->id(), event).second == false)
+    if (event_args_.insert(event.get()).second == false)
       throw DuplicateArgumentError("Duplicate argument " + event->name());
     container->emplace_back(event);
     if (event->orphan()) event->orphan(false);
@@ -409,7 +406,7 @@ class Formula : private boost::noncopyable {
 
   Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
-  std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
+  IdTable<Event*> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
   std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.
   std::vector<GatePtr> gate_args_;  ///< Arguments that are gates.
