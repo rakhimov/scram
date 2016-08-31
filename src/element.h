@@ -22,12 +22,12 @@
 #ifndef SCRAM_SRC_ELEMENT_H_
 #define SCRAM_SRC_ELEMENT_H_
 
-#include <map>
 #include <string>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index/member.hpp>
 
 namespace scram {
 namespace mef {
@@ -97,9 +97,16 @@ class Element {
   ~Element() = default;
 
  private:
+  /// Container of attributes hashed by their names.
+  using AttributeTable = boost::multi_index_container<
+      Attribute,
+      boost::multi_index::indexed_by<
+          boost::multi_index::hashed_unique<boost::multi_index::member<
+              Attribute, std::string, &Attribute::name>>>>;
+
   const std::string kName_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
-  std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
+  AttributeTable attributes_;  ///< Collection of attributes.
 };
 
 /// Table of elements with unique names.
