@@ -10,8 +10,7 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
 fi
 
 sudo pip install -U pip wheel
-sudo pip install nose
-sudo pip install lxml
+sudo pip install -r requirements-tests.txt
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
@@ -24,9 +23,4 @@ fi
 sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq doxygen
-sudo pip install cpp-coveralls
-sudo pip install lizard
-sudo pip install codecov
-sudo pip install coverage
-sudo pip install cpplint
-sudo pip install prospector
+sudo pip install -r requirements-dev.txt

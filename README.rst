@@ -108,19 +108,6 @@ Package                Minimum Version
 ====================   ==================
 
 
-Python Modules
---------------
-
-====================   ==================
-Package                Tested Version
-====================   ==================
-`nose`                 1.3.1
-`lxml`                 3.3.3
-====================   ==================
-
-.. note:: Python modules are needed for tests only.
-
-
 Compilers
 ---------
 

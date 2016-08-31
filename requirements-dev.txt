@@ -1,0 +1,6 @@
+cpp-coveralls
+lizard
+codecov
+coverage
+cpplint
+prospector
