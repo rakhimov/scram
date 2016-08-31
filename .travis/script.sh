@@ -80,6 +80,7 @@ sed -i '/Include the directory when naming/d' style.txt
 sed -i '/^Ignoring/d' style.txt
 sed -i '/^Skipping/d' style.txt
 sed -i '/is an unapproved C++11 header/d' style.txt
+sed -i '/Add #include <algorithm> for sort/d' style.txt
 if [[ -s style.txt ]]; then
   echo "Style errors:" >&2
   cat style.txt >&2

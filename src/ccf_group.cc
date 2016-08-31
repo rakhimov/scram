@@ -20,6 +20,8 @@
 
 #include "ccf_group.h"
 
+#include <boost/range/algorithm.hpp>
+
 namespace scram {
 namespace mef {
 
@@ -34,7 +36,7 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (members_.emplace(basic_event->name(), basic_event).second == false) {
+  if (members_.insert(basic_event).second == false) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + Element::name() + " CCF group.");
   }
@@ -44,9 +46,8 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   if (distribution_) throw LogicError("CCF distribution is already defined.");
   distribution_ = distr;
   // Define probabilities of all basic events.
-  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-    mem.second->expression(distribution_);
-  }
+  for (const BasicEventPtr& member : members_)
+    member->expression(distribution_);
 }
 
 void CcfGroup::CheckLevel(int level) {
@@ -136,11 +137,21 @@ std::string JoinNames(const std::vector<Gate*>& combination) {
 
 }  // namespace
 
+std::vector<BasicEvent*> CcfGroup::StabilizeMembers() {
+  std::vector<BasicEvent*> stable_members;
+  stable_members.reserve(members_.size());
+  for (const BasicEventPtr& member : members_)
+    stable_members.push_back(member.get());
+
+  boost::sort(stable_members,
+              [](auto* lhs, auto* rhs) { return lhs->name() < rhs->name(); });
+  return stable_members;
+}
+
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<Gate*> proxy_gates;
-  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
-    const BasicEventPtr& member = mem.second;
+  for (BasicEvent* member : CcfGroup::StabilizeMembers()) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());

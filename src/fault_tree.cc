@@ -55,16 +55,16 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  for (const std::pair<const std::string, BasicEventPtr>& member :
-       ccf_group->members()) {
-    if (gates_.count(member.first) || basic_events_.count(member.first) ||
-        house_events_.count(member.first)) {
-      throw ValidationError("Duplicate event " + member.second->name() +
+  for (const BasicEventPtr& member : ccf_group->members()) {
+    const std::string& name = member->name();
+    if (gates_.count(name) || basic_events_.count(name) ||
+        house_events_.count(name)) {
+      throw ValidationError("Duplicate event " + name +
                             " from CCF group " + ccf_group->name());
     }
   }
   for (const auto& member : ccf_group->members())
-    basic_events_.insert(member.second);
+    basic_events_.insert(member);
   ccf_groups_.insert(ccf_group);
 }
 
