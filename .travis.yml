@@ -3,7 +3,10 @@ dist: trusty
 
 language: cpp
 
-cache: ccache
+cache:
+    ccache: true
+    directories:
+        - $HOME/.cache/pip
 
 os:
     - linux

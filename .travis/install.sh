@@ -9,6 +9,7 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew install ccache
 fi
 
+sudo pip install -U pip wheel
 sudo pip install nose
 sudo pip install lxml
 
