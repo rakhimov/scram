@@ -34,9 +34,8 @@ TEST(BooleanGraphTest, Print) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/fta/correct_formulas.xml");
   EXPECT_NO_THROW(init->ProcessInputFiles(input_files));
-  BooleanGraph* graph = new BooleanGraph(*init->model()
-                                         ->fault_trees().begin()->second
-                                         ->top_events().front());
+  const mef::FaultTreePtr& ft = *init->model()->fault_trees().begin();
+  BooleanGraph* graph = new BooleanGraph(*ft->top_events().front());
   graph->Print();
   delete init;
   delete graph;

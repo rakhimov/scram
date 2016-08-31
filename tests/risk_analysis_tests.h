@@ -101,7 +101,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Returns a single fault tree, assuming one fault tree with single top gate.
   const mef::FaultTreePtr& fault_tree() {
-    return init->model()->fault_trees().begin()->second;
+    return *init->model()->fault_trees().begin();
   }
 
   const std::unordered_map<std::string, mef::GatePtr>& gates() {

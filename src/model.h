@@ -25,8 +25,6 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -59,7 +57,7 @@ class Model : public Element, boost::noncopyable {
 
   /// @returns Defined constructs in the model.
   /// @{
-  const Table<FaultTreePtr>& fault_trees() const { return fault_trees_; }
+  const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const Table<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
   }
@@ -70,7 +68,7 @@ class Model : public Element, boost::noncopyable {
     return basic_events_.entities_by_id;
   }
   const Table<GatePtr>& gates() const { return gates_.entities_by_id; }
-  const Table<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
+  const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
 
   /// Adds a fault tree into the model container.
@@ -215,14 +213,14 @@ class Model : public Element, boost::noncopyable {
 
   /// A collection of defined constructs in the model.
   /// @{
-  Table<FaultTreePtr> fault_trees_;
+  ElementTable<FaultTreePtr> fault_trees_;
   Lookup<Gate> gates_;
   Lookup<HouseEvent> house_events_;
   Lookup<BasicEvent> basic_events_;
   Lookup<Parameter> parameters_;
-  Table<CcfGroupPtr> ccf_groups_;
+  IdTable<CcfGroupPtr> ccf_groups_;
   /// @}
-  std::unordered_set<std::string> event_ids_;  ///< All event ids.
+  IdTable<Event*> events_;  ///< All events by ids.
 };
 
 }  // namespace mef

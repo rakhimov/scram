@@ -891,10 +891,7 @@ void Initializer::ValidateInitialization() {
 
   Initializer::ValidateExpressions();
 
-  for (const std::pair<const std::string, CcfGroupPtr>& group :
-       model_->ccf_groups()) {
-    group.second->Validate();
-  }
+  for (const CcfGroupPtr& group : model_->ccf_groups()) group->Validate();
 }
 
 void Initializer::ValidateExpressions() {
@@ -917,12 +914,11 @@ void Initializer::ValidateExpressions() {
 
   // Check distribution values for CCF groups.
   std::stringstream msg;
-  for (const std::pair<const std::string, CcfGroupPtr>& group :
-        model_->ccf_groups()) {
+  for (const CcfGroupPtr& group : model_->ccf_groups()) {
     try {
-      group.second->ValidateDistribution();
+      group->ValidateDistribution();
     } catch (ValidationError& err) {
-      msg << group.second->name() << " : " << err.msg() << "\n";
+      msg << group->name() << " : " << err.msg() << "\n";
     }
   }
   if (!msg.str().empty()) {
@@ -949,19 +945,15 @@ void Initializer::ValidateExpressions() {
 void Initializer::SetupForAnalysis() {
   CLOCK(top_time);
   LOG(DEBUG2) << "Collecting top events of fault trees...";
-  for (const std::pair<const std::string, FaultTreePtr>& ft :
-       model_->fault_trees()) {
-    ft.second->CollectTopEvents();
+  for (const FaultTreePtr& ft : model_->fault_trees()) {
+    ft->CollectTopEvents();
   }
   LOG(DEBUG2) << "Top event collection is finished in " << DUR(top_time);
 
   CLOCK(ccf_time);
   LOG(DEBUG2) << "Applying CCF models...";
   // CCF groups must apply models to basic event members.
-  for (const std::pair<const std::string, CcfGroupPtr>& group :
-       model_->ccf_groups()) {
-    group.second->ApplyModel();
-  }
+  for (const CcfGroupPtr& group : model_->ccf_groups()) group->ApplyModel();
   LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
 }
 

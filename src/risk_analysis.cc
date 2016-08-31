@@ -48,9 +48,8 @@ void RiskAnalysis::Analyze() noexcept {
   // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
-  for (const std::pair<const std::string, mef::FaultTreePtr>& ft :
-       model_->fault_trees()) {
-    for (const mef::Gate* target : ft.second->top_events()) {
+  for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
+    for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis: " << target->id();
       RiskAnalysis::RunAnalysis(target->id(), *target);
       LOG(INFO) << "Finished analysis: " << target->id();
