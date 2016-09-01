@@ -3,6 +3,8 @@
 set -ev
 
 if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+  brew update
+  brew outdated boost || brew upgrade boost
   brew install libxml++
   brew install gperftools
   brew install qt5
