@@ -167,7 +167,7 @@ the following line will install all major dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 libgoogle-perftools-dev qt5-default
+    sudo apt-get install -y cmake make gcc g++ lib{boost-all,xml2,xml++2.6,google-perftools}-dev python2.7 qt5-default
 
 
 Mac Systems
