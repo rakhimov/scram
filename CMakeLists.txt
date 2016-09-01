@@ -77,6 +77,11 @@ find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    add_definitions("-Qunused-arguments")  # TODO: CCache bug with not splitting args.
+  endif()
 endif()
 
 ######################## End compiler configurations ####################
