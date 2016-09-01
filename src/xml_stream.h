@@ -80,7 +80,7 @@ class XmlStreamElement {
   ///
   /// The constructor is not defined,
   /// so the use of this constructor will produce a linker error.
-  XmlStreamElement(const XmlStreamElement&);
+  XmlStreamElement(XmlStreamElement&&);
 
   /// Puts the closing tag.
   ///

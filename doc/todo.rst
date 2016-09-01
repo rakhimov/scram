@@ -59,12 +59,8 @@ Platform Support
 ================
 
 - Installation Package for Windows.
-
-    * Migrate "Quick Installation" in ``README.rst`` to "Installation" web page.
-
 - Installation Package for Mac OS X.
-
-- Compilation and testing on ARM
+- Compilation and testing on ARM.
 
 
 Code

@@ -21,6 +21,7 @@
 #include "element.h"
 
 #include "error.h"
+#include "ext.h"
 
 namespace scram {
 namespace mef {
@@ -40,7 +41,7 @@ void Element::label(const std::string& new_label) {
 }
 
 void Element::AddAttribute(const Attribute& attr) {
-  if (attributes_.emplace(attr.name, attr).second == false)
+  if (attributes_.insert(attr).second == false)
     throw LogicError("Trying to re-add an attribute: " + attr.name);
 }
 
@@ -49,11 +50,9 @@ bool Element::HasAttribute(const std::string& id) const {
 }
 
 const Attribute& Element::GetAttribute(const std::string& id) const {
-  try {
-    return attributes_.at(id);
-  } catch (std::out_of_range&) {
-    throw LogicError("Element does not have attribute: " + id);
-  }
+  if (auto it = ext::find(attributes_, id)) return *it;
+
+  throw LogicError("Element does not have attribute: " + id);
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)

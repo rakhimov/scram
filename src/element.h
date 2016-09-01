@@ -22,8 +22,12 @@
 #ifndef SCRAM_SRC_ELEMENT_H_
 #define SCRAM_SRC_ELEMENT_H_
 
-#include <map>
 #include <string>
+
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index/member.hpp>
 
 namespace scram {
 namespace mef {
@@ -93,10 +97,26 @@ class Element {
   ~Element() = default;
 
  private:
+  /// Container of attributes hashed by their names.
+  using AttributeTable = boost::multi_index_container<
+      Attribute,
+      boost::multi_index::indexed_by<
+          boost::multi_index::hashed_unique<boost::multi_index::member<
+              Attribute, std::string, &Attribute::name>>>>;
+
   const std::string kName_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
-  std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
+  AttributeTable attributes_;  ///< Collection of attributes.
 };
+
+/// Table of elements with unique names.
+///
+/// @tparam T  Value or (smart/raw) pointer type deriving from Element class.
+template <typename T>
+using ElementTable = boost::multi_index_container<
+    T, boost::multi_index::indexed_by<
+           boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
+               Element, const std::string&, &Element::name>>>>;
 
 /// Role, access attributes for elements.
 enum class RoleSpecifier { kPublic, kPrivate };
@@ -132,6 +152,18 @@ class Role {
   const std::string kBasePath_;  ///< A series of ancestor containers.
 };
 
+/// Computes the full path of an element.
+///
+/// @tparam T  Pointer to Element type deriving from Role.
+///
+/// @param[in] element  A valid element with a name and base path.
+///
+/// @returns A string representation of the full path.
+template <typename T>
+std::string GetFullPath(const T& element) {
+  return element->base_path() + "." + element->name();
+}
+
 /// Mixin class for assigning unique identifiers to elements.
 class Id {
  public:
@@ -154,6 +186,15 @@ class Id {
  private:
   const std::string kId_;  ///< Unique Id name of an element.
 };
+
+/// Table of elements with unique ids.
+///
+/// @tparam T  Value or (smart/raw) pointer type deriving from Id class.
+template <typename T>
+using IdTable = boost::multi_index_container<
+    T,
+    boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+        boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
 
 }  // namespace mef
 }  // namespace scram

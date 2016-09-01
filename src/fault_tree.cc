@@ -46,7 +46,7 @@ void Component::AddHouseEvent(const HouseEventPtr& house_event) {
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
-  if (parameters_.emplace(parameter->name(), parameter).second == false) {
+  if (parameters_.insert(parameter).second == false) {
     throw ValidationError("Duplicate parameter " + parameter->name());
   }
 }
@@ -55,32 +55,31 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  for (const std::pair<const std::string, BasicEventPtr>& member :
-       ccf_group->members()) {
-    if (gates_.count(member.first) || basic_events_.count(member.first) ||
-        house_events_.count(member.first)) {
-      throw ValidationError("Duplicate event " + member.second->name() +
+  for (const BasicEventPtr& member : ccf_group->members()) {
+    const std::string& name = member->name();
+    if (gates_.count(name) || basic_events_.count(name) ||
+        house_events_.count(name)) {
+      throw ValidationError("Duplicate event " + name +
                             " from CCF group " + ccf_group->name());
     }
   }
-  for (const auto& member : ccf_group->members()) basic_events_.insert(member);
-  ccf_groups_.emplace(ccf_group->name(), ccf_group);
+  for (const auto& member : ccf_group->members())
+    basic_events_.insert(member);
+  ccf_groups_.insert(ccf_group);
 }
 
 void Component::AddComponent(std::unique_ptr<Component> component) {
   if (components_.count(component->name())) {
     throw ValidationError("Duplicate component " + component->name());
   }
-  components_.emplace(component->name(), std::move(component));
+  components_.insert(std::move(component));
 }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  for (const std::pair<const std::string, GatePtr>& gate : gates_) {
-    gates->insert(gate.second.get());
-  }
-  for (const std::pair<const std::string, ComponentPtr>& comp : components_) {
-    comp.second->GatherGates(gates);
-  }
+  for (const GatePtr& gate : gates_) gates->insert(gate.get());
+
+  for (const ComponentPtr& component : components_)
+    component->GatherGates(gates);
 }
 
 template <class Ptr, class Container>
@@ -90,7 +89,7 @@ void Component::AddEvent(const Ptr& event, Container* container) {
       house_events_.count(name)) {
     throw ValidationError("Duplicate event " + name);
   }
-  container->emplace(name, event);
+  container->insert(event);
 }
 
 FaultTree::FaultTree(const std::string& name) : Component(name) {}

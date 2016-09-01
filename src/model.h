@@ -24,11 +24,11 @@
 #include <memory>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/global_fun.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "ccf_group.h"
@@ -44,12 +44,6 @@ namespace mef {
 /// This class represents a risk analysis model.
 class Model : public Element, boost::noncopyable {
  public:
-  /// Table for constructs in the model identified by names or ids.
-  ///
-  /// @tparam T  The type of a stored value.
-  template <typename T>
-  using Table = std::unordered_map<std::string, T>;
-
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.
@@ -59,18 +53,18 @@ class Model : public Element, boost::noncopyable {
 
   /// @returns Defined constructs in the model.
   /// @{
-  const Table<FaultTreePtr>& fault_trees() const { return fault_trees_; }
-  const Table<ParameterPtr>& parameters() const {
+  const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
+  const IdTable<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
   }
-  const Table<HouseEventPtr>& house_events() const {
+  const IdTable<HouseEventPtr>& house_events() const {
     return house_events_.entities_by_id;
   }
-  const Table<BasicEventPtr>& basic_events() const {
+  const IdTable<BasicEventPtr>& basic_events() const {
     return basic_events_.entities_by_id;
   }
-  const Table<GatePtr>& gates() const { return gates_.entities_by_id; }
-  const Table<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
+  const IdTable<GatePtr>& gates() const { return gates_.entities_by_id; }
+  const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
 
   /// Adds a fault tree into the model container.
@@ -162,8 +156,18 @@ class Model : public Element, boost::noncopyable {
   ///
   /// @tparam T  Type of an entity with a role.
   template <typename T>
-  struct Lookup {
+  struct LookupTable {
     static_assert(std::is_base_of<Role, T>::value, "Entity without a role!");
+
+    /// Container with full path to elements.
+    ///
+    /// @tparam Ptr  Pointer type to the T.
+    template <typename Ptr>
+    using PathTable = boost::multi_index_container<
+        Ptr,
+        boost::multi_index::indexed_by<
+            boost::multi_index::hashed_unique<boost::multi_index::global_fun<
+                const Ptr&, std::string, &GetFullPath>>>>;
 
     /// Adds an entry with an entity into lookup containers.
     ///
@@ -171,16 +175,15 @@ class Model : public Element, boost::noncopyable {
     ///
     /// @returns false if the entity is duplicate and hasn't been added.
     bool Add(const std::shared_ptr<T>& entity) {
-      if (entities_by_id.emplace(entity->id(), entity).second == false)
+      if (entities_by_id.insert(entity).second == false)
         return false;
 
-      entities_by_path.emplace(entity->base_path() + "." + entity->name(),
-                               entity);
+      entities_by_path.insert(entity);
       return true;
     }
 
-    Table<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.
-    Table<std::shared_ptr<T>> entities_by_path;  ///< Full path as a key.
+    IdTable<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.
+    PathTable<std::shared_ptr<T>> entities_by_path;  ///< Full path as a key.
   };
 
   /// Generic helper function to find an entity from a reference.
@@ -199,30 +202,36 @@ class Model : public Element, boost::noncopyable {
   template <class T>
   std::shared_ptr<T> GetEntity(const std::string& entity_reference,
                                const std::string& base_path,
-                               const Lookup<T>& container) {
+                               const LookupTable<T>& container) {
     assert(!entity_reference.empty());
     if (!base_path.empty()) {  // Check the local scope.
       if (auto it = ext::find(container.entities_by_path,
                               base_path + "." + entity_reference))
-        return it->second;
+        return *it;
     }
 
-    if (entity_reference.find('.') == std::string::npos)  // Public entity.
-      return container.entities_by_id.at(entity_reference);
+    auto At = [&entity_reference](const auto& reference_container) {
+      if (auto it = ext::find(reference_container, entity_reference))
+        return *it;
+      throw std::out_of_range("The event cannot be found.");
+    };
 
-    return container.entities_by_path.at(entity_reference);  // Direct access.
+    if (entity_reference.find('.') == std::string::npos)  // Public entity.
+      return At(container.entities_by_id);
+
+    return At(container.entities_by_path);  // Direct access.
   }
 
   /// A collection of defined constructs in the model.
   /// @{
-  Table<FaultTreePtr> fault_trees_;
-  Lookup<Gate> gates_;
-  Lookup<HouseEvent> house_events_;
-  Lookup<BasicEvent> basic_events_;
-  Lookup<Parameter> parameters_;
-  Table<CcfGroupPtr> ccf_groups_;
+  ElementTable<FaultTreePtr> fault_trees_;
+  LookupTable<Gate> gates_;
+  LookupTable<HouseEvent> house_events_;
+  LookupTable<BasicEvent> basic_events_;
+  LookupTable<Parameter> parameters_;
+  IdTable<CcfGroupPtr> ccf_groups_;
   /// @}
-  std::unordered_set<std::string> event_ids_;  ///< All event ids.
+  IdTable<Event*> events_;  ///< All events by ids.
 };
 
 }  // namespace mef
