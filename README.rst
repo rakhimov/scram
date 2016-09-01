@@ -44,39 +44,15 @@ which can create hard-to-analyze fault trees in a short time.
 
 The documentation_ contains a full description of SCRAM,
 its current capabilities, and future additions.
+The latest stable release is packaged for `quick installation`_ on various platforms.
 
 .. _OpenPSA: http://open-psa.org
 .. _MEF Support: http://scram-pra.org/doc/opsa_support.html
 .. _documentation: http://scram-pra.org
+.. _quick installation: http://scram-pra.org/doc/installation.html
 
 .. contents:: **Table of Contents**
     :depth: 2
-
-
-******************
-Quick Installation
-******************
-
-The fastest and easiest way to install SCRAM is
-to have a Linux distribution with ``apt-get`` as the package manager
-that can install packages from Personal Package Archives.
-For example, Ubuntu_ 14.04 and later releases are tested to work.
-
-On these machines, run the following commands to get SCRAM from its PPA_.
-
-.. code-block:: bash
-
-    sudo add-apt-repository ppa:rakhimov/scram
-
-    sudo apt-get update
-
-    sudo apt-get install scram
-
-.. _Ubuntu: http://www.ubuntu.com/download
-.. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
-
-If you want to get more tools and run tests under current development,
-follow the building and installing instructions bellow.
 
 
 ***********************
@@ -284,21 +260,7 @@ These tools do not need compilation or installation.
 Windows
 =======
 
-The easiest option is
-to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
-with Ubuntu_ 16.04.
-Follow the `Quick Installation`_ guide for this option
-or building and installation instructions for `Linux Systems`_.
-
-Another option is to use MSYS2_ with Mingw-w64_ or Cygwin_
-to build and install SCRAM on Windows.
-Cygwin_ 64bit has been tested to produce binaries on Windows,
-but it is not being tested on a regular basis.
-The dependencies listed for Linux systems must be installed with Cygwin64.
-
-MSYS2_ with Mingw-w64_, on the other hand,
-is the current target platform for Continuous Integration on Windows.
-It is as friendly and easy as Cygwin.
+MSYS2_/Mingw-w64_ is the recommended platform to work on Windows.
 Assuming MSYS2 is installed on the system,
 the following instructions will install SCRAM dependencies.
 
@@ -345,7 +307,6 @@ SCRAM must be run inside of the MSYS2 shell.
 
 .. _MSYS2: https://sourceforge.net/projects/msys2/
 .. _Mingw-w64: http://mingw-w64.sourceforge.net/
-.. _Cygwin: https://www.cygwin.com/
 
 
 ***********************
