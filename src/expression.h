@@ -142,7 +142,11 @@ const std::array<const char*, kNumUnits> kUnitsToString = {
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
-class Parameter : public Expression, public Element, public Role, public Id {
+class Parameter : public Expression,
+                  public Element,
+                  public Role,
+                  public Id,
+                  public NodeMark {
  public:
   /// Creates a parameter as a variable for future references.
   ///
@@ -182,21 +186,12 @@ class Parameter : public Expression, public Element, public Role, public Id {
   double Max() noexcept override { return expression_->Max(); }
   double Min() noexcept override { return expression_->Min(); }
 
-  /// @returns The mark of this node.
-  const std::string& mark() const { return mark_; }
-
-  /// Sets the mark for this node.
-  ///
-  /// @param[in] label  The specific label for the node.
-  void mark(const std::string& label) { mark_ = label; }
-
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
   Expression* expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.
-  std::string mark_;  ///< The mark for traversal in cycle detection.
 };
 
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.

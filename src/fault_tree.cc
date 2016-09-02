@@ -99,18 +99,20 @@ void FaultTree::CollectTopEvents() {
   std::unordered_set<Gate*> gates;
   Component::GatherGates(&gates);
   // Detects top events.
+  for (Gate* gate : gates) FaultTree::MarkNonTopGates(gate, gates);
+
   for (Gate* gate : gates) {
-    FaultTree::MarkNonTopGates(gate, gates);
-  }
-  for (Gate* gate : gates) {
-    if (gate->mark() != "non-top") top_events_.push_back(gate);
-    gate->mark("");  // Cleaning up.
+    if (gate->mark()) {  // Not a top event.
+      gate->mark(NodeMark::kClear);  // Cleaning up.
+    } else {
+      top_events_.push_back(gate);
+    }
   }
 }
 
 void FaultTree::MarkNonTopGates(Gate* gate,
                                 const std::unordered_set<Gate*>& gates) {
-  if (gate->mark() == "non-top") return;
+  if (gate->mark()) return;
   FaultTree::MarkNonTopGates(gate->formula(), gates);
 }
 
@@ -119,7 +121,7 @@ void FaultTree::MarkNonTopGates(const Formula& formula,
   for (const GatePtr& gate : formula.gate_args()) {
     if (gates.count(gate.get())) {
       FaultTree::MarkNonTopGates(gate.get(), gates);
-      gate->mark("non-top");
+      gate->mark(NodeMark::kPermanent);  // Any non clear mark can be assigned.
     }
   }
   for (const FormulaPtr& arg : formula.formula_args()) {

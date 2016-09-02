@@ -28,6 +28,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 
 namespace scram {
 namespace mef {
@@ -97,11 +98,13 @@ class Element {
   ~Element() = default;
 
  private:
-  /// Container of attributes hashed by their names.
+  /// Container of attributes ordered by their names.
+  ///
+  /// @note Using a hash table incurs a huge memory overhead (~400B / element).
   using AttributeTable = boost::multi_index_container<
       Attribute,
       boost::multi_index::indexed_by<
-          boost::multi_index::hashed_unique<boost::multi_index::member<
+          boost::multi_index::ordered_unique<boost::multi_index::member<
               Attribute, std::string, &Attribute::name>>>>;
 
   const std::string kName_;  ///< The original name of the element.
@@ -195,6 +198,31 @@ using IdTable = boost::multi_index_container<
     T,
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
         boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
+
+/// Mixin class for providing marks for graph nodes.
+class NodeMark {
+ public:
+  /// Possible marks for the node.
+  enum Mark {
+    kClear = 0,  ///< Implicit conversion to Boolean false.
+    kTemporary,
+    kPermanent
+  };
+
+  /// @returns The mark of this node.
+  Mark mark() const { return mark_; }
+
+  /// Sets the mark for this node.
+  ///
+  /// @param[in] label  The specific label for the node.
+  void mark(Mark label) { mark_ = label; }
+
+ protected:
+  ~NodeMark() = default;
+
+ private:
+  Mark mark_ = kClear;  ///< The mark for traversal or toposort.
+};
 
 }  // namespace mef
 }  // namespace scram

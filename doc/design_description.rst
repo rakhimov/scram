@@ -2,6 +2,11 @@
 Design Description
 ##################
 
+.. figure:: http://img.thedailywtf.com/images/201101/DependencyGraph.png
+    :align: center
+
+    Complex Dependency Diagram (TheDailyWTF)
+
 - XML Parser leverages external libraries to process XML files.
 
 - Validator validates XML configuration and input files against the RelaxNG schema.
