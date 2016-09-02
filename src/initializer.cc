@@ -862,7 +862,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
 }
 
 void Initializer::ValidateInitialization() {
-  // Check if all gates have no cycles.
+  // Check if *all* gates have no cycles.
   for (const GatePtr& gate : model_->gates()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(gate, &cycle)) {
@@ -872,6 +872,10 @@ void Initializer::ValidateInitialization() {
       throw ValidationError(msg);
     }
   }
+
+  // Keep node marks clean after use.
+  for (const GatePtr& gate : model_->gates()) gate->mark(NodeMark::kClear);
+
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -893,7 +897,8 @@ void Initializer::ValidateInitialization() {
 }
 
 void Initializer::ValidateExpressions() {
-  // Check for cycles in parameters. This must be done before expressions.
+  // Check for cycles in parameters.
+  // This must be done before expressions.
   for (const ParameterPtr& param : model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(param.get(), &cycle)) {
@@ -901,6 +906,9 @@ void Initializer::ValidateExpressions() {
                             " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
+
+  for (const ParameterPtr& param : model_->parameters())
+    param->mark(NodeMark::kClear);
 
   // Validate expressions.
   try {

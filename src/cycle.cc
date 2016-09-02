@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,13 @@
 #include "cycle.h"
 
 namespace scram {
+namespace mef {
 namespace cycle {
 
 std::string PrintCycle(const std::vector<std::string>& cycle) {
   assert(cycle.size() > 1);
   auto it = cycle.cbegin();
-  std::string cycle_start = *it;
+  const std::string& cycle_start = *it;
   std::string result = "->" + cycle_start;
   for (++it; *it != cycle_start; ++it) {
     assert(it != cycle.cend());
@@ -37,4 +38,5 @@ std::string PrintCycle(const std::vector<std::string>& cycle) {
 }
 
 }  // namespace cycle
+}  // namespace mef
 }  // namespace scram

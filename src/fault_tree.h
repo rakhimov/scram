@@ -174,10 +174,13 @@ class FaultTree : public Component {
   /// if the user does not supply any.
   /// If the structure of the fault tree changes,
   /// this function must be called again to update the top events.
+  ///
+  /// @pre Gate marks are clear.
   void CollectTopEvents();
 
  private:
-  /// Recursively marks descendant gates as "non-top".
+  /// Recursively marks descendant gates
+  /// with an unspecified-but-non-clear mark.
   /// These gates belong to this fault tree only.
   ///
   /// @param[in,out] gate  The ancestor gate.

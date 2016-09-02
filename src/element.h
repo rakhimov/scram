@@ -202,19 +202,26 @@ using IdTable = boost::multi_index_container<
 /// Mixin class for providing marks for graph nodes.
 class NodeMark {
  public:
+  /// Possible marks for the node.
+  enum Mark {
+    kClear = 0,  ///< Implicit conversion to Boolean false.
+    kTemporary,
+    kPermanent
+  };
+
   /// @returns The mark of this node.
-  const std::string& mark() const { return mark_; }
+  Mark mark() const { return mark_; }
 
   /// Sets the mark for this node.
   ///
   /// @param[in] label  The specific label for the node.
-  void mark(const std::string& label) { mark_ = label; }
+  void mark(Mark label) { mark_ = label; }
 
  protected:
   ~NodeMark() = default;
 
  private:
-  std::string mark_;  ///< The mark for traversal or toposort.
+  Mark mark_ = kClear;  ///< The mark for traversal or toposort.
 };
 
 }  // namespace mef
