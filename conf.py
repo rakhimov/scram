@@ -26,17 +26,17 @@ import sphinx_rtd_theme
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.4'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
+    # 'sphinx.ext.doctest',
+    # 'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage',
+    # 'sphinx.ext.coverage',
     'sphinx.ext.imgmath',
 ]
 
@@ -77,7 +77,7 @@ release = '0.11.3'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['README.rst', 'publish/*', 'doc/performance.rst']
+exclude_patterns = ['README.rst', 'doc/performance.rst']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -102,7 +102,7 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
-
+suppress_warnings = ['image.nonlocal_uri']
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -146,7 +146,7 @@ html_favicon = 'logo/s_blue.ico'
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-#html_extra_path = []
+html_extra_path = ['publish', 'build/doxygen']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -273,4 +273,4 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+# intersphinx_mapping = {'https://docs.python.org/2.7': None}

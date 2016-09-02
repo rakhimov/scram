@@ -10,25 +10,14 @@ The **gh-pages** is the final destination
 of the generated files from **gh-source**.
 This branch contains files for SCRAM website and API documentation.
 
-The files are transfered from ``build/publish``, ``build/html``, and ``build/api/html``.
-
-The ``publis.sh`` script is provided in ``build/publish``,
-which does the steps described bellow.
-
-To run the script:
+The generated files are transferred from ``build/html``.
+Before transferring the newly generated files,
+remove all existing old files on this branch.
+The ``publish.sh`` script can do this for you.
 
 .. code-block:: bash
 
-    bash build/publish/publish.sh
-
-Example publishing steps:
-
-    #. Clean previous web files that are going to be replaced.
-    #. Clean all irrelevant files.
-    #. Copy contents of ``build/publish`` into the root directory.
-    #. Copy contents of ``build/html`` into the root directory.
-    #. Make the ``api/`` directory.
-    #. Copy contents of the ``build/api/html`` into the ``api/`` directory.
+    bash build/html/publish.sh
 
 The new changes must be amended
 to the single commit on the **gh-pages** branch.

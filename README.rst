@@ -31,7 +31,7 @@ A list of dependencies:
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`Sphinx`                1.1.2
+`Sphinx`                1.4.3
 ====================   ==================
 
 Optional dependencies:
@@ -43,7 +43,7 @@ Package                 Minimum Version
 `DVI-to-PNG`            1.14
 `doxygen`               1.7.6.1
 `Graphviz Dot`          2.26.3
-`Lizard`                1.10.4
+`Lizard`                1.12
 ====================   =================
 
 .. warning::
@@ -70,18 +70,11 @@ The command to build the API documentation.
 
     doxygen doxygen.conf
 
-The results are located in ``build/html`` and ``build/api/html``.
-The generated files should be transfered to the **gh-pages** branch.
+The results are located in ``build/html`` and ``build/doxygen/api``.
+The generated files should be transferred to the **gh-pages** branch.
 
 The ``prepare.sh`` script is provided,
 which automates all the steps described above.
-
-In addition to the generated files,
-files in the ``publish`` directory must be transfered to the website branch.
-The directory also contains a publishing script
-that automates the transfers of the generated files.
-Before switching to the **gh-pages** branch for publishing,
-copy the ``publish`` directory into the ``build`` directory.
 
 Follow the instructions in ``publish/README.rst``
 for the final publishing steps.
