@@ -199,6 +199,24 @@ using IdTable = boost::multi_index_container<
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
         boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
 
+/// Mixin class for providing marks for graph nodes.
+class NodeMark {
+ public:
+  /// @returns The mark of this node.
+  const std::string& mark() const { return mark_; }
+
+  /// Sets the mark for this node.
+  ///
+  /// @param[in] label  The specific label for the node.
+  void mark(const std::string& label) { mark_ = label; }
+
+ protected:
+  ~NodeMark() = default;
+
+ private:
+  std::string mark_;  ///< The mark for traversal or toposort.
+};
+
 }  // namespace mef
 }  // namespace scram
 
