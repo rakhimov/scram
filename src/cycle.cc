@@ -20,20 +20,19 @@
 
 #include "cycle.h"
 
+#include <algorithm>
+
 namespace scram {
 namespace mef {
 namespace cycle {
 
 std::string PrintCycle(const std::vector<std::string>& cycle) {
   assert(cycle.size() > 1);
-  auto it = cycle.cbegin();
-  const std::string& cycle_start = *it;
-  std::string result = "->" + cycle_start;
-  for (++it; *it != cycle_start; ++it) {
-    assert(it != cycle.cend());
-    result = "->" + *it + result;
-  }
-  result = cycle_start + result;
+  auto it = std::find(cycle.rbegin(), cycle.rend(), cycle.front());
+  assert(it != std::prev(cycle.rend()) && "No cycle is provided.");
+
+  std::string result = *it;
+  for (++it; it != cycle.rend(); ++it) result += "->" + *it;
   return result;
 }
 
