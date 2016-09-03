@@ -9,11 +9,13 @@ set(GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "")
 set(CURRENT_DEBUG_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/googletest")
+set(GTEST_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest")
+
+add_subdirectory("${GTEST_DIR}")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CURRENT_DEBUG_FLAGS}")  # Restore the original flags.
 
-include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/googletest/include")
+include_directories(SYSTEM "${GTEST_DIR}/include")
 
 # Include the project headers.
 include_directories("${SCRAM_SOURCE_DIR}")

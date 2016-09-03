@@ -45,14 +45,14 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   mef::GatePtr top = *gates().find("TopEvent");
   EXPECT_EQ("TopEvent", top->id());
   ASSERT_NO_THROW(top->formula().type());
-  EXPECT_EQ(kAnd, top->formula().type());
+  EXPECT_EQ(mef::kAnd, top->formula().type());
   EXPECT_EQ(2, top->formula().event_args().size());
 
   ASSERT_TRUE(gates().count("TrainOne"));
   mef::GatePtr inter = *gates().find("TrainOne");
   EXPECT_EQ("TrainOne", inter->id());
   ASSERT_NO_THROW(inter->formula().type());
-  EXPECT_EQ(kOr, inter->formula().type());
+  EXPECT_EQ(mef::kOr, inter->formula().type());
   EXPECT_EQ(2, inter->formula().event_args().size());
 
   ASSERT_TRUE(basic_events().count("ValveOne"));
