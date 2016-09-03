@@ -23,7 +23,7 @@ before_build:
 
 build_script:
     - cmake -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=..\install -DCMAKE_BUILD_TYPE=%CONFIGURATION% ..
-    - make
+    - make -j 2
 
 after_build:
     - make install
