@@ -35,7 +35,7 @@ SCRAM input and report files are based on OpenPSA_ Model Exchange Format.
 For the current status of the OpenPSA MEF features in SCRAM,
 please see the `MEF Support`_ documentation.
 
-A complementary GUI front-end is provided
+A complementary GUI front-end is under development
 for visualization and manipulation of risk analysis models and reports.
 
 To explore the performance of SCRAM or research fault trees,
