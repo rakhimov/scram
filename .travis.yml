@@ -39,18 +39,12 @@ addons:
         packages:
             - gcc-4.9
             - g++-4.9
-            - libboost-program-options1.58-dev
-            - libboost-filesystem1.58-dev
-            - libboost-system1.58-dev
-            - libboost-math1.58-dev
-            - libboost-date-time1.58-dev
             - libxml2-dev
             - libxml++2.6-dev
             - libgoogle-perftools-dev
             - qt5-default
         sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:kojoley/boost'
 
 before_install:
     - if [[ -n "${INTEL_COMPILER}" ]]; then export CC=icc; export CXX=icpc; export RELEASE=true; fi
