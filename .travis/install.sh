@@ -17,7 +17,7 @@ sudo pip install -r requirements-tests.txt
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
 if [[ "$CXX" == "icpc" ]]; then
-  git clone https://github.com/nemequ/icc-travis.git
+  git clone --branch icc17 https://github.com/rakhimov/icc-travis.git
   ./icc-travis/install-icc.sh
 fi
 

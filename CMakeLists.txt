@@ -61,8 +61,6 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  # TODO: Bug in Intel compiler '-Wnon-virtual-dtor' side effect on implicit ctors.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=2304")
   # TODO: Bug in Intel compiler with multi-initialization with auto.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373")
   # TODO: Bug in Intel compiler w/o GCC 5 built-in math with overlflow.
