@@ -148,8 +148,8 @@ class Product {
     return complement_vector_ & (1 << pos);
   }
 
-  uint8_t size_;  ///< The number of literals in the product.
-  uint32_t complement_vector_;  ///< The complement flags of the literals.
+  std::uint8_t size_;  ///< The number of literals in the product.
+  std::uint32_t complement_vector_;  ///< The complement flags of the literals.
   /// The collection of literal events.
   std::unique_ptr<const mef::BasicEvent*[]> data_;
 };

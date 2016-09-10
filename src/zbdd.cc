@@ -783,7 +783,8 @@ int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
          Zbdd::CountSetNodes(node->low());
 }
 
-int64_t Zbdd::CountProducts(const VertexPtr& vertex, bool modules) noexcept {
+std::int64_t Zbdd::CountProducts(const VertexPtr& vertex,
+                                 bool modules) noexcept {
   if (vertex->terminal()) {
     if (Terminal<SetNode>::Ptr(vertex)->value()) return 1;
     return 0;
@@ -791,7 +792,7 @@ int64_t Zbdd::CountProducts(const VertexPtr& vertex, bool modules) noexcept {
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->mark()) return node->count();
   node->mark(true);
-  int64_t multiplier = 1;  // Multiplier of the module.
+  std::int64_t multiplier = 1;  // Multiplier of the module.
   if (modules && node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
     multiplier = module->CountProducts(module->root_, true);
