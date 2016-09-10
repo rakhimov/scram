@@ -58,10 +58,10 @@ Config::Config(const std::string& config_file) {
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "config");
-  Config::GatherInputFiles(root);
-  Config::GetOutputPath(root);
+  GatherInputFiles(root);
+  GetOutputPath(root);
   try {
-    Config::GatherOptions(root);
+    GatherOptions(root);
   } catch (Error& err) {
     err.msg("In file '" + config_file + "', " + err.msg());
     throw;
@@ -102,19 +102,19 @@ void Config::GatherOptions(const xmlpp::Node* root) {
           static_cast<const xmlpp::Element*>(node);
       std::string name = option_group->get_name();
       if (name == "algorithm") {
-        Config::SetAlgorithm(option_group);
+        SetAlgorithm(option_group);
 
       } else if (name == "analysis") {
-        Config::SetAnalysis(option_group);
+        SetAnalysis(option_group);
 
       } else if (name == "prime-implicants") {
         settings_.prime_implicants(true);
 
       } else if (name == "approximation") {
-        Config::SetApproximation(option_group);
+        SetApproximation(option_group);
 
       } else if (name == "limits") {
-        Config::SetLimits(option_group);
+        SetLimits(option_group);
       }
     }
   } catch (InvalidArgument& err) {
@@ -141,7 +141,7 @@ void Config::SetAlgorithm(const xmlpp::Element* analysis) {
 void Config::SetAnalysis(const xmlpp::Element* analysis) {
   for (const xmlpp::Attribute* type : analysis->get_attributes()) {
     std::string name = type->get_name();
-    bool flag = Config::GetBoolFromString(type->get_value());
+    bool flag = GetBoolFromString(type->get_value());
     if (name == "probability") {
       settings_.probability_analysis(flag);
 

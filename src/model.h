@@ -123,19 +123,19 @@ class Model : public Element, boost::noncopyable {
   /// @{
   ParameterPtr GetParameter(const std::string& entity_reference,
                             const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, parameters_);
+    return GetEntity(entity_reference, base_path, parameters_);
   }
   HouseEventPtr GetHouseEvent(const std::string& entity_reference,
                               const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, house_events_);
+    return GetEntity(entity_reference, base_path, house_events_);
   }
   BasicEventPtr GetBasicEvent(const std::string& entity_reference,
                               const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, basic_events_);
+    return GetEntity(entity_reference, base_path, basic_events_);
   }
   GatePtr GetGate(const std::string& entity_reference,
                   const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, gates_);
+    return GetEntity(entity_reference, base_path, gates_);
   }
   /// @}
 

@@ -327,7 +327,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// Destructs parent information from the arguments.
   ~Gate() noexcept {
     assert(Node::parents().empty());
-    Gate::EraseAllArgs();
+    EraseAllArgs();
   }
 
   /// Clones arguments and parameters.
@@ -534,11 +534,11 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
 
-    if (args_.count(index)) return Gate::ProcessDuplicateArg(index);
-    if (args_.count(-index)) return Gate::ProcessComplementArg(index);
+    if (args_.count(index)) return ProcessDuplicateArg(index);
+    if (args_.count(-index)) return ProcessComplementArg(index);
 
     args_.insert(index);
-    Gate::mutable_args<T>().data().emplace_back(index, arg);
+    mutable_args<T>().data().emplace_back(index, arg);
     arg->AddParent(shared_from_this());
   }
 
@@ -630,7 +630,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void Nullify() noexcept {
     assert(state_ == kNormalState);
     state_ = kNullState;
-    Gate::EraseAllArgs();
+    EraseAllArgs();
   }
 
   /// Sets the state of this gate to unity
@@ -639,7 +639,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void MakeUnity() noexcept {
     assert(state_ == kNormalState);
     state_ = kUnityState;
-    Gate::EraseAllArgs();
+    EraseAllArgs();
   }
 
  private:

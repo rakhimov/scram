@@ -51,7 +51,7 @@ void RiskAnalysis::Analyze() noexcept {
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis: " << target->id();
-      RiskAnalysis::RunAnalysis(target->id(), *target);
+      RunAnalysis(target->id(), *target);
       LOG(INFO) << "Finished analysis: " << target->id();
     }
   }
@@ -59,13 +59,14 @@ void RiskAnalysis::Analyze() noexcept {
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const mef::Gate& target) noexcept {
-  if (Analysis::settings().algorithm() == "bdd") {
-    RiskAnalysis::RunAnalysis<Bdd>(name, target);
-  } else if (Analysis::settings().algorithm() == "zbdd") {
-    RiskAnalysis::RunAnalysis<Zbdd>(name, target);
+  const std::string& algorithm = Analysis::settings().algorithm();
+  if (algorithm == "bdd") {
+    RunAnalysis<Bdd>(name, target);
+  } else if (algorithm == "zbdd") {
+    RunAnalysis<Zbdd>(name, target);
   } else {
-    assert(Analysis::settings().algorithm() == "mocus");
-    RiskAnalysis::RunAnalysis<Mocus>(name, target);
+    assert(algorithm == "mocus");
+    RunAnalysis<Mocus>(name, target);
   }
 }
 
@@ -76,12 +77,12 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {
     if (Analysis::settings().approximation() == "no") {
-      RiskAnalysis::RunAnalysis<Algorithm, Bdd>(name, fta);
+      RunAnalysis<Algorithm, Bdd>(name, fta);
     } else if (Analysis::settings().approximation() == "rare-event") {
-      RiskAnalysis::RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
+      RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
     } else {
       assert(Analysis::settings().approximation() == "mcub");
-      RiskAnalysis::RunAnalysis<Algorithm, McubCalculator>(name, fta);
+      RunAnalysis<Algorithm, McubCalculator>(name, fta);
     }
   }
   fault_tree_analyses_.emplace(name, FaultTreeAnalysisPtr(fta));
@@ -115,7 +116,7 @@ void RiskAnalysis::Report(std::string output) {
   if (!of.good()) {
     throw IOError(output +  " : Cannot write the output file.");
   }
-  RiskAnalysis::Report(of);
+  Report(of);
 }
 
 }  // namespace core

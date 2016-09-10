@@ -151,7 +151,7 @@ std::vector<BasicEvent*> CcfGroup::StabilizeMembers() {
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<Gate*> proxy_gates;
-  for (BasicEvent* member : CcfGroup::StabilizeMembers()) {
+  for (BasicEvent* member : StabilizeMembers()) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());

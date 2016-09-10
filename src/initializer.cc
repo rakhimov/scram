@@ -75,32 +75,32 @@ Initializer::Initializer(const core::Settings& settings)
 void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
-  Initializer::CheckFileExistence(xml_files);
-  Initializer::CheckDuplicateFiles(xml_files);
+  CheckFileExistence(xml_files);
+  CheckDuplicateFiles(xml_files);
   std::vector<std::string>::const_iterator it;
   try {
     for (it = xml_files.begin(); it != xml_files.end(); ++it) {
-      Initializer::ProcessInputFile(*it);
+      ProcessInputFile(*it);
     }
   } catch (ValidationError& err) {
     err.msg("In file '" + *it + "', " + err.msg());
     throw;
   }
   CLOCK(def_time);
-  Initializer::ProcessTbdElements();
+  ProcessTbdElements();
   LOG(DEBUG2) << "Element definition time " << DUR(def_time);
   LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   CLOCK(valid_time);
   LOG(DEBUG1) << "Validating the input files";
   // Check if the initialization is successful.
-  Initializer::ValidateInitialization();
+  ValidateInitialization();
   LOG(DEBUG1) << "Validation is finished in " << DUR(valid_time);
 
   CLOCK(setup_time);
   LOG(DEBUG1) << "Setting up for the analysis";
   // Perform setup for analysis using configurations from the input files.
-  Initializer::SetupForAnalysis();
+  SetupForAnalysis();
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
@@ -162,19 +162,19 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!model_) {  // Create only one model for multiple files.
     const xmlpp::Element* root_element = XmlElement(root);
     model_ = std::make_shared<Model>(GetAttributeValue(root_element, "name"));
-    Initializer::AttachLabelAndAttributes(root_element, model_.get());
+    AttachLabelAndAttributes(root_element, model_.get());
   }
 
   for (const xmlpp::Node* node : root->find("./define-fault-tree")) {
-    Initializer::DefineFaultTree(XmlElement(node));
+    DefineFaultTree(XmlElement(node));
   }
 
   for (const xmlpp::Node* node : root->find("./define-CCF-group")) {
-    Initializer::RegisterCcfGroup(XmlElement(node), "", RoleSpecifier::kPublic);
+    RegisterCcfGroup(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 
   for (const xmlpp::Node* node : root->find("./model-data")) {
-    Initializer::ProcessModelData(XmlElement(node));
+    ProcessModelData(XmlElement(node));
   }
 }
 
@@ -185,21 +185,21 @@ void Initializer::ProcessTbdElements() {
     for (const std::pair<Parameter*, const xmlpp::Element*>& param :
          tbd_.parameters) {
       el_def = param.second;
-      Initializer::DefineParameter(el_def, param.first);
+      DefineParameter(el_def, param.first);
     }
     for (const std::pair<BasicEvent*, const xmlpp::Element*>& event :
          tbd_.basic_events) {
       el_def = event.second;
-      Initializer::DefineBasicEvent(el_def, event.first);
+      DefineBasicEvent(el_def, event.first);
     }
     for (const std::pair<Gate*, const xmlpp::Element*>& gate : tbd_.gates) {
       el_def = gate.second;
-      Initializer::DefineGate(el_def, gate.first);
+      DefineGate(el_def, gate.first);
     }
     for (const std::pair<CcfGroup*, const xmlpp::Element*>& group :
          tbd_.ccf_groups) {
       el_def = group.second;
-      Initializer::DefineCcfGroup(el_def, group.first);
+      DefineCcfGroup(el_def, group.first);
     }
   } catch (ValidationError& err) {
     const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
@@ -236,7 +236,7 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
 void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   std::string name = GetAttributeValue(ft_node, "name");
   FaultTreePtr fault_tree(new FaultTree(name));
-  Initializer::RegisterFaultTreeData(ft_node, name, fault_tree.get());
+  RegisterFaultTreeData(ft_node, name, fault_tree.get());
   try {
     model_->AddFaultTree(std::move(fault_tree));
   } catch (ValidationError& err) {
@@ -254,48 +254,44 @@ ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
   std::string role = GetAttributeValue(component_node, "role");
   ComponentPtr component(new Component(name, base_path,
                                        GetRole(role, container_role)));
-  Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
-                                     component.get());
+  RegisterFaultTreeData(component_node, base_path + "." + name,
+                        component.get());
   return component;
 }
 
 void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
                                         const std::string& base_path,
                                         Component* component) {
-  Initializer::AttachLabelAndAttributes(ft_node, component);
+  AttachLabelAndAttributes(ft_node, component);
 
   for (const xmlpp::Node* node : ft_node->find("./define-house-event")) {
     component->AddHouseEvent(
-        Initializer::DefineHouseEvent(XmlElement(node), base_path,
-                                      component->role()));
+        DefineHouseEvent(XmlElement(node), base_path, component->role()));
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
     component->AddBasicEvent(
-        Initializer::RegisterBasicEvent(XmlElement(node), base_path,
-                                        component->role()));
+        RegisterBasicEvent(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-parameter")) {
     component->AddParameter(
-        Initializer::RegisterParameter(XmlElement(node), base_path,
-                                       component->role()));
+        RegisterParameter(XmlElement(node), base_path, component->role()));
   }
 
   CLOCK(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-gate")) {
-    component->AddGate(Initializer::RegisterGate(XmlElement(node), base_path,
-                                                 component->role()));
+    component->AddGate(
+        RegisterGate(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-CCF-group")) {
     component->AddCcfGroup(
-        Initializer::RegisterCcfGroup(XmlElement(node), base_path,
-                                      component->role()));
+        RegisterCcfGroup(XmlElement(node), base_path, component->role()));
   }
   for (const xmlpp::Node* node : ft_node->find("./define-component")) {
-    ComponentPtr sub = Initializer::DefineComponent(XmlElement(node), base_path,
-                                                    component->role());
+    ComponentPtr sub =
+        DefineComponent(XmlElement(node), base_path, component->role());
     try {
       component->AddComponent(std::move(sub));
     } catch (ValidationError& err) {
@@ -309,17 +305,15 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   for (const xmlpp::Node* node : model_data->find("./define-house-event")) {
-    Initializer::DefineHouseEvent(XmlElement(node), "", RoleSpecifier::kPublic);
+    DefineHouseEvent(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-basic-event")) {
-    Initializer::RegisterBasicEvent(XmlElement(node), "",
-                                    RoleSpecifier::kPublic);
+    RegisterBasicEvent(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-parameter")) {
-    Initializer::RegisterParameter(XmlElement(node), "",
-                                   RoleSpecifier::kPublic);
+    RegisterParameter(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 }
 
@@ -339,7 +333,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
     throw;
   }
   tbd_.gates.emplace_back(gate.get(), gate_node);
-  Initializer::AttachLabelAndAttributes(gate_node, gate.get());
+  AttachLabelAndAttributes(gate_node, gate.get());
   return gate;
 }
 
@@ -349,7 +343,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node, Gate* gate) {
   // Assumes that there are no attributes and labels.
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node = XmlElement(formulas.front());
-  gate->formula(Initializer::GetFormula(formula_node, gate->base_path()));
+  gate->formula(GetFormula(formula_node, gate->base_path()));
   try {
     gate->Validate();
   } catch (ValidationError& err) {
@@ -380,7 +374,7 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
   if (type == "null") {  // Special case of pass-through.
     formula_node = formula_node->get_parent();
   }
-  Initializer::ProcessFormula(formula_node, base_path, formula.get());
+  ProcessFormula(formula_node, base_path, formula.get());
 
   try {
     formula->Validate();
@@ -441,7 +435,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                                                "name() != 'house-event']");
   for (const xmlpp::Node* node : formulas) {
     const xmlpp::Element* nested_formula = XmlElement(node);
-    formula->AddArgument(Initializer::GetFormula(nested_formula, base_path));
+    formula->AddArgument(GetFormula(nested_formula, base_path));
   }
 }
 
@@ -463,7 +457,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
     throw;
   }
   tbd_.basic_events.emplace_back(basic_event.get(), event_node);
-  Initializer::AttachLabelAndAttributes(event_node, basic_event.get());
+  AttachLabelAndAttributes(event_node, basic_event.get());
   return basic_event;
 }
 
@@ -475,7 +469,7 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node = XmlElement(expressions.back());
     ExpressionPtr expression =
-        Initializer::GetExpression(expr_node, basic_event->base_path());
+        GetExpression(expr_node, basic_event->base_path());
     basic_event->expression(expression);
   }
 }
@@ -509,7 +503,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
     bool state = val == "true";
     house_event->state(state);
   }
-  Initializer::AttachLabelAndAttributes(event_node, house_event.get());
+  AttachLabelAndAttributes(event_node, house_event.get());
   return house_event;
 }
 
@@ -537,7 +531,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
     assert(pos < kNumUnits && "Unexpected unit kind.");
     parameter->unit(static_cast<Units>(pos));
   }
-  Initializer::AttachLabelAndAttributes(param_node, parameter.get());
+  AttachLabelAndAttributes(param_node, parameter.get());
   return parameter;
 }
 
@@ -548,8 +542,7 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
       param_node->find("./*[name() != 'attributes' and name() != 'label']");
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_node = XmlElement(expressions.back());
-  ExpressionPtr expression =
-      Initializer::GetExpression(expr_node, parameter->base_path());
+  ExpressionPtr expression = GetExpression(expr_node, parameter->base_path());
 
   parameter->expression(expression);
 }
@@ -672,10 +665,10 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
   std::string expr_name = expr_element->get_name();
   if (expr_name == "int" || expr_name == "float" || expr_name == "bool")
-    return Initializer::GetConstantExpression(expr_element);
+    return GetConstantExpression(expr_element);
 
   if (expr_name == "parameter" || expr_name == "system-mission-time")
-    return Initializer::GetParameterExpression(expr_element, base_path);
+    return GetParameterExpression(expr_element, base_path);
 
   if (expr_name == "pi") return ConstantExpression::kPi;
 
@@ -783,9 +776,9 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
 
   xmlpp::NodeSet members = ccf_node->find("./members");
   assert(members.size() == 1);
-  Initializer::ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
+  ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
 
-  Initializer::AttachLabelAndAttributes(ccf_node, ccf_group.get());
+  AttachLabelAndAttributes(ccf_node, ccf_group.get());
 
   tbd_.ccf_groups.emplace_back(ccf_group.get(), ccf_node);
   return ccf_group;
@@ -800,15 +793,15 @@ void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
       assert(element->find("./*").size() == 1);
       const xmlpp::Element* expr_node = XmlElement(element->find("./*")[0]);
       ExpressionPtr expression =
-          Initializer::GetExpression(expr_node, ccf_group->base_path());
+          GetExpression(expr_node, ccf_group->base_path());
       ccf_group->AddDistribution(expression);
 
     } else if (name == "factor") {
-      Initializer::DefineCcfFactor(element, ccf_group);
+      DefineCcfFactor(element, ccf_group);
 
     } else if (name == "factors") {
       for (const xmlpp::Node* factor_node : element->find("./*")) {
-        Initializer::DefineCcfFactor(XmlElement(factor_node), ccf_group);
+        DefineCcfFactor(XmlElement(factor_node), ccf_group);
       }
     }
   }
@@ -849,8 +842,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   int level_num = CastAttributeValue<int>(factor_node, "level");
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node = XmlElement(factor_node->find("./*")[0]);
-  ExpressionPtr expression =
-      Initializer::GetExpression(expr_node, ccf_group->base_path());
+  ExpressionPtr expression = GetExpression(expr_node, ccf_group->base_path());
   try {
     ccf_group->AddFactor(expression, level_num);
   } catch (ValidationError& err) {
@@ -891,7 +883,7 @@ void Initializer::ValidateInitialization() {
                             msg);
   }
 
-  Initializer::ValidateExpressions();
+  ValidateExpressions();
 
   for (const CcfGroupPtr& group : model_->ccf_groups()) group->Validate();
 }

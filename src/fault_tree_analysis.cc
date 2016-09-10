@@ -80,7 +80,7 @@ int GetOrder(const Product& product) {
 
 FaultTreeDescriptor::FaultTreeDescriptor(const mef::Gate& root)
     : top_event_(root) {
-  FaultTreeDescriptor::GatherEvents(top_event_.formula());
+  GatherEvents(top_event_.formula());
 }
 
 void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
@@ -94,10 +94,10 @@ void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
   }
   for (const mef::GatePtr& gate : formula.gate_args()) {
     bool unvisited = inter_events_.emplace(gate->id(), gate.get()).second;
-    if (unvisited) FaultTreeDescriptor::GatherEvents(gate->formula());
+    if (unvisited) GatherEvents(gate->formula());
   }
   for (const mef::FormulaPtr& arg : formula.formula_args()) {
-    FaultTreeDescriptor::GatherEvents(*arg);
+    GatherEvents(*arg);
   }
 }
 

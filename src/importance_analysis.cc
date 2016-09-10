@@ -76,9 +76,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(int index) noexcept {
   bool original_mark = Ite::Ptr(root)->mark();
 
   int order = bdd_graph_->index_to_order().find(index)->second;
-  double mif = ImportanceAnalyzer::CalculateMif(bdd_graph_->root().vertex,
-                                                order,
-                                                !original_mark);
+  double mif = CalculateMif(bdd_graph_->root().vertex, order, !original_mark);
   bdd_graph_->ClearMarks(original_mark);
   return mif;
 }
@@ -96,19 +94,19 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const Bdd::VertexPtr& vertex,
       // The assumption is
       // that the order of a module is always larger
       // than the order of its variables.
-      double high = ImportanceAnalyzer::RetrieveProbability(ite->high());
-      double low = ImportanceAnalyzer::RetrieveProbability(ite->low());
+      double high = RetrieveProbability(ite->high());
+      double low = RetrieveProbability(ite->low());
       if (ite->complement_edge()) low = 1 - low;
       const Bdd::Function& res =
           bdd_graph_->modules().find(ite->index())->second;
-      double mif = ImportanceAnalyzer::CalculateMif(res.vertex, order, mark);
+      double mif = CalculateMif(res.vertex, order, mark);
       if (res.complement) mif = -mif;
       ite->factor((high - low) * mif);
     }
   } else if (ite->order() == order) {
     assert(!ite->module() && "A variable can't be a module.");
-    double high = ImportanceAnalyzer::RetrieveProbability(ite->high());
-    double low = ImportanceAnalyzer::RetrieveProbability(ite->low());
+    double high = RetrieveProbability(ite->high());
+    double low = RetrieveProbability(ite->low());
     if (ite->complement_edge()) low = 1 - low;
     ite->factor(high - low);
   } else  {
@@ -117,13 +115,13 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const Bdd::VertexPtr& vertex,
     if (ite->module()) {
       const Bdd::Function& res =
           bdd_graph_->modules().find(ite->index())->second;
-      p_var = ImportanceAnalyzer::RetrieveProbability(res.vertex);
+      p_var = RetrieveProbability(res.vertex);
       if (res.complement) p_var = 1 - p_var;
     } else {
-      p_var = ImportanceAnalyzerBase::prob_analyzer()->p_vars()[ite->index()];
+      p_var = prob_analyzer()->p_vars()[ite->index()];
     }
-    double high = ImportanceAnalyzer::CalculateMif(ite->high(), order, mark);
-    double low = ImportanceAnalyzer::CalculateMif(ite->low(), order, mark);
+    double high = CalculateMif(ite->high(), order, mark);
+    double low = CalculateMif(ite->low(), order, mark);
     if (ite->complement_edge()) low = -low;
     ite->factor(p_var * high + (1 - p_var) * low);
   }

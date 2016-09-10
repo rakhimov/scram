@@ -42,7 +42,7 @@ namespace scram {
 class RelaxNGValidator : private boost::noncopyable {
  public:
   /// Releases XML related memory.
-  ~RelaxNGValidator() noexcept { RelaxNGValidator::ReleaseUnderlying(); }
+  ~RelaxNGValidator() noexcept { ReleaseUnderlying(); }
 
   /// Parses a RelaxNG schema XML file.
   ///

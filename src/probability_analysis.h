@@ -277,7 +277,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
       current_mark_(false),
       owner_(true) {
   CLOCK(main_time);
-  ProbabilityAnalyzer::CreateBdd(fta->top_event());
+  CreateBdd(fta->top_event());
   Analysis::AddAnalysisTime(DUR(main_time));
 }
 

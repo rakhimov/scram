@@ -35,7 +35,7 @@ namespace scram {
 void RelaxNGValidator::ParseMemory(const Glib::ustring& contents) {
   xmlRelaxNGParserCtxtPtr context =
       xmlRelaxNGNewMemParserCtxt(contents.c_str(), contents.bytes());
-  RelaxNGValidator::ReleaseUnderlying();  // Free any existing info.
+  ReleaseUnderlying();  // Free any existing info.
   schema_ = xmlRelaxNGParse(context);
   xmlRelaxNGFreeParserCtxt(context);
   if (!schema_) throw LogicError("Schema could not be parsed");

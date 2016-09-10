@@ -78,7 +78,7 @@ struct MoveEraser {
   template <class T>
   static typename T::iterator erase(typename T::const_iterator it,
                                     T* container) {
-    return MoveEraser::erase(
+    return erase(
         std::next(container->begin(), std::distance(container->cbegin(), it)),
         container);
   }

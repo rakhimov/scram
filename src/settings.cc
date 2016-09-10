@@ -32,10 +32,10 @@ Settings& Settings::algorithm(const std::string& algorithm) {
 
   algorithm_ = algorithm;
   if (algorithm_ == "bdd") {
-    Settings::approximation("no");
+    approximation("no");
   } else {
-    if (approximation_ == "no") Settings::approximation("rare-event");
-    if (prime_implicants_) Settings::prime_implicants(false);
+    if (approximation_ == "no") approximation("rare-event");
+    if (prime_implicants_) prime_implicants(false);
   }
   return *this;
 }
@@ -45,7 +45,7 @@ Settings& Settings::prime_implicants(bool flag) {
     throw InvalidArgument("Prime implicants can only be calculated with BDD");
 
   prime_implicants_ = flag;
-  if (prime_implicants_) Settings::approximation("no");
+  if (prime_implicants_) approximation("no");
   return *this;
 }
 
