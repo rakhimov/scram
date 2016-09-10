@@ -31,7 +31,7 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
       "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(4).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(54436, products().size());
   std::vector<int> distr = {0, 0, 1144, 53292};
@@ -46,7 +46,7 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_ZBDD) {
       "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(3).algorithm("zbdd").probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(1144, products().size());
   std::vector<int> distr = {0, 0, 1144};

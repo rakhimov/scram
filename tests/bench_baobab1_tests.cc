@@ -35,7 +35,7 @@ TEST_F(RiskAnalysisTest, Baobab1) {
       "./share/scram/input/Baobab/baobab1-basic-events.xml"};
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == "rare-event") {
     EXPECT_NEAR(1.6815e-6, p_total(), 1e-8);
   } else {  // Probability with BDD.
@@ -53,7 +53,7 @@ TEST_P(RiskAnalysisTest, Baobab1L8) {
       "./share/scram/input/Baobab/baobab1-basic-events.xml"};
   settings.limit_order(8);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(25892, products().size());
   std::vector<int> distr = {0, 1, 1, 70, 400, 2212, 14748, 8460};
   EXPECT_EQ(distr, ProductDistribution());

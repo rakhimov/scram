@@ -30,7 +30,7 @@ TEST_P(RiskAnalysisTest, BSCU) {
   settings.uncertainty_analysis(true);
   settings.num_trials(10000);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {
       {"SwitchStuckInIntermediatePosition"},
       {"ValidityMonitorFailure"},

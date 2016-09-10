@@ -91,7 +91,7 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
 TEST_P(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
                                          {"PumpOne", "ValveTwo"},
                                          {"PumpTwo", "ValveOne"},
@@ -103,7 +103,7 @@ TEST_P(RiskAnalysisTest, AnalyzeDefault) {
 TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_non_coherent.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   if (settings.prime_implicants()) {
     std::set<std::set<std::string>> pi = {{"not PumpOne", "ValveOne"},
                                           {"PumpOne", "PumpTwo"},
@@ -130,7 +130,7 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   std::set<std::set<std::string>> mcs = {mcs_1, mcs_2, mcs_3, mcs_4};
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
 
   EXPECT_EQ(mcs, products());
   if (settings.approximation() == "rare-event") {
@@ -151,7 +151,7 @@ TEST_P(RiskAnalysisTest, EnforceExactProbability) {
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.probability_analysis(true).approximation("no");
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
 }
 
@@ -162,7 +162,7 @@ TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
                                          {"PumpTwo", "ValveOne"},
                                          {"ValveOne", "ValveTwo"}};
   ASSERT_NO_THROW(ProcessInputFile(nested_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(mcs, products());
 }
 
@@ -171,7 +171,7 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
       {"PumpOne", {0.51, 0.4737, 0.7895, 1.316, 1.9}},
@@ -194,7 +194,7 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
   settings.prime_implicants(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(0.04459, p_total(), 1e-3);
   // Check importance values with negative event.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
@@ -220,7 +220,7 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   // Probability calculations with the rare event approximation.
   settings.approximation("rare-event").importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.012, p_total());  // Adjusted probability.
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
@@ -247,7 +247,7 @@ TEST_F(RiskAnalysisTest, Mcub) {
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
@@ -258,7 +258,7 @@ TEST_F(RiskAnalysisTest, McubNonCoherent) {
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(0.10, p_total(), 1e-5);
 }
 
@@ -269,7 +269,7 @@ TEST_P(RiskAnalysisTest, AnalyzeMC) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
 }
 
 // Test Reporting capabilities
@@ -280,8 +280,8 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
   // Messing up the output file.
   std::string output = "abracadabra.cadabraabra/output.txt";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_THROW(ran->Report(output), IOError);
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_THROW(analysis->Report(output), IOError);
 }
 
 // Reporting of the default analysis for MCS only without probabilities.
@@ -358,7 +358,7 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
 TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   if (settings.prime_implicants()) {
     std::set<std::set<std::string>> pi = {
         {"not PumpOne", "not PumpTwo", "not ValveOne"},
@@ -373,7 +373,7 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
 TEST_P(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {{"A", "B"}};
   EXPECT_EQ(mcs, products());
 }
@@ -382,7 +382,7 @@ TEST_P(RiskAnalysisTest, ManyHouseEvents) {
 TEST_P(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(kUnity, products());
 }
 
@@ -391,7 +391,7 @@ TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
   std::string tree_input =
       "./share/scram/input/fta/ambiguous_events_with_roles.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {
       {"C", "Ambiguous.Private.A", "Ambiguous.Private.B"},
       {"G", "Ambiguous.Private.A", "Ambiguous.Private.B"}};

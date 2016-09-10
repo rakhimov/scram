@@ -70,7 +70,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   // Resets the risk analysis with the initialized model and settings.
   void ResetRiskAnalysis() {
     assert(init && "Missing initializer");
-    ran = std::make_unique<RiskAnalysis>(init->model(), settings);
+    analysis = std::make_unique<RiskAnalysis>(init->model(), settings);
   }
 
   // Parsing an input file to get the model.
@@ -90,9 +90,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     schema_stream.close();
 
     ASSERT_NO_THROW(ProcessInputFile(tree_input));
-    ASSERT_NO_THROW(ran->Analyze());
+    ASSERT_NO_THROW(analysis->Analyze());
     std::stringstream output;
-    ASSERT_NO_THROW(ran->Report(output));
+    ASSERT_NO_THROW(analysis->Report(output));
 
     std::unique_ptr<XmlParser> parser;
     ASSERT_NO_THROW(parser = std::make_unique<XmlParser>(output));
@@ -115,11 +115,11 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   const std::set<std::set<std::string>>& products() {
-    assert(!ran->fault_tree_analyses().empty());
-    assert(ran->fault_tree_analyses().size() == 1);
+    assert(!analysis->fault_tree_analyses().empty());
+    assert(analysis->fault_tree_analyses().size() == 1);
     if (products_.empty()) {
       const FaultTreeAnalysis* fta =
-          ran->fault_tree_analyses().begin()->second.get();
+          analysis->fault_tree_analyses().begin()->second.get();
       for (const Product& product : fta->products()) {
         products_.emplace(Convert(product));
       }
@@ -130,11 +130,11 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   // Provides the number of products per order of sets.
   // The order starts from 1.
   std::vector<int> ProductDistribution() {
-    assert(!ran->fault_tree_analyses().empty());
-    assert(ran->fault_tree_analyses().size() == 1);
+    assert(!analysis->fault_tree_analyses().empty());
+    assert(analysis->fault_tree_analyses().size() == 1);
     std::vector<int> distr(settings.limit_order(), 0);
     const FaultTreeAnalysis* fta =
-        ran->fault_tree_analyses().begin()->second.get();
+        analysis->fault_tree_analyses().begin()->second.get();
     for (const Product& product : fta->products()) {
       distr[GetOrder(product) - 1]++;
     }
@@ -144,25 +144,25 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   /// Prints products to the standard error.
   void PrintProducts() {
-    assert(!ran->fault_tree_analyses().empty());
-    assert(ran->fault_tree_analyses().size() == 1);
+    assert(!analysis->fault_tree_analyses().empty());
+    assert(analysis->fault_tree_analyses().size() == 1);
     const FaultTreeAnalysis* fta =
-        ran->fault_tree_analyses().begin()->second.get();
+        analysis->fault_tree_analyses().begin()->second.get();
     Print(fta->products());
   }
 
   double p_total() {
-    assert(!ran->probability_analyses().empty());
-    assert(ran->probability_analyses().size() == 1);
-    return ran->probability_analyses().begin()->second->p_total();
+    assert(!analysis->probability_analyses().empty());
+    assert(analysis->probability_analyses().size() == 1);
+    return analysis->probability_analyses().begin()->second->p_total();
   }
 
   const std::map<std::set<std::string>, double>& product_probability() {
-    assert(!ran->fault_tree_analyses().empty());
-    assert(ran->fault_tree_analyses().size() == 1);
+    assert(!analysis->fault_tree_analyses().empty());
+    assert(analysis->fault_tree_analyses().size() == 1);
     if (product_probability_.empty()) {
       const FaultTreeAnalysis* fta =
-          ran->fault_tree_analyses().begin()->second.get();
+          analysis->fault_tree_analyses().begin()->second.get();
       for (const Product& product : fta->products()) {
         product_probability_.emplace(Convert(product),
                                      CalculateProbability(product));
@@ -172,22 +172,22 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   const ImportanceFactors& importance(std::string id) {
-    assert(!ran->importance_analyses().empty());
-    assert(ran->importance_analyses().size() == 1);
-    return ran->importance_analyses().begin()->second->importance().at(id);
+    assert(!analysis->importance_analyses().empty());
+    assert(analysis->importance_analyses().size() == 1);
+    return analysis->importance_analyses().begin()->second->importance().at(id);
   }
 
   // Uncertainty analysis.
   double mean() {
-    assert(!ran->uncertainty_analyses().empty());
-    assert(ran->uncertainty_analyses().size() == 1);
-    return ran->uncertainty_analyses().begin()->second->mean();
+    assert(!analysis->uncertainty_analyses().empty());
+    assert(analysis->uncertainty_analyses().size() == 1);
+    return analysis->uncertainty_analyses().begin()->second->mean();
   }
 
   double sigma() {
-    assert(!ran->uncertainty_analyses().empty());
-    assert(ran->uncertainty_analyses().size() == 1);
-    return ran->uncertainty_analyses().begin()->second->sigma();
+    assert(!analysis->uncertainty_analyses().empty());
+    assert(analysis->uncertainty_analyses().size() == 1);
+    return analysis->uncertainty_analyses().begin()->second->sigma();
   }
 
   /// Converts a set of pointers to events with complement flags
@@ -203,7 +203,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   // Members
-  std::unique_ptr<RiskAnalysis> ran;
+  std::unique_ptr<RiskAnalysis> analysis;
   std::unique_ptr<mef::Initializer> init;
   Settings settings;
 

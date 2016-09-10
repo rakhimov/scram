@@ -29,7 +29,7 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == "rare-event") {
     EXPECT_DOUBLE_EQ(1, p_total());
   } else {

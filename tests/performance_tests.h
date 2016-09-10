@@ -39,17 +39,15 @@ class PerformanceTest : public ::testing::Test {
     delta = 0.10;  // % variation of values.
   }
 
-  void TearDown() override {
-    delete ran;
-  }
+  void TearDown() override { delete analysis; }
 
   // Convenient function to manage analysis of one model in input files.
   void Analyze(const std::vector<std::string>& input_files) {
     mef::Initializer* init = new mef::Initializer(settings);
     init->ProcessInputFiles(input_files);
-    ran = new RiskAnalysis(init->model(), settings);
+    analysis = new RiskAnalysis(init->model(), settings);
     delete init;
-    ran->Analyze();
+    analysis->Analyze();
   }
 
   // Convenient function to manage analysis of one model in one input file.
@@ -61,29 +59,29 @@ class PerformanceTest : public ::testing::Test {
 
   // Total probability as a result of analysis.
   double p_total() {
-    assert(!ran->probability_analyses().empty());
-    return ran->probability_analyses().begin()->second->p_total();
+    assert(!analysis->probability_analyses().empty());
+    return analysis->probability_analyses().begin()->second->p_total();
   }
 
   // The number of products as a result of analysis.
   int NumOfProducts() {
-    assert(!ran->fault_tree_analyses().empty());
-    return ran->fault_tree_analyses().begin()->second->products().size();
+    assert(!analysis->fault_tree_analyses().empty());
+    return analysis->fault_tree_analyses().begin()->second->products().size();
   }
 
   // Time taken to find products.
   double ProductGenerationTime() {
-    assert(!ran->fault_tree_analyses().empty());
-    return ran->fault_tree_analyses().begin()->second->analysis_time();
+    assert(!analysis->fault_tree_analyses().empty());
+    return analysis->fault_tree_analyses().begin()->second->analysis_time();
   }
 
   // Time taken to calculate total probability.
   double ProbabilityCalculationTime() {
-    assert(!ran->probability_analyses().empty());
-    return ran->probability_analyses().begin()->second->analysis_time();
+    assert(!analysis->probability_analyses().empty());
+    return analysis->probability_analyses().begin()->second->analysis_time();
   }
 
-  RiskAnalysis* ran;
+  RiskAnalysis* analysis;
   Settings settings;
   double delta;  // The range indicator for values.
 };

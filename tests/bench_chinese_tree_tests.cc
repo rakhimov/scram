@@ -31,7 +31,7 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
   input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == "rare-event") {
     EXPECT_NEAR(0.004804, p_total(), 1e-5);
   } else {
