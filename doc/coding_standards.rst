@@ -181,20 +181,20 @@ Core C++ Code
       abbreviate it to ``p_``.
       Its getter/setter functions should have
       corresponding names, i.e., ``p()`` and ``p(double value)``.
-      Append extra description after ``p_``, i.e., ``p_total_``.
+      Append extra description after ``p_``, e.g., ``p_total_``.
       Avoid abbreviating the name to ``prob``
       or fully spelling it to ``probability``.
 
     * For non-member probability variables:
 
         + Prefer prefixing with ``p_``
-          if the name has more description to the probability value, i.e., ``p_not_event``.
+          if the name has more description to the probability value, e.g., ``p_not_event``.
         + Prefer ``prob`` abbreviation
           for single word names indicating general probability values.
 
     * Prefer spelling ``Probability`` fully for cases not covered above
-      (class/function/namespace/typedef/...), i.e., ``CalculateProbability``.
-      Avoid abbreviating the name, i.e., ``CalculateProb``.
+      (class/function/namespace/typedef/...), e.g., ``CalculateProbability``.
+      Avoid abbreviating the name, e.g., ``CalculateProb``.
 
 - Prefer the terminology and concepts of Boolean algebra and graph theory
   to the terminology and concepts of risk analysis in **analysis code**.
