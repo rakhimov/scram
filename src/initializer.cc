@@ -118,7 +118,7 @@ void Initializer::CheckDuplicateFiles(
   using Path = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
   std::vector<Path> files;
-  auto Comparator = [](const Path& lhs, const Path& rhs) {
+  auto comparator = [](const Path& lhs, const Path& rhs) {
     return lhs.first < rhs.first;
   };
 
@@ -126,14 +126,14 @@ void Initializer::CheckDuplicateFiles(
     files.emplace_back(fs::canonical(xml_file), xml_file);
 
   auto it = boost::adjacent_find(
-      boost::sort(files, Comparator),  // NOLINT(build/include_what_you_use)
+      boost::sort(files, comparator),  // NOLINT(build/include_what_you_use)
       [](const Path& lhs, const Path& rhs) { return lhs.first == rhs.first; });
 
   if (it != files.end()) {
     std::stringstream msg;
     msg << "Duplicate input files:\n";
     const Path& path = *it;
-    auto it_end = std::upper_bound(it, files.end(), path, Comparator);
+    auto it_end = std::upper_bound(it, files.end(), path, comparator);
     for (; it != it_end; ++it) {
       msg << "    " << it->second << "\n";
     }

@@ -68,11 +68,11 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate.index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, const Gate*> gates;
-  auto AddGates = [&gates](const Gate::ArgMap<Gate>& args) {
+  auto add_gates = [&gates](const Gate::ArgMap<Gate>& args) {
     for (const Gate::Arg<Gate>& arg : args)
       gates.emplace(arg.first, arg.second.get());
   };
-  AddGates(gate.args<Gate>());
+  add_gates(gate.args<Gate>());
 
   auto container = std::make_unique<zbdd::CutSetContainer>(
       kSettings_, gate.index(), graph_->basic_events().size());
@@ -80,7 +80,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   while (int next_gate_index = container->GetNextGate()) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate_index;
     const Gate* next_gate = gates.find(next_gate_index)->second;
-    AddGates(next_gate->args<Gate>());
+    add_gates(next_gate->args<Gate>());
 
     container->Merge(container->ExpandGate(
         container->ConvertGate(*next_gate),

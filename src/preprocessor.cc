@@ -1925,8 +1925,8 @@ void Preprocessor::DetermineGateState(const GatePtr& gate, int num_failure,
   assert(!(num_success && graph_->coherent()) && "Impossible state.");
 
   if (!(num_success + num_failure)) return;  // Undetermined 0 state.
-  auto ComputeState = [&num_failure, &num_success](int req_failure,
-                                                   int req_success) {
+  auto compute_state = [&num_failure, &num_success](int req_failure,
+                                                    int req_success) {
     if (num_failure >= req_failure) return 1;
     if (num_success >= req_success) return -1;
     return 0;
@@ -1934,19 +1934,19 @@ void Preprocessor::DetermineGateState(const GatePtr& gate, int num_failure,
   switch (gate->type()) {
     case kNull:
       assert((num_failure + num_success) == 1);
-      gate->opti_value(ComputeState(1, 1));
+      gate->opti_value(compute_state(1, 1));
       break;
     case kOr:
-      gate->opti_value(ComputeState(1, gate->args().size()));
+      gate->opti_value(compute_state(1, gate->args().size()));
       break;
     case kAnd:
-      gate->opti_value(ComputeState(gate->args().size(), 1));
+      gate->opti_value(compute_state(gate->args().size(), 1));
       break;
     case kVote:
       assert(gate->args().size() > gate->vote_number());
       gate->opti_value(
-          ComputeState(gate->vote_number(),
-                       gate->args().size() - gate->vote_number() + 1));
+          compute_state(gate->vote_number(),
+                        gate->args().size() - gate->vote_number() + 1));
       break;
     case kXor:
       if (num_failure == 1 && num_success == 1) {
@@ -1957,13 +1957,13 @@ void Preprocessor::DetermineGateState(const GatePtr& gate, int num_failure,
       break;
     case kNot:
       assert((num_failure + num_success) == 1);
-      gate->opti_value(-ComputeState(1, 1));
+      gate->opti_value(-compute_state(1, 1));
       break;
     case kNand:
-      gate->opti_value(-ComputeState(gate->args().size(), 1));
+      gate->opti_value(-compute_state(gate->args().size(), 1));
       break;
     case kNor:
-      gate->opti_value(-ComputeState(1, gate->args().size()));
+      gate->opti_value(-compute_state(1, gate->args().size()));
       break;
   }
 }
@@ -2118,7 +2118,8 @@ bool Preprocessor::DecompositionProcessor::operator()(
   preprocessor_ = preprocessor;
   assert(preprocessor_->const_gates_.empty());
   assert(preprocessor_->null_gates_.empty());
-  auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
+  // Determines whether decomposition is possible with a given type.
+  auto is_decomposition_type = [](Operator type) {
     switch (type) {
       case kAnd:
       case kNand:
@@ -2131,8 +2132,8 @@ bool Preprocessor::DecompositionProcessor::operator()(
   };
   // Determine if the decomposition setups are possible.
   auto it = boost::find_if(
-      node_->parents(), [&IsDecompositionType](const Node::Parent& member) {
-        return IsDecompositionType(member.second.lock()->type());
+      node_->parents(), [&is_decomposition_type](const Node::Parent& member) {
+        return is_decomposition_type(member.second.lock()->type());
       });
   if (it == node_->parents().end()) return false;  // No setups possible.
 
@@ -2154,7 +2155,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
     assert(!member.second.expired());
     GatePtr parent = member.second.lock();
     if (parent->descendant() == node_->index() &&
-        IsDecompositionType(parent->type())) {
+        is_decomposition_type(parent->type())) {
       dest.push_back(parent);
     }
   }
