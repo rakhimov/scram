@@ -31,11 +31,8 @@ Deviations from the GCSG
 ------------------------
 
 - Exceptions are allowed.
-- Prefer streams to ``printf-like`` routines.
 - Name mutator functions without ``set_`` prefix.
 - Multiple *implementation* inheritance is allowed (mostly for mixins).
-- Lambda expressions used as nested functions follow
-  the function naming conventions.
 
 
 Deviations from the Qt Style
@@ -97,11 +94,6 @@ Additional Coding Conventions
 
 - Use *modern C++* (C++14).
   Refer to `C++ Core Guidelines`_ for best practices.
-
-- If API, functionality, class, container, or other constructs mimic the STL constructs,
-  prefer the STL conventions and style.
-  For example, an iterator class for a custom container
-  should be named ``iterator`` instead of ``Iterator``.
 
 - Do not use ``inline``
   when defining a function in a class definition.
