@@ -67,8 +67,7 @@ Package                Minimum Version
 ====================   ==================
 `CMake`                2.8.12
 `boost`                1.56
-`libxml2`              2.8.0
-`libxml++`             2.34.1
+`libxml++`             2.38.1
 `Python`               2.7.3 or 3.3
 `Qt`                   5.2.1
 ====================   ==================
@@ -143,7 +142,6 @@ The minimal list of required library package names is:
 #. make
 #. cmake
 #. libboost-all-dev
-#. libxml2-dev
 #. libxml++2.6-dev
 #. python2.7
 #. qt5-default
@@ -167,7 +165,7 @@ the following line will install all major dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ lib{boost-all,xml2,xml++2.6,google-perftools}-dev python2.7 qt5-default
+    sudo apt-get install -y cmake make gcc g++ lib{boost-all,xml++2.6,google-perftools}-dev python2.7 qt5-default
 
 
 Mac Systems
@@ -189,7 +187,6 @@ The minimal list of required library package names is:
 
 #. cmake
 #. boost
-#. libxml2
 #. libxmlxx2
 #. python27
 #. qt5-mac
@@ -213,7 +210,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo port install cmake boost libxml2 libxmlxx2 python27 google-perftools qt5-mac
+    sudo port install cmake boost libxmlxx2 python27 google-perftools qt5-mac
 
 .. _macports: http://www.macports.org/
 .. _homebrew: http://brew.sh/
@@ -277,7 +274,6 @@ Where ``package`` is replaced by the correct package name:
 #. make
 #. cmake
 #. boost
-#. libxml2
 #. libxml++2.6
 #. qt5
 
@@ -293,7 +289,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,libxml++2.6,qt5}
+    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml++2.6,qt5}
 
 The building and installation can be done with the ``install.py`` script
 in the root directory.

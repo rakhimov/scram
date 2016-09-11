@@ -144,8 +144,10 @@ add_definitions(${LIBXML2_DEFINITIONS})
 set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
 
 # Find LibXML++ and dependencies.
+# TODO: Check minimum version 2.38.
 find_package(LibXML++ REQUIRED)
 set(LIBS ${LIBS} ${LibXML++_LIBRARIES})
+
 message(STATUS ${LIBS})
 
 # Include the boost header files and the program_options library.

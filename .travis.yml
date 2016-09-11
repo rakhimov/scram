@@ -40,7 +40,7 @@ addons:
             - gcc-4.9
             - g++-4.9
             - libxml2-dev
-            - libxml++2.6-dev
+            - libglibmm-2.4-dev
             - libgoogle-perftools-dev
             - qt5-default
         sources:
