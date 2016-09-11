@@ -22,13 +22,11 @@
 #define SCRAM_SRC_XML_PARSER_H_
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/noncopyable.hpp>
 #include <libxml++/libxml++.h>
 
 #include "error.h"
@@ -63,15 +61,10 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
   return static_cast<const xmlpp::Element*>(node);
 }
 
-/// Normalizes the string in an XML attribute.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns Normalized (trimmed) string from the attribute.
+/// Returns Normalized (trimmed) string value of an XML element attribute.
 inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute) {
-  std::string value = element->get_attribute_value(attribute);
+                                     const std::string& attribute_name) {
+  std::string value = element->get_attribute_value(attribute_name);
   boost::trim(value);
   return value;
 }
@@ -94,11 +87,17 @@ CastAttributeValue(const xmlpp::Element* element,
   try {
     return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
   } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret attribute '" << attribute << "' to a number.";
-    throw ValidationError(msg.str());
+    throw ValidationError("Line " + std::to_string(element->get_line()) +
+                          ":\nFailed to interpret attribute '" + attribute +
+                          "' to a number.");
   }
+}
+
+/// Returns Normalized content of an XML text node.
+inline std::string GetContent(const xmlpp::TextNode* child_text) {
+  std::string content = child_text->get_content();
+  boost::trim(content);
+  return content;
 }
 
 /// Gets a number from an XML text.
@@ -114,15 +113,13 @@ CastAttributeValue(const xmlpp::Element* element,
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, T>::type
 CastChildText(const xmlpp::Element* element) {
-  std::string content = element->get_child_text()->get_content();
-  boost::trim(content);
+  std::string content = GetContent(element->get_child_text());
   try {
     return boost::lexical_cast<T>(content);
   } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret text '" << content << "' to a number.";
-    throw ValidationError(msg.str());
+    throw ValidationError("Line " + std::to_string(element->get_line()) +
+                          ":\nFailed to interpret text '" + content +
+                          "' to a number.");
   }
 }
 

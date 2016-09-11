@@ -22,7 +22,6 @@
 #define SCRAM_SRC_INITIALIZER_H_
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>

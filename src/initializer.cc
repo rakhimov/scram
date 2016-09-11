@@ -20,7 +20,7 @@
 
 #include "initializer.h"
 
-#include <fstream>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/range/algorithm.hpp>
@@ -138,8 +138,7 @@ void Initializer::CheckDuplicateFiles(
 void Initializer::ProcessInputFile(const std::string& xml_file) {
   static xmlpp::RelaxNGValidator validator(Env::input_schema());
 
-  std::unique_ptr<xmlpp::DomParser> parser =
-      scram::ConstructDomParser(xml_file);
+  std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(xml_file);
   try {
     validator.validate(parser->get_document());
   } catch (const xmlpp::validity_error& err) {
@@ -209,7 +208,7 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
     const xmlpp::Element* label = XmlElement(labels.front());
     const xmlpp::TextNode* text = label->get_child_text();
     assert(text);
-    element->label(text->get_content());
+    element->label(GetContent(text));
   }
 
   xmlpp::NodeSet attributes = element_node->find("./attributes");
@@ -340,9 +339,8 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node, Gate* gate) {
   try {
     gate->Validate();
   } catch (ValidationError& err) {
-    std::stringstream msg;
-    msg << "Line " << gate_node->get_line() << ":\n";
-    err.msg(msg.str() + err.msg());
+    err.msg("Line " + std::to_string(gate_node->get_line()) + ":\n" +
+            err.msg());
     throw;
   }
 }
