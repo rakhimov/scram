@@ -46,11 +46,9 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
 
-before_install:
-    - if [[ -n "${INTEL_COMPILER}" ]]; then export CC=icc; export CXX=icpc; export RELEASE=true; fi
-
 install:
-    - .travis/install.sh
+    - .travis/install.sh  # Dependencies are built with gcc or clang.
+    - if [[ -n "${INTEL_COMPILER}" ]]; then export CC=icc; export CXX=icpc; export RELEASE=true; fi
 
 before_script:
     - .travis/before_script.sh
