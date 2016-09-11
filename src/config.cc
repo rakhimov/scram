@@ -26,6 +26,8 @@
 #include <memory>
 #include <sstream>
 
+#include <boost/filesystem.hpp>
+
 #include "env.h"
 #include "error.h"
 #include "xml_parser.h"
@@ -33,17 +35,12 @@
 namespace scram {
 
 Config::Config(const std::string& config_file) {
-  std::ifstream file_stream(config_file.c_str());
-  if (!file_stream) {
+  if (boost::filesystem::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
-  }
-
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
 
   std::unique_ptr<xmlpp::DomParser> parser;
   try {
-    parser = scram::ConstructDomParser(stream);
+    parser = scram::ConstructDomParser(config_file);
     std::stringstream schema;
     std::string schema_path = Env::config_schema();
     std::ifstream schema_stream(schema_path.c_str());

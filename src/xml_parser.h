@@ -44,13 +44,11 @@ namespace scram {
 ///
 /// @throws ValidationError  There are problems loading the XML snippet.
 inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
-    const std::stringstream& xml_input_snippet) {
+    const std::string& file_path) {
   try {
-    auto parser = std::make_unique<xmlpp::DomParser>();
-    parser->parse_memory(xml_input_snippet.str());
-    return parser;
-  } catch (xmlpp::exception& ex) {
-    throw ValidationError("Error loading XML file: " + std::string(ex.what()));
+    return std::make_unique<xmlpp::DomParser>(file_path);
+  } catch (const xmlpp::parse_error& ex) {
+    throw ValidationError("XML file is invalid: " + std::string(ex.what()));
   }
 }
 

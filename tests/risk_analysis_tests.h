@@ -93,9 +93,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     std::stringstream output;
     ASSERT_NO_THROW(analysis->Report(output));
 
-    std::unique_ptr<xmlpp::DomParser> parser;
-    ASSERT_NO_THROW(parser = scram::ConstructDomParser(output));
-    ASSERT_NO_THROW(scram::Validate(parser->get_document(), schema));
+    xmlpp::DomParser parser;
+    ASSERT_NO_THROW(parser.parse_stream(output));
+    ASSERT_NO_THROW(scram::Validate(parser.get_document(), schema));
   }
 
   // Returns a single fault tree, assuming one fault tree with single top gate.

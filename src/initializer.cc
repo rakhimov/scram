@@ -143,13 +143,8 @@ void Initializer::CheckDuplicateFiles(
 }
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
-  std::ifstream file_stream(xml_file.c_str());
-  if (!file_stream) throw IOError("'" + xml_file + "' could not be loaded.");
-
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
-
-  std::unique_ptr<xmlpp::DomParser> parser = scram::ConstructDomParser(stream);
+  std::unique_ptr<xmlpp::DomParser> parser =
+      scram::ConstructDomParser(xml_file);
   scram::Validate(parser->get_document(), schema_);
 
   const xmlpp::Node* root = parser->get_document()->get_root_node();
