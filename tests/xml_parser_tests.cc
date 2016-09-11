@@ -18,7 +18,6 @@
 #include "xml_parser_tests.h"
 
 #include "error.h"
-#include "relax_ng_validator.h"
 
 namespace scram {
 namespace test {
@@ -46,25 +45,6 @@ void XmlParserTests::FillSchema(std::stringstream& ss, bool malformed) {
 }
 
 using XmlParserPtr = std::unique_ptr<XmlParser>;
-
-// This is an indirect test of the validator.
-TEST_F(XmlParserTests, RelaxNGValidator) {
-  std::stringstream snippet;
-  FillSnippet(snippet);
-  std::stringstream schema;
-  FillSchema(schema);
-
-  XmlParserPtr parser;
-  ASSERT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
-
-  RelaxNGValidator validator;
-  EXPECT_THROW(validator.Validate(nullptr), LogicError);
-  const xmlpp::Document* doc = parser->Document();
-  EXPECT_THROW(validator.Validate(doc), LogicError);  // No schema initialized.
-
-  ASSERT_NO_THROW(validator.ParseMemory(schema.str()));
-  EXPECT_NO_THROW(validator.Validate(doc));  // Initialized.
-}
 
 TEST_F(XmlParserTests, WithoutSchema) {
   std::stringstream snippet;

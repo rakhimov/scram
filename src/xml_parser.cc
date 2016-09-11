@@ -22,7 +22,9 @@
 
 #include <cassert>
 
-#include "relax_ng_validator.h"
+#include <libxml++/exceptions/parse_error.h>
+#include <libxml++/exceptions/validity_error.h>
+#include <libxml++/validators/relaxngvalidator.h>
 
 namespace scram {
 
@@ -37,9 +39,19 @@ XmlParser::XmlParser(const std::stringstream& xml_input_snippet)
 }
 
 void XmlParser::Validate(const std::stringstream& xml_schema_snippet) {
-  RelaxNGValidator validator;
-  validator.ParseMemory(xml_schema_snippet.str());
-  validator.Validate(parser_->get_document());
+  xmlpp::RelaxNGValidator validator;
+  try {
+    validator.parse_memory(xml_schema_snippet.str());
+  } catch (const xmlpp::parse_error& err) {
+    throw LogicError("Schema could not be parsed: " + std::string(err.what()));
+  }
+
+  try {
+    validator.validate(parser_->get_document());
+  } catch (const xmlpp::validity_error& err) {
+    throw ValidationError("Document failed schema validation: " +
+                          std::string(err.what()));
+  }
 }
 
 }  // namespace scram

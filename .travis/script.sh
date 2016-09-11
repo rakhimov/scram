@@ -45,7 +45,7 @@ coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
   --exclude src/model.h --exclude src/ccf_group.h --exclude src/preprocessor.h \
   --exclude src/config.h --exclude src/fault_tree.h --exclude src/xml_parser.h \
   --exclude src/random.h --exclude src/xml_stream.h \
-  --exclude src/element.h --exclude src/relax_ng_validator.h \
+  --exclude src/element.h \
   --exclude src/zbdd.h --exclude src/initializer.h --exclude src/reporter.h \
   --exclude src/ext.h --exclude src/linear_map.h \
   > /dev/null
