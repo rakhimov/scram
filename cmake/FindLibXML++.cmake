@@ -8,8 +8,8 @@
 include(LibFindMacros)
 
 # Dependencies
-libfind_package(LibXML++ LibXml2)
-libfind_package(LibXML++ Glibmm)
+libfind_package(LibXML++ LibXml2 REQUIRED)
+libfind_package(LibXML++ Glibmm REQUIRED)
 
 # Use pkg-config to get hints about paths
 libfind_pkg_check_modules(LibXML++_PKGCONF libxml++-2.6)

@@ -137,15 +137,9 @@ if(WITH_TCMALLOC)
   set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
 endif()
 
-# Debian installs useful LibXML2 files to /usr/include/libxml2/libxml.
-# libxml2 is required for relaxng schema validation.
-find_package(LibXml2 REQUIRED)
-add_definitions(${LIBXML2_DEFINITIONS})
-set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
-
 # Find LibXML++ and dependencies.
-# TODO: Check minimum version 2.38.
-find_package(LibXML++ REQUIRED)
+set(LIBXML++_MIN_VERSION "2.38.1")  # TODO: Fix the minimum version check.
+find_package(LibXML++ "${LIBXML++_MIN_VERSION}" REQUIRED)
 set(LIBS ${LIBS} ${LibXML++_LIBRARIES})
 
 message(STATUS ${LIBS})
@@ -207,10 +201,10 @@ endif()
 
 # Include all the discovered system directories.
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
-include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
+include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")  # TODO: libxml++ dependency.
 include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
-include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
+include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})  # TODO: libxml++ dependency.
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
