@@ -43,7 +43,7 @@ coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
   --exclude src/event.h --exclude src/mocus.h --exclude src/settings.h \
   --exclude src/boolean_graph.h --exclude src/expression.h \
   --exclude src/model.h --exclude src/ccf_group.h --exclude src/preprocessor.h \
-  --exclude src/config.h --exclude src/fault_tree.h --exclude src/xml_parser.h \
+  --exclude src/config.h --exclude src/fault_tree.h --exclude src/xml.h \
   --exclude src/random.h --exclude src/xml_stream.h \
   --exclude src/element.h \
   --exclude src/zbdd.h --exclude src/initializer.h --exclude src/reporter.h \

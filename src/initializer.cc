@@ -29,7 +29,7 @@
 #include "env.h"
 #include "error.h"
 #include "logger.h"
-#include "xml_parser.h"
+#include "xml.h"
 
 namespace scram {
 namespace mef {

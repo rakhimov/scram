@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file xml_parser.h
-/// XML Parser.
+/// @file xml.h
+/// XML helper facilities to work with libxml++.
 
-#ifndef SCRAM_SRC_XML_PARSER_H_
-#define SCRAM_SRC_XML_PARSER_H_
+#ifndef SCRAM_SRC_XML_H_
+#define SCRAM_SRC_XML_H_
 
 #include <memory>
 #include <string>
@@ -125,4 +125,4 @@ CastChildText(const xmlpp::Element* element) {
 
 }  // namespace scram
 
-#endif  // SCRAM_SRC_XML_PARSER_H_
+#endif  // SCRAM_SRC_XML_H_

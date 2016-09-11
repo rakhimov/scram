@@ -31,7 +31,7 @@
 
 #include "env.h"
 #include "initializer.h"
-#include "xml_parser.h"
+#include "xml.h"
 
 namespace scram {
 namespace core {

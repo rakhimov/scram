@@ -28,7 +28,7 @@
 
 #include "env.h"
 #include "error.h"
-#include "xml_parser.h"
+#include "xml.h"
 
 namespace scram {
 
