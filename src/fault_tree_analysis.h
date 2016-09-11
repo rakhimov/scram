@@ -272,7 +272,6 @@ class FaultTreeAnalysis : public Analysis {
 template <class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
-  /// Constructor with a fault tree and analysis settings.
   using FaultTreeAnalysis::FaultTreeAnalysis;
 
   /// Runs fault tree analysis with the given algorithm.

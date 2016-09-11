@@ -1124,7 +1124,7 @@ class Bdd;
 template <>
 class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
-  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+  using Preprocessor::Preprocessor;
 
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
   /// This preprocessing assigns the order for variables for BDD construction.
@@ -1137,7 +1137,7 @@ class Zbdd;
 template <>
 class CustomPreprocessor<Zbdd> : public Preprocessor {
  public:
-  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+  using Preprocessor::Preprocessor;
 
   /// Performs preprocessing for analyses
   /// with Zero-Suppressed Binary Decision Diagrams.
@@ -1152,7 +1152,6 @@ class Mocus;
 template <>
 class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
  public:
-  /// Constructor with a Boolean graph.
   using CustomPreprocessor<Zbdd>::CustomPreprocessor;
 
   /// Performs processing of a fault tree

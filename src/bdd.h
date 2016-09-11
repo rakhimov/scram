@@ -353,7 +353,7 @@ class Ite : public NonTerminal<Ite> {
   }
 
  public:
-  using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+  using NonTerminal::NonTerminal;
 
   /// @returns true if the low edge is complement.
   bool complement_edge() const { return complement_edge_; }

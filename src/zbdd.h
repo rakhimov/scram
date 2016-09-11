@@ -43,7 +43,7 @@ namespace core {
 /// The order of the complement is higher than the order of the variable.
 class SetNode : public NonTerminal<SetNode> {
  public:
-  using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+  using NonTerminal::NonTerminal;
 
   /// @returns true if the ZBDD is minimized.
   bool minimal() const { return minimal_; }

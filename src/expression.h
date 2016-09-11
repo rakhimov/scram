@@ -384,7 +384,7 @@ class WeibullExpression : public Expression {
 /// These expressions provide quantification for uncertainty and sensitivity.
 class RandomDeviate : public Expression {
  public:
-  using Expression::Expression;  // Main helper constructors with arguments.
+  using Expression::Expression;
 
   bool IsConstant() noexcept override { return false; }
 };
@@ -650,7 +650,7 @@ class BinaryExpression : public Expression {
 /// This expression adds all the given expressions' values.
 class Add : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override { return Compute(&Expression::Mean); }
   double Max() noexcept override { return Compute(&Expression::Max); }
@@ -678,7 +678,7 @@ class Add : public BinaryExpression {
 /// First expression minus the rest of the given expressions' values.
 class Sub : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override { return Compute(&Expression::Mean); }
   double Max() noexcept override {
@@ -716,7 +716,7 @@ class Sub : public BinaryExpression {
 /// This expression performs multiplication operation.
 class Mul : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override;
 
@@ -748,7 +748,7 @@ class Mul : public BinaryExpression {
 /// the rest of argument expressions.
 class Div : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   /// @throws InvalidArgument  Division by 0.
   void Validate() const override;
