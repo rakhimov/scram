@@ -122,10 +122,9 @@ std::shared_ptr<scram::mef::Model> acceptCmdLine(const po::variables_map &vm)
     }
     // Process input files
     // into valid analysis containers and constructs.
-    auto init = std::make_unique<scram::mef::Initializer>(settings);
-
     // Validation phase happens upon processing.
-    init->ProcessInputFiles(inputFiles);
+    auto init = std::make_unique<scram::mef::Initializer>(inputFiles, settings);
+
     return init->model();
 }
 

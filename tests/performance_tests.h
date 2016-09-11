@@ -39,22 +39,15 @@ class PerformanceTest : public ::testing::Test {
     delta = 0.10;  // % variation of values.
   }
 
-  void TearDown() override { delete analysis; }
+  void TearDown() override {}
 
   // Convenient function to manage analysis of one model in input files.
   void Analyze(const std::vector<std::string>& input_files) {
-    mef::Initializer* init = new mef::Initializer(settings);
-    init->ProcessInputFiles(input_files);
-    analysis = new RiskAnalysis(init->model(), settings);
-    delete init;
+    {
+      mef::Initializer init(input_files, settings);
+      analysis = std::make_unique<RiskAnalysis>(init.model(), settings);
+    }
     analysis->Analyze();
-  }
-
-  // Convenient function to manage analysis of one model in one input file.
-  void Analyze(const std::string& input_file) {
-    std::vector<std::string> input_files;
-    input_files.push_back(input_file);
-    Analyze(input_files);
   }
 
   // Total probability as a result of analysis.
@@ -81,7 +74,7 @@ class PerformanceTest : public ::testing::Test {
     return analysis->probability_analyses().begin()->second->analysis_time();
   }
 
-  RiskAnalysis* analysis;
+  std::unique_ptr<RiskAnalysis> analysis;
   Settings settings;
   double delta;  // The range indicator for values.
 };

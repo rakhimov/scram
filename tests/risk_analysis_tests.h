@@ -57,14 +57,8 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files) {
-    ResetInitializer();
-    init->ProcessInputFiles(input_files);
+    init = std::make_unique<mef::Initializer>(input_files, settings);
     ResetRiskAnalysis();
-  }
-
-  // Resets the initializer with the settings of the object.
-  void ResetInitializer() {
-    init = std::make_unique<mef::Initializer>(settings);
   }
 
   // Resets the risk analysis with the initialized model and settings.

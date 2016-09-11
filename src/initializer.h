@@ -49,23 +49,18 @@ namespace mef {
 /// for future use or analysis.
 class Initializer : private boost::noncopyable {
  public:
-  /// Prepares common information to be used by
-  /// the future input file constructs,
-  /// for example, mission time and validation schema.
-  ///
-  /// @param[in] settings  Analysis settings.
-  explicit Initializer(const core::Settings& settings);
-
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.
   /// Puts all events into their appropriate containers in the model.
   ///
-  /// @param[in] xml_files  The formatted XML input files.
+  /// @param[in] xml_files  The MEF XML input files.
+  /// @param[in] settings  Analysis settings.
   ///
   /// @throws DuplicateArgumentError  Input contains duplicate files.
   /// @throws ValidationError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
-  void ProcessInputFiles(const std::vector<std::string>& xml_files);
+  Initializer(const std::vector<std::string>& xml_files,
+              core::Settings settings);
 
   /// @returns The model built from the input files.
   std::shared_ptr<Model> model() const { return model_; }
@@ -104,6 +99,15 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws DuplicateArgumentError  There are duplicate input files.
   void CheckDuplicateFiles(const std::vector<std::string>& xml_files);
+
+  /// @copybrief Initializer::Initializer
+  ///
+  /// @param[in] xml_files  The formatted XML input files.
+  ///
+  /// @throws DuplicateArgumentError  Input contains duplicate files.
+  /// @throws ValidationError  The input contains errors.
+  /// @throws IOError  One of the input files is not accessible.
+  void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.

@@ -29,11 +29,11 @@ namespace core {
 namespace test {
 
 TEST(BooleanGraphTest, Print) {
-  mef::Initializer init(Settings{});
-  std::vector<std::string> input_files = {
-      "./share/scram/input/fta/correct_formulas.xml"};
-  EXPECT_NO_THROW(init.ProcessInputFiles(input_files));
-  const mef::FaultTreePtr& ft = *init.model()->fault_trees().begin();
+  std::unique_ptr<mef::Initializer> init;
+  ASSERT_NO_THROW(
+      init.reset(new mef::Initializer(
+          {"./share/scram/input/fta/correct_formulas.xml"}, Settings())));
+  const mef::FaultTreePtr& ft = *init->model()->fault_trees().begin();
   BooleanGraph graph(*ft->top_events().front());
   graph.Print();
 }

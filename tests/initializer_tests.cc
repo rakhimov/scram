@@ -30,21 +30,18 @@ namespace test {
 
 // Test if the XML is well formed.
 TEST(InitializerTest, XMLFormatting) {
-  Initializer* init = new Initializer(core::Settings());
-  EXPECT_THROW(
-      init->ProcessInputFiles({"./share/scram/input/xml_formatting_error.xml"}),
-      ValidationError);
-  delete init;
+  EXPECT_THROW(Initializer({"./share/scram/input/xml_formatting_error.xml"},
+                           core::Settings()),
+               ValidationError);
 }
 
 // Test the response for non-existent file.
 TEST(InitializerTest, NonExistentFile) {
   // Access issues. IOErrors
-  Initializer* init = new Initializer(core::Settings());
-  EXPECT_THROW(
-      init->ProcessInputFiles({"./share/scram/input/nonexistent_file.xml"}),
-      IOError);
-  delete init;
+  (core::Settings());
+  EXPECT_THROW(Initializer({"./share/scram/input/nonexistent_file.xml"},
+                           core::Settings()),
+               IOError);
 }
 
 // Test if passing the same file twice causing an error.
@@ -52,20 +49,17 @@ TEST(InitializerTest, PassTheSameFileTwice) {
   std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
   std::string the_same_path = "./share/.."  // Path obfuscation.
                               "/share/scram/input/fta/correct_tree_input.xml";
-  Initializer* init = new Initializer(core::Settings());
-  EXPECT_THROW(init->ProcessInputFiles({input_correct, the_same_path}),
+  EXPECT_THROW(Initializer({input_correct, the_same_path}, core::Settings()),
                ValidationError);
-  delete init;
 }
 
 // Test if the schema catches errors.
 // This is trusted to XML libraries and the correctness of the RelaxNG schema,
 // so the test is very basic calls.
 TEST(InitializerTest, FailSchemaValidation) {
-  Initializer* init = new Initializer(core::Settings());
-  EXPECT_THROW(init->ProcessInputFiles({"./share/scram/input/schema_fail.xml"}),
-               ValidationError);
-  delete init;
+  EXPECT_THROW(
+      Initializer({"./share/scram/input/schema_fail.xml"}, core::Settings()),
+      ValidationError);
 }
 
 // Unsupported operations.
@@ -75,10 +69,8 @@ TEST(InitializerTest, UnsupportedFeature) {
                                                "../unsupported_gate.xml",
                                                "../unsupported_expression.xml"};
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(core::Settings());
-    EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename:  " << input;
-    delete init;
   }
 }
 
@@ -87,10 +79,8 @@ TEST(InitializerTest, EmptyAttributeElementText) {
   std::vector<std::string> incorrect_inputs = {"../empty_element.xml",
                                                "../empty_attribute.xml"};
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(core::Settings());
-    EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename:  " << input;
-    delete init;
   }
 }
 
@@ -118,10 +108,8 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "case_sensitivity.xml"};
 
   for (const auto& input : correct_inputs) {
-    Initializer* init = new Initializer(core::Settings());
-    EXPECT_NO_THROW(init->ProcessInputFiles({dir + input}))
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
-    delete init;
   }
 }
 
@@ -138,10 +126,8 @@ TEST(InitializerTest, CorrectProbabilityInputs) {
   settings.probability_analysis(true);
 
   for (const auto& input : correct_inputs) {
-    Initializer* init = new Initializer(settings);
-    EXPECT_NO_THROW(init->ProcessInputFiles({dir + input}))
+    EXPECT_NO_THROW(Initializer({dir + input}, settings))
         << " Filename: " << input;
-    delete init;
   }
 }
 
@@ -194,10 +180,8 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "repeated_ccf_members.xml"};
 
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(core::Settings());
-    EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename:  " << input;
-    delete init;
   }
 }
 
@@ -210,10 +194,8 @@ TEST(InitializerTest, IncorrectProbabilityInputs) {
   core::Settings settings;
   settings.probability_analysis(true);
   for (const auto& input : incorrect_inputs) {
-    Initializer* init = new Initializer(settings);
-    EXPECT_THROW(init->ProcessInputFiles({dir + input}), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, settings), ValidationError)
         << " Filename:  " << input;
-    delete init;
   }
 }
 
@@ -222,10 +204,9 @@ TEST(InitializerTest, IncorrectProbabilityInputs) {
 // can be a child of a gate of another fault tree.
 TEST(InitializerTest, NonOrphanTopEvent) {
   std::string dir = "./share/scram/input/fta/";
-  Initializer* init = new Initializer(core::Settings());
-  EXPECT_NO_THROW(init->ProcessInputFiles({dir + "correct_tree_input.xml",
-                                           dir + "second_fault_tree.xml"}));
-  delete init;
+  EXPECT_NO_THROW(Initializer(
+      {dir + "correct_tree_input.xml", dir + "second_fault_tree.xml"},
+      core::Settings()));
 }
 
 }  // namespace test

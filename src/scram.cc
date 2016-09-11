@@ -225,8 +225,8 @@ void RunScram(const po::variables_map& vm) {
   }
   // Process input files
   // into valid analysis containers and constructs.
-  auto init = std::make_unique<scram::mef::Initializer>(settings);
-  init->ProcessInputFiles(input_files);  // Throws if anything is invalid.
+  // Throws if anything is invalid.
+  auto init = std::make_unique<scram::mef::Initializer>(input_files, settings);
   if (vm.count("validate")) return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.

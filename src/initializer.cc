@@ -59,42 +59,12 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 
 }  // namespace
 
-Initializer::Initializer(const core::Settings& settings)
-    : settings_(settings),
+Initializer::Initializer(const std::vector<std::string>& xml_files,
+                         core::Settings settings)
+    : settings_(std::move(settings)),
       mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
-}
-
-void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
-  CLOCK(input_time);
-  LOG(DEBUG1) << "Processing input files";
-  CheckFileExistence(xml_files);
-  CheckDuplicateFiles(xml_files);
-  std::vector<std::string>::const_iterator it;
-  try {
-    for (it = xml_files.begin(); it != xml_files.end(); ++it) {
-      ProcessInputFile(*it);
-    }
-  } catch (ValidationError& err) {
-    err.msg("In file '" + *it + "', " + err.msg());
-    throw;
-  }
-  CLOCK(def_time);
-  ProcessTbdElements();
-  LOG(DEBUG2) << "Element definition time " << DUR(def_time);
-  LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
-
-  CLOCK(valid_time);
-  LOG(DEBUG1) << "Validating the input files";
-  // Check if the initialization is successful.
-  ValidateInitialization();
-  LOG(DEBUG1) << "Validation is finished in " << DUR(valid_time);
-
-  CLOCK(setup_time);
-  LOG(DEBUG1) << "Setting up for the analysis";
-  // Perform setup for analysis using configurations from the input files.
-  SetupForAnalysis();
-  LOG(DEBUG1) << "Setup time " << DUR(setup_time);
+  ProcessInputFiles(xml_files);
 }
 
 void Initializer::CheckFileExistence(
@@ -133,6 +103,38 @@ void Initializer::CheckDuplicateFiles(
     msg << "  POSIX Path: " << path.first.c_str();
     throw DuplicateArgumentError(msg.str());
   }
+}
+
+void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
+  CLOCK(input_time);
+  LOG(DEBUG1) << "Processing input files";
+  CheckFileExistence(xml_files);
+  CheckDuplicateFiles(xml_files);
+  std::vector<std::string>::const_iterator it;
+  try {
+    for (it = xml_files.begin(); it != xml_files.end(); ++it) {
+      ProcessInputFile(*it);
+    }
+  } catch (ValidationError& err) {
+    err.msg("In file '" + *it + "', " + err.msg());
+    throw;
+  }
+  CLOCK(def_time);
+  ProcessTbdElements();
+  LOG(DEBUG2) << "Element definition time " << DUR(def_time);
+  LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
+
+  CLOCK(valid_time);
+  LOG(DEBUG1) << "Validating the input files";
+  // Check if the initialization is successful.
+  ValidateInitialization();
+  LOG(DEBUG1) << "Validation is finished in " << DUR(valid_time);
+
+  CLOCK(setup_time);
+  LOG(DEBUG1) << "Setting up for the analysis";
+  // Perform setup for analysis using configurations from the input files.
+  SetupForAnalysis();
+  LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
