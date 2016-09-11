@@ -34,8 +34,6 @@
 namespace scram {
 namespace mef {
 
-std::stringstream Initializer::schema_;
-
 namespace {
 
 /// Maps string to the role specifier.
@@ -65,11 +63,6 @@ Initializer::Initializer(const core::Settings& settings)
     : settings_(settings),
       mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
-  if (schema_.str().empty()) {
-    std::string schema_path = Env::input_schema();
-    std::ifstream schema_stream(schema_path.c_str());
-    schema_ << schema_stream.rdbuf();
-  }
 }
 
 void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
@@ -143,9 +136,16 @@ void Initializer::CheckDuplicateFiles(
 }
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
+  static xmlpp::RelaxNGValidator validator(Env::input_schema());
+
   std::unique_ptr<xmlpp::DomParser> parser =
       scram::ConstructDomParser(xml_file);
-  scram::Validate(parser->get_document(), schema_);
+  try {
+    validator.validate(parser->get_document());
+  } catch (const xmlpp::validity_error& err) {
+    throw ValidationError("Document failed schema validation: " +
+                          std::string(err.what()));
+  }
 
   const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "opsa-mef");

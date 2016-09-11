@@ -371,9 +371,6 @@ class Initializer : private boost::noncopyable {
   core::Settings settings_;  ///< Settings for analysis.
   std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
-  /// The main schema for validation.
-  static std::stringstream schema_;
-
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
 

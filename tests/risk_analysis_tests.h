@@ -83,10 +83,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   // Collection of assertions on the reporting after running analysis.
   // Note that the analysis is run by this function.
   void CheckReport(const std::string& tree_input) {
-    std::stringstream schema;
-    std::string schema_path = Env::report_schema();
-    std::ifstream schema_stream(schema_path.c_str());
-    schema << schema_stream.rdbuf();
+    static xmlpp::RelaxNGValidator validator(Env::report_schema());
 
     ASSERT_NO_THROW(ProcessInputFile(tree_input));
     ASSERT_NO_THROW(analysis->Analyze());
@@ -95,7 +92,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
     xmlpp::DomParser parser;
     ASSERT_NO_THROW(parser.parse_stream(output));
-    ASSERT_NO_THROW(scram::Validate(parser.get_document(), schema));
+    ASSERT_NO_THROW(validator.validate(parser.get_document()));
   }
 
   // Returns a single fault tree, assuming one fault tree with single top gate.

@@ -38,11 +38,11 @@ namespace scram {
 /// Initializes a DOM parser
 /// and converts library exceptions into local errors.
 ///
-/// @param[in] xml_input_snippet  An XML snippet to be used as input.
+/// @param[in] file_path  Path to the xml file.
 ///
 /// @returns A parser with a well-formed, initialized document.
 ///
-/// @throws ValidationError  There are problems loading the XML snippet.
+/// @throws ValidationError  There are problems loading the XML file.
 inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
     const std::string& file_path) {
   try {
@@ -51,16 +51,6 @@ inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
     throw ValidationError("XML file is invalid: " + std::string(ex.what()));
   }
 }
-
-/// Validates the file against a schema.
-///
-/// @param[in] document  Well-formed, initialized document.
-/// @param[in] xml_schema_snippet  The schema to validate against.
-///
-/// @throws ValidationError  The XML file failed schema validation.
-/// @throws LogicError  The schema could not be parsed.
-void Validate(const xmlpp::Document* document,
-              const std::stringstream& xml_schema_snippet);
 
 /// Helper function to statically cast to XML element.
 ///

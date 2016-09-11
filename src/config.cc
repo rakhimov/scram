@@ -35,20 +35,17 @@
 namespace scram {
 
 Config::Config(const std::string& config_file) {
+  static xmlpp::RelaxNGValidator validator(Env::config_schema());
+
   if (boost::filesystem::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
 
-  std::unique_ptr<xmlpp::DomParser> parser;
+  std::unique_ptr<xmlpp::DomParser> parser =
+      scram::ConstructDomParser(config_file);
   try {
-    parser = scram::ConstructDomParser(config_file);
-    std::stringstream schema;
-    std::string schema_path = Env::config_schema();
-    std::ifstream schema_stream(schema_path.c_str());
-    schema << schema_stream.rdbuf();
-    scram::Validate(parser->get_document(), schema);
-  } catch (ValidationError& err) {
-    err.msg("In file '" + config_file + "', " + err.msg());
-    throw;
+    validator.validate(parser->get_document());
+  } catch (const xmlpp::validity_error& err) {
+    throw ValidationError("In file '" + config_file + "', " + err.what());
   }
   const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "config");
