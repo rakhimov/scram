@@ -29,6 +29,7 @@
 #include "env.h"
 #include "error.h"
 #include "logger.h"
+#include "xml_parser.h"
 
 namespace scram {
 namespace mef {
@@ -68,7 +69,6 @@ Initializer::Initializer(const core::Settings& settings)
     std::string schema_path = Env::input_schema();
     std::ifstream schema_stream(schema_path.c_str());
     schema_ << schema_stream.rdbuf();
-    schema_stream.close();
   }
 }
 
@@ -148,14 +148,11 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   std::stringstream stream;
   stream << file_stream.rdbuf();
-  file_stream.close();
 
-  XmlParser* parser = new XmlParser(stream);
-  parsers_.emplace_back(parser);  // Gets managed by unique pointer.
-  parser->Validate(schema_);
+  std::unique_ptr<xmlpp::DomParser> parser = scram::ConstructDomParser(stream);
+  scram::Validate(parser->get_document(), schema_);
 
-  const xmlpp::Document* doc = parser->Document();
-  const xmlpp::Node* root = doc->get_root_node();
+  const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "opsa-mef");
   doc_to_file_.emplace(root, xml_file);  // Save for later.
 
@@ -176,6 +173,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   for (const xmlpp::Node* node : root->find("./model-data")) {
     ProcessModelData(XmlElement(node));
   }
+  parsers_.emplace_back(std::move(parser));
 }
 
 void Initializer::ProcessTbdElements() {

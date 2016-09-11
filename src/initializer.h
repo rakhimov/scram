@@ -38,7 +38,6 @@
 #include "fault_tree.h"
 #include "model.h"
 #include "settings.h"
-#include "xml_parser.h"
 
 namespace scram {
 namespace mef {
@@ -375,8 +374,8 @@ class Initializer : private boost::noncopyable {
   /// The main schema for validation.
   static std::stringstream schema_;
 
-  /// Parsers with all documents saved for later access.
-  std::vector<std::unique_ptr<XmlParser>> parsers_;
+  /// Saved parsers to keep XML documents alive.
+  std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;

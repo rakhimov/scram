@@ -87,16 +87,15 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     std::string schema_path = Env::report_schema();
     std::ifstream schema_stream(schema_path.c_str());
     schema << schema_stream.rdbuf();
-    schema_stream.close();
 
     ASSERT_NO_THROW(ProcessInputFile(tree_input));
     ASSERT_NO_THROW(analysis->Analyze());
     std::stringstream output;
     ASSERT_NO_THROW(analysis->Report(output));
 
-    std::unique_ptr<XmlParser> parser;
-    ASSERT_NO_THROW(parser = std::make_unique<XmlParser>(output));
-    ASSERT_NO_THROW(parser->Validate(schema));
+    std::unique_ptr<xmlpp::DomParser> parser;
+    ASSERT_NO_THROW(parser = scram::ConstructDomParser(output));
+    ASSERT_NO_THROW(scram::Validate(parser->get_document(), schema));
   }
 
   // Returns a single fault tree, assuming one fault tree with single top gate.

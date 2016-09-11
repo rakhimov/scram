@@ -17,7 +17,6 @@ include_directories("${SCRAM_SOURCE_DIR}")
 
 set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/linear_map_tests.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_stream_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/config_tests.cc"
