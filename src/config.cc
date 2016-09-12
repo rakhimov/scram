@@ -22,46 +22,34 @@
 
 #include <cassert>
 
-#include <fstream>
 #include <memory>
-#include <sstream>
+
+#include <boost/filesystem.hpp>
 
 #include "env.h"
 #include "error.h"
-#include "xml_parser.h"
+#include "xml.h"
 
 namespace scram {
 
 Config::Config(const std::string& config_file) {
-  std::ifstream file_stream(config_file.c_str());
-  if (!file_stream) {
+  static xmlpp::RelaxNGValidator validator(Env::config_schema());
+
+  if (boost::filesystem::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
-  }
 
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
-  file_stream.close();
-
-  std::unique_ptr<XmlParser> parser;
+  std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(config_file);
   try {
-    parser = std::make_unique<XmlParser>(stream);
-    std::stringstream schema;
-    std::string schema_path = Env::config_schema();
-    std::ifstream schema_stream(schema_path.c_str());
-    schema << schema_stream.rdbuf();
-    schema_stream.close();
-    parser->Validate(schema);
-  } catch (ValidationError& err) {
-    err.msg("In file '" + config_file + "', " + err.msg());
-    throw;
+    validator.validate(parser->get_document());
+  } catch (const xmlpp::validity_error& err) {
+    throw ValidationError("In file '" + config_file + "', " + err.what());
   }
-  const xmlpp::Document* doc = parser->Document();
-  const xmlpp::Node* root = doc->get_root_node();
+  const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "config");
-  Config::GatherInputFiles(root);
-  Config::GetOutputPath(root);
+  GatherInputFiles(root);
+  GetOutputPath(root);
   try {
-    Config::GatherOptions(root);
+    GatherOptions(root);
   } catch (Error& err) {
     err.msg("In file '" + config_file + "', " + err.msg());
     throw;
@@ -72,14 +60,13 @@ void Config::GatherInputFiles(const xmlpp::Node* root) {
   xmlpp::NodeSet input_files = root->find("./input-files");
   if (input_files.empty()) return;
   assert(input_files.size() == 1);
-  const xmlpp::Element* files =
-      static_cast<const xmlpp::Element*>(input_files.front());
+  const xmlpp::Element* files = XmlElement(input_files.front());
   xmlpp::NodeSet all_files = files->find("./*");
   assert(!all_files.empty());
   for (const xmlpp::Node* node : all_files) {
-    const xmlpp::Element* file = static_cast<const xmlpp::Element*>(node);
+    const xmlpp::Element* file = XmlElement(node);
     assert(file->get_name() == "file");
-    input_files_.push_back(file->get_child_text()->get_content());
+    input_files_.push_back(GetContent(file->get_child_text()));
   }
 }
 
@@ -87,8 +74,7 @@ void Config::GatherOptions(const xmlpp::Node* root) {
   xmlpp::NodeSet options = root->find("./options");
   if (options.empty()) return;
   assert(options.size() == 1);
-  const xmlpp::Element* element =
-      static_cast<const xmlpp::Element*>(options.front());
+  const xmlpp::Element* element = XmlElement(options.front());
   xmlpp::NodeSet all_options = element->find("./*");
   assert(!all_options.empty());
   int line_number = 0;  // For error reporting.
@@ -98,29 +84,26 @@ void Config::GatherOptions(const xmlpp::Node* root) {
     // yet this function should not know what the order is.
     for (const xmlpp::Node* node : all_options) {
       line_number = node->get_line();
-      const xmlpp::Element* option_group =
-          static_cast<const xmlpp::Element*>(node);
+      const xmlpp::Element* option_group = XmlElement(node);
       std::string name = option_group->get_name();
       if (name == "algorithm") {
-        Config::SetAlgorithm(option_group);
+        SetAlgorithm(option_group);
 
       } else if (name == "analysis") {
-        Config::SetAnalysis(option_group);
+        SetAnalysis(option_group);
 
       } else if (name == "prime-implicants") {
         settings_.prime_implicants(true);
 
       } else if (name == "approximation") {
-        Config::SetApproximation(option_group);
+        SetApproximation(option_group);
 
       } else if (name == "limits") {
-        Config::SetLimits(option_group);
+        SetLimits(option_group);
       }
     }
   } catch (InvalidArgument& err) {
-    std::stringstream msg;
-    msg << "Line " << line_number << ":\n";
-    err.msg(msg.str() + err.msg());
+    err.msg("Line " + std::to_string(line_number) + ":\n" + err.msg());
     throw;
   }
 }
@@ -129,19 +112,18 @@ void Config::GetOutputPath(const xmlpp::Node* root) {
   xmlpp::NodeSet out = root->find("./output-path");
   if (out.empty()) return;
   assert(out.size() == 1);
-  const xmlpp::Element* element =
-      static_cast<const xmlpp::Element*>(out.front());
-  output_path_ = element->get_child_text()->get_content();
+  const xmlpp::Element* element = XmlElement(out.front());
+  output_path_ = GetContent(element->get_child_text());
 }
 
 void Config::SetAlgorithm(const xmlpp::Element* analysis) {
-  settings_.algorithm(analysis->get_attribute_value("name"));
+  settings_.algorithm(GetAttributeValue(analysis, "name"));
 }
 
 void Config::SetAnalysis(const xmlpp::Element* analysis) {
   for (const xmlpp::Attribute* type : analysis->get_attributes()) {
     std::string name = type->get_name();
-    bool flag = Config::GetBoolFromString(type->get_value());
+    bool flag = GetBoolFromString(type->get_value());
     if (name == "probability") {
       settings_.probability_analysis(flag);
 
@@ -158,12 +140,12 @@ void Config::SetAnalysis(const xmlpp::Element* analysis) {
 }
 
 void Config::SetApproximation(const xmlpp::Element* approx) {
-  settings_.approximation(approx->get_attribute_value("name"));
+  settings_.approximation(GetAttributeValue(approx, "name"));
 }
 
 void Config::SetLimits(const xmlpp::Element* limits) {
   for (const xmlpp::Node* node : limits->find("./*")) {
-    const xmlpp::Element* limit = static_cast<const xmlpp::Element*>(node);
+    const xmlpp::Element* limit = XmlElement(node);
     std::string name = limit->get_name();
     if (name == "product-order") {
       settings_.limit_order(CastChildText<int>(limit));

@@ -78,33 +78,10 @@ int GetOrder(const Product& product) {
   return product.empty() ? 1 : product.size();
 }
 
-FaultTreeDescriptor::FaultTreeDescriptor(const mef::Gate& root)
-    : top_event_(root) {
-  FaultTreeDescriptor::GatherEvents(top_event_.formula());
-}
-
-void FaultTreeDescriptor::GatherEvents(const mef::Formula& formula) noexcept {
-  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    basic_events_.emplace(basic_event->id(), basic_event.get());
-    if (basic_event->HasCcf())
-      ccf_events_.emplace(basic_event->id(), basic_event.get());
-  }
-  for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
-    house_events_.emplace(house_event->id(), house_event.get());
-  }
-  for (const mef::GatePtr& gate : formula.gate_args()) {
-    bool unvisited = inter_events_.emplace(gate->id(), gate.get()).second;
-    if (unvisited) FaultTreeDescriptor::GatherEvents(gate->formula());
-  }
-  for (const mef::FormulaPtr& arg : formula.formula_args()) {
-    FaultTreeDescriptor::GatherEvents(*arg);
-  }
-}
-
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
                                      const Settings& settings)
     : Analysis(settings),
-      FaultTreeDescriptor(root) {}
+      top_event_(root) {}
 
 void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
                                 const BooleanGraph* graph) noexcept {

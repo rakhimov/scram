@@ -244,7 +244,7 @@ class Random {
   ///
   /// @returns A sampled value.
   static double LogUniformGenerator(double min, double max) noexcept {
-    return std::exp(Random::UniformRealGenerator(min, max));
+    return std::exp(UniformRealGenerator(min, max));
   }
 
   /// RNG from log-triangular distribution.
@@ -256,7 +256,7 @@ class Random {
   /// @returns A sampled value.
   static double LogTriangularGenerator(double lower, double mode,
                                        double upper) noexcept {
-    return std::exp(Random::TriangularGenerator(lower, mode, upper));
+    return std::exp(TriangularGenerator(lower, mode, upper));
   }
 
  private:

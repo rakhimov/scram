@@ -225,24 +225,24 @@ void RunScram(const po::variables_map& vm) {
   }
   // Process input files
   // into valid analysis containers and constructs.
-  auto init = std::make_unique<scram::mef::Initializer>(settings);
-  init->ProcessInputFiles(input_files);  // Throws if anything is invalid.
+  // Throws if anything is invalid.
+  auto init = std::make_unique<scram::mef::Initializer>(input_files, settings);
   if (vm.count("validate")) return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
-  auto ran =
+  auto analysis =
       std::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
   init.reset();  // Remove extra reference counts to shared objects.
 
-  ran->Analyze();
+  analysis->Analyze();
 #ifndef NDEBUG
   if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
     return;
 #endif
   if (output_path.empty()) {
-    ran->Report(std::cout);
+    analysis->Report(std::cout);
   } else {
-    ran->Report(output_path);
+    analysis->Report(output_path);
   }
 }
 

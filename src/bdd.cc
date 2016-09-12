@@ -58,25 +58,25 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     assert(top_gate->args<Gate>().empty());
     int child = *top_gate->args().begin();
     VariablePtr var = top_gate->args<Variable>().begin()->second;
-    root_ = {child < 0, Bdd::FindOrAddVertex(var->index(), kOne_, kOne_, true,
-                                             var->order())};
+    root_ = {child < 0,
+             FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = Bdd::ConvertGraph(*fault_tree->root(), &gates);
+    root_ = ConvertGraph(*fault_tree->root(), &gates);
     root_.complement ^= fault_tree->complement();
   }
-  Bdd::ClearMarks(false);
-  Bdd::TestStructure(root_.vertex);
+  ClearMarks(false);
+  TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
-  Bdd::ClearMarks(false);
-  LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
+  ClearMarks(false);
+  LOG(DEBUG4) << "# of ITE in BDD: " << CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
-  Bdd::ClearMarks(false);
+  ClearMarks(false);
   // Clear tables if no more calculations are expected.
-  Bdd::ClearTables();
+  ClearTables();
   if (coherent_) {
     unique_table_.Release();
     and_table_.reserve(0);
@@ -90,7 +90,7 @@ void Bdd::Analyze() noexcept {
   zbdd_ = std::make_unique<Zbdd>(this, kSettings_);
   zbdd_->Analyze();
   if (!coherent_) {  // The BDD has been used by the ZBDD.
-    Bdd::ClearTables();
+    ClearTables();
     unique_table_.Release();
     and_table_.reserve(0);
     or_table_.reserve(0);
@@ -120,8 +120,8 @@ ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,
 ItePtr Bdd::FindOrAddVertex(const ItePtr& ite, const VertexPtr& high,
                             const VertexPtr& low,
                             bool complement_edge) noexcept {
-  ItePtr in_table = Bdd::FindOrAddVertex(ite->index(), high, low,
-                                         complement_edge, ite->order());
+  ItePtr in_table =
+      FindOrAddVertex(ite->index(), high, low, complement_edge, ite->order());
   if (in_table->unique()) {
     in_table->module(ite->module());
     in_table->coherent(ite->coherent());
@@ -135,8 +135,8 @@ ItePtr Bdd::FindOrAddVertex(const Gate& gate, const VertexPtr& high,
                             const VertexPtr& low,
                             bool complement_edge) noexcept {
   assert(gate.module() && "Only module gates are expected for proxies.");
-  ItePtr in_table = Bdd::FindOrAddVertex(gate.index(), high, low,
-                                         complement_edge, gate.order());
+  ItePtr in_table =
+      FindOrAddVertex(gate.index(), high, low, complement_edge, gate.order());
   if (in_table->unique()) {
     in_table->module(gate.module());
     in_table->coherent(gate.coherent());
@@ -161,16 +161,16 @@ Bdd::Function Bdd::ConvertGraph(
   }
   std::vector<Function> args;
   for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
-    args.push_back({arg.first < 0,
-                    Bdd::FindOrAddVertex(arg.second->index(), kOne_, kOne_,
-                                         true, arg.second->order())});
+    args.push_back(
+        {arg.first < 0, FindOrAddVertex(arg.second->index(), kOne_, kOne_, true,
+                                        arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
-    Function res = Bdd::ConvertGraph(*arg.second, gates);
+    Function res = ConvertGraph(*arg.second, gates);
     if (arg.second->module()) {
-      args.push_back({arg.first < 0,
-                      Bdd::FindOrAddVertex(*arg.second, kOne_, kOne_, true)});
+      args.push_back(
+          {arg.first < 0, FindOrAddVertex(*arg.second, kOne_, kOne_, true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});
@@ -183,10 +183,10 @@ Bdd::Function Bdd::ConvertGraph(
   });
   auto it = args.cbegin();
   for (result = *it++; it != args.cend(); ++it) {
-    result = Bdd::Apply(gate.type(), result.vertex, it->vertex,
-                        result.complement, it->complement);
+    result = Apply(gate.type(), result.vertex, it->vertex, result.complement,
+                   it->complement);
   }
-  Bdd::ClearTables();
+  ClearTables();
   assert(result.vertex);
   if (gate.module()) modules_.emplace(gate.index(), result);
   if (gate.parents().size() > 1) gates->insert({gate.index(), {result, 1}});
@@ -225,10 +225,10 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
     return {complement_one, arg_one};
   }
   std::pair<int, int> min_max_id =
-      Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
+      GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
   if (auto it = ext::find(and_table_, min_max_id)) return it->second;
-  Function result = Bdd::Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
-                                     complement_one, complement_two);
+  Function result = Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
+                                complement_one, complement_two);
   and_table_.emplace(min_max_id, result);
   return result;
 }
@@ -252,10 +252,10 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
     return {complement_one, arg_one};
   }
   std::pair<int, int> min_max_id =
-      Bdd::GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
+      GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
   if (auto it = ext::find(or_table_, min_max_id)) return it->second;
-  Function result = Bdd::Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
-                                    complement_one, complement_two);
+  Function result = Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
+                               complement_one, complement_two);
   or_table_.emplace(min_max_id, result);
   return result;
 }
@@ -273,24 +273,24 @@ Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
   Function low;
   if (ite_one->order() == ite_two->order()) {  // The same variable.
     assert(ite_one->index() == ite_two->index());
-    high = Bdd::Apply<Type>(ite_one->high(), ite_two->high(), complement_one,
-                            complement_two);
-    low = Bdd::Apply<Type>(ite_one->low(), ite_two->low(),
-                           complement_one ^ ite_one->complement_edge(),
-                           complement_two ^ ite_two->complement_edge());
+    high = Apply<Type>(ite_one->high(), ite_two->high(), complement_one,
+                       complement_two);
+    low = Apply<Type>(ite_one->low(), ite_two->low(),
+                      complement_one ^ ite_one->complement_edge(),
+                      complement_two ^ ite_two->complement_edge());
   } else {
     assert(ite_one->order() < ite_two->order());
-    high = Bdd::Apply<Type>(ite_one->high(), ite_two, complement_one,
-                            complement_two);
-    low = Bdd::Apply<Type>(ite_one->low(), ite_two,
-                           complement_one ^ ite_one->complement_edge(),
-                           complement_two);
+    high =
+        Apply<Type>(ite_one->high(), ite_two, complement_one, complement_two);
+    low = Apply<Type>(ite_one->low(), ite_two,
+                      complement_one ^ ite_one->complement_edge(),
+                      complement_two);
   }
 
   bool complement_edge = high.complement ^ low.complement;
   if (complement_edge || (high.vertex->id() != low.vertex->id())) {
     high.vertex =
-        Bdd::FindOrAddVertex(ite_one, high.vertex, low.vertex, complement_edge);
+        FindOrAddVertex(ite_one, high.vertex, low.vertex, complement_edge);
   }
 
   return high;
@@ -301,17 +301,17 @@ Bdd::Function Bdd::Apply(Operator type,
                          bool complement_one, bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
   if (type == kAnd) {
-    return Bdd::Apply<kAnd>(arg_one, arg_two, complement_one, complement_two);
+    return Apply<kAnd>(arg_one, arg_two, complement_one, complement_two);
   }
   assert(type == kOr && "Unsupported operator.");
-  return Bdd::Apply<kOr>(arg_one, arg_two, complement_one, complement_two);
+  return Apply<kOr>(arg_one, arg_two, complement_one, complement_two);
 }
 
 Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
                                       bool complement) noexcept {
-  Bdd::ClearTables();
-  return Bdd::Apply<kAnd>(ite->high(), ite->low(), complement,
-                          ite->complement_edge() ^ complement);
+  ClearTables();
+  return Apply<kAnd>(ite->high(), ite->low(), complement,
+                     ite->complement_edge() ^ complement);
 }
 
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
@@ -322,10 +322,9 @@ int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
   int in_module = 0;
   if (ite->module()) {
     const Function& module = modules_.find(ite->index())->second;
-    in_module = Bdd::CountIteNodes(module.vertex);
+    in_module = CountIteNodes(module.vertex);
   }
-  return 1 + in_module + Bdd::CountIteNodes(ite->high()) +
-         Bdd::CountIteNodes(ite->low());
+  return 1 + in_module + CountIteNodes(ite->high()) + CountIteNodes(ite->low());
 }
 
 void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
@@ -334,11 +333,11 @@ void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
   if (ite->mark() == mark) return;
   ite->mark(mark);
   if (ite->module()) {
-    const Bdd::Function& res = modules_.find(ite->index())->second;
-    Bdd::ClearMarks(res.vertex, mark);
+    const Function& res = modules_.find(ite->index())->second;
+    ClearMarks(res.vertex, mark);
   }
-  Bdd::ClearMarks(ite->high(), mark);
-  Bdd::ClearMarks(ite->low(), mark);
+  ClearMarks(ite->high(), mark);
+  ClearMarks(ite->low(), mark);
 }
 
 void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
@@ -359,12 +358,12 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
            ite->order() >= Ite::Ptr(ite->low())->order()) &&
          "Ordering of nodes failed.");
   if (ite->module()) {
-    const Bdd::Function& res = modules_.find(ite->index())->second;
+    const Function& res = modules_.find(ite->index())->second;
     assert(!res.vertex->terminal() && "Terminal modules must be removed.");
-    Bdd::TestStructure(res.vertex);
+    TestStructure(res.vertex);
   }
-  Bdd::TestStructure(ite->high());
-  Bdd::TestStructure(ite->low());
+  TestStructure(ite->high());
+  TestStructure(ite->low());
 }
 
 }  // namespace core

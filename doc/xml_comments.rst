@@ -10,7 +10,7 @@ XML Editors
 For better experience and productivity with writing and reading XML files,
 it is recommended to use advanced text editors and tools
 that provide XML specific automation and help,
-i.e. tag auto-completion, folding, schema validation.
+e.g. tag auto-completion, folding, schema validation.
 
 
 Recommended Tools

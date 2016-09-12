@@ -52,7 +52,7 @@ void UncertaintyAnalysis::Analyze() noexcept {
   CLOCK(stat_time);
   LOG(DEBUG3) << "Calculating statistics...";
   // Perform statistical analysis.
-  UncertaintyAnalysis::CalculateStatistics(samples);
+  CalculateStatistics(samples);
   LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
 
   Analysis::AddAnalysisTime(DUR(analysis_time));

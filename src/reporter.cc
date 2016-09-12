@@ -34,7 +34,7 @@ namespace scram {
 void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   XmlStreamElement report("report", out);
-  Reporter::ReportInformation(risk_an, &report);
+  ReportInformation(risk_an, &report);
 
   CLOCK(report_time);
   LOG(DEBUG1) << "Reporting analysis results...";
@@ -45,16 +45,14 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
     if (risk_an.settings().probability_analysis()) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
     }
-    Reporter::ReportResults(id, *fta.second, prob_analysis, &results);
+    ReportResults(id, *fta.second, prob_analysis, &results);
 
     if (risk_an.settings().importance_analysis()) {
-      Reporter::ReportResults(id, *risk_an.importance_analyses().at(id),
-                              &results);
+      ReportResults(id, *risk_an.importance_analyses().at(id), &results);
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
-      Reporter::ReportResults(id, *risk_an.uncertainty_analyses().at(id),
-                              &results);
+      ReportResults(id, *risk_an.uncertainty_analyses().at(id), &results);
     }
   }
   LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
@@ -156,32 +154,28 @@ void Reporter::ReportCalculatedQuantity<core::RiskAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
   // Report the fault tree analysis by default.
-  Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(settings,
-                                                              information);
+  ReportCalculatedQuantity<core::FaultTreeAnalysis>(settings, information);
   // Report optional analyses.
   if (settings.probability_analysis()) {
-    Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(settings,
-                                                                  information);
+    ReportCalculatedQuantity<core::ProbabilityAnalysis>(settings, information);
   }
   if (settings.importance_analysis()) {
-    Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(settings,
-                                                                 information);
+    ReportCalculatedQuantity<core::ImportanceAnalysis>(settings, information);
   }
   if (settings.uncertainty_analysis()) {
-    Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(settings,
-                                                                  information);
+    ReportCalculatedQuantity<core::UncertaintyAnalysis>(settings, information);
   }
 }
 
 void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* report) {
   XmlStreamElement information = report->AddChild("information");
-  Reporter::ReportSoftwareInformation(&information);
-  Reporter::ReportPerformance(risk_an, &information);
-  Reporter::ReportCalculatedQuantity(risk_an.settings(), &information);
-  Reporter::ReportModelFeatures(risk_an.model(), &information);
-  Reporter::ReportOrphanPrimaryEvents(risk_an.model(), &information);
-  Reporter::ReportUnusedParameters(risk_an.model(), &information);
+  ReportSoftwareInformation(&information);
+  ReportPerformance(risk_an, &information);
+  ReportCalculatedQuantity(risk_an.settings(), &information);
+  ReportModelFeatures(risk_an.model(), &information);
+  ReportOrphanPrimaryEvents(risk_an.model(), &information);
+  ReportUnusedParameters(risk_an.model(), &information);
 }
 
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
@@ -294,7 +288,7 @@ void Reporter::ReportResults(const std::string& ft_name,
       product.SetAttribute("contribution", prob / sum);
     }
     for (const core::Literal& literal : product_set) {
-      Reporter::ReportLiteral(literal, &product);
+      ReportLiteral(literal, &product);
     }
   }
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
@@ -322,7 +316,7 @@ void Reporter::ReportResults(
           .SetAttribute("RAW", factors.raw)
           .SetAttribute("RRW", factors.rrw);
     };
-    Reporter::ReportBasicEvent(*entry.first, &importance, add_data);
+    ReportBasicEvent(*entry.first, &importance, add_data);
   }
 }
 
@@ -386,9 +380,9 @@ void Reporter::ReportLiteral(const core::Literal& literal,
   auto add_data = [](XmlStreamElement* /*element*/) {};
   if (literal.complement) {
     XmlStreamElement not_parent = parent->AddChild("not");
-    Reporter::ReportBasicEvent(literal.event, &not_parent, add_data);
+    ReportBasicEvent(literal.event, &not_parent, add_data);
   } else {
-    Reporter::ReportBasicEvent(literal.event, parent, add_data);
+    ReportBasicEvent(literal.event, parent, add_data);
   }
 }
 

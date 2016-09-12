@@ -143,13 +143,12 @@ void GlmExpression::Validate() const {
 }
 
 double GlmExpression::Mean() noexcept {
-  return GlmExpression::Compute(gamma_.Mean(), lambda_.Mean(), mu_.Mean(),
-                                time_.Mean());
+  return Compute(gamma_.Mean(), lambda_.Mean(), mu_.Mean(), time_.Mean());
 }
 
 double GlmExpression::GetSample() noexcept {
-  return GlmExpression::Compute(gamma_.Sample(), lambda_.Sample(),
-                                mu_.Sample(), time_.Sample());
+  return Compute(gamma_.Sample(), lambda_.Sample(), mu_.Sample(),
+                 time_.Sample());
 }
 
 double GlmExpression::Compute(double gamma, double lambda, double mu,
@@ -270,14 +269,14 @@ void LogNormalDeviate::Validate() const {
 }
 
 double LogNormalDeviate::GetSample() noexcept {
-  double sigma = LogNormalDeviate::ComputeScale(level_.Sample(), ef_.Sample());
-  double mu = LogNormalDeviate::ComputeLocation(mean_.Sample(), sigma);
+  double sigma = ComputeScale(level_.Sample(), ef_.Sample());
+  double mu = ComputeLocation(mean_.Sample(), sigma);
   return Random::LogNormalGenerator(mu, sigma);
 }
 
 double LogNormalDeviate::Max() noexcept {
-  double sigma = LogNormalDeviate::ComputeScale(level_.Mean(), ef_.Mean());
-  double mu = LogNormalDeviate::ComputeLocation(mean_.Max(), sigma);
+  double sigma = ComputeScale(level_.Mean(), ef_.Mean());
+  double mu = ComputeLocation(mean_.Max(), sigma);
   return std::exp(
       std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
 }

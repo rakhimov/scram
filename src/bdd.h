@@ -91,8 +91,9 @@ class WeakIntrusivePtr final : private boost::noncopyable {
   ~WeakIntrusivePtr() noexcept {
     if (control_block_) {
       if (--control_block_->weak_count == 0 &&
-          control_block_->vertex == nullptr)
+          control_block_->vertex == nullptr) {
         delete control_block_;
+      }
     }
   }
 
@@ -352,7 +353,7 @@ class Ite : public NonTerminal<Ite> {
   }
 
  public:
-  using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+  using NonTerminal::NonTerminal;
 
   /// @returns true if the low edge is complement.
   bool complement_edge() const { return complement_edge_; }
@@ -431,7 +432,7 @@ class UniqueTable {
   ///
   /// @param[in] init_capacity  The starting capacity for the table.
   explicit UniqueTable(int init_capacity = 1000)
-      : capacity_(GetPrimeNumber(init_capacity)),
+      : capacity_(core::GetPrimeNumber(init_capacity)),
         size_(0),
         max_load_factor_(0.75),
         table_(capacity_) {}
@@ -475,9 +476,9 @@ class UniqueTable {
   /// @returns Reference to the weak pointer.
   WeakIntrusivePtr<T>& FindOrAdd(int index, int high_id, int low_id) noexcept {
     if (size_ >= (max_load_factor_ * capacity_))
-      UniqueTable::Rehash(UniqueTable::GetNextCapacity(capacity_));
+      Rehash(GetNextCapacity(capacity_));
 
-    int bucket_number = UniqueTable::Hash(index, high_id, low_id) % capacity_;
+    int bucket_number = Hash(index, high_id, low_id) % capacity_;
     Bucket& chain = table_[bucket_number];
     auto it_prev = chain.before_begin();  // Parent.
     for (auto it_cur = chain.begin(), it_end = chain.end(); it_cur != it_end;) {
@@ -518,8 +519,7 @@ class UniqueTable {
         ++new_size;
         T* vertex = it_cur->get();
         int bucket_number =
-            UniqueTable::Hash(vertex->index(), get_high_id(*vertex),
-                              get_low_id(*vertex)) %
+            Hash(vertex->index(), get_high_id(*vertex), get_low_id(*vertex)) %
             new_capacity;
         Bucket& new_chain = new_table[bucket_number];
         new_chain.splice_after(new_chain.before_begin(), chain, it_prev,
@@ -561,7 +561,7 @@ class UniqueTable {
     }
     int growth_factor = std::pow(2, scale_power);
     int new_capacity =  prev_capacity * growth_factor;
-    return GetPrimeNumber(new_capacity);
+    return core::GetPrimeNumber(new_capacity);
   }
 
   int capacity_;  ///< The total number of buckets in the table.
@@ -610,7 +610,7 @@ class CacheTable {
   explicit CacheTable(int init_capacity = 1000)
       : size_(0),
         max_load_factor_(0.75),
-        table_(GetPrimeNumber(init_capacity)) {}
+        table_(core::GetPrimeNumber(init_capacity)) {}
 
   /// @returns The number of entires in the table.
   int size() const { return size_; }
@@ -636,7 +636,7 @@ class CacheTable {
       return;
     }
     if (n <= size_) return;
-    CacheTable::Rehash(GetPrimeNumber(n / max_load_factor_ + 1));
+    Rehash(core::GetPrimeNumber(n / max_load_factor_ + 1));
   }
 
   /// Searches for existing entry.
@@ -667,7 +667,7 @@ class CacheTable {
     assert(value && "Empty computation results!");
 
     if (size_ >= (max_load_factor_ * table_.size()))
-      CacheTable::Rehash(GetPrimeNumber(table_.size() * 2));
+      Rehash(core::GetPrimeNumber(table_.size() * 2));
 
     int index = boost::hash_value(key) % table_.size();
     value_type& entry = table_[index];
@@ -785,7 +785,7 @@ class Bdd : private boost::noncopyable {
   ///
   /// @warning If the graph is discontinuously and partially marked,
   ///          this function will not help with the mess.
-  void ClearMarks(bool mark) { Bdd::ClearMarks(root_.vertex, mark); }
+  void ClearMarks(bool mark) { ClearMarks(root_.vertex, mark); }
 
   /// Runs the Qualitative analysis
   /// with the representation of a Boolean graph as ROBDD.

@@ -15,55 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file xml_parser.h
-/// XML Parser.
+/// @file xml.h
+/// XML helper facilities to work with libxml++.
 
-#ifndef SCRAM_SRC_XML_PARSER_H_
-#define SCRAM_SRC_XML_PARSER_H_
+#ifndef SCRAM_SRC_XML_H_
+#define SCRAM_SRC_XML_H_
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/noncopyable.hpp>
 #include <libxml++/libxml++.h>
 
 #include "error.h"
 
 namespace scram {
 
-/// A helper class to hold XML file data
-/// and provide automatic validation.
-class XmlParser : private boost::noncopyable {
- public:
-  /// Initializes a parser with an XML snippet.
-  ///
-  /// @param[in] xml_input_snippet  An XML snippet to be used as input.
-  ///
-  /// @throws ValidationError  There are problems loading the XML snippet.
-  explicit XmlParser(const std::stringstream& xml_input_snippet);
-
-  /// Resets the parser.
-  ~XmlParser() noexcept { parser_.reset(); }
-
-  /// Validates the file against a schema.
-  ///
-  /// @param[in] xml_schema_snippet  The schema to validate against.
-  ///
-  /// @throws ValidationError  The XML file failed schema validation.
-  /// @throws LogicError  The schema could not be parsed.
-  /// @throws Error  Could not create validating context.
-  void Validate(const std::stringstream& xml_schema_snippet);
-
-  /// @returns The parser's document.
-  const xmlpp::Document* Document() const { return parser_->get_document(); }
-
- private:
-  std::unique_ptr<xmlpp::DomParser> parser_;  ///< File parser.
-};
+/// Initializes a DOM parser
+/// and converts library exceptions into local errors.
+///
+/// @param[in] file_path  Path to the xml file.
+///
+/// @returns A parser with a well-formed, initialized document.
+///
+/// @throws ValidationError  There are problems loading the XML file.
+inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
+    const std::string& file_path) {
+  try {
+    return std::make_unique<xmlpp::DomParser>(file_path);
+  } catch (const xmlpp::parse_error& ex) {
+    throw ValidationError("XML file is invalid: " + std::string(ex.what()));
+  }
+}
 
 /// Helper function to statically cast to XML element.
 ///
@@ -76,15 +61,10 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
   return static_cast<const xmlpp::Element*>(node);
 }
 
-/// Normalizes the string in an XML attribute.
-///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
-///
-/// @returns Normalized (trimmed) string from the attribute.
+/// Returns Normalized (trimmed) string value of an XML element attribute.
 inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute) {
-  std::string value = element->get_attribute_value(attribute);
+                                     const std::string& attribute_name) {
+  std::string value = element->get_attribute_value(attribute_name);
   boost::trim(value);
   return value;
 }
@@ -107,11 +87,17 @@ CastAttributeValue(const xmlpp::Element* element,
   try {
     return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
   } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret attribute '" << attribute << "' to a number.";
-    throw ValidationError(msg.str());
+    throw ValidationError("Line " + std::to_string(element->get_line()) +
+                          ":\nFailed to interpret attribute '" + attribute +
+                          "' to a number.");
   }
+}
+
+/// Returns Normalized content of an XML text node.
+inline std::string GetContent(const xmlpp::TextNode* child_text) {
+  std::string content = child_text->get_content();
+  boost::trim(content);
+  return content;
 }
 
 /// Gets a number from an XML text.
@@ -127,18 +113,16 @@ CastAttributeValue(const xmlpp::Element* element,
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, T>::type
 CastChildText(const xmlpp::Element* element) {
-  std::string content = element->get_child_text()->get_content();
-  boost::trim(content);
+  std::string content = GetContent(element->get_child_text());
   try {
     return boost::lexical_cast<T>(content);
   } catch (boost::bad_lexical_cast&) {
-    std::stringstream msg;
-    msg << "Line " << element->get_line() << ":\n"
-        << "Failed to interpret text '" << content << "' to a number.";
-    throw ValidationError(msg.str());
+    throw ValidationError("Line " + std::to_string(element->get_line()) +
+                          ":\nFailed to interpret text '" + content +
+                          "' to a number.");
   }
 }
 
 }  // namespace scram
 
-#endif  // SCRAM_SRC_XML_PARSER_H_
+#endif  // SCRAM_SRC_XML_H_

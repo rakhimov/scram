@@ -123,19 +123,19 @@ class Model : public Element, boost::noncopyable {
   /// @{
   ParameterPtr GetParameter(const std::string& entity_reference,
                             const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, parameters_);
+    return GetEntity(entity_reference, base_path, parameters_);
   }
   HouseEventPtr GetHouseEvent(const std::string& entity_reference,
                               const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, house_events_);
+    return GetEntity(entity_reference, base_path, house_events_);
   }
   BasicEventPtr GetBasicEvent(const std::string& entity_reference,
                               const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, basic_events_);
+    return GetEntity(entity_reference, base_path, basic_events_);
   }
   GatePtr GetGate(const std::string& entity_reference,
                   const std::string& base_path) {
-    return Model::GetEntity(entity_reference, base_path, gates_);
+    return GetEntity(entity_reference, base_path, gates_);
   }
   /// @}
 
@@ -210,16 +210,16 @@ class Model : public Element, boost::noncopyable {
         return *it;
     }
 
-    auto At = [&entity_reference](const auto& reference_container) {
+    auto at = [&entity_reference](const auto& reference_container) {
       if (auto it = ext::find(reference_container, entity_reference))
         return *it;
       throw std::out_of_range("The event cannot be found.");
     };
 
     if (entity_reference.find('.') == std::string::npos)  // Public entity.
-      return At(container.entities_by_id);
+      return at(container.entities_by_id);
 
-    return At(container.entities_by_path);  // Direct access.
+    return at(container.entities_by_path);  // Direct access.
   }
 
   /// A collection of defined constructs in the model.

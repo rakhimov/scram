@@ -82,28 +82,27 @@ void Formula::vote_number(int number) {
 }
 
 void Formula::Validate() const {
-  int size = Formula::num_args();
   switch (type_) {
     case kAnd:
     case kOr:
     case kNand:
     case kNor:
-      if (size < 2)
+      if (num_args() < 2)
         throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
                               "\" formula must have 2 or more arguments.");
       break;
     case kNot:
     case kNull:
-      if (size != 1)
+      if (num_args() != 1)
         throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
                               "\" formula must have only one argument.");
       break;
     case kXor:
-      if (size != 2)
+      if (num_args() != 2)
         throw ValidationError("\"xor\" formula must have exactly 2 arguments.");
       break;
     case kVote:
-      if (size <= vote_number_)
+      if (num_args() <= vote_number_)
         throw ValidationError("\"atleast\" formula must have more arguments "
                               "than its vote number " +
                               std::to_string(vote_number_) + ".");

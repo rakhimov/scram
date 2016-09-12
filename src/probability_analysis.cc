@@ -95,9 +95,7 @@ double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG4) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
-  double prob = ProbabilityAnalyzer::CalculateProbability(
-      bdd_graph_->root().vertex,
-      current_mark_);
+  double prob = CalculateProbability(bdd_graph_->root().vertex, current_mark_);
   if (bdd_graph_->root().complement) prob = 1 - prob;
   LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
   return prob;
@@ -132,13 +130,13 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
   double p_var = 0;
   if (ite->module()) {
     const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
-    p_var = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
+    p_var = CalculateProbability(res.vertex, mark);
     if (res.complement) p_var = 1 - p_var;
   } else {
     p_var = ProbabilityAnalyzerBase::p_vars()[ite->index()];
   }
-  double high = ProbabilityAnalyzer::CalculateProbability(ite->high(), mark);
-  double low = ProbabilityAnalyzer::CalculateProbability(ite->low(), mark);
+  double high = CalculateProbability(ite->high(), mark);
+  double low = CalculateProbability(ite->low(), mark);
   if (ite->complement_edge()) low = 1 - low;
   ite->p(p_var * high + (1 - p_var) * low);
   return ite->p();

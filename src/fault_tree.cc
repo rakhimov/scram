@@ -34,15 +34,15 @@ Component::Component(std::string name, std::string base_path,
       Role(role, std::move(base_path)) {}
 
 void Component::AddGate(const GatePtr& gate) {
-  Component::AddEvent(gate, &gates_);
+  AddEvent(gate, &gates_);
 }
 
 void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
-  Component::AddEvent(basic_event, &basic_events_);
+  AddEvent(basic_event, &basic_events_);
 }
 
 void Component::AddHouseEvent(const HouseEventPtr& house_event) {
-  Component::AddEvent(house_event, &house_events_);
+  AddEvent(house_event, &house_events_);
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
@@ -99,7 +99,8 @@ void FaultTree::CollectTopEvents() {
   std::unordered_set<Gate*> gates;
   Component::GatherGates(&gates);
   // Detects top events.
-  for (Gate* gate : gates) FaultTree::MarkNonTopGates(gate, gates);
+  for (Gate* gate : gates)
+    MarkNonTopGates(gate, gates);
 
   for (Gate* gate : gates) {
     if (gate->mark()) {  // Not a top event.
@@ -113,19 +114,19 @@ void FaultTree::CollectTopEvents() {
 void FaultTree::MarkNonTopGates(Gate* gate,
                                 const std::unordered_set<Gate*>& gates) {
   if (gate->mark()) return;
-  FaultTree::MarkNonTopGates(gate->formula(), gates);
+  MarkNonTopGates(gate->formula(), gates);
 }
 
 void FaultTree::MarkNonTopGates(const Formula& formula,
                                 const std::unordered_set<Gate*>& gates) {
   for (const GatePtr& gate : formula.gate_args()) {
     if (gates.count(gate.get())) {
-      FaultTree::MarkNonTopGates(gate.get(), gates);
+      MarkNonTopGates(gate.get(), gates);
       gate->mark(NodeMark::kPermanent);  // Any non clear mark can be assigned.
     }
   }
   for (const FormulaPtr& arg : formula.formula_args()) {
-    FaultTree::MarkNonTopGates(*arg, gates);
+    MarkNonTopGates(*arg, gates);
   }
 }
 

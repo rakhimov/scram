@@ -71,7 +71,7 @@ class Event : public Element,
 /// This class represents Base, House, Undeveloped, and other events.
 class PrimaryEvent : public Event {
  public:
-  using Event::Event;  // Construction with unique identification.
+  using Event::Event;
   virtual ~PrimaryEvent() = 0;  ///< Abstract class.
 
   /// @returns A flag indicating if the event's expression is set.
@@ -91,7 +91,7 @@ class PrimaryEvent : public Event {
 /// Representation of a house event in a fault tree.
 class HouseEvent : public PrimaryEvent {
  public:
-  using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.
+  using PrimaryEvent::PrimaryEvent;
 
   /// Sets the state for House event.
   ///
@@ -116,7 +116,7 @@ using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
-  using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.
+  using PrimaryEvent::PrimaryEvent;
 
   virtual ~BasicEvent() = default;
 
@@ -258,7 +258,7 @@ using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
  public:
-  using Event::Event;  // Construction with unique identification.
+  using Event::Event;
 
   /// @returns The formula of this gate.
   /// @{

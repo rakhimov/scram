@@ -29,7 +29,7 @@ namespace scram {
 
 /// Errors in using XML streaming facilities.
 struct XmlStreamError : public Error {
-  using Error::Error;  ///< Constructor with a message.
+  using Error::Error;
 };
 
 /// Writer of data formed as an XML element to a stream.

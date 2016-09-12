@@ -31,11 +31,8 @@ Deviations from the GCSG
 ------------------------
 
 - Exceptions are allowed.
-- Prefer streams to ``printf-like`` routines.
 - Name mutator functions without ``set_`` prefix.
 - Multiple *implementation* inheritance is allowed (mostly for mixins).
-- Lambda expressions used as nested functions follow
-  the function naming conventions.
 
 
 Deviations from the Qt Style
@@ -98,11 +95,6 @@ Additional Coding Conventions
 - Use *modern C++* (C++14).
   Refer to `C++ Core Guidelines`_ for best practices.
 
-- If API, functionality, class, container, or other constructs mimic the STL constructs,
-  prefer the STL conventions and style.
-  For example, an iterator class for a custom container
-  should be named ``iterator`` instead of ``Iterator``.
-
 - Do not use ``inline``
   when defining a function in a class definition.
   It is implicitly ``inline``.
@@ -163,13 +155,20 @@ Core C++ Code
     * ``ClassNamePtr`` for shared, unique, and intrusive pointers
     * ``ClassNameWeakPtr`` for weak pointers
 
-- Function call qualifications in definitions of class member functions:
+- Function call qualification conventions:
 
-    * Explicitly qualify non-virtual member and inherited function calls
-      with the corresponding class names, i.e., ``ClassName::Foo()``.
-    * Qualify virtual functions to be overridden by design as ``this->Foo()``.
-    * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
-    * Unqualified calls relying on the ADL must state the intent in the documentation.
+    * Unqualified calls customizable by or relying on the ADL
+      must make it explicit in the documentation and comments.
+
+    * In definitions of member functions:
+
+        - Explicitly qualify calls to inherited non-virtual member functions
+          with the corresponding base class names, e.g., ``BaseClassName::Foo()``.
+        - Qualify virtual functions to be overridden by design as ``this->Foo()``.
+        - Qualify a call to a free function with its namespace, e.g., ``scram::Foo()``.
+
+    * In definitions of free functions,
+      calls to other free functions in the enclosing namespace can be unqualified.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
@@ -182,20 +181,20 @@ Core C++ Code
       abbreviate it to ``p_``.
       Its getter/setter functions should have
       corresponding names, i.e., ``p()`` and ``p(double value)``.
-      Append extra description after ``p_``, i.e., ``p_total_``.
+      Append extra description after ``p_``, e.g., ``p_total_``.
       Avoid abbreviating the name to ``prob``
       or fully spelling it to ``probability``.
 
     * For non-member probability variables:
 
         + Prefer prefixing with ``p_``
-          if the name has more description to the probability value, i.e., ``p_not_event``.
+          if the name has more description to the probability value, e.g., ``p_not_event``.
         + Prefer ``prob`` abbreviation
           for single word names indicating general probability values.
 
     * Prefer spelling ``Probability`` fully for cases not covered above
-      (class/function/namespace/typedef/...), i.e., ``CalculateProbability``.
-      Avoid abbreviating the name, i.e., ``CalculateProb``.
+      (class/function/namespace/typedef/...), e.g., ``CalculateProbability``.
+      Avoid abbreviating the name, e.g., ``CalculateProb``.
 
 - Prefer the terminology and concepts of Boolean algebra and graph theory
   to the terminology and concepts of risk analysis in **analysis code**.

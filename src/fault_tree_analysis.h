@@ -148,8 +148,8 @@ class Product {
     return complement_vector_ & (1 << pos);
   }
 
-  uint8_t size_;  ///< The number of literals in the product.
-  uint32_t complement_vector_;  ///< The complement flags of the literals.
+  std::uint8_t size_;  ///< The number of literals in the product.
+  std::uint32_t complement_vector_;  ///< The complement flags of the literals.
   /// The collection of literal events.
   std::unique_ptr<const mef::BasicEvent*[]> data_;
 };
@@ -183,69 +183,6 @@ double CalculateProbability(const Product& product);
 /// @note An empty set is assumed to indicate the Base/Unity set.
 int GetOrder(const Product& product);
 
-/// Fault tree description gatherer.
-/// General information about a fault tree
-/// described by a gate as its root.
-class FaultTreeDescriptor {
- public:
-  /// Table of fault tree events with their ids as keys.
-  template <typename T>
-  using Table = std::unordered_map<std::string, const T*>;
-
-  /// Gathers all information about a fault tree with a root gate.
-  ///
-  /// @param[in] root  The root gate of a fault tree.
-  ///
-  /// @warning If the fault tree structure is changed,
-  ///          this description does not incorporate the changed structure.
-  ///          Moreover, the data may get corrupted.
-  explicit FaultTreeDescriptor(const mef::Gate& root);
-
-  virtual ~FaultTreeDescriptor() = default;
-
-  /// @returns The top gate that is passed to the analysis.
-  const mef::Gate& top_event() const { return top_event_; }
-
-  /// @returns The container of fault tree events.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  /// @{
-  const Table<mef::Gate>& inter_events() const { return inter_events_; }
-  const Table<mef::BasicEvent>& basic_events() const { return basic_events_; }
-  const Table<mef::BasicEvent>& ccf_events() const { return ccf_events_; }
-  const Table<mef::HouseEvent>& house_events() const { return house_events_; }
-  /// @}
-
- private:
-  /// Traverses formulas recursively to find all events.
-  /// Gathers information about the correctly initialized fault tree.
-  /// Databases for events are manipulated
-  /// to best reflect the state and structure of the fault tree.
-  /// This function must be called after validation.
-  /// This function must be called before any analysis is performed
-  /// because there would not be necessary information
-  /// available for analysis like primary events of this fault tree.
-  /// Moreover, all the nodes of this fault tree
-  /// are expected to be defined fully and correctly.
-  ///
-  /// @param[in] formula  The formula to get events from.
-  void GatherEvents(const mef::Formula& formula) noexcept;
-
-  const mef::Gate& top_event_;  ///< Top event of this fault tree.
-
-  /// Containers of gathered fault tree events.
-  /// @{
-  Table<mef::Gate> inter_events_;
-  Table<mef::BasicEvent> basic_events_;
-  Table<mef::HouseEvent> house_events_;
-  /// @}
-
-  /// Container for basic events that are identified to be in some CCF group.
-  /// These basic events are not necessarily in the same CCF group.
-  Table<mef::BasicEvent> ccf_events_;
-};
-
 /// Fault tree analysis functionality.
 /// The analysis must be done on
 /// a validated and fully initialized fault trees.
@@ -265,7 +202,7 @@ class FaultTreeDescriptor {
 ///
 /// @warning Run analysis only once.
 ///          One analysis per FaultTreeAnalysis object.
-class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
+class FaultTreeAnalysis : public Analysis {
  public:
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -284,6 +221,9 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   FaultTreeAnalysis(const mef::Gate& root, const Settings& settings);
 
   virtual ~FaultTreeAnalysis() = default;
+
+  /// @returns The top gate that is passed to the analysis.
+  const mef::Gate& top_event() const { return top_event_; }
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called
@@ -319,6 +259,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
                const BooleanGraph* graph) noexcept;
 
  private:
+  const mef::Gate& top_event_;  ///< The root of the graph under analysis.
   std::vector<Product> products_;  ///< Container of analysis results.
   /// The set of events in the resultant products.
   std::unordered_set<const mef::BasicEvent*> product_events_;
@@ -331,7 +272,6 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 template <class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
-  /// Constructor with a fault tree and analysis settings.
   using FaultTreeAnalysis::FaultTreeAnalysis;
 
   /// Runs fault tree analysis with the given algorithm.
@@ -357,7 +297,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = std::make_unique<BooleanGraph>(FaultTreeDescriptor::top_event(),
+  graph_ = std::make_unique<BooleanGraph>(FaultTreeAnalysis::top_event(),
                                           Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 

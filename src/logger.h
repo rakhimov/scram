@@ -46,7 +46,7 @@ namespace scram {
 /// Starts the timing in nanoseconds.
 ///
 /// @param[out] var  A unique name for time variable in the scope.
-#define CLOCK(var) uint64_t var = TIME_STAMP()
+#define CLOCK(var) std::uint64_t var = TIME_STAMP()
 
 /// Calculates the time duration since the start of the clock in seconds.
 ///

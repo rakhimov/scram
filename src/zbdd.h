@@ -43,7 +43,7 @@ namespace core {
 /// The order of the complement is higher than the order of the variable.
 class SetNode : public NonTerminal<SetNode> {
  public:
-  using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+  using NonTerminal::NonTerminal;
 
   /// @returns true if the ZBDD is minimized.
   bool minimal() const { return minimal_; }
@@ -63,7 +63,7 @@ class SetNode : public NonTerminal<SetNode> {
   void max_set_order(int order) { max_set_order_ = order; }
 
   /// @returns Whatever count is stored in this node.
-  int64_t count() const { return count_; }
+  std::int64_t count() const { return count_; }
 
   /// Stores numerical value for later retrieval.
   /// This can be a helper functionality
@@ -78,7 +78,7 @@ class SetNode : public NonTerminal<SetNode> {
   ///       In contrast to providing separate fields or using hash tables
   ///       for each technique metric,
   ///       this general-purpose field saves space and time.
-  void count(int64_t number) { count_ = number; }
+  void count(std::int64_t number) { count_ = number; }
 
   /// @returns Products found in the ZBDD represented by this node.
   const std::vector<std::vector<int>>& products() const { return products_; }
@@ -106,7 +106,7 @@ class SetNode : public NonTerminal<SetNode> {
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
   int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
   std::vector<std::vector<int>> products_;  ///< Products of this node.
-  int64_t count_ = 0;  ///< The number of products, nodes, or anything else.
+  std::int64_t count_ = 0;  ///< The number of products, nodes, or anything.
 };
 
 using SetNodePtr = IntrusivePtr<SetNode>;  ///< Shared ZBDD set nodes.
@@ -677,7 +677,7 @@ class Zbdd : private boost::noncopyable {
   /// @returns The number of products in ZBDD.
   ///
   /// @pre SetNode marks are clear (false).
-  int64_t CountProducts(const VertexPtr& vertex, bool modules) noexcept;
+  std::int64_t CountProducts(const VertexPtr& vertex, bool modules) noexcept;
 
   /// Cleans up non-terminal vertex marks
   /// by setting them to "false".

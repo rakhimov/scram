@@ -347,24 +347,21 @@ class WeibullExpression : public Expression {
   void Validate() const override;
 
   double Mean() noexcept override {
-    return WeibullExpression::Compute(alpha_.Mean(), beta_.Mean(),
-                                      t0_.Mean(), time_.Mean());
+    return Compute(alpha_.Mean(), beta_.Mean(), t0_.Mean(), time_.Mean());
   }
 
   double Max() noexcept override {
-    return WeibullExpression::Compute(alpha_.Min(), beta_.Max(),
-                                      t0_.Min(), time_.Max());
+    return Compute(alpha_.Min(), beta_.Max(), t0_.Min(), time_.Max());
   }
 
   double Min() noexcept override {
-    return WeibullExpression::Compute(alpha_.Max(), beta_.Min(),
-                                      t0_.Max(), time_.Min());
+    return Compute(alpha_.Max(), beta_.Min(), t0_.Max(), time_.Min());
   }
 
  private:
   double GetSample() noexcept override {
-    return WeibullExpression::Compute(alpha_.Sample(), beta_.Sample(),
-                                      t0_.Sample(), time_.Sample());
+    return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(),
+                   time_.Sample());
   }
 
   /// Calculates Weibull expression.
@@ -387,7 +384,7 @@ class WeibullExpression : public Expression {
 /// These expressions provide quantification for uncertainty and sensitivity.
 class RandomDeviate : public Expression {
  public:
-  using Expression::Expression;  // Main helper constructors with arguments.
+  using Expression::Expression;
 
   bool IsConstant() noexcept override { return false; }
 };
@@ -590,8 +587,8 @@ class Histogram : public RandomDeviate {
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
   void Validate() const override {
-    Histogram::CheckBoundaries();
-    Histogram::CheckWeights();
+    CheckBoundaries();
+    CheckWeights();
   }
 
   double Mean() noexcept override;
@@ -653,15 +650,15 @@ class BinaryExpression : public Expression {
 /// This expression adds all the given expressions' values.
 class Add : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
-  double Mean() noexcept override { return Add::Compute(&Expression::Mean); }
-  double Max() noexcept override { return Add::Compute(&Expression::Max); }
-  double Min() noexcept override { return Add::Compute(&Expression::Min); }
+  double Mean() noexcept override { return Compute(&Expression::Mean); }
+  double Max() noexcept override { return Compute(&Expression::Max); }
+  double Min() noexcept override { return Compute(&Expression::Min); }
 
  private:
   double GetSample() noexcept override {
-    return Add::Compute(&Expression::Sample);
+    return Compute(&Expression::Sample);
   }
 
   /// Adds all argument expression values.
@@ -681,19 +678,19 @@ class Add : public BinaryExpression {
 /// First expression minus the rest of the given expressions' values.
 class Sub : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
-  double Mean() noexcept override { return Sub::Compute(&Expression::Mean); }
+  double Mean() noexcept override { return Compute(&Expression::Mean); }
   double Max() noexcept override {
-    return Sub::Compute(&Expression::Max, &Expression::Min);
+    return Compute(&Expression::Max, &Expression::Min);
   }
   double Min() noexcept override {
-    return Sub::Compute(&Expression::Min, &Expression::Max);
+    return Compute(&Expression::Min, &Expression::Max);
   }
 
  private:
   double GetSample() noexcept override {
-    return Sub::Compute(&Expression::Sample);
+    return Compute(&Expression::Sample);
   }
 
   /// Performs the subtraction of all argument expression values.
@@ -719,7 +716,7 @@ class Sub : public BinaryExpression {
 /// This expression performs multiplication operation.
 class Mul : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override;
 
@@ -728,14 +725,14 @@ class Mul : public BinaryExpression {
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum possible value of the product.
-  double Max() noexcept override { return Mul::GetExtremum(/*max=*/true); }
+  double Max() noexcept override { return GetExtremum(/*max=*/true); }
 
   /// Finds minimum product
   /// from the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum possible value of the product.
-  double Min() noexcept override { return Mul::GetExtremum(/*max=*/false); }
+  double Min() noexcept override { return GetExtremum(/*max=*/false); }
 
  private:
   double GetSample() noexcept override;
@@ -751,7 +748,7 @@ class Mul : public BinaryExpression {
 /// the rest of argument expressions.
 class Div : public BinaryExpression {
  public:
-  using BinaryExpression::BinaryExpression;  // Constructor with all arguments.
+  using BinaryExpression::BinaryExpression;
 
   /// @throws InvalidArgument  Division by 0.
   void Validate() const override;
@@ -763,14 +760,14 @@ class Div : public BinaryExpression {
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum value for division of arguments.
-  double Max() noexcept override { return Div::GetExtremum(/*max=*/true); }
+  double Max() noexcept override { return GetExtremum(/*max=*/true); }
 
   /// Finds minimum results of division
   /// of the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum value for division of arguments.
-  double Min() noexcept override { return Div::GetExtremum(/*max=*/false); }
+  double Min() noexcept override { return GetExtremum(/*max=*/false); }
 
  private:
   double GetSample() noexcept override;

@@ -78,18 +78,12 @@ struct MoveEraser {
   template <class T>
   static typename T::iterator erase(typename T::const_iterator it,
                                     T* container) {
-    return MoveEraser::erase(
+    return erase(
         std::next(container->begin(), std::distance(container->cbegin(), it)),
         container);
   }
   /// @}
 };
-
-/// @todo Bug in Intel compiler with variadic-template-template arguments.
-#ifdef __INTEL_COMPILER
-template <typename T>
-using DefaultSequence = std::vector<T>;
-#endif
 
 /// An adaptor map with lookup complexity O(N)
 /// based on sequence (contiguous structure by default).
@@ -137,11 +131,7 @@ using DefaultSequence = std::vector<T>;
 /// @tparam Sequence  The underlying container type.
 template <typename Key, typename Value,
           class ErasePolicy = DefaultEraser,
-#ifdef __INTEL_COMPILER
-          template <typename> class Sequence = DefaultSequence>
-#else
           template <typename...> class Sequence = std::vector>
-#endif
 class linear_map {
   /// Non-member equality test operators.
   /// The complexity is O(N^2).

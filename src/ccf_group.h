@@ -168,7 +168,7 @@ using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
 /// then all components or members fail simultaneously or within short time.
 class BetaFactorModel : public CcfGroup {
  public:
-  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
+  using CcfGroup::CcfGroup;
 
  private:
   /// Checks a CCF factor level for the beta model.
@@ -190,7 +190,7 @@ class BetaFactorModel : public CcfGroup {
 /// given that (k-1) members failed.
 class MglModel : public CcfGroup {
  public:
-  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
+  using CcfGroup::CcfGroup;
 
  private:
   /// Checks a CCF factor level for the MGL model.
@@ -210,7 +210,7 @@ class MglModel : public CcfGroup {
 /// the group due to common cause.
 class AlphaFactorModel : public CcfGroup {
  public:
-  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
+  using CcfGroup::CcfGroup;
 
  private:
   ExpressionMap CalculateProbabilities() override;
@@ -222,7 +222,7 @@ class AlphaFactorModel : public CcfGroup {
 /// This model is described in the OpenPSA Model Exchange Format.
 class PhiFactorModel : public CcfGroup {
  public:
-  using CcfGroup::CcfGroup;  ///< Standard group constructor with a group name.
+  using CcfGroup::CcfGroup;
 
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.
