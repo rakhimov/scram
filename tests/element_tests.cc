@@ -75,7 +75,7 @@ TEST(ElementTest, Attribute) {
   attr.type = "float";
   EXPECT_THROW(el.GetAttribute(attr.name), LogicError);
   ASSERT_NO_THROW(el.AddAttribute(attr));
-  EXPECT_THROW(el.AddAttribute(attr), LogicError);
+  EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
 }

@@ -214,16 +214,24 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
   }
 
   xmlpp::NodeSet attributes = element_node->find("./attributes");
-  if (!attributes.empty()) {
-    assert(attributes.size() == 1);  // Only one big element 'attributes'.
-    const xmlpp::Element* attributes_element = XmlElement(attributes.front());
+  if (attributes.empty())
+    return;
+  assert(attributes.size() == 1);  // Only one big element 'attributes'.
+  const xmlpp::Element* attribute = nullptr;  // To report position.
+  const xmlpp::Element* attributes_element = XmlElement(attributes.front());
+
+  try {
     for (const xmlpp::Node* node : attributes_element->find("./attribute")) {
-      const xmlpp::Element* attribute = XmlElement(node);
-      Attribute attr = {GetAttributeValue(attribute, "name"),
-                        GetAttributeValue(attribute, "value"),
-                        GetAttributeValue(attribute, "type")};
-      element->AddAttribute(attr);
+      attribute = XmlElement(node);
+      Attribute attribute_struct = {GetAttributeValue(attribute, "name"),
+                                    GetAttributeValue(attribute, "value"),
+                                    GetAttributeValue(attribute, "type")};
+      element->AddAttribute(std::move(attribute_struct));
     }
+  } catch(ValidationError& err) {
+    err.msg("Line " + std::to_string(attribute->get_line()) + ":\n" +
+            err.msg());
+    throw;
   }
 }
 

@@ -69,13 +69,14 @@ class Element {
   ///
   /// @throws LogicError  The label is already set,
   ///                     or the new label is empty.
-  void label(const std::string& new_label);
+  void label(std::string new_label);
 
   /// Adds an attribute to the attribute map.
   ///
   /// @param[in] attr  Unique attribute of this element.
   ///
-  /// @throws LogicError  The attribute already exists.
+  /// @throws DuplicateArgumentError  A member attribute with the same name
+  ///                                 already exists.
   ///
   /// @post Pointers or references
   ///       to existing attributes may get invalidated.
@@ -86,10 +87,9 @@ class Element {
   /// @param[in] name  The identifying name of the attribute.
   ///
   /// @returns true if this element has an attribute with the given name.
-  /// @returns false otherwise.
   bool HasAttribute(const std::string& name) const;
 
-  /// @returns Reference to the attribute if it exists.
+  /// @returns A member attribute with the given name.
   ///
   /// @param[in] name  The id name of the attribute.
   ///

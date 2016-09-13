@@ -99,6 +99,7 @@ BAD_INPUTS = [
     "cyclic_expression.xml",
     "invalid_expression.xml",
     "repeated_child.xml",
+    "repeated_attribute.xml",
     "alpha_ccf_level_error.xml",
     "beta_ccf_level_error.xml",
     "mgl_ccf_level_error.xml",

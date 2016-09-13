@@ -36,15 +36,20 @@ Element::Element(std::string name, bool optional_name)
     throw InvalidArgument("The element name is malformed.");
 }
 
-void Element::label(const std::string& new_label) {
-  if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
-  if (new_label.empty()) throw LogicError("Trying to apply empty label");
-  label_ = new_label;
+void Element::label(std::string new_label) {
+  if (!label_.empty())
+    throw LogicError("Trying to reset the label: " + label_);
+  if (new_label.empty())
+    throw LogicError("Trying to apply empty label");
+
+  label_ = std::move(new_label);
 }
 
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name))
-    throw LogicError("Trying to overwrite an existing attribute: " + attr.name);
+    throw DuplicateArgumentError(
+        "Trying to overwrite an existing attribute {event: " + kName_ +
+        ", attr: " + attr.name + "} ");
 
   attributes_.emplace_back(std::move(attr));
 }
@@ -60,9 +65,10 @@ const Attribute& Element::GetAttribute(const std::string& name) const {
   auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
     return attr.name == name;
   });
-  if (it != attributes_.end()) return *it;
+  if (it == attributes_.end())
+    throw LogicError("Element does not have attribute: " + name);
 
-  throw LogicError("Element does not have attribute: " + name);
+  return *it;
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
