@@ -23,12 +23,11 @@
 #define SCRAM_SRC_ELEMENT_H_
 
 #include <string>
+#include <vector>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
-#include <boost/multi_index/member.hpp>
-#include <boost/multi_index/ordered_index.hpp>
 
 namespace scram {
 namespace mef {
@@ -77,39 +76,40 @@ class Element {
   /// @param[in] attr  Unique attribute of this element.
   ///
   /// @throws LogicError  The attribute already exists.
-  void AddAttribute(const Attribute& attr);
+  ///
+  /// @post Pointers or references
+  ///       to existing attributes may get invalidated.
+  void AddAttribute(Attribute attr);
 
   /// Checks if the element has a given attribute.
   ///
-  /// @param[in] id  The identification name of the attribute.
+  /// @param[in] name  The identifying name of the attribute.
   ///
-  /// @returns true if this element has an attribute with the given ID.
+  /// @returns true if this element has an attribute with the given name.
   /// @returns false otherwise.
-  bool HasAttribute(const std::string& id) const;
+  bool HasAttribute(const std::string& name) const;
 
   /// @returns Reference to the attribute if it exists.
   ///
-  /// @param[in] id  The id name of the attribute.
+  /// @param[in] name  The id name of the attribute.
   ///
   /// @throws LogicError  There is no such attribute.
-  const Attribute& GetAttribute(const std::string& id) const;
+  const Attribute& GetAttribute(const std::string& name) const;
 
  protected:
   ~Element() = default;
 
  private:
-  /// Container of attributes ordered by their names.
-  ///
-  /// @note Using a hash table incurs a huge memory overhead (~400B / element).
-  using AttributeTable = boost::multi_index_container<
-      Attribute,
-      boost::multi_index::indexed_by<
-          boost::multi_index::ordered_unique<boost::multi_index::member<
-              Attribute, std::string, &Attribute::name>>>>;
-
   const std::string kName_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
-  AttributeTable attributes_;  ///< Collection of attributes.
+
+  /// Container of attributes ordered by insertion time.
+  /// The attributes are unique by their names.
+  ///
+  /// @note Using a hash table incurs a huge memory overhead (~400B / element).
+  /// @note Elements are expected to have few attributes,
+  ///       complex containers may be overkill.
+  std::vector<Attribute> attributes_;
 };
 
 /// Table of elements with unique names.

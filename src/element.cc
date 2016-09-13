@@ -20,6 +20,8 @@
 
 #include "element.h"
 
+#include <boost/range/algorithm.hpp>
+
 #include "error.h"
 #include "ext.h"
 
@@ -40,19 +42,27 @@ void Element::label(const std::string& new_label) {
   label_ = new_label;
 }
 
-void Element::AddAttribute(const Attribute& attr) {
-  if (attributes_.insert(attr).second == false)
-    throw LogicError("Trying to re-add an attribute: " + attr.name);
+void Element::AddAttribute(Attribute attr) {
+  if (HasAttribute(attr.name))
+    throw LogicError("Trying to overwrite an existing attribute: " + attr.name);
+
+  attributes_.emplace_back(std::move(attr));
 }
 
-bool Element::HasAttribute(const std::string& id) const {
-  return attributes_.count(id);
+bool Element::HasAttribute(const std::string& name) const {
+  return attributes_.end() !=
+         boost::find_if(attributes_, [&name](const Attribute& attr) {
+           return attr.name == name;
+         });
 }
 
-const Attribute& Element::GetAttribute(const std::string& id) const {
-  if (auto it = ext::find(attributes_, id)) return *it;
+const Attribute& Element::GetAttribute(const std::string& name) const {
+  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
+    return attr.name == name;
+  });
+  if (it != attributes_.end()) return *it;
 
-  throw LogicError("Element does not have attribute: " + id);
+  throw LogicError("Element does not have attribute: " + name);
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
