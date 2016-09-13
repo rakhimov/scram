@@ -31,6 +31,7 @@
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
 #include <cassert>
+#include <cstdint>
 
 #include <algorithm>
 #include <array>
@@ -265,7 +266,7 @@ using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 ///          The algorithms may assume
 ///          for performance and simplicity reasons
 ///          that these are the only kinds of operators possible.
-enum Operator {
+enum Operator : std::uint8_t {
   kAnd = 0,  ///< Simple AND gate.
   kOr,  ///< Simple OR gate.
   kVote,  ///< Combination, K/N, or Vote gate representation.
@@ -283,7 +284,7 @@ const int kNumOperators = 8;  // Update this number if operators change.
 /// State of a gate as a set of Boolean variables.
 /// This state helps detect null and unity sets
 /// that are formed upon Boolean operations.
-enum State {
+enum State : std::uint8_t {
   kNormalState,  ///< The default case with any set that is not null or unity.
   kNullState,  ///< The set is null. This indicates no failure.
   kUnityState  ///< The set is unity. This set guarantees failure.
@@ -716,14 +717,14 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
+  bool mark_;  ///< Marking for linear traversal of a graph.
+  bool module_;  ///< Indication of an independent module gate.
+  bool coherent_;  ///< Indication of a coherent graph.
   int vote_number_;  ///< Vote number for VOTE gate.
   int descendant_;  ///< Mark by descendant indices.
   int ancestor_;  ///< Mark by ancestor indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
-  bool mark_;  ///< Marking for linear traversal of a graph.
-  bool module_;  ///< Indication of an independent module gate.
-  bool coherent_;  ///< Indication of a coherent graph.
   ArgSet args_;  ///< Argument indices of the gate.
   /// Associative containers of gate arguments of certain type.
   /// @{

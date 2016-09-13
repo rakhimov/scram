@@ -62,9 +62,9 @@ Parameter::Parameter(std::string name, std::string base_path,
       Element(std::move(name)),
       Role(role, std::move(base_path)),
       Id(*this, *this),
-      expression_(nullptr),
       unit_(kUnitless),
-      unused_(true) {}
+      unused_(true),
+      expression_(nullptr) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
   if (expression_) throw LogicError("Parameter expression is already set.");

@@ -21,6 +21,8 @@
 #ifndef SCRAM_SRC_EVENT_H_
 #define SCRAM_SRC_EVENT_H_
 
+#include <cstdint>
+
 #include <array>
 #include <memory>
 #include <string>
@@ -285,7 +287,7 @@ class Gate : public Event, public NodeMark {
 
 /// Operators for formulas.
 /// The ordering is the same as analysis operators in the Boolean graph.
-enum Operator {
+enum Operator : std::uint8_t {
   kAnd = 0,
   kOr,
   kVote,  ///< Combination, K/N, atleast, or Vote gate representation.

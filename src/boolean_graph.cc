@@ -62,14 +62,14 @@ Variable::Variable() noexcept : Node(next_variable_++) {}
 Gate::Gate(Operator type) noexcept
     : type_(type),
       state_(kNormalState),
+      mark_(false),
+      module_(false),
+      coherent_(false),
       vote_number_(0),
       descendant_(0),
       ancestor_(0),
       min_time_(0),
-      max_time_(0),
-      mark_(false),
-      module_(false),
-      coherent_(false) {}
+      max_time_(0) {}
 
 GatePtr Gate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();

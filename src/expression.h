@@ -22,6 +22,7 @@
 #define SCRAM_SRC_EXPRESSION_H_
 
 #include <cmath>
+#include <cstdint>
 
 #include <array>
 #include <memory>
@@ -118,7 +119,7 @@ class Expression : private boost::noncopyable {
 };
 
 /// Provides units for parameters.
-enum Units {
+enum Units : std::uint8_t {
   kUnitless = 0,
   kBool,
   kInt,
@@ -189,9 +190,9 @@ class Parameter : public Expression,
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  Expression* expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.
+  Expression* expression_;  ///< Expression for this parameter.
 };
 
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.

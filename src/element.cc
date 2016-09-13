@@ -72,8 +72,8 @@ const Attribute& Element::GetAttribute(const std::string& name) const {
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
-    : kRole_(role),
-      kBasePath_(std::move(base_path)) {
+    : kBasePath_(std::move(base_path)),
+      kRole_(role) {
   if (!kBasePath_.empty() &&
       (kBasePath_.front() == '.' || kBasePath_.back() == '.'))
     throw InvalidArgument("Element reference base path is malformed.");

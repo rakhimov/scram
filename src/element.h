@@ -22,6 +22,8 @@
 #ifndef SCRAM_SRC_ELEMENT_H_
 #define SCRAM_SRC_ELEMENT_H_
 
+#include <cstdint>
+
 #include <string>
 #include <vector>
 
@@ -122,7 +124,7 @@ using ElementTable = boost::multi_index_container<
                Element, const std::string&, &Element::name>>>>;
 
 /// Role, access attributes for elements.
-enum class RoleSpecifier { kPublic, kPrivate };
+enum class RoleSpecifier : std::uint8_t { kPublic, kPrivate };
 
 /// Mixin class that manages private or public roles
 /// for elements as needed.
@@ -151,8 +153,8 @@ class Role {
   ~Role() = default;
 
  private:
-  const RoleSpecifier kRole_;  ///< The role of the element.
   const std::string kBasePath_;  ///< A series of ancestor containers.
+  const RoleSpecifier kRole_;  ///< The role of the element.
 };
 
 /// Computes the full path of an element.
@@ -203,7 +205,7 @@ using IdTable = boost::multi_index_container<
 class NodeMark {
  public:
   /// Possible marks for the node.
-  enum Mark {
+  enum Mark : std::uint8_t {
     kClear = 0,  ///< Implicit conversion to Boolean false.
     kTemporary,
     kPermanent
