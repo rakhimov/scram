@@ -12,7 +12,7 @@ install_cmd="time -p ./install.py --prefix=./install --threads 2"
 if [[ -n "${RELEASE}" ]]; then
   ${install_cmd} --release
 elif [[ "$CXX" = "g++" ]]; then
-  ${install_cmd} --profile
+  ${install_cmd} --coverage
 else
   ${install_cmd} --debug
 fi

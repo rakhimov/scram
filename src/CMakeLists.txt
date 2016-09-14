@@ -11,6 +11,17 @@ configure_file(
   )
 ################### End File Configurations ####################
 
+set(LIB_LINK_FLAGS "")
+if(WITH_COVERAGE)
+  add_definitions("--coverage")
+  set(LIB_LINK_FLAGS "--coverage")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LIB_LINK_FLAGS}")
+endif()
+
+if(WITH_PROFILE)
+  add_definitions("-pg")
+endif()
+
 set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/version.cc"
@@ -47,6 +58,7 @@ set_target_properties(scramcore
   PROPERTIES
   INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
   INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+  LINK_FLAGS "${LIB_LINK_FLAGS}"
   )
 
 target_link_libraries(scramcore ${LIBS})

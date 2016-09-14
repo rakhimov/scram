@@ -25,6 +25,9 @@ option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
 
 option(WITH_TCMALLOC "Use TCMalloc" ON)
 
+option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
+option(WITH_PROFILE "Instrument for performance profiling" OFF)
+
 option(BUILD_GUI "Build the GUI front-end" ON)
 option(BUILD_TESTS "Build the tests" ON)
 
@@ -132,7 +135,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(LIBS "")
 
 # Optional TCMalloc for optimization.
-if(WITH_TCMALLOC)
+if(WITH_TCMALLOC AND NOT WITH_PROFILE)
   find_package(Tcmalloc)
   set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
 endif()

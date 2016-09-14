@@ -50,16 +50,15 @@ def generate_make_files(args):
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=" + args.build_type]
     elif args.release:
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
-    elif args.profile:
-        cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
-        cmake_cmd += ["-DWITH_TCMALLOC=OFF"]
-        cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
-        cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
-        cmake_cmd += ["-DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage'"]
     else:
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
         cmake_cmd += ["--warn-uninitialized"]
         cmake_cmd += ["-Wdev"]
+
+    if args.profile:
+        cmake_cmd += ["-DWITH_PROFILE=ON"]
+    if args.coverage:
+        cmake_cmd += ["-DWITH_COVERAGE=ON"]
 
     if args.D is not None:
         cmake_cmd += ["-D" + x for x in args.D]
@@ -132,12 +131,14 @@ def main():
     parser.add_argument("--test", action="store_true",
                         help="run tests after building")
     parser.add_argument("--build-type", help="the CMAKE_BUILD_TYPE")
-    parser.add_argument("-d", "--debug", help="build for debugging (default)",
+    parser.add_argument("--debug", help="build for debugging (default)",
                         action="store_true", default=False)
-    parser.add_argument("-p", "--profile", help="build for profiling",
-                        action="store_true", default=False)
-    parser.add_argument("-r", "--release",
+    parser.add_argument("--release",
                         help="build for release with optimizations",
+                        action="store_true", default=False)
+    parser.add_argument("--profile", help="build with profiling",
+                        action="store_true", default=False)
+    parser.add_argument("--coverage", help="build with coverage",
                         action="store_true", default=False)
     parser.add_argument("-D", metavar="VAR", action="append",
                         help="pass environment variable(s) to CMake")
