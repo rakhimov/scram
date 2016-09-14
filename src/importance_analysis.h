@@ -181,13 +181,15 @@ double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   p_vars[index] = 1;
   double p_e = Base::prob_analyzer()->CalculateTotalProbability();
   assert(p_e >= 0);
-  if (p_e > 1) p_e = 1;
+  if (p_e > 1)
+    p_e = 1;
 
   // Calculate P(top/Not event)
   p_vars[index] = 0;
   double p_not_e = Base::prob_analyzer()->CalculateTotalProbability();
   assert(p_not_e >= 0);
-  if (p_not_e > 1) p_not_e = 1;
+  if (p_not_e > 1)
+    p_not_e = 1;
 
   // Restore the probability.
   p_vars[index] = Base::prob_analyzer()->graph()->GetBasicEvent(index)->p();

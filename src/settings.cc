@@ -34,8 +34,10 @@ Settings& Settings::algorithm(const std::string& algorithm) {
   if (algorithm_ == "bdd") {
     approximation("no");
   } else {
-    if (approximation_ == "no") approximation("rare-event");
-    if (prime_implicants_) prime_implicants(false);
+    if (approximation_ == "no")
+      approximation("rare-event");
+    if (prime_implicants_)
+      prime_implicants(false);
   }
   return *this;
 }
@@ -45,7 +47,8 @@ Settings& Settings::prime_implicants(bool flag) {
     throw InvalidArgument("Prime implicants can only be calculated with BDD");
 
   prime_implicants_ = flag;
-  if (prime_implicants_) approximation("no");
+  if (prime_implicants_)
+    approximation("no");
   return *this;
 }
 
@@ -94,21 +97,24 @@ Settings& Settings::num_quantiles(int n) {
 }
 
 Settings& Settings::num_bins(int n) {
-  if (n < 1) throw InvalidArgument("The number of bins cannot be less than 1.");
+  if (n < 1)
+    throw InvalidArgument("The number of bins cannot be less than 1.");
 
   num_bins_ = n;
   return *this;
 }
 
 Settings& Settings::seed(int s) {
-  if (s < 0) throw InvalidArgument("The seed for PRNG cannot be negative.");
+  if (s < 0)
+    throw InvalidArgument("The seed for PRNG cannot be negative.");
 
   seed_ = s;
   return *this;
 }
 
 Settings& Settings::mission_time(double time) {
-  if (time < 0) throw InvalidArgument("The mission time cannot be negative.");
+  if (time < 0)
+    throw InvalidArgument("The mission time cannot be negative.");
 
   mission_time_ = time;
   return *this;

@@ -111,7 +111,8 @@ class Product {
     assert(size >= 0 && size <= 32);
     for (int i = 0; i < size; ++i, ++it) {
       const auto& literal = *it;
-      if (literal.first) complement_vector_ |= 1 << i;  // The complement flag.
+      if (literal.first)
+        complement_vector_ |= 1 << i;  // The complement flag.
       data_[i] = literal.second;  // The variable itself.
     }
   }
@@ -308,7 +309,8 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
-  if (Analysis::settings().preprocessor) return;  // Preprocessor only option.
+  if (Analysis::settings().preprocessor)
+    return;  // Preprocessor only option.
 #endif
   CLOCK(algo_time);
   LOG(DEBUG2) << "Launching the algorithm...";

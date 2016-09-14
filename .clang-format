@@ -2,4 +2,6 @@
 Language: Cpp
 BasedOnStyle: Google
 DerivePointerAlignment: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 # ExperimentalAutoDetectBinPacking: true

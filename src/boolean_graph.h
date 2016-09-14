@@ -488,9 +488,11 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          that will avoid any need for the RTTI or other hacks.
   NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
-    if (auto it = ext::find(gate_args_, index)) return it->second;
+    if (auto it = ext::find(gate_args_, index))
+      return it->second;
 
-    if (auto it = ext::find(variable_args_, index)) return it->second;
+    if (auto it = ext::find(variable_args_, index))
+      return it->second;
 
     return constant_args_.find(index)->second;
   }
@@ -535,8 +537,10 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
 
-    if (args_.count(index)) return ProcessDuplicateArg(index);
-    if (args_.count(-index)) return ProcessComplementArg(index);
+    if (args_.count(index))
+      return ProcessDuplicateArg(index);
+    if (args_.count(-index))
+      return ProcessComplementArg(index);
 
     args_.insert(index);
     mutable_args<T>().data().emplace_back(index, arg);
@@ -797,9 +801,10 @@ class GateSet {
     /// @returns true if the gate arguments are equal.
     bool operator()(const GatePtr& lhs, const GatePtr& rhs) const noexcept {
       assert(lhs->type() == rhs->type());
-      if (lhs->args() != rhs->args()) return false;
-      if (lhs->type() == kVote &&
-          lhs->vote_number() != rhs->vote_number()) return false;
+      if (lhs->args() != rhs->args())
+        return false;
+      if (lhs->type() == kVote && lhs->vote_number() != rhs->vote_number())
+        return false;
       return true;
     }
   };

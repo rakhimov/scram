@@ -128,7 +128,8 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     for (const Product& product : fta->products()) {
       distr[GetOrder(product) - 1]++;
     }
-    while (!distr.empty() && !distr.back()) distr.pop_back();
+    while (!distr.empty() && !distr.back())
+      distr.pop_back();
     return distr;
   }
 

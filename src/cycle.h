@@ -63,7 +63,8 @@ inline std::vector<Parameter*> GetNodes(Expression* connector) {
   std::vector<Parameter*> nodes;
   for (const ExpressionPtr& arg : connector->args()) {
     auto* ptr = dynamic_cast<Parameter*>(arg.get());
-    if (ptr) nodes.push_back(ptr);
+    if (ptr)
+      nodes.push_back(ptr);
   }
   return nodes;
 }
@@ -146,10 +147,12 @@ bool DetectCycle(const Ptr& node, std::vector<std::string>* cycle) {
 template <class Ptr>
 bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle) {
   for (const auto& node : GetNodes(connector)) {
-    if (DetectCycle(node, cycle)) return true;
+    if (DetectCycle(node, cycle))
+      return true;
   }
   for (const auto& link : GetConnectors(connector)) {
-    if (ContinueConnector(link, cycle)) return true;
+    if (ContinueConnector(link, cycle))
+      return true;
   }
   return false;
 }

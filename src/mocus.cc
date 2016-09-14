@@ -46,7 +46,8 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
 
 void Mocus::Analyze() {
   BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
-  if (constant_graph_) return;
+  if (constant_graph_)
+    return;
 
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";

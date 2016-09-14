@@ -395,7 +395,8 @@ class Formula : private boost::noncopyable {
     if (event_args_.insert(event.get()).second == false)
       throw DuplicateArgumentError("Duplicate argument " + event->name());
     container->emplace_back(event);
-    if (event->orphan()) event->orphan(false);
+    if (event->orphan())
+      event->orphan(false);
   }
 
   Operator type_;  ///< Logical operator.

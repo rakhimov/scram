@@ -227,7 +227,8 @@ void RunScram(const po::variables_map& vm) {
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
   auto init = std::make_unique<scram::mef::Initializer>(input_files, settings);
-  if (vm.count("validate")) return;  // Stop if only validation is requested.
+  if (vm.count("validate"))
+    return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
   auto analysis =
@@ -272,8 +273,10 @@ int main(int argc, char* argv[]) {
     // Parse command-line options.
     po::variables_map vm;
     int ret = ParseArguments(argc, argv, &vm);
-    if (ret == 1) return 1;
-    if (ret == 0) RunScram(vm);
+    if (ret == 1)
+      return 1;
+    if (ret == 0)
+      RunScram(vm);
 
 #ifdef NDEBUG
   }

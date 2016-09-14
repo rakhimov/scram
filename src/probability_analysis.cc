@@ -45,7 +45,8 @@ void ProbabilityAnalysis::Analyze() noexcept {
 double CutSetProbabilityCalculator::Calculate(
     const CutSet& cut_set,
     const std::vector<double>& p_vars) noexcept {
-  if (cut_set.empty()) return 0;
+  if (cut_set.empty())
+    return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
     assert(member > 0 && "Complements in a cut set.");
@@ -57,7 +58,8 @@ double CutSetProbabilityCalculator::Calculate(
 double RareEventCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
     const std::vector<double>& p_vars) noexcept {
-  if (CutSetProbabilityCalculator::CheckUnity(cut_sets)) return 1;
+  if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
+    return 1;
   double sum = 0;
   for (const auto& cut_set : cut_sets) {
     assert(!cut_set.empty() && "Detected an empty cut set.");
@@ -69,7 +71,8 @@ double RareEventCalculator::Calculate(
 double McubCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
     const std::vector<double>& p_vars) noexcept {
-  if (CutSetProbabilityCalculator::CheckUnity(cut_sets)) return 1;
+  if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
+    return 1;
   double m = 1;
   for (const auto& cut_set : cut_sets) {
     assert(!cut_set.empty() && "Detected an empty cut set.");
@@ -88,7 +91,8 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
 }
 
 ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
-  if (owner_) delete bdd_graph_;
+  if (owner_)
+    delete bdd_graph_;
 }
 
 double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
@@ -96,7 +100,8 @@ double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
   LOG(DEBUG4) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
   double prob = CalculateProbability(bdd_graph_->root().vertex, current_mark_);
-  if (bdd_graph_->root().complement) prob = 1 - prob;
+  if (bdd_graph_->root().complement)
+    prob = 1 - prob;
   LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
   return prob;
 }
@@ -123,21 +128,25 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const mef::Gate& root) noexcept {
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Bdd::VertexPtr& vertex,
     bool mark) noexcept {
-  if (vertex->terminal()) return 1;
+  if (vertex->terminal())
+    return 1;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return ite->p();
+  if (ite->mark() == mark)
+    return ite->p();
   ite->mark(mark);
   double p_var = 0;
   if (ite->module()) {
     const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
     p_var = CalculateProbability(res.vertex, mark);
-    if (res.complement) p_var = 1 - p_var;
+    if (res.complement)
+      p_var = 1 - p_var;
   } else {
     p_var = ProbabilityAnalyzerBase::p_vars()[ite->index()];
   }
   double high = CalculateProbability(ite->high(), mark);
   double low = CalculateProbability(ite->low(), mark);
-  if (ite->complement_edge()) low = 1 - low;
+  if (ite->complement_edge())
+    low = 1 - low;
   ite->p(p_var * high + (1 - p_var) * low);
   return ite->p();
 }

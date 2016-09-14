@@ -671,7 +671,8 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   if (expr_name == "parameter" || expr_name == "system-mission-time")
     return GetParameterExpression(expr_element, base_path);
 
-  if (expr_name == "pi") return ConstantExpression::kPi;
+  if (expr_name == "pi")
+    return ConstantExpression::kPi;
 
   try {
     ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
@@ -867,16 +868,19 @@ void Initializer::ValidateInitialization() {
   }
 
   // Keep node marks clean after use.
-  for (const GatePtr& gate : model_->gates()) gate->mark(NodeMark::kClear);
+  for (const GatePtr& gate : model_->gates())
+    gate->mark(NodeMark::kClear);
 
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
     for (const BasicEventPtr& event : model_->basic_events()) {
-      if (!event->has_expression()) msg += event->name() + "\n";
+      if (!event->has_expression())
+        msg += event->name() + "\n";
     }
     for (const HouseEventPtr& event : model_->house_events()) {
-      if (!event->has_expression()) msg += event->name() + "\n";
+      if (!event->has_expression())
+        msg += event->name() + "\n";
     }
 
     if (!msg.empty())
@@ -886,7 +890,8 @@ void Initializer::ValidateInitialization() {
 
   ValidateExpressions();
 
-  for (const CcfGroupPtr& group : model_->ccf_groups()) group->Validate();
+  for (const CcfGroupPtr& group : model_->ccf_groups())
+    group->Validate();
 }
 
 void Initializer::ValidateExpressions() {
@@ -905,7 +910,8 @@ void Initializer::ValidateExpressions() {
 
   // Validate expressions.
   try {
-    for (Expression* expression : expressions_) expression->Validate();
+    for (Expression* expression : expressions_)
+      expression->Validate();
   } catch (InvalidArgument& err) {
     throw ValidationError(err.msg());
   }
@@ -926,7 +932,8 @@ void Initializer::ValidateExpressions() {
 
   // Check probability values for primary events.
   for (const BasicEventPtr& event : model_->basic_events()) {
-    if (event->has_expression() == false) continue;
+    if (event->has_expression() == false)
+      continue;
     try {
       event->Validate();
     } catch (ValidationError& err) {
@@ -950,7 +957,8 @@ void Initializer::SetupForAnalysis() {
   CLOCK(ccf_time);
   LOG(DEBUG2) << "Applying CCF models...";
   // CCF groups must apply models to basic event members.
-  for (const CcfGroupPtr& group : model_->ccf_groups()) group->ApplyModel();
+  for (const CcfGroupPtr& group : model_->ccf_groups())
+    group->ApplyModel();
   LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
 }
 

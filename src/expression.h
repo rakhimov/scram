@@ -703,7 +703,8 @@ class Sub : public BinaryExpression {
   /// @returns first_value() - sum(rest_value()).
   double Compute(double (Expression::*first_value)(),
                  double (Expression::*rest_value)() = nullptr) {
-    if (!rest_value) rest_value = first_value;
+    if (!rest_value)
+      rest_value = first_value;
 
     auto it = Expression::args().begin();
     double result = ((**it).*first_value)();

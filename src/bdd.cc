@@ -33,8 +33,10 @@ namespace core {
 
 int GetPrimeNumber(int n) {
   assert(n > 0 && "Only natural numbers.");
-  if (n % 2 == 0) ++n;
-  while (boost::multiprecision::miller_rabin_test(n, 25) == false) n += 2;
+  if (n % 2 == 0)
+    ++n;
+  while (boost::multiprecision::miller_rabin_test(n, 25) == false)
+    n += 2;
   return n;
 }
 
@@ -109,7 +111,8 @@ ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,
   IteWeakPtr& in_table =
       unique_table_.FindOrAdd(index, high->id(),
                               complement_edge ? -low->id() : low->id());
-  if (!in_table.expired()) return in_table.lock();
+  if (!in_table.expired())
+    return in_table.lock();
   assert(order > 0 && "Improper order.");
   ItePtr ite(new Ite(index, order, function_id_++, high, low));
   ite->complement_edge(complement_edge);
@@ -156,7 +159,8 @@ Bdd::Function Bdd::ConvertGraph(
     std::pair<Function, int>& entry = it_entry->second;
     result = entry.first;
     assert(entry.second < gate.parents().size());  // Processed parents.
-    if (++entry.second == gate.parents().size()) gates->erase(it_entry);
+    if (++entry.second == gate.parents().size())
+      gates->erase(it_entry);
     return result;
   }
   std::vector<Function> args;
@@ -177,8 +181,10 @@ Bdd::Function Bdd::ConvertGraph(
     }
   }
   boost::sort(args, [](const Function& lhs, const Function& rhs) {
-    if (lhs.vertex->terminal()) return true;
-    if (rhs.vertex->terminal()) return false;
+    if (lhs.vertex->terminal())
+      return true;
+    if (rhs.vertex->terminal())
+      return false;
     return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
   });
   auto it = args.cbegin();
@@ -188,8 +194,10 @@ Bdd::Function Bdd::ConvertGraph(
   }
   ClearTables();
   assert(result.vertex);
-  if (gate.module()) modules_.emplace(gate.index(), result);
-  if (gate.parents().size() > 1) gates->insert({gate.index(), {result, 1}});
+  if (gate.module())
+    modules_.emplace(gate.index(), result);
+  if (gate.parents().size() > 1)
+    gates->insert({gate.index(), {result, 1}});
   return result;
 }
 
@@ -202,7 +210,8 @@ std::pair<int, int> Bdd::GetMinMaxId(const VertexPtr& arg_one,
   assert(arg_one->id() != arg_two->id());
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
-  if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
+  if (arg_one->id() > arg_two->id())
+    std::swap(min_id, max_id);
   return {min_id, max_id};
 }
 
@@ -213,20 +222,24 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
                                bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
   if (arg_one->terminal()) {
-    if (complement_one) return {true, kOne_};
+    if (complement_one)
+      return {true, kOne_};
     return {complement_two, arg_two};
   }
   if (arg_two->terminal()) {
-    if (complement_two) return {true, kOne_};
+    if (complement_two)
+      return {true, kOne_};
     return {complement_one, arg_one};
   }
   if (arg_one->id() == arg_two->id()) {  // Reduction detection.
-    if (complement_one ^ complement_two) return {true, kOne_};
+    if (complement_one ^ complement_two)
+      return {true, kOne_};
     return {complement_one, arg_one};
   }
   std::pair<int, int> min_max_id =
       GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  if (auto it = ext::find(and_table_, min_max_id)) return it->second;
+  if (auto it = ext::find(and_table_, min_max_id))
+    return it->second;
   Function result = Apply<kAnd>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                 complement_one, complement_two);
   and_table_.emplace(min_max_id, result);
@@ -240,20 +253,24 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
                               bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
   if (arg_one->terminal()) {
-    if (!complement_one) return {false, kOne_};
+    if (!complement_one)
+      return {false, kOne_};
     return {complement_two, arg_two};
   }
   if (arg_two->terminal()) {
-    if (!complement_two) return {false, kOne_};
+    if (!complement_two)
+      return {false, kOne_};
     return {complement_one, arg_one};
   }
   if (arg_one->id() == arg_two->id()) {  // Reduction detection.
-    if (complement_one ^ complement_two) return {false, kOne_};
+    if (complement_one ^ complement_two)
+      return {false, kOne_};
     return {complement_one, arg_one};
   }
   std::pair<int, int> min_max_id =
       GetMinMaxId(arg_one, arg_two, complement_one, complement_two);
-  if (auto it = ext::find(or_table_, min_max_id)) return it->second;
+  if (auto it = ext::find(or_table_, min_max_id))
+    return it->second;
   Function result = Apply<kOr>(Ite::Ptr(arg_one), Ite::Ptr(arg_two),
                                complement_one, complement_two);
   or_table_.emplace(min_max_id, result);
@@ -315,9 +332,11 @@ Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
 }
 
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return 0;
+  if (vertex->terminal())
+    return 0;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark()) return 0;
+  if (ite->mark())
+    return 0;
   ite->mark(true);
   int in_module = 0;
   if (ite->module()) {
@@ -328,9 +347,11 @@ int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
 }
 
 void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
-  if (vertex->terminal()) return;
+  if (vertex->terminal())
+    return;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return;
+  if (ite->mark() == mark)
+    return;
   ite->mark(mark);
   if (ite->module()) {
     const Function& res = modules_.find(ite->index())->second;
@@ -341,9 +362,11 @@ void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
 }
 
 void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return;
+  if (vertex->terminal())
+    return;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark()) return;
+  if (ite->mark())
+    return;
   ite->mark(true);
   assert(ite->index() && "Illegal index for a node.");
   assert(ite->order() && "Improper order for nodes.");

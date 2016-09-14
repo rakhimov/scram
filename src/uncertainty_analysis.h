@@ -144,7 +144,8 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   samples.reserve(Analysis::settings().num_trials());
   for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
     // Reset distributions.
-    for (const auto& event : uncertain_events) event.second->Reset();
+    for (const auto& event : uncertain_events)
+      event.second->Reset();
 
     // Sample all basic events with distributions.
     for (const auto& event : uncertain_events) {
@@ -158,7 +159,8 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
     }
     double result = prob_analyzer_->CalculateTotalProbability();
     assert(result >= 0);
-    if (result > 1) result = 1;
+    if (result > 1)
+      result = 1;
     samples.push_back(result);
   }
   // Reset probabilities.

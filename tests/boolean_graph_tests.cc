@@ -67,8 +67,10 @@ class GateTest : public ::testing::Test {
     assert(!(type == kVote && num_vars < 2));
 
     g = std::make_shared<Gate>(type);
-    if (type == kVote) g->vote_number(2);
-    for (int i = 0; i < num_vars; ++i) g->AddArg(vars_[i]->index(), vars_[i]);
+    if (type == kVote)
+      g->vote_number(2);
+    for (int i = 0; i < num_vars; ++i)
+      g->AddArg(vars_[i]->index(), vars_[i]);
 
     assert(g->state() == kNormalState);
     assert(g->type() == type);
@@ -233,7 +235,8 @@ TEST_F(GateTest, DuplicateArgVoteToOrWithTwoClones) {
   ++it;
   GatePtr clone_one = it->second;  // Guessing.
   // Correcting the guess.
-  if (and_gate->type() != kAnd) std::swap(and_gate, clone_one);
+  if (and_gate->type() != kAnd)
+    std::swap(and_gate, clone_one);
   ASSERT_EQ(kAnd, and_gate->type());
   ASSERT_EQ(kVote, clone_one->type());
 
@@ -344,11 +347,12 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity)
 /// @param v_num  The initial vote number of the gate.
 /// @param init_type  The initial type of the gate.
 /// @param final_type  The final type of the gate.
-#define TEST_CONSTANT_ARG_VNUM(                                         \
-    arg_state, num_vars, v_num, init_type, final_type)                  \
+#define TEST_CONSTANT_ARG_VNUM(arg_state, num_vars, v_num, init_type,   \
+                               final_type)                              \
   TEST_F(GateTest, arg_state##ConstantArg##init_type##To##final_type) { \
     DefineGate(k##init_type, num_vars);                                 \
-    if (v_num) g->vote_number(v_num);                                   \
+    if (v_num)                                                          \
+      g->vote_number(v_num);                                            \
     g->ProcessConstantArg(var_one, arg_state);                          \
     ASSERT_EQ(kNormalState, g->state());                                \
     EXPECT_EQ(k##final_type, g->type());                                \
