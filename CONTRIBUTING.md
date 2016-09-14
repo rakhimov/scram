@@ -45,3 +45,12 @@ it does not change your rights to use your own contributions for any other purpo
 
 [Contributor License Agreement]: https://github.com/rakhimov/scram/blob/develop/ICLA.md
 [CLA Assistant]: https://cla-assistant.io/
+
+
+## Contributor Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct].
+By participating in this project,
+you agree to abide by its terms.
+
+[Contributor Code of Conduct]: https://github.com/rakhimov/scram/blob/develop/CODE_OF_CONDUCT.md
