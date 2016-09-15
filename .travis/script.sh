@@ -39,7 +39,7 @@ valgrind --tool=memcheck --leak-check=full --show-leak-kinds=definite \
   --errors-for-leak-kinds=definite --error-exitcode=127 \
   --track-fds=yes \
   scram_tests \
-  --gtest_filter=-*Death*:*Baobab*:*IncorrectFtaInputs:MEFGateTest.Cycle \
+  --gtest_filter=-*Death*:*Baobab*:MEFGateTest.Cycle \
   || [[ $? -ne 127 ]]
 
 # Check documentation coverage

@@ -257,9 +257,25 @@ using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
+class Initializer;  // Needs to handle cycles with gates.
+
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
  public:
+  /// Provides access to cycle-destructive functions.
+  class Cycle {
+    friend class Initializer;  // Only Initializer needs the functionality.
+    /// Breaks connections in a fault tree.
+    ///
+    /// @param[in,out] gate  A gate in a cycle or potentially in a cycle.
+    ///
+    /// @post The fault tree is unusable for analysis.
+    ///       Only destruction is guaranteed to succeed.
+    static void BreakConnections(Gate* gate) {
+      gate->formula_.reset();
+    }
+  };
+
   using Event::Event;
 
   /// @returns The formula of this gate.

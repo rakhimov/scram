@@ -64,7 +64,12 @@ Initializer::Initializer(const std::vector<std::string>& xml_files,
     : settings_(std::move(settings)),
       mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
-  ProcessInputFiles(xml_files);
+  try {
+    ProcessInputFiles(xml_files);
+  } catch (const CycleError&) {
+    BreakCycles();
+    throw;
+  }
 }
 
 void Initializer::CheckFileExistence(
@@ -860,10 +865,8 @@ void Initializer::ValidateInitialization() {
   for (const GatePtr& gate : model_->gates()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(gate, &cycle)) {
-      std::string msg =
-          "Detected a cycle in " + gate->name() + " gate:\n";
-      msg += cycle::PrintCycle(cycle);
-      throw ValidationError(msg);
+      throw CycleError("Detected a cycle in " + gate->name() +
+                       " gate:\n" + cycle::PrintCycle(cycle));
     }
   }
 
@@ -900,8 +903,8 @@ void Initializer::ValidateExpressions() {
   for (const ParameterPtr& param : model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(param.get(), &cycle)) {
-      throw ValidationError("Detected a cycle in " + param->name() +
-                            " parameter:\n" + cycle::PrintCycle(cycle));
+      throw CycleError("Detected a cycle in " + param->name() +
+                       " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
 
@@ -943,6 +946,30 @@ void Initializer::ValidateExpressions() {
   if (!msg.str().empty()) {
     std::string head = "Invalid basic event probabilities detected:\n";
     throw ValidationError(head + msg.str());
+  }
+}
+
+void Initializer::BreakCycles() {
+  std::vector<std::weak_ptr<Gate>> cyclic_gates;
+  for (const GatePtr& gate : model_->gates())
+    cyclic_gates.emplace_back(gate);
+
+  std::vector<std::weak_ptr<Parameter>> cyclic_parameters;
+  for (const ParameterPtr& parameter : model_->parameters())
+    cyclic_parameters.emplace_back(parameter);
+
+  model_.reset();
+
+  for (const auto& gate : cyclic_gates) {
+    if (gate.expired())
+      continue;
+    Gate::Cycle::BreakConnections(gate.lock().get());
+  }
+
+  for (const auto& parameter : cyclic_parameters) {
+    if (parameter.expired())
+      continue;
+    Parameter::Cycle::BreakConnections(parameter.lock().get());
   }
 }
 
