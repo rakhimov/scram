@@ -94,10 +94,6 @@ Package                Minimum Version
 `Intel`                17.0
 ====================   ==================
 
-.. note::
-    Earlier versions may or may not work.
-    The listed minimum versions are the ones known to work.
-
 
 Google Test
 -----------
@@ -109,7 +105,7 @@ or the following commands must be executed after a normal clone.
 
 .. code-block:: bash
 
-    git submodule init && git submodule update
+    git submodule init --update --recursive
 
 
 Installing Dependencies (Linux and Unix)
@@ -296,7 +292,7 @@ in the root directory.
 
 .. code-block:: bash
 
-    .../scram$ python install.py --prefix=path/to/installation/directory -r --mingw64
+    .../scram$ python install.py --prefix=path/to/installation/directory -release --mingw64
 
 After installation,
 SCRAM must be run inside of the MSYS2 shell.
