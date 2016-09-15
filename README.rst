@@ -105,7 +105,7 @@ or the following commands must be executed after a normal clone.
 
 .. code-block:: bash
 
-    git submodule init --update --recursive
+    git submodule update --init --recursive
 
 
 Installing Dependencies (Linux and Unix)
