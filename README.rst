@@ -235,18 +235,18 @@ The main and test binaries are installed in ``installation/directory/bin``.
 The input files and schema are copied in ``installation/directory/share/scram/``.
 
 The default build type is ``Debug`` with many compiler warnings turned on,
-but it can be overridden by ``--release``, ``--profile``, or ``--build-type``.
-For performance testing and distribution, use ``--release`` or ``-r`` flag:
+but it can be overridden by ``--release`` or ``--build-type CMAKE_BUILD_TYPE``.
+For performance testing and distribution, use ``--release`` flag:
 
 .. code-block:: bash
 
-    .../scram$ python install.py --prefix=path/to/installation/directory -r
+    .../scram$ python install.py --prefix=path/to/installation/directory --release
 
 Various other flags are described by the script's help prompt.
 
 .. code-block:: bash
 
-    .../scram$ python install.py -h
+    .../scram$ python install.py --help
 
 Other tools,
 such as the **fault tree generator** and **shorthand-to-XML** converter,
