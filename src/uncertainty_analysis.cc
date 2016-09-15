@@ -63,7 +63,8 @@ UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
   std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events;
   int index = 1;
   for (mef::BasicEvent* event : graph->basic_events()) {
-    if (!event->IsConstant()) uncertain_events.emplace_back(index, event);
+    if (!event->IsConstant())
+      uncertain_events.emplace_back(index, event);
     ++index;
   }
   return uncertain_events;

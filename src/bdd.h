@@ -442,7 +442,8 @@ class UniqueTable {
 
   /// Erases all entries.
   void clear() {
-    for (Bucket& chain : table_) chain.clear();
+    for (Bucket& chain : table_)
+      chain.clear();
   }
 
   /// Releases all the memory associated with managing this table with BDD.
@@ -618,7 +619,8 @@ class CacheTable {
   /// Removes all entries from the table.
   void clear() {
     for (value_type& entry : table_) {
-      if (entry.second) entry.second.reset();
+      if (entry.second)
+        entry.second.reset();
     }
     size_ = 0;
   }
@@ -635,7 +637,8 @@ class CacheTable {
       decltype(table_)().swap(table_);
       return;
     }
-    if (n <= size_) return;
+    if (n <= size_)
+      return;
     Rehash(core::GetPrimeNumber(n / max_load_factor_ + 1));
   }
 
@@ -648,7 +651,8 @@ class CacheTable {
   iterator find(const key_type& key) {
     int index = boost::hash_value(key) % table_.size();
     value_type& entry = table_[index];
-    if (!entry.second || entry.first != key) return table_.end();
+    if (!entry.second || entry.first != key)
+      return table_.end();
     return table_.begin() + index;
   }
 
@@ -671,7 +675,8 @@ class CacheTable {
 
     int index = boost::hash_value(key) % table_.size();
     value_type& entry = table_[index];
-    if (!entry.second) ++size_;
+    if (!entry.second)
+      ++size_;
     entry.first = key;  // Key equality is unlikely for the use case.
     entry.second = value;  // Might be purging another value.
   }
@@ -684,11 +689,13 @@ class CacheTable {
     int new_size = 0;
     std::vector<value_type> new_table(new_capacity);
     for (value_type& entry : table_) {
-      if (!entry.second) continue;
+      if (!entry.second)
+        continue;
       int new_index = boost::hash_value(entry.first) % new_table.size();
       value_type& new_entry = new_table[new_index];
       new_entry.first = entry.first;
-      if (!new_entry.second) ++new_size;
+      if (!new_entry.second)
+        ++new_size;
       new_entry.second.swap(entry.second);
     }
     size_ = new_size;

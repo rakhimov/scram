@@ -39,10 +39,14 @@ XmlStreamElement::XmlStreamElement(const char* name, int indent,
       active_(true),
       parent_(parent),
       out_(out) {
-  if (*kName_ == '\0') throw XmlStreamError("The element name can't be empty.");
-  if (kIndent_ < 0) throw XmlStreamError("Negative indentation.");
+  if (*kName_ == '\0')
+    throw XmlStreamError("The element name can't be empty.");
+  if (kIndent_ < 0)
+    throw XmlStreamError("Negative indentation.");
+
   if (parent_) {
-    if (!parent_->active_) throw XmlStreamError("The parent is inactive.");
+    if (!parent_->active_)
+      throw XmlStreamError("The parent is inactive.");
     parent_->active_ = false;
   }
   out_ << std::string(kIndent_, ' ') << "<" << kName_;
@@ -51,7 +55,8 @@ XmlStreamElement::XmlStreamElement(const char* name, int indent,
 XmlStreamElement::~XmlStreamElement() noexcept {
   assert(active_ && "The child element may still be alive.");
   assert(!(parent_ && parent_->active_) && "The parent must be inactive.");
-  if (parent_) parent_->active_ = true;
+  if (parent_)
+    parent_->active_ = true;
   if (accept_attributes_) {
     out_ << "/>\n";
   } else if (accept_elements_) {
@@ -65,10 +70,15 @@ closing_tag:
 }
 
 XmlStreamElement XmlStreamElement::AddChild(const char* name) {
-  if (!active_) throw XmlStreamError("The element is inactive.");
-  if (!accept_elements_) throw XmlStreamError("Too late to add elements.");
-  if (*name == '\0') throw XmlStreamError("Element name can't be empty.");
-  if (accept_text_) accept_text_ = false;
+  if (!active_)
+    throw XmlStreamError("The element is inactive.");
+  if (!accept_elements_)
+    throw XmlStreamError("Too late to add elements.");
+  if (*name == '\0')
+    throw XmlStreamError("Element name can't be empty.");
+
+  if (accept_text_)
+    accept_text_ = false;
   if (accept_attributes_) {
     accept_attributes_ = false;
     out_ << ">\n";

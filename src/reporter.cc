@@ -59,7 +59,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
 }
 
 /// Describes the fault tree analysis and techniques.
-template<>
+template <>
 void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
@@ -230,10 +230,12 @@ void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
                                          XmlStreamElement* information) {
   std::string out;
   for (const mef::BasicEventPtr& param : model.basic_events()) {
-    if (param->orphan()) out += param->id() + " ";
+    if (param->orphan())
+      out += param->id() + " ";
   }
   for (const mef::HouseEventPtr& param : model.house_events()) {
-    if (param->orphan()) out += param->id() + " ";
+    if (param->orphan())
+      out += param->id() + " ";
   }
   if (!out.empty())
     information->AddChild("warning").AddText("Orphan Primary Events: " + out);
@@ -243,7 +245,8 @@ void Reporter::ReportUnusedParameters(const mef::Model& model,
                                       XmlStreamElement* information) {
   std::string out;
   for (const mef::ParameterPtr& param : model.parameters()) {
-    if (param->unused()) out += param->id() + " ";
+    if (param->unused())
+      out += param->id() + " ";
   }
   if (!out.empty())
     information->AddChild("warning").AddText("Unused Parameters: " + out);

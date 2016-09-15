@@ -43,7 +43,8 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
-  if (distribution_) throw LogicError("CCF distribution is already defined.");
+  if (distribution_)
+    throw LogicError("CCF distribution is already defined.");
   distribution_ = distr;
   // Define probabilities of all basic events.
   for (const BasicEventPtr& member : members_)
@@ -51,7 +52,8 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 }
 
 void CcfGroup::CheckLevel(int level) {
-  if (level <= 0) throw LogicError("CCF group level is not positive.");
+  if (level <= 0)
+    throw LogicError("CCF group level is not positive.");
   if (level != factors_.size() + 1) {
     throw ValidationError(Element::name() + " CCF group level expected " +
                           std::to_string(factors_.size() + 1) +
@@ -104,12 +106,16 @@ GenerateCombinations(Iterator first1, Iterator last1, int k) {
   auto size = std::distance(first1, last1);
   assert(size >= 0 && "Invalid iterators.");
 
-  if (k > size) return {};
-  if (k == 0) return {{}};  // The notion of 'nothing'.
-  if (k == size) return {{first1, last1}};
+  if (k > size)
+    return {};
+  if (k == 0)
+    return {{}};  // The notion of 'nothing'.
+  if (k == size)
+    return {{first1, last1}};
 
   auto c = GenerateCombinations(std::next(first1), last1, k - 1);
-  for (auto& v : c) v.push_back(*first1);
+  for (auto& v : c)
+    v.push_back(*first1);
 
   auto rest = GenerateCombinations(std::next(first1), last1, k);
   c.reserve(c.size() + rest.size());
@@ -173,14 +179,16 @@ void CcfGroup::ApplyModel() {
     for (auto& combination : combinations) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
-      for (Gate* gate : combination) gate->formula().AddArgument(ccf_event);
+      for (Gate* gate : combination)
+        gate->formula().AddArgument(ccf_event);
       ccf_event->members(std::move(combination));  // Move, at last.
     }
   }
 }
 
 void BetaFactorModel::CheckLevel(int level) {
-  if (level <= 0) throw LogicError("CCF group level is not positive.");
+  if (level <= 0)
+    throw LogicError("CCF group level is not positive.");
   if (!CcfGroup::factors().empty()) {
     throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
                           " CCF group must have exactly one factor.");
@@ -211,7 +219,8 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 }
 
 void MglModel::CheckLevel(int level) {
-  if (level <= 0) throw LogicError("CCF group level is not positive.");
+  if (level <= 0)
+    throw LogicError("CCF group level is not positive.");
   if (level != CcfGroup::factors().size() + 2) {
     throw ValidationError(CcfGroup::name() +
                           " MGL model CCF group level expected " +
@@ -233,7 +242,8 @@ double CalculateCombinationReciprocal(int n, int k) {
   assert(n >= 0);
   assert(k >= 0);
   assert(n >= k);
-  if (n - k > k) k = n - k;
+  if (n - k > k)
+    k = n - k;
   double result = 1;
   for (int i = 1; i <= n - k; ++i) {
     result *= static_cast<double>(i) / static_cast<double>(k + i);

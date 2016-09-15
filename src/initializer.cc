@@ -64,7 +64,12 @@ Initializer::Initializer(const std::vector<std::string>& xml_files,
     : settings_(std::move(settings)),
       mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
-  ProcessInputFiles(xml_files);
+  try {
+    ProcessInputFiles(xml_files);
+  } catch (const CycleError&) {
+    BreakCycles();
+    throw;
+  }
 }
 
 void Initializer::CheckFileExistence(
@@ -214,16 +219,24 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
   }
 
   xmlpp::NodeSet attributes = element_node->find("./attributes");
-  if (!attributes.empty()) {
-    assert(attributes.size() == 1);  // Only one big element 'attributes'.
-    const xmlpp::Element* attributes_element = XmlElement(attributes.front());
+  if (attributes.empty())
+    return;
+  assert(attributes.size() == 1);  // Only one big element 'attributes'.
+  const xmlpp::Element* attribute = nullptr;  // To report position.
+  const xmlpp::Element* attributes_element = XmlElement(attributes.front());
+
+  try {
     for (const xmlpp::Node* node : attributes_element->find("./attribute")) {
-      const xmlpp::Element* attribute = XmlElement(node);
-      Attribute attr = {GetAttributeValue(attribute, "name"),
-                        GetAttributeValue(attribute, "value"),
-                        GetAttributeValue(attribute, "type")};
-      element->AddAttribute(attr);
+      attribute = XmlElement(node);
+      Attribute attribute_struct = {GetAttributeValue(attribute, "name"),
+                                    GetAttributeValue(attribute, "value"),
+                                    GetAttributeValue(attribute, "type")};
+      element->AddAttribute(std::move(attribute_struct));
     }
+  } catch(ValidationError& err) {
+    err.msg("Line " + std::to_string(attribute->get_line()) + ":\n" +
+            err.msg());
+    throw;
   }
 }
 
@@ -663,7 +676,8 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   if (expr_name == "parameter" || expr_name == "system-mission-time")
     return GetParameterExpression(expr_element, base_path);
 
-  if (expr_name == "pi") return ConstantExpression::kPi;
+  if (expr_name == "pi")
+    return ConstantExpression::kPi;
 
   try {
     ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
@@ -851,24 +865,25 @@ void Initializer::ValidateInitialization() {
   for (const GatePtr& gate : model_->gates()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(gate, &cycle)) {
-      std::string msg =
-          "Detected a cycle in " + gate->name() + " gate:\n";
-      msg += cycle::PrintCycle(cycle);
-      throw ValidationError(msg);
+      throw CycleError("Detected a cycle in " + gate->name() +
+                       " gate:\n" + cycle::PrintCycle(cycle));
     }
   }
 
   // Keep node marks clean after use.
-  for (const GatePtr& gate : model_->gates()) gate->mark(NodeMark::kClear);
+  for (const GatePtr& gate : model_->gates())
+    gate->mark(NodeMark::kClear);
 
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
     for (const BasicEventPtr& event : model_->basic_events()) {
-      if (!event->has_expression()) msg += event->name() + "\n";
+      if (!event->has_expression())
+        msg += event->name() + "\n";
     }
     for (const HouseEventPtr& event : model_->house_events()) {
-      if (!event->has_expression()) msg += event->name() + "\n";
+      if (!event->has_expression())
+        msg += event->name() + "\n";
     }
 
     if (!msg.empty())
@@ -878,7 +893,8 @@ void Initializer::ValidateInitialization() {
 
   ValidateExpressions();
 
-  for (const CcfGroupPtr& group : model_->ccf_groups()) group->Validate();
+  for (const CcfGroupPtr& group : model_->ccf_groups())
+    group->Validate();
 }
 
 void Initializer::ValidateExpressions() {
@@ -887,8 +903,8 @@ void Initializer::ValidateExpressions() {
   for (const ParameterPtr& param : model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle(param.get(), &cycle)) {
-      throw ValidationError("Detected a cycle in " + param->name() +
-                            " parameter:\n" + cycle::PrintCycle(cycle));
+      throw CycleError("Detected a cycle in " + param->name() +
+                       " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
 
@@ -897,7 +913,8 @@ void Initializer::ValidateExpressions() {
 
   // Validate expressions.
   try {
-    for (Expression* expression : expressions_) expression->Validate();
+    for (Expression* expression : expressions_)
+      expression->Validate();
   } catch (InvalidArgument& err) {
     throw ValidationError(err.msg());
   }
@@ -918,7 +935,8 @@ void Initializer::ValidateExpressions() {
 
   // Check probability values for primary events.
   for (const BasicEventPtr& event : model_->basic_events()) {
-    if (event->has_expression() == false) continue;
+    if (event->has_expression() == false)
+      continue;
     try {
       event->Validate();
     } catch (ValidationError& err) {
@@ -928,6 +946,30 @@ void Initializer::ValidateExpressions() {
   if (!msg.str().empty()) {
     std::string head = "Invalid basic event probabilities detected:\n";
     throw ValidationError(head + msg.str());
+  }
+}
+
+void Initializer::BreakCycles() {
+  std::vector<std::weak_ptr<Gate>> cyclic_gates;
+  for (const GatePtr& gate : model_->gates())
+    cyclic_gates.emplace_back(gate);
+
+  std::vector<std::weak_ptr<Parameter>> cyclic_parameters;
+  for (const ParameterPtr& parameter : model_->parameters())
+    cyclic_parameters.emplace_back(parameter);
+
+  model_.reset();
+
+  for (const auto& gate : cyclic_gates) {
+    if (gate.expired())
+      continue;
+    Gate::Cycle::BreakConnections(gate.lock().get());
+  }
+
+  for (const auto& parameter : cyclic_parameters) {
+    if (parameter.expired())
+      continue;
+    Parameter::Cycle::BreakConnections(parameter.lock().get());
   }
 }
 
@@ -942,7 +984,8 @@ void Initializer::SetupForAnalysis() {
   CLOCK(ccf_time);
   LOG(DEBUG2) << "Applying CCF models...";
   // CCF groups must apply models to basic event members.
-  for (const CcfGroupPtr& group : model_->ccf_groups()) group->ApplyModel();
+  for (const CcfGroupPtr& group : model_->ccf_groups())
+    group->ApplyModel();
   LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
 }
 

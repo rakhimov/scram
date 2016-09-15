@@ -105,9 +105,13 @@ class XmlStreamElement {
   /// @throws XmlStreamError  Invalid setup for the attribute.
   template <typename T>
   XmlStreamElement& SetAttribute(const char* name, T&& value) {
-    if (!active_) throw XmlStreamError("The element is inactive.");
-    if (!accept_attributes_) throw XmlStreamError("Too late for attributes.");
-    if (*name == '\0') throw XmlStreamError("Attribute name can't be empty.");
+    if (!active_)
+      throw XmlStreamError("The element is inactive.");
+    if (!accept_attributes_)
+      throw XmlStreamError("Too late for attributes.");
+    if (*name == '\0')
+      throw XmlStreamError("Attribute name can't be empty.");
+
     out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
     return *this;
   }
@@ -124,9 +128,13 @@ class XmlStreamElement {
   /// @throws XmlStreamError  Invalid setup or state for text addition.
   template <typename T>
   void AddText(T&& text) {
-    if (!active_) throw XmlStreamError("The element is inactive.");
-    if (!accept_text_) throw XmlStreamError("Too late to put text.");
-    if (accept_elements_) accept_elements_ = false;
+    if (!active_)
+      throw XmlStreamError("The element is inactive.");
+    if (!accept_text_)
+      throw XmlStreamError("Too late to put text.");
+
+    if (accept_elements_)
+      accept_elements_ = false;
     if (accept_attributes_) {
       accept_attributes_ = false;
       out_ << ">";

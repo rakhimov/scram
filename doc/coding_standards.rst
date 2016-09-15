@@ -33,6 +33,9 @@ Deviations from the GCSG
 - Exceptions are allowed.
 - Name mutator functions without ``set_`` prefix.
 - Multiple *implementation* inheritance is allowed (mostly for mixins).
+- One-liner ``if statements`` are not allowed.
+  It interferes with interactive debugging and
+  code coverage analysis tools (may hide uncovered lines).
 
 
 Deviations from the Qt Style

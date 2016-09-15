@@ -775,7 +775,8 @@ class CutSetContainer : public Zbdd {
   ///
   /// @pre Variable ordering puts the gate to the top (root).
   int GetNextGate() noexcept {
-    if (Zbdd::root()->terminal()) return 0;
+    if (Zbdd::root()->terminal())
+      return 0;
     SetNodePtr node = SetNode::Ptr(Zbdd::root());
     return CutSetContainer::IsGate(node) && !node->module() ? node->index() : 0;
   }

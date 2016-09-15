@@ -80,6 +80,11 @@ struct DuplicateArgumentError : public ValidationError {
   using ValidationError::ValidationError;
 };
 
+/// Signals unacceptable cycles in invalid structures.
+struct CycleError : public ValidationError {
+  using ValidationError::ValidationError;
+};
+
 /// For input/output related errors.
 struct IOError : public Error {
   using Error::Error;

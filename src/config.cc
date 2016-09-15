@@ -58,7 +58,8 @@ Config::Config(const std::string& config_file) {
 
 void Config::GatherInputFiles(const xmlpp::Node* root) {
   xmlpp::NodeSet input_files = root->find("./input-files");
-  if (input_files.empty()) return;
+  if (input_files.empty())
+    return;
   assert(input_files.size() == 1);
   const xmlpp::Element* files = XmlElement(input_files.front());
   xmlpp::NodeSet all_files = files->find("./*");
@@ -72,7 +73,8 @@ void Config::GatherInputFiles(const xmlpp::Node* root) {
 
 void Config::GatherOptions(const xmlpp::Node* root) {
   xmlpp::NodeSet options = root->find("./options");
-  if (options.empty()) return;
+  if (options.empty())
+    return;
   assert(options.size() == 1);
   const xmlpp::Element* element = XmlElement(options.front());
   xmlpp::NodeSet all_options = element->find("./*");
@@ -110,7 +112,8 @@ void Config::GatherOptions(const xmlpp::Node* root) {
 
 void Config::GetOutputPath(const xmlpp::Node* root) {
   xmlpp::NodeSet out = root->find("./output-path");
-  if (out.empty()) return;
+  if (out.empty())
+    return;
   assert(out.size() == 1);
   const xmlpp::Element* element = XmlElement(out.front());
   output_path_ = GetContent(element->get_child_text());
@@ -173,7 +176,8 @@ void Config::SetLimits(const xmlpp::Element* limits) {
 
 bool Config::GetBoolFromString(const std::string& flag) {
   assert(flag == "1" || flag == "true" || flag == "0" || flag == "false");
-  if (flag == "1" || flag == "true") return true;
+  if (flag == "1" || flag == "true")
+    return true;
   return false;
 }
 

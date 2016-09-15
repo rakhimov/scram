@@ -9,9 +9,7 @@ lizard -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert -Ens -Ecpre \
   cycle.cc \
   error.cc \
   logger.cc \
-  relax_ng_validator.cc \
   xml_stream.cc \
-  xml_parser.cc \
   reporter.cc \
   element.cc \
   expression.cc \

@@ -22,6 +22,7 @@
 #define SCRAM_SRC_EXPRESSION_H_
 
 #include <cmath>
+#include <cstdint>
 
 #include <array>
 #include <memory>
@@ -42,6 +43,8 @@ namespace mef {
 class Expression;
 using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 
+class Initializer;  // Needs to handle cycles.
+
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
 /// and may create cycles.
@@ -51,6 +54,25 @@ using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 /// after validation phases.
 class Expression : private boost::noncopyable {
  public:
+  /// Provides access to cycle-destructive functions.
+  class Cycle {
+    friend class Initializer;  // Only Initializer needs the functionality.
+    /// Breaks connections with expression arguments.
+    ///
+    /// @param[in,out] parameter  A parameter node in possible cycles.
+    ///                           The type is not declared ``Parameter``
+    ///                           because the inheritance is not
+    ///                           forward-declarable.
+    ///
+    /// @post The parameter is in inconsistent, unusable state.
+    ///       Only destruction is guaranteed to succeed.
+    ///
+    /// @todo Consider moving into Parameter class.
+    static void BreakConnections(Expression* parameter) {
+      parameter->args_.clear();
+    }
+  };
+
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///
@@ -118,7 +140,7 @@ class Expression : private boost::noncopyable {
 };
 
 /// Provides units for parameters.
-enum Units {
+enum Units : std::uint8_t {
   kUnitless = 0,
   kBool,
   kInt,
@@ -189,9 +211,9 @@ class Parameter : public Expression,
  private:
   double GetSample() noexcept override { return expression_->Sample(); }
 
-  Expression* expression_;  ///< Expression for this parameter.
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.
+  Expression* expression_;  ///< Expression for this parameter.
 };
 
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
@@ -702,7 +724,8 @@ class Sub : public BinaryExpression {
   /// @returns first_value() - sum(rest_value()).
   double Compute(double (Expression::*first_value)(),
                  double (Expression::*rest_value)() = nullptr) {
-    if (!rest_value) rest_value = first_value;
+    if (!rest_value)
+      rest_value = first_value;
 
     auto it = Expression::args().begin();
     double result = ((**it).*first_value)();

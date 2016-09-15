@@ -145,9 +145,11 @@ class linear_map {
   ///
   /// @{
   friend bool operator==(const linear_map& lhs, const linear_map& rhs) {
-    if (lhs.size() != rhs.size()) return false;
+    if (lhs.size() != rhs.size())
+      return false;
     for (const auto& entry : lhs) {
-       if (std::find(rhs.begin(), rhs.end(), entry) == rhs.end()) return false;
+      if (std::find(rhs.begin(), rhs.end(), entry) == rhs.end())
+        return false;
     }
     return true;
   }
@@ -245,14 +247,16 @@ class linear_map {
   /// @{
   mapped_type& operator[](const key_type& key) {
     auto it = linear_map::find(key);
-    if (it != map_.end()) return it->second;
+    if (it != map_.end())
+      return it->second;
     map_.emplace_back(key, mapped_type());
     return map_.back().second;
   }
 
   mapped_type& operator[](key_type&& key) {
     auto it = linear_map::find(key);
-    if (it != map_.end()) return it->second;
+    if (it != map_.end())
+      return it->second;
     map_.emplace_back(std::move(key), mapped_type());
     return map_.back().second;
   }
@@ -269,7 +273,8 @@ class linear_map {
   /// @{
   const mapped_type& at(const key_type& key) const {
     auto it = linear_map::find(key);
-    if (it == map_.end()) throw std::out_of_range("Key is not found.");
+    if (it == map_.end())
+      throw std::out_of_range("Key is not found.");
     return it->second;
   }
 
@@ -290,14 +295,16 @@ class linear_map {
   /// @{
   std::pair<iterator, bool> insert(const value_type& p) {
     auto it = linear_map::find(p.first);
-    if (it != map_.end()) return {it, false};
+    if (it != map_.end())
+      return {it, false};
     map_.push_back(p);
     return {std::prev(map_.end()), true};
   }
 
   std::pair<iterator, bool> insert(value_type&& p) {
     auto it = linear_map::find(p.first);
-    if (it != map_.end()) return {it, false};
+    if (it != map_.end())
+      return {it, false};
     map_.emplace_back(std::forward<value_type>(p));
     return {std::prev(map_.end()), true};
   }
@@ -328,7 +335,8 @@ class linear_map {
   std::pair<iterator, bool> emplace(Ts&&... args) {
     value_type p(std::forward<Ts>(args)...);
     auto it = linear_map::find(p.first);
-    if (it != map_.end()) return {it, false};
+    if (it != map_.end())
+      return {it, false};
     map_.emplace_back(std::move(p));
     return {std::prev(map_.end()), true};
   }
@@ -352,7 +360,8 @@ class linear_map {
   ///          0 if there's no entry with the given key.
   size_type erase(const key_type& key) {
     iterator it = linear_map::find(key);
-    if (it == map_.end()) return 0;
+    if (it == map_.end())
+      return 0;
     linear_map::erase(it);
     return 1;
   }

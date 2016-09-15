@@ -20,6 +20,8 @@
 
 #include "element.h"
 
+#include <boost/range/algorithm.hpp>
+
 #include "error.h"
 #include "ext.h"
 
@@ -34,40 +36,55 @@ Element::Element(std::string name, bool optional_name)
     throw InvalidArgument("The element name is malformed.");
 }
 
-void Element::label(const std::string& new_label) {
-  if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
-  if (new_label.empty()) throw LogicError("Trying to apply empty label");
-  label_ = new_label;
+void Element::label(std::string new_label) {
+  if (!label_.empty())
+    throw LogicError("Trying to reset the label: " + label_);
+  if (new_label.empty())
+    throw LogicError("Trying to apply empty label");
+
+  label_ = std::move(new_label);
 }
 
-void Element::AddAttribute(const Attribute& attr) {
-  if (attributes_.insert(attr).second == false)
-    throw LogicError("Trying to re-add an attribute: " + attr.name);
+void Element::AddAttribute(Attribute attr) {
+  if (HasAttribute(attr.name)) {
+    throw DuplicateArgumentError(
+        "Trying to overwrite an existing attribute {event: " + kName_ +
+        ", attr: " + attr.name + "} ");
+  }
+  attributes_.emplace_back(std::move(attr));
 }
 
-bool Element::HasAttribute(const std::string& id) const {
-  return attributes_.count(id);
+bool Element::HasAttribute(const std::string& name) const {
+  return ext::any_of(attributes_, [&name](const Attribute& attr) {
+    return attr.name == name;
+  });
 }
 
-const Attribute& Element::GetAttribute(const std::string& id) const {
-  if (auto it = ext::find(attributes_, id)) return *it;
+const Attribute& Element::GetAttribute(const std::string& name) const {
+  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
+    return attr.name == name;
+  });
+  if (it == attributes_.end())
+    throw LogicError("Element does not have attribute: " + name);
 
-  throw LogicError("Element does not have attribute: " + id);
+  return *it;
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
-    : kRole_(role),
-      kBasePath_(std::move(base_path)) {
+    : kBasePath_(std::move(base_path)),
+      kRole_(role) {
   if (!kBasePath_.empty() &&
-      (kBasePath_.front() == '.' || kBasePath_.back() == '.'))
+      (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
     throw InvalidArgument("Element reference base path is malformed.");
+  }
 }
 
 Id::Id(const Element& el, const Role& role)
     : kId_(role.role() == RoleSpecifier::kPublic
                ? el.name()
                : role.base_path() + "." + el.name()) {
-  if (el.name().empty()) throw LogicError("The name for an Id is empty!");
+  if (el.name().empty())
+    throw LogicError("The name for an Id is empty!");
   if (role.role() == RoleSpecifier::kPrivate && role.base_path().empty())
     throw LogicError("The base path for a private element is empty.");
 }

@@ -49,18 +49,22 @@ void Print(const std::vector<Product>& products) {
     to_print.push_back(std::move(ids));
   }
   boost::sort(to_print, [](const ProductSet& lhs, const ProductSet& rhs) {
-    if (lhs.size() == rhs.size()) return lhs < rhs;
+    if (lhs.size() == rhs.size())
+      return lhs < rhs;
     return lhs.size() < rhs.size();
   });
   assert(!to_print.front().empty() && "Failure of the analysis with Unity!");
   std::vector<int> distribution(to_print.back().size());
-  for (const auto& product : to_print) distribution[product.size() - 1]++;
+  for (const auto& product : to_print)
+    distribution[product.size() - 1]++;
   std::cerr << " " << to_print.size() << " : {";
-  for (int i : distribution) std::cerr << " " << i;
+  for (int i : distribution)
+    std::cerr << " " << i;
   std::cerr << " }\n\n";
 
   for (const auto& product : to_print) {
-    for (const auto& id : product) std::cerr << " " << id;
+    for (const auto& id : product)
+      std::cerr << " " << id;
     std::cerr << "\n";
   }
   std::cerr << std::flush;
@@ -115,7 +119,8 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
         GeneratorIterator{result_set.begin(), *graph, product_events_});
   }
 #ifndef NDEBUG
-  if (Analysis::settings().print) Print(products_);
+  if (Analysis::settings().print)
+    Print(products_);
 #endif
 }
 

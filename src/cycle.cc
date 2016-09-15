@@ -32,7 +32,8 @@ std::string PrintCycle(const std::vector<std::string>& cycle) {
   assert(it != std::prev(cycle.rend()) && "No cycle is provided.");
 
   std::string result = *it;
-  for (++it; it != cycle.rend(); ++it) result += "->" + *it;
+  for (++it; it != cycle.rend(); ++it)
+    result += "->" + *it;
   return result;
 }
 

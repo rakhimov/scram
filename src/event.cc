@@ -64,7 +64,8 @@ void Gate::Validate() const {
 Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
 
 int Formula::vote_number() const {
-  if (!vote_number_) throw LogicError("Vote number is not set.");
+  if (!vote_number_)
+    throw LogicError("Vote number is not set.");
   return vote_number_;
 }
 
@@ -75,8 +76,10 @@ void Formula::vote_number(int number) {
         "The operator of this formula is '" +
         std::string(kOperatorToString[type_]) + "'.");
   }
-  if (number < 2) throw InvalidArgument("Vote number cannot be less than 2.");
-  if (vote_number_) throw LogicError("Trying to re-assign a vote number");
+  if (number < 2)
+    throw InvalidArgument("Vote number cannot be less than 2.");
+  if (vote_number_)
+    throw LogicError("Trying to re-assign a vote number");
 
   vote_number_ = number;
 }

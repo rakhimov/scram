@@ -199,7 +199,8 @@ class Settings {
   /// @returns Reference to this object.
   Settings& importance_analysis(bool flag) {
     importance_analysis_ = flag;
-    if (importance_analysis_) probability_analysis_ = true;
+    if (importance_analysis_)
+      probability_analysis_ = true;
     return *this;
   }
 
@@ -215,7 +216,8 @@ class Settings {
   /// @returns Reference to this object.
   Settings& uncertainty_analysis(bool flag) {
     uncertainty_analysis_ = flag;
-    if (uncertainty_analysis_) probability_analysis_ = true;
+    if (uncertainty_analysis_)
+      probability_analysis_ = true;
     return *this;
   }
 

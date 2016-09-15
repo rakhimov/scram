@@ -24,8 +24,10 @@
 #include <algorithm>
 
 #include <boost/math/constants/constants.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "error.h"
+#include "ext.h"
 #include "random.h"
 
 namespace scram {
@@ -45,15 +47,16 @@ double Expression::Sample() noexcept {
 }
 
 void Expression::Reset() noexcept {
-  if (!sampled_) return;
+  if (!sampled_)
+    return;
   sampled_ = false;
-  for (const ExpressionPtr& arg : args_) arg->Reset();
+  for (const ExpressionPtr& arg : args_)
+    arg->Reset();
 }
 
 bool Expression::IsConstant() noexcept {
-  for (const ExpressionPtr& arg : args_)
-    if (!arg->IsConstant()) return false;
-  return true;
+  return ext::all_of(
+      args_, [](const ExpressionPtr& arg) { return arg->IsConstant(); });
 }
 
 Parameter::Parameter(std::string name, std::string base_path,
@@ -62,12 +65,13 @@ Parameter::Parameter(std::string name, std::string base_path,
       Element(std::move(name)),
       Role(role, std::move(base_path)),
       Id(*this, *this),
-      expression_(nullptr),
       unit_(kUnitless),
-      unused_(true) {}
+      unused_(true),
+      expression_(nullptr) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
-  if (expression_) throw LogicError("Parameter expression is already set.");
+  if (expression_)
+    throw LogicError("Parameter expression is already set.");
   expression_ = expression.get();
   Expression::AddArg(expression);
 }
@@ -345,12 +349,14 @@ Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
                      std::vector<ExpressionPtr> weights)
     : RandomDeviate(std::move(boundaries)) {  // Partial registration!
   int num_intervals = Expression::args().size() - 1;
-  if (weights.size() != num_intervals)
+  if (weights.size() != num_intervals) {
     throw InvalidArgument("The number of weights is not equal to the number"
                           " of intervals.");
+  }
 
   // Complete the argument registration.
-  for (const ExpressionPtr& arg : weights) Expression::AddArg(arg);
+  for (const ExpressionPtr& arg : weights)
+    Expression::AddArg(arg);
 
   boundaries_.first = Expression::args().begin();
   boundaries_.second = std::next(boundaries_.first, num_intervals + 1);
@@ -382,7 +388,7 @@ class sampler_iterator : public Iterator {
   /// Initializes the wrapper with to-be-sampled iterator.
   explicit sampler_iterator(const Iterator& it) : Iterator(it) {}
 
-  /// Hides the wrapped iterator' operator*.
+  /// Hides the wrapped iterator's operator*.
   ///
   /// @returns The sampled value of the expression under the iterator.
   double operator*() { return Iterator::operator*()->Sample(); }
@@ -451,13 +457,15 @@ BinaryExpression::BinaryExpression(std::vector<ExpressionPtr> args)
 
 double Mul::Mean() noexcept {
   double mean = 1;
-  for (const ExpressionPtr& arg : Expression::args()) mean *= arg->Mean();
+  for (const ExpressionPtr& arg : Expression::args())
+    mean *= arg->Mean();
   return mean;
 }
 
 double Mul::GetSample() noexcept {
   double result = 1;
-  for (const ExpressionPtr& arg : Expression::args()) result *= arg->Sample();
+  for (const ExpressionPtr& arg : Expression::args())
+    result *= arg->Sample();
   return result;
 }
 
@@ -498,7 +506,8 @@ double Div::Mean() noexcept {
 double Div::GetSample() noexcept {
   auto it = Expression::args().begin();
   double result = (*it)->Sample();
-  for (++it; it != Expression::args().end(); ++it) result /= (*it)->Sample();
+  for (++it; it != Expression::args().end(); ++it)
+    result /= (*it)->Sample();
   return result;
 }
 

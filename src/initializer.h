@@ -349,17 +349,31 @@ class Initializer : private boost::noncopyable {
   void DefineCcfFactor(const xmlpp::Element* factor_node, CcfGroup* ccf_group);
 
   /// Validates if the initialization of the analysis is successful.
-  /// This validation process also generates optional warnings.
   ///
+  /// @throws CycleError  Model contains cycles.
   /// @throws ValidationError  The initialization contains mistakes.
+  ///
+  /// @note Cyclic structures need to be broken up by other methods
+  ///       if this error condition may lead resource leaks.
   void ValidateInitialization();
 
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.
   ///
+  /// @throws CycleError  Cyclic parameters are detected.
   /// @throws ValidationError  There are problems detected with expressions.
   void ValidateExpressions();
+
+  /// Breaks all possible cycles in graph structures.
+  /// This function handles cycles
+  /// conservatively and indiscriminately.
+  ///
+  /// It may not be the most optimal approach,
+  /// but this error condition is considered uncommon.
+  ///
+  /// @post The model is unusable (freed).
+  void BreakCycles();
 
   /// Applies the input information to set up for future analysis.
   /// This step is crucial to get

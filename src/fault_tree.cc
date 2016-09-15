@@ -76,7 +76,8 @@ void Component::AddComponent(std::unique_ptr<Component> component) {
 }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  for (const GatePtr& gate : gates_) gates->insert(gate.get());
+  for (const GatePtr& gate : gates_)
+    gates->insert(gate.get());
 
   for (const ComponentPtr& component : components_)
     component->GatherGates(gates);
@@ -113,7 +114,8 @@ void FaultTree::CollectTopEvents() {
 
 void FaultTree::MarkNonTopGates(Gate* gate,
                                 const std::unordered_set<Gate*>& gates) {
-  if (gate->mark()) return;
+  if (gate->mark())
+    return;
   MarkNonTopGates(gate->formula(), gates);
 }
 
