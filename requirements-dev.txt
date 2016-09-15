@@ -1,4 +1,3 @@
-cpp-coveralls
 lizard
 codecov
 coverage

@@ -22,6 +22,18 @@ ccache -s
 ./.travis/run_tests.sh
 
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
+# Submit coverage of C++
+COV_DIR="build/src/CMakeFiles/scramcore.dir/"
+TRACE_FILE="coverage.info"
+
+lcov --no-compat-libtool --directory \
+  $COV_DIR -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q 2> /dev/null
+lcov --extract $TRACE_FILE '*/scram/*' -o $TRACE_FILE
+coveralls-lcov $TRACE_FILE
+
+# Submit coverage of Python
+codecov > /dev/null
+
 # Check for memory leaks with Valgrind
 valgrind --tool=memcheck --leak-check=full --show-leak-kinds=definite \
   --errors-for-leak-kinds=definite --error-exitcode=127 \
@@ -29,29 +41,6 @@ valgrind --tool=memcheck --leak-check=full --show-leak-kinds=definite \
   scram_tests \
   --gtest_filter=-*Death*:*Baobab*:*IncorrectFtaInputs:MEFGateTest.Cycle \
   || [[ $? -ne 127 ]]
-
-# Submit coverage of C++
-coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
-  --exclude ./build/lib/ --exclude ./build/gui/ \
-  --exclude ./build/bin/  --exclude install/include/ \
-  --exclude gui/ \
-  --exclude src/error.cc --exclude src/error.h \
-  --exclude src/env.cc --exclude src/env.h \
-  --exclude src/version.cc --exclude src/version.h \
-  --exclude src/logger.cc --exclude src/logger.h \
-  --exclude src/analysis.h --exclude src/risk_analysis.h \
-  --exclude src/event.h --exclude src/mocus.h --exclude src/settings.h \
-  --exclude src/boolean_graph.h --exclude src/expression.h \
-  --exclude src/model.h --exclude src/ccf_group.h --exclude src/preprocessor.h \
-  --exclude src/config.h --exclude src/fault_tree.h --exclude src/xml.h \
-  --exclude src/random.h --exclude src/xml_stream.h \
-  --exclude src/element.h \
-  --exclude src/zbdd.h --exclude src/initializer.h --exclude src/reporter.h \
-  --exclude src/ext.h --exclude src/linear_map.h \
-  > /dev/null
-
-# Submit coverage of Python
-codecov > /dev/null
 
 # Check documentation coverage
 doxygen ./.travis/doxygen.conf > /dev/null 2> doc_errors.txt

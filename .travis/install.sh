@@ -44,3 +44,5 @@ sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq doxygen
 sudo pip install -r requirements-dev.txt
+sudo apt-get install -qq lcov
+gem install coveralls-lcov
