@@ -33,7 +33,7 @@ System Specs     Version
 ==============   ===================
 Processor         Core i7-2820QM
 OS                Ubuntu 16.04 64bit
-GCC version       5.3.1
+GCC version       5.4.0
 Boost version     1.58
 Libxml2           2.9.3
 TCMalloc          2.4
@@ -166,7 +166,7 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 1.6
+- BDD Time: 1.5
 - ZBDD Time: 0.20
 
 - # of BDD vertices created: 2652730

@@ -29,7 +29,7 @@
 //
 //   Proc         Core i7-2820QM
 //   Ubuntu       16.04 64bit
-//   GCC          5.3.1
+//   GCC          5.4.0
 //   Boost        1.58
 //   TCMalloc     2.4
 //

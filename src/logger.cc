@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #include "logger.h"
 
+#include <cstdio>
+
 #include <string>
 
 #include "error.h"
@@ -31,11 +33,26 @@ const char* const Logger::kLevelToString_[] = {"ERROR", "WARNING", "INFO",
                                                "DEBUG4", "DEBUG5"};
 LogLevel Logger::report_level_ = ERROR;
 
+Logger::~Logger() noexcept {
+  os_ << std::endl;
+  // fprintf used for thread safety.
+  std::fprintf(stderr, "%s", os_.str().c_str());
+  std::fflush(stderr);
+}
+
 void Logger::SetVerbosity(int level) {
-  if (level < 0 || level > kMaxVerbosity)
+  if (level < 0 || level > kMaxVerbosity) {
     throw InvalidArgument("Log verbosity must be between 0 and " +
                           std::to_string(kMaxVerbosity));
+  }
   report_level_ = static_cast<LogLevel>(level);
+}
+
+std::ostringstream& Logger::Get(LogLevel level) {
+  os_ << Logger::kLevelToString_[level] << ": ";
+  if (level >= DEBUG1)
+    os_ << std::string(level - DEBUG1 + 1, '\t');
+  return os_;
 }
 
 }  // namespace scram
