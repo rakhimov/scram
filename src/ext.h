@@ -23,7 +23,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <type_traits>
 
 #include <boost/range/algorithm/find_if.hpp>
 

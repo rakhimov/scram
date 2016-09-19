@@ -21,7 +21,7 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <ostream>
+#include <iosfwd>
 #include <string>
 
 #include "event.h"

@@ -21,6 +21,7 @@
 #include "reporter.h"
 
 #include <fstream>
+#include <ostream>
 #include <vector>
 
 #include <boost/date_time.hpp>

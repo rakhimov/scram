@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <unordered_set>
 
+#include "event.h"
 #include "logger.h"
 
 namespace scram {

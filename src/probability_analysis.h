@@ -26,10 +26,8 @@
 #include "analysis.h"
 #include "bdd.h"
 #include "boolean_graph.h"
-#include "event.h"
 #include "fault_tree_analysis.h"
 #include "logger.h"
-#include "settings.h"
 
 namespace scram {
 namespace core {
@@ -171,6 +169,16 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ~ProbabilityAnalyzerBase() = default;
 
  private:
+  /// Upon construction of the probability analysis,
+  /// stores the variable probabilities in a continuous container
+  /// for retrieval by their indices instead of pointers.
+  ///
+  /// @note This function may seem redundant,
+  ///       for it's super-short and simple to do it inline in the constructor.
+  ///       The main benefit of the out-of-line implementation
+  ///       is compile-time decoupling from the input BasicEvent classes.
+  void ExtractVariableProbabilities();
+
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
   std::vector<double> p_vars_;  ///< Variable probabilities.
@@ -182,10 +190,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     : ProbabilityAnalysis(fta),
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
-  p_vars_.push_back(-1);  // Padding.
-  for (const mef::BasicEvent* event : graph_->basic_events()) {
-    p_vars_.push_back(event->p());
-  }
+  ExtractVariableProbabilities();
 }
 
 /// Fault-tree-analysis-aware probability analyzer.
@@ -248,10 +253,10 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
  private:
   /// Creates a new BDD for use by the analyzer.
   ///
-  /// @param[in] root  The root gate of the fault tree.
+  /// @param[in] fta  The fault tree analysis providing the root gate.
   ///
   /// @pre The function is called in the constructor only once.
-  void CreateBdd(const mef::Gate& root) noexcept;
+  void CreateBdd(const FaultTreeAnalysis& fta) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
@@ -277,7 +282,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
       current_mark_(false),
       owner_(true) {
   CLOCK(main_time);
-  CreateBdd(fta->top_event());
+  CreateBdd(*fta);
   Analysis::AddAnalysisTime(DUR(main_time));
 }
 

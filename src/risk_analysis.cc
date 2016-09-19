@@ -20,15 +20,11 @@
 
 #include "risk_analysis.h"
 
-#include <utility>
-#include <vector>
-
 #include "bdd.h"
 #include "ext.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
-#include "model.h"
 #include "random.h"
 #include "zbdd.h"
 

@@ -42,11 +42,18 @@
 #include <boost/container/flat_set.hpp>
 #include <boost/noncopyable.hpp>
 
-#include "event.h"
 #include "ext.h"
 #include "linear_map.h"
 
 namespace scram {
+
+namespace mef {  // Declarations to decouple from the initialization code.
+class Gate;
+class BasicEvent;
+class HouseEvent;
+class Formula;
+}  // namespace mef
+
 namespace core {
 
 class Gate;  // An indexed gate parent of nodes.
@@ -750,7 +757,7 @@ inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
   return constant_args_;
 }
 
-class Preprocessor;
+class Preprocessor;  ///< @todo This can be decoupled.
 
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
 /// This class provides a simpler representation of a fault tree

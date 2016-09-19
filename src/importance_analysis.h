@@ -28,11 +28,15 @@
 #include <vector>
 
 #include "bdd.h"
-#include "event.h"
 #include "probability_analysis.h"
 #include "settings.h"
 
 namespace scram {
+
+namespace mef {  // Decouple from the analysis code header.
+class BasicEvent;
+}  // namespace mef
+
 namespace core {
 
 /// Collection of importance factors for variables.

@@ -20,9 +20,6 @@
 
 #include "fault_tree.h"
 
-#include <utility>
-
-#include "cycle.h"
 #include "error.h"
 
 namespace scram {

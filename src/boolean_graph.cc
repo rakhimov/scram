@@ -31,6 +31,7 @@
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/range/algorithm.hpp>
 
+#include "event.h"
 #include "logger.h"
 
 namespace scram {

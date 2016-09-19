@@ -27,6 +27,8 @@
 #include <boost/container/flat_set.hpp>
 #include <boost/range/algorithm.hpp>
 
+#include "event.h"
+
 namespace scram {
 namespace core {
 
