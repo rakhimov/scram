@@ -25,6 +25,7 @@
 
 #include "bdd.h"
 #include "expression.h"
+#include "ext.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
@@ -45,6 +46,7 @@ void RiskAnalysis::Analyze() noexcept {
   // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
+
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis: " << target->id();
@@ -82,7 +84,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
       RunAnalysis<Algorithm, McubCalculator>(name, fta);
     }
   }
-  fault_tree_analyses_.emplace(name, FaultTreeAnalysisPtr(fta));
+  fault_tree_analyses_.emplace(name, ext::make_unique(fta));
 }
 
 template <class Algorithm, class Calculator>
@@ -93,14 +95,14 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
   if (Analysis::settings().importance_analysis()) {
     auto* ia = new ImportanceAnalyzer<Calculator>(pa);
     ia->Analyze();
-    importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia));
+    importance_analyses_.emplace(name, ext::make_unique(ia));
   }
   if (Analysis::settings().uncertainty_analysis()) {
     auto* ua = new UncertaintyAnalyzer<Calculator>(pa);
     ua->Analyze();
-    uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
+    uncertainty_analyses_.emplace(name, ext::make_unique(ua));
   }
-  probability_analyses_.emplace(name, ProbabilityAnalysisPtr(pa));
+  probability_analyses_.emplace(name, ext::make_unique(pa));
 }
 
 }  // namespace core

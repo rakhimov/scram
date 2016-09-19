@@ -143,6 +143,18 @@ bool all_of(const SinglePassRange& rng, UnaryPredicate pred) {
 }
 /// @}
 
+/// Passes an unmanaged resource to a smart pointer
+/// with automatic type deduction.
+/// This is a helper function to avoid boilerplate code.
+/// This helper would be unnecessary
+/// if template arguments could be deduced from constructors.
+///
+/// @param[in] dumb_handle  A raw pointer to the resource.
+///
+/// @returns A smart pointer exclusively owning the resource.
+template <typename T>
+auto make_unique(T* dumb_handle) { return std::unique_ptr<T>(dumb_handle); }
+
 }  // namespace ext
 
 #endif  // SCRAM_SRC_EXT_H_
