@@ -20,11 +20,13 @@
 
 #include "reporter.h"
 
+#include <fstream>
 #include <vector>
 
 #include <boost/date_time.hpp>
 
 #include "ccf_group.h"
+#include "error.h"
 #include "expression.h"
 #include "logger.h"
 #include "version.h"
@@ -56,6 +58,15 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
     }
   }
   LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
+}
+
+void Reporter::Report(const core::RiskAnalysis& risk_an,
+                      const std::string& file) {
+  std::ofstream of(file.c_str());
+  if (!of.good())
+    throw IOError(file + " : Cannot write the output file.");
+
+  Report(risk_an, of);
 }
 
 /// Describes the fault tree analysis and techniques.

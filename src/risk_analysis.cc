@@ -20,19 +20,16 @@
 
 #include "risk_analysis.h"
 
-#include <fstream>
 #include <utility>
 #include <vector>
 
 #include "bdd.h"
-#include "error.h"
 #include "expression.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
 #include "model.h"
 #include "random.h"
-#include "reporter.h"
 #include "zbdd.h"
 
 namespace scram {
@@ -104,19 +101,6 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
     uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
   }
   probability_analyses_.emplace(name, ProbabilityAnalysisPtr(pa));
-}
-
-void RiskAnalysis::Report(std::ostream& out) {
-  Reporter rp = Reporter();
-  rp.Report(*this, out);
-}
-
-void RiskAnalysis::Report(std::string output) {
-  std::ofstream of(output.c_str());
-  if (!of.good()) {
-    throw IOError(output +  " : Cannot write the output file.");
-  }
-  Report(of);
 }
 
 }  // namespace core

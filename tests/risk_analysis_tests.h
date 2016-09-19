@@ -31,6 +31,7 @@
 
 #include "env.h"
 #include "initializer.h"
+#include "reporter.h"
 #include "xml.h"
 
 namespace scram {
@@ -82,7 +83,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     ASSERT_NO_THROW(ProcessInputFile(tree_input));
     ASSERT_NO_THROW(analysis->Analyze());
     std::stringstream output;
-    ASSERT_NO_THROW(analysis->Report(output));
+    ASSERT_NO_THROW(Reporter().Report(*analysis, output));
 
     xmlpp::DomParser parser;
     ASSERT_NO_THROW(parser.parse_stream(output));

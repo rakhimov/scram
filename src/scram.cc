@@ -30,6 +30,7 @@
 #include "error.h"
 #include "initializer.h"
 #include "logger.h"
+#include "reporter.h"
 #include "risk_analysis.h"
 #include "settings.h"
 #include "version.h"
@@ -240,10 +241,11 @@ void RunScram(const po::variables_map& vm) {
   if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
     return;
 #endif
+  scram::Reporter reporter;
   if (output_path.empty()) {
-    analysis->Report(std::cout);
+    reporter.Report(*analysis, std::cout);
   } else {
-    analysis->Report(output_path);
+    reporter.Report(*analysis, output_path);
   }
 }
 

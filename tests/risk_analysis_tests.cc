@@ -281,7 +281,7 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
   std::string output = "abracadabra.cadabraabra/output.txt";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  EXPECT_THROW(analysis->Report(output), IOError);
+  EXPECT_THROW(Reporter().Report(*analysis, output), IOError);
 }
 
 // Reporting of the default analysis for MCS only without probabilities.
