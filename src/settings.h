@@ -167,6 +167,8 @@ class Settings {
   /// @param[in] time  A positive number in hours by default.
   ///
   /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument  The time value is negative.
   Settings& mission_time(double time);
 
   /// @returns true if probability analysis is requested.

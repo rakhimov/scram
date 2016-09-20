@@ -26,41 +26,6 @@
 namespace scram {
 namespace mef {
 
-/// This is for the system mission time.
-/// @todo Make this class derive from constant expression.
-class MissionTime : public Expression {
- public:
-  MissionTime();
-
-  /// Sets the mission time.
-  /// This function is expected to be used only once.
-  ///
-  /// @param[in] time  The mission time.
-  ///
-  /// @todo Move into constructor.
-  void mission_time(double time) {
-    assert(time >= 0);
-    mission_time_ = time;
-  }
-
-  /// @returns The unit of the system mission time.
-  Units unit() const { return unit_; }
-
-  /// Sets the unit of this parameter.
-  ///
-  /// @param[in] unit  A valid unit.
-  void unit(Units unit) { unit_ = unit; }
-
-  double Mean() noexcept override { return mission_time_; }
-  bool IsConstant() noexcept override { return true; }
-
- private:
-  double GetSample() noexcept override { return mission_time_; }
-
-  double mission_time_;  ///< The system mission time.
-  Units unit_;  ///< Units of this parameter.
-};
-
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
@@ -88,7 +53,27 @@ class ConstantExpression : public Expression {
 
  private:
   double GetSample() noexcept override { return value_; }
-  double value_;  ///< The Constant value.
+
+  const double value_;  ///< The universal value to represent int, bool, double.
+};
+
+/// The system mission time.
+class MissionTime : public ConstantExpression {
+ public:
+  /// Sets the mission time.
+  /// This function is expected to be used only once.
+  ///
+  /// @param[in] time  The mission time.
+  /// @param[in] unit  The unit of the given ``time`` argument.
+  ///
+  /// @throws LogicError  The time value is negative.
+  explicit MissionTime(double time, Units unit = kHours);
+
+  /// @returns The unit of the system mission time.
+  Units unit() const { return unit_; }
+
+ private:
+  Units unit_;  ///< Units of this parameter.
 };
 
 }  // namespace mef

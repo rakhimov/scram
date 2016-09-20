@@ -65,8 +65,7 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 Initializer::Initializer(const std::vector<std::string>& xml_files,
                          core::Settings settings)
     : settings_(std::move(settings)),
-      mission_time_(std::make_shared<MissionTime>()) {
-  mission_time_->mission_time(settings_.mission_time());
+      mission_time_(std::make_shared<MissionTime>(settings_.mission_time())) {
   try {
     ProcessInputFiles(xml_files);
   } catch (const CycleError&) {

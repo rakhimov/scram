@@ -22,10 +22,10 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include "src/error.h"
+
 namespace scram {
 namespace mef {
-
-MissionTime::MissionTime() : Expression({}), mission_time_(-1), unit_(kHours) {}
 
 const ExpressionPtr ConstantExpression::kOne(new ConstantExpression(1));
 const ExpressionPtr ConstantExpression::kZero(new ConstantExpression(0));
@@ -41,6 +41,13 @@ ConstantExpression::ConstantExpression(int value)
 
 ConstantExpression::ConstantExpression(bool value)
     : ConstantExpression(static_cast<double>(value)) {}
+
+MissionTime::MissionTime(double time, Units unit)
+    : ConstantExpression(time),
+      unit_(unit) {
+  if (time < 0)
+    throw LogicError("Mission time cannot be negative.");
+}
 
 }  // namespace mef
 }  // namespace scram
