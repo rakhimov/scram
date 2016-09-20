@@ -27,8 +27,8 @@
 
 #include "ccf_group.h"
 #include "error.h"
-#include "expression.h"
 #include "logger.h"
+#include "parameter.h"
 #include "version.h"
 
 namespace scram {

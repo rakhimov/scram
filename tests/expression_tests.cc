@@ -16,6 +16,10 @@
  */
 
 #include "expression.h"
+#include "expression/arithmetic.h"
+#include "expression/exponential.h"
+#include "expression/random_deviate.h"
+#include "parameter.h"
 
 #include <gtest/gtest.h>
 

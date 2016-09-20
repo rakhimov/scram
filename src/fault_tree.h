@@ -31,7 +31,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
-#include "expression.h"
+#include "parameter.h"
 
 namespace scram {
 namespace mef {

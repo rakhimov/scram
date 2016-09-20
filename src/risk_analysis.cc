@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "bdd.h"
-#include "expression.h"
 #include "ext.h"
 #include "fault_tree.h"
 #include "logger.h"

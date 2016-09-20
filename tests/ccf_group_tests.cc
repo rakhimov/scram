@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 
 #include "error.h"
+#include "expression/constant.h"
 
 namespace scram {
 namespace mef {

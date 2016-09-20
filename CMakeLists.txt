@@ -209,6 +209,8 @@ include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
 include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})  # TODO: libxml++ dependency.
 
+include_directories("${PROJECT_SOURCE_DIR}")  # Include the core headers via "src".
+
 add_subdirectory("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
 add_subdirectory("${SCRAM_INPUT_DIR}")

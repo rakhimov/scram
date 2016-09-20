@@ -28,6 +28,9 @@
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
+#include "expression/arithmetic.h"
+#include "expression/exponential.h"
+#include "expression/random_deviate.h"
 #include "logger.h"
 #include "xml.h"
 
@@ -368,7 +371,8 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
     type = "null";
   }
 
-  int pos = boost::find(kOperatorToString, type) - kOperatorToString.begin();
+  int pos =
+      boost::find(kOperatorToString, type) - std::begin(kOperatorToString);
   assert(pos < kNumOperators && "Unexpected operator type.");
 
   FormulaPtr formula(new Formula(static_cast<Operator>(pos)));
@@ -533,7 +537,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
   if (!unit.empty()) {
-    int pos = boost::find(kUnitsToString, unit) - kUnitsToString.begin();
+    int pos = boost::find(kUnitsToString, unit) - std::begin(kUnitsToString);
     assert(pos < kNumUnits && "Unexpected unit kind.");
     parameter->unit(static_cast<Units>(pos));
   }

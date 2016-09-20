@@ -34,8 +34,10 @@
 #include "element.h"
 #include "event.h"
 #include "expression.h"
+#include "expression/constant.h"
 #include "fault_tree.h"
 #include "model.h"
+#include "parameter.h"
 #include "settings.h"
 
 namespace scram {

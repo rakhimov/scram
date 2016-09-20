@@ -22,6 +22,9 @@
 
 #include <boost/range/algorithm.hpp>
 
+#include "expression/arithmetic.h"
+#include "expression/constant.h"
+
 namespace scram {
 namespace mef {
 

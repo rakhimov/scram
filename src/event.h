@@ -23,7 +23,6 @@
 
 #include <cstdint>
 
-#include <array>
 #include <memory>
 #include <string>
 #include <vector>
@@ -319,8 +318,8 @@ const int kNumOperators = 8;
 
 /// String representations of the operators.
 /// The ordering is the same as the Operator enum.
-const std::array<const char*, kNumOperators> kOperatorToString = {
-    "and", "or", "atleast", "xor", "not", "nand", "nor", "null"};
+const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
+                                         "not", "nand", "nor",     "null"};
 
 /// Boolean formula with operators and arguments.
 /// Formulas are not expected to be shared.
