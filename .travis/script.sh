@@ -60,8 +60,11 @@ lizard -w -L 60 -a 5 -EIgnoreAssert -ENS -Ecpre src gui \
 lizard -w -L 60 -a 5 scripts/*.py
 
 # C++ linting
-cpplint --repository=../ --quiet src/* tests/* 2> style.txt \
+cpplint --repository=../ --quiet --recursive src/* 2> style.txt \
   || echo "TODO: Fix the C++ code"
+cpplint --repository=../ --quiet --filter=-build/include_what_you_use \
+  tests/* 2>> style.txt || echo "TODO: Fix the C++ code"
+
 # Clean false positives and noise
 sed -i '/Found C system header after C\+\+/d' style.txt
 sed -i '/Found C system header after other header/d' style.txt

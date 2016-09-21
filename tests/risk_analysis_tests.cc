@@ -17,9 +17,15 @@
 
 #include "risk_analysis_tests.h"
 
+#include <sstream>
 #include <utility>
 
+#include <libxml++/libxml++.h>
+
+#include "env.h"
 #include "error.h"
+#include "initializer.h"
+#include "reporter.h"
 
 namespace scram {
 namespace core {
@@ -27,6 +33,97 @@ namespace test {
 
 const std::set<std::set<std::string>> RiskAnalysisTest::kUnity = {
     std::set<std::string>{}};
+
+void RiskAnalysisTest::SetUp() {
+  if (HasParam()) {
+    std::string param = GetParam();
+    if (param == "pi") {
+      settings.algorithm("bdd");
+      settings.prime_implicants(true);
+    } else {
+      settings.algorithm(GetParam());
+    }
+  }
+}
+
+void RiskAnalysisTest::ProcessInputFiles(
+    const std::vector<std::string>& input_files) {
+  mef::Initializer init(input_files, settings);
+  model = init.model();
+  analysis = std::make_unique<RiskAnalysis>(model, settings);
+  result_ = Result();
+}
+
+void RiskAnalysisTest::CheckReport(const std::string& tree_input) {
+  static xmlpp::RelaxNGValidator validator(Env::report_schema());
+
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  std::stringstream output;
+  ASSERT_NO_THROW(Reporter().Report(*analysis, output));
+
+  xmlpp::DomParser parser;
+  ASSERT_NO_THROW(parser.parse_stream(output));
+  ASSERT_NO_THROW(validator.validate(parser.get_document()));
+}
+
+const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
+  assert(!analysis->fault_tree_analyses().empty());
+  assert(analysis->fault_tree_analyses().size() == 1);
+  if (result_.products.empty()) {
+    const FaultTreeAnalysis* fta =
+        analysis->fault_tree_analyses().begin()->second.get();
+    for (const Product& product : fta->products()) {
+      result_.products.emplace(Convert(product));
+    }
+  }
+  return result_.products;
+}
+
+std::vector<int> RiskAnalysisTest::ProductDistribution() {
+  assert(!analysis->fault_tree_analyses().empty());
+  assert(analysis->fault_tree_analyses().size() == 1);
+  std::vector<int> distr(settings.limit_order(), 0);
+  const FaultTreeAnalysis* fta =
+      analysis->fault_tree_analyses().begin()->second.get();
+  for (const Product& product : fta->products()) {
+    distr[GetOrder(product) - 1]++;
+  }
+  while (!distr.empty() && !distr.back())
+    distr.pop_back();
+  return distr;
+}
+
+void RiskAnalysisTest::PrintProducts() {
+  assert(!analysis->fault_tree_analyses().empty());
+  assert(analysis->fault_tree_analyses().size() == 1);
+  const FaultTreeAnalysis* fta =
+      analysis->fault_tree_analyses().begin()->second.get();
+  Print(fta->products());
+}
+
+const std::map<std::set<std::string>, double>&
+RiskAnalysisTest::product_probability() {
+  assert(!analysis->fault_tree_analyses().empty());
+  assert(analysis->fault_tree_analyses().size() == 1);
+  if (result_.product_probability.empty()) {
+    const FaultTreeAnalysis* fta =
+        analysis->fault_tree_analyses().begin()->second.get();
+    for (const Product& product : fta->products()) {
+      result_.product_probability.emplace(Convert(product),
+                                          CalculateProbability(product));
+    }
+  }
+  return result_.product_probability;
+}
+
+std::set<std::string> RiskAnalysisTest::Convert(const Product& product) {
+  std::set<std::string> string_set;
+  for (const Literal& literal : product) {
+    string_set.insert((literal.complement ? "not " : "") + literal.event.id());
+  }
+  return string_set;
+}
 
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
