@@ -21,6 +21,7 @@
 #include "fault_tree_analysis.h"
 
 #include <algorithm>
+#include <iostream>
 #include <utility>
 
 #include <boost/container/flat_set.hpp>

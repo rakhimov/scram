@@ -78,6 +78,7 @@
 #include <queue>
 #include <unordered_set>
 
+#include <boost/functional/hash.hpp>
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/range/algorithm_ext.hpp>
@@ -116,6 +117,64 @@ void Preprocessor::Run() noexcept {
       return;
   }
 }
+
+/// Container of unique gates.
+/// This container acts like an unordered set of gates.
+/// The gates are equivalent
+/// if they have the same semantics.
+/// However, this set does not test
+/// for the isomorphism of the gates' Boolean formulas.
+class Preprocessor::GateSet {
+ public:
+  /// Inserts a gate into the set
+  /// if it is semantically unique.
+  ///
+  /// @param[in] gate  The gate to insert.
+  ///
+  /// @returns A pair of the unique gate and
+  ///          the insertion success flag.
+  std::pair<GatePtr, bool> insert(const GatePtr& gate) noexcept {
+    auto result = table_[gate->type()].insert(gate);
+    return {*result.first, result.second};
+  }
+
+ private:
+  /// Functor for hashing gates by their arguments.
+  ///
+  /// @note The hashing discards the logic of the gate.
+  struct Hash {
+    /// Operator overload for hashing.
+    ///
+    /// @param[in] gate  The gate which hash must be calculated.
+    ///
+    /// @returns Hash value of the gate
+    ///          from its arguments but not logic.
+    std::size_t operator()(const GatePtr& gate) const noexcept {
+      return boost::hash_range(gate->args().begin(), gate->args().end());
+    }
+  };
+  /// Functor for equality test for gates by their arguments.
+  ///
+  /// @note The equality discards the logic of the gate.
+  struct Equal {
+    /// Operator overload for gate argument equality test.
+    ///
+    /// @param[in] lhs  The first gate.
+    /// @param[in] rhs  The second gate.
+    ///
+    /// @returns true if the gate arguments are equal.
+    bool operator()(const GatePtr& lhs, const GatePtr& rhs) const noexcept {
+      assert(lhs->type() == rhs->type());
+      if (lhs->args() != rhs->args())
+        return false;
+      if (lhs->type() == kVote && lhs->vote_number() != rhs->vote_number())
+        return false;
+      return true;
+    }
+  };
+  /// Container of gates grouped by their types.
+  std::array<std::unordered_set<GatePtr, Hash, Equal>, kNumOperators> table_;
+};
 
 namespace {  // Boolean graph structure verification tools.
 
