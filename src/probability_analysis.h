@@ -27,7 +27,6 @@
 #include "bdd.h"
 #include "boolean_graph.h"
 #include "fault_tree_analysis.h"
-#include "logger.h"
 
 namespace scram {
 namespace core {
@@ -112,10 +111,10 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
   ///
   /// @pre Absolute indices of events directly map to vector indices.
   ///
-  /// @post The returned probability value may not be acceptable.
-  ///       That is, it may be out of the acceptable [0, 1] range.
-  ///       The caller of this function must decide
-  ///       what to do in this case.
+  /// @post In case the calculated probability exceeds 1,
+  ///       the probability is adjusted to 1.
+  ///       It is very unwise to use the rare-event approximation
+  ///       with large probability values.
   double Calculate(const std::vector<CutSet>& cut_sets,
                    const std::vector<double>& p_vars) noexcept;
 };
@@ -146,7 +145,12 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
   template <class Algorithm>
-  explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
+  explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta)
+      : ProbabilityAnalysis(fta),
+        graph_(fta->graph()),
+        products_(fta->algorithm()->products()) {
+    ExtractVariableProbabilities();
+  }
 
   /// @returns The original Boolean graph from the fault tree analyzer.
   const BooleanGraph* graph() const { return graph_; }
@@ -154,16 +158,8 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @returns The resulting products of the fault tree analyzer.
   const std::vector<Product>& products() const { return products_; }
 
-  /// @returns A modifiable mapping for probability values and indices.
-  ///
-  /// @pre Quantitative analyzers aware of how Probability analyzer works.
-  /// @pre Quantitative analyzers will cleanup after themselves.
-  ///
-  /// @warning This is a hack
-  ///          due to tight coupling of Quantitative analyzers.
-  ///
-  /// @todo Redesign the use and manipulation of variable probabilities.
-  std::vector<double>& p_vars() { return p_vars_; }
+  /// @returns A mapping for probability values and indices.
+  const std::vector<double>& p_vars() const { return p_vars_; }
 
  protected:
   ~ProbabilityAnalyzerBase() = default;
@@ -184,15 +180,6 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   std::vector<double> p_vars_;  ///< Variable probabilities.
 };
 
-template <class Algorithm>
-ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
-    const FaultTreeAnalyzer<Algorithm>* fta)
-    : ProbabilityAnalysis(fta),
-      graph_(fta->graph()),
-      products_(fta->algorithm()->products()) {
-  ExtractVariableProbabilities();
-}
-
 /// Fault-tree-analysis-aware probability analyzer.
 /// Probability analyzer provides the main engine for probability analysis.
 ///
@@ -202,15 +189,27 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
  public:
   using ProbabilityAnalyzerBase::ProbabilityAnalyzerBase;
 
+  /// Calculates the total probability
+  /// with a different set of probability values
+  /// than the one given upon construction.
+  ///
+  /// @param[in] p_vars  A map of probabilities of the graph variables.
+  ///                    The indices of the variables must map
+  ///                    exactly to the vector indices.
+  ///
+  /// @returns The total probability calculated with the given values.
+  double CalculateTotalProbability(const std::vector<double>& p_vars) noexcept {
+    return calc_.Calculate(ProbabilityAnalyzerBase::products(), p_vars);
+  }
+
+ private:
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph or the sum of products.
   double CalculateTotalProbability() noexcept override {
-    return calc_.Calculate(ProbabilityAnalyzerBase::products(),
-                           ProbabilityAnalyzerBase::p_vars());
+    return CalculateTotalProbability(ProbabilityAnalyzerBase::p_vars());
   }
 
- private:
   Calculator calc_;  ///< Provider of the calculation logic.
 };
 
@@ -226,7 +225,12 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
   template <class Algorithm>
-  explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
+  explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta)
+      : ProbabilityAnalyzerBase(fta),
+        current_mark_(false),
+        owner_(true) {
+    CreateBdd(*fta);
+  }
 
   /// Reuses BDD structures from Fault tree analyzer.
   ///
@@ -245,12 +249,17 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @returns Binary decision diagram used for calculations.
   Bdd* bdd_graph() { return bdd_graph_; }
 
+  /// @copydoc ProbabilityAnalyzer::CalculateTotalProbability
+  double CalculateTotalProbability(const std::vector<double>& p_vars) noexcept;
+
+ private:
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph.
-  double CalculateTotalProbability() noexcept override;
+  double CalculateTotalProbability() noexcept override {
+    return CalculateTotalProbability(ProbabilityAnalyzerBase::p_vars());
+  }
 
- private:
   /// Creates a new BDD for use by the analyzer.
   ///
   /// @param[in] fta  The fault tree analysis providing the root gate.
@@ -263,28 +272,20 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   ///
   /// @param[in] vertex  The root vertex of a function graph.
   /// @param[in] mark  A flag to mark traversed vertices.
+  /// @param[in] p_vars  The probabilities of the variables
+  ///                    mapped by their indices.
   ///
   /// @returns Probability value.
   ///
   /// @warning If a vertex is already marked with the input mark,
   ///          it will not be traversed and updated with a probability value.
-  double CalculateProbability(const Bdd::VertexPtr& vertex, bool mark) noexcept;
+  double CalculateProbability(const Bdd::VertexPtr& vertex, bool mark,
+                              const std::vector<double>& p_vars) noexcept;
 
   Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
   bool current_mark_;  ///< To keep track of BDD current mark.
   bool owner_;  ///< Indication that pointers are handles.
 };
-
-template <class Algorithm>
-ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
-    const FaultTreeAnalyzer<Algorithm>* fta)
-    : ProbabilityAnalyzerBase(fta),
-      current_mark_(false),
-      owner_(true) {
-  CLOCK(main_time);
-  CreateBdd(*fta);
-  Analysis::AddAnalysisTime(DUR(main_time));
-}
 
 }  // namespace core
 }  // namespace scram

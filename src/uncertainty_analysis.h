@@ -26,11 +26,15 @@
 #include <vector>
 
 #include "analysis.h"
-#include "event.h"
 #include "probability_analysis.h"
 #include "settings.h"
 
 namespace scram {
+
+namespace mef {  // Decouple from the implementation dependence.
+class BasicEvent;
+}  // namespace mef
+
 namespace core {
 
 /// Uncertainty analysis and statistics
@@ -83,6 +87,18 @@ class UncertaintyAnalysis : public Analysis {
   std::vector<std::pair<int, mef::BasicEvent*>> FilterUncertainEvents(
       const BooleanGraph* graph) noexcept;
 
+  /// Samples each uncertain event probability.
+  ///
+  /// @param[in] uncertain_events  A collection of uncertain events.
+  /// @param[in,out] p_vars  A container for sampled event probabilities.
+  ///
+  /// @pre The container for probabilities is large enough
+  ///      to have the resultant probabilities get mapped by indices.
+  ///      That is, container[event.index()] never fails for any given event.
+  void SampleEventProbabilities(
+      const std::vector<std::pair<int, mef::BasicEvent*>>& uncertain_events,
+      std::vector<double>* p_vars) noexcept;
+
  private:
   /// Performs Monte Carlo Simulation
   /// by sampling the probability distributions
@@ -118,11 +134,6 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   /// to calculate the total probability for sampling.
   ///
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
-  ///
-  /// @pre Probability analyzer can work with modified probability values.
-  ///
-  /// @post Probability analyzer's probability values are
-  ///       reset to the original values (event probabilities).
   explicit UncertaintyAnalyzer(ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : UncertaintyAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
@@ -139,33 +150,16 @@ template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
-  std::vector<double>& p_vars = prob_analyzer_->p_vars();
+  std::vector<double> p_vars = prob_analyzer_->p_vars();  // Private copy!
   std::vector<double> samples;
   samples.reserve(Analysis::settings().num_trials());
-  for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
-    // Reset distributions.
-    for (const auto& event : uncertain_events)
-      event.second->Reset();
 
-    // Sample all basic events with distributions.
-    for (const auto& event : uncertain_events) {
-      double prob = event.second->SampleProbability();
-      if (prob < 0) {  // Adjust if out of range.
-        prob = 0;
-      } else if (prob > 1) {
-        prob = 1;
-      }
-      p_vars[event.first] = prob;
-    }
-    double result = prob_analyzer_->CalculateTotalProbability();
-    assert(result >= 0);
-    if (result > 1)
-      result = 1;
+  for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
+    UncertaintyAnalysis::SampleEventProbabilities(uncertain_events, &p_vars);
+    double result = prob_analyzer_->CalculateTotalProbability(p_vars);
+    assert(result >= 0 && result <= 1);
     samples.push_back(result);
   }
-  // Reset probabilities.
-  for (const auto& event : uncertain_events)
-    p_vars[event.first] = event.second->p();
 
   return samples;
 }
