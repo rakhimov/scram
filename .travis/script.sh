@@ -48,6 +48,7 @@ doxygen ./.travis/doxygen.conf > /dev/null 2> doc_errors.txt
 sed -i '/=delete/d' doc_errors.txt
 # Doxygen 1.8.6 can't deal with C++11 initializer list in constructor.
 sed -i '/expression\.cc/d' doc_errors.txt
+sed -r -i '/expression\/\w+\.cc/d' doc_errors.txt
 if [[ -s doc_errors.txt ]]; then
   echo "Documentation errors:" >&2
   cat doc_errors.txt >&2
