@@ -56,7 +56,6 @@ namespace test {
 TEST(RegressionTest, ObjectSize) {
   // x86-64 platform.
   // 64-bit platform with alignment at 8-byte boundaries.
-  EXPECT_EQ(16, sizeof(ControlBlock));
   EXPECT_EQ(8, sizeof(WeakIntrusivePtr<Vertex<Ite>>));
   EXPECT_EQ(8, sizeof(IntrusivePtr<Vertex<Ite>>));
   EXPECT_EQ(16, sizeof(Vertex<Ite>));

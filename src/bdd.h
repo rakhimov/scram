@@ -40,18 +40,14 @@
 namespace scram {
 namespace core {
 
-/// Control flags and pointers for communication
-/// between BDD vertex pointers and BDD tables.
-struct ControlBlock {
-  void* vertex;  ///< The manager of the control block.
-  int weak_count;  ///< Pointers in tables.
-};
-
 /// The default management of BDD vertices.
 ///
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
 using IntrusivePtr = boost::intrusive_ptr<T>;
+
+template <class T>
+class Vertex;  // Manager of its own entry in the unique table.
 
 /// A weak pointer to store in BDD unique tables.
 /// This weak pointer is unique pointer as well
@@ -60,17 +56,20 @@ using IntrusivePtr = boost::intrusive_ptr<T>;
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
 class WeakIntrusivePtr final : private boost::noncopyable {
+  friend class Vertex<T>;  // Communicates the destruction of the vertex.
+
  public:
   /// Default constructor is to allow initialization in tables.
-  WeakIntrusivePtr() noexcept : control_block_(nullptr) {}
+  WeakIntrusivePtr() noexcept : vertex_(nullptr) {}
 
   /// Constructs from the shared pointer.
   /// However, there is no weak-to-shared constructor.
   ///
   /// @param[in] ptr  Fully initialized intrusive pointer.
   explicit WeakIntrusivePtr(const IntrusivePtr<T>& ptr) noexcept
-      : control_block_(get_control_block(ptr.get())) {
-    control_block_->weak_count++;
+      : vertex_(ptr.get()) {
+    assert(vertex_->table_ptr_ == nullptr && "Non-unique table pointers.");
+    vertex_->table_ptr_ = this;
   }
 
   /// Copy assignment from shared pointers
@@ -85,35 +84,25 @@ class WeakIntrusivePtr final : private boost::noncopyable {
     return *this;
   }
 
-  /// Decrements weak count in the control block.
-  /// If this is the last pointer and vertex is gone,
-  /// the control block is deleted.
+  /// Communicates the pointer destruction to the vertex.
   ~WeakIntrusivePtr() noexcept {
-    if (control_block_) {
-      if (--control_block_->weak_count == 0 &&
-          control_block_->vertex == nullptr) {
-        delete control_block_;
-      }
-    }
+    if (vertex_)
+      vertex_->table_ptr_ = nullptr;
   }
 
   /// @returns true if the managed vertex is deleted or not initialized.
-  bool expired() const { return !control_block_ || !control_block_->vertex; }
+  bool expired() const { return !vertex_; }
 
   /// @returns The intrusive pointer of the vertex.
-  ///
-  /// @warning Hard failure for uninitialized pointers.
-  IntrusivePtr<T> lock() const {
-    return IntrusivePtr<T>(static_cast<T*>(control_block_->vertex));
-  }
+  ///          nullptr if the vertex is deleted or not initialized.
+  IntrusivePtr<T> lock() const { return IntrusivePtr<T>(vertex_); }
 
   /// @returns The raw pointer to the vertex.
-  ///
-  /// @warning Hard failure for uninitialized pointers.
-  T* get() const { return static_cast<T*>(control_block_->vertex); }
+  ///          nullptr if the vertex is deleted or not initialized.
+  T* get() const { return vertex_; }
 
  private:
-  ControlBlock* control_block_;  ///< To receive information from vertices.
+  T* vertex_;  ///< A communication pointer with the vertex.
 };
 
 template <class T>
@@ -130,12 +119,7 @@ class Terminal;  // Forward declaration for Vertex to manage.
 /// @pre Vertices are not shared among separate BDD instances.
 template <class T>
 class Vertex : private boost::noncopyable {
-  /// @param[in] ptr  Vertex pointer managed by intrusive pointers.
-  ///
-  /// @returns The control block of intrusive counting for tables.
-  friend ControlBlock* get_control_block(Vertex<T>* ptr) noexcept {
-    return ptr->control_block_;
-  }
+  friend class WeakIntrusivePtr<T>;  // Mutual friendship to manage table entry.
 
   /// Increases the reference count for new intrusive pointers.
   ///
@@ -165,7 +149,7 @@ class Vertex : private boost::noncopyable {
   explicit Vertex(int id)
       : id_(id),
         use_count_(0),
-        control_block_(new ControlBlock{this}) {}
+        table_ptr_(nullptr) {}
 
   /// @returns Identifier of the BDD graph rooted by this vertex.
   int id() const { return id_; }
@@ -183,20 +167,18 @@ class Vertex : private boost::noncopyable {
   }
 
  protected:
-  /// Communicates the destruction via the control block
-  /// if there's anyone left to care.
+  /// Communicates the destruction
+  /// via the pointer to the unique table entry
+  /// if there's any.
   ~Vertex() noexcept {
-    if (control_block_->weak_count == 0) {
-      delete control_block_;
-    } else {
-      control_block_->vertex = nullptr;
-    }
+    if (table_ptr_)
+      table_ptr_->vertex_ = nullptr;
   }
 
  private:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.
   int use_count_;  ///< Reference count for the intrusive pointer.
-  ControlBlock* control_block_;  ///< Communication channel for pointers.
+  WeakIntrusivePtr<T>* table_ptr_;  ///< Entry in the unique table.
 };
 
 /// Representation of terminal vertices in BDD graphs.

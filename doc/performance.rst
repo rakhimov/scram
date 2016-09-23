@@ -166,14 +166,14 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 1.5
+- BDD Time: 1.4
 - ZBDD Time: 0.20
 
 - # of BDD vertices created: 2652730
 - # of ITE in unique table: 2370567
 - # of ITE in BDD: 1123292 | 1160828
 
-- Memory:   250
+- Memory:   215
 
 - Cache-misses:  46 %  |  50 %
 
@@ -193,7 +193,7 @@ Release build:
 - ZBDD Cut set extraction memory: 100
 - Cut set indices to pointers memory: 90
 
-- Memory: 375
+- Memory: 310
 
 - Cache-misses:  34 %
 
