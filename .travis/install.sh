@@ -40,9 +40,15 @@ tar -xf ${LIBXMLPP}.tar.xz
 cd $PROJECT_DIR
 
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
+
+# Install newer doxygen due to bugs in 1.8.6 with C++11 code.
+DOXYGEN='doxygen-1.8.12.linux.bin.tar.gz'
+wget https://sourceforge.net/projects/iscram/files/deps/${DOXYGEN}
+tar -xf ${DOXYGEN}
+sudo cp doxygen-1.8.12/bin/* /usr/bin/
+
 sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
-sudo apt-get install -qq doxygen
 sudo pip install -r requirements-dev.txt
 sudo apt-get install -qq lcov
 gem install coveralls-lcov
