@@ -20,7 +20,7 @@ env:
     global:
         - PATH=$PATH:`pwd`/install/bin
         # Intel Parallel Studio
-        - secure: "BM1aLsCy0NYk1TCCMeQH6H1O9B+NmZeO6QzRTjy1Xrs8wvoKsuBiazjxSZ6nVWP3F+JtjsOLzeFyELmCf4lobcw8bhzgLZ7ZFaDJl4DC31w+87RdQFYzMe5t53SfflkfBDYkbpbUrt1B7qPk5r0nYDG+QzO3T/XnvSN/0HvmEBQ="
+        - secure: "AY6adQXVk/3J43z6PHbqVxq3Bn5HZ5Qrf8fvPeF+BR56Oa4+9YryfDDJyiDRISuyh7PoDUw+PERJiZpAL3rkFefxUkYTB3hdU4lsMIAgl37MuT4/kP5CW9TC+gsPJl41y4i8XKFtJXF1K4PW2oDRZCbDDB9oUWPZjNPPe0jg4e8="
     matrix:
         - RELEASE=
         - RELEASE=true
