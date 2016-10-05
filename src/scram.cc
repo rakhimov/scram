@@ -254,10 +254,10 @@ void RunScram(const po::variables_map& vm) {
 /// Catches an exception,
 /// prints its message to the standard error,
 /// and returns error code of 1 to exit from the main function.
-#define CATCH(exception_type, header)                        \
-  catch (const exception_type& err) {                        \
-    std::cerr << header << ":\n" << err.what() << std::endl; \
-    return 1;                                                \
+#define CATCH(exception_type)                                         \
+  catch (const exception_type& err) {                                 \
+    std::cerr << #exception_type << ":\n" << err.what() << std::endl; \
+    return 1;                                                         \
   }
 
 /// Command-line SCRAM entrance.
@@ -282,19 +282,19 @@ int main(int argc, char* argv[]) {
 
 #ifdef NDEBUG
   }
-  CATCH(scram::IOError, "SCRAM I/O Error")
-  CATCH(scram::ValidationError, "SCRAM Validation Error")
-  CATCH(scram::ValueError, "SCRAM Value Error")
-  CATCH(scram::LogicError, "SCRAM Logic Error")
-  CATCH(scram::IllegalOperation, "SCRAM Illegal Operation")
-  CATCH(scram::InvalidArgument, "SCRAM Invalid Argument Error")
-  CATCH(scram::Error, "SCRAM Error")
+  CATCH(scram::IOError)
+  CATCH(scram::ValidationError)
+  CATCH(scram::ValueError)
+  CATCH(scram::LogicError)
+  CATCH(scram::IllegalOperation)
+  CATCH(scram::InvalidArgument)
+  CATCH(scram::Error)
   catch (boost::exception& boost_err) {
     std::cerr << "Boost Exception:\n"
               << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   }
-  CATCH(std::exception, "Standard Exception")
+  CATCH(std::exception)
 #endif
 }  // End of main.
 #undef CATCH
