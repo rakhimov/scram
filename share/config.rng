@@ -20,9 +20,11 @@
       <optional>
         <element name="algorithm">
           <attribute name="name">
-            <data type="string">
-              <param name="pattern">mocus|bdd|zbdd</param>
-            </data>
+            <choice>
+              <value>mocus</value>
+              <value>bdd</value>
+              <value>zbdd</value>
+            </choice>
           </attribute>
         </element>
       </optional>
@@ -58,9 +60,10 @@
       <optional>
         <element name="approximation">
           <attribute name="name">
-            <data type="string">
-              <param name="pattern">rare-event|mcub</param>
-            </data>
+            <choice>
+              <value>rare-event</value>
+              <value>mcub</value>
+            </choice>
           </attribute>
         </element>
       </optional>
