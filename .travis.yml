@@ -29,6 +29,8 @@ matrix:
     exclude:
         - os: osx
           compiler: gcc  # GCC is Clang on OS X.
+        - os: osx
+          env: RELEASE=  # OS X builds are slow and limited.
     include:
         - os: linux
           compiler: icc
