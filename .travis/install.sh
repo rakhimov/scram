@@ -11,8 +11,8 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew install ccache
 fi
 
-sudo pip install -U pip wheel
-sudo pip install -r requirements-tests.txt
+sudo -H pip install -U pip wheel
+sudo -H pip install -r requirements-tests.txt
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
@@ -49,6 +49,6 @@ sudo cp doxygen-1.8.12/bin/* /usr/bin/
 
 sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
-sudo pip install -r requirements-dev.txt
+sudo -H pip install -r requirements-dev.txt
 sudo apt-get install -qq lcov
 gem install coveralls-lcov
