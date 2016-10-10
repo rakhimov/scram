@@ -24,7 +24,7 @@ set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
 
 option(WITH_TCMALLOC "Use TCMalloc" ON)
-option(WITH_JEMALLOC "Use JeMalloc" OFF)
+option(WITH_JEMALLOC "Use JEMalloc" OFF)
 
 option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
 option(WITH_PROFILE "Instrument for performance profiling" OFF)
@@ -149,7 +149,7 @@ if(NOT WITH_PROFILE)
     find_package(JeMalloc)
     if(JEMALLOC_FOUND)
       set(LIBS ${LIBS} ${JEMALLOC_LIBRARIES})
-      set(MALLOC "JeMalloc")
+      set(MALLOC "JEMalloc")
     endif()
   endif()
 endif()

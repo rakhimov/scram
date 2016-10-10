@@ -80,7 +80,7 @@ Optional Dependencies
 Package                Minimum Version
 ====================   ==================
 `TCMalloc`             1.7
-`JeMalloc`             3.6
+`JEMalloc`             3.6
 ====================   ==================
 
 
