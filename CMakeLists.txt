@@ -24,6 +24,7 @@ set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
 
 option(WITH_TCMALLOC "Use TCMalloc" ON)
+option(WITH_JEMALLOC "Use JeMalloc" OFF)
 
 option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
 option(WITH_PROFILE "Instrument for performance profiling" OFF)
@@ -76,6 +77,7 @@ endif()
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
+  message(STATUS "Using CCache for builds")
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 
@@ -134,11 +136,24 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 set(LIBS "")
 
-# Optional TCMalloc for optimization.
-if(WITH_TCMALLOC AND NOT WITH_PROFILE)
-  find_package(Tcmalloc)
-  set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+set(MALLOC "System Malloc")
+# Optional alternative Malloc for optimization.
+if(NOT WITH_PROFILE)
+  if(WITH_TCMALLOC)
+    find_package(Tcmalloc)
+    if(Tcmalloc_FOUND)
+      set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+      set(MALLOC "TCMalloc")
+    endif()
+  elseif(WITH_JEMALLOC)
+    find_package(JeMalloc)
+    if(JEMALLOC_FOUND)
+      set(LIBS ${LIBS} ${JEMALLOC_LIBRARIES})
+      set(MALLOC "JeMalloc")
+    endif()
+  endif()
 endif()
+message(STATUS "The memory allocator: ${MALLOC}")
 
 # Find LibXML++ and dependencies.
 set(LIBXML++_MIN_VERSION "2.38.1")  # TODO: Fix the minimum version check.
