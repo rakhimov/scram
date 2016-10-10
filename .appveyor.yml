@@ -12,6 +12,7 @@ install:
     - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
     - pacman --noconfirm -Syu
     - pacman --noconfirm -Syu
+    - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
     - pacman --noconfirm -S mingw-w64-x86_64-boost
     - pacman --noconfirm -S mingw-w64-x86_64-libxml++2.6
     - pacman --noconfirm -S mingw-w64-x86_64-qt5
@@ -19,15 +20,11 @@ install:
 before_build:
     - md install
     - md build
-    - cd build
 
 build_script:
-    - cmake -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=..\install -DCMAKE_BUILD_TYPE=%CONFIGURATION% ..
-    - make -j 2
+    - python .\install.py --mingw64 --prefix=.\install --build-type=%CONFIGURATION% -j 2
 
 after_build:
-    - make install
-    - cd ..
     - set PATH=%PATH%;%CD%\install\bin
 
 test_script:

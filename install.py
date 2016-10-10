@@ -64,7 +64,8 @@ def generate_make_files(args):
         cmake_cmd += ["-D" + x for x in args.D]
 
     if args.mingw64:
-        cmake_cmd += ["-G", "MSYS Makefiles"]
+        cmake_cmd += ["-G", "MSYS Makefiles", "-DWITH_TCMALLOC=OFF",
+                      "-DWITH_JEMALLOC=ON"]
 
     subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                           shell=(os.name == "nt"))

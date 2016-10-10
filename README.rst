@@ -274,6 +274,10 @@ Where ``package`` is replaced by the correct package name:
 #. libxml++2.6
 #. qt5
 
+and (optionally):
+
+#. jemalloc
+
 If Python has not already been installed on the system,
 Python installation takes the form of:
 
@@ -286,14 +290,14 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml++2.6,qt5}
+    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml++2.6,qt5,jemalloc}
 
 The building and installation can be done with the ``install.py`` script
 in the root directory.
 
 .. code-block:: bash
 
-    .../scram$ python install.py --prefix=path/to/installation/directory -release --mingw64
+    .../scram$ python install.py --prefix=path/to/installation/directory --release --mingw64
 
 After installation,
 SCRAM must be run inside of the MSYS2 shell.
