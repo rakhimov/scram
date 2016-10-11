@@ -16,9 +16,9 @@ SCRAM
     :alt: Code Health
 .. image:: https://codecov.io/github/rakhimov/scram/coverage.svg?branch=develop
     :target: https://codecov.io/github/rakhimov/scram?branch=develop
-.. image:: https://badge.waffle.io/rakhimov/scram.svg?label=ready&title=Ready
+.. image:: https://badge.waffle.io/rakhimov/scram.svg?label=In%20Progress&title=in%20progress
     :target: https://waffle.io/rakhimov/scram
-    :alt: 'Stories in Ready'
+    :alt: 'Stories in Progress'
 
 |
 
