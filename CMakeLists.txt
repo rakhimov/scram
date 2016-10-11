@@ -23,8 +23,8 @@ set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 # Linking of external libraries, such as BOOST.
 option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
 
-option(WITH_TCMALLOC "Use TCMalloc" ON)
-option(WITH_JEMALLOC "Use JEMalloc" OFF)
+option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
+option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 
 option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
 option(WITH_PROFILE "Instrument for performance profiling" OFF)
@@ -134,23 +134,17 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 ######################## Begin find libraries ######################
 
-set(LIBS "")
-
 set(MALLOC "System Malloc")
 # Optional alternative Malloc for optimization.
 if(NOT WITH_PROFILE)
-  if(WITH_TCMALLOC)
-    find_package(Tcmalloc)
-    if(Tcmalloc_FOUND)
-      set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
-      set(MALLOC "TCMalloc")
-    endif()
-  elseif(WITH_JEMALLOC)
-    find_package(JeMalloc)
-    if(JEMALLOC_FOUND)
-      set(LIBS ${LIBS} ${JEMALLOC_LIBRARIES})
-      set(MALLOC "JEMalloc")
-    endif()
+  find_package(Tcmalloc)
+  find_package(JeMalloc)
+  if(WITH_TCMALLOC AND Tcmalloc_FOUND)
+    set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+    set(MALLOC "TCMalloc")
+  elseif(WITH_JEMALLOC AND JEMALLOC_FOUND)
+    set(LIBS ${LIBS} ${JEMALLOC_LIBRARIES})
+    set(MALLOC "JEMalloc")
   endif()
 endif()
 message(STATUS "The memory allocator: ${MALLOC}")

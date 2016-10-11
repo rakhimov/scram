@@ -52,7 +52,6 @@ def generate_make_files(args):
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
     else:
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
-        cmake_cmd += ["--warn-uninitialized"]
         cmake_cmd += ["-Wdev"]
 
     if args.profile:
@@ -64,8 +63,7 @@ def generate_make_files(args):
         cmake_cmd += ["-D" + x for x in args.D]
 
     if args.mingw64:
-        cmake_cmd += ["-G", "MSYS Makefiles", "-DWITH_TCMALLOC=OFF",
-                      "-DWITH_JEMALLOC=ON"]
+        cmake_cmd += ["-G", "MSYS Makefiles"]
 
     subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                           shell=(os.name == "nt"))
