@@ -3,7 +3,7 @@
   <define-fault-tree name="Ex">
     <define-basic-event name="A">
       <attributes>
-        <attribute value=""/>
+        <attribute name="attribute" value=""/>
       </attributes>
       <float value="0.1"/>
     </define-basic-event>

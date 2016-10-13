@@ -5,11 +5,11 @@
     <element name="config">
       <element name="input-files">
         <oneOrMore>
-          <element name="file"> <data type="string"/> </element>
+          <element name="file"> <data type="anyURI"/> </element>
         </oneOrMore>
       </element>
       <optional>
-        <element name="output-path"> <data type="string"/> </element>
+        <element name="output-path"> <data type="anyURI"/> </element>
       </optional>
       <ref name="options"/>
     </element>
@@ -35,24 +35,16 @@
         <element name="analysis">
           <interleave>
             <optional>
-              <attribute name="probability">
-                <data type="boolean"/>
-              </attribute>
+              <attribute name="probability"> <data type="boolean"/> </attribute>
             </optional>
             <optional>
-              <attribute name="importance">
-                <data type="boolean"/>
-              </attribute>
+              <attribute name="importance"> <data type="boolean"/> </attribute>
             </optional>
             <optional>
-              <attribute name="uncertainty">
-                <data type="boolean"/>
-              </attribute>
+              <attribute name="uncertainty"> <data type="boolean"/> </attribute>
             </optional>
             <optional>
-              <attribute name="ccf">
-                <data type="boolean"/>
-              </attribute>
+              <attribute name="ccf"> <data type="boolean"/> </attribute>
             </optional>
           </interleave>
         </element>
@@ -68,46 +60,36 @@
         </element>
       </optional>
       <optional>
-        <element name="limits">
-          <interleave>
-            <optional>
-              <element name="product-order">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="mission-time">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="cut-off">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="number-of-trials">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="number-of-quantiles">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="number-of-bins">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="seed">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-          </interleave>
-        </element>
+        <ref name="limits"/>
       </optional>
+    </element>
+  </define>
+
+  <define name="limits">
+    <element name="limits">
+      <interleave>
+        <optional>
+          <element name="product-order"> <data type="nonNegativeInteger"/> </element>
+        </optional>
+        <optional>
+          <element name="mission-time"> <data type="double"/> </element>
+        </optional>
+        <optional>
+          <element name="cut-off"> <data type="double"/> </element>
+        </optional>
+        <optional>
+          <element name="number-of-trials"> <data type="nonNegativeInteger"/> </element>
+        </optional>
+        <optional>
+          <element name="number-of-quantiles"> <data type="nonNegativeInteger"/> </element>
+        </optional>
+        <optional>
+          <element name="number-of-bins"> <data type="nonNegativeInteger"/> </element>
+        </optional>
+        <optional>
+          <element name="seed"> <data type="nonNegativeInteger"/> </element>
+        </optional>
+      </interleave>
     </element>
   </define>
 

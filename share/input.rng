@@ -60,7 +60,7 @@
 
   <define name="NonEmptyString">  <!-- Texts without LF and other special chars. -->
     <data type="normalizedString">
-      <param name="pattern">.*\S+.*</param>
+      <param name="minLength">1</param>
     </data>
   </define>
 
