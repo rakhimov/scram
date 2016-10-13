@@ -20,7 +20,6 @@
 from __future__ import print_function
 
 import subprocess
-import sys
 
 
 # Input that must be analyzed with the results printed.
@@ -123,81 +122,42 @@ BLOCK_DELIM = "=" * 80
 FILE_DELIM = "-" * 80
 
 
+def run_inputs(title, inputs, flags):
+    """Runs each input with scram.
+
+    Args:
+        title: The group title for the inputs and the run.
+        inputs: The input files.
+        flags: A list of flags to be prepended before the argument file.
+    """
+    print("\n%s" % title.upper())
+    print(BLOCK_DELIM)
+    for i in inputs:
+        print("\n%s : " % title.split()[0].upper() + i)
+        print(FILE_DELIM)
+        subprocess.call(["scram"] + flags + [i])
+        print(FILE_DELIM)
+    print(BLOCK_DELIM)
+
+
 def main():
     """Runs SCRAM with all registered inputs."""
     # Run correct inputs
-    print("\nRUNNING CORRECT INPUTS WITH OUTPUT")
-    print(BLOCK_DELIM)
-    for i in PRINT_INPUTS:
-        print("\nRUNNING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", i]
-        subprocess.call(args)
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
-
-    # Run correct inputs
-    print("\nVALIDATING CORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
-    print(BLOCK_DELIM)
-    for i in PASS_INPUTS:
-        print("\nVALIDATING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", i, "--validate"]
-        subprocess.call(args)
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
+    run_inputs("running correct inputs with output", PRINT_INPUTS, [])
+    run_inputs("validating correct inputs w/o probability calculation",
+               PASS_INPUTS, ["--validate"])
+    run_inputs("validating correct probability inputs", PASS_PROBS,
+               ["--probability", "1", "--validate"])
 
     # Run incorrect inputs
-    print("\nVALIDATING INCORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
-    print(BLOCK_DELIM)
-    for i in BAD_INPUTS:
-        print("\nVALIDATING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", i, "--validate"]
-        try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
-            print(sys.exc_info()[0])
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
+    run_inputs("validating incorrect inputs w/o probability calculation",
+               BAD_INPUTS, ["--validate"])
+    run_inputs("validating incorrect probability inputs", BAD_PROBS,
+               ["--probability", "1", "--validate"])
 
-    # Run correct inputs with probabilities
-    print("\nVALIDATING CORRECT PROBABILITY INPUTS")
-    print(BLOCK_DELIM)
-    for i in PASS_PROBS:
-        print("\nVALIDATING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", i, "--probability", "1", "--validate"]
-        subprocess.call(args)
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
-
-    # Run incorrect inputs with probability calculations
-    print("\nVALIDATING INCORRECT PROBABILITY INPUTS")
-    print(BLOCK_DELIM)
-    for i in BAD_PROBS:
-        print("\nVALIDATING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", i, "--probability", "1", "--validate"]
-        try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
-            print(sys.exc_info()[0])
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
-
-    print("\nVALIDATING INCORRECT CONFIGURATION FILES")
-    print(BLOCK_DELIM)
-    for i in BAD_CONFIG:
-        print("\nVALIDATING : " + i)
-        print(FILE_DELIM)
-        args = ["scram", "--config-file", i, "--validate"]
-        try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
-            print(sys.exc_info()[0])
-        print(FILE_DELIM)
-    print(BLOCK_DELIM)
+    # Incorrect configurations
+    run_inputs("validating incorrect configuration files", BAD_CONFIG,
+               ["--validate", "--config-file"])
 
 if __name__ == "__main__":
     main()

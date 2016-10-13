@@ -18,7 +18,7 @@
 import os
 from subprocess import call
 
-from nose.tools import assert_true, assert_equal, assert_not_equal
+from nose.tools import assert_equal, assert_not_equal
 
 
 def test_empty_call():
