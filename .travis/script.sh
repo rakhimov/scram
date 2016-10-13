@@ -77,4 +77,4 @@ if [[ -s style.txt ]]; then
 fi
 
 # Python linting
-prospector -P .landscape ./*.py scripts/*.py
+prospector ./*.py scripts/*.py

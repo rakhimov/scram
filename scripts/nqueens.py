@@ -62,20 +62,24 @@ def gate(i, j=None):
 
 def print_constraints(n):  # pylint: disable=invalid-name
     """Prints the main setup constraints for n queens."""
+    def _append_attacked_positions(i, j, logic):
+        """Appends positions attacked by the (i, j) queen into logic."""
+        for k in range(1, n + 1):
+            if k != j:
+                logic.append(position(i, k, True))
+            if k != i:
+                logic.append(position(k, j, True))
+                diag_one = j + k - i
+                if diag_one > 0 and diag_one <= n:
+                    logic.append(position(k, diag_one, True))
+                diag_two = j + i - k
+                if diag_two > 0 and diag_two <= n:
+                    logic.append(position(k, diag_two, True))
+
     for i in range(1, n + 1):
         for j in range(1, n + 1):
             logic = [position(i, j, False)]
-            for k in range(1, n + 1):
-                if k != j:
-                    logic.append(position(i, k, True))
-                if k != i:
-                    logic.append(position(k, j, True))
-                    diag_one = j + k - i
-                    if diag_one > 0 and diag_one <= n:
-                        logic.append(position(k, diag_one, True))
-                    diag_two = j + i - k
-                    if diag_two > 0 and diag_two <= n:
-                        logic.append(position(k, diag_two, True))
+            _append_attacked_positions(i, j, logic)
             print(gate(i, j) + " := " + " & ".join(logic))
 
 

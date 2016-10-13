@@ -578,6 +578,9 @@ def init_gates(gates_queue, common_basic, common_gate, fault_tree):
     max_tries = len(common_gate)  # the number of maximum tries
     num_tries = 0  # the number of tries to get a common gate
 
+    # pylint: disable=too-many-nested-blocks
+    # This code is both hot and coupled for performance reasons.
+    # There may be a better solution than the current approach.
     while gate.num_arguments() < num_arguments:
         s_percent = random.random()  # sample percentage of gates
         s_common = random.random()  # sample the reuse frequency
