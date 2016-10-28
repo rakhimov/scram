@@ -114,8 +114,8 @@ Additional Coding Conventions
     .. code-block:: cpp
 
         double checked_div(double x, double y) {
-            if (!y) throw domain_error("");  // Bad. Looks like 'if (no y) then fail'.
-                                             // More explicit (y == 0) is better.
+            if (!y)                      // Bad. Looks like 'if (no y) then fail'.
+                throw domain_error("");  // More explicit (y == 0) is better.
             return x / y;
         }
 
@@ -184,13 +184,13 @@ Core C++ Code
       abbreviate it to ``p_``.
       Its getter/setter functions should have
       corresponding names, i.e., ``p()`` and ``p(double value)``.
-      Append extra description after ``p_``, e.g., ``p_total_``.
+      Append extra description after ``p_``, e.g., ``p_total_`` (a la Semantic Hungarian).
       Avoid abbreviating the name to ``prob``
       or fully spelling it to ``probability``.
 
     * For non-member probability variables:
 
-        + Prefer prefixing with ``p_``
+        + Prefer prefixing with ``p_`` (a la Semantic Hungarian)
           if the name has more description to the probability value, e.g., ``p_not_event``.
         + Prefer ``prob`` abbreviation
           for single word names indicating general probability values.

@@ -97,5 +97,5 @@ Suggested tools:
 Report File Example
 ===================
 
-.. highlight:: xml
 .. literalinclude:: example/report.xml
+    :language: xml
