@@ -36,7 +36,7 @@ Installation
 .. toctree::
     :maxdepth: 2
 
-    ../doc/installation.rst
+    doc/installation
 
 
 Documentation
@@ -97,8 +97,9 @@ Miscellanea
 .. toctree::
     :maxdepth: 1
 
-    doc/theory.rst
+    doc/theory
     doc/references
+    doc/citation
     doc/xml_comments
 
 

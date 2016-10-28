@@ -21,5 +21,5 @@ Validation Schemas
 Configuration File Example
 ==========================
 
-.. highlight:: xml
 .. literalinclude:: example/config.xml
+    :language: xml

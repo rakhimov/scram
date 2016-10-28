@@ -28,6 +28,9 @@
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
+#include "expression/arithmetic.h"
+#include "expression/exponential.h"
+#include "expression/random_deviate.h"
 #include "logger.h"
 #include "xml.h"
 
@@ -62,8 +65,7 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 Initializer::Initializer(const std::vector<std::string>& xml_files,
                          core::Settings settings)
     : settings_(std::move(settings)),
-      mission_time_(std::make_shared<MissionTime>()) {
-  mission_time_->mission_time(settings_.mission_time());
+      mission_time_(std::make_shared<MissionTime>(settings_.mission_time())) {
   try {
     ProcessInputFiles(xml_files);
   } catch (const CycleError&) {
@@ -368,7 +370,8 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
     type = "null";
   }
 
-  int pos = boost::find(kOperatorToString, type) - kOperatorToString.begin();
+  int pos =
+      boost::find(kOperatorToString, type) - std::begin(kOperatorToString);
   assert(pos < kNumOperators && "Unexpected operator type.");
 
   FormulaPtr formula(new Formula(static_cast<Operator>(pos)));
@@ -533,7 +536,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
   if (!unit.empty()) {
-    int pos = boost::find(kUnitsToString, unit) - kUnitsToString.begin();
+    int pos = boost::find(kUnitsToString, unit) - std::begin(kUnitsToString);
     assert(pos < kNumUnits && "Unexpected unit kind.");
     parameter->unit(static_cast<Units>(pos));
   }

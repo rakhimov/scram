@@ -33,7 +33,7 @@ System Specs     Version
 ==============   ===================
 Processor         Core i7-2820QM
 OS                Ubuntu 16.04 64bit
-GCC version       5.3.1
+GCC version       5.4.0
 Boost version     1.58
 Libxml2           2.9.3
 TCMalloc          2.4
@@ -166,14 +166,14 @@ Debug build:
 Release build:
 ~~~~~~~~~~~~~~
 
-- BDD Time: 1.6
+- BDD Time: 1.4
 - ZBDD Time: 0.20
 
 - # of BDD vertices created: 2652730
 - # of ITE in unique table: 2370567
 - # of ITE in BDD: 1123292 | 1160828
 
-- Memory:   250
+- Memory:   215
 
 - Cache-misses:  46 %  |  50 %
 
@@ -193,7 +193,7 @@ Release build:
 - ZBDD Cut set extraction memory: 100
 - Cut set indices to pointers memory: 90
 
-- Memory: 375
+- Memory: 310
 
 - Cache-misses:  34 %
 

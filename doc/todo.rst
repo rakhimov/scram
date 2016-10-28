@@ -60,7 +60,6 @@ Platform Support
 
 - Installation Package for Windows.
 - Installation Package for Mac OS X.
-- Compilation and testing on ARM.
 
 
 Code

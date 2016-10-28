@@ -21,7 +21,7 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <ostream>
+#include <iosfwd>
 #include <string>
 
 #include "event.h"
@@ -36,7 +36,7 @@
 
 namespace scram {
 
-/// This class reports the results of the analyses.
+/// Facilities to report analysis results.
 class Reporter {
  public:
   /// Reports the results of risk analysis on a model.
@@ -48,6 +48,15 @@ class Reporter {
   /// @pre The output destination is used only by this reporter.
   ///      There is going to be no appending to the stream after the report.
   void Report(const core::RiskAnalysis& risk_an, std::ostream& out);
+
+  /// A convenience function to generate the report into a file.
+  /// This function overwrites the file.
+  ///
+  /// @param[in] risk_an  Risk analysis with results.
+  /// @param[out] file  The output destination.
+  ///
+  /// @throws IOError  The output file is not accessible.
+  void Report(const core::RiskAnalysis& risk_an, const std::string& file);
 
  private:
   /// This function populates information

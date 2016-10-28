@@ -2,7 +2,7 @@
 Installation Instructions
 #########################
 
-.. note: Some SCRAM tools and tests may be absent in distribution packages.
+.. note:: Some SCRAM tools and tests may be absent in distribution packages.
 
 
 Ubuntu 14.04 or later

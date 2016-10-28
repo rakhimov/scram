@@ -64,6 +64,8 @@ class Preprocessor : private boost::noncopyable {
   virtual void Run() noexcept = 0;
 
  protected:
+  class GateSet;  ///< Container of unique gates by semantics.
+
   /// The initial phase of preprocessing.
   /// The most basic cleanup algorithms are applied.
   /// The cleanup should benefit all other phases

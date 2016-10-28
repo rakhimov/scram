@@ -21,13 +21,11 @@
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
 
-#include <cassert>
-
 #include <string>
 #include <vector>
 
 #include "event.h"
-#include "expression.h"
+#include "parameter.h"
 
 namespace scram {
 namespace mef {

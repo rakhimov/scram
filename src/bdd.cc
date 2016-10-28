@@ -23,7 +23,6 @@
 #include <boost/multiprecision/miller_rabin.hpp>
 #include <boost/range/algorithm.hpp>
 
-#include "event.h"
 #include "ext.h"
 #include "logger.h"
 #include "zbdd.h"

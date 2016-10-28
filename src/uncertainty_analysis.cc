@@ -29,6 +29,7 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
+#include "event.h"
 #include "logger.h"
 
 namespace scram {
@@ -68,6 +69,20 @@ UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
     ++index;
   }
   return uncertain_events;
+}
+
+void UncertaintyAnalysis::SampleEventProbabilities(
+    const std::vector<std::pair<int, mef::BasicEvent*>>& uncertain_events,
+    std::vector<double>* p_vars) noexcept {
+  // Reset distributions.
+  for (const auto& event : uncertain_events)
+    event.second->Reset();
+
+  // Sample all basic events with distributions.
+  for (const auto& event : uncertain_events) {
+    double prob = event.second->SampleProbability();
+    (*p_vars)[event.first] = prob > 1 ? 1 : prob < 0 ? 0 : prob;
+  }
 }
 
 void UncertaintyAnalysis::CalculateStatistics(

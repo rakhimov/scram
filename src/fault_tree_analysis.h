@@ -31,12 +31,17 @@
 
 #include "analysis.h"
 #include "boolean_graph.h"
-#include "event.h"
 #include "logger.h"
 #include "preprocessor.h"
 #include "settings.h"
 
 namespace scram {
+
+namespace mef {  // Decouple from the analysis code.
+class Gate;
+class BasicEvent;
+}  // namespace mef
+
 namespace core {
 
 /// Event or its complement

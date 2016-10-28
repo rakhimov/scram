@@ -35,8 +35,8 @@
 #include "element.h"
 #include "event.h"
 #include "ext.h"
-#include "expression.h"
 #include "fault_tree.h"
+#include "parameter.h"
 
 namespace scram {
 namespace mef {

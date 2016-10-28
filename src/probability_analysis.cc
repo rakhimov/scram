@@ -21,6 +21,10 @@
 
 #include "probability_analysis.h"
 
+#include "event.h"
+#include "logger.h"
+#include "settings.h"
+
 namespace scram {
 namespace core {
 
@@ -65,7 +69,7 @@ double RareEventCalculator::Calculate(
     assert(!cut_set.empty() && "Detected an empty cut set.");
     sum += CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
-  return sum;
+  return sum > 1 ? 1 : sum;
 }
 
 double McubCalculator::Calculate(
@@ -79,6 +83,13 @@ double McubCalculator::Calculate(
     m *= 1 - CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
   return 1 - m;
+}
+
+void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
+  p_vars_.push_back(-1);  // Padding.
+  for (const mef::BasicEvent* event : graph_->basic_events()) {
+    p_vars_.push_back(event->p());
+  }
 }
 
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
@@ -95,22 +106,28 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
     delete bdd_graph_;
 }
 
-double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
+double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability(
+    const std::vector<double>& p_vars) noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG4) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
-  double prob = CalculateProbability(bdd_graph_->root().vertex, current_mark_);
+  double prob =
+      CalculateProbability(bdd_graph_->root().vertex, current_mark_, p_vars);
   if (bdd_graph_->root().complement)
     prob = 1 - prob;
   LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
   return prob;
 }
 
-void ProbabilityAnalyzer<Bdd>::CreateBdd(const mef::Gate& root) noexcept {
+void ProbabilityAnalyzer<Bdd>::CreateBdd(
+    const FaultTreeAnalysis& fta) noexcept {
+  CLOCK(total_time);
+
   CLOCK(ft_creation);
   BooleanGraph* bool_graph =
-      new BooleanGraph(root, Analysis::settings().ccf_analysis());
+      new BooleanGraph(fta.top_event(), Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
   Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph);
@@ -123,11 +140,14 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const mef::Gate& root) noexcept {
   bdd_graph_ = new Bdd(bool_graph, Analysis::settings());
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   delete bool_graph;  // The original graph of FTA is usable with the BDD.
+
+  Analysis::AddAnalysisTime(DUR(total_time));
 }
 
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Bdd::VertexPtr& vertex,
-    bool mark) noexcept {
+    bool mark,
+    const std::vector<double>& p_vars) noexcept {
   if (vertex->terminal())
     return 1;
   ItePtr ite = Ite::Ptr(vertex);
@@ -137,14 +157,14 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
   double p_var = 0;
   if (ite->module()) {
     const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
-    p_var = CalculateProbability(res.vertex, mark);
+    p_var = CalculateProbability(res.vertex, mark, p_vars);
     if (res.complement)
       p_var = 1 - p_var;
   } else {
-    p_var = ProbabilityAnalyzerBase::p_vars()[ite->index()];
+    p_var = p_vars[ite->index()];
   }
-  double high = CalculateProbability(ite->high(), mark);
-  double low = CalculateProbability(ite->low(), mark);
+  double high = CalculateProbability(ite->high(), mark, p_vars);
+  double low = CalculateProbability(ite->low(), mark, p_vars);
   if (ite->complement_edge())
     low = 1 - low;
   ite->p(p_var * high + (1 - p_var) * low);

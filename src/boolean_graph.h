@@ -30,34 +30,37 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
-#include <cassert>
 #include <cstdint>
 
 #include <algorithm>
-#include <array>
-#include <iostream>
+#include <iosfwd>
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
-#include <boost/functional/hash.hpp>
 #include <boost/noncopyable.hpp>
 
-#include "event.h"
 #include "ext.h"
 #include "linear_map.h"
 
 namespace scram {
+
+namespace mef {  // Declarations to decouple from the initialization code.
+class Gate;
+class BasicEvent;
+class HouseEvent;
+class Formula;
+}  // namespace mef
+
 namespace core {
 
-class Gate;  // Indexed gate parent of nodes.
+class Gate;  // An indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
-using GateWeakPtr = std::weak_ptr<Gate>;  ///< Acyclic ptr to parent gates.
+using GateWeakPtr = std::weak_ptr<Gate>;  ///< An acyclic ptr to parent gates.
 
-/// Manager of information about parents.
+/// A manager of information about parents.
 /// Only gates can manipulate the data.
 class NodeParentManager : private boost::noncopyable {
   friend class Gate;  ///< The main manipulator of parent information.
@@ -65,10 +68,10 @@ class NodeParentManager : private boost::noncopyable {
  public:
   using Parent = std::pair<int, GateWeakPtr>;  ///< Parent index and ptr.
 
-  /// Map of parent gate positive indices and weak pointers to them.
+  /// A map type of parent gate positive indices and weak pointers to them.
   using ParentMap = ext::linear_map<int, GateWeakPtr, ext::MoveEraser>;
 
-  /// @returns Parents of a node.
+  /// @returns The parents of a node.
   const ParentMap& parents() const { return parents_; }
 
  protected:
@@ -290,7 +293,7 @@ enum State : std::uint8_t {
   kUnityState  ///< The set is unity. This set guarantees failure.
 };
 
-/// Indexed gate for use in BooleanGraph.
+/// An indexed gate for use in BooleanGraph.
 /// Initially this gate can represent any type of gate or logic;
 /// however, this gate can be only of OR and AND type
 /// at the end of all simplifications and processing.
@@ -298,23 +301,23 @@ enum State : std::uint8_t {
 /// before any complex analysis is done.
 class Gate : public Node, public std::enable_shared_from_this<Gate> {
  public:
-  /// Argument entry type in the gate's argument containers.
+  /// An argument entry type in the gate's argument containers.
   /// The entry contains
   /// the positive or negative index (indicating a complement)
-  /// and a pointer to the argument node.
+  /// and the pointer to the argument node.
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
   using Arg = std::pair<int, std::shared_ptr<T>>;
 
-  /// The associative container type to store the gate arguments.
-  /// This container type maps the index of the argument to a pointer to it.
+  /// An associative container type to store the gate arguments.
+  /// This container type maps the index of the argument to the pointer to it.
   ///
   /// @tparam T  The type of the argument node.
   template <class T>
   using ArgMap = ext::linear_map<int, std::shared_ptr<T>, ext::MoveEraser>;
 
-  /// The ordered set of gate argument indices.
+  /// An ordered set of gate argument indices.
   using ArgSet = boost::container::flat_set<int>;
 
   /// Creates an indexed gate with its unique index.
@@ -754,65 +757,7 @@ inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
   return constant_args_;
 }
 
-/// Container of unique gates.
-/// This container acts like an unordered set of gates.
-/// The gates are equivalent
-/// if they have the same semantics.
-/// However, this set does not test
-/// for the isomorphism of the gates' Boolean formulas.
-class GateSet {
- public:
-  /// Inserts a gate into the set
-  /// if it is semantically unique.
-  ///
-  /// @param[in] gate  The gate to insert.
-  ///
-  /// @returns A pair of the unique gate and
-  ///          the insertion success flag.
-  std::pair<GatePtr, bool> insert(const GatePtr& gate) noexcept {
-    auto result = table_[gate->type()].insert(gate);
-    return {*result.first, result.second};
-  }
-
- private:
-  /// Functor for hashing gates by their arguments.
-  ///
-  /// @note The hashing discards the logic of the gate.
-  struct Hash {
-    /// Operator overload for hashing.
-    ///
-    /// @param[in] gate  The gate which hash must be calculated.
-    ///
-    /// @returns Hash value of the gate
-    ///          from its arguments but not logic.
-    std::size_t operator()(const GatePtr& gate) const noexcept {
-      return boost::hash_range(gate->args().begin(), gate->args().end());
-    }
-  };
-  /// Functor for equality test for gates by their arguments.
-  ///
-  /// @note The equality discards the logic of the gate.
-  struct Equal {
-    /// Operator overload for gate argument equality test.
-    ///
-    /// @param[in] lhs  The first gate.
-    /// @param[in] rhs  The second gate.
-    ///
-    /// @returns true if the gate arguments are equal.
-    bool operator()(const GatePtr& lhs, const GatePtr& rhs) const noexcept {
-      assert(lhs->type() == rhs->type());
-      if (lhs->args() != rhs->args())
-        return false;
-      if (lhs->type() == kVote && lhs->vote_number() != rhs->vote_number())
-        return false;
-      return true;
-    }
-  };
-  /// Container of gates grouped by their types.
-  std::array<std::unordered_set<GatePtr, Hash, Equal>, kNumOperators> table_;
-};
-
-class Preprocessor;
+class Preprocessor;  ///< @todo This can be decoupled.
 
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
 /// This class provides a simpler representation of a fault tree

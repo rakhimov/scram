@@ -129,8 +129,8 @@ Input File Examples
 Fault Tree Input File
 ---------------------
 
-.. highlight:: xml
 .. literalinclude:: example/input.xml
+    :language: xml
 
 
 Shorthand Version

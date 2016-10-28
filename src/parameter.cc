@@ -15,40 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file expression.cc
-/// Implementation of the expression base class.
+/// @file parameter.cc
+/// Implementation of expression parameters.
 
-#include "expression.h"
+#include "parameter.h"
 
-#include "ext.h"
+#include "error.h"
 
 namespace scram {
 namespace mef {
 
-Expression::Expression(std::vector<ExpressionPtr> args)
-    : args_(std::move(args)),
-      sampled_value_(0),
-      sampled_(false) {}
+Parameter::Parameter(std::string name, std::string base_path,
+                     RoleSpecifier role)
+    : Expression({}),
+      Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      Id(*this, *this),
+      unit_(kUnitless),
+      unused_(true),
+      expression_(nullptr) {}
 
-double Expression::Sample() noexcept {
-  if (!sampled_) {
-    sampled_ = true;
-    sampled_value_ = this->GetSample();
-  }
-  return sampled_value_;
-}
-
-void Expression::Reset() noexcept {
-  if (!sampled_)
-    return;
-  sampled_ = false;
-  for (const ExpressionPtr& arg : args_)
-    arg->Reset();
-}
-
-bool Expression::IsConstant() noexcept {
-  return ext::all_of(
-      args_, [](const ExpressionPtr& arg) { return arg->IsConstant(); });
+void Parameter::expression(const ExpressionPtr& expression) {
+  if (expression_)
+    throw LogicError("Parameter expression is already set.");
+  expression_ = expression.get();
+  Expression::AddArg(expression);
 }
 
 }  // namespace mef

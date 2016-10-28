@@ -24,11 +24,14 @@
 
 #include "boolean_graph.h"
 
+#include <iostream>
 #include <string>
+#include <unordered_set>
 
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/range/algorithm.hpp>
 
+#include "event.h"
 #include "logger.h"
 
 namespace scram {

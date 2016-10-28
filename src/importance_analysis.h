@@ -28,11 +28,15 @@
 #include <vector>
 
 #include "bdd.h"
-#include "event.h"
 #include "probability_analysis.h"
 #include "settings.h"
 
 namespace scram {
+
+namespace mef {  // Decouple from the analysis code header.
+class BasicEvent;
+}  // namespace mef
+
 namespace core {
 
 /// Collection of importance factors for variables.
@@ -126,11 +130,6 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   /// to calculate the total and conditional probabilities for factors.
   ///
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
-  ///
-  /// @pre Probability analyzer can work with modified probability values.
-  ///
-  /// @post Probability analyzer's probability values are
-  ///       reset to the original values (event probabilities).
   explicit ImportanceAnalyzerBase(
       ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : ImportanceAnalysis(prob_analyzer),
@@ -167,32 +166,35 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
 template <class Calculator>
 class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
  public:
-  using ImportanceAnalyzerBase<Calculator>::ImportanceAnalyzerBase;
+  /// @copydoc ImportanceAnalyzerBase<Calculator>::ImportanceAnalyzerBase
+  explicit ImportanceAnalyzer(ProbabilityAnalyzer<Calculator>* prob_analyzer)
+      : ImportanceAnalyzerBase<Calculator>(prob_analyzer),
+        p_vars_(prob_analyzer->p_vars()) {}
 
  private:
   double CalculateMif(int index) noexcept override;
+  std::vector<double> p_vars_;  ///< A private copy of variable probabilities.
 };
 
 template <class Calculator>
 double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   using Base = ImportanceAnalyzerBase<Calculator>;
-  std::vector<double>& p_vars = Base::prob_analyzer()->p_vars();
+
+  double p_store = p_vars_[index];  // Save the original value for restoring.
+
   // Calculate P(top/event)
-  p_vars[index] = 1;
-  double p_e = Base::prob_analyzer()->CalculateTotalProbability();
-  assert(p_e >= 0);
-  if (p_e > 1)
-    p_e = 1;
+  p_vars_[index] = 1;
+  double p_e = Base::prob_analyzer()->CalculateTotalProbability(p_vars_);
+  assert(p_e >= 0 && p_e <= 1);
 
   // Calculate P(top/Not event)
-  p_vars[index] = 0;
-  double p_not_e = Base::prob_analyzer()->CalculateTotalProbability();
-  assert(p_not_e >= 0);
-  if (p_not_e > 1)
-    p_not_e = 1;
+  p_vars_[index] = 0;
+  double p_not_e = Base::prob_analyzer()->CalculateTotalProbability(p_vars_);
+  assert(p_not_e >= 0 && p_not_e <= 1);
 
-  // Restore the probability.
-  p_vars[index] = Base::prob_analyzer()->graph()->GetBasicEvent(index)->p();
+  // Restore the probability for next importance calculation.
+  p_vars_[index] = p_store;
+
   return p_e - p_not_e;
 }
 
