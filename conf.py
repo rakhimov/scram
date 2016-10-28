@@ -104,6 +104,9 @@ pygments_style = 'sphinx'
 #keep_warnings = False
 suppress_warnings = ['image.nonlocal_uri']
 
+rst_epilog = """
+.. |year| replace:: 2016
+"""
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
