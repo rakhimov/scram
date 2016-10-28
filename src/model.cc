@@ -20,6 +20,8 @@
 
 #include "model.h"
 
+#include "ext.h"
+
 namespace scram {
 namespace mef {
 
@@ -66,6 +68,49 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.insert(ccf_group).second == false) {
     throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
   }
+}
+
+ParameterPtr Model::GetParameter(const std::string& entity_reference,
+                                 const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, parameters_);
+}
+
+HouseEventPtr Model::GetHouseEvent(const std::string& entity_reference,
+                                   const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, house_events_);
+}
+
+BasicEventPtr Model::GetBasicEvent(const std::string& entity_reference,
+                                   const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, basic_events_);
+}
+
+GatePtr Model::GetGate(const std::string& entity_reference,
+                       const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, gates_);
+}
+
+template <class T>
+std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
+                                    const std::string& base_path,
+                                    const LookupTable<T>& container) {
+  assert(!entity_reference.empty());
+  if (!base_path.empty()) {  // Check the local scope.
+    if (auto it = ext::find(container.entities_by_path,
+                            base_path + "." + entity_reference))
+      return *it;
+  }
+
+  auto at = [&entity_reference](const auto& reference_container) {
+    if (auto it = ext::find(reference_container, entity_reference))
+      return *it;
+    throw std::out_of_range("The event cannot be found.");
+  };
+
+  if (entity_reference.find('.') == std::string::npos)  // Public entity.
+    return at(container.entities_by_id);
+
+  return at(container.entities_by_path);  // Direct access.
 }
 
 /// Helper macro for Model::BindEvent event discovery.
