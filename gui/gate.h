@@ -18,8 +18,7 @@
 #ifndef GATE_H
 #define GATE_H
 
-#include <QPainter>
-#include <QStyleOptionGraphicsItem>
+#include <QGraphicsItem>
 
 namespace scram {
 namespace gui {
@@ -27,22 +26,8 @@ namespace gui {
 /**
  * @brief The abstract base class for various gate types.
  */
-class Gate
+class Gate : public QGraphicsItem
 {
-public:
-    Gate(const Gate&) = delete;
-    Gate& operator=(const Gate&) = delete;
-
-    virtual ~Gate() = default;
-
-    /**
-     * @brief Paints the shape of the gate without its inputs.
-     *
-     * @param painter  The reciever of the image.
-     * @param option  Holder of reference units for the sizes.
-     */
-    virtual void paint(QPainter *painter,
-                       const QStyleOptionGraphicsItem *option) = 0;
 };
 
 } // namespace gui

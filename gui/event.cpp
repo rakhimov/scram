@@ -21,14 +21,20 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QRectF>
-#include <QSize>
 #include <QStyleOptionGraphicsItem>
 
 namespace scram {
 namespace gui {
 
-Event::Event(QGraphicsView *view) : m_view(view) {
+template <class T>
+Event::Event(const T &, QGraphicsView *view)
+    : m_view(view), m_typeGraphics(Event::getTypeGraphics<T>(units()))
+{
     m_view->scene()->addItem(this);
+    if (m_typeGraphics) {
+        m_typeGraphics->setParentItem(this);
+        m_typeGraphics->setPos(0, 5.5 * units().height());
+    }
 }
 
 QSize Event::units() const
@@ -37,15 +43,24 @@ QSize Event::units() const
     return {font.averageCharWidth(), font.height()};
 }
 
+void Event::setTypeGraphics(QGraphicsItem *item)
+{
+    delete m_typeGraphics;
+    m_typeGraphics = item;
+    m_typeGraphics->setParentItem(this);
+    m_typeGraphics->setPos(0, 5.5 * units().height());
+}
+
 QRectF Event::boundingRect() const
 {
     int w = units().width();
     int h = units().height();
-    return QRectF(-8 * w, 0, 16 * w, 5.5 * h + 10 * w);
+    return QRectF(-8 * w, 0, 16 * w, 5.5 * h);
 }
 
-void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/,
-                  QWidget */*widget*/)
+void Event::paint(QPainter *painter,
+                  const QStyleOptionGraphicsItem * /*option*/,
+                  QWidget * /*widget*/)
 {
     int w = units().width();
     int h = units().height();
@@ -55,28 +70,25 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option*/,
 
     painter->drawLine(QPointF(0, 3 * h), QPointF(0, 4 * h));
 
-    QRectF nameRect(-5 * w, 4 *h, 10 * w, h);
+    QRectF nameRect(-5 * w, 4 * h, 10 * w, h);
     painter->drawRect(nameRect);
     painter->drawText(nameRect, Qt::AlignCenter, m_name);
 
     painter->drawLine(QPointF(0, 5 * h), QPointF(0, 5.5 * h));
 }
 
-void BasicEvent::paint(QPainter *painter,
-                       const QStyleOptionGraphicsItem *option,
-                       QWidget *widget)
+template <>
+QGraphicsItem *Event::getTypeGraphics<BasicEvent>(const QSize &units)
 {
-    Event::paint(painter, option, widget);
-    double r = 5 * units().width();
-    painter->drawEllipse(QPointF(0, 5.5 * units().height() + r), r, r);
+    double r = 5 * units.width();
+    double d = 2 * r;
+    return new QGraphicsEllipseItem(-r, 0, d, d);
 }
 
-void IntermediateEvent::paint(QPainter *painter,
-                              const QStyleOptionGraphicsItem *option,
-                              QWidget *widget)
+BasicEvent::BasicEvent(QGraphicsView *view) : Event(*this, view) {}
+
+IntermediateEvent::IntermediateEvent(QGraphicsView *view) : Event(*this, view)
 {
-    Event::paint(painter, option, widget);
-    m_gate->paint(painter, option);
 }
 
 } // namespace gui
