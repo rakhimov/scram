@@ -271,6 +271,7 @@ C++
 #. Google style conformance check with Cpplint_
 #. Common C++ code problem check with cppclean_
 #. Consistent code formatting with ClangFormat_
+#. Component dependency analysis with cppdep_
 
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _Coveralls: https://coveralls.io/github/rakhimov/scram
@@ -281,6 +282,7 @@ C++
 .. _Cpplint: https://github.com/theandrewdavis/cpplint
 .. _cppclean: https://github.com/myint/cppclean
 .. _ClangFormat: http://clang.llvm.org/docs/ClangFormat.html
+.. _cppdep: https://pypi.python.org/pypi/cppdep
 
 
 Python
@@ -294,7 +296,7 @@ Python
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
-.. _Codecov: https://codecov.io/github/rakhimov/scram?ref=develop
+.. _Codecov: https://codecov.io/github/rakhimov/scram
 .. _Landscape: https://landscape.io/
 .. _Prospector: https://github.com/landscapeio/prospector
 
