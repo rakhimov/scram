@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 set(GTEST_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest")
 
-add_subdirectory("${GTEST_DIR}")
+add_subdirectory("${GTEST_DIR}" EXCLUDE_FROM_ALL)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CURRENT_DEBUG_FLAGS}")  # Restore the original flags.
 
