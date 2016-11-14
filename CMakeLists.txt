@@ -67,8 +67,6 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # TODO: Bug in Intel compiler with multi-initialization with auto.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373")
-  # TODO: Bug in Intel compiler w/o GCC 5 built-in math with overlflow.
-  add_definitions(-D_GLIB_TEST_OVERFLOW_FALLBACK)  # TODO: Remove after glib2 version 2.48
 endif()
 
 if(WIN32)
