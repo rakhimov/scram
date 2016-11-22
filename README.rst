@@ -386,14 +386,16 @@ It is recommended to build SCRAM
 with assertions preserved
 and sanitizers enabled, for example,
 address sanitizer in GCC and Clang ``-fsanitize=address``.
+
 In order to speed up the fuzz testing,
 SCRAM may be built with optimizations but ``NDEBUG`` undefined.
+Additionally, multiple SCRAM instances can be run at once.
 
-An example command to run SCRAM 1000 times with auto-generated inputs and configurations:
+An example command to run SCRAM 1000 times with 4 parallel instances:
 
 .. code-block:: bash
 
-    fuzz_tester.py -n 1000
+    fuzz_tester.py -n 1000 -j 4
 
 The fuzz tester can be guided with options listed in its help prompt.
 Some options can be combined,
@@ -406,6 +408,7 @@ however, information messages are given to indicate the interpretation.
 
     fuzz_tester.py --help
 
+Fuzzing inputs and configurations are auto-generated.
 The fuzz tester collects run configurations, failures, and logs.
 The auto-generated inputs are preserved for failed runs.
 

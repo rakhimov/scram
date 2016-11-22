@@ -28,9 +28,9 @@ the script is handy to discover
 complex auto-generated analysis inputs and configurations.
 """
 
-from __future__ import print_function
-
 import hashlib
+import logging
+import multiprocessing
 import os
 import random
 import resource
@@ -73,29 +73,29 @@ class Config(object):
     def configure(args):
         """Adjusts configurations with the cmd-line arguments."""
         if args.cross_validate:
-            print("Cross validating algorithms")
+            logging.info("Cross validating algorithms")
             Config.analysis = [""]
             Config.switch = []
             Config.approximation = [""]
             return
 
         if args.prime_implicants:
-            print("Focusing on Prime Implicants")
+            logging.info("Focusing on Prime Implicants")
             Config.analysis = ["--bdd"]
             Config.approximation = [""]
             Config.additional.append("--prime-implicants")
         elif args.mocus:
-            print("Focusing on MOCUS")
+            logging.info("Focusing on MOCUS")
             Config.analysis = ["--mocus"]
         elif args.bdd:
-            print("Focusing on BDD")
+            logging.info("Focusing on BDD")
             Config.analysis = ["--bdd"]
         elif args.zbdd:
-            print("Focusing on ZBDD")
+            logging.info("Focusing on ZBDD")
             Config.analysis = ["--zbdd"]
 
         if args.preprocessor:
-            print("Focusing on Preprocessor")
+            logging.info("Focusing on Preprocessor")
             Config.restrict()
 
 
@@ -186,7 +186,7 @@ def call_scram(input_file):
         0 for successful runs.
     """
     cmd = generate_analysis_call(input_file)
-    print(cmd)
+    logging.info(cmd)
     cmd += ["--verbosity", "5", "-o", "/dev/null"]
     log_file = open(get_log_file_name(input_file), "w")
     log_file.write(str(cmd) + "\n")
@@ -210,7 +210,7 @@ def cross_validate(input_file):
         1 for failed runs.
     """
     cmd = generate_analysis_call(input_file)
-    print(cmd)
+    logging.info(cmd)
     cmd += ["--print"]
     log_file = open(get_log_file_name(input_file), "w")
     log_file.write(str(cmd) + "\n")
@@ -276,15 +276,19 @@ def main():
                         help="focus on Prime Implicants")
     parser.add_argument("--time-limit", type=int, metavar="seconds",
                         help="CPU time limit for each run")
+    parser.add_argument("-j", "--jobs", type=int, metavar="N",
+                        help="allow N runs (jobs) at once")
     parser.add_argument("-o", "--output-dir", type=str, metavar="path",
                         help="directory to put results")
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.INFO)
+
     if call(["which", "scram"]):
-        print("SCRAM is not found in the PATH.")
+        logging.error("SCRAM is not found in the PATH.")
         return 2
     if args.output_dir and not os.path.isdir(args.output_dir):
-        print("The output directory doesn't exist.")
+        logging.error("The output directory doesn't exist.")
         return 2
 
     if args.time_limit:
@@ -292,19 +296,41 @@ def main():
                            (args.time_limit, args.time_limit))
 
     Config.configure(args)
-    call_function = cross_validate if args.cross_validate else call_scram
-    ret = 0
-    for i in range(args.num_runs):
-        input_file = generate_input(args.normal, args.coherent, args.output_dir)
-        if call_function(input_file):
-            print("SCRAM failed: " + input_file)
-            ret = 1
-            continue
+    return any(list(get_map(args.jobs)(Fuzzer(args), range(args.num_runs))))
+
+
+def get_map(working_threads):
+    """Returns the map method for jobs."""
+    if working_threads <= 1:
+        return map
+    return multiprocessing.Pool(processes=working_threads).imap_unordered
+
+
+class Fuzzer(object):  # pylint: disable=too-few-public-methods
+    """Runs fuzz testing."""
+
+    def __init__(self, args):
+        """Saves the argument for later use."""
+        self.args = args
+        self.call_function = (cross_validate
+                              if args.cross_validate else call_scram)
+
+    def __call__(self, job_number):
+        """Returns 1 for failure and 0 for success."""
+        input_file = generate_input(self.args.normal, self.args.coherent,
+                                    self.args.output_dir)
+        num_runs = job_number + 1
+        if self.call_function(input_file):
+            logging.info("SCRAM failed run " + str(num_runs) + ": " +
+                         input_file)
+            return 1
         os.remove(input_file)
         os.remove(get_log_file_name(input_file))
-        if not (i + 1) % 10:
-            print("\n========== Finished run #%d ==========\n" % (i + 1))
-    return ret
+        if not num_runs % 10:
+            logging.info(
+                "\n========== Finished run #" + str(num_runs) + " ==========\n")
+        return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
