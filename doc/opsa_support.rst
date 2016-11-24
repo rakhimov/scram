@@ -41,22 +41,12 @@ This paradigm is followed from the structured programming techniques.
 More information about the initiative and format can be found on http://open-psa.org
 
 
-.. _opsa_mef_schema:
-
-OpenPSA MEF Schemas
-===================
-
-- `MEF RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rng>`_
-- `MEF RelaxNG Compact Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rnc>`_
-- `MEF DTD <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
-
-
 .. _opsa_support:
 
 Currently Supported OpenPSA MEF Features
 ========================================
 
-The difference between :ref:`opsa_mef_schema` and :ref:`schema` can be used
+The difference between `the Open-PSA MEF schema`_ and SCRAM's :ref:`schema` can be used
 to identify the supported and unsupported features.
 
 - Label
@@ -88,9 +78,12 @@ to identify the supported and unsupported features.
     * Constant expressions
     * System mission time
     * Parameter
+    * Arithmetic expressions
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential with two parameters,
       exponential with four parameters, Weibull)
+
+- `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
 
 
 Deviations from OpenPSA MEF
@@ -108,10 +101,6 @@ Deviations from OpenPSA MEF
 - Common cause model levels for factors are required
   and must be strictly sequential in ascending order.
 - Attributes are not inherited.
-- The decimal separator for floating-point numbers is ``.`` (dot)
-  regardless of the locale.
-  The scientific notation for floating-point numbers is recognized
-  with ``e`` or ``E`` for the exponent.
 - An empty text in XML attributes or elements is considered an error.
 
 
