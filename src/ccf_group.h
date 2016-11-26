@@ -219,7 +219,7 @@ class AlphaFactorModel : public CcfGroup {
 /// Phi factor model is a simplification,
 /// where fractions of k-member group failure is given directly.
 /// Thus, Q_k = phi_k * Q_total.
-/// This model is described in the OpenPSA Model Exchange Format.
+/// This model is described in the Open-PSA Model Exchange Format.
 class PhiFactorModel : public CcfGroup {
  public:
   using CcfGroup::CcfGroup;

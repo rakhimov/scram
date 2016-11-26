@@ -4,14 +4,14 @@ SCRAM |release|
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 SCRAM is a free and open source probabilistic risk analysis tool
-that supports the OpenPSA_ Model Exchange Format.
+that supports the Open-PSA_ Model Exchange Format.
 
 SCRAM is licensed under the GPLv3_.
 The `release notes`_, `source code`_, and `issue/bug`_ tracker
 are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 The Doxygen generated documentation of the core C++ code is provided here_.
 
-.. _OpenPSA: http://open-psa.org
+.. _Open-PSA: http://open-psa.org
 .. _GPLv3: https://github.com/rakhimov/scram/blob/master/LICENSE
 .. _release notes: https://github.com/rakhimov/scram/releases
 .. _source code: https://github.com/rakhimov/scram/tree/master

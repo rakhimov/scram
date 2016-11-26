@@ -48,7 +48,7 @@ Minor
   Multi-rooted graph analysis. *Low*
 - Importance factor calculation for gates (formulas). *Low*
 - Uncertainty analysis for importance factors. *Moderate*
-- OpenPSA MEF Support:
+- The Open-PSA MEF Support:
 
     * Expressions. *Moderate*
     * "Include directive" in input files to include other input files. *Low*

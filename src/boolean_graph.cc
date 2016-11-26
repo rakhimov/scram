@@ -840,7 +840,7 @@ std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
 
 namespace {
 
-/// Gate formula signature for printing in the shorthand format.
+/// Gate formula signature for printing in the Aralia format.
 struct FormulaSig {
   std::string begin;  ///< Beginning of the formula string.
   std::string op;  ///< Operator between the formula arguments.

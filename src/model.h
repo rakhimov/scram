@@ -34,7 +34,6 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
-#include "ext.h"
 #include "fault_tree.h"
 #include "parameter.h"
 
@@ -122,21 +121,13 @@ class Model : public Element, boost::noncopyable {
   /// @throws std::out_of_range  The entity cannot be found.
   /// @{
   ParameterPtr GetParameter(const std::string& entity_reference,
-                            const std::string& base_path) {
-    return GetEntity(entity_reference, base_path, parameters_);
-  }
+                            const std::string& base_path);
   HouseEventPtr GetHouseEvent(const std::string& entity_reference,
-                              const std::string& base_path) {
-    return GetEntity(entity_reference, base_path, house_events_);
-  }
+                              const std::string& base_path);
   BasicEventPtr GetBasicEvent(const std::string& entity_reference,
-                              const std::string& base_path) {
-    return GetEntity(entity_reference, base_path, basic_events_);
-  }
+                              const std::string& base_path);
   GatePtr GetGate(const std::string& entity_reference,
-                  const std::string& base_path) {
-    return GetEntity(entity_reference, base_path, gates_);
-  }
+                  const std::string& base_path);
   /// @}
 
   /// Binds a formula with its argument event.
@@ -202,25 +193,7 @@ class Model : public Element, boost::noncopyable {
   template <class T>
   std::shared_ptr<T> GetEntity(const std::string& entity_reference,
                                const std::string& base_path,
-                               const LookupTable<T>& container) {
-    assert(!entity_reference.empty());
-    if (!base_path.empty()) {  // Check the local scope.
-      if (auto it = ext::find(container.entities_by_path,
-                              base_path + "." + entity_reference))
-        return *it;
-    }
-
-    auto at = [&entity_reference](const auto& reference_container) {
-      if (auto it = ext::find(reference_container, entity_reference))
-        return *it;
-      throw std::out_of_range("The event cannot be found.");
-    };
-
-    if (entity_reference.find('.') == std::string::npos)  // Public entity.
-      return at(container.entities_by_id);
-
-    return at(container.entities_by_path);  // Direct access.
-  }
+                               const LookupTable<T>& container);
 
   /// A collection of defined constructs in the model.
   /// @{

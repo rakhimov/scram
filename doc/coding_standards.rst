@@ -208,12 +208,12 @@ Core C++ Code
       This gate in fault tree analysis has many names
       (Voting, Combination, atleast, K/N),
       and there doesn't seem to be a consensus among sources and tools.
-      The OpenPSA MEF "atleast" best captures the nature of the gate;
+      The Open-PSA MEF "atleast" best captures the nature of the gate;
       however, the "atleast" is awkward to use in code and API
       (Atleast vs. AtLeast vs. atleast vs. at_least).
       In SCRAM, the "vote" word must be used consistently
       to represent this gate in code and API.
-      The code that deals with the OpenPSA MEF may use the "atleast".
+      The code that deals with the Open-PSA MEF may use the "atleast".
 
 - In performance-critical **analysis code**
   (BDD variable ordering, Boolean formula rewriting/preprocessing, etc.),
@@ -271,6 +271,7 @@ C++
 #. Google style conformance check with Cpplint_
 #. Common C++ code problem check with cppclean_
 #. Consistent code formatting with ClangFormat_
+#. Component dependency analysis with cppdep_
 
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _Coveralls: https://coveralls.io/github/rakhimov/scram
@@ -281,6 +282,7 @@ C++
 .. _Cpplint: https://github.com/theandrewdavis/cpplint
 .. _cppclean: https://github.com/myint/cppclean
 .. _ClangFormat: http://clang.llvm.org/docs/ClangFormat.html
+.. _cppdep: https://pypi.python.org/pypi/cppdep
 
 
 Python
@@ -294,7 +296,7 @@ Python
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
-.. _Codecov: https://codecov.io/github/rakhimov/scram?ref=develop
+.. _Codecov: https://codecov.io/github/rakhimov/scram
 .. _Landscape: https://landscape.io/
 .. _Prospector: https://github.com/landscapeio/prospector
 
@@ -417,8 +419,8 @@ Conventions in Documentation "Source Text"
 General
 -------
 
-- Prefer :ref:`shorthand_format` for the Boolean formula documentation.
-  This format uses the C-style bitwise logical operators for equations.
+- Prefer the :ref:`Aralia_format` for the Boolean formula documentation.
+  This format uses the C-style bit-wise logical operators for equations.
 
 
 reST Documentation Style
