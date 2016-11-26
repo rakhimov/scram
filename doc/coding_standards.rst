@@ -208,12 +208,12 @@ Core C++ Code
       This gate in fault tree analysis has many names
       (Voting, Combination, atleast, K/N),
       and there doesn't seem to be a consensus among sources and tools.
-      The OpenPSA MEF "atleast" best captures the nature of the gate;
+      The Open-PSA MEF "atleast" best captures the nature of the gate;
       however, the "atleast" is awkward to use in code and API
       (Atleast vs. AtLeast vs. atleast vs. at_least).
       In SCRAM, the "vote" word must be used consistently
       to represent this gate in code and API.
-      The code that deals with the OpenPSA MEF may use the "atleast".
+      The code that deals with the Open-PSA MEF may use the "atleast".
 
 - In performance-critical **analysis code**
   (BDD variable ordering, Boolean formula rewriting/preprocessing, etc.),

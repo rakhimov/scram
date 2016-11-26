@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-This is an event tree example taken from OpenPSA MEF description.
+This is an event tree example taken from the Open-PSA MEF description.
 -->
 <opsa-mef>
   <define-event-tree name="my-first-event-tree">

@@ -135,7 +135,7 @@ class Initializer : private boost::noncopyable {
 
   /// Attaches attributes and a label to the elements of the analysis.
   /// These attributes are not XML attributes
-  /// but OpenPSA format defined arbitrary attributes
+  /// but the Open-PSA format defined arbitrary attributes
   /// and a label that can be attached to many analysis elements.
   ///
   /// @param[in] element_node  XML element.

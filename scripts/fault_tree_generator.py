@@ -17,7 +17,7 @@
 
 """Generates a fault tree of various complexities.
 
-The generated fault tree can be put into an XML file with the OpenPSA MEF
+The generated fault tree can be put into an XML file with the Open-PSA MEF
 or the Aralia format file.
 The resulting fault tree is topologically sorted.
 

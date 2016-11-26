@@ -47,10 +47,10 @@ Representation of INHIBIT, Undeveloped, and Conditional
 =======================================================
 
 These gate and event types are not directly supported
-by the input format based on the OpenPSA [MEF]_.
+by the input format based on the Open-PSA [MEF]_.
 Indeed, these types are treated just like AND gate and Basic event respectively;
 therefore, the description of these types
-can be given through the OpenPSA MEF "attribute" element for gates and events.
+can be given through the Open-PSA MEF "attribute" element for gates and events.
 The attribute name "flavor" is used to indicate
 the different representation of an event as shown in the description bellow.
 

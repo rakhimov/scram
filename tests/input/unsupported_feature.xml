@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 This input contains unsupported feature by SCRAM.
-However, this feature is valid in OpenPSA MEF.
+However, this feature is valid in the Open-PSA MEF.
 -->
 <opsa-mef>
   <define-substitution name="Backup">

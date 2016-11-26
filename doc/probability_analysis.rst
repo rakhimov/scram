@@ -9,7 +9,7 @@ Probability Types
 *****************
 
 Various probability types and distributions are accepted
-as described in the OpenPSA Model Exchange Format [MEF]_,
+as described in the Open-PSA Model Exchange Format [MEF]_,
 for example, constant values, exponential with two or four parameters,
 and uniform, normal, log-normal distributions.
 

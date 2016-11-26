@@ -62,7 +62,7 @@ Papers
 Standards, Guides, Manuals, Handbooks
 =====================================
 
-.. [MEF] `OpenPSA Model Exchange Format <http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19>`_
+.. [MEF] `Open PSA Model Exchange Format <http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19>`_
 
 .. [NUREG0492] `NRC NUREG-0492 <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/sr0492.pdf>`_
 
@@ -80,7 +80,7 @@ Standards, Guides, Manuals, Handbooks
 Web Resources
 =============
 
-.. [OPSA] `OpenPSA Initiative <http://open-psa.org>`_
+.. [OPSA] `The Open-PSA Initiative <http://open-psa.org>`_
 
 .. [PRA] `PRA Wiki Page <https://en.wikipedia.org/wiki/Probabilistic_risk_assessment>`_
 .. [FTA] `FTA Wiki Page <https://en.wikipedia.org/wiki/Fault_tree_analysis>`_

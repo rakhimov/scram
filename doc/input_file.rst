@@ -8,10 +8,10 @@ See :ref:`xml_tools` for more convenient writing and reading of XML input files.
 Currently, only fault trees are accepted for analysis,
 and one model per run is assumed.
 The input file format follows
-OpenPSA Model Exchange Format ([MEF]_) version 2.0d or later.
-The extensive description is given in the above format documentation by OpenPSA,
+the Open-PSA Model Exchange Format ([MEF]_) version 2.0d or later.
+The extensive description is given in the above format documentation by Open-PSA,
 and input files should be straightforward to create and understand.
-However, not all OpenPSA formatting is supported,
+However, not all Open-PSA formatting is supported,
 and some additional assumptions/restrictions are made by SCRAM.
 See :ref:`opsa_support` for the format description
 and current implementation with differences.
@@ -38,7 +38,7 @@ Steps in XML Input Validation
     - The first file must define the name, label, and attributes of the model.
       Other files with this kind of information are ignored without a warning.
       This feature allows reuse of files from other models
-      without the need for the OpenPSA MEF ``include`` directives.
+      without the need for the Open-PSA MEF ``include`` directives.
 
 #. An XML input file is validated against the RelaxNG_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
@@ -49,7 +49,7 @@ Steps in XML Input Validation
     - Public names must be unique globally,
       and private names must be unique locally within containers.
     - References are followed according to the public and private roles
-      described in the OpenPSA MEF section
+      described in the Open-PSA MEF section
       *IV.3.2. Solving Name Conflicts: Public versus Private Elements*.
 
 #. Additional validation of fault trees and values of parameters is performed:

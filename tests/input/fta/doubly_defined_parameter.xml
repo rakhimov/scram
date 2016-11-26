@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 This input contains a paremeter that is doubly defined.
-This input may be valid OpenPSA MEF with optional warnings.
+This input may be valid Open-PSA MEF with optional warnings.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">

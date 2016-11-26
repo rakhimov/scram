@@ -1,6 +1,6 @@
-#############################
-OpenPSA Model Exchange Format
-#############################
+##################################
+The Open-PSA Model Exchange Format
+##################################
 
 Open Probabilistic Safety Assessment Initiative hopes
 to bring international community of PSA together
@@ -22,7 +22,7 @@ The initiative deals with the following issues in the current PSA:
     - No universal format for industry data
 
 In order to facilitate information exchange and quality assurance,
-OpenPSA community has developed a model exchange format([MEF]_) for PSA
+The Open-PSA community has developed a model exchange format([MEF]_) for PSA
 that covers most needs to describe the analysis input for PSA tools.
 Moreover, the MEF defines the following requirements
 for its development and use:
@@ -43,8 +43,8 @@ More information about the initiative and format can be found on http://open-psa
 
 .. _opsa_support:
 
-Currently Supported OpenPSA MEF Features
-========================================
+Currently Supported Open-PSA MEF Features
+=========================================
 
 The difference between `the Open-PSA MEF schema`_ and SCRAM's :ref:`schema` can be used
 to identify the supported and unsupported features.
@@ -86,8 +86,8 @@ to identify the supported and unsupported features.
 - `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
 
 
-Deviations from OpenPSA MEF
-===========================
+Deviations from the Open-PSA MEF
+================================
 
 - Names and references are case-sensitive
   and restricted to fewer characters and combinations.
@@ -104,8 +104,8 @@ Deviations from OpenPSA MEF
 - An empty text in XML attributes or elements is considered an error.
 
 
-Translators to the OpenPSA MEF
-==============================
+Translators to the Open-PSA MEF
+===============================
 
 Various translators from other formats, such as Aralia,
 can be found in `the Open-PSA MEF translators repository`_.

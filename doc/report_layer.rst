@@ -2,12 +2,12 @@
 Report Layer
 ############
 
-***********
-OpenPSA MEF
-***********
+****************
+The Open-PSA MEF
+****************
 
 The results of calculations are reported in the XML format
-suggested by OpenPSA Model Exchange Format ([MEF]_).
+suggested by the Open-PSA Model Exchange Format ([MEF]_).
 It is expected that the standardized report format be used by other tools
 to further analyze and operate on the results of PSA tools.
 The report contains two constructs:
@@ -59,7 +59,7 @@ The report contains two constructs:
 Encodings
 =========
 
-There is no specification for file encodings in OpenPSA MEF.
+There is no specification for file encodings in the Open-PSA MEF.
 SCRAM results are reported with the UTF-8 character set
 regardless of what the input file encodings are.
 
