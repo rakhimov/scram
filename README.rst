@@ -352,7 +352,7 @@ To test the tools in the ``scripts`` directory:
 
 .. code-block:: bash
 
-    nosetests -w scripts/
+    nosetests -w scripts/ test/
 
 To test the command-line call of SCRAM:
 

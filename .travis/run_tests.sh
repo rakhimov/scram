@@ -11,7 +11,7 @@ scram_tests
 nosetests -w ./tests/
 
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
-  nosetests --with-coverage -w ./scripts/
+  nosetests --with-coverage -w scripts test/
 fi
 
 ./scripts/fault_tree_generator.py -b 200 -a 5

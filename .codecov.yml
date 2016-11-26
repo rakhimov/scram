@@ -5,4 +5,4 @@ coverage:
     ignore:
         - tests/*
         - src/*
-        - scripts/test_*
+        - scripts/test/*
