@@ -15,7 +15,7 @@
 
 """Tests for the fault tree generator."""
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import random
 from subprocess import call
@@ -121,7 +121,7 @@ class FaultTreeGeneratorTestCase(TestCase):
 
     def setUp(self):
         """Initializes the generator factors for default complexity."""
-        self.output = NamedTemporaryFile()
+        self.output = NamedTemporaryFile(mode="w+")
         random.seed(123)
         self.factors = Factors()
         self.factors.set_min_max_prob(0.01, 0.1)
@@ -158,7 +158,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         assert_is_not_none(fault_tree)
         self.output.write(fault_tree.to_aralia())
         self.output.file.flush()
-        tmp = NamedTemporaryFile()
+        tmp = NamedTemporaryFile(mode="w+")
         cmd = ["./translators/aralia.py", self.output.name, "-o", tmp.name]
         assert_equal(0, call(cmd))
 
@@ -175,7 +175,7 @@ class FaultTreeGeneratorTestCase(TestCase):
 
 def test_main():
     """Tests the main() of the generator."""
-    tmp = NamedTemporaryFile()
+    tmp = NamedTemporaryFile(mode="w+")
     main(["-b", "200", "-g", "200", "-o", tmp.name])
     relaxng_doc = etree.parse("../share/input.rng")
     relaxng = etree.RelaxNG(relaxng_doc)
@@ -184,5 +184,6 @@ def test_main():
         assert_true(relaxng.validate(doc))
 
     main(["-b", "200", "-g", "200", "-o", tmp.name, "--aralia"])
-    cmd = ["./translators/aralia.py", tmp.name, "-o", NamedTemporaryFile().name]
+    cmd = ["./translators/aralia.py", tmp.name, "-o",
+           NamedTemporaryFile(mode="w+").name]
     assert_equal(0, call(cmd))

@@ -40,7 +40,7 @@ all the other factors set by the user are
 guaranteed to be preserved and used as they are.
 """
 
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 
 from collections import deque
 import random
@@ -48,8 +48,7 @@ import sys
 
 import argparse as ap
 
-from translators.fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, \
-    FaultTree
+from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, FaultTree
 
 
 class FactorError(Exception):
