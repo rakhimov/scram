@@ -148,18 +148,18 @@ class FaultTreeGeneratorTestCase(TestCase):
             doc = etree.parse(test_file)
             assert_true(relaxng.validate(doc))
 
-    def test_shorthand_output(self):
-        """Checks if the shorthand format output passes validation."""
+    def test_aralia_output(self):
+        """Checks if the Aralia format output passes validation."""
         self.factors.set_gate_weights([1, 1, 1, 0.1, 0.1])
         self.factors.num_house = 10
         self.factors.num_ccf = 10
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
         assert_is_not_none(fault_tree)
-        self.output.write(fault_tree.to_shorthand())
+        self.output.write(fault_tree.to_aralia())
         self.output.file.flush()
         tmp = NamedTemporaryFile()
-        cmd = ["./shorthand_to_xml.py", self.output.name, "-o", tmp.name]
+        cmd = ["./translators/aralia.py", self.output.name, "-o", tmp.name]
         assert_equal(0, call(cmd))
 
     def test_constrain_num_gates(self):
@@ -183,6 +183,6 @@ def test_main():
         doc = etree.parse(test_file)
         assert_true(relaxng.validate(doc))
 
-    main(["-b", "200", "-g", "200", "-o", tmp.name, "--shorthand"])
-    cmd = ["./shorthand_to_xml.py", tmp.name, "-o", NamedTemporaryFile().name]
+    main(["-b", "200", "-g", "200", "-o", tmp.name, "--aralia"])
+    cmd = ["./translators/aralia.py", tmp.name, "-o", NamedTemporaryFile().name]
     assert_equal(0, call(cmd))

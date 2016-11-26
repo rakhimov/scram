@@ -104,10 +104,10 @@ Deviations from OpenPSA MEF
 - An empty text in XML attributes or elements is considered an error.
 
 
-OpenPSA MEF Converters
-======================
+Translators to the OpenPSA MEF
+==============================
 
-- `Python script`_ for :ref:`shorthand_format` to OpenPSA MEF XML conversion.
+Various translators from other formats, such as Aralia,
+can be found in `the Open-PSA MEF translators repository`_.
 
-.. _Python script:
-    https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py
+.. _the Open-PSA MEF translators repository: https://github.com/open-psa/translators/

@@ -47,7 +47,7 @@ Script Arguments
   Complex gates (K/N, NOT, XOR) are created
   only if the weights are given.
 - Output file name.
-- Output formats: shorthand or XML(default).
+- Output formats: Aralia or XML(default).
 - An option to merge gates into nested formulas for the output.
 
 .. note::

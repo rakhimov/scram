@@ -830,7 +830,7 @@ class BooleanGraph : private boost::noncopyable {
     return basic_events_[index - 1];
   }
 
-  /// Prints the Boolean graph in the shorthand format.
+  /// Prints the Boolean graph in the Aralia format.
   /// This is a helper for logging and debugging.
   /// The output is the standard error.
   ///
@@ -1027,14 +1027,14 @@ class BooleanGraph : private boost::noncopyable {
   std::vector<std::weak_ptr<Gate>> null_gates_;
 };
 
-/// Prints Boolean graph nodes in the shorthand format.
+/// Prints Boolean graph nodes in the Aralia format.
 /// @{
 std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant);
 std::ostream& operator<<(std::ostream& os, const VariablePtr& variable);
 std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 /// @}
 
-/// Prints the BooleanGraph as a fault tree in the shorthand format.
+/// Prints the BooleanGraph as a fault tree in the Aralia format.
 /// This function is mostly for debugging purposes.
 /// The output is not meant to be human readable.
 ///

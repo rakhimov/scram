@@ -17,7 +17,7 @@
 
 """Generates a fault tree representation of the N Queens problem.
 
-The representation is given in the shorthand format.
+The representation is given in the Aralia format.
 """
 
 from __future__ import print_function

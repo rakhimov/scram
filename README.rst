@@ -245,8 +245,7 @@ Various other flags are described by the script's help prompt.
 
     .../scram$ python install.py --help
 
-Other tools,
-such as the **fault tree generator** and **shorthand-to-XML** converter,
+Other tools, such as the **fault tree generator**,
 can be found in the ``scripts`` directory.
 These tools do not need compilation or installation.
 
@@ -335,7 +334,7 @@ On command line, run help to get more detailed information:
     scram --help
 
 Various other useful tools and helper scripts,
-such as the **fault tree generator** and **shorthand-to-XML** converter,
+such as the **fault tree generator**,
 can be found in the ``scripts`` directory.
 Help prompts and the documentation have more details how to use these tools.
 

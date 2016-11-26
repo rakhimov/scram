@@ -17,7 +17,7 @@ See :ref:`opsa_support` for the format description
 and current implementation with differences.
 
 In addition to the XML format,
-the :ref:`shorthand_format` is supported indirectly.
+the :ref:`Aralia_format` is supported indirectly.
 
 
 Encodings
@@ -109,18 +109,18 @@ Validation Schemas
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
 
 
-.. _shorthand_format:
+.. _Aralia_format:
 
-Shorthand Input Format
-======================
+Aralia Input Format
+===================
 
 A more convenient format than the XML for writing simple fault trees
 utilizes a shorter notation for gates, operators (``&``, ``|``, ``@``, ``~``, ``^``), and events
 to create a collection of Boolean equations.
-The shorthand format can be converted into the XML format with `this script`_.
+The Aralia format can be converted into the XML format with `this script`_.
 
 .. _this script:
-    https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py
+    https://github.com/open-psa/translators/blob/master/aralia.py
 
 
 Input File Examples
@@ -133,9 +133,9 @@ Fault Tree Input File
     :language: xml
 
 
-Shorthand Version
------------------
+Aralia Version
+--------------
 
-.. literalinclude:: example/shorthand_input.txt
+.. literalinclude:: example/aralia_input.txt
 
 .. _RelaxNG: http://relaxng.org/

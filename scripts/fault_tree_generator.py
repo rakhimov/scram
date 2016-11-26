@@ -18,7 +18,7 @@
 """Generates a fault tree of various complexities.
 
 The generated fault tree can be put into an XML file with the OpenPSA MEF
-or a shorthand format file.
+or the Aralia format file.
 The resulting fault tree is topologically sorted.
 
 This script helps create complex fault trees in a short time
@@ -889,14 +889,14 @@ def manage_cmd_args(argv=None):
                         default=0, metavar="int")
     parser.add_argument("-o", "--out", type=str, default="fault_tree.xml",
                         metavar="path", help="a file to write the fault tree")
-    parser.add_argument("--shorthand", action="store_true",
-                        help="apply the shorthand format to the output")
+    parser.add_argument("--aralia", action="store_true",
+                        help="apply the Aralia format to the output")
     parser.add_argument("--nest", type=int, default=0, metavar="int",
                         help="nestedness of Boolean formulae in the XML output")
     args = parser.parse_args(argv)
     if args.nest < 0:
         raise ap.ArgumentTypeError("The nesting factor cannot be negative")
-    if args.shorthand:
+    if args.aralia:
         if args.out == "fault_tree.xml":
             args.out = "fault_tree.txt"
     return args
@@ -944,8 +944,8 @@ def main(argv=None):
     factors = setup_factors(args)
     fault_tree = generate_fault_tree(args.ft_name, args.root, factors)
     with open(args.out, "w") as tree_file:
-        if args.shorthand:
-            tree_file.write(fault_tree.to_shorthand())
+        if args.aralia:
+            tree_file.write(fault_tree.to_aralia())
         else:
             write_info(fault_tree, tree_file, args.seed)
             write_summary(fault_tree, tree_file)

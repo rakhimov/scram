@@ -419,8 +419,8 @@ Conventions in Documentation "Source Text"
 General
 -------
 
-- Prefer :ref:`shorthand_format` for the Boolean formula documentation.
-  This format uses the C-style bitwise logical operators for equations.
+- Prefer the :ref:`Aralia_format` for the Boolean formula documentation.
+  This format uses the C-style bit-wise logical operators for equations.
 
 
 reST Documentation Style
