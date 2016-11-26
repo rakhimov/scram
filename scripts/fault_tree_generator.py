@@ -48,7 +48,8 @@ import sys
 
 import argparse as ap
 
-from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, FaultTree
+from translators.fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, \
+    FaultTree
 
 
 class FactorError(Exception):

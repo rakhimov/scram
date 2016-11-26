@@ -1,3 +1,6 @@
 [submodule "tests/googletest"]
 	path = tests/googletest
 	url = https://github.com/rakhimov/googletest
+[submodule "scripts/translators"]
+	path = scripts/translators
+	url = https://github.com/rakhimov/translators
