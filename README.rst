@@ -32,6 +32,7 @@ A list of dependencies:
 Package                Minimum Version
 ====================   ==================
 `Sphinx`                1.4.3
+`sphinx_rtd_theme`      0.1.8
 ====================   ==================
 
 Optional dependencies:
