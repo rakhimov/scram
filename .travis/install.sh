@@ -26,10 +26,10 @@ PROJECT_DIR=$PWD
 cd /tmp
 
 # Boost
-wget https://sourceforge.net/projects/iscram/files/deps/boost-scram.tar.bzip2
-tar -xf ./boost-scram.tar.bzip2  # Sets up install dir.
-sudo mv ./install/lib/* /usr/lib/
-sudo mv ./install/include/boost /usr/include/
+wget https://sourceforge.net/projects/iscram/files/deps/boost-scram.tar.gz
+tar -xf ./boost-scram.tar.gz
+sudo mv ./boost-scram/lib/* /usr/lib/
+sudo mv ./boost-scram/include/* /usr/include/
 
 # Libxml++
 LIBXMLPP='libxml++-2.38.1'
