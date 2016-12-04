@@ -168,7 +168,7 @@ endif()
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
 find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
-  program_options filesystem system date_time
+  program_options filesystem system date_time random
   REQUIRED)
 
 if(Boost_USE_STATIC_LIBS)

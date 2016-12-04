@@ -24,9 +24,11 @@
 #include <cassert>
 #include <cmath>
 
-#include <array>
 #include <random>
 #include <vector>
+
+#include <boost/random/beta_distribution.hpp>
+#include <boost/random/triangle_distribution.hpp>
 
 namespace scram {
 
@@ -36,6 +38,11 @@ namespace scram {
 /// In other words, the user should make sure
 /// that the passed parameters are valid.
 /// For example, standard deviation cannot be negative.
+///
+/// This facility wraps the engine and distributions.
+/// It provides convenience and reproducibility for the whole analysis.
+///
+/// @todo Work with iterators instead of containers.
 class Random {
  public:
   /// Sets the seed of the underlying random number generator.
@@ -53,8 +60,7 @@ class Random {
   /// @returns A sampled value.
   static double UniformRealGenerator(double min, double max) noexcept {
     assert(min < max);
-    std::uniform_real_distribution<double> dist(min, max);
-    return dist(rng_);
+    return std::uniform_real_distribution<>(min, max)(rng_);
   }
 
   /// RNG from a triangular distribution.
@@ -68,12 +74,7 @@ class Random {
                                     double upper) noexcept {
     assert(lower < mode);
     assert(mode < upper);
-    static const std::array<double, 3> weights = {0, 1, 0};
-    std::array<double, 3> intervals = {lower, mode, upper};
-    std::piecewise_linear_distribution<double> dist(intervals.begin(),
-                                                    intervals.end(),
-                                                    weights.begin());
-    return dist(rng_);
+    return boost::random::triangle_distribution<>(lower, mode, upper)(rng_);
   }
 
   /// RNG from a piecewise linear distribution.
@@ -89,10 +90,8 @@ class Random {
   static double PiecewiseLinearGenerator(
       const std::vector<double>& intervals,
       const std::vector<double>& weights) noexcept {
-    std::piecewise_linear_distribution<double> dist(intervals.begin(),
-                                                    intervals.end(),
-                                                    weights.begin());
-    return dist(rng_);
+    return std::piecewise_linear_distribution<>(
+        intervals.begin(), intervals.end(), weights.begin())(rng_);
   }
 
   /// RNG from a histogram distribution.
@@ -114,7 +113,7 @@ class Random {
   template <class IteratorB, class IteratorW>
   static double HistogramGenerator(IteratorB first_b, IteratorB last_b,
                                    IteratorW first_w) noexcept {
-    std::piecewise_constant_distribution<double> dist(first_b, last_b, first_w);
+    std::piecewise_constant_distribution<> dist(first_b, last_b, first_w);
     return dist(rng_);
   }
 
@@ -141,8 +140,7 @@ class Random {
   ///
   /// @returns The number of successes.
   static int BinomialGenerator(int n, double p) noexcept {
-    std::binomial_distribution<int> dist(n, p);
-    return dist(rng_);
+    return std::binomial_distribution<>(n, p)(rng_);
   }
 
   /// RNG from a normal distribution.
@@ -153,8 +151,7 @@ class Random {
   /// @returns A sampled value.
   static double NormalGenerator(double mean, double sigma) noexcept {
     assert(sigma >= 0);
-    std::normal_distribution<double> dist(mean, sigma);
-    return dist(rng_);
+    return std::normal_distribution<>(mean, sigma)(rng_);
   }
 
   /// RNG from lognormal distribution.
@@ -165,8 +162,7 @@ class Random {
   /// @returns A sampled value.
   static double LogNormalGenerator(double m, double s) noexcept {
     assert(s >= 0);
-    std::lognormal_distribution<double> dist(m, s);
-    return dist(rng_);
+    return std::lognormal_distribution<>(m, s)(rng_);
   }
 
   /// RNG from Gamma distribution.
@@ -182,8 +178,7 @@ class Random {
   static double GammaGenerator(double k, double theta) noexcept {
     assert(k > 0);
     assert(theta > 0);
-    std::gamma_distribution<double> gamma_dist(k);
-    return theta * gamma_dist(rng_);
+    return std::gamma_distribution<>(k)(rng_) * theta;
   }
 
   /// RNG from Beta distribution.
@@ -195,11 +190,7 @@ class Random {
   static double BetaGenerator(double alpha, double beta) noexcept {
     assert(alpha > 0);
     assert(beta > 0);
-    std::gamma_distribution<double> gamma_dist_x(alpha);
-    std::gamma_distribution<double> gamma_dist_y(beta);
-    double x = gamma_dist_x(rng_);
-    double y = gamma_dist_y(rng_);
-    return x / (x + y);
+    return boost::random::beta_distribution<>(alpha, beta)(rng_);
   }
 
   /// RNG from Weibull distribution.
@@ -211,8 +202,7 @@ class Random {
   static double WeibullGenerator(double k, double lambda) noexcept {
     assert(k > 0);
     assert(lambda > 0);
-    std::weibull_distribution<double> dist(k, lambda);
-    return dist(rng_);
+    return std::weibull_distribution<>(k, lambda)(rng_);
   }
 
   /// RNG from Exponential distribution.
@@ -222,8 +212,7 @@ class Random {
   /// @returns A sampled value.
   static double ExponentialGenerator(double lambda) noexcept {
     assert(lambda > 0);
-    std::exponential_distribution<double> dist(lambda);
-    return dist(rng_);
+    return std::exponential_distribution<>(lambda)(rng_);
   }
 
   /// RNG from Poisson distribution.
@@ -233,8 +222,7 @@ class Random {
   /// @returns A sampled value.
   static int PoissonGenerator(int mean) noexcept {
     assert(mean > 0);
-    std::poisson_distribution<int> dist(mean);
-    return dist(rng_);
+    return std::poisson_distribution<>(mean)(rng_);
   }
 
   /// RNG from log-uniform distribution.
@@ -267,8 +255,7 @@ class Random {
   ///
   /// @returns Integer in the range [0, n).
   static int DiscreteGenerator(const std::vector<double>& weights) noexcept {
-    std::discrete_distribution<int> dist(weights.begin(), weights.end());
-    return dist(rng_);
+    return std::discrete_distribution<>(weights.begin(), weights.end())(rng_);
   }
 
   static std::mt19937 rng_;  ///< The random number generator.
