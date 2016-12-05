@@ -1,0 +1,25 @@
+language: python
+python:
+    - 2.7
+    - 3.4
+
+addons:
+    apt:
+        packages:
+            - dvipng
+            - texlive
+            - texlive-fonts-recommended
+            - texlive-latex-extra
+            - graphviz
+
+install:
+    - pip install sphinx sphinx_rtd_theme lizard
+    - wget -q -O - https://sourceforge.net/projects/iscram/files/deps/doxygen-1.8.12.linux.bin.tar.gz | tar xz
+    - sudo cp doxygen-1.8.12/bin/* /usr/bin/
+
+before_script:
+    - mkdir build
+
+script:
+    - make doxygen html linkcheck 2> _warnings.txt
+    - cat _warnings.txt && [[ ! -s _warnings.txt ]]
