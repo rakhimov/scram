@@ -41,7 +41,6 @@ Optional dependencies:
 Package                 Minimum Version
 ====================   =================
 `LaTeX`
-`DVI-to-PNG`            1.14
 `doxygen`               1.7.6.1
 `Graphviz Dot`          2.26.3
 `Lizard`                1.12
