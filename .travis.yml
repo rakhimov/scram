@@ -3,6 +3,9 @@ python:
     - 2.7
     - 3.4
 
+git:
+    depth: 200
+
 addons:
     apt:
         packages:

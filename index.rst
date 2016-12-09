@@ -4,7 +4,7 @@ SCRAM |release|
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 SCRAM is a free and open source probabilistic risk analysis tool
-that supports the Open-PSA_ Model Exchange Format.
+that supports the Open-PSA_ `Model Exchange Format`_.
 
 SCRAM is licensed under the GPLv3_.
 The `release notes`_, `source code`_, and `issue/bug`_ tracker
@@ -12,6 +12,7 @@ are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 The Doxygen generated documentation of the core C++ code is provided here_.
 
 .. _Open-PSA: http://open-psa.org
+.. _Model Exchange Format: https://open-psa.github.io/mef
 .. _GPLv3: https://github.com/rakhimov/scram/blob/master/LICENSE
 .. _release notes: https://github.com/rakhimov/scram/releases
 .. _source code: https://github.com/rakhimov/scram/tree/master
@@ -22,8 +23,8 @@ The Doxygen generated documentation of the core C++ code is provided here_.
 Implemented Features
 --------------------
 
-- Static fault tree analysis (MOCUS/BDD/ZBDD)
-- Analysis of non-coherent fault trees (Minimal Cut Sets / Prime Implicants)
+- Static fault tree analysis (MOCUS, BDD, ZBDD)
+- Analysis of non-coherent fault trees (Minimal Cut Sets, Prime Implicants)
 - Analysis with common-cause failure models
 - Probability calculations with importance analysis
 - Uncertainty analysis with Monte Carlo simulations
@@ -42,10 +43,8 @@ Installation
 Documentation
 -------------
 
-Development
-~~~~~~~~~~~
-
 .. toctree::
+    :caption: Development
     :maxdepth: 1
 
     doc/design_description
@@ -54,10 +53,8 @@ Development
     doc/bugs
 
 
-Analysis
-~~~~~~~~
-
 .. toctree::
+    :caption: Analysis
     :maxdepth: 1
 
     doc/description
@@ -69,10 +66,8 @@ Analysis
     doc/common_cause_analysis
 
 
-Format
-~~~~~~
-
 .. toctree::
+    :caption: Format
     :maxdepth: 1
 
     doc/input_file
@@ -81,20 +76,16 @@ Format
     doc/opsa_support
 
 
-Tools
-~~~~~
-
 .. toctree::
+    :caption: Tools
     :maxdepth: 1
 
     doc/fault_tree_generator
     doc/gui
 
 
-Miscellanea
-~~~~~~~~~~~
-
 .. toctree::
+    :caption: Miscellanea
     :maxdepth: 1
 
     doc/theory
