@@ -16,25 +16,25 @@ and uniform, normal, log-normal distributions.
 Bellow is a brief description.
 For more information, please take a look at the [MEF]_ format documentation.
 
-**P-model**
+P-model
     The probability of an event occurring
     when the time to failure is unknown or unpredictable.
 
-**Lambda-model or Exponential with Two Parameters**
-    The probability that a primary event will occur within given time (t).
+Lambda-model or Exponential with Two Parameters
+    The probability that a primary event will occur within given time (:math:`t`).
     Appropriate for events within systems
     that are continuously operating and
     have a known probability of failure during a unit time period (:math:`\lambda`).
 
     .. math::
 
-        P = 1-\exp(-\lambda*t)
+        P = 1-e^{-\lambda \cdot t}
 
     For small lambda and time, the approximation is
 
     .. math::
 
-        P \approx \lambda*t
+        P \approx \lambda \cdot t
 
 
 ************************

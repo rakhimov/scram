@@ -105,7 +105,7 @@ the event is repair (success) relevant.
 If an event is not in a product,
 it is irrelevant.
 
-Given Boolean formula **f(a,b,c)**:
+Given Boolean formula :math:`f(a,b,c)`:
 
     .. math::
 
@@ -118,13 +118,14 @@ Considering the complement is always True, the formula is simplified:
         f(a,b,c) = a \& b \| c
 
 Computation of prime implicants requires computation of the consensus
-when variable **a** is irrelevant:
+when variable :math:`a` is irrelevant:
 
     .. math::
 
         f(a,b,c) = a \& b \| \overline{a} \& c \| b \& c
 
-Minimal cut sets of the formula are ``{ab, c}``. Prime implicants are ``{ab, ~ac, bc}``.
+Minimal cut sets of the formula are :math:`{ab, c}`.
+Prime implicants are :math:`{ab, ~ac, bc}`.
 
 
 ********************
