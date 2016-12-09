@@ -1,0 +1,26 @@
+<cppdep>
+  <package-group name="scram" path=".">
+    <package name="core">
+      <path>src</path>
+    </package>
+    <!-- <package name="tests"> -->
+    <!--   <path>tests</path> -->
+    <!-- </package> -->
+  </package-group>
+  <package-group role="external" name="Dependencies" path="/">
+    <package name="System">
+      <path>/usr/include</path>
+    </package>
+    <package name="STL">
+      <path>/usr/include/c++/5</path>
+    </package>
+    <package name="Boost">
+      <path>/usr/include/boost</path>
+    </package>
+    <package name="LibXML">
+      <path>/usr/include/libxml++-2.6</path>
+      <path>/usr/include/libxml2</path>
+      <path>/usr/include/glibmm-2.4/glibmm/</path>
+    </package>
+  </package-group>
+</cppdep>

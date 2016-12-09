@@ -50,15 +50,29 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-doxygen:
+build/complexity_report.txt:
+	@echo "Generating Lizard report..."
 	lizard -i -1 -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert -Ens -Ecpre src/ -x '*.h' > build/complexity_report.txt || echo "Lizard Warnings!"
 	@echo
 	@echo "Generated Lizard complexity report."
+
+doxygen: build/complexity_report.txt
+	@echo "Generating Doxygen docs..."
 	doxygen doxygen.conf
 	@echo
 	@echo "Generated Doxygen docs from the C++ source."
 
-html:
+build/dep_report.txt scram_core.dot:
+	@echo "Generating cppdep report.."
+	cppdep -c cppdep.xml > build/dep_report.txt
+	@echo "Generated cppdep report."
+
+build/scram_core.svg: scram_core.dot
+	@echo "Converting the dependency diagram to SVG..."
+	dot -Tsvg -o build/scram_core.svg scram_core.dot
+	@echo "Generated svg diagram."
+
+html: build/dep_report.txt build/scram_core.svg
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

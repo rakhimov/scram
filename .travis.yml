@@ -15,7 +15,7 @@ addons:
             - graphviz
 
 install:
-    - pip install sphinx sphinx_rtd_theme lizard
+    - pip install sphinx sphinx_rtd_theme lizard cppdep
     - wget -q -O - https://sourceforge.net/projects/iscram/files/deps/doxygen-1.8.12.linux.bin.tar.gz | tar xz
     - sudo cp doxygen-1.8.12/bin/* /usr/bin/
 
@@ -23,5 +23,7 @@ before_script:
     - mkdir build
 
 script:
+    - cp .travis_cppdep.xml cppdep.xml
+    - make build/dep_report.txt scram_core.dot 2> /dev/null
     - make doxygen html linkcheck 2> _warnings.txt
     - cat _warnings.txt && [[ ! -s _warnings.txt ]]
