@@ -31,7 +31,7 @@ probability calculations with importance analysis,
 and uncertainty analysis with Monte Carlo simulations.
 This tool can handle non-coherent fault trees, containing NOT logic.
 
-SCRAM input and report files are based on Open-PSA_ Model Exchange Format.
+SCRAM input and report files are based on the Open-PSA_ `Model Exchange Format`_.
 For the current status of the Open-PSA MEF features in SCRAM,
 please see the `MEF Support`_ documentation.
 
@@ -47,6 +47,7 @@ its current capabilities, and future additions.
 The latest stable release is packaged for `quick installation`_ on various platforms.
 
 .. _Open-PSA: http://open-psa.org
+.. _Model Exchange Format: http://open-psa.github.io/mef
 .. _MEF Support: http://scram-pra.org/doc/opsa_support.html
 .. _documentation: http://scram-pra.org
 .. _quick installation: http://scram-pra.org/doc/installation.html

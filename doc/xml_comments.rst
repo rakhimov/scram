@@ -21,7 +21,7 @@ Recommended Tools
 - `Emacs <http://www.gnu.org/software/emacs/>`_ with
   `nXML mode <http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html>`_
 
-- `Notepad++ <http://notepad-plus-plus.org/>`_ with XML Tools plug-in
+- `Notepad++ <https://notepad-plus-plus.org/>`_ with XML Tools plug-in
 
 - `xmllint <http://xmlsoft.org/xmllint.html>`_ with RelaxNG schema
 
