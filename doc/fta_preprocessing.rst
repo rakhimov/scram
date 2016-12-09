@@ -171,7 +171,7 @@ and its failure logic to the failure destinations.
 The generalization of this technique
 comes from the observations
 of special cases for the Shannon decomposition.
-Given a Boolean formula **f(x, y)**,
+Given a Boolean formula :math:`f(x, y)`,
 the following cases are the special cases of its Shannon decomposition:
 
     1. If ``f(x, y) = 1/True/Failure`` assuming ``x = 1/True/Failure``:
