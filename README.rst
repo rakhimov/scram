@@ -2,6 +2,11 @@
 SCRAM Website Source
 ####################
 
+.. image:: https://travis-ci.org/rakhimov/scram.svg?branch=gh-source
+    :target: https://travis-ci.org/rakhimov/scram
+
+|
+
 The three branch system is used to build website:
 
     **develop** -> **gh-source** -> **gh-pages**
