@@ -17,7 +17,7 @@ The Doxygen generated documentation of the core C++ code is provided here_.
 .. _release notes: https://github.com/rakhimov/scram/releases
 .. _source code: https://github.com/rakhimov/scram/tree/master
 .. _issue/bug:  https://github.com/rakhimov/scram/issues
-.. _here: http://scram-pra.org/api/
+.. _here: api/index.xhtml
 
 
 Implemented Features
