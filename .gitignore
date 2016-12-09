@@ -4,3 +4,6 @@ build-*/
 
 # Tests
 tests/googletest
+
+# Submodules
+scripts/translators

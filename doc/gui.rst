@@ -4,7 +4,7 @@ GUI Front-End
 
 The GUI front-end is developed with `Qt5 and Qt Creator`_.
 
-.. _Qt5 and Qt Creator: http://qt-project.org/
+.. _Qt5 and Qt Creator: https://www.qt.io/developers/
 
 
 GUI Concerns
@@ -104,4 +104,4 @@ Human Interface Guidelines
 - `XFCE HIG <https://wiki.xfce.org/dev/hig/general>`_
 - `The basic concepts of UI`_
 
-.. _The basic concepts of UI: http://www.usability.gov/what-and-why/user-interface-design.html
+.. _The basic concepts of UI: https://www.usability.gov/what-and-why/user-interface-design.html

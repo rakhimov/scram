@@ -279,7 +279,7 @@ C++
 .. _Coverity: https://scan.coverity.com/projects/2555
 .. _CppCheck: https://github.com/danmar/cppcheck/
 .. _Lizard: https://github.com/terryyin/lizard
-.. _Cpplint: https://github.com/theandrewdavis/cpplint
+.. _Cpplint: https://github.com/cpplint/cpplint
 .. _cppclean: https://github.com/myint/cppclean
 .. _ClangFormat: http://clang.llvm.org/docs/ClangFormat.html
 .. _cppdep: https://pypi.python.org/pypi/cppdep
@@ -293,9 +293,9 @@ Python
 #. Code coverage check with coverage_ and reporting with Codecov_
 #. Continuous code quality control on Landscape_ with Prospector_
 
-.. _Pylint: http://www.pylint.org/
+.. _Pylint: https://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
-.. _coverage: http://nedbatchelder.com/code/coverage/
+.. _coverage: https://coverage.readthedocs.io/en/latest/
 .. _Codecov: https://codecov.io/github/rakhimov/scram
 .. _Landscape: https://landscape.io/
 .. _Prospector: https://github.com/landscapeio/prospector
@@ -341,7 +341,7 @@ with auto-generated analysis input files
 to discover bugs, bottlenecks, and assumption failures.
 
 .. _GoogleTest: https://github.com/google/googletest
-.. _Nose: https://nose.readthedocs.org/en/latest/
+.. _Nose: httpss://nose.readthedocs.io/en/latest/
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
 .. _AppVeyor: https://ci.appveyor.com/project/rakhimov/scram
 
@@ -370,7 +370,7 @@ Version control and Versioning
 - `Atomic Commit`_
 - `Semantic Versioning`_
 
-.. _Git SCM: http://git-scm.com/
+.. _Git SCM: https://git-scm.com/
 .. _Branching Model: http://nvie.com/posts/a-successful-git-branching-model/
 .. _Writing Good Commit Messages: https://github.com/erlang/otp/wiki/Writing-good-commit-messages
 .. _On Commit Messages: http://who-t.blogspot.com/2009/12/on-commit-messages.html
@@ -429,7 +429,7 @@ reST Documentation Style
 - Semantic Linefeeds
 - Two blank lines between sections with bodies
 - One blank line after a header before its body
-- Title ``#`` overlined and underlined
+- Part ``#`` overlined and underlined
 - Chapter ``*`` overlined and underlined
 - Section underlining and order ``=``, ``-``, ``~``, ``^``, ``+``
 - Point nesting and order ``-``, ``*``, ``+``

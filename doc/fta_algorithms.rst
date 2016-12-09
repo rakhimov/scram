@@ -76,8 +76,8 @@ complicates failure scenarios
 or may be irrelevant at all
 if the probability of success is close to 1.
 
-Minimal cut sets can be used for non-coherent analysis
-as conservative approximations.
+Minimal cut sets can be used as a conservative, approximate result
+for analysis of non-coherent fault trees.
 In order to eliminate complements of variables,
 it is assumed that a complement of an event always occurs, i.e., constant True or 1,
 unless the complement is in the same path or set as the corresponding event.

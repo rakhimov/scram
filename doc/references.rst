@@ -17,13 +17,13 @@ Papers
 
 .. [DR96] Y. Dutuit and A. Rauzy,
           "A linear time algorithm to find modules of fault trees,"
-          IEEE Trans. Rel., vol. 45, no. 3, pp. 422-425, 1996.
+          IEEE Trans. Reliab. Eng. Syst. Saf., vol. 45, no. 3, pp. 422-425, 1996.
 
 .. [DR01] Y. Dutuit and A. Rauzy,
           "Efficient algorithms to assess component and gate importance in fault tree analysis,"
-          Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.
+          IEEE Trans. Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.
 
-.. [Jun09] W. Jung
+.. [Jun09] W. Jung,
            "ZBDD algorithm features for an efficient probabilistic safety assessment,"
            Nuc. Eng. Des., vol. 239, pp. 2085-2092, 2009.
 
@@ -33,27 +33,27 @@ Papers
 
 .. [Nie94] I. Niemelä,
            "On simplification of large fault trees,"
-           Reliab. Eng. Syst. Saf., vol. 44, pp. 135-138, 1994.
+           IEEE Trans. Reliab. Eng. Syst. Saf., vol. 44, pp. 135-138, 1994.
 
 .. [NR99] M. Nikolskaia and A. Rauzy,
           "Fine-tuning of boolean formulae preprocessing techniques,"
           in Proc. ESREL Conf., vol. 2, pp. 1027-1032, 1999.
 
-.. [PA09] R. Remenyte-Prescott and J. Andrews
+.. [PA09] R. Remenyte-Prescott and J. Andrews,
           "An efficient real-time method of analysis for non-coherent fault trees,"
           Qual. Reliab. Eng. Int., no. 25, pp. 129-150, 2009.
 
 .. [Rau93] A. Rauzy,
            "New algorithms for fault trees analysis,"
-           Reliab. Eng. Syst. Saf., vol. 5, no. 59, pp. 203-211, 1993.
+           IEEE Trans. Reliab. Eng. Syst. Saf., vol. 5, no. 59, pp. 203-211, 1993.
 
 .. [Rau01] A. Rauzy,
            "Mathematical foundation of minimal cutsets,"
-           IEEE Trans. Rel., vol. 50, no. 4, pp. 389-396, 2001
+           IEEE Trans. Reliab. Eng. Syst. Saf., vol. 50, no. 4, pp. 389-396, 2001
 
 .. [Rau03] A. Rauzy,
-           "Towards an efficient implementation of MOCUS," IEEE Trans.
-           Reliab. Eng. Syst. Saf., vol. 52, no. 2, pp. 175-180, 2003.
+           "Towards an efficient implementation of MOCUS,"
+           IEEE Trans. Reliab. Eng. Syst. Saf., vol. 52, no. 2, pp. 175-180, 2003.
 
 .. [WakXX] D. Wakefield,
            "You can't just build trees and call it PSA"
@@ -62,9 +62,9 @@ Papers
 Standards, Guides, Manuals, Handbooks
 =====================================
 
-.. [MEF] `Open PSA Model Exchange Format <http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19>`_
+.. [MEF] `Open PSA Model Exchange Format <https://open-psa.github.io/mef>`_
 
-.. [NUREG0492] `NRC NUREG-0492 <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/sr0492.pdf>`_
+.. [NUREG0492] `NRC NUREG-0492 <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/>`_
 
 .. [WASH1400] `NRC NUREG-75/014 (WASH-1400), Appendices III & IV <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr75-014/appendix-iii-iv/>`_
 
