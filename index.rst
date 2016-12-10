@@ -9,7 +9,11 @@ that supports the Open-PSA_ `Model Exchange Format`_.
 SCRAM is licensed under the GPLv3_.
 The `release notes`_, `source code`_, and `issue/bug`_ tracker
 are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
-The Doxygen generated documentation of the core C++ code is provided here_.
+
+.. rubric:: Code documentation:
+
+- `C++ core code <api/index.xhtml>`_
+- `Python scripts <scripts/modules.html>`_
 
 .. _Open-PSA: http://open-psa.org
 .. _Model Exchange Format: https://open-psa.github.io/mef
@@ -17,7 +21,6 @@ The Doxygen generated documentation of the core C++ code is provided here_.
 .. _release notes: https://github.com/rakhimov/scram/releases
 .. _source code: https://github.com/rakhimov/scram/tree/master
 .. _issue/bug:  https://github.com/rakhimov/scram/issues
-.. _here: api/index.xhtml
 
 
 Implemented Features

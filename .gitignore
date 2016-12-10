@@ -7,3 +7,7 @@ tests/googletest
 
 # Submodules
 scripts/translators
+
+#Python
+*.pyc
+*.pyo

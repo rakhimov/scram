@@ -47,6 +47,8 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
+	@echo "  dummy       to check syntax errors of document sources"
+	@echo "  coverage    to run coverage check of the documentation (if enabled)"
 clean:
 	rm -rf $(BUILDDIR)/*
 
@@ -72,7 +74,16 @@ build/scram_core.svg: scram_core.dot
 	dot -Tsvg -o build/scram_core.svg scram_core.dot
 	@echo "Generated svg diagram."
 
-html: build/dep_report.txt build/scram_core.svg
+scripts/*.rst:
+	@echo "Generating Python script API documentation..."
+	sphinx-apidoc -f -o scripts/ scripts/
+	@echo "	Patching modules.rst..."
+	bash -c 'echo -e ":orphan:\n" > _modules.rst'
+	cat scripts/modules.rst >> _modules.rst
+	mv _modules.rst scripts/modules.rst
+	@echo "The scripts docs finishsed."
+
+html: build/dep_report.txt build/scram_core.svg scripts/*.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -189,6 +200,13 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
+.PHONY: coverage
+coverage:
+	$(SPHINXBUILD) -b coverage $(ALLSPHINXOPTS) $(BUILDDIR)/coverage
+	@echo "Testing of coverage in the sources finished, look at the " \
+	      "results in $(BUILDDIR)/coverage/python.txt."
+
+.PHONY: xml
 xml:
 	$(SPHINXBUILD) -b xml $(ALLSPHINXOPTS) $(BUILDDIR)/xml
 	@echo
@@ -198,3 +216,9 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+.PHONY: dummy
+dummy:
+	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
+	@echo
+	@echo "Build finished. Dummy builder generates no files."

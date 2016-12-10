@@ -12,8 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-# import sys
-# import os
+import sys
+import os
 from subprocess import check_output
 
 import sphinx_rtd_theme
@@ -22,7 +22,9 @@ import sphinx_rtd_theme
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+#
+sys.path.insert(0, os.path.abspath('scripts'))
+
 
 # -- General configuration ------------------------------------------------
 
@@ -33,15 +35,22 @@ needs_sphinx = '1.4'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # 'sphinx.ext.autodoc',
-    # 'sphinx.ext.napoleon',
-    # 'sphinx.ext.doctest',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.doctest',
     # 'sphinx.ext.intersphinx',
     # 'sphinx.ext.todo',
-    # 'sphinx.ext.coverage',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.coverage',
+    'sphinx.ext.githubpages',
     # 'sphinx.ext.imgmath',
     'sphinx.ext.mathjax',
 ]
+
+autodoc_member_order = "groupwise"
+autoclass_content = "both"
+autosummary_generate = []
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['atemplates']
