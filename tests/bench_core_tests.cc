@@ -455,9 +455,9 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == "rare-event") {
-    EXPECT_NEAR(0.03234, p_total(), 1e-5);
+    EXPECT_NEAR(0.05488, p_total(), 1e-5);
   } else {
-    EXPECT_NEAR(0.03092, p_total(), 1e-5);
+    EXPECT_NEAR(0.05298, p_total(), 1e-5);
   }
   EXPECT_EQ(34, products().size());
   std::vector<int> distr = {2, 24, 8};

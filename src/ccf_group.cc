@@ -286,16 +286,19 @@ CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
   assert(CcfGroup::factors().size() == max_level);
   std::vector<ExpressionPtr> sum_args;
   for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
-    sum_args.push_back(factor.second);
+    sum_args.emplace_back(new Mul(
+        {ExpressionPtr(new ConstantExpression(factor.first)), factor.second}));
   }
   ExpressionPtr sum(new Add(std::move(sum_args)));
   int num_members = CcfGroup::members().size();
 
   for (int i = 0; i < max_level; ++i) {
     double mult = CalculateCombinationReciprocal(num_members - 1, i);
-    ExpressionPtr k(new ConstantExpression(mult));
+    ExpressionPtr level(new ConstantExpression(i + 1));
     ExpressionPtr fraction(new Div({CcfGroup::factors()[i].second, sum}));
-    ExpressionPtr prob(new Mul({k, fraction, CcfGroup::distribution()}));
+    ExpressionPtr prob(
+        new Mul({level, ExpressionPtr(new ConstantExpression(mult)), fraction,
+                 CcfGroup::distribution()}));
     probabilities.emplace_back(i + 1, prob);
   }
   assert(probabilities.size() == max_level);
