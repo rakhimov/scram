@@ -6,6 +6,9 @@ python:
 git:
     depth: 200
 
+env:
+    - PYTHONOPTIMIZE=1
+
 addons:
     apt:
         packages:
