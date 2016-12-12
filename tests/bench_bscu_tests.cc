@@ -48,12 +48,12 @@ TEST_P(RiskAnalysisTest, BSCU) {
 
   if (settings.approximation() == "rare-event") {
     EXPECT_NEAR(0.135372, p_total(), 1e-4);
-    EXPECT_NEAR(0.1448961, mean(), 5e-3);
-    EXPECT_NEAR(0.203192, sigma(), 5e-3);
+    EXPECT_NEAR(0.137, mean(), 5e-3);
+    EXPECT_NEAR(0.217, sigma(), 5e-3);
   } else {
     EXPECT_NEAR(0.1124087, p_total(), 1e-4);
-    EXPECT_NEAR(0.1212541, mean(), 5e-3);
-    EXPECT_NEAR(0.1646726, sigma(), 5e-3);
+    EXPECT_NEAR(0.117, mean(), 5e-3);
+    EXPECT_NEAR(0.183, sigma(), 5e-3);
   }
 }
 

@@ -93,7 +93,8 @@ class NormalDeviate : public RandomDeviate {
   Expression& sigma_;  ///< Standard deviation of normal distribution.
 };
 
-/// Log-normal distribution.
+/// Log-normal distribution defined by
+/// its expected value and error factor of certain confidence level.
 class LogNormalDeviate : public RandomDeviate {
  public:
   /// Setup for log-normal distribution.
@@ -105,7 +106,7 @@ class LogNormalDeviate : public RandomDeviate {
   ///                  sigma is the scale factor.
   ///                  E(x) = exp(mu + sigma^2 / 2)
   /// @param[in] ef  The error factor of the log-normal distribution.
-  ///                EF = exp(z * sigma)
+  ///                EF = exp(z_alpha * sigma)
   /// @param[in] level  The confidence level.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level);
@@ -115,7 +116,7 @@ class LogNormalDeviate : public RandomDeviate {
 
   double Mean() noexcept override { return mean_.Mean(); }
 
-  /// 99 percentile estimate.
+  /// 99.9 percentile estimate.
   double Max() noexcept override;
 
   double Min() noexcept override { return 0; }

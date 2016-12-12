@@ -34,8 +34,15 @@ TEST_P(RiskAnalysisTest, SmallTree) {
   std::set<std::set<std::string>> mcs = {{"e1", "e2"}, {"e3", "e4"}};
   EXPECT_EQ(2, products().size());
   EXPECT_EQ(mcs, products());
-  EXPECT_NEAR(0.02569, mean(), 1e-3);
-  EXPECT_NEAR(0.018065, sigma(), 2e-3);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.02696, p_total(), 1e-5);
+    EXPECT_NEAR(0.0255, mean(), 1e-3);
+    EXPECT_NEAR(0.0225, sigma(), 2e-3);
+  } else {
+    EXPECT_NEAR(0.02678, p_total(), 1e-5);
+    EXPECT_NEAR(0.0253, mean(), 1e-3);
+    EXPECT_NEAR(0.022, sigma(), 2e-3);
+  }
 }
 
 }  // namespace test

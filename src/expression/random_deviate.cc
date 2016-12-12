@@ -108,14 +108,12 @@ double LogNormalDeviate::GetSample() noexcept {
 double LogNormalDeviate::Max() noexcept {
   double sigma = ComputeScale(level_.Mean(), ef_.Mean());
   double mu = ComputeLocation(mean_.Max(), sigma);
-  return std::exp(
-      std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
+  return std::exp(3 * sigma + mu);
 }
 
 double LogNormalDeviate::ComputeScale(double level, double ef) noexcept {
-  double p = level + (1 - level) / 2;
-  double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
-  return std::log(ef) / std::abs(z);
+  double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level);
+  return std::log(ef) / z;
 }
 
 double LogNormalDeviate::ComputeLocation(double mean, double sigma) noexcept {
