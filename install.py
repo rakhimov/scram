@@ -43,6 +43,7 @@ def generate_make_files(args):
         sys.exit("CMake could not be found, "
                  "please install CMake before developing SCRAM.")
     cmake_cmd = ["cmake", os.path.abspath(root_dir)]
+    cmake_cmd += ["-DBUILD_SHARED_LIBS=ON"]
     if args.prefix:
         cmake_cmd += ["-DCMAKE_INSTALL_PREFIX=" + absexpanduser(args.prefix)]
 

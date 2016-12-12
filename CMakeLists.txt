@@ -18,7 +18,9 @@ set(SCRAM_VERSION_MICRO 4)  # Bug fixes.
 
 ####################### Begin Options ###################
 
-set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
+option(BUILD_SHARED_LIBS OFF)
+
+option(INSTALL_LIBS "Install the generated libraries" ON)
 
 # Linking of external libraries, such as BOOST.
 option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
@@ -118,7 +120,9 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # (but later on when installing).
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+if(INSTALL_LIBS)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 
 # Add the automatically determined parts of the RPATH,
 # which point to directories outside the build tree

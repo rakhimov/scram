@@ -59,29 +59,30 @@ set(SCRAM_CORE_SRC
   )
 add_library(scramcore ${SCRAM_CORE_SRC})
 
-set_target_properties(scramcore
-  PROPERTIES
-  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-  LINK_FLAGS "${LIB_LINK_FLAGS}"
-  )
+if(INSTALL_LIBS)
+  set_target_properties(scramcore
+    PROPERTIES
+    INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+    LINK_FLAGS "${LIB_LINK_FLAGS}"
+    )
+  if(WIN32)
+    install(
+      TARGETS scramcore
+      RUNTIME DESTINATION bin COMPONENT scram
+      LIBRARY DESTINATION lib COMPONENT scram
+      ARCHIVE DESTINATION lib COMPONENT scram
+      )
+  else()
+    install(
+      TARGETS scramcore
+      DESTINATION lib
+      COMPONENT scram
+      )
+  endif()
+endif()
 
 target_link_libraries(scramcore ${LIBS})
-
-if(WIN32)
-  install(
-    TARGETS scramcore
-    RUNTIME DESTINATION bin COMPONENT scram
-    LIBRARY DESTINATION lib COMPONENT scram
-    ARCHIVE DESTINATION lib COMPONENT scram
-    )
-else()
-  install(
-    TARGETS scramcore
-    DESTINATION lib
-    COMPONENT scram
-    )
-endif()
 
 add_executable(scram scram.cc)
 target_link_libraries(scram scramcore ${Boost_LIBRARIES})
