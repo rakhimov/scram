@@ -54,7 +54,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
 }
 
 // Test if the schema catches errors.
-// This is trusted to XML libraries and the correctness of the RelaxNG schema,
+// This is trusted to XML libraries and the correctness of the RELAX NG schema,
 // so the test is very basic calls.
 TEST(InitializerTest, FailSchemaValidation) {
   EXPECT_THROW(

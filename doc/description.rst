@@ -38,8 +38,8 @@ before adjusting them for accuracy and performance.
 Fault Tree Analysis
 ===================
 
-#. Validate XML input files against RelaxNG.
-#. Validate the input analysis specifications and instantiations.
+#. Validate XML input files against the RELAX NG schema.
+#. Validate the input analysis specifications and instances.
 #. Instantiate the analysis.
    Create the fault trees for the analysis.
 #. Find minimal cut sets or prime implicants. *Probability input is optional*

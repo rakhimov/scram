@@ -46,7 +46,8 @@ More information about the initiative and format can be found on http://open-psa
 Currently Supported Open-PSA MEF Features
 =========================================
 
-The difference between `the Open-PSA MEF schema`_ and SCRAM's :ref:`schema` can be used
+The difference between `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
+and SCRAM's :ref:`schema` can be used
 to identify the supported and unsupported features.
 
 - Label
@@ -82,8 +83,6 @@ to identify the supported and unsupported features.
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential with two parameters,
       exponential with four parameters, Weibull)
-
-- `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
 
 
 Deviations from the Open-PSA MEF

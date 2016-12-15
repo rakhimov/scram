@@ -40,7 +40,7 @@ Steps in XML Input Validation
       This feature allows reuse of files from other models
       without the need for the Open-PSA MEF ``include`` directives.
 
-#. An XML input file is validated against the RelaxNG_ :ref:`schema`.
+#. An XML input file is validated against the `RELAX NG`_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
     - Event names and references are case-sensitive.
@@ -106,7 +106,7 @@ thus references may follow the pattern ``fault_tree.component.event``.
 Validation Schemas
 ==================
 
-- `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
+- `RELAX NG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
 
 
 .. _Aralia_format:
@@ -138,4 +138,4 @@ Aralia Version
 
 .. literalinclude:: example/aralia_input.txt
 
-.. _RelaxNG: http://relaxng.org/
+.. _RELAX NG: http://relaxng.org/
