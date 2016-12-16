@@ -23,7 +23,7 @@ Recommended Tools
 
 - `Notepad++ <https://notepad-plus-plus.org/>`_ with XML Tools plug-in
 
-- `xmllint <http://xmlsoft.org/xmllint.html>`_ with RelaxNG schema
+- `xmllint <http://xmlsoft.org/xmllint.html>`_ with RELAX NG schema
 
 - `BaseX <http://basex.org>`_
 

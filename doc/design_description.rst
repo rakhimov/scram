@@ -12,7 +12,7 @@ Core
 
 #. XML Parser leverages external libraries to process XML files.
 
-#. Validator validates XML configuration and input files against the RelaxNG schema.
+#. Validator validates XML configuration and input files against the RELAX NG schema.
    The validation against the schema is an integral part of the initialization.
    Values that pass the validation against the schema are not re-checked by users of those values.
 
