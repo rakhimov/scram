@@ -4,7 +4,7 @@ set -e
 
 git clean -fd
 
-git rm -rf _images/ _sources/ _static/ doc/ api/
+git rm -rf _images/ _sources/ _static/ doc/ api/ scripts/
 
 cp -r build/html/* .
 

@@ -85,6 +85,8 @@ scripts/*.rst:
 
 html: build/dep_report.txt build/scram_core.svg scripts/*.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo "Patching norobot..."
+	python patch_robot.py build/html/_modules/*.html build/html/scripts/*.html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
