@@ -91,41 +91,62 @@ void CcfGroup::Validate() const {
 
 namespace {
 
+/// Helper function to generate combinations of elements from a range.
+///
+/// @tparam Iterator  Iterator type of the range.
+///                   Best if it's a random access iterator.
+/// @tparam Functor  The function type with
+///                  operator()(const std::vector<value_type>&)
+///
+/// @param[in] k  The number of elements to choose into a combination.
+/// @param[in] first1  The beginning of the range.
+/// @param[in] last1  The end of the range.
+/// @param[in] combination  The current combination stack of elements.
+/// @param[in] combination_handler  The function working on a combination.
+template <typename Iterator, typename Functor>
+void GenerateCombinations(
+    int k, Iterator first1, Iterator last1,
+    std::vector<typename Iterator::value_type>* combination,
+    Functor& combination_handler) {  // NOLINT(runtime/references)
+  using container_type = std::vector<typename Iterator::value_type>;
+  assert(k >= 0 && "No negative choice number.");
+  auto n = std::distance(first1, last1);
+  if (k > n)
+    return;
+  if (k == 0) {
+    combination_handler(static_cast<const container_type&>(*combination));
+  } else if (k == n) {
+    combination->insert(combination->end(), first1, last1);
+    combination_handler(static_cast<const container_type&>(*combination));
+    combination->erase(std::prev(combination->end(), n), combination->end());
+  } else if (first1 != last1) {
+    combination->push_back(*first1);
+    GenerateCombinations(k - 1, std::next(first1), last1, combination,
+                         combination_handler);
+    combination->pop_back();
+    GenerateCombinations(k, std::next(first1), last1, combination,
+                         combination_handler);
+  }
+}
+
 /// Generates combinations of elements from a range.
 ///
 /// @tparam Iterator  Iterator type of the range.
 ///                   Best if it's a random access iterator.
+/// @tparam Functor  The function type with
+///                  operator()(const std::vector<value_type>&)
 ///
+/// @param[in] k  The number of elements to choose into a combination.
 /// @param[in] first1  The beginning of the range.
 /// @param[in] last1  The end of the range.
-/// @param[in] k  The number of elements to choose into a combination.
-///
-/// @returns  A container of all possible combinations.
-template <typename Iterator>
-std::vector<std::vector<typename Iterator::value_type>>
-GenerateCombinations(Iterator first1, Iterator last1, int k) {
+/// @param[in] combination_handler  The function working on a combination.
+template <typename Iterator, typename Functor>
+void GenerateCombinations(int k, Iterator first1, Iterator last1,
+                          Functor& combination_handler) {  // NOLINT
   assert(k >= 0 && "No negative choice number.");
-
-  auto size = std::distance(first1, last1);
-  assert(size >= 0 && "Invalid iterators.");
-
-  if (k > size)
-    return {};
-  if (k == 0)
-    return {{}};  // The notion of 'nothing'.
-  if (k == size)
-    return {{first1, last1}};
-
-  auto c = GenerateCombinations(std::next(first1), last1, k - 1);
-  for (auto& v : c)
-    v.push_back(*first1);
-
-  auto rest = GenerateCombinations(std::next(first1), last1, k);
-  c.reserve(c.size() + rest.size());
-  std::move(rest.begin(), rest.end(), std::back_inserter(c));
-  assert(rest.empty() || rest.front().empty());  // Verify the move.
-
-  return c;
+  std::vector<typename Iterator::value_type> combination;
+  combination.reserve(std::distance(first1, last1));
+  GenerateCombinations(k, first1, last1, &combination, combination_handler);
 }
 
 /// Joins CCF combination proxy gate names
@@ -176,16 +197,15 @@ void CcfGroup::ApplyModel() {
   for (auto& entry : probabilities) {
     int level = entry.first;
     ExpressionPtr prob = entry.second;
-    std::vector<std::vector<Gate*>> combinations =
-        GenerateCombinations(proxy_gates.begin(), proxy_gates.end(), level);
-
-    for (auto& combination : combinations) {
+    auto combination_handler = [this, &prob](std::vector<Gate*> combination) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)
         gate->formula().AddArgument(ccf_event);
       ccf_event->members(std::move(combination));  // Move, at last.
-    }
+    };
+    GenerateCombinations(level, proxy_gates.begin(), proxy_gates.end(),
+                         combination_handler);
   }
 }
 
