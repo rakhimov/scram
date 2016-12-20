@@ -26,6 +26,7 @@
 
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
+#include "ext.h"
 
 namespace scram {
 namespace mef {
@@ -93,82 +94,6 @@ void CcfGroup::Validate() const {
 
 namespace {
 
-/// Generator of K out-of N combinations.
-///
-/// The combination generator guarantees the element order
-/// to be the same as in the original source collection.
-template <typename Iterator>
-class CombinationGenerator {
- public:
-  /// Read forward-iterator for combination generation.
-  class iterator {
-    friend bool operator==(const iterator& lhs, const iterator& rhs) {
-      return lhs.first1_ == rhs.first1_ && lhs.bitmask_ == rhs.bitmask_;
-    }
-    friend bool operator!=(const iterator& lhs, const iterator& rhs) {
-      return !(lhs == rhs);
-    }
-
-   public:
-    /// @copydoc CombinationGenerator::CombinationGenerator
-    iterator(int k, Iterator first1, Iterator last1)
-        : first1_(first1), bitmask_(std::distance(first1, last1)) {
-      assert(k > 0 && "The choice must be positive.");
-      assert(k <= std::distance(first1, last1) && "The choice can't exceed N.");
-      std::fill_n(bitmask_.begin(), k, 1);
-    }
-
-    /// Constructs a special iterator to signal the end of generation.
-    explicit iterator(Iterator first1) : first1_(first1) {}
-
-    /// Sets up the iterator state for the next combination.
-    iterator& operator++() {
-      if (boost::prev_permutation(bitmask_) == false)
-        bitmask_.clear();
-      return *this;
-    }
-
-    /// @returns The current combination of k elements.
-    std::vector<typename Iterator::value_type> operator*() {
-      assert(!bitmask_.empty() && "Calling on the sentinel iterator.");
-      std::vector<typename Iterator::value_type> combination;
-      for (int i = 0; i < bitmask_.size(); ++i) {
-        if (bitmask_[i])
-          combination.push_back(*std::next(first1_, i));
-      }
-      return combination;
-    }
-
-   private:
-    Iterator first1_;  ///< The first element in the collection.
-    std::vector<int> bitmask_;  ///< bit-mask for N elements.
-  };
-
-  /// Constructor for a range with N elements to choose from.
-  ///
-  /// @param[in] k  The number of elements to choose.
-  /// @param[in] first1  The start of the range.
-  /// @param[in] last1  The sentinel end of the range.
-  CombinationGenerator(int k, Iterator first1, Iterator last1)
-      : k_(k), first1_(first1), last1_(last1) {}
-
-  /// @returns The generator iterator from the first combination.
-  iterator begin() const { return iterator(k_, first1_, last1_); }
-  /// @returns The sentinel end signal iterator.
-  iterator end() const { return iterator(first1_); }
-
- private:
-  int k_;  ///< The combination size.
-  Iterator first1_;  ///< The begin of the range.
-  Iterator last1_;  ///< The end of the range.
-};
-
-/// Helper for CombinationGenerator construction to deduce iterator type.
-template <typename Iterator>
-auto make_combination_generator(int k, Iterator first1, Iterator last1) {
-  return CombinationGenerator<Iterator>(k, first1, last1);
-}
-
 /// Joins CCF combination proxy gate names
 /// to create a distinct name for a new CCF event.
 ///
@@ -217,9 +142,9 @@ void CcfGroup::ApplyModel() {
   for (auto& entry : probabilities) {
     int level = entry.first;
     ExpressionPtr prob = entry.second;
-    for (auto combination : make_combination_generator(level,
-                                                       proxy_gates.begin(),
-                                                       proxy_gates.end())) {
+    for (auto combination :
+         ext::make_combination_generator(level, proxy_gates.begin(),
+                                         proxy_gates.end())) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)
