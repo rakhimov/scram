@@ -180,7 +180,7 @@ class combination_iterator
       : first1_(first1), bitmask_(std::distance(first1, last1)) {
     assert(k > 0 && "The choice must be positive.");
     assert(k <= std::distance(first1, last1) && "The choice can't exceed N.");
-    std::fill_n(bitmask_.begin(), k, 1);
+    std::fill_n(bitmask_.begin(), k, true);
   }
 
   /// Constructs a special iterator to signal the end of generation.
@@ -207,7 +207,7 @@ class combination_iterator
   }
   /// @}
   Iterator first1_;           ///< The first element in the collection.
-  std::vector<int> bitmask_;  ///< bit-mask for N elements.
+  std::vector<bool> bitmask_;  ///< bit-mask for N elements.
 };
 
 /// Helper for N-choose-K combination generator range construction.
