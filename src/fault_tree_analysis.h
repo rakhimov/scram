@@ -29,6 +29,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/iterator/iterator_facade.hpp>
+
 #include "analysis.h"
 #include "boolean_graph.h"
 #include "logger.h"
@@ -65,16 +67,10 @@ struct Literal {
 class Product {
  public:
   /// Read iterator over Product Literals.
-  class iterator {
-    /// Equality test operators.
-    /// @{
-    friend bool operator==(const iterator& lhs, const iterator& rhs) {
-      return &lhs.product_ == &rhs.product_ && lhs.pos_ == rhs.pos_;
-    }
-    friend bool operator!=(const iterator& lhs, const iterator& rhs) {
-      return !(lhs == rhs);
-    }
-    /// @}
+  class iterator
+      : public boost::iterator_facade<iterator, Literal,
+                                      boost::forward_traversal_tag, Literal> {
+    friend class boost::iterator_core_access;
 
    public:
     /// Constructs an iterator on a position in a specific product.
@@ -83,18 +79,17 @@ class Product {
     /// @param[in] product  The host container.
     iterator(int pos, const Product& product) : pos_(pos), product_(product) {}
 
-    /// @returns The literal at the position.
-    Literal operator*() const {
+   private:
+    /// Standard forward iterator functionality returning Literal in products.
+    /// @{
+    void increment() { ++pos_; }
+    bool equal(const iterator& other) const {
+      return &product_ == &other.product_ && pos_ == other.pos_;
+    }
+    Literal dereference() const {
       return {product_.GetComplement(pos_), *product_.data_[pos_]};
     }
-
-    /// Pre-increment operator for for-range loops.
-    iterator& operator++() {
-      ++pos_;
-      return *this;
-    }
-
-   private:
+    /// @}
     int pos_;  ///< The current position of the iterator.
     const Product& product_;  ///< The container to be iterated over.
   };
