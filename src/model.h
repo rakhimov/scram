@@ -41,7 +41,7 @@ namespace scram {
 namespace mef {
 
 /// This class represents a risk analysis model.
-class Model : public Element, boost::noncopyable {
+class Model : public Element, private boost::noncopyable {
  public:
   /// Creates a model container.
   ///
