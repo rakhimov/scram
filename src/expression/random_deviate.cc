@@ -196,20 +196,19 @@ Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
   for (const ExpressionPtr& arg : weights)
     Expression::AddArg(arg);
 
-  boundaries_.first = Expression::args().begin();
-  boundaries_.second = std::next(boundaries_.first, num_intervals + 1);
-  weights_.first = boundaries_.second;
-  weights_.second = Expression::args().end();
+  auto midpoint = std::next(Expression::args().begin(), num_intervals + 1);
+  boundaries_ = IteratorRange(Expression::args().begin(), midpoint);
+  weights_ = IteratorRange(midpoint, Expression::args().end());
 }
 
 double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
-  auto it_b = boundaries_.first;
-  double prev_bound = (*it_b++)->Mean();
-  for (auto it_w = weights_.first; it_w != weights_.second; ++it_w, ++it_b) {
-    double cur_bound = (*it_b)->Mean();
-    double cur_weight = (*it_w)->Mean();
+  auto it_b = boundaries_.begin();
+  double prev_bound = (*it_b)->Mean();
+  for (const auto& weight : weights_) {
+    double cur_weight = weight->Mean();
+    double cur_bound = (*++it_b)->Mean();
     sum_product += (cur_bound + prev_bound) * cur_weight;
     sum_weights += cur_weight;
     prev_bound = cur_bound;
@@ -228,13 +227,14 @@ auto make_sampler(const Iterator& it) {
 }  // namespace
 
 double Histogram::GetSample() noexcept {
-  return Random::HistogramGenerator(make_sampler(boundaries_.first),
-                                    make_sampler(boundaries_.second),
-                                    make_sampler(weights_.first));
+  return Random::HistogramGenerator(make_sampler(boundaries_.begin()),
+                                    make_sampler(boundaries_.end()),
+                                    make_sampler(weights_.begin()));
 }
 
 void Histogram::CheckBoundaries() const {
-  for (auto it = boundaries_.first; it != std::prev(boundaries_.second); ++it) {
+  for (auto it = boundaries_.begin(); it != std::prev(boundaries_.end());
+       ++it) {
     const auto& prev_expr = *it;
     const auto& cur_expr = *std::next(it);
     if (prev_expr->Mean() >= cur_expr->Mean()) {
@@ -248,10 +248,10 @@ void Histogram::CheckBoundaries() const {
 }
 
 void Histogram::CheckWeights() const {
-  for (auto it = weights_.first; it != weights_.second; ++it) {
-    if ((*it)->Mean() < 0) {
+  for (const auto& expr : weights_) {
+    if (expr->Mean() < 0) {
       throw InvalidArgument("Histogram weights can't be negative.");
-    } else if ((*it)->Min() < 0) {
+    } else if (expr->Min() < 0) {
       throw InvalidArgument("Histogram sampled weights can't be negative.");
     }
   }
