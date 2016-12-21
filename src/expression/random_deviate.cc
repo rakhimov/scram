@@ -22,6 +22,8 @@
 
 #include <cmath>
 
+#include <functional>
+
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/erf.hpp>
@@ -220,8 +222,7 @@ namespace {
 /// Provides a helper iterator adaptor for retrieving sampled values.
 template <class Iterator>
 auto make_sampler(const Iterator& it) {
-  return boost::make_transform_iterator(
-      it, [](const ExpressionPtr& expression) { return expression->Sample(); });
+  return boost::make_transform_iterator(it, std::mem_fn(&Expression::Sample));
 }
 
 }  // namespace
