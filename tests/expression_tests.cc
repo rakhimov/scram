@@ -455,7 +455,7 @@ TEST(ExpressionTest, Histogram) {
   b0->mean = 0.5;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   b0->mean = 0;
-  EXPECT_DOUBLE_EQ(10.0 / 18, dev->Mean());
+  EXPECT_DOUBLE_EQ(1.5, dev->Mean());
 
   b1->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);

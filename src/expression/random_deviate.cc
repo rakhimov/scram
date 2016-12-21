@@ -210,11 +210,11 @@ double Histogram::Mean() noexcept {
   for (auto it_w = weights_.first; it_w != weights_.second; ++it_w, ++it_b) {
     double cur_bound = (*it_b)->Mean();
     double cur_weight = (*it_w)->Mean();
-    sum_product += (cur_bound - prev_bound) * cur_weight;
+    sum_product += (cur_bound + prev_bound) * cur_weight;
     sum_weights += cur_weight;
     prev_bound = cur_bound;
   }
-  return sum_product / (prev_bound * sum_weights);
+  return sum_product / (2 * sum_weights);
 }
 
 namespace {
