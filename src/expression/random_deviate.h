@@ -213,18 +213,6 @@ class Histogram : public RandomDeviate {
   ///
   /// @throws InvalidArgument  The boundaries container size is not equal to
   ///                          weights container size + 1.
-  ///
-  /// @note This description of histogram sampling is mostly for probabilities.
-  ///       Therefore, it is not flexible.
-  ///       Currently, it allows sampling both boundaries and weights.
-  ///       This behavior makes checking
-  ///       for valid arrangement of the boundaries mandatory
-  ///       for each sampling.
-  ///       Moreover, the first starting point is assumed but not defined.
-  ///       The starting point is assumed to be 0,
-  ///       which leaves only positive values for boundaries.
-  ///       This behavior is restrictive
-  ///       and should be handled accordingly.
   Histogram(std::vector<ExpressionPtr> boundaries,
             std::vector<ExpressionPtr> weights);
 
@@ -239,7 +227,7 @@ class Histogram : public RandomDeviate {
   double Max() noexcept override {
     return (*std::prev(boundaries_.second))->Max();
   }
-  double Min() noexcept override { return 0; }
+  double Min() noexcept override { return (*boundaries_.first)->Min(); }
 
  private:
   /// Access to args.

@@ -234,19 +234,15 @@ double Histogram::GetSample() noexcept {
 }
 
 void Histogram::CheckBoundaries() const {
-  auto it = boundaries_.first;
-  if ((*it)->IsConstant() == false || (*it)->Mean() != 0) {
-    throw InvalidArgument("Histogram lower boundary must be 0.");
-  }
-  for (++it; it != boundaries_.second; ++it) {
-    const auto& prev_expr = *std::prev(it);
-    const auto& cur_expr = *it;
+  for (auto it = boundaries_.first; it != std::prev(boundaries_.second); ++it) {
+    const auto& prev_expr = *it;
+    const auto& cur_expr = *std::next(it);
     if (prev_expr->Mean() >= cur_expr->Mean()) {
       throw InvalidArgument("Histogram upper boundaries are not strictly"
-                            " increasing and positive.");
+                            " increasing.");
     } else if (prev_expr->Max() >= cur_expr->Min()) {
       throw InvalidArgument("Histogram sampled upper boundaries must"
-                            " be strictly increasing and positive.");
+                            " be strictly increasing.");
     }
   }
 }

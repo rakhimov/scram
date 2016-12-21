@@ -453,7 +453,7 @@ TEST(ExpressionTest, Histogram) {
   ExpressionPtr dev(new Histogram(boundaries, weights));
   EXPECT_NO_THROW(dev->Validate());
   b0->mean = 0.5;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   b0->mean = 0;
   EXPECT_DOUBLE_EQ(1.5, dev->Mean());
 

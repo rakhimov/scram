@@ -669,6 +669,7 @@
 
     <define name="histogram">
       <element name="histogram">
+        <ref name="expression"/>
         <oneOrMore>
           <ref name="bin"/>
         </oneOrMore>

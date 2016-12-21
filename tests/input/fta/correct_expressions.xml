@@ -104,6 +104,7 @@ The input tries to utilize all the functionality including optional cases.
     </define-basic-event>
     <define-basic-event name="Histogram">
       <histogram>
+        <float value="0"/>
         <bin>
           <float value="0.1"/>
           <float value="2"/>

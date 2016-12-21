@@ -640,14 +640,16 @@ struct Initializer::Extractor<Histogram, -1> {
   std::shared_ptr<Histogram> operator()(const xmlpp::NodeSet& args,
                                         const std::string& base_path,
                                         Initializer* init) {
-    std::vector<ExpressionPtr> boundaries = {ConstantExpression::kZero};
+    assert(args.size() > 1 && "At least one bin must be present.");
+    std::vector<ExpressionPtr> boundaries = {
+        init->GetExpression(XmlElement(args.front()), base_path)};
     std::vector<ExpressionPtr> weights;
-    for (const xmlpp::Node* node : args) {
-      const xmlpp::Element* el = XmlElement(node);
-      xmlpp::NodeSet pair = el->find("./*");
-      assert(pair.size() == 2);
-      boundaries.push_back(init->GetExpression(XmlElement(pair[0]), base_path));
-      weights.push_back(init->GetExpression(XmlElement(pair[1]), base_path));
+    for (auto it = std::next(args.begin()); it != args.end(); ++it) {
+      const xmlpp::Element* el = XmlElement(*it);
+      xmlpp::NodeSet bin = el->find("./*");
+      assert(bin.size() == 2);
+      boundaries.push_back(init->GetExpression(XmlElement(bin[0]), base_path));
+      weights.push_back(init->GetExpression(XmlElement(bin[1]), base_path));
     }
     return std::make_shared<Histogram>(std::move(boundaries),
                                        std::move(weights));
