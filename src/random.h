@@ -88,7 +88,7 @@ class Random {
   /// @pre Interval points for the distribution must be strictly increasing.
   ///
   /// @pre The number of weights must be equal to
-  ///      the number of intervals (boundaries - 1).
+  ///      the number of boundaries.
   ///      Extra weights are ignored.
   template <class IteratorB, class IteratorW>
   static double PiecewiseLinearGenerator(IteratorB first_b, IteratorB last_b,
