@@ -462,3 +462,11 @@ Please follow the instructions in `CONTRIBUTING.md`_.
 
 .. _CONTRIBUTING.md:
     https://github.com/rakhimov/scram/blob/develop/CONTRIBUTING.md
+
+
+.. image:: https://bestpractices.coreinfrastructure.org/projects/356/badge
+    :target: https://bestpractices.coreinfrastructure.org/projects/356
+    :alt: CII Best Practices
+.. image:: https://www.openhub.net/p/scram/widgets/project_thin_badge.gif
+    :target: https://www.openhub.net/p/scram
+    :alt: Open HUB Metrics
