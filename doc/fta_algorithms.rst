@@ -125,7 +125,7 @@ when variable :math:`a` is irrelevant:
         f(a,b,c) = a \& b \| \overline{a} \& c \| b \& c
 
 Minimal cut sets of the formula are :math:`{ab, c}`.
-Prime implicants are :math:`{ab, ~ac, bc}`.
+Prime implicants are :math:`{ab, \overline{a}c, bc}`.
 
 
 ********************
@@ -138,9 +138,9 @@ MOCUS
 This algorithm is similar to the MOCUS algorithm as described in [Rau03]_.
 Steps in the algorithm for minimal cut set generation from a fault tree.
 
-**Rule 1.** Each OR gate generates new rows(sets) in the table(set) of cut sets
+**Rule 1.** Each OR gate generates new rows (sets) in the table (set) of cut sets
 
-**Rule 2.** Each AND gate generates new columns(elements) in the table(set) of cut sets
+**Rule 2.** Each AND gate generates new columns (elements) in the table (set) of cut sets
 
 After finishing or each of the above steps:
 

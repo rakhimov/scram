@@ -195,11 +195,11 @@ class Zbdd : private boost::noncopyable {
   const std::vector<std::vector<int>>& products() const { return products_; }
 
  protected:
-  /// Default constructor to initialize member variables.
+  /// The common constructor to initialize member variables.
   ///
   /// @param[in] settings  Settings that control analysis complexity.
   /// @param[in] coherent  A flag for coherent modular functions.
-  /// @param[in] module_index  The of a module if known.
+  /// @param[in] module_index  The index of a module if known.
   explicit Zbdd(const Settings& settings, bool coherent = false,
                 int module_index = 0) noexcept;
 
@@ -223,7 +223,7 @@ class Zbdd : private boost::noncopyable {
   void Log() noexcept;
 
   /// Finds or adds a unique SetNode in the ZBDD.
-  /// All vertices in the ZBDD must be created with this functions.
+  /// All vertices in the ZBDD must be created with this function.
   /// Otherwise, the ZBDD may not be reduced,
   /// and vertices will miss crucial meta-information about the ZBDD.
   ///
