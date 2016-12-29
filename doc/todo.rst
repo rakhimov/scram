@@ -23,17 +23,6 @@ Enhancements and Capabilities
 Major
 -----
 
-- Incorporation of an event tree analysis. *Moderate*
-- Event tree chaining. *Moderate*
-- Event tree fault tree linking. *High*
-- Incorporation of alignments. *Moderate*
-
-    * Maintenance
-    * Guaranteed Success/Failure
-
-- Consequences and Consequence groups. *Moderate*
-- Substitutions to represent
-  Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
 - Sensitivity analysis. *Moderate*
 - Dynamic Fault Tree Analysis. *Moderate*
 
@@ -50,16 +39,8 @@ Minor
 - Uncertainty analysis for importance factors. *Moderate*
 - The Open-PSA MEF Support:
 
-    * Expressions. *Moderate*
     * "Include directive" in input files to include other input files. *Low*
     * Cardinality/Imply/IFF gates. *Low*
-
-
-Platform Support
-================
-
-- Installation Package for Windows.
-- Installation Package for Mac OS X.
 
 
 Code
@@ -70,7 +51,3 @@ Code
 - More tests for preprocessing techniques. *High*
 
     * Graph equality tests.
-
-- Benchmark tests:
-
-    * HIPPS (periodic tests)
