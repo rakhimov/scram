@@ -20,10 +20,13 @@
 
 #include "ccf_group.h"
 
+#include <algorithm>
+
 #include <boost/range/algorithm.hpp>
 
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
+#include "ext.h"
 
 namespace scram {
 namespace mef {
@@ -91,43 +94,6 @@ void CcfGroup::Validate() const {
 
 namespace {
 
-/// Generates combinations of elements from a range.
-///
-/// @tparam Iterator  Iterator type of the range.
-///                   Best if it's a random access iterator.
-///
-/// @param[in] first1  The beginning of the range.
-/// @param[in] last1  The end of the range.
-/// @param[in] k  The number of elements to choose into a combination.
-///
-/// @returns  A container of all possible combinations.
-template <typename Iterator>
-std::vector<std::vector<typename Iterator::value_type>>
-GenerateCombinations(Iterator first1, Iterator last1, int k) {
-  assert(k >= 0 && "No negative choice number.");
-
-  auto size = std::distance(first1, last1);
-  assert(size >= 0 && "Invalid iterators.");
-
-  if (k > size)
-    return {};
-  if (k == 0)
-    return {{}};  // The notion of 'nothing'.
-  if (k == size)
-    return {{first1, last1}};
-
-  auto c = GenerateCombinations(std::next(first1), last1, k - 1);
-  for (auto& v : c)
-    v.push_back(*first1);
-
-  auto rest = GenerateCombinations(std::next(first1), last1, k);
-  c.reserve(c.size() + rest.size());
-  std::move(rest.begin(), rest.end(), std::back_inserter(c));
-  assert(rest.empty() || rest.front().empty());  // Verify the move.
-
-  return c;
-}
-
 /// Joins CCF combination proxy gate names
 /// to create a distinct name for a new CCF event.
 ///
@@ -176,10 +142,9 @@ void CcfGroup::ApplyModel() {
   for (auto& entry : probabilities) {
     int level = entry.first;
     ExpressionPtr prob = entry.second;
-    std::vector<std::vector<Gate*>> combinations =
-        GenerateCombinations(proxy_gates.begin(), proxy_gates.end(), level);
-
-    for (auto& combination : combinations) {
+    for (auto combination :
+         ext::make_combination_generator(level, proxy_gates.begin(),
+                                         proxy_gates.end())) {
       auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)

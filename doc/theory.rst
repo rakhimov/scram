@@ -6,7 +6,7 @@ Theory
 
 This section contains short descriptions of the analyses used in probabilistic risk assessment.
 More information can be found in
-:ref:`references`, [WASH1400]_, [FTACOURSE]_, [FTHB]_, [PRA]_.
+:ref:`references`, [WASH1400]_, [FTACOURSE]_, [FTHB]_, [PRA]_, [MEF]_.
 
 
 **************************
@@ -110,7 +110,7 @@ GATES
     (the enabling condition is represented by a Conditioning Event drawn to the right of the gate.).
     This gate restricts input events to only two events.
 
-#. Combination/Voting/VOTE/Atleast/K-out-of-N(K/N) :
+#. Combination/Voting/VOTE/Atleast/K-out-of-N (K/N) :
     Output fault occurs if **m** out of the **n** input events occurs.
     The **m** input events need not to occur simultaneously.
     The output occurs if at least **m** events occur.
@@ -207,8 +207,8 @@ The components can fail independently,
 but multiple independent failures are ignored.
 
 
-Multiple Greek Letters(MGL) System
-==================================
+Multiple Greek Letters (MGL) System
+===================================
 
 MGL is a generalization of Beta system.
 MGL describes several conditional factors
@@ -239,7 +239,7 @@ The phi factors must sum to 1.
 Uncertainty Analysis
 ********************
 
-Uncertainty quantification is performed for a top event(gate)
+Uncertainty quantification is performed for a top event (gate)
 with determined minimal cut sets or prime implicants [UA]_.
 If events in the products have their probabilities
 expressed by a statistical distribution with some uncertainties,
@@ -255,7 +255,7 @@ Sensitivity Analysis
 
 Sensitivity analysis determines
 how much the variation of each event
-contributes to the total uncertainty of the top event(gate) [SA]_.
+contributes to the total uncertainty of the top event (gate) [SA]_.
 There are many approaches for this analysis,
 but in general, the analyst modifies the structure of the problem tree or input values
 to observe changes in results.
@@ -279,13 +279,13 @@ that need most attention to reduce the overall risk.
 Birnbaum
 ========
 
-This factor is also called Marginal Importance Factor(MIF).
+This factor is also called Marginal Importance Factor (MIF).
 This factor gives the increase in risk due to the failure of the component
 by measuring the difference between failed-event and non-failed event systems.
 
 .. math::
 
-    MIF = P(System/event) - P(System/NOT event)
+    MIF = P(S|e) - P(S|\overline{e})
 
 
 Critical Importance Factor
@@ -296,7 +296,7 @@ and takes into account the reliability of the component.
 
 .. math::
 
-    CIF = P(event) / P(System) * MIF
+    CIF = \frac{P(e)}{P(S)} \times MIF
 
 
 Fussel-Vesely
@@ -308,7 +308,7 @@ about how much the component is contributing to the total risk.
 
 .. math::
 
-    DIF = P(event/System) = P(event) * P(System/event) / P(System)
+    DIF = P(e|S) = \frac{P(e) \cdot P(S|e)}{P(S)}
 
 
 Risk Achievement Worth
@@ -322,7 +322,7 @@ maintaining the component at its current level of reliability.
 
 .. math::
 
-    RAW = P(System/event) / P(System)
+    RAW = \frac{P(S|e)}{P(S)}
 
 
 Risk Reduction Worth
@@ -336,7 +336,7 @@ to improve first with most effect on risk reduction.
 
 .. math::
 
-    RRW = P(System) / P(System/NOT event)
+    RRW = \frac{P(S)}{P(S|\overline{e})}
 
 
 ***************************
@@ -397,7 +397,7 @@ GATES
 Reliability Block Diagram
 *************************
 
-RBD or Dependence Diagram(DD) is another way of showing the system component layout
+RBD or Dependence Diagram (DD) is another way of showing the system component layout
 using a diagram with series and parallel configurations [RBD]_.
 In this analysis,
 the success of the system is shown through the paths

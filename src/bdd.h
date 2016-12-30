@@ -708,7 +708,7 @@ class Bdd : private boost::noncopyable {
     VertexPtr vertex;  ///< The root vertex of the BDD function graph.
 
     /// @returns true if the function is initialized.
-    operator bool() const { return vertex != nullptr; }
+    explicit operator bool() const { return vertex != nullptr; }
 
     /// Clears the function's root vertex pointer.
     void reset() { vertex = nullptr; }

@@ -22,6 +22,9 @@
 
 #include <cmath>
 
+#include <functional>
+
+#include <boost/iterator/transform_iterator.hpp>
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/special_functions/gamma.hpp>
@@ -193,88 +196,62 @@ Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
   for (const ExpressionPtr& arg : weights)
     Expression::AddArg(arg);
 
-  boundaries_.first = Expression::args().begin();
-  boundaries_.second = std::next(boundaries_.first, num_intervals + 1);
-  weights_.first = boundaries_.second;
-  weights_.second = Expression::args().end();
+  auto midpoint = std::next(Expression::args().begin(), num_intervals + 1);
+  boundaries_ = IteratorRange(Expression::args().begin(), midpoint);
+  weights_ = IteratorRange(midpoint, Expression::args().end());
 }
 
 double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
-  auto it_b = boundaries_.first;
-  double prev_bound = (*it_b++)->Mean();
-  for (auto it_w = weights_.first; it_w != weights_.second; ++it_w, ++it_b) {
-    double cur_bound = (*it_b)->Mean();
-    double cur_weight = (*it_w)->Mean();
-    sum_product += (cur_bound - prev_bound) * cur_weight;
+  auto it_b = boundaries_.begin();
+  double prev_bound = (*it_b)->Mean();
+  for (const auto& weight : weights_) {
+    double cur_weight = weight->Mean();
+    double cur_bound = (*++it_b)->Mean();
+    sum_product += (cur_bound + prev_bound) * cur_weight;
     sum_weights += cur_weight;
     prev_bound = cur_bound;
   }
-  return sum_product / (prev_bound * sum_weights);
+  return sum_product / (2 * sum_weights);
 }
 
 namespace {
 
-/// Iterator adaptor for retrieving sampled values.
+/// Provides a helper iterator adaptor for retrieving sampled values.
 template <class Iterator>
-class sampler_iterator : public Iterator {
- public:
-  /// Initializes the wrapper with to-be-sampled iterator.
-  explicit sampler_iterator(const Iterator& it) : Iterator(it) {}
-
-  /// Hides the wrapped iterator's operator*.
-  ///
-  /// @returns The sampled value of the expression under the iterator.
-  double operator*() { return Iterator::operator*()->Sample(); }
-};
-
-/// Helper function for type deduction upon sampler_iterator construction.
-template <class Iterator>
-sampler_iterator<Iterator> make_sampler(const Iterator& it) {
-  return sampler_iterator<Iterator>(it);
+auto make_sampler(const Iterator& it) {
+  return boost::make_transform_iterator(it, std::mem_fn(&Expression::Sample));
 }
 
 }  // namespace
 
 double Histogram::GetSample() noexcept {
-#ifdef _LIBCPP_VERSION  // libc++ chokes on iterator categories.
-  std::vector<double> samples;
-  for (auto it = boundaries_.first; it != boundaries_.second; ++it) {
-    samples.push_back((*it)->Sample());
-  }
-  return Random::HistogramGenerator(
-      samples.begin(), samples.end(), make_sampler(weights_.first));
-#else
-  return Random::HistogramGenerator(make_sampler(boundaries_.first),
-                                    make_sampler(boundaries_.second),
-                                    make_sampler(weights_.first));
-#endif
+  return Random::HistogramGenerator(make_sampler(boundaries_.begin()),
+                                    make_sampler(boundaries_.end()),
+                                    make_sampler(weights_.begin()));
 }
 
 void Histogram::CheckBoundaries() const {
-  auto it = boundaries_.first;
-  if ((*it)->IsConstant() == false || (*it)->Mean() != 0) {
-    throw InvalidArgument("Histogram lower boundary must be 0.");
-  }
-  for (++it; it != boundaries_.second; ++it) {
-    const auto& prev_expr = *std::prev(it);
-    const auto& cur_expr = *it;
+  for (auto it = boundaries_.begin(); it != std::prev(boundaries_.end());
+       ++it) {
+    const auto& prev_expr = *it;
+    const auto& cur_expr = *std::next(it);
     if (prev_expr->Mean() >= cur_expr->Mean()) {
       throw InvalidArgument("Histogram upper boundaries are not strictly"
-                            " increasing and positive.");
+                            " increasing.");
     } else if (prev_expr->Max() >= cur_expr->Min()) {
       throw InvalidArgument("Histogram sampled upper boundaries must"
-                            " be strictly increasing and positive.");
+                            " be strictly increasing.");
     }
   }
 }
 
 void Histogram::CheckWeights() const {
-  for (auto it = weights_.first; it != weights_.second; ++it) {
-    if ((*it)->Mean() < 0) {
+  for (const auto& expr : weights_) {
+    if (expr->Mean() < 0) {
       throw InvalidArgument("Histogram weights can't be negative.");
-    } else if ((*it)->Min() < 0) {
+    } else if (expr->Min() < 0) {
       throw InvalidArgument("Histogram sampled weights can't be negative.");
     }
   }

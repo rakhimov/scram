@@ -22,8 +22,9 @@
 #ifndef SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 #define SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 
-#include <utility>
 #include <vector>
+
+#include <boost/range/iterator_range.hpp>
 
 #include "src/expression.h"
 
@@ -213,18 +214,6 @@ class Histogram : public RandomDeviate {
   ///
   /// @throws InvalidArgument  The boundaries container size is not equal to
   ///                          weights container size + 1.
-  ///
-  /// @note This description of histogram sampling is mostly for probabilities.
-  ///       Therefore, it is not flexible.
-  ///       Currently, it allows sampling both boundaries and weights.
-  ///       This behavior makes checking
-  ///       for valid arrangement of the boundaries mandatory
-  ///       for each sampling.
-  ///       Moreover, the first starting point is assumed but not defined.
-  ///       The starting point is assumed to be 0,
-  ///       which leaves only positive values for boundaries.
-  ///       This behavior is restrictive
-  ///       and should be handled accordingly.
   Histogram(std::vector<ExpressionPtr> boundaries,
             std::vector<ExpressionPtr> weights);
 
@@ -237,13 +226,14 @@ class Histogram : public RandomDeviate {
 
   double Mean() noexcept override;
   double Max() noexcept override {
-    return (*std::prev(boundaries_.second))->Max();
+    return (*std::prev(boundaries_.end()))->Max();
   }
-  double Min() noexcept override { return 0; }
+  double Min() noexcept override { return (*boundaries_.begin())->Min(); }
 
  private:
   /// Access to args.
-  using Iterator = std::vector<ExpressionPtr>::const_iterator;
+  using IteratorRange =
+      boost::iterator_range<std::vector<ExpressionPtr>::const_iterator>;
 
   double GetSample() noexcept override;
 
@@ -257,8 +247,8 @@ class Histogram : public RandomDeviate {
   /// @throws InvalidArgument  The mean values are negative.
   void CheckWeights() const;
 
-  std::pair<Iterator, Iterator> boundaries_;  ///< Boundaries of the intervals.
-  std::pair<Iterator, Iterator> weights_;  ///< Weights of the intervals.
+  IteratorRange boundaries_;  ///< Boundaries of the intervals.
+  IteratorRange weights_;  ///< Weights of the intervals.
 };
 
 }  // namespace mef
