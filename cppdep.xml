@@ -1,26 +1,35 @@
 <cppdep>
   <package-group name="scram" path=".">
+    <include-path/>
     <package name="core">
-      <path>src</path>
+      <src-path>src</src-path>
     </package>
+    <!-- <package name="gui"> -->
+    <!--   <src-path>gui</src-path> -->
+    <!-- </package> -->
     <!-- <package name="tests"> -->
     <!--   <path>tests</path> -->
     <!-- </package> -->
   </package-group>
-  <package-group role="external" name="Dependencies" path="/">
+  <package-group role="external" name="Dependencies" path="/usr/include">
     <package name="System">
-      <path>/usr/include</path>
+      <include-path/>
     </package>
     <package name="STL">
-      <path>/usr/include/c++/5</path>
+      <include-path>c++/5</include-path>
     </package>
     <package name="Boost">
-      <path>/usr/include/boost</path>
+      <alias-path>boost</alias-path>
     </package>
     <package name="LibXML">
-      <path>/usr/include/libxml++-2.6</path>
-      <path>/usr/include/libxml2</path>
-      <path>/usr/include/glibmm-2.4/glibmm/</path>
+      <include-path>libxml++-2.6</include-path>
+      <include-path>libxml2</include-path>
+    </package>
+    <package name="Qt5">
+      <include-path>x86_64-linux-gnu/qt5/QtCore</include-path>
+      <include-path>x86_64-linux-gnu/qt5/QtGui</include-path>
+      <include-path>x86_64-linux-gnu/qt5/QtWidgets</include-path>
+      <include-path>x86_64-linux-gnu/qt5/QtTest</include-path>
     </package>
   </package-group>
 </cppdep>

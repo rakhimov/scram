@@ -1,15 +1,8 @@
 <cppdep>
   <package-group name="scram" path=".">
+    <include-path/>
     <package name="core">
-      <path>src</path>
-    </package>
-    <!-- <package name="tests"> -->
-    <!--   <path>tests</path> -->
-    <!-- </package> -->
-  </package-group>
-  <package-group role="external" name="Dependencies" path="/">
-    <package name="System">
-      <path>/usr/include</path>
+      <src-path>src</src-path>
     </package>
   </package-group>
 </cppdep>
