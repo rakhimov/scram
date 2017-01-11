@@ -35,6 +35,14 @@ Installation with homebrew_:
 .. _homebrew: http://brew.sh/
 
 
+Windows
+=======
+
+Download and run the installer_.
+
+.. _installer: https://sourceforge.net/projects/iscram/files/SCRAM-0.11.5-win64.exe/download
+
+
 Other Platforms
 ===============
 
