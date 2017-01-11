@@ -21,6 +21,20 @@ Run the following commands to get SCRAM from its PPA_.
 .. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
 
 
+macOS
+=====
+
+Installation with homebrew_:
+
+.. code-block:: bash
+
+    brew tap rakhimov/scram
+
+    brew install scram
+
+.. _homebrew: http://brew.sh/
+
+
 Other Platforms
 ===============
 

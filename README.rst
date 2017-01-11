@@ -66,11 +66,11 @@ Dependencies
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`CMake`                2.8.12
-`boost`                1.56
-`libxml++`             2.38.1
-`Python`               2.7.3 or 3.3
-`Qt`                   5.2.1
+CMake                  2.8.12
+boost                  1.56
+libxml++               2.38.1
+Python                 2.7.3 or 3.3
+Qt                     5.2.1
 ====================   ==================
 
 
@@ -80,8 +80,8 @@ Optional Dependencies
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`TCMalloc`             1.7
-`JEMalloc`             3.6
+TCMalloc               1.7
+JEMalloc               3.6
 ====================   ==================
 
 
@@ -91,9 +91,9 @@ Compilers
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`GCC/G++`              4.9
-`Clang/LLVM`           3.4
-`Intel`                17.0.1
+GCC/G++                4.9
+Clang/LLVM             3.4
+Intel                  17.0.1
 ====================   ==================
 
 
@@ -110,8 +110,8 @@ or the following commands must be executed after a normal clone.
     git submodule update --init --recursive
 
 
-Installing Dependencies (Linux and Unix)
-========================================
+Installing Dependencies
+=======================
 
 The following installation instructions and scripts are taken from Cyclus_.
 
@@ -122,8 +122,8 @@ and access to a package manager
 or has some other suitable method of automatically installing libraries.
 
 
-Linux Systems
--------------
+Ubuntu
+------
 
 This process is tested on Ubuntu 16.04 LTS
 using ``apt-get`` as the package manager.
@@ -137,11 +137,9 @@ The command to install a dependency takes the form of:
 Where ``package`` is replaced by the correct package name.
 The minimal list of required library package names is:
 
-#. make
 #. cmake
 #. libboost-all-dev
 #. libxml++2.6-dev
-#. python2.7
 #. qt5-default
 
 and (optionally):
@@ -158,40 +156,47 @@ For example, in order to install ``Boost`` on your system, type:
 
     sudo apt-get install libboost-all-dev
 
+Python and GCC/G++ compilers are assumed to be available on the system.
 If you'd prefer to copy/paste,
-the following line will install all major dependencies and GCC/G++ compiler:
+the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ lib{boost-all,xml++2.6,google-perftools}-dev python2.7 qt5-default
+    sudo apt-get install -y cmake lib{boost-all,xml++2.6,google-perftools}-dev qt5-default
 
 
-Mac Systems
------------
+macOS
+-----
 
 If on a Mac system, a good manager to use is macports_ or homebrew_.
 It is assumed that some dependencies are provided by Xcode.
 The following instructions are tested on OS X 10.9,
 but it should work for later versions as well.
 
-Using macports_, the command to install a dependency takes the form of:
+Using homebrew_, the command to install a dependency takes the form of:
 
 .. code-block:: bash
 
-    sudo port install package
+    brew install package
+
+If the ``package`` is already installed the command will fail,
+instead upgrade the ``package`` if necessary:
+
+.. code-block:: bash
+
+    brew outdated package || brew upgrade package
 
 Where ``package`` is replaced by the correct package name.
 The minimal list of required library package names is:
 
 #. cmake
 #. boost
-#. libxmlxx2
-#. python27
-#. qt5-mac
+#. libxml++
+#. qt5
 
 and (optionally):
 
-#. google-perftools
+#. gperftools
 
 compiler:
 
@@ -201,58 +206,21 @@ For example, in order to install ``Boost`` on your system, type:
 
 .. code-block:: bash
 
-    sudo port install boost
+    brew install boost
 
 If you'd prefer to copy/paste,
 the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo port install cmake boost libxmlxx2 python27 google-perftools qt5-mac
+    brew install cmake boost libxml++ gperftools qt5
 
 .. _macports: http://www.macports.org/
 .. _homebrew: http://brew.sh/
 
 
-Installing SCRAM (Linux and Unix)
-=================================
-
-A python script is provided to make the installation process easier.
-If there are dependency issues, ``CMake`` output should guide with errors.
-``CMake`` can be used directly without the python script to configure the build.
-
-The default installation directory is ``~/.local``.
-The default linkage is dynamic;
-however, tests are statically linked against GoogleTest.
-
-.. code-block:: bash
-
-    .../scram$ python install.py  --prefix=path/to/installation/directory
-
-The main and test binaries are installed in ``installation/directory/bin``.
-The input files and schema are copied in ``installation/directory/share/scram/``.
-
-The default build type is ``Debug`` with many compiler warnings turned on,
-but it can be overridden by ``--release`` or ``--build-type CMAKE_BUILD_TYPE``.
-For performance testing and distribution, use ``--release`` flag:
-
-.. code-block:: bash
-
-    .../scram$ python install.py --prefix=path/to/installation/directory --release
-
-Various other flags are described by the script's help prompt.
-
-.. code-block:: bash
-
-    .../scram$ python install.py --help
-
-Other tools, such as the **fault tree generator**,
-can be found in the ``scripts`` directory.
-These tools do not need compilation or installation.
-
-
 Windows
-=======
+-------
 
 MSYS2_/Mingw-w64_ is the recommended platform to work on Windows.
 Assuming MSYS2 is installed on the system,
@@ -278,7 +246,7 @@ and (optionally):
 
 #. jemalloc
 
-If Python has not already been installed on the system,
+If Python has not yet been installed on the system,
 Python installation takes the form of:
 
 .. code-block:: bash
@@ -292,18 +260,53 @@ the following line will install all major dependencies:
 
     pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml++2.6,qt5,jemalloc}
 
-The building and installation can be done with the ``install.py`` script
-in the root directory.
+SCRAM installation and executables must be run inside of the MSYS2 shell.
+
+.. _MSYS2: https://sourceforge.net/projects/msys2/
+.. _Mingw-w64: http://mingw-w64.sourceforge.net/
+
+
+Installing SCRAM
+================
+
+A python script is provided to make the build/installation process easier.
+If there are dependency issues, ``CMake`` output should guide with errors.
+``CMake`` can be used directly without the python script to configure the build.
+
+The default installation directory is ``~/.local``.
+The default linkage is dynamic;
+however, tests are statically linked against GoogleTest.
+
+.. code-block:: bash
+
+    .../scram$ python install.py  --prefix=path/to/installation/directory
+
+The main and test binaries are installed in ``installation/directory/bin``.
+The input files and schema are copied in ``installation/directory/share/scram/``.
+
+The default build type is ``Debug`` with many compiler warnings turned on,
+but it can be overridden by ``--release`` or ``--build-type CMAKE_BUILD_TYPE``.
+For performance testing and distribution, use ``--release`` flag:
+
+.. code-block:: bash
+
+    .../scram$ python install.py --prefix=path/to/installation/directory --release
+
+For Mingw-w64_ on Windows, add ``--mingw64`` flag.
 
 .. code-block:: bash
 
     .../scram$ python install.py --prefix=path/to/installation/directory --release --mingw64
 
-After installation,
-SCRAM must be run inside of the MSYS2 shell.
+Various other flags are described by the script's help prompt.
 
-.. _MSYS2: https://sourceforge.net/projects/msys2/
-.. _Mingw-w64: http://mingw-w64.sourceforge.net/
+.. code-block:: bash
+
+    .../scram$ python install.py --help
+
+Other tools, such as the **fault tree generator**,
+can be found in the ``scripts`` directory.
+These tools do not need compilation or installation.
 
 
 ***********************
