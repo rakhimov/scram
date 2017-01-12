@@ -170,12 +170,12 @@ class linear_map {
   using container_type = Sequence<value_type>;
   /// @}
 
-  /// Iterator-related typedefs.
+  /// Iterator-related typedefs redeclared from the underlying container type.
   /// @{
-  using pointer = value_type*;
-  using const_pointer = const value_type*;
-  using reference = value_type&;
-  using const_reference = const value_type&;
+  using pointer = typename container_type::pointer;
+  using const_pointer = typename container_type::const_pointer;
+  using reference = typename container_type::reference;
+  using const_reference = typename container_type::const_reference;
   using iterator = typename container_type::iterator;
   using const_iterator = typename container_type::const_iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
