@@ -43,7 +43,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "ext.h"
-#include "linear_map.h"
+#include "ext/linear_map.h"
 
 namespace scram {
 
