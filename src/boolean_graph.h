@@ -42,7 +42,7 @@
 #include <boost/container/flat_set.hpp>
 #include <boost/noncopyable.hpp>
 
-#include "ext.h"
+#include "ext/find_iterator.h"
 #include "ext/linear_map.h"
 
 namespace scram {

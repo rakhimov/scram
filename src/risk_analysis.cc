@@ -21,12 +21,19 @@
 #include "risk_analysis.h"
 
 #include "bdd.h"
-#include "ext.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
 #include "random.h"
 #include "zbdd.h"
+
+namespace ext {
+/// TODO: Remove
+template <typename T>
+auto make_unique(T* dumb_pointer) {
+  return std::unique_ptr<T>(dumb_pointer);
+}
+}
 
 namespace scram {
 namespace core {

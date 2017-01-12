@@ -20,7 +20,7 @@
 
 #include "expression.h"
 
-#include "ext.h"
+#include "ext/algorithm.h"
 
 namespace scram {
 namespace mef {

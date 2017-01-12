@@ -26,7 +26,7 @@
 
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
-#include "ext.h"
+#include "ext/combination_iterator.h"
 
 namespace scram {
 namespace mef {
