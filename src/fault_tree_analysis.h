@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -304,9 +304,10 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Algorithm>(graph_.get());
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
+  {
+    CustomPreprocessor<Algorithm> preprocessor(graph_.get());
+    preprocessor.Run();
+  }
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
   if (Analysis::settings().preprocessor)

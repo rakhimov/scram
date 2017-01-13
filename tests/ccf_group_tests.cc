@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,25 +27,23 @@ namespace mef {
 namespace test {
 
 TEST(CcfGroupTest, AddMemberRepeated) {
-  CcfGroup* ccf_group = new BetaFactorModel("general");
+  BetaFactorModel ccf_group("general");
   BasicEventPtr member(new BasicEvent("id"));
-  ASSERT_NO_THROW(ccf_group->AddMember(member));
-  EXPECT_THROW(ccf_group->AddMember(member), ValidationError);
-  delete ccf_group;
+  ASSERT_NO_THROW(ccf_group.AddMember(member));
+  EXPECT_THROW(ccf_group.AddMember(member), ValidationError);
 }
 
 TEST(CcfGroupTest, AddMemberAfterDistribution) {
-  CcfGroup* ccf_group = new BetaFactorModel("general");
+  BetaFactorModel ccf_group("general");
 
   BasicEventPtr member(new BasicEvent("id"));
-  ASSERT_NO_THROW(ccf_group->AddMember(member));
+  ASSERT_NO_THROW(ccf_group.AddMember(member));
 
   ExpressionPtr distr(new ConstantExpression(1));
-  ASSERT_NO_THROW(ccf_group->AddDistribution(distr));
+  ASSERT_NO_THROW(ccf_group.AddDistribution(distr));
 
   BasicEventPtr member_two(new BasicEvent("two"));
-  EXPECT_THROW(ccf_group->AddMember(member), IllegalOperation);
-  delete ccf_group;
+  EXPECT_THROW(ccf_group.AddMember(member), IllegalOperation);
 }
 
 }  // namespace test

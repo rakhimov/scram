@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,22 +124,21 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
   CLOCK(total_time);
 
   CLOCK(ft_creation);
-  BooleanGraph* bool_graph =
-      new BooleanGraph(fta.top_event(), Analysis::settings().ccf_analysis());
+  BooleanGraph bool_graph(fta.top_event(), Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph);
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
+  {
+    CustomPreprocessor<Bdd> preprocessor(&bool_graph);
+    preprocessor.Run();
+  }
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Creating BDD for Probability Analysis...";
-  bdd_graph_ = new Bdd(bool_graph, Analysis::settings());
+  bdd_graph_ = new Bdd(&bool_graph, Analysis::settings());
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
-  delete bool_graph;  // The original graph of FTA is usable with the BDD.
 
   Analysis::AddAnalysisTime(DUR(total_time));
 }
