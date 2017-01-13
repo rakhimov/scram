@@ -13,10 +13,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
 endif()
 
-if(Qt5Widgets_VERSION_STRING VERSION_EQUAL "5.7.0")
-  set(CMAKE_CXX_STANDARD 14)  # TODO: Bug in CMake with Qt 5.7.0.
-endif()
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
