@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "boolean_graph.h"
+#include "pdag.h"
 #include "settings.h"
 #include "zbdd.h"
 
@@ -42,17 +42,17 @@ namespace core {
 /// to generate minimal cut sets with the MOCUS algorithm.
 class Mocus : private boost::noncopyable {
  public:
-  /// Prepares a Boolean graph for analysis with the MOCUS algorithm.
+  /// Prepares a PDAG for analysis with the MOCUS algorithm.
   ///
   /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
   /// @param[in] settings  The analysis settings.
   ///
-  /// @pre The passed Boolean graph already has variable ordering.
-  /// @pre The Boolean graph is in negation normal form;
+  /// @pre The passed PDAG already has variable ordering.
+  /// @pre The PDAG is in negation normal form;
   ///      that is, it contains only positive AND/OR gates.
-  Mocus(const BooleanGraph* fault_tree, const Settings& settings);
+  Mocus(const Pdag* fault_tree, const Settings& settings);
 
-  /// Finds minimal cut sets from the Boolean graph.
+  /// Finds minimal cut sets from the PDAG.
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
@@ -62,7 +62,7 @@ class Mocus : private boost::noncopyable {
   /// Runs analysis on a module gate.
   /// All sub-modules are analyzed and joined recursively.
   ///
-  /// @param[in] gate  A Boolean graph gate for analysis.
+  /// @param[in] gate  A PDAG gate for analysis.
   /// @param[in] settings  Settings for analysis.
   ///
   /// @returns Fully processed, minimized Zbdd cut set container.
@@ -70,7 +70,7 @@ class Mocus : private boost::noncopyable {
   AnalyzeModule(const Gate& gate, const Settings& settings) noexcept;
 
   bool constant_graph_;  ///< No need for analysis.
-  const BooleanGraph* graph_;  ///< The analysis PDAG.
+  const Pdag* graph_;  ///< The analysis PDAG.
   const Settings kSettings_;  ///< Analysis settings.
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };

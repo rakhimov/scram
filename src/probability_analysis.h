@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@
 
 #include "analysis.h"
 #include "bdd.h"
-#include "boolean_graph.h"
 #include "fault_tree_analysis.h"
+#include "pdag.h"
 
 namespace scram {
 namespace core {
@@ -152,8 +152,8 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
     ExtractVariableProbabilities();
   }
 
-  /// @returns The original Boolean graph from the fault tree analyzer.
-  const BooleanGraph* graph() const { return graph_; }
+  /// @returns The original PDAG from the fault tree analyzer.
+  const Pdag* graph() const { return graph_; }
 
   /// @returns The resulting products of the fault tree analyzer.
   const std::vector<Product>& products() const { return products_; }
@@ -175,7 +175,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ///       is compile-time decoupling from the input BasicEvent classes.
   void ExtractVariableProbabilities();
 
-  const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
+  const Pdag* graph_;  ///< PDAG from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
   std::vector<double> p_vars_;  ///< Variable probabilities.
 };
@@ -242,7 +242,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   ///       by use of its BDD internals.
   explicit ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta);
 
-  /// Deletes the Boolean graph and BDD
+  /// Deletes the PDAG and BDD
   /// only if ProbabilityAnalyzer is the owner of them.
   ~ProbabilityAnalyzer() noexcept;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,11 +81,11 @@ class UncertaintyAnalysis : public Analysis {
  protected:
   /// Gathers basic events that have distributions.
   ///
-  /// @param[in] graph  Boolean graph with the variables.
+  /// @param[in] graph  PDAG with the variables.
   ///
   /// @returns The gathered uncertain basic events.
   std::vector<std::pair<int, mef::BasicEvent*>> FilterUncertainEvents(
-      const BooleanGraph* graph) noexcept;
+      const Pdag* graph) noexcept;
 
   /// Samples each uncertain event probability.
   ///

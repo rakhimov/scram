@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file boolean_graph.cc
-/// Implementation of indexed nodes, variables, gates, and the Boolean graph.
+/// @file pdag.cc
+/// Implementation of a Propositional Directed Acyclic Graph
+/// with indexed nodes, variables, and gates.
 /// The implementation caters other algorithms like preprocessing.
 /// The main goal is
 /// to make manipulations and transformations of the graph
 /// easier to achieve for graph algorithms.
 
-#include "boolean_graph.h"
+#include "pdag.h"
 
 #include <iostream>
 #include <string>
@@ -441,7 +442,7 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
+Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept
     : root_sign_(1),
       coherent_(true),
       normal_(true) {
@@ -451,7 +452,7 @@ BooleanGraph::BooleanGraph(const mef::Gate& root, bool ccf) noexcept
   root_ = ProcessFormula(root.formula(), ccf, &nodes);
 }
 
-void BooleanGraph::Print() {
+void Pdag::Print() {
   ClearNodeVisits();
   std::cerr << "\n" << this << std::endl;
 }
@@ -468,8 +469,8 @@ constexpr bool CheckOperatorEnums() {
 #undef OperatorEqual
 }  // namespace
 
-GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
-                                     ProcessedNodes* nodes) noexcept {
+GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
+                             ProcessedNodes* nodes) noexcept {
   static_assert(kNumOperators == 8, "Unspecified formula operators.");
   static_assert(kNumOperators == mef::kNumOperators, "Operator mismatch.");
   static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
@@ -515,9 +516,9 @@ GatePtr BooleanGraph::ProcessFormula(const mef::Formula& formula, bool ccf,
   return parent;
 }
 
-void BooleanGraph::ProcessBasicEvent(const GatePtr& parent,
-                                     mef::BasicEvent* basic_event, bool ccf,
-                                     ProcessedNodes* nodes) noexcept {
+void Pdag::ProcessBasicEvent(const GatePtr& parent,
+                             mef::BasicEvent* basic_event, bool ccf,
+                             ProcessedNodes* nodes) noexcept {
   if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
     GatePtr& ccf_gate = nodes->gates[&basic_event->ccf_gate()];
     if (!ccf_gate) {
@@ -535,9 +536,9 @@ void BooleanGraph::ProcessBasicEvent(const GatePtr& parent,
   }
 }
 
-void BooleanGraph::ProcessHouseEvent(const GatePtr& parent,
-                                     const mef::HouseEvent& house_event,
-                                     ProcessedNodes* nodes) noexcept {
+void Pdag::ProcessHouseEvent(const GatePtr& parent,
+                             const mef::HouseEvent& house_event,
+                             ProcessedNodes* nodes) noexcept {
   ConstantPtr& constant = nodes->constants[&house_event];
   if (!constant) {
     constant = std::make_shared<Constant>(house_event.state());
@@ -546,8 +547,8 @@ void BooleanGraph::ProcessHouseEvent(const GatePtr& parent,
   parent->AddArg(constant->index(), constant);
 }
 
-void BooleanGraph::ProcessGate(const GatePtr& parent, const mef::Gate& gate,
-                               bool ccf, ProcessedNodes* nodes) noexcept {
+void Pdag::ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+                       ProcessedNodes* nodes) noexcept {
   GatePtr& pdag_gate = nodes->gates[&gate];
   if (!pdag_gate) {
     pdag_gate = ProcessFormula(gate.formula(), ccf, nodes);
@@ -555,9 +556,9 @@ void BooleanGraph::ProcessGate(const GatePtr& parent, const mef::Gate& gate,
   parent->AddArg(pdag_gate->index(), pdag_gate);
 }
 
-void BooleanGraph::ClearGateMarks() noexcept { ClearGateMarks(root_); }
+void Pdag::ClearGateMarks() noexcept { ClearGateMarks(root_); }
 
-void BooleanGraph::ClearGateMarks(const GatePtr& gate) noexcept {
+void Pdag::ClearGateMarks(const GatePtr& gate) noexcept {
   if (!gate->mark())
     return;
   gate->mark(false);
@@ -566,7 +567,7 @@ void BooleanGraph::ClearGateMarks(const GatePtr& gate) noexcept {
   }
 }
 
-void BooleanGraph::ClearNodeVisits() noexcept {
+void Pdag::ClearNodeVisits() noexcept {
   LOG(DEBUG5) << "Clearing node visit times...";
   ClearGateMarks();
   ClearNodeVisits(root_);
@@ -574,7 +575,7 @@ void BooleanGraph::ClearNodeVisits() noexcept {
   LOG(DEBUG5) << "Node visit times are clear!";
 }
 
-void BooleanGraph::ClearNodeVisits(const GatePtr& gate) noexcept {
+void Pdag::ClearNodeVisits(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -595,7 +596,7 @@ void BooleanGraph::ClearNodeVisits(const GatePtr& gate) noexcept {
   }
 }
 
-void BooleanGraph::ClearOptiValues() noexcept {
+void Pdag::ClearOptiValues() noexcept {
   LOG(DEBUG5) << "Clearing OptiValues...";
   ClearGateMarks();
   ClearOptiValues(root_);
@@ -603,7 +604,7 @@ void BooleanGraph::ClearOptiValues() noexcept {
   LOG(DEBUG5) << "Node OptiValues are clear!";
 }
 
-void BooleanGraph::ClearOptiValues(const GatePtr& gate) noexcept {
+void Pdag::ClearOptiValues(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -618,7 +619,7 @@ void BooleanGraph::ClearOptiValues(const GatePtr& gate) noexcept {
   assert(gate->args<Constant>().empty());
 }
 
-void BooleanGraph::ClearNodeCounts() noexcept {
+void Pdag::ClearNodeCounts() noexcept {
   LOG(DEBUG5) << "Clearing node counts...";
   ClearGateMarks();
   ClearNodeCounts(root_);
@@ -626,7 +627,7 @@ void BooleanGraph::ClearNodeCounts() noexcept {
   LOG(DEBUG5) << "Node counts are clear!";
 }
 
-void BooleanGraph::ClearNodeCounts(const GatePtr& gate) noexcept {
+void Pdag::ClearNodeCounts(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -641,7 +642,7 @@ void BooleanGraph::ClearNodeCounts(const GatePtr& gate) noexcept {
   assert(gate->args<Constant>().empty());
 }
 
-void BooleanGraph::ClearDescendantMarks() noexcept {
+void Pdag::ClearDescendantMarks() noexcept {
   LOG(DEBUG5) << "Clearing gate descendant marks...";
   ClearGateMarks();
   ClearDescendantMarks(root_);
@@ -649,7 +650,7 @@ void BooleanGraph::ClearDescendantMarks() noexcept {
   LOG(DEBUG5) << "Descendant marks are clear!";
 }
 
-void BooleanGraph::ClearDescendantMarks(const GatePtr& gate) noexcept {
+void Pdag::ClearDescendantMarks(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -659,7 +660,7 @@ void BooleanGraph::ClearDescendantMarks(const GatePtr& gate) noexcept {
   }
 }
 
-void BooleanGraph::ClearAncestorMarks() noexcept {
+void Pdag::ClearAncestorMarks() noexcept {
   LOG(DEBUG5) << "Clearing gate descendant marks...";
   ClearGateMarks();
   ClearAncestorMarks(root_);
@@ -667,7 +668,7 @@ void BooleanGraph::ClearAncestorMarks() noexcept {
   LOG(DEBUG5) << "Descendant marks are clear!";
 }
 
-void BooleanGraph::ClearAncestorMarks(const GatePtr& gate) noexcept {
+void Pdag::ClearAncestorMarks(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -677,7 +678,7 @@ void BooleanGraph::ClearAncestorMarks(const GatePtr& gate) noexcept {
   }
 }
 
-void BooleanGraph::ClearNodeOrders() noexcept {
+void Pdag::ClearNodeOrders() noexcept {
   LOG(DEBUG5) << "Clearing node order marks...";
   ClearGateMarks();
   ClearNodeOrders(root_);
@@ -685,7 +686,7 @@ void BooleanGraph::ClearNodeOrders() noexcept {
   LOG(DEBUG5) << "Node order marks are clear!";
 }
 
-void BooleanGraph::ClearNodeOrders(const GatePtr& gate) noexcept {
+void Pdag::ClearNodeOrders(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -702,19 +703,19 @@ void BooleanGraph::ClearNodeOrders(const GatePtr& gate) noexcept {
   assert(gate->args<Constant>().empty());
 }
 
-namespace {  // Helper facilities to log the BooleanGraph.
+namespace {  // Helper facilities to log the PDAG.
 
-/// Container for properties of Boolean Graphs.
+/// Container for properties of PDAGs.
 struct GraphLogger {
   /// Special handling of the root gate
   /// because it doesn't have parents.
   ///
-  /// @param[in] gate  The root gate of the Boolean graph.
+  /// @param[in] gate  The root gate of the PDAG.
   explicit GraphLogger(const GatePtr& gate) noexcept {
     gates.insert(gate->index());
   }
 
-  /// Traverses a Boolean graph to collect information.
+  /// Traverses a PDAG to collect information.
   ///
   /// @param[in] gate  The starting gate for traversal.
   void GatherInformation(const GatePtr& gate) noexcept {
@@ -778,13 +779,13 @@ struct GraphLogger {
 
 }  // namespace
 
-void BooleanGraph::Log() noexcept {
+void Pdag::Log() noexcept {
   if (DEBUG4 > scram::Logger::report_level())
     return;
   ClearGateMarks();
   GraphLogger logger(root_);
   logger.GatherInformation(root_);
-  LOG(DEBUG4) << "Boolean graph with root G" << root_->index();
+  LOG(DEBUG4) << "PDAG with root G" << root_->index();
   LOG(DEBUG4) << "Total # of gates: " << logger.Count(logger.gates);
   LOG(DEBUG4) << "# of modules: " << logger.num_modules;
   LOG(DEBUG4) << "# of gates with negative indices: "
@@ -947,8 +948,8 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
-  os << "BooleanGraph" << "\n\n" << ft->root();
+std::ostream& operator<<(std::ostream& os, const Pdag* ft) {
+  os << "PDAG" << "\n\n" << ft->root();
   return os;
 }
 

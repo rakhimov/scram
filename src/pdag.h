@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file boolean_graph.h
-/// Classes and facilities to represent simplified fault trees
-/// as Boolean graphs with event and gate indices instead of ID names.
+/// @file pdag.h
+/// Classes and facilities to represent fault trees
+/// as PDAGs with event and gate indices instead of ID names.
 /// These facilities are designed to work
 /// with FaultTreeAnalysis and Preprocessor classes.
 ///
 /// The terminologies of the graphs and Boolean logic are mixed
-/// to represent the Boolean graph;
+/// to represent the PDAG;
 /// however, if there is a conflict,
 /// the Boolean terminology is preferred.
 /// For example, instead of "children", "arguments" are preferred.
 
-#ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
-#define SCRAM_SRC_BOOLEAN_GRAPH_H_
+#ifndef SCRAM_SRC_PDAG_H_
+#define SCRAM_SRC_PDAG_H_
 
 #include <cstdint>
 
@@ -98,7 +98,7 @@ class NodeParentManager : private boost::noncopyable {
   ParentMap parents_;  ///< All registered parents of this node.
 };
 
-/// An abstract base class that represents a node in a Boolean graph.
+/// An abstract base class that represents a node in a PDAG.
 /// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
@@ -264,7 +264,7 @@ using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 /// The operator defines a type and logic of a gate.
 ///
 /// @warning If a new operator is added,
-///          all the preprocessing and Boolean graph algorithms
+///          all the preprocessing and PDAG algorithms
 ///          must be reviewed and updated.
 ///          The algorithms may assume
 ///          for performance and simplicity reasons
@@ -293,7 +293,7 @@ enum State : std::uint8_t {
   kUnityState  ///< The set is unity. This set guarantees failure.
 };
 
-/// An indexed gate for use in BooleanGraph.
+/// An indexed gate for use in a PDAG.
 /// Initially this gate can represent any type of gate or logic;
 /// however, this gate can be only of OR and AND type
 /// at the end of all simplifications and processing.
@@ -759,7 +759,7 @@ inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
 
 class Preprocessor;  ///< @todo This can be decoupled.
 
-/// BooleanGraph is a propositional directed acyclic graph (PDAG).
+/// PDAG is a propositional directed acyclic graph.
 /// This class provides a simpler representation of a fault tree
 /// that takes into account the indices of events
 /// instead of IDs and pointers.
@@ -769,7 +769,7 @@ class Preprocessor;  ///< @todo This can be decoupled.
 /// to help preprocessing and other graph transformation functions.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate
-///          except for the root gate of a Boolean graph.
+///          except for the root gate of the graph.
 ///          Extra reference count will prevent
 ///          automatic deletion of the node
 ///          and management of the structure of the graph.
@@ -777,11 +777,11 @@ class Preprocessor;  ///< @todo This can be decoupled.
 ///          a multiple-top-event fault tree,
 ///          which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
-class BooleanGraph : private boost::noncopyable {
-  friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
+class Pdag : private boost::noncopyable {
+  friend class Preprocessor;  ///< The main manipulator of PDAGs.
 
  public:
-  /// Constructs a BooleanGraph
+  /// Constructs a PDAG
   /// starting from the top gate of a fault tree.
   /// Upon construction,
   /// features of the fault tree are recorded
@@ -790,11 +790,11 @@ class BooleanGraph : private boost::noncopyable {
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
   ///
-  /// @post The BooleanGraph is stable as long as
+  /// @post The PDAG is stable as long as
   ///       the argument fault tree and its underlying containers are stable.
   ///       If the fault tree has been manipulated (event addition, etc.),
-  ///       its BooleanGraph representation is not guaranteed to be the same.
-  explicit BooleanGraph(const mef::Gate& root, bool ccf = false) noexcept;
+  ///       its PDAG representation is not guaranteed to be the same.
+  explicit Pdag(const mef::Gate& root, bool ccf = false) noexcept;
 
   /// @returns true if the fault tree is coherent.
   bool coherent() const { return coherent_; }
@@ -830,14 +830,14 @@ class BooleanGraph : private boost::noncopyable {
     return basic_events_[index - 1];
   }
 
-  /// Prints the Boolean graph in the Aralia format.
+  /// Prints the PDAG in the Aralia format.
   /// This is a helper for logging and debugging.
   /// The output is the standard error.
   ///
   /// @warning Node visits are used.
   void Print();
 
-  /// Writes Boolean graph properties into logs.
+  /// Writes PDAG properties into logs.
   ///
   /// @pre The graph is valid and well formed.
   /// @pre Logging cutoff level is Debug 4 or higher.
@@ -856,14 +856,14 @@ class BooleanGraph : private boost::noncopyable {
 
   /// Holder for nodes that are created from fault tree events.
   /// This is a helper structure
-  /// for functions that transform a fault tree into a Boolean graph.
+  /// for functions that transform a fault tree into a PDAG.
   struct ProcessedNodes {  /// @{
     std::unordered_map<const mef::Gate*, GatePtr> gates;
     std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
     std::unordered_map<const mef::HouseEvent*, ConstantPtr> constants;
   };  /// @}
 
-  /// Processes a Boolean formula of a gate into a Boolean graph.
+  /// Processes a Boolean formula of a gate into a PDAG.
   ///
   /// @param[in] formula  The Boolean formula to be processed.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
@@ -871,12 +871,12 @@ class BooleanGraph : private boost::noncopyable {
   ///
   /// @returns Pointer to the newly created indexed gate.
   ///
-  /// @pre The Operator enum in the MEF is the same as in Boolean graph.
+  /// @pre The Operator enum in the MEF is the same as in PDAG.
   GatePtr ProcessFormula(const mef::Formula& formula, bool ccf,
                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's basic events
-  /// into variable arguments of an indexed gate in the Boolean graph.
+  /// into variable arguments of an indexed gate in the PDAG.
   /// Basic events are saved for reference in analysis.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
@@ -887,7 +887,7 @@ class BooleanGraph : private boost::noncopyable {
                          bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's house events
-  /// into constant arguments of an indexed gate of the Boolean graph.
+  /// into constant arguments of an indexed gate of the PDAG.
   /// Newly created constants are registered for removal for Preprocessor.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
@@ -898,7 +898,7 @@ class BooleanGraph : private boost::noncopyable {
                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's gates
-  /// into gate arguments of an indexed gate of the Boolean graph.
+  /// into gate arguments of an indexed gate of the PDAG.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
   /// @param[in] gate  The gate argument of the formula.
@@ -1021,20 +1021,20 @@ class BooleanGraph : private boost::noncopyable {
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
   std::vector<mef::BasicEvent*> basic_events_;  ///< Mapping for basic events.
-  /// Registered house events upon the creation of the Boolean graph.
+  /// Registered house events upon the creation of the PDAG.
   std::vector<std::weak_ptr<Constant>> constants_;
-  /// Registered NULL type gates upon the creation of the Boolean graph.
+  /// Registered NULL type gates upon the creation of the PDAG.
   std::vector<std::weak_ptr<Gate>> null_gates_;
 };
 
-/// Prints Boolean graph nodes in the Aralia format.
+/// Prints PDAG nodes in the Aralia format.
 /// @{
 std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant);
 std::ostream& operator<<(std::ostream& os, const VariablePtr& variable);
 std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 /// @}
 
-/// Prints the BooleanGraph as a fault tree in the Aralia format.
+/// Prints the PDAG as a fault tree in the Aralia format.
 /// This function is mostly for debugging purposes.
 /// The output is not meant to be human readable.
 ///
@@ -1045,9 +1045,9 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 ///
 /// @warning Visits of nodes must be clean.
 ///          Visit information may get changed.
-std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft);
+std::ostream& operator<<(std::ostream& os, const Pdag* ft);
 
 }  // namespace core
 }  // namespace scram
 
-#endif  // SCRAM_SRC_BOOLEAN_GRAPH_H_
+#endif  // SCRAM_SRC_PDAG_H_

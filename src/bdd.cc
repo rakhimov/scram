@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,13 +39,13 @@ int GetPrimeNumber(int n) {
   return n;
 }
 
-Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
+Bdd::Bdd(const Pdag* fault_tree, const Settings& settings)
     : kSettings_(settings),
       coherent_(fault_tree->coherent()),
       kOne_(new Terminal<Ite>(true)),
       function_id_(2) {
   CLOCK(init_time);
-  LOG(DEBUG3) << "Converting Boolean graph into BDD...";
+  LOG(DEBUG3) << "Converting PDAG into BDD...";
   if (fault_tree->root()->IsConstant()) {
     // Constant case should only happen to the top gate.
     if (fault_tree->root()->state() == kNullState) {
@@ -74,7 +74,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << CountIteNodes(root_.vertex);
-  LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
+  LOG(DEBUG3) << "Finished PDAG conversion in " << DUR(init_time);
   ClearMarks(false);
   // Clear tables if no more calculations are expected.
   ClearTables();

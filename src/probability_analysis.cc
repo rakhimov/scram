@@ -124,20 +124,20 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
   CLOCK(total_time);
 
   CLOCK(ft_creation);
-  BooleanGraph bool_graph(fta.top_event(), Analysis::settings().ccf_analysis());
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+  Pdag graph(fta.top_event(), Analysis::settings().ccf_analysis());
+  LOG(DEBUG2) << "PDAG is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
   {
-    CustomPreprocessor<Bdd> preprocessor(&bool_graph);
+    CustomPreprocessor<Bdd> preprocessor(&graph);
     preprocessor.Run();
   }
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Creating BDD for Probability Analysis...";
-  bdd_graph_ = new Bdd(&bool_graph, Analysis::settings());
+  bdd_graph_ = new Bdd(&graph, Analysis::settings());
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
 
   Analysis::AddAnalysisTime(DUR(total_time));

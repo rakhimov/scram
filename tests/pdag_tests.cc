@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "boolean_graph.h"
+#include "pdag.h"
 
 #include <gtest/gtest.h>
 
@@ -28,13 +28,13 @@ namespace scram {
 namespace core {
 namespace test {
 
-TEST(BooleanGraphTest, Print) {
+TEST(PdagTest, Print) {
   std::unique_ptr<mef::Initializer> init;
   ASSERT_NO_THROW(
       init.reset(new mef::Initializer(
           {"./share/scram/input/fta/correct_formulas.xml"}, Settings())));
   const mef::FaultTreePtr& ft = *init->model()->fault_trees().begin();
-  BooleanGraph graph(*ft->top_events().front());
+  Pdag graph(*ft->top_events().front());
   graph.Print();
 }
 
@@ -126,7 +126,7 @@ TEST_F(GateTest, AddArgDeathTests) {
   EXPECT_TRUE(g->args<Gate>().empty());            \
   EXPECT_TRUE(g->args<Constant>().empty())
 
-/// Tests addition of an existing argument to Boolean graph gates
+/// Tests addition of an existing argument to PDAG gates
 /// that do not change the type of the gate.
 ///
 /// @param short_type  Short name of the gate type, i.e., 'And'.

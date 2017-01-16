@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 namespace scram {
 namespace core {
 
-Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
+Mocus::Mocus(const Pdag* fault_tree, const Settings& settings)
     : constant_graph_(false),
       graph_(fault_tree),
       kSettings_(settings) {

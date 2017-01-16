@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
       top_event_(root) {}
 
 void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
-                                const BooleanGraph* graph) noexcept {
+                                const Pdag* graph) noexcept {
   // Special cases of sets.
   if (results.empty()) {
     Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
@@ -110,7 +110,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
       return {*it < 0, basic_event};
     }
     std::vector<int>::const_iterator it;
-    const BooleanGraph& graph;
+    const Pdag& graph;
     decltype(product_events_)& product_events;
   };
 

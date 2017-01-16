@@ -43,7 +43,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/boolean_graph.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/pdag.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/mocus.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bdd.cc"

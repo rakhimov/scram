@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -301,7 +301,7 @@ class Gate : public Event, public NodeMark {
 };
 
 /// Operators for formulas.
-/// The ordering is the same as analysis operators in the Boolean graph.
+/// The ordering is the same as analysis operators in the PDAG.
 enum Operator : std::uint8_t {
   kAnd = 0,
   kOr,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void UncertaintyAnalysis::Analyze() noexcept {
 }
 
 std::vector<std::pair<int, mef::BasicEvent*>>
-UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
+UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
   std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events;
   int index = 1;
   for (mef::BasicEvent* event : graph->basic_events()) {

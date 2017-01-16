@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 /// @file preprocessor.cc
 /// Implementation of preprocessing algorithms.
 /// The main goal of preprocessing algorithms is
-/// to make Boolean graphs simpler, modular, easier for analysis.
+/// to make PDAGs simpler, modular, easier for analysis.
 ///
 /// If a preprocessing algorithm has
 /// its limitations, side-effects, and assumptions,
@@ -26,7 +26,7 @@
 /// must contain all the relevant information within
 /// its description, preconditions, postconditions, notes, or warnings.
 /// The default assumption for all algorithms is
-/// that the Boolean graph is valid and well-formed.
+/// that the PDAG is valid and well-formed.
 ///
 /// Some suggested contracts/notes for preprocessing algorithms:
 ///
@@ -52,15 +52,15 @@
 ///   * Idempotent (consecutive, repeated application doesn't yield any change)
 ///   * One-time operation (any repetition is pointless or dangerous)
 ///
-/// Assuming that the Boolean graph is provided
+/// Assuming that the PDAG is provided
 /// in the state as described in the contract,
 /// the algorithms should never throw an exception.
 ///
 /// The algorithms must guarantee
-/// that, given a valid and well-formed Boolean graph,
-/// the resulting Boolean graph
+/// that, given a valid and well-formed PDAG,
+/// the resulting PDAG
 /// will at least be valid, well-formed,
-/// and semantically equivalent (isomorphic) to the input Boolean graph.
+/// and semantically equivalent (isomorphic) to the input PDAG.
 /// Moreover, the algorithms must be deterministic
 /// and produce stable results.
 ///
@@ -90,7 +90,7 @@
 namespace scram {
 namespace core {
 
-Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
+Preprocessor::Preprocessor(Pdag* graph) noexcept
     : graph_(graph),
       constant_graph_(false) {}
 
@@ -177,9 +177,9 @@ class Preprocessor::GateSet {
   std::array<std::unordered_set<GatePtr, Hash, Equal>, kNumOperators> table_;
 };
 
-namespace {  // Boolean graph structure verification tools.
+namespace {  // PDAG structure verification tools.
 
-/// Functor to sanity check the marks of Boolean graph gates.
+/// Functor to sanity check the marks of PDAG gates.
 class TestGateMarks {
  public:
   /// Helper function to find discontinuous gate marking.
@@ -203,7 +203,7 @@ class TestGateMarks {
   std::unordered_set<int> tested_gates_;  ///< Alternative to gate marking.
 };
 
-/// Functor to sanity check the structure of Boolean graph gates.
+/// Functor to sanity check the structure of PDAG gates.
 class TestGateStructure {
  public:
   /// Helper function to find malformed gates.

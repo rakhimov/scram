@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
-Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
+Zbdd::Zbdd(const Pdag* fault_tree, const Settings& settings) noexcept
     : Zbdd(*fault_tree->root(), settings) {
   assert(!fault_tree->complement() && "Complements must be propagated.");
   if (fault_tree->root()->IsConstant()) {

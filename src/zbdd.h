@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -171,20 +171,20 @@ class Zbdd : private boost::noncopyable {
   Zbdd(Bdd* bdd, const Settings& settings) noexcept;
 
   /// Constructor with the analysis target.
-  /// ZBDD is directly produced from a Boolean graph.
+  /// ZBDD is directly produced from a PDAG.
   ///
   /// @param[in] fault_tree  Preprocessed, partially normalized,
   ///                        and indexed fault tree.
   /// @param[in] settings  The analysis settings.
   ///
-  /// @pre The passed Boolean graph already has variable ordering.
+  /// @pre The passed PDAG already has variable ordering.
   /// @note The construction may take considerable time.
-  Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept;
+  Zbdd(const Pdag* fault_tree, const Settings& settings) noexcept;
 
   virtual ~Zbdd() noexcept = default;
 
   /// Runs the analysis
-  /// with the representation of a Boolean graph as ZBDD.
+  /// with the representation of a PDAG as ZBDD.
   ///
   /// @warning The analysis will destroy ZBDD.
   ///
@@ -413,7 +413,7 @@ class Zbdd : private boost::noncopyable {
   Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
        const Settings& settings, int module_index = 0) noexcept;
 
-  /// Constructs ZBDD from modular Boolean graphs.
+  /// Constructs ZBDD from modular PDAGs.
   /// This constructor does not handle constant or single variable graphs.
   /// These cases are expected to be handled
   /// after calling this constructor.
@@ -425,7 +425,7 @@ class Zbdd : private boost::noncopyable {
   /// @param[in] settings  Analysis settings.
   ///
   /// @post The root vertex pointer is uninitialized
-  ///       if the Boolean graph is constant or single variable.
+  ///       if the PDAG is constant or single variable.
   Zbdd(const Gate& gate, const Settings& settings) noexcept;
 
   /// Finds a replacement for an existing node
@@ -529,9 +529,9 @@ class Zbdd : private boost::noncopyable {
                                       Bdd* bdd_graph, int limit_order,
                                       PairTable<VertexPtr>* ites) noexcept;
 
-  /// Transforms a Boolean graph gate into a Zbdd set graph.
+  /// Transforms a PDAG gate into a Zbdd set graph.
   ///
-  /// @param[in] gate  The root gate of the Boolean graph.
+  /// @param[in] gate  The root gate of the PDAG.
   /// @param[in,out] gates  Processed gates with use counts.
   /// @param[out] module_gates  Sub-module gates.
   ///
@@ -761,7 +761,7 @@ class CutSetContainer : public Zbdd {
   CutSetContainer(const Settings& settings, int module_index,
                   int gate_index_bound) noexcept;
 
-  /// Converts a Boolean graph gate into intermediate cut sets.
+  /// Converts a PDAG gate into intermediate cut sets.
   ///
   /// @param[in] gate  The target AND/OR gate with arguments.
   ///

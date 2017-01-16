@@ -6,7 +6,7 @@ FTA: Preprocessing Techniques
 
 In order to optimize the analysis
 and deal with the exponential complexity,
-fault tree preprocessing is attempted
+fault tree preprocessing (or transformation) is attempted
 before initiating other fault tree analysis algorithms.
 
 The preprocessing algorithms deal with
@@ -14,10 +14,10 @@ transformations of propositional directed acyclic graphs ([PDAG]_)
 to reduce the complexity and divide-and-conquer the problem.
 There are many proposed algorithms,
 and successful application of preprocessing techniques helps reduce substantially
-the complexity of analysis of large graphs.
+the complexity of analysis of large graphs in some cases.
 However, the ordering of preprocessing algorithms is not always clear
 due to their side-effects,
-and the performance gain is not guaranteed.
+and the performance gain is not guaranteed (may even be negative).
 Some preprocessing techniques may only work
 for certain structures or particular setups in the graph.
 
@@ -28,15 +28,15 @@ Constant Propagation
 House or external events are treated as Boolean constants
 and propagated according to the Boolean logic
 before other more complex and expensive preprocessing steps [NR99]_ [Rau03]_.
-This procedure prunes the fault tree.
-Null and unity branches are removed from the fault tree
-leaving only basic events and gates.
+This procedure prunes the PDAG.
+Null and unity branches are removed from the PDAG
+leaving only variables and gates.
 
 
 Gate Normalization
 ==================
 
-The fault tree is simplified to contain only *AND* and *OR* gates
+The PDAG is simplified to contain only *AND* and *OR* gates
 by rewriting complex gates like *VOTE* and *XOR* with *AND* and *OR* gates
 [Nie94]_ [Rau03]_.
 After this operation,
@@ -46,7 +46,7 @@ the graph is in normal form.
 Complement Propagation
 ======================
 
-Complements or negations of gates are pushed down to basic events
+Complements or negations of gates are pushed down to leaves (variables)
 according to the De Morgan's law [Rau03]_.
 This procedure transforms the graph into negation normal form ([NNF]_)
 if the graph is normal before the propagation.
@@ -62,7 +62,7 @@ For example,
 or the arguments of the child are added to the parent gate.
 This operation attempts to reduce the number of gates to expand later.
 However, this operation may complicate other preprocessing steps
-that may try to find modules or propagate failure in the fault tree.
+that may try to find modules or propagate failure in the PDAG.
 
 
 Module Detection
@@ -71,7 +71,7 @@ Module Detection
 Modules are defined as gates or group of nodes
 whose sub-graph does not have common nodes with the rest of the graph.
 Modules are detected and analyzed
-as separate and independent fault trees [DR96]_.
+as separate and independent PDAGs [DR96]_.
 If a module appears in the final products,
 then the products are populated with the sum of products of the module.
 This operation guarantees
@@ -199,7 +199,7 @@ the following cases are the special cases of its Shannon decomposition:
             f(x, y) = x \& f(1, y)
 
 There may be many setups
-that satisfy these special cases in a Boolean graph,
+that satisfy these special cases in a PDAG,
 but only few transformations are beneficial.
 Transformations with disjunctions of the formula (cases 1 and 3)
 are the most desirable for analysis
