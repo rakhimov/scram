@@ -129,10 +129,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  {
-    CustomPreprocessor<Bdd> preprocessor(&graph);
-    preprocessor.Run();
-  }
+  CustomPreprocessor<Bdd>{&graph}();
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   CLOCK(bdd_time);  // BDD based calculation time.

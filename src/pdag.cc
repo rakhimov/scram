@@ -372,7 +372,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     this->EraseAllArgs();
     this->type_ = kAnd;
-    clone_two->TransferArg(index, shared_from_this());  // Transfered the x.
+    clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
     if (clone_two->vote_number() == 1)
       clone_two->type(kOr);
     this->AddArg(clone_two->index(), clone_two);
@@ -385,13 +385,13 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   type_ = kOr;
   this->AddArg(clone_one->index(), clone_one);
   if (vote_number_ == 2) {  // No need for the second K/N gate.
-    clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
+    clone_one->TransferArg(index, shared_from_this());  // Transferred the x.
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
     auto and_gate = std::make_shared<Gate>(kAnd);
     this->AddArg(and_gate->index(), and_gate);
-    clone_one->TransferArg(index, and_gate);  // Transfered the x.
+    clone_one->TransferArg(index, and_gate);  // Transferred the x.
 
     // Have to create the second K/N for vote_number > 2.
     GatePtr clone_two = clone_one->Clone();

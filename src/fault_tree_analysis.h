@@ -304,10 +304,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  {
-    CustomPreprocessor<Algorithm> preprocessor(graph_.get());
-    preprocessor.Run();
-  }
+  CustomPreprocessor<Algorithm>(graph_.get())();
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
   if (Analysis::settings().preprocessor)

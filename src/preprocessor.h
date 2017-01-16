@@ -59,12 +59,15 @@ class Preprocessor : private boost::noncopyable {
 
   virtual ~Preprocessor() = default;
 
-  /// Runs the default preprocessing
-  /// that achieves the graph in a normal form.
-  virtual void Run() noexcept = 0;
+  /// Runs the graph preprocessing.
+  void operator()() noexcept { this->Run(); }
 
  protected:
   class GateSet;  ///< Container of unique gates by semantics.
+
+  /// Runs the default preprocessing
+  /// that achieves the graph in a normal form.
+  virtual void Run() noexcept = 0;
 
   /// The initial phase of preprocessing.
   /// The most basic cleanup algorithms are applied.
@@ -1128,6 +1131,7 @@ class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;
 
+ private:
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
   /// This preprocessing assigns the order for variables for BDD construction.
   void Run() noexcept override;
@@ -1141,6 +1145,7 @@ class CustomPreprocessor<Zbdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;
 
+ protected:
   /// Performs preprocessing for analyses
   /// with Zero-Suppressed Binary Decision Diagrams.
   /// Complements are propagated to variables.
@@ -1156,6 +1161,7 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
  public:
   using CustomPreprocessor<Zbdd>::CustomPreprocessor;
 
+ private:
   /// Performs processing of a fault tree
   /// to simplify the structure to
   /// normalized (OR/AND gates only),
@@ -1164,7 +1170,6 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
   /// The variable ordering is assigned specifically for MOCUS.
   void Run() noexcept override;
 
- private:
   /// Groups and inverts the topological ordering for nodes.
   /// The inversion is done to simplify the work of MOCUS facilities,
   /// which rely on the top-down approach.
