@@ -459,14 +459,15 @@ void Pdag::Print() {
 
 namespace {
 /// Compares operator enums from mef::Operator and core::Operator
-#define Equal(op) static_cast<int>(op) == static_cast<int>(mef::op)
+#define OPERATOR_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
 
 /// @returns true if mef::Operator enum maps exactly to core::Operator enum.
 constexpr bool CheckOperatorEnums() {
-  return Equal(kAnd) && Equal(kOr) && Equal(kVote) && Equal(kXor) &&
-         Equal(kNot) && Equal(kNand) && Equal(kNor) && Equal(kNull);
+  return OPERATOR_EQ(kAnd) && OPERATOR_EQ(kOr) && OPERATOR_EQ(kVote) &&
+         OPERATOR_EQ(kXor) && OPERATOR_EQ(kNot) && OPERATOR_EQ(kNand) &&
+         OPERATOR_EQ(kNor) && OPERATOR_EQ(kNull);
 }
-#undef OperatorEqual
+#undef OPERATOR_EQ
 }  // namespace
 
 GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
