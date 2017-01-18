@@ -38,14 +38,14 @@
 namespace scram {
 namespace core {
 
-int Node::next_index_ = 1e6;  // Limit for basic events per fault tree!
+int Node::next_index_ = kMaxVariableIndex;
 
 void NodeParentManager::AddParent(const GatePtr& gate) {
   assert(!parents_.count(gate->index()) && "Adding an existing parent.");
   parents_.data().emplace_back(gate->index(), gate);
 }
 
-Node::Node() noexcept : Node(next_index_++) {}
+Node::Node() noexcept : Node(++next_index_) {}
 
 Node::Node(int index) noexcept
     : index_(index),
@@ -531,7 +531,7 @@ void Pdag::ProcessBasicEvent(const GatePtr& parent,
     if (!var) {
       basic_events_.push_back(basic_event);
       var = std::make_shared<Variable>();  // Sequential indices.
-      assert(basic_events_.size() == var->index());
+      assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
     }
     parent->AddArg(var->index(), var);
   }

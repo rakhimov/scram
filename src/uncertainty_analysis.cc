@@ -62,7 +62,7 @@ void UncertaintyAnalysis::Analyze() noexcept {
 std::vector<std::pair<int, mef::BasicEvent*>>
 UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
   std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events;
-  int index = 1;
+  int index = kVariableStartIndex;
   for (mef::BasicEvent* event : graph->basic_events()) {
     if (!event->expression().IsConstant())
       uncertain_events.emplace_back(index, event);

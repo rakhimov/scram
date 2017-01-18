@@ -858,7 +858,7 @@ class CutSetContainer : public Zbdd {
   /// @returns true if the index of the node belongs to a gate.
   ///
   /// @pre There are no complements of gates.
-  /// @pre Gate indexation has a lower bound.
+  /// @pre Gate indices have a lower bound.
   bool IsGate(const SetNodePtr& node) noexcept override {
     return node->index() > gate_index_bound_;
   }

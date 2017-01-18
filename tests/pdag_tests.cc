@@ -47,7 +47,8 @@ class GateTest : public ::testing::Test {
     var_two = std::make_shared<Variable>();
     var_three = std::make_shared<Variable>();
     vars_ = {var_one, var_two, var_three};
-    for (int i = 0; i < 2; ++i) vars_.emplace_back(new Variable());  // Extra.
+    for (int i = 0; i < 2; ++i)
+      vars_.emplace_back(new Variable());  // Extra.
   }
 
   void TearDown() override {

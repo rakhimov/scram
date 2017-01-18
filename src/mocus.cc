@@ -76,7 +76,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   add_gates(gate.args<Gate>());
 
   auto container = std::make_unique<zbdd::CutSetContainer>(
-      kSettings_, gate.index(), graph_->basic_events().size());
+      kSettings_, gate.index(), kMaxVariableIndex);
   container->Merge(container->ConvertGate(gate));
   while (int next_gate_index = container->GetNextGate()) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate_index;

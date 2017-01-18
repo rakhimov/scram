@@ -86,10 +86,12 @@ double McubCalculator::Calculate(
 }
 
 void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
-  p_vars_.push_back(-1);  // Padding.
-  for (const mef::BasicEvent* event : graph_->basic_events()) {
+  /// @todo Deal with this padding hack!
+  for (int i = 0; i < kVariableStartIndex; ++i)
+    p_vars_.push_back(-1);  // Padding.
+
+  for (const mef::BasicEvent* event : graph_->basic_events())
     p_vars_.push_back(event->p());
-  }
 }
 
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)

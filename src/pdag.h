@@ -56,6 +56,10 @@ class Formula;
 
 namespace core {
 
+/// @todo Refactor the index assignment logic.
+const int kVariableStartIndex = 2;  ///< The starting index of graph variables.
+const int kMaxVariableIndex = 1e6;  ///< The max index for graph variables.
+
 class Gate;  // An indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
 using GateWeakPtr = std::weak_ptr<Gate>;  ///< An acyclic ptr to parent gates.
@@ -117,7 +121,7 @@ class Node : public NodeParentManager {
   virtual ~Node() = 0;  ///< Abstract class.
 
   /// Resets the starting index.
-  static void ResetIndex() { next_index_ = 1e6; }
+  static void ResetIndex() { next_index_ = kMaxVariableIndex; }
 
   /// @returns The index of this node.
   int index() const { return index_; }
@@ -209,7 +213,7 @@ class Node : public NodeParentManager {
   }
 
  private:
-  static int next_index_;  ///< Automatic indexation of the next new node.
+  static int next_index_;  ///< Automatic index of the next new node.
   int index_;  ///< Index of this node.
   int order_;  ///< Ordering of nodes in the graph.
   int visits_[3];  ///< Traversal array with first, second, and last visits.
@@ -237,10 +241,9 @@ class Constant : public Node {
 /// Boolean variables in a Boolean formula or graph.
 /// Variables can represent the basic events of fault trees.
 ///
-/// Indexation of the variables is special.
-/// It starts from 1 and ends with the number of the basic events
-/// in the fault tree.
-/// This indexation technique helps
+/// The index assignment for variables is special:
+/// 1 < index < number of variables in the graph + 2.
+/// This indexing technique helps
 /// preprocessing and analysis algorithms
 /// optimize their work with basic events.
 class Variable : public Node {
@@ -249,7 +252,7 @@ class Variable : public Node {
   Variable() noexcept;
 
   /// Resets the starting index for variables.
-  static void ResetIndex() { next_variable_ = 1; }
+  static void ResetIndex() { next_variable_ = kVariableStartIndex; }
 
  private:
   static int next_variable_;  ///< The next index for a new variable.
@@ -810,12 +813,15 @@ class Pdag : private boost::noncopyable {
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
-  ///          The position of a basic event equals (its index - 1).
+  ///          The position of a basic event equals to
+  ///          (its index - kVariableStartIndex).
+  ///
+  /// @todo Refactor the implicit basic event index mapping magic numbers.
   const std::vector<mef::BasicEvent*>& basic_events() const {
     return basic_events_;
   }
 
-  /// Helper function to map the results of the indexation
+  /// Helper function to map the results of the index assignment
   /// to the original basic events.
   /// This function, for example, helps transform
   /// products with indices into
@@ -825,9 +831,9 @@ class Pdag : private boost::noncopyable {
   ///
   /// @returns Pointer to the original basic event from its index.
   mef::BasicEvent* GetBasicEvent(int index) const {
-    assert(index > 0);
-    assert(index <= basic_events_.size());
-    return basic_events_[index - 1];
+    assert(index >= kVariableStartIndex);
+    assert(index < (kVariableStartIndex + basic_events_.size()));
+    return basic_events_[index - kVariableStartIndex];
   }
 
   /// Prints the PDAG in the Aralia format.
