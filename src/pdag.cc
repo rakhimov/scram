@@ -949,8 +949,8 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Pdag* ft) {
-  os << "PDAG" << "\n\n" << ft->root();
+std::ostream& operator<<(std::ostream& os, const Pdag* graph) {
+  os << "PDAG" << "\n\n" << graph->root();
   return os;
 }
 

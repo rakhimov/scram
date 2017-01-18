@@ -1039,13 +1039,13 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 /// The output is not meant to be human readable.
 ///
 /// @param[in,out] os  Output stream.
-/// @param[in] ft  The fault tree to be printed.
+/// @param[in] graph  The PDAG to be printed.
 ///
 /// @returns The provided output stream in its original state.
 ///
 /// @warning Visits of nodes must be clean.
 ///          Visit information may get changed.
-std::ostream& operator<<(std::ostream& os, const Pdag* ft);
+std::ostream& operator<<(std::ostream& os, const Pdag* graph);
 
 }  // namespace core
 }  // namespace scram
