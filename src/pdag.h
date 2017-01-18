@@ -231,8 +231,8 @@ class Constant : public Node {
   /// Constructs a new Constant node with index 1.
   Constant() noexcept;
 
-  /// @returns The state of the constant.
-  bool state() const { return true; }
+  /// @returns The constant Boolean value.
+  bool value() const { return true; }
 };
 
 /// Boolean variables in a Boolean formula or graph.

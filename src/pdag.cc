@@ -833,7 +833,7 @@ std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {
   if (constant->Visited())
     return os;
   constant->Visit(1);
-  std::string state = constant->state() ? "true" : "false";
+  std::string state = constant->value() ? "true" : "false";
   os << "s(H" << constant->index() << ") = " << state << "\n";
   return os;
 }

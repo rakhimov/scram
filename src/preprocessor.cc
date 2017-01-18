@@ -535,7 +535,7 @@ void Preprocessor::RemoveConstants() noexcept {
 void Preprocessor::PropagateConstant(const ConstantPtr& constant) noexcept {
   while (!constant->parents().empty()) {
     GatePtr parent = constant->parents().begin()->second.lock();
-    parent->ProcessConstantArg(constant, constant->state());
+    parent->ProcessConstantArg(constant, constant->value());
     if (parent->IsConstant()) {
       PropagateConstant(parent);
     } else if (parent->type() == kNull) {
