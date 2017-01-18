@@ -139,7 +139,7 @@ class Preprocessor : private boost::noncopyable {
 
   /// Removes argument gates of NULL type,
   /// which means these arg gates have only one argument.
-  /// That one grand arg is transfered to the parent gate,
+  /// That one grand arg is transferred to the parent gate,
   /// and the original argument gate is removed from the parent gate.
   ///
   /// This function is used only once
@@ -1036,7 +1036,7 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in,out] replacement  A gate that will replace the old gate.
   ///
   /// @post The sign of the existing gate as an argument
-  ///       is transfered to the replacement gate.
+  ///       is transferred to the replacement gate.
   ///
   /// @post If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
