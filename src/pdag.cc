@@ -558,17 +558,11 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
 void Pdag::AddArg(const GatePtr& parent,
                   const mef::HouseEvent& house_event) noexcept {
   // Create unique pass-through gates to hold the construction invariant.
-  if (house_event.state()) {
-    auto null_gate = std::make_shared<Gate>(kNull, this);
-    null_gate->AddArg(constant_->index(), constant_);
-    parent->AddArg(null_gate->index(), null_gate);
-    null_gates_.push_back(null_gate);
-  } else {
-    coherent_ = false;  /// @todo Unnecessary non-coherence introduction.
-    auto not_gate = std::make_shared<Gate>(kNot, this);
-    not_gate->AddArg(constant_->index(), constant_);
-    parent->AddArg(not_gate->index(), not_gate);
-  }
+  auto null_gate = std::make_shared<Gate>(kNull, this);
+  int index = constant_->index();
+  null_gate->AddArg(house_event.state() ? index : -index, constant_);
+  parent->AddArg(null_gate->index(), null_gate);
+  null_gates_.push_back(null_gate);
 }
 
 void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
