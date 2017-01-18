@@ -74,7 +74,8 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
       gates.emplace(arg.first, arg.second.get());
   };
   add_gates(gate.args<Gate>());
-
+  const int kMaxVariableIndex =
+      Pdag::kVariableStartIndex + graph_->basic_events().size() - 1;
   auto container = std::make_unique<zbdd::CutSetContainer>(
       kSettings_, gate.index(), kMaxVariableIndex);
   container->Merge(container->ConvertGate(gate));
@@ -103,7 +104,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
     bool coherent = entry.second.first;
     if (limit == 0 && coherent) {  // Unity is impossible.
       auto empty_zbdd = std::make_unique<zbdd::CutSetContainer>(
-          kSettings_, index, graph_->basic_events().size());
+          kSettings_, index, kMaxVariableIndex);
       container->JoinModule(index, std::move(empty_zbdd));
       continue;
     }

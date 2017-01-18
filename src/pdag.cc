@@ -38,33 +38,25 @@
 namespace scram {
 namespace core {
 
-int Node::next_index_ = kMaxVariableIndex;
-
 void NodeParentManager::AddParent(const GatePtr& gate) {
   assert(!parents_.count(gate->index()) && "Adding an existing parent.");
   parents_.data().emplace_back(gate->index(), gate);
 }
 
-Node::Node() noexcept : Node(++next_index_) {}
-
-Node::Node(int index) noexcept
-    : index_(index),
+Node::Node(Pdag* graph) noexcept
+    : index_(Pdag::NodeIndexGenerator()(graph)),
       order_(0),
       visits_{},
       opti_value_(0),
       pos_count_(0),
-      neg_count_(0) {}
+      neg_count_(0),
+      graph_(*graph) {}
 
 Node::~Node() = default;
 
-Constant::Constant() noexcept : Node(1) {}
-
-int Variable::next_variable_ = kVariableStartIndex;
-
-Variable::Variable() noexcept : Node(next_variable_++) {}
-
-Gate::Gate(Operator type) noexcept
-    : type_(type),
+Gate::Gate(Operator type, Pdag* graph) noexcept
+    : Node(graph),
+      type_(type),
       state_(kNormalState),
       mark_(false),
       module_(false),
@@ -77,7 +69,7 @@ Gate::Gate(Operator type) noexcept
 
 GatePtr Gate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
-  auto clone = std::make_shared<Gate>(type_);  // The same type.
+  auto clone = std::make_shared<Gate>(type_, &Node::graph());  // The same type.
   clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
@@ -389,7 +381,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
-    auto and_gate = std::make_shared<Gate>(kAnd);
+    auto and_gate = std::make_shared<Gate>(kAnd, &Node::graph());
     this->AddArg(and_gate->index(), and_gate);
     clone_one->TransferArg(index, and_gate);  // Transferred the x.
 
@@ -442,14 +434,16 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept
-    : constant_(std::make_shared<Constant>()),
+Pdag::Pdag() noexcept
+    : node_index_(0),
       root_sign_(1),
       coherent_(true),
-      normal_(true) {
-  Node::ResetIndex();
-  Variable::ResetIndex();
+      normal_(true),
+      constant_(new Constant(this)) {}
+
+Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
   ProcessedNodes nodes;
+  GatherVariables(root.formula(), ccf, &nodes);
   root_ = ProcessFormula(root.formula(), ccf, &nodes);
 }
 
@@ -471,6 +465,38 @@ constexpr bool CheckOperatorEnums() {
 #undef OPERATOR_EQ
 }  // namespace
 
+void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
+                           ProcessedNodes* nodes) noexcept {
+  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
+    GatherVariables(*basic_event, ccf, nodes);
+  }
+
+  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
+    if (nodes->gates.emplace(mef_gate.get(), nullptr).second) {
+      GatherVariables(mef_gate->formula(), ccf, nodes);
+    }
+  }
+
+  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
+    GatherVariables(*sub_form, ccf, nodes);
+  }
+}
+
+void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
+                           ProcessedNodes* nodes) noexcept {
+  if (ccf && basic_event.HasCcf()) {  // Gather CCF events.
+    if (nodes->gates.emplace(&basic_event.ccf_gate(), nullptr).second)
+      GatherVariables(basic_event.ccf_gate().formula(), ccf, nodes);
+  } else {
+    VariablePtr& var = nodes->variables[&basic_event];
+    if (!var) {
+      basic_events_.push_back(&basic_event);
+      var = std::make_shared<Variable>(this);  // Sequential indices.
+      assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
+    }
+  }
+}
+
 GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
                              ProcessedNodes* nodes) noexcept {
   static_assert(kNumOperators == 8, "Unspecified formula operators.");
@@ -478,7 +504,7 @@ GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
   static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
 
   Operator type = static_cast<Operator>(formula.type());
-  auto parent = std::make_shared<Gate>(type);
+  auto parent = std::make_shared<Gate>(type, this);
 
   if (type != kOr && type != kAnd)
     normal_ = false;
@@ -500,7 +526,7 @@ GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
   for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    ProcessBasicEvent(parent, basic_event.get(), ccf, nodes);
+    ProcessBasicEvent(parent, *basic_event, ccf, nodes);
   }
 
   for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
@@ -519,21 +545,13 @@ GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
 }
 
 void Pdag::ProcessBasicEvent(const GatePtr& parent,
-                             mef::BasicEvent* basic_event, bool ccf,
-                             ProcessedNodes* nodes) noexcept {
-  if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-    GatePtr& ccf_gate = nodes->gates[&basic_event->ccf_gate()];
-    if (!ccf_gate) {
-      ccf_gate = ProcessFormula(basic_event->ccf_gate().formula(), ccf, nodes);
-    }
-    parent->AddArg(ccf_gate->index(), ccf_gate);
+                             const mef::BasicEvent& basic_event,
+                             bool ccf, ProcessedNodes* nodes) noexcept {
+  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
+    ProcessGate(parent, basic_event.ccf_gate(), ccf, nodes);
   } else {
-    VariablePtr& var = nodes->variables[basic_event];
-    if (!var) {
-      basic_events_.push_back(basic_event);
-      var = std::make_shared<Variable>();  // Sequential indices.
-      assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
-    }
+    VariablePtr& var = nodes->variables.find(&basic_event)->second;
+    assert(var && "Uninitialized variable.");
     parent->AddArg(var->index(), var);
   }
 }
@@ -542,13 +560,13 @@ void Pdag::ProcessHouseEvent(const GatePtr& parent,
                              const mef::HouseEvent& house_event) noexcept {
   // Create unique pass-through gates to hold the construction invariant.
   if (house_event.state()) {
-    auto null_gate = std::make_shared<Gate>(kNull);
+    auto null_gate = std::make_shared<Gate>(kNull, this);
     null_gate->AddArg(constant_->index(), constant_);
     parent->AddArg(null_gate->index(), null_gate);
     null_gates_.push_back(null_gate);
   } else {
     coherent_ = false;  /// @todo Unnecessary non-coherence introduction.
-    auto not_gate = std::make_shared<Gate>(kNot);
+    auto not_gate = std::make_shared<Gate>(kNot, this);
     not_gate->AddArg(constant_->index(), constant_);
     parent->AddArg(not_gate->index(), not_gate);
   }
@@ -556,7 +574,7 @@ void Pdag::ProcessHouseEvent(const GatePtr& parent,
 
 void Pdag::ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,
                        ProcessedNodes* nodes) noexcept {
-  GatePtr& pdag_gate = nodes->gates[&gate];
+  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
   if (!pdag_gate) {
     pdag_gate = ProcessFormula(gate.formula(), ccf, nodes);
   }

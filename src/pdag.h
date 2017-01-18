@@ -56,10 +56,6 @@ class Formula;
 
 namespace core {
 
-/// @todo Refactor the index assignment logic.
-const int kVariableStartIndex = 2;  ///< The starting index of graph variables.
-const int kMaxVariableIndex = 1e6;  ///< The max index for graph variables.
-
 class Gate;  // An indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
 using GateWeakPtr = std::weak_ptr<Gate>;  ///< An acyclic ptr to parent gates.
@@ -102,26 +98,23 @@ class NodeParentManager : private boost::noncopyable {
   ParentMap parents_;  ///< All registered parents of this node.
 };
 
+class Pdag;  // Manager of the graph, node indices and uniqueness.
+
 /// An abstract base class that represents a node in a PDAG.
 /// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
 class Node : public NodeParentManager {
  public:
-  /// Creates a graph node with its index assigned sequentially.
-  Node() noexcept;
-
-  /// Creates a graph node with its index.
+  /// Creates a unique graph node as a member of a PDAG.
   ///
-  /// @param[in] index  An unique positive index of this node.
-  ///
-  /// @warning The index is not validated upon instantiation.
-  explicit Node(int index) noexcept;
+  /// @param[in] graph  The graph this node belongs to.
+  explicit Node(Pdag* graph) noexcept;
 
   virtual ~Node() = 0;  ///< Abstract class.
 
-  /// Resets the starting index.
-  static void ResetIndex() { next_index_ = kMaxVariableIndex; }
+  /// @returns The host graph of the node.
+  Pdag& graph() { return graph_; }
 
   /// @returns The index of this node.
   int index() const { return index_; }
@@ -213,13 +206,13 @@ class Node : public NodeParentManager {
   }
 
  private:
-  static int next_index_;  ///< Automatic index of the next new node.
   int index_;  ///< Index of this node.
   int order_;  ///< Ordering of nodes in the graph.
   int visits_[3];  ///< Traversal array with first, second, and last visits.
   int opti_value_;  ///< Failure propagation optimization value.
   int pos_count_;  ///< The number of occurrences as a positive node.
   int neg_count_;  ///< The number of occurrences as a negative node.
+  Pdag& graph_;  ///< The host graph for the node.
 };
 
 /// Representation of a node that is a Boolean constant TRUE.
@@ -227,32 +220,22 @@ class Node : public NodeParentManager {
 /// There's only one constant per graph.
 /// FALSE is represented as NOT TRUE with -1 as its index.
 class Constant : public Node {
- public:
-  /// Constructs a new Constant node with index 1.
-  Constant() noexcept;
+  friend class Pdag;  // Only one constant per graph must be enforced by PDAG.
 
+ public:
   /// @returns The constant Boolean value.
   bool value() const { return true; }
+
+ private:
+  /// Constructs a new Constant node with index 1.
+  using Node::Node;
 };
 
 /// Boolean variables in a Boolean formula or graph.
 /// Variables can represent the basic events of fault trees.
-///
-/// The index assignment for variables is special:
-/// 1 < index < number of variables in the graph + 2.
-/// This indexing technique helps
-/// preprocessing and analysis algorithms
-/// optimize their work with basic events.
 class Variable : public Node {
  public:
-  /// Creates a new indexed variable with its index assigned sequentially.
-  Variable() noexcept;
-
-  /// Resets the starting index for variables.
-  static void ResetIndex() { next_variable_ = kVariableStartIndex; }
-
- private:
-  static int next_variable_;  ///< The next index for a new variable.
+  using Node::Node;
 };
 
 using NodePtr = std::shared_ptr<Node>;  ///< Shared base nodes in the graph.
@@ -326,7 +309,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// to manage parent-child hierarchy.
   ///
   /// @param[in] type  The type of this gate.
-  explicit Gate(Operator type) noexcept;
+  /// @param[in,out] graph  The host PDAG.
+  Gate(Operator type, Pdag* graph) noexcept;
 
   /// Destructs parent information from the arguments.
   ~Gate() noexcept {
@@ -768,19 +752,34 @@ class Preprocessor;  ///< @todo This can be decoupled.
 /// This class is designed
 /// to help preprocessing and other graph transformation functions.
 ///
-/// @warning Never hold a shared pointer to any other indexed gate
-///          except for the root gate of the graph.
-///          Extra reference count will prevent
-///          automatic deletion of the node
-///          and management of the structure of the graph.
-///          Moreover, the graph may become
-///          a multiple-top-event fault tree,
-///          which is not the assumption of
-///          all the other preprocessing and analysis algorithms.
+/// @pre There are no shared pointers to any other graph gate
+///      except for the root gate of the graph upon graph transformations.
+///      Extra reference count will prevent
+///      automatic deletion of the node
+///      and management of the structure of the graph.
+///      Moreover, the graph may become
+///      a multi-root graph,
+///      which is not the assumption of
+///      all the other preprocessing and analysis algorithms.
 class Pdag : private boost::noncopyable {
   friend class Preprocessor;  ///< The main manipulator of PDAGs.
 
  public:
+  static const int kVariableStartIndex = 2;  ///< The shift value for mapping.
+
+  /// Generator of unique indices for graph nodes.
+  class NodeIndexGenerator {
+    friend class Node;  // Access for a new index request.
+    /// @returns A new unique index in the graph.
+    ///
+    /// @param[in,out] graph  A graph within which the index is unique.
+    int operator()(Pdag* graph) const { return ++graph->node_index_; }
+  };
+
+  /// Constructs a graph with no root gate
+  /// ready for general purpose (test) Boolean formulas.
+  Pdag() noexcept;
+
   /// Constructs a PDAG
   /// starting from the top gate of a fault tree.
   /// Upon construction,
@@ -790,10 +789,20 @@ class Pdag : private boost::noncopyable {
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
   ///
+  /// @pre No new Variable nodes are introduced after the construction.
+  ///
   /// @post The PDAG is stable as long as
   ///       the argument fault tree and its underlying containers are stable.
   ///       If the fault tree has been manipulated (event addition, etc.),
   ///       its PDAG representation is not guaranteed to be the same.
+  ///
+  /// @post The index assignment for variables is special:
+  ///       index in [kVariableStartIndex, num of vars + kVariableStartIndex).
+  ///       This indexing technique helps
+  ///       preprocessing and analysis algorithms
+  ///       optimize their work with basic events.
+  ///
+  /// @post All Gate indices >= (num of vars + kVariableStartIndex).
   explicit Pdag(const mef::Gate& root, bool ccf = false) noexcept;
 
   /// @returns true if the fault tree is coherent.
@@ -803,7 +812,18 @@ class Pdag : private boost::noncopyable {
   bool normal() const { return normal_; }
 
   /// @returns The current root gate of the graph.
+  ///          nullptr iff the graph has been constructed root-less.
   const GatePtr& root() const { return root_; }
+
+  /// Sets the root gate.
+  /// This function is helpful for transformations.
+  ///
+  /// @param[in] gate  Replacement root gate.
+  void root(const GatePtr& gate) {
+    assert(gate && "The graph cannot be made root-less.");
+    assert(this == &gate->graph() && "The gate is from a different graph.");
+    root_ = gate;
+  }
 
   /// @returns true if the root must be complemented.
   bool complement() const { return root_sign_ < 0; }
@@ -811,10 +831,10 @@ class Pdag : private boost::noncopyable {
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals to
-  ///          (its index - kVariableStartIndex).
+  ///          (its variable index - kVariableStartIndex).
   ///
-  /// @todo Refactor the implicit basic event index mapping magic numbers.
-  const std::vector<mef::BasicEvent*>& basic_events() const {
+  /// @pre No new Variable nodes are introduced after the construction.
+  const std::vector<const mef::BasicEvent*>& basic_events() const {
     return basic_events_;
   }
 
@@ -827,7 +847,7 @@ class Pdag : private boost::noncopyable {
   /// @param[in] index  Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  mef::BasicEvent* GetBasicEvent(int index) const {
+  const mef::BasicEvent* GetBasicEvent(int index) const {
     assert(index >= kVariableStartIndex);
     assert(index < (kVariableStartIndex + basic_events_.size()));
     return basic_events_[index - kVariableStartIndex];
@@ -851,12 +871,6 @@ class Pdag : private boost::noncopyable {
   void Log() noexcept;
 
  private:
-  /// Sets the root gate.
-  /// This function is helpful for preprocessing.
-  ///
-  /// @param[in] gate  Replacement root gate.
-  void root(const GatePtr& gate) { root_ = gate; }
-
   /// Holder for nodes that are created from fault tree events.
   /// This is a helper structure
   /// for functions that transform a fault tree into a PDAG.
@@ -864,6 +878,27 @@ class Pdag : private boost::noncopyable {
     std::unordered_map<const mef::Gate*, GatePtr> gates;
     std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
   };  /// @}
+
+  /// Gathers and initializes Variables from Basic Events.
+  /// The gates are gathered but not initialized
+  /// to give the sequential indices for the Variables
+  /// for establishing the construction invariant.
+  ///
+  /// @param[in] formula  The Boolean formula with the source variables.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::Formula& formula, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
+
+  /// Initializes Variable from a Basic Event or
+  /// continues the initialization of CCF Events
+  /// belonging to the corresponding CCF gates.
+  ///
+  /// @param[in] basic_event  A Basic Event belonging to a formula.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula of a gate into a PDAG.
   ///
@@ -885,7 +920,8 @@ class Pdag : private boost::noncopyable {
   /// @param[in] basic_event  The basic event argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessBasicEvent(const GatePtr& parent, mef::BasicEvent* basic_event,
+  void ProcessBasicEvent(const GatePtr& parent,
+                         const mef::BasicEvent& basic_event,
                          bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's house events
@@ -1015,12 +1051,14 @@ class Pdag : private boost::noncopyable {
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeOrders(const GatePtr& gate) noexcept;
 
-  GatePtr root_;  ///< The root gate of this graph.
-  ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
+  int node_index_;  ///< Automatic index of the new node.
   int root_sign_;  ///< The negative or positive sign of the root node.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
-  std::vector<mef::BasicEvent*> basic_events_;  ///< Mapping for basic events.
+  GatePtr root_;  ///< The root gate of this graph.
+  ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
+  /// Mapping for basic events and their Variable indices.
+  std::vector<const mef::BasicEvent*> basic_events_;
   /// Registered NULL type gates upon the creation of the PDAG.
   std::vector<std::weak_ptr<Gate>> null_gates_;
 };

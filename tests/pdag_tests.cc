@@ -43,18 +43,15 @@ static_assert(kNumOperators == 8, "New gate types are not considered!");
 class GateTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    var_one = std::make_shared<Variable>();
-    var_two = std::make_shared<Variable>();
-    var_three = std::make_shared<Variable>();
+    var_one = std::make_shared<Variable>(&graph);
+    var_two = std::make_shared<Variable>(&graph);
+    var_three = std::make_shared<Variable>(&graph);
     vars_ = {var_one, var_two, var_three};
     for (int i = 0; i < 2; ++i)
-      vars_.emplace_back(new Variable());  // Extra.
+      vars_.emplace_back(new Variable(&graph));  // Extra.
   }
 
-  void TearDown() override {
-    Node::ResetIndex();
-    Variable::ResetIndex();
-  }
+  void TearDown() override {}
 
   /// Sets up the main gate with the default variables.
   ///
@@ -67,7 +64,7 @@ class GateTest : public ::testing::Test {
     assert(num_vars < 6);
     assert(!(type == kVote && num_vars < 2));
 
-    g = std::make_shared<Gate>(type);
+    g = std::make_shared<Gate>(type, &graph);
     if (type == kVote)
       g->vote_number(2);
     for (int i = 0; i < num_vars; ++i)
@@ -88,6 +85,7 @@ class GateTest : public ::testing::Test {
   VariablePtr var_three;
 
  private:
+  Pdag graph;  // The manager of unique indices.
   std::vector<VariablePtr> vars_;  // For convenience only.
 };
 

@@ -133,7 +133,7 @@ class BasicEvent : public PrimaryEvent {
   /// @returns The previously set expression for analysis purposes.
   ///
   /// @pre The expression has been set.
-  Expression& expression() {
+  Expression& expression() const {
     assert(expression_ && "The basic event's expression is not set.");
     return *expression_;
   }

@@ -84,7 +84,7 @@ class UncertaintyAnalysis : public Analysis {
   /// @param[in] graph  PDAG with the variables.
   ///
   /// @returns The gathered uncertain basic events.
-  std::vector<std::pair<int, mef::BasicEvent*>> FilterUncertainEvents(
+  std::vector<std::pair<int, const mef::BasicEvent*>> FilterUncertainEvents(
       const Pdag* graph) noexcept;
 
   /// Samples each uncertain event probability.
@@ -96,7 +96,8 @@ class UncertaintyAnalysis : public Analysis {
   ///      to have the resultant probabilities get mapped by indices.
   ///      That is, container[event.index()] never fails for any given event.
   void SampleEventProbabilities(
-      const std::vector<std::pair<int, mef::BasicEvent*>>& uncertain_events,
+      const std::vector<std::pair<int, const mef::BasicEvent*>>&
+          uncertain_events,
       std::vector<double>* p_vars) noexcept;
 
  private:
@@ -148,7 +149,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
 
 template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
-  std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events =
+  std::vector<std::pair<int, const mef::BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
   std::vector<double> p_vars = prob_analyzer_->p_vars();  // Private copy!
   std::vector<double> samples;

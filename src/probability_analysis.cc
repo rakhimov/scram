@@ -87,7 +87,7 @@ double McubCalculator::Calculate(
 
 void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
   /// @todo Deal with this padding hack!
-  for (int i = 0; i < kVariableStartIndex; ++i)
+  for (int i = 0; i < Pdag::kVariableStartIndex; ++i)
     p_vars_.push_back(-1);  // Padding.
 
   for (const mef::BasicEvent* event : graph_->basic_events())

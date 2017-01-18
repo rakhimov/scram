@@ -59,11 +59,11 @@ void UncertaintyAnalysis::Analyze() noexcept {
   Analysis::AddAnalysisTime(DUR(analysis_time));
 }
 
-std::vector<std::pair<int, mef::BasicEvent*>>
+std::vector<std::pair<int, const mef::BasicEvent*>>
 UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
-  std::vector<std::pair<int, mef::BasicEvent*>> uncertain_events;
-  int index = kVariableStartIndex;
-  for (mef::BasicEvent* event : graph->basic_events()) {
+  std::vector<std::pair<int, const mef::BasicEvent*>> uncertain_events;
+  int index = Pdag::kVariableStartIndex;
+  for (const mef::BasicEvent* event : graph->basic_events()) {
     if (!event->expression().IsConstant())
       uncertain_events.emplace_back(index, event);
     ++index;
@@ -72,7 +72,7 @@ UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
 }
 
 void UncertaintyAnalysis::SampleEventProbabilities(
-    const std::vector<std::pair<int, mef::BasicEvent*>>& uncertain_events,
+    const std::vector<std::pair<int, const mef::BasicEvent*>>& uncertain_events,
     std::vector<double>* p_vars) noexcept {
   // Reset distributions.
   for (const auto& event : uncertain_events)
