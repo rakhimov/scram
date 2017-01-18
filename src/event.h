@@ -125,9 +125,17 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @param[in] expression  The expression to describe this event.
   void expression(const ExpressionPtr& expression) {
-    assert(!expression_);
+    assert(!expression_ && "The basic event's expression is already set.");
     PrimaryEvent::has_expression(true);
     expression_ = expression;
+  }
+
+  /// @returns The previously set expression for analysis purposes.
+  ///
+  /// @pre The expression has been set.
+  Expression& expression() {
+    assert(expression_ && "The basic event's expression is not set.");
+    return *expression_;
   }
 
   /// @returns The mean probability of this basic event.
@@ -137,28 +145,9 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
-    assert(expression_);
+    assert(expression_ && "The basic event's expression is not set.");
     return expression_->Mean();
   }
-
-  /// Samples probability value from its probability distribution.
-  ///
-  /// @returns Sampled value.
-  ///
-  /// @note The user of this function should make sure
-  ///       that the returned value is acceptable for calculations.
-  ///
-  /// @warning Undefined behavior if the expression is not set.
-  double SampleProbability() noexcept {
-    assert(expression_);
-    return expression_->Sample();
-  }
-
-  /// Resets the sampling.
-  void Reset() noexcept { expression_->Reset(); }
-
-  /// @returns Indication if this event does not have uncertainty.
-  bool IsConstant() noexcept { return expression_->IsConstant(); }
 
   /// Validates the probability expressions for the primary event.
   ///
