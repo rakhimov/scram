@@ -909,8 +909,8 @@ class Pdag : private boost::noncopyable {
   /// @returns Pointer to the newly created indexed gate.
   ///
   /// @pre The Operator enum in the MEF is the same as in PDAG.
-  GatePtr ProcessFormula(const mef::Formula& formula, bool ccf,
-                         ProcessedNodes* nodes) noexcept;
+  GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
+                        ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's basic events
   /// into variable arguments of an indexed gate in the PDAG.
@@ -920,17 +920,16 @@ class Pdag : private boost::noncopyable {
   /// @param[in] basic_event  The basic event argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessBasicEvent(const GatePtr& parent,
-                         const mef::BasicEvent& basic_event,
-                         bool ccf, ProcessedNodes* nodes) noexcept;
+  void AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+              bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the PDAG.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
   /// @param[in] house_event  The house event argument of the formula.
-  void ProcessHouseEvent(const GatePtr& parent,
-                         const mef::HouseEvent& house_event) noexcept;
+  void AddArg(const GatePtr& parent,
+              const mef::HouseEvent& house_event) noexcept;
 
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the PDAG.
@@ -939,8 +938,8 @@ class Pdag : private boost::noncopyable {
   /// @param[in] gate  The gate argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                   ProcessedNodes* nodes) noexcept;
+  void AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+              ProcessedNodes* nodes) noexcept;
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,

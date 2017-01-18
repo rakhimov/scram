@@ -444,7 +444,7 @@ Pdag::Pdag() noexcept
 Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
   ProcessedNodes nodes;
   GatherVariables(root.formula(), ccf, &nodes);
-  root_ = ProcessFormula(root.formula(), ccf, &nodes);
+  root_ = ConstructGate(root.formula(), ccf, &nodes);
 }
 
 void Pdag::Print() {
@@ -497,8 +497,8 @@ void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
   }
 }
 
-GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
-                             ProcessedNodes* nodes) noexcept {
+GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
+                            ProcessedNodes* nodes) noexcept {
   static_assert(kNumOperators == 8, "Unspecified formula operators.");
   static_assert(kNumOperators == mef::kNumOperators, "Operator mismatch.");
   static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
@@ -526,29 +526,28 @@ GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
   for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    ProcessBasicEvent(parent, *basic_event, ccf, nodes);
+    AddArg(parent, *basic_event, ccf, nodes);
   }
 
   for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
-    ProcessHouseEvent(parent, *house_event);
+    AddArg(parent, *house_event);
   }
 
   for (const mef::GatePtr& mef_gate : formula.gate_args()) {
-    ProcessGate(parent, *mef_gate, ccf, nodes);
+    AddArg(parent, *mef_gate, ccf, nodes);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
-    GatePtr new_gate = ProcessFormula(*sub_form, ccf, nodes);
+    GatePtr new_gate = ConstructGate(*sub_form, ccf, nodes);
     parent->AddArg(new_gate->index(), new_gate);
   }
   return parent;
 }
 
-void Pdag::ProcessBasicEvent(const GatePtr& parent,
-                             const mef::BasicEvent& basic_event,
-                             bool ccf, ProcessedNodes* nodes) noexcept {
+void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+                  bool ccf, ProcessedNodes* nodes) noexcept {
   if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    ProcessGate(parent, basic_event.ccf_gate(), ccf, nodes);
+    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
   } else {
     VariablePtr& var = nodes->variables.find(&basic_event)->second;
     assert(var && "Uninitialized variable.");
@@ -556,8 +555,8 @@ void Pdag::ProcessBasicEvent(const GatePtr& parent,
   }
 }
 
-void Pdag::ProcessHouseEvent(const GatePtr& parent,
-                             const mef::HouseEvent& house_event) noexcept {
+void Pdag::AddArg(const GatePtr& parent,
+                  const mef::HouseEvent& house_event) noexcept {
   // Create unique pass-through gates to hold the construction invariant.
   if (house_event.state()) {
     auto null_gate = std::make_shared<Gate>(kNull, this);
@@ -572,11 +571,11 @@ void Pdag::ProcessHouseEvent(const GatePtr& parent,
   }
 }
 
-void Pdag::ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                       ProcessedNodes* nodes) noexcept {
+void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+                  ProcessedNodes* nodes) noexcept {
   GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
   if (!pdag_gate) {
-    pdag_gate = ProcessFormula(gate.formula(), ccf, nodes);
+    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
   }
   parent->AddArg(pdag_gate->index(), pdag_gate);
 }
