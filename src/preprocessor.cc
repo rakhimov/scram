@@ -257,7 +257,7 @@ class TestGateStructure {
 void Preprocessor::RunPhaseOne() noexcept {
   SANITY_ASSERT;
   graph_->Log();
-  if (!graph_->constants_.empty()) {
+  if (!graph_->constant_->parents().empty()) {
     LOG(DEBUG3) << "Removing constants...";
     RemoveConstants();
     LOG(DEBUG3) << "Constant are removed!";
@@ -526,15 +526,9 @@ void Preprocessor::RemoveNullGates() noexcept {
 
 void Preprocessor::RemoveConstants() noexcept {
   assert(const_gates_.empty());
-  assert(!graph_->constants_.empty());
-  for (const std::weak_ptr<Constant>& ptr : graph_->constants_) {
-    if (ptr.expired())
-      continue;
-    PropagateConstant(ptr.lock());
-    assert(ptr.expired());
-  }
+  assert(!graph_->constant_->parents().empty());
+  PropagateConstant(graph_->constant_);
   assert(const_gates_.empty());
-  graph_->constants_.clear();
   constant_graph_ = graph_->root()->IsConstant();
 }
 

@@ -57,9 +57,9 @@ Node::Node(int index) noexcept
 
 Node::~Node() = default;
 
-Constant::Constant(bool state) noexcept : state_(state) {}
+Constant::Constant() noexcept : Node(1) {}
 
-int Variable::next_variable_ = 1;
+int Variable::next_variable_ = kVariableStartIndex;
 
 Variable::Variable() noexcept : Node(next_variable_++) {}
 
@@ -443,7 +443,8 @@ void Gate::ProcessComplementArg(int index) noexcept {
 }
 
 Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept
-    : root_sign_(1),
+    : constant_(std::make_shared<Constant>()),
+      root_sign_(1),
       coherent_(true),
       normal_(true) {
   Node::ResetIndex();
@@ -503,7 +504,7 @@ GatePtr Pdag::ProcessFormula(const mef::Formula& formula, bool ccf,
   }
 
   for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
-    ProcessHouseEvent(parent, *house_event, nodes);
+    ProcessHouseEvent(parent, *house_event);
   }
 
   for (const mef::GatePtr& mef_gate : formula.gate_args()) {
@@ -538,14 +539,19 @@ void Pdag::ProcessBasicEvent(const GatePtr& parent,
 }
 
 void Pdag::ProcessHouseEvent(const GatePtr& parent,
-                             const mef::HouseEvent& house_event,
-                             ProcessedNodes* nodes) noexcept {
-  ConstantPtr& constant = nodes->constants[&house_event];
-  if (!constant) {
-    constant = std::make_shared<Constant>(house_event.state());
-    constants_.push_back(constant);
+                             const mef::HouseEvent& house_event) noexcept {
+  // Create unique pass-through gates to hold the construction invariant.
+  if (house_event.state()) {
+    auto null_gate = std::make_shared<Gate>(kNull);
+    null_gate->AddArg(constant_->index(), constant_);
+    parent->AddArg(null_gate->index(), null_gate);
+    null_gates_.push_back(null_gate);
+  } else {
+    coherent_ = false;  /// @todo Unnecessary non-coherence introduction.
+    auto not_gate = std::make_shared<Gate>(kNot);
+    not_gate->AddArg(constant_->index(), constant_);
+    parent->AddArg(not_gate->index(), not_gate);
   }
-  parent->AddArg(constant->index(), constant);
 }
 
 void Pdag::ProcessGate(const GatePtr& parent, const mef::Gate& gate, bool ccf,

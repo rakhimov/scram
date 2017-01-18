@@ -222,20 +222,17 @@ class Node : public NodeParentManager {
   int neg_count_;  ///< The number of occurrences as a negative node.
 };
 
-/// Representation of a node that is a Boolean constant
-/// with True or False state.
+/// Representation of a node that is a Boolean constant TRUE.
+/// The Node index 1 is reserved for this special argument.
+/// There's only one constant per graph.
+/// FALSE is represented as NOT TRUE with -1 as its index.
 class Constant : public Node {
  public:
-  /// Constructs a new constant indexed node.
-  ///
-  /// @param[in] state  Binary state of the Boolean constant.
-  explicit Constant(bool state) noexcept;
+  /// Constructs a new Constant node with index 1.
+  Constant() noexcept;
 
   /// @returns The state of the constant.
-  bool state() const { return state_; }
-
- private:
-  bool state_;  ///< The Boolean value for the constant state.
+  bool state() const { return true; }
 };
 
 /// Boolean variables in a Boolean formula or graph.
@@ -866,7 +863,6 @@ class Pdag : private boost::noncopyable {
   struct ProcessedNodes {  /// @{
     std::unordered_map<const mef::Gate*, GatePtr> gates;
     std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
-    std::unordered_map<const mef::HouseEvent*, ConstantPtr> constants;
   };  /// @}
 
   /// Processes a Boolean formula of a gate into a PDAG.
@@ -894,14 +890,11 @@ class Pdag : private boost::noncopyable {
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the PDAG.
-  /// Newly created constants are registered for removal for Preprocessor.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
   /// @param[in] house_event  The house event argument of the formula.
-  /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessHouseEvent(const GatePtr& parent,
-                         const mef::HouseEvent& house_event,
-                         ProcessedNodes* nodes) noexcept;
+                         const mef::HouseEvent& house_event) noexcept;
 
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the PDAG.
@@ -1023,12 +1016,11 @@ class Pdag : private boost::noncopyable {
   void ClearNodeOrders(const GatePtr& gate) noexcept;
 
   GatePtr root_;  ///< The root gate of this graph.
+  ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
   int root_sign_;  ///< The negative or positive sign of the root node.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
   std::vector<mef::BasicEvent*> basic_events_;  ///< Mapping for basic events.
-  /// Registered house events upon the creation of the PDAG.
-  std::vector<std::weak_ptr<Constant>> constants_;
   /// Registered NULL type gates upon the creation of the PDAG.
   std::vector<std::weak_ptr<Gate>> null_gates_;
 };
