@@ -30,6 +30,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 
 #include "event.h"
+#include "expression.h"
 #include "logger.h"
 
 namespace scram {
@@ -59,29 +60,29 @@ void UncertaintyAnalysis::Analyze() noexcept {
   Analysis::AddAnalysisTime(DUR(analysis_time));
 }
 
-std::vector<std::pair<int, const mef::BasicEvent*>>
-UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
-  std::vector<std::pair<int, const mef::BasicEvent*>> uncertain_events;
+std::vector<std::pair<int, mef::Expression&>>
+UncertaintyAnalysis::GatherDeviateExpressions(const Pdag* graph) noexcept {
+  std::vector<std::pair<int, mef::Expression&>> deviate_expressions;
   int index = Pdag::kVariableStartIndex;
   for (const mef::BasicEvent* event : graph->basic_events()) {
     if (event->expression().IsDeviate())
-      uncertain_events.emplace_back(index, event);
+      deviate_expressions.emplace_back(index, event->expression());
     ++index;
   }
-  return uncertain_events;
+  return deviate_expressions;
 }
 
-void UncertaintyAnalysis::SampleEventProbabilities(
-    const std::vector<std::pair<int, const mef::BasicEvent*>>& uncertain_events,
+void UncertaintyAnalysis::SampleExpressions(
+    const std::vector<std::pair<int, mef::Expression&>>& deviate_expressions,
     Pdag::IndexMap<double>* p_vars) noexcept {
   // Reset distributions.
-  for (const auto& event : uncertain_events)
-    event.second->expression().Reset();
+  for (const auto& expression : deviate_expressions)
+    expression.second.Reset();
 
-  // Sample all basic events with distributions.
-  for (const auto& event : uncertain_events) {
-    double prob = event.second->expression().Sample();
-    (*p_vars)[event.first] = prob > 1 ? 1 : prob < 0 ? 0 : prob;
+  // Sample all expressions with distributions.
+  for (const auto& expression : deviate_expressions) {
+    double prob = expression.second.Sample();
+    (*p_vars)[expression.first] = prob > 1 ? 1 : prob < 0 ? 0 : prob;
   }
 }
 

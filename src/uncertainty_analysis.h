@@ -32,14 +32,14 @@
 namespace scram {
 
 namespace mef {  // Decouple from the implementation dependence.
-class BasicEvent;
+class Expression;
 }  // namespace mef
 
 namespace core {
 
 /// Uncertainty analysis and statistics
 /// for top event or gate probabilities
-/// and probability distributions of basic events.
+/// with probability distributions of basic events.
 class UncertaintyAnalysis : public Analysis {
  public:
   /// Uncertainty analysis
@@ -79,25 +79,20 @@ class UncertaintyAnalysis : public Analysis {
   const std::vector<double>& quantiles() const { return quantiles_; }
 
  protected:
-  /// Gathers basic events that have distributions.
+  /// Gathers deviate expressions of variables.
   ///
   /// @param[in] graph  PDAG with the variables.
   ///
-  /// @returns The gathered uncertain basic events.
-  std::vector<std::pair<int, const mef::BasicEvent*>> FilterUncertainEvents(
+  /// @returns The gathered deviate expressions with variable indices.
+  std::vector<std::pair<int, mef::Expression&>> GatherDeviateExpressions(
       const Pdag* graph) noexcept;
 
-  /// Samples each uncertain event probability.
+  /// Samples uncertain probabilities.
   ///
-  /// @param[in] uncertain_events  A collection of uncertain events.
-  /// @param[in,out] p_vars  A container for sampled event probabilities.
-  ///
-  /// @pre The container for probabilities is large enough
-  ///      to have the resultant probabilities get mapped by indices.
-  ///      That is, container[event.index()] never fails for any given event.
-  void SampleEventProbabilities(
-      const std::vector<std::pair<int, const mef::BasicEvent*>>&
-          uncertain_events,
+  /// @param[in] deviate_expressions  A collection of deviate expressions.
+  /// @param[in,out] p_vars  Indices to probabilities mapping with values.
+  void SampleExpressions(
+      const std::vector<std::pair<int, mef::Expression&>>& deviate_expressions,
       Pdag::IndexMap<double>* p_vars) noexcept;
 
  private:
@@ -119,7 +114,7 @@ class UncertaintyAnalysis : public Analysis {
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.
-  std::vector<std::pair<double, double> > distribution_;
+  std::vector<std::pair<double, double>> distribution_;
   /// The quantiles of the distribution.
   std::vector<double> quantiles_;
 };
@@ -149,14 +144,14 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
 
 template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
-  std::vector<std::pair<int, const mef::BasicEvent*>> uncertain_events =
-      UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
+  std::vector<std::pair<int, mef::Expression&>> deviate_expressions =
+      UncertaintyAnalysis::GatherDeviateExpressions(prob_analyzer_->graph());
   Pdag::IndexMap<double> p_vars = prob_analyzer_->p_vars();  // Private copy!
   std::vector<double> samples;
   samples.reserve(Analysis::settings().num_trials());
 
   for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
-    UncertaintyAnalysis::SampleEventProbabilities(uncertain_events, &p_vars);
+    UncertaintyAnalysis::SampleExpressions(deviate_expressions, &p_vars);
     double result = prob_analyzer_->CalculateTotalProbability(p_vars);
     assert(result >= 0 && result <= 1);
     samples.push_back(result);
