@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ class ExponentialExpression : public Expression {
   }
 
  private:
-  double GetSample() noexcept override {
+  double DoSample() noexcept override {
     return 1 - std::exp(-(lambda_.Sample() * time_.Sample()));
   }
 
@@ -85,7 +85,7 @@ class GlmExpression : public Expression {
   double Min() noexcept override { return 0; }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   /// Computes the value for GLM expression.
   ///
@@ -130,7 +130,7 @@ class WeibullExpression : public Expression {
   }
 
  private:
-  double GetSample() noexcept override {
+  double DoSample() noexcept override {
     return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(),
                    time_.Sample());
   }

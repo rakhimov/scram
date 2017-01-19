@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,10 +45,10 @@ class OpenExpression : public Expression {
   double min;  // This value is used only if explicitly set non-zero.
   double max;  // This value is used only if explicitly set non-zero.
   double Mean() noexcept override { return mean; }
-  double GetSample() noexcept override { return sample; }
+  double DoSample() noexcept override { return sample; }
   double Max() noexcept override { return max ? max : sample; }
   double Min() noexcept override { return min ? min : sample; }
-  bool IsConstant() noexcept override { return true; }
+  bool IsDeviate() noexcept override { return false; }
 };
 
 using OpenExpressionPtr = std::shared_ptr<OpenExpression>;
@@ -92,7 +92,7 @@ TEST(ExpressionTest, Exponential) {
   double sampled_value = 0;
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
-  ASSERT_TRUE(dev->IsConstant());
+  ASSERT_FALSE(dev->IsDeviate());
 }
 
 TEST(ExpressionTest, GLM) {
@@ -155,7 +155,7 @@ TEST(ExpressionTest, GLM) {
   double sampled_value = 0;
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
-  ASSERT_TRUE(dev->IsConstant());
+  ASSERT_FALSE(dev->IsDeviate());
 }
 
 TEST(ExpressionTest, Weibull) {
@@ -224,7 +224,7 @@ TEST(ExpressionTest, Weibull) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_TRUE(dev->IsConstant());
+  ASSERT_FALSE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
 }
@@ -249,7 +249,7 @@ TEST(ExpressionTest, UniformDeviate) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
@@ -279,7 +279,7 @@ TEST(ExpressionTest, NormalDeviate) {
   EXPECT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
@@ -332,7 +332,7 @@ TEST(ExpressionTest, LogNormalDeviate) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
@@ -377,7 +377,7 @@ TEST(ExpressionTest, GammaDeviate) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
@@ -422,7 +422,7 @@ TEST(ExpressionTest, BetaDeviate) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
@@ -491,7 +491,7 @@ TEST(ExpressionTest, Histogram) {
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
-  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_TRUE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());

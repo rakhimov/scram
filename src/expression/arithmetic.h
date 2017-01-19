@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ class Neg : public Expression {
   double Min() noexcept override { return -expression_.Max(); }
 
  private:
-  double GetSample() noexcept override { return -expression_.Sample(); }
+  double DoSample() noexcept override { return -expression_.Sample(); }
 
   Expression& expression_;  ///< Expression that is used for negation.
 };
@@ -68,9 +68,7 @@ class Add : public BinaryExpression {
   double Min() noexcept override { return Compute(&Expression::Min); }
 
  private:
-  double GetSample() noexcept override {
-    return Compute(&Expression::Sample);
-  }
+  double DoSample() noexcept override { return Compute(&Expression::Sample); }
 
   /// Adds all argument expression values.
   ///
@@ -100,9 +98,7 @@ class Sub : public BinaryExpression {
   }
 
  private:
-  double GetSample() noexcept override {
-    return Compute(&Expression::Sample);
-  }
+  double DoSample() noexcept override { return Compute(&Expression::Sample); }
 
   /// Performs the subtraction of all argument expression values.
   ///
@@ -147,7 +143,7 @@ class Mul : public BinaryExpression {
   double Min() noexcept override { return GetExtremum(/*max=*/false); }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   /// @param[in] maximum  Flag to return maximum value.
   ///
@@ -182,7 +178,7 @@ class Div : public BinaryExpression {
   double Min() noexcept override { return GetExtremum(/*max=*/false); }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   /// @param[in] maximum  Flag to return maximum value.
   ///

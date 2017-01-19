@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ double Mul::Mean() noexcept {
   return mean;
 }
 
-double Mul::GetSample() noexcept {
+double Mul::DoSample() noexcept {
   double result = 1;
   for (const ExpressionPtr& arg : Expression::args())
     result *= arg->Sample();
@@ -85,7 +85,7 @@ double Div::Mean() noexcept {
   return mean;
 }
 
-double Div::GetSample() noexcept {
+double Div::DoSample() noexcept {
   auto it = Expression::args().begin();
   double result = (*it)->Sample();
   for (++it; it != Expression::args().end(); ++it)
