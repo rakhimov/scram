@@ -74,7 +74,7 @@ class CutSetProbabilityCalculator {
   /// This function assumes independence of each member.
   ///
   /// @param[in] cut_set  A cut set with positive indices of basic events.
-  /// @param[in] p_vars  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped by the variable indices.
   ///
   /// @returns The total probability of the cut set.
   ///
@@ -82,7 +82,7 @@ class CutSetProbabilityCalculator {
   /// @pre Probability values are non-negative.
   /// @pre Indices of events directly map to vector indices.
   double Calculate(const CutSet& cut_set,
-                   const std::vector<double>& p_vars) noexcept;
+                   const Pdag::IndexMap<double>& p_vars) noexcept;
 
   /// Checks the special case of a unity set with probability 1.
   ///
@@ -105,18 +105,16 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
   /// using the Rare-Event approximation.
   ///
   /// @param[in] cut_sets  A collection of sets of indices of basic events.
-  /// @param[in] p_vars  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped by the variable indices.
   ///
   /// @returns The total probability with the rare-event approximation.
-  ///
-  /// @pre Absolute indices of events directly map to vector indices.
   ///
   /// @post In case the calculated probability exceeds 1,
   ///       the probability is adjusted to 1.
   ///       It is very unwise to use the rare-event approximation
   ///       with large probability values.
   double Calculate(const std::vector<CutSet>& cut_sets,
-                   const std::vector<double>& p_vars) noexcept;
+                   const Pdag::IndexMap<double>& p_vars) noexcept;
 };
 
 /// Quantitative calculator of probability values
@@ -127,11 +125,11 @@ class McubCalculator : private CutSetProbabilityCalculator {
   /// using the minimal cut set upper bound (MCUB) approximation.
   ///
   /// @param[in] cut_sets  A collection of sets of indices of basic events.
-  /// @param[in] p_vars  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped by the variable indices.
   ///
   /// @returns The total probability with the MCUB approximation.
   double Calculate(const std::vector<CutSet>& cut_sets,
-                   const std::vector<double>& p_vars) noexcept;
+                   const Pdag::IndexMap<double>& p_vars) noexcept;
 };
 
 /// Base class for Probability analyzers.
@@ -158,8 +156,8 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @returns The resulting products of the fault tree analyzer.
   const std::vector<Product>& products() const { return products_; }
 
-  /// @returns A mapping for probability values and indices.
-  const std::vector<double>& p_vars() const { return p_vars_; }
+  /// @returns A mapping for probability values with indices.
+  const Pdag::IndexMap<double>& p_vars() const { return p_vars_; }
 
  protected:
   ~ProbabilityAnalyzerBase() = default;
@@ -177,7 +175,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
 
   const Pdag* graph_;  ///< PDAG from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
-  std::vector<double> p_vars_;  ///< Variable probabilities.
+  Pdag::IndexMap<double> p_vars_;  ///< Variable probabilities.
 };
 
 /// Fault-tree-analysis-aware probability analyzer.
@@ -195,10 +193,11 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   ///
   /// @param[in] p_vars  A map of probabilities of the graph variables.
   ///                    The indices of the variables must map
-  ///                    exactly to the vector indices.
+  ///                    exactly to the values.
   ///
   /// @returns The total probability calculated with the given values.
-  double CalculateTotalProbability(const std::vector<double>& p_vars) noexcept {
+  double CalculateTotalProbability(
+      const Pdag::IndexMap<double>& p_vars) noexcept {
     return calc_.Calculate(ProbabilityAnalyzerBase::products(), p_vars);
   }
 
@@ -250,7 +249,8 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   Bdd* bdd_graph() { return bdd_graph_; }
 
   /// @copydoc ProbabilityAnalyzer::CalculateTotalProbability
-  double CalculateTotalProbability(const std::vector<double>& p_vars) noexcept;
+  double CalculateTotalProbability(
+      const Pdag::IndexMap<double>& p_vars) noexcept;
 
  private:
   /// Calculates the total probability.
@@ -280,7 +280,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @warning If a vertex is already marked with the input mark,
   ///          it will not be traversed and updated with a probability value.
   double CalculateProbability(const Bdd::VertexPtr& vertex, bool mark,
-                              const std::vector<double>& p_vars) noexcept;
+                              const Pdag::IndexMap<double>& p_vars) noexcept;
 
   Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
   bool current_mark_;  ///< To keep track of BDD current mark.

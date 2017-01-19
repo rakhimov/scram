@@ -98,7 +98,7 @@ class UncertaintyAnalysis : public Analysis {
   void SampleEventProbabilities(
       const std::vector<std::pair<int, const mef::BasicEvent*>>&
           uncertain_events,
-      std::vector<double>* p_vars) noexcept;
+      Pdag::IndexMap<double>* p_vars) noexcept;
 
  private:
   /// Performs Monte Carlo Simulation
@@ -151,7 +151,7 @@ template <class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, const mef::BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
-  std::vector<double> p_vars = prob_analyzer_->p_vars();  // Private copy!
+  Pdag::IndexMap<double> p_vars = prob_analyzer_->p_vars();  // Private copy!
   std::vector<double> samples;
   samples.reserve(Analysis::settings().num_trials());
 

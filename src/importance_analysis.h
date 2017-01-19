@@ -173,7 +173,7 @@ class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
 
  private:
   double CalculateMif(int index) noexcept override;
-  std::vector<double> p_vars_;  ///< A private copy of variable probabilities.
+  Pdag::IndexMap<double> p_vars_;  ///< A copy of variable probabilities.
 };
 
 template <class Calculator>

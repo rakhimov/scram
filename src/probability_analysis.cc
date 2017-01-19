@@ -48,7 +48,7 @@ void ProbabilityAnalysis::Analyze() noexcept {
 
 double CutSetProbabilityCalculator::Calculate(
     const CutSet& cut_set,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (cut_set.empty())
     return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
@@ -61,7 +61,7 @@ double CutSetProbabilityCalculator::Calculate(
 
 double RareEventCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
     return 1;
   double sum = 0;
@@ -74,7 +74,7 @@ double RareEventCalculator::Calculate(
 
 double McubCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
     return 1;
   double m = 1;
@@ -86,10 +86,7 @@ double McubCalculator::Calculate(
 }
 
 void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
-  /// @todo Deal with this padding hack!
-  for (int i = 0; i < Pdag::kVariableStartIndex; ++i)
-    p_vars_.push_back(-1);  // Padding.
-
+  p_vars_.reserve(graph_->basic_events().size());
   for (const mef::BasicEvent* event : graph_->basic_events())
     p_vars_.push_back(event->p());
 }
@@ -109,7 +106,7 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
 }
 
 double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability(
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG4) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
@@ -145,7 +142,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Bdd::VertexPtr& vertex,
     bool mark,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (vertex->terminal())
     return 1;
   ItePtr ite = Ite::Ptr(vertex);

@@ -105,7 +105,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     void operator++() { ++it; }
     /// Populates the Product with Literals.
     std::pair<bool, const mef::BasicEvent*> operator*() {
-      const mef::BasicEvent* basic_event = graph.GetBasicEvent(std::abs(*it));
+      const mef::BasicEvent* basic_event = graph.basic_events()[std::abs(*it)];
       product_events.insert(basic_event);
       return {*it < 0, basic_event};
     }

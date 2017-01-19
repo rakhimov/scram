@@ -43,6 +43,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "ext/find_iterator.h"
+#include "ext/index_map.h"
 #include "ext/linear_map.h"
 
 namespace scram {
@@ -766,6 +767,9 @@ class Pdag : private boost::noncopyable {
 
  public:
   static const int kVariableStartIndex = 2;  ///< The shift value for mapping.
+  /// Sequential mapping of Variable indices to other data of type T.
+  template<typename T>
+  using IndexMap = ext::index_map<kVariableStartIndex, T>;
 
   /// Generator of unique indices for graph nodes.
   class NodeIndexGenerator {
@@ -830,27 +834,11 @@ class Pdag : private boost::noncopyable {
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
-  ///          The position of a basic event equals to
-  ///          (its variable index - kVariableStartIndex).
+  ///          The Variable indices map directly to the original basic events.
   ///
   /// @pre No new Variable nodes are introduced after the construction.
-  const std::vector<const mef::BasicEvent*>& basic_events() const {
+  const IndexMap<const mef::BasicEvent*>& basic_events() const {
     return basic_events_;
-  }
-
-  /// Helper function to map the results of the index assignment
-  /// to the original basic events.
-  /// This function, for example, helps transform
-  /// products with indices into
-  /// products with IDs or pointers.
-  ///
-  /// @param[in] index  Positive index of the basic event.
-  ///
-  /// @returns Pointer to the original basic event from its index.
-  const mef::BasicEvent* GetBasicEvent(int index) const {
-    assert(index >= kVariableStartIndex);
-    assert(index < (kVariableStartIndex + basic_events_.size()));
-    return basic_events_[index - kVariableStartIndex];
   }
 
   /// Prints the PDAG in the Aralia format.
@@ -1057,7 +1045,7 @@ class Pdag : private boost::noncopyable {
   GatePtr root_;  ///< The root gate of this graph.
   ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
   /// Mapping for basic events and their Variable indices.
-  std::vector<const mef::BasicEvent*> basic_events_;
+  IndexMap<const mef::BasicEvent*> basic_events_;
   /// Registered NULL type gates upon the creation of the PDAG.
   std::vector<std::weak_ptr<Gate>> null_gates_;
 };

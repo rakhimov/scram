@@ -73,7 +73,7 @@ UncertaintyAnalysis::FilterUncertainEvents(const Pdag* graph) noexcept {
 
 void UncertaintyAnalysis::SampleEventProbabilities(
     const std::vector<std::pair<int, const mef::BasicEvent*>>& uncertain_events,
-    std::vector<double>* p_vars) noexcept {
+    Pdag::IndexMap<double>* p_vars) noexcept {
   // Reset distributions.
   for (const auto& event : uncertain_events)
     event.second->expression().Reset();

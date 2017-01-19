@@ -66,7 +66,7 @@ ImportanceAnalysis::GatherImportantEvents(
       if (unique_indices.insert(pos_index).second == false)
         continue;
       important_events.emplace_back(pos_index,
-                                    graph->GetBasicEvent(pos_index));
+                                    graph->basic_events()[pos_index]);
     }
   }
   return important_events;
