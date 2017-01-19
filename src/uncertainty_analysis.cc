@@ -90,27 +90,23 @@ void UncertaintyAnalysis::CalculateStatistics(
     const std::vector<double>& samples) noexcept {
   using namespace boost;  // NOLINT
   using namespace boost::accumulators;  // NOLINT
-  using accumulator_q =
-      accumulator_set<double, stats<tag::extended_p_square_quantile>>;
+  using histogram_type =
+      iterator_range<std::vector<std::pair<double, double>>::iterator>;
   quantiles_.clear();
   int num_quantiles = Analysis::settings().num_quantiles();
   double delta = 1.0 / num_quantiles;
   for (int i = 0; i < num_quantiles; ++i) {
     quantiles_.push_back(delta * (i + 1));
   }
-  accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
-
   int num_trials = Analysis::settings().num_trials();
-  accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
+  accumulator_set<double, stats<tag::mean, tag::variance, tag::density,
+                                tag::extended_p_square_quantile>>
       acc(tag::density::num_bins = Analysis::settings().num_bins(),
-          tag::density::cache_size = num_trials);
-
+          tag::density::cache_size = num_trials,
+          extended_p_square_probabilities = quantiles_);
   for (double sample : samples) {
     acc(sample);
-    acc_q(sample);
   }
-  using histogram_type =
-      iterator_range<std::vector<std::pair<double, double>>::iterator>;
   histogram_type hist = density(acc);
   for (int i = 1; i < hist.size(); i++) {
     distribution_.push_back(hist[i]);
@@ -122,7 +118,7 @@ void UncertaintyAnalysis::CalculateStatistics(
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
 
   for (int i = 0; i < num_quantiles; ++i) {
-    quantiles_[i] = quantile(acc_q, quantile_probability = quantiles_[i]);
+    quantiles_[i] = quantile(acc, quantile_probability = quantiles_[i]);
   }
 }
 
