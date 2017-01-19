@@ -39,22 +39,22 @@ int GetPrimeNumber(int n) {
   return n;
 }
 
-Bdd::Bdd(const Pdag* fault_tree, const Settings& settings)
+Bdd::Bdd(const Pdag* graph, const Settings& settings)
     : kSettings_(settings),
-      coherent_(fault_tree->coherent()),
+      coherent_(graph->coherent()),
       kOne_(new Terminal<Ite>(true)),
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting PDAG into BDD...";
-  if (fault_tree->root()->IsConstant()) {
+  if (graph->root()->IsConstant()) {
     // Constant case should only happen to the top gate.
-    if (fault_tree->root()->state() == kNullState) {
+    if (graph->root()->state() == kNullState) {
       root_ = {true, kOne_};
     } else {
       root_ = {false, kOne_};
     }
-  } else if (fault_tree->root()->type() == kNull) {
-    const GatePtr& top_gate = fault_tree->root();
+  } else if (graph->root()->type() == kNull) {
+    const GatePtr& top_gate = graph->root();
     assert(top_gate->args().size() == 1);
     assert(top_gate->args<Gate>().empty());
     int child = *top_gate->args().begin();
@@ -63,8 +63,8 @@ Bdd::Bdd(const Pdag* fault_tree, const Settings& settings)
              FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = ConvertGraph(*fault_tree->root(), &gates);
-    root_.complement ^= fault_tree->complement();
+    root_ = ConvertGraph(*graph->root(), &gates);
+    root_.complement ^= graph->complement();
   }
   ClearMarks(false);
   TestStructure(root_.vertex);

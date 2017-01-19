@@ -740,14 +740,13 @@ class Bdd : private boost::noncopyable {
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a PDAG.
   ///
-  /// @param[in] fault_tree  Preprocessed, partially normalized,
-  ///                        and indexed fault tree.
+  /// @param[in] graph  Preprocessed and partially normalized PDAG.
   /// @param[in] settings  The analysis settings.
   ///
   /// @pre The PDAG has variable ordering.
   ///
   /// @note BDD construction may take considerable time.
-  Bdd(const Pdag* fault_tree, const Settings& settings);
+  Bdd(const Pdag* graph, const Settings& settings);
 
   /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;

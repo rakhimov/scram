@@ -32,14 +32,14 @@
 namespace scram {
 namespace core {
 
-Mocus::Mocus(const Pdag* fault_tree, const Settings& settings)
+Mocus::Mocus(const Pdag* graph, const Settings& settings)
     : constant_graph_(false),
-      graph_(fault_tree),
+      graph_(graph),
       kSettings_(settings) {
-  const GatePtr& top_gate = fault_tree->root();
+  const GatePtr& top_gate = graph->root();
   if (top_gate->IsConstant() || top_gate->type() == kNull) {
     constant_graph_ = true;
-    zbdd_ = std::make_unique<Zbdd>(fault_tree, settings);
+    zbdd_ = std::make_unique<Zbdd>(graph, settings);
     zbdd_->Analyze();
   }
 }

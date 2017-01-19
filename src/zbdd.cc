@@ -63,17 +63,17 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
-Zbdd::Zbdd(const Pdag* fault_tree, const Settings& settings) noexcept
-    : Zbdd(*fault_tree->root(), settings) {
-  assert(!fault_tree->complement() && "Complements must be propagated.");
-  if (fault_tree->root()->IsConstant()) {
-    if (fault_tree->root()->state() == kNullState) {
+Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
+    : Zbdd(*graph->root(), settings) {
+  assert(!graph->complement() && "Complements must be propagated.");
+  if (graph->root()->IsConstant()) {
+    if (graph->root()->state() == kNullState) {
       root_ = kEmpty_;
     } else {
       root_ = kBase_;
     }
-  } else if (fault_tree->root()->type() == kNull) {
-    const GatePtr& top_gate = fault_tree->root();
+  } else if (graph->root()->type() == kNull) {
+    const GatePtr& top_gate = graph->root();
     assert(top_gate->args().size() == 1);
     assert(top_gate->args<Gate>().empty());
     int child = *top_gate->args().begin();

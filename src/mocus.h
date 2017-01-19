@@ -44,13 +44,13 @@ class Mocus : private boost::noncopyable {
  public:
   /// Prepares a PDAG for analysis with the MOCUS algorithm.
   ///
-  /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
+  /// @param[in] graph  Preprocessed and normalized PDAG.
   /// @param[in] settings  The analysis settings.
   ///
   /// @pre The passed PDAG already has variable ordering.
   /// @pre The PDAG is in negation normal form;
   ///      that is, it contains only positive AND/OR gates.
-  Mocus(const Pdag* fault_tree, const Settings& settings);
+  Mocus(const Pdag* graph, const Settings& settings);
 
   /// Finds minimal cut sets from the PDAG.
   void Analyze();

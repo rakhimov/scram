@@ -173,13 +173,12 @@ class Zbdd : private boost::noncopyable {
   /// Constructor with the analysis target.
   /// ZBDD is directly produced from a PDAG.
   ///
-  /// @param[in] fault_tree  Preprocessed, partially normalized,
-  ///                        and indexed fault tree.
+  /// @param[in] graph  Preprocessed and fully normalized PDAG.
   /// @param[in] settings  The analysis settings.
   ///
   /// @pre The passed PDAG already has variable ordering.
   /// @note The construction may take considerable time.
-  Zbdd(const Pdag* fault_tree, const Settings& settings) noexcept;
+  Zbdd(const Pdag* graph, const Settings& settings) noexcept;
 
   virtual ~Zbdd() noexcept = default;
 
