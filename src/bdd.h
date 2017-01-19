@@ -731,8 +731,7 @@ class Bdd : private boost::noncopyable {
     /// @param[in] complement  Interpretation of the BDD vertex.
     ///
     /// @returns The consensus BDD function.
-    static Function Calculate(Bdd* bdd, const ItePtr& ite,
-                              bool complement) noexcept {
+    Function operator()(Bdd* bdd, const ItePtr& ite, bool complement) noexcept {
       return bdd->CalculateConsensus(ite, complement);
     }
   };

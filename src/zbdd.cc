@@ -314,7 +314,7 @@ Zbdd::VertexPtr
 Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
                                 Bdd* bdd_graph, int limit_order,
                                 PairTable<VertexPtr>* ites) noexcept {
-  Bdd::Function common = Bdd::Consensus::Calculate(bdd_graph, ite, complement);
+  Bdd::Function common = Bdd::Consensus()(bdd_graph, ite, complement);
   VertexPtr consensus = ConvertBdd(common.vertex, common.complement, bdd_graph,
                                    limit_order, ites);
   if (limit_order == 0) {  // Cut-off on the product order.
