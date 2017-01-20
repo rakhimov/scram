@@ -67,8 +67,17 @@ Gate::Gate(Operator type, Pdag* graph) noexcept
       min_time_(0),
       max_time_(0) {}
 
+void Gate::type(Operator type) {  // Don't use in Gate constructor!
+  /// @todo Find the inefficient resets.
+  /* assert(type_ != type && "Attribute reset: Operation with no effect."); */
+  type_ = type;
+  if (type_ == kNull)
+    Pdag::NullGateRegistrar()(shared_from_this());
+}
+
 GatePtr Gate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
+  assert(!IsConstant() && type_ != kNull);
   auto clone = std::make_shared<Gate>(type_, &Node::graph());  // The same type.
   clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
@@ -211,7 +220,7 @@ void Gate::ProcessTrueArg(int index) noexcept {
   switch (type_) {
     case kNull:
     case kOr:
-      MakeUnity();
+      MakeConstant(true);
       break;
     case kNand:
     case kAnd:
@@ -219,13 +228,13 @@ void Gate::ProcessTrueArg(int index) noexcept {
       break;
     case kNor:
     case kNot:
-      Nullify();
+      MakeConstant(false);
       break;
     case kXor:  // Special handling due to its internal negation.
       assert(args_.size() == 2);
       EraseArg(index);
       assert(args_.size() == 1);
-      type_ = kNot;
+      type(kNot);
       break;
     case kVote:  // (K - 1) / (N - 1).
       assert(args_.size() > 2);
@@ -233,7 +242,7 @@ void Gate::ProcessTrueArg(int index) noexcept {
       assert(vote_number_ > 0);
       --vote_number_;
       if (vote_number_ == 1)
-        type_ = kOr;
+        type(kOr);
       break;
   }
 }
@@ -247,17 +256,17 @@ void Gate::ProcessFalseArg(int index) noexcept {
       break;
     case kNull:
     case kAnd:
-      Nullify();
+      MakeConstant(false);
       break;
     case kNand:
     case kNot:
-      MakeUnity();
+      MakeConstant(true);
       break;
     case kVote:  // K / (N - 1).
       assert(args_.size() > 2);
       EraseArg(index);
       if (vote_number_ == args_.size())
-        type_ = kAnd;
+        type(kAnd);
       break;
   }
 }
@@ -270,11 +279,11 @@ void Gate::RemoveConstantArg(int index) noexcept {
       case kXor:
       case kOr:
       case kAnd:
-        type_ = kNull;
+        type(kNull);
         break;
       case kNor:
       case kNand:
-        type_ = kNot;
+        type(kNot);
         break;
       default:
         assert(false && "NULL/NOT one-arg gates should not appear.");
@@ -317,6 +326,14 @@ void Gate::EraseAllArgs() noexcept {
   constant_args_.clear();
 }
 
+void Gate::MakeConstant(bool state) noexcept {
+  assert(state_ == kNormalState);
+  state_ = state ? kUnityState : kNullState;
+  type_ = kNull;  // Don't use type() member function to avoid double register.
+  EraseAllArgs();
+  Pdag::NullGateRegistrar()(shared_from_this(), /*constant=*/true);
+}
+
 void Gate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
@@ -329,15 +346,15 @@ void Gate::ProcessDuplicateArg(int index) noexcept {
     switch (type_) {
       case kAnd:
       case kOr:
-        type_ = kNull;
+        type(kNull);
         break;
       case kNand:
       case kNor:
-        type_ = kNot;
+        type(kNot);
         break;
       case kXor:
         LOG(DEBUG5) << "Handling special case of XOR duplicate argument!";
-        Nullify();
+        MakeConstant(false);
         break;
       default:
         assert(false && "NOT and NULL gates can't have duplicates.");
@@ -355,7 +372,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   if (args_.size() == 2) {  // @(2, [x, x, z]) = x
     assert(vote_number_ == 2);
     this->EraseArg(index);
-    this->type_ = kNull;
+    this->type(kNull);
     return;
   }
   if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
@@ -363,7 +380,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     GatePtr clone_two = this->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     this->EraseAllArgs();
-    this->type_ = kAnd;
+    this->type(kAnd);
     clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
     if (clone_two->vote_number() == 1)
       clone_two->type(kOr);
@@ -374,7 +391,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   GatePtr clone_one = this->Clone();  // @(k, [y_i])
 
   this->EraseAllArgs();  // The main gate turns into OR with x.
-  type_ = kOr;
+  type(kOr);
   this->AddArg(clone_one);
   if (vote_number_ == 2) {  // No need for the second K/N gate.
     clone_one->TransferArg(index, shared_from_this());  // Transferred the x.
@@ -407,12 +424,12 @@ void Gate::ProcessComplementArg(int index) noexcept {
   switch (type_) {
     case kNor:
     case kAnd:
-      Nullify();
+      MakeConstant(false);
       break;
     case kNand:
     case kXor:
     case kOr:
-      MakeUnity();
+      MakeConstant(true);
       break;
     case kVote:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
@@ -422,11 +439,11 @@ void Gate::ProcessComplementArg(int index) noexcept {
       EraseArg(-index);
       --vote_number_;
       if (args_.size() == 1) {
-        type_ = kNull;
+        type(kNull);
       } else if (vote_number_ == 1) {
-        type_ = kOr;
+        type(kOr);
       } else if (vote_number_ == args_.size()) {
-        type_ = kAnd;
+        type(kAnd);
       }
       break;
     default:
@@ -439,6 +456,7 @@ Pdag::Pdag() noexcept
       complement_(false),
       coherent_(true),
       normal_(true),
+      register_null_gates_(true),
       constant_(new Constant(this)) {}
 
 Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {

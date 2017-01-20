@@ -102,7 +102,7 @@ TEST_F(GateTest, AddArgDeathTests) {
   DefineGate(kAnd, 1);
   EXPECT_DEATH(g->AddArg(0, var_two), "");  // Wrong index.
   DefineGate(kAnd, 2);
-  g->Nullify();  // Constant state.
+  g->MakeConstant(false);  // Constant state.
   EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");  // Wrong index.
   DefineGate(kVote, 3);
   g->vote_number(-1);  // Negative vote number.

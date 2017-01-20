@@ -333,20 +333,20 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns Type of this gate.
   Operator type() const { return type_; }
 
-  /// Changes the gate type information.
-  /// This function is expected to be used
-  /// with only simple AND, OR, NOT, NULL gates.
+  /// Changes the logic of the gate.
+  /// Depending on the original and new type of the gate,
+  /// the graph or gate properties may be changed or recorded.
   ///
-  /// @param[in] t  The type for this gate.
-  void type(Operator t) {
-    assert(t == kAnd || t == kOr || t == kNot || t == kNull);
-    type_ = t;
-  }
+  /// @param[in] type  A new type for this gate.
+  ///
+  /// @pre The new logic is compatible with the existing arguments
+  ///      and preserves the gate invariants.
+  /// @pre The previous type is not equal to the new one.
+  void type(Operator type);
 
   /// @returns Vote number.
   ///
-  /// @warning The function does not validate the vote number,
-  ///          nor does it check for the VOTE type of the gate.
+  /// @pre The vote number is relevant to the gate logic.
   int vote_number() const { return vote_number_; }
 
   /// Sets the vote number for this gate.
@@ -354,8 +354,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] number  The vote number of VOTE gate.
   ///
-  /// @warning The function does not validate the vote number,
-  ///          nor does it check for the VOTE type of the gate.
+  /// @pre The vote number is appropriate for the gate logic and arguments.
   void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
@@ -630,20 +629,11 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// Sets the state of this gate to null
   /// and clears all its arguments.
   /// This function is expected to be used only once.
-  void Nullify() noexcept {
-    assert(state_ == kNormalState);
-    state_ = kNullState;
-    EraseAllArgs();
-  }
-
-  /// Sets the state of this gate to unity
-  /// and clears all its arguments.
-  /// This function is expected to be used only once.
-  void MakeUnity() noexcept {
-    assert(state_ == kNormalState);
-    state_ = kUnityState;
-    EraseAllArgs();
-  }
+  ///
+  /// @param[in] state  true for kUnityState and false for kNullState
+  ///
+  /// @todo Refactor and remove states.
+  void MakeConstant(bool state) noexcept;
 
  private:
   /// Mutable getter for the gate arguments.
@@ -788,6 +778,23 @@ class Pdag : private boost::noncopyable {
     ///
     /// @param[in,out] graph  A graph within which the index is unique.
     int operator()(Pdag* graph) const { return ++graph->node_index_; }
+  };
+
+  /// Registers pass-through or Null logic gates belonging to the graph.
+  class NullGateRegistrar {
+    friend class Gate;
+    /// @param[in] gate  A Null gate with a single argument.
+    /// @param[in] constant The single argument is constant.
+    void operator()(GatePtr gate, bool constant = false) const {
+      assert(gate->type() == kNull && "Only Null logic gates are expected.");
+      if (!gate->graph().register_null_gates_)
+        return;
+      if (constant) {
+        gate->graph().const_gates_.emplace_back(std::move(gate));
+      } else {
+        gate->graph().null_gates_.emplace_back(std::move(gate));
+      }
+    }
   };
 
   /// Constructs a graph with no root gate
@@ -1052,12 +1059,18 @@ class Pdag : private boost::noncopyable {
   bool complement_;  ///< The indication of a complement graph.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
+  bool register_null_gates_;  ///< Automatically register pass-through gates.
   GatePtr root_;  ///< The root gate of this graph.
   ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
   /// Mapping for basic events and their Variable indices.
   IndexMap<const mef::BasicEvent*> basic_events_;
-  /// Registered NULL type gates upon the creation of the PDAG.
-  std::vector<std::weak_ptr<Gate>> null_gates_;
+  /// Container for constant gates to be tracked and cleaned by algorithms.
+  /// These constant gates are created
+  /// because of complement or constant descendants.
+  std::vector<GateWeakPtr> const_gates_;
+  /// Container for NULL type gates to be tracked and cleaned by algorithms.
+  /// NULL type gates are created by coherent gates with only one argument.
+  std::vector<GateWeakPtr> null_gates_;
 };
 
 /// Prints PDAG nodes in the Aralia format.
