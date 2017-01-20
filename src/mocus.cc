@@ -38,12 +38,12 @@ Mocus::Mocus(const Pdag* graph, const Settings& settings)
 
 void Mocus::Analyze() {
   CLOCK(mcs_time);
-  if (graph_->root()->type() == kNull) {
+  if (graph_->root().type() == kNull) {
     LOG(DEBUG2) << "Graph is constant!";
     zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
   } else {
     LOG(DEBUG2) << "Start minimal cut set generation.";
-    zbdd_ = AnalyzeModule(*graph_->root(), kSettings_);
+    zbdd_ = AnalyzeModule(graph_->root(), kSettings_);
   }
 
   LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";

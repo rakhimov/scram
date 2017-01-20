@@ -46,22 +46,22 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting PDAG into BDD...";
-  if (graph->root()->type() == kNull) {
-    const GatePtr& top_gate = graph->root();
-    assert(top_gate->args().size() == 1);
-    assert(top_gate->args<Gate>().empty());
-    int child = *top_gate->args().begin();
-    if (top_gate->IsConstant()) {
+  if (graph->root().type() == kNull) {
+    const Gate& top_gate = graph->root();
+    assert(top_gate.args().size() == 1);
+    assert(top_gate.args<Gate>().empty());
+    int child = *top_gate.args().begin();
+    if (top_gate.IsConstant()) {
       // Constant case should only happen to the top gate.
       root_ = {child < 0, kOne_};
     } else {
-      VariablePtr var = top_gate->args<Variable>().begin()->second;
+      VariablePtr var = top_gate.args<Variable>().begin()->second;
       root_ = {child < 0,
                FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
     }
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = ConvertGraph(*graph->root(), &gates);
+    root_ = ConvertGraph(graph->root(), &gates);
     root_.complement ^= graph->complement();
   }
   ClearMarks(false);

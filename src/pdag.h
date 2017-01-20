@@ -829,9 +829,14 @@ class Pdag : private boost::noncopyable {
   /// @todo Consider processing and tracking internally.
   void normal(bool flag) { normal_ = flag; }
 
-  /// @returns The current root gate of the graph.
+  /// @returns The shared pointer to current root gate of the graph.
   ///          nullptr iff the graph has been constructed root-less.
-  const GatePtr& root() const { return root_; }
+  const GatePtr& root() { return root_; }
+
+  /// @returns The current root gate of the graph.
+  ///
+  /// @pre The graph has been constructed with a root gate.
+  const Gate& root() const { return *root_; }
 
   /// Sets the root gate.
   /// This function is helpful for transformations.
@@ -1127,7 +1132,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 ///
 /// @warning Visits of nodes must be clean.
 ///          Visit information may get changed.
-std::ostream& operator<<(std::ostream& os, const Pdag* graph);
+std::ostream& operator<<(std::ostream& os, Pdag* graph);
 
 }  // namespace core
 }  // namespace scram

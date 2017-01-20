@@ -64,19 +64,19 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
 }
 
 Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
-    : Zbdd(*graph->root(), settings) {
+    : Zbdd(graph->root(), settings) {
   assert(!graph->complement() && "Complements must be propagated.");
-  if (graph->root()->type() == kNull) {
-    const GatePtr& top_gate = graph->root();
-    assert(top_gate->args().size() == 1);
-    assert(top_gate->args<Gate>().empty());
-    int child = *top_gate->args().begin();
-    if (graph->root()->IsConstant()) {
+  if (graph->root().type() == kNull) {
+    const Gate& top_gate = graph->root();
+    assert(top_gate.args().size() == 1);
+    assert(top_gate.args<Gate>().empty());
+    int child = *top_gate.args().begin();
+    if (top_gate.IsConstant()) {
       root_ = child < 0 ? kEmpty_ : kBase_;
     } else if (child < 0) {
       root_ = kBase_;
     } else {
-      const VariablePtr& var = top_gate->args<Variable>().begin()->second;
+      const VariablePtr& var = top_gate.args<Variable>().begin()->second;
       root_ = FindOrAddVertex(var->index(), kBase_, kEmpty_, var->order());
     }
   }

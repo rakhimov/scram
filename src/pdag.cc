@@ -1016,7 +1016,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Pdag* graph) {
+std::ostream& operator<<(std::ostream& os, Pdag* graph) {
   os << "PDAG" << "\n\n" << graph->root();
   return os;
 }
