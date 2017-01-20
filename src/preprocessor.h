@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 
 /// @file preprocessor.h
-/// A collection of Boolean graph preprocessing algorithms
+/// A collection of PDAG transformation/preprocessing algorithms
 /// that simplify fault trees for analysis.
 
 #ifndef SCRAM_SRC_PREPROCESSOR_H_
@@ -31,40 +31,43 @@
 #include <boost/noncopyable.hpp>
 #include <boost/unordered_map.hpp>
 
-#include "boolean_graph.h"
+#include "pdag.h"
 
 namespace scram {
 namespace core {
 
 /// The class provides main preprocessing operations
-/// over a Boolean graph
+/// over a PDAG
 /// to simplify the fault tree
 /// and to help analysis run more efficiently.
 class Preprocessor : private boost::noncopyable {
  public:
-  /// Constructs a preprocessor of a Boolean graph
+  /// Constructs a preprocessor of a PDAG
   /// representing a fault tree.
   ///
-  /// @param[in] graph  The Boolean graph to be preprocessed.
+  /// @param[in] graph  The PDAG to be preprocessed.
   ///
   /// @warning There should not be another shared pointer to the root gate
-  ///          outside of the passed Boolean graph.
+  ///          outside of the passed PDAG.
   ///          Upon preprocessing a new root gate may be assigned to the graph,
   ///          and, if there is an extra pointer to the previous top gate
   ///          outside of the graph,
   ///          the destructor will not be called
   ///          as expected by the preprocessing algorithms,
-  ///          which will mess the new structure of the Boolean graph.
-  explicit Preprocessor(BooleanGraph* graph) noexcept;
+  ///          which will mess the new structure of the PDAG.
+  explicit Preprocessor(Pdag* graph) noexcept;
 
   virtual ~Preprocessor() = default;
+
+  /// Runs the graph preprocessing.
+  void operator()() noexcept { this->Run(); }
+
+ protected:
+  class GateSet;  ///< Container of unique gates by semantics.
 
   /// Runs the default preprocessing
   /// that achieves the graph in a normal form.
   virtual void Run() noexcept = 0;
-
- protected:
-  class GateSet;  ///< Container of unique gates by semantics.
 
   /// The initial phase of preprocessing.
   /// The most basic cleanup algorithms are applied.
@@ -136,7 +139,7 @@ class Preprocessor : private boost::noncopyable {
 
   /// Removes argument gates of NULL type,
   /// which means these arg gates have only one argument.
-  /// That one grand arg is transfered to the parent gate,
+  /// That one grand arg is transferred to the parent gate,
   /// and the original argument gate is removed from the parent gate.
   ///
   /// This function is used only once
@@ -159,11 +162,11 @@ class Preprocessor : private boost::noncopyable {
   ///          and left for constant propagation functions.
   void RemoveNullGates() noexcept;
 
-  /// Removes all Boolean constants from the Boolean graph
+  /// Removes all Boolean constants from the PDAG
   /// according to the Boolean logic of the gates.
   /// This function is only used
   /// to get rid of all constants
-  /// registered by the Boolean graph
+  /// registered by the PDAG
   /// at the very beginning of preprocessing.
   ///
   /// @note This is one of the first preprocessing steps.
@@ -178,7 +181,7 @@ class Preprocessor : private boost::noncopyable {
   void RemoveConstants() noexcept;
 
   /// Propagates a Boolean constant bottom-up.
-  /// This is a helper function for initial cleanup of the Boolean graph.
+  /// This is a helper function for initial cleanup of the PDAG.
   ///
   /// @param[in,out] constant  The constant to be propagated.
   ///
@@ -229,7 +232,7 @@ class Preprocessor : private boost::noncopyable {
   /// @warning Gate marks will get cleared by this function.
   void ClearNullGates() noexcept;
 
-  /// Normalizes the gates of the whole Boolean graph
+  /// Normalizes the gates of the whole PDAG
   /// into OR, AND gates.
   ///
   /// @param[in] full  A flag to handle complex gates like XOR and K/N,
@@ -311,7 +314,7 @@ class Preprocessor : private boost::noncopyable {
   /// according to the De Morgan's law
   /// in order to remove any negative logic from the graph's gates.
   /// The resulting graph will contain only positive gates, OR and AND types.
-  /// After this function, the Boolean graph is in negation normal form.
+  /// After this function, the PDAG is in negation normal form.
   ///
   /// @param[in,out] gate  The starting gate to traverse the graph.
   ///                      This is for recursive purposes.
@@ -331,7 +334,7 @@ class Preprocessor : private boost::noncopyable {
       bool keep_modules,
       std::unordered_map<int, GatePtr>* complements) noexcept;
 
-  /// Runs gate coalescence on the whole Boolean graph.
+  /// Runs gate coalescence on the whole PDAG.
   ///
   /// @param[in] common  A flag to also coalesce common/shared gates.
   ///                    These gates may be important for other algorithms.
@@ -376,7 +379,7 @@ class Preprocessor : private boost::noncopyable {
   ///       to verify that the new graph does not have multiple definitions.
   bool ProcessMultipleDefinitions() noexcept;
 
-  /// Traverses the Boolean graph to collect multiple definitions of gates.
+  /// Traverses the PDAG to collect multiple definitions of gates.
   ///
   /// @param[in] gate  The gate to traverse the sub-graph.
   /// @param[in,out] multi_def  Detected multiple definitions.
@@ -388,7 +391,7 @@ class Preprocessor : private boost::noncopyable {
       std::unordered_map<GatePtr, std::vector<GateWeakPtr>>* multi_def,
       GateSet* unique_gates) noexcept;
 
-  /// Traverses the Boolean graph to detect modules.
+  /// Traverses the PDAG to detect modules.
   /// Modules are independent sub-graphs
   /// without common nodes with the rest of the graph.
   void DetectModules() noexcept;
@@ -478,7 +481,7 @@ class Preprocessor : private boost::noncopyable {
       const std::vector<std::pair<int, NodePtr>>& modular_args,
       const std::vector<std::vector<std::pair<int, NodePtr>>>& groups) noexcept;
 
-  /// Gathers all modules in the Boolean graph.
+  /// Gathers all modules in the PDAG.
   ///
   /// @returns Unique modules encountered breadth-first.
   ///
@@ -892,7 +895,7 @@ class Preprocessor : private boost::noncopyable {
   /// @warning The common node must be cleaned separately.
   void ClearStateMarks(const GatePtr& gate) noexcept;
 
-  /// The Shannon decomposition for common nodes in the Boolean graph.
+  /// The Shannon decomposition for common nodes in the PDAG.
   /// This procedure is also called "Constant Propagation",
   /// but it is confusing with the actual propagation of
   /// house events and constant gates.
@@ -1033,7 +1036,7 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in,out] replacement  A gate that will replace the old gate.
   ///
   /// @post The sign of the existing gate as an argument
-  ///       is transfered to the replacement gate.
+  ///       is transferred to the replacement gate.
   ///
   /// @post If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
@@ -1048,14 +1051,14 @@ class Preprocessor : private boost::noncopyable {
   /// @pre The caller will later call the appropriate cleanup functions.
   bool RegisterToClear(const GatePtr& gate) noexcept;
 
-  /// Assigns order for Boolean graph variables.
+  /// Assigns order for PDAG variables.
   ///
   /// @pre Old node order marks are allowed to get cleaned.
   ///
   /// @post Node order marks contain the ordering.
   void AssignOrder() noexcept;
 
-  /// Assigns topological ordering to nodes of the Boolean Graph.
+  /// Assigns topological ordering to nodes of the PDAG.
   /// The ordering is assigned to the node order marks.
   /// The nodes are sorted in descending optimization value.
   /// The highest order value belongs to the root.
@@ -1079,7 +1082,7 @@ class Preprocessor : private boost::noncopyable {
   template <class T>
   std::vector<T*> OrderArguments(const Gate& gate) noexcept;
 
-  /// Gathers all nodes in the Boolean graph.
+  /// Gathers all nodes in the PDAG.
   ///
   /// @param[out] gates  A set of gates.
   /// @param[out] variables  A set of variables.
@@ -1099,10 +1102,10 @@ class Preprocessor : private boost::noncopyable {
                    std::vector<VariablePtr>* variables) noexcept;
 
   /// @returns The graph under processing.
-  const BooleanGraph& graph() const { return *graph_; }
+  const Pdag& graph() const { return *graph_; }
 
  private:
-  BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
+  Pdag* graph_;  ///< The PDAG to preprocess.
   bool constant_graph_;  ///< Graph is constant due to constant events.
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created
@@ -1128,6 +1131,7 @@ class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;
 
+ private:
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
   /// This preprocessing assigns the order for variables for BDD construction.
   void Run() noexcept override;
@@ -1141,6 +1145,7 @@ class CustomPreprocessor<Zbdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;
 
+ protected:
   /// Performs preprocessing for analyses
   /// with Zero-Suppressed Binary Decision Diagrams.
   /// Complements are propagated to variables.
@@ -1156,16 +1161,15 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
  public:
   using CustomPreprocessor<Zbdd>::CustomPreprocessor;
 
+ private:
   /// Performs processing of a fault tree
   /// to simplify the structure to
   /// normalized (OR/AND gates only),
   /// modular (independent sub-trees),
-  /// positive-gate-only (negation normal)
-  /// Boolean graph.
+  /// positive-gate-only (negation normal) PDAG.
   /// The variable ordering is assigned specifically for MOCUS.
   void Run() noexcept override;
 
- private:
   /// Groups and inverts the topological ordering for nodes.
   /// The inversion is done to simplify the work of MOCUS facilities,
   /// which rely on the top-down approach.

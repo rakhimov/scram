@@ -206,7 +206,7 @@ Core C++ Code
 
     * There is no Boolean operator for the K-out-of-N logic.
       This gate in fault tree analysis has many names
-      (Voting, Combination, atleast, K/N),
+      (Voting, Combination, atleast, K/N, etc.),
       and there doesn't seem to be a consensus among sources and tools.
       The Open-PSA MEF "atleast" best captures the nature of the gate;
       however, the "atleast" is awkward to use in code and API

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,14 +32,14 @@
 namespace scram {
 namespace core {
 
-Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
+Mocus::Mocus(const Pdag* graph, const Settings& settings)
     : constant_graph_(false),
-      graph_(fault_tree),
+      graph_(graph),
       kSettings_(settings) {
-  const GatePtr& top_gate = fault_tree->root();
+  const GatePtr& top_gate = graph->root();
   if (top_gate->IsConstant() || top_gate->type() == kNull) {
     constant_graph_ = true;
-    zbdd_ = std::make_unique<Zbdd>(fault_tree, settings);
+    zbdd_ = std::make_unique<Zbdd>(graph, settings);
     zbdd_->Analyze();
   }
 }
@@ -74,9 +74,10 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
       gates.emplace(arg.first, arg.second.get());
   };
   add_gates(gate.args<Gate>());
-
+  const int kMaxVariableIndex =
+      Pdag::kVariableStartIndex + graph_->basic_events().size() - 1;
   auto container = std::make_unique<zbdd::CutSetContainer>(
-      kSettings_, gate.index(), graph_->basic_events().size());
+      kSettings_, gate.index(), kMaxVariableIndex);
   container->Merge(container->ConvertGate(gate));
   while (int next_gate_index = container->GetNextGate()) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate_index;
@@ -103,7 +104,7 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
     bool coherent = entry.second.first;
     if (limit == 0 && coherent) {  // Unity is impossible.
       auto empty_zbdd = std::make_unique<zbdd::CutSetContainer>(
-          kSettings_, index, graph_->basic_events().size());
+          kSettings_, index, kMaxVariableIndex);
       container->JoinModule(index, std::move(empty_zbdd));
       continue;
     }

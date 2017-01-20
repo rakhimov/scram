@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,18 +96,18 @@ class Expression : private boost::noncopyable {
   /// its arguments are not going to get any calls.
   virtual void Reset() noexcept;
 
-  /// Determines if the value of the expression varies.
+  /// Determines if the value of the expression contains deviate expressions.
   /// The default logic is to check arguments with uncertainties for sampling.
   /// Derived expression classes must decide
   /// if they don't have arguments,
   /// or if they are random deviates.
   ///
-  /// @returns true if the expression's value does not need sampling.
-  /// @returns false if the expression's value has uncertainties.
+  /// @returns true if the expression's value deviates from its mean.
+  /// @returns false if the expression's value not need sampling.
   ///
   /// @warning Improper registration of arguments
   ///          may yield silent failure.
-  virtual bool IsConstant() noexcept;
+  virtual bool IsDeviate() noexcept;
 
   /// @returns Maximum value of this expression.
   virtual double Max() noexcept { return this->Mean(); }
@@ -126,7 +126,7 @@ class Expression : private boost::noncopyable {
   /// Derived concrete classes must provide the calculation.
   ///
   /// @returns A sampled value of this expression.
-  virtual double GetSample() noexcept = 0;
+  virtual double DoSample() noexcept = 0;
 
   std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
   double sampled_value_;  ///< The sampled value.

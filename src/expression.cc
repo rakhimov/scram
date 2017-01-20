@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #include "expression.h"
 
-#include "ext.h"
+#include "ext/algorithm.h"
 
 namespace scram {
 namespace mef {
@@ -33,7 +33,7 @@ Expression::Expression(std::vector<ExpressionPtr> args)
 double Expression::Sample() noexcept {
   if (!sampled_) {
     sampled_ = true;
-    sampled_value_ = this->GetSample();
+    sampled_value_ = this->DoSample();
   }
   return sampled_value_;
 }
@@ -46,9 +46,9 @@ void Expression::Reset() noexcept {
     arg->Reset();
 }
 
-bool Expression::IsConstant() noexcept {
-  return ext::all_of(
-      args_, [](const ExpressionPtr& arg) { return arg->IsConstant(); });
+bool Expression::IsDeviate() noexcept {
+  return ext::any_of(
+      args_, [](const ExpressionPtr& arg) { return arg->IsDeviate(); });
 }
 
 }  // namespace mef

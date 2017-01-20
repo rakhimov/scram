@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@
 #include <boost/iterator/iterator_facade.hpp>
 
 #include "analysis.h"
-#include "boolean_graph.h"
 #include "logger.h"
+#include "pdag.h"
 #include "preprocessor.h"
 #include "settings.h"
 
@@ -255,9 +255,9 @@ class FaultTreeAnalysis : public Analysis {
   /// This function also collects basic events in products.
   ///
   /// @param[in] results  A sets with indices of events from calculations.
-  /// @param[in] graph  Boolean graph with basic event indices and pointers.
+  /// @param[in] graph  PDAG with basic event indices and pointers.
   void Convert(const std::vector<std::vector<int>>& results,
-               const BooleanGraph* graph) noexcept;
+               const Pdag* graph) noexcept;
 
  private:
   const mef::Gate& top_event_;  ///< The root of the graph under analysis.
@@ -285,12 +285,12 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   ///          for use by other analyses.
   Algorithm* algorithm() { return algorithm_.get(); }
 
-  /// @returns Pointer to the Boolean graph representing the fault tree.
-  const BooleanGraph* graph() const { return graph_.get(); }
+  /// @returns Pointer to the PDAG representing the fault tree.
+  const Pdag* graph() const { return graph_.get(); }
 
  private:
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
-  std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
+  std::unique_ptr<Pdag> graph_;  ///< PDAG of the fault tree.
 };
 
 template <class Algorithm>
@@ -298,15 +298,13 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = std::make_unique<BooleanGraph>(FaultTreeAnalysis::top_event(),
-                                          Analysis::settings().ccf_analysis());
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
+  graph_ = std::make_unique<Pdag>(FaultTreeAnalysis::top_event(),
+                                  Analysis::settings().ccf_analysis());
+  LOG(DEBUG2) << "PDAG is created in " << DUR(graph_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Algorithm>(graph_.get());
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
+  CustomPreprocessor<Algorithm>(graph_.get())();
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
   if (Analysis::settings().preprocessor)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ void ImportanceAnalysis::Analyze() noexcept {
 
 std::vector<std::pair<int, const mef::BasicEvent*>>
 ImportanceAnalysis::GatherImportantEvents(
-    const BooleanGraph* graph,
+    const Pdag* graph,
     const std::vector<std::vector<int>>& products) noexcept {
   std::vector<std::pair<int, const mef::BasicEvent*>> important_events;
   std::unordered_set<int> unique_indices;
@@ -66,7 +66,7 @@ ImportanceAnalysis::GatherImportantEvents(
       if (unique_indices.insert(pos_index).second == false)
         continue;
       important_events.emplace_back(pos_index,
-                                    graph->GetBasicEvent(pos_index));
+                                    graph->basic_events()[pos_index]);
     }
   }
   return important_events;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ void ProbabilityAnalysis::Analyze() noexcept {
 
 double CutSetProbabilityCalculator::Calculate(
     const CutSet& cut_set,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (cut_set.empty())
     return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
@@ -61,7 +61,7 @@ double CutSetProbabilityCalculator::Calculate(
 
 double RareEventCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
     return 1;
   double sum = 0;
@@ -74,7 +74,7 @@ double RareEventCalculator::Calculate(
 
 double McubCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
     return 1;
   double m = 1;
@@ -86,10 +86,9 @@ double McubCalculator::Calculate(
 }
 
 void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
-  p_vars_.push_back(-1);  // Padding.
-  for (const mef::BasicEvent* event : graph_->basic_events()) {
+  p_vars_.reserve(graph_->basic_events().size());
+  for (const mef::BasicEvent* event : graph_->basic_events())
     p_vars_.push_back(event->p());
-  }
 }
 
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
@@ -107,7 +106,7 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
 }
 
 double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability(
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG4) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
@@ -124,22 +123,18 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
   CLOCK(total_time);
 
   CLOCK(ft_creation);
-  BooleanGraph* bool_graph =
-      new BooleanGraph(fta.top_event(), Analysis::settings().ccf_analysis());
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+  Pdag graph(fta.top_event(), Analysis::settings().ccf_analysis());
+  LOG(DEBUG2) << "PDAG is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph);
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
+  CustomPreprocessor<Bdd>{&graph}();
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Creating BDD for Probability Analysis...";
-  bdd_graph_ = new Bdd(bool_graph, Analysis::settings());
+  bdd_graph_ = new Bdd(&graph, Analysis::settings());
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
-  delete bool_graph;  // The original graph of FTA is usable with the BDD.
 
   Analysis::AddAnalysisTime(DUR(total_time));
 }
@@ -147,7 +142,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Bdd::VertexPtr& vertex,
     bool mark,
-    const std::vector<double>& p_vars) noexcept {
+    const Pdag::IndexMap<double>& p_vars) noexcept {
   if (vertex->terminal())
     return 1;
   ItePtr ite = Ite::Ptr(vertex);

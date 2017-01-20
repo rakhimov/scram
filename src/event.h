@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,9 +125,17 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @param[in] expression  The expression to describe this event.
   void expression(const ExpressionPtr& expression) {
-    assert(!expression_);
+    assert(!expression_ && "The basic event's expression is already set.");
     PrimaryEvent::has_expression(true);
     expression_ = expression;
+  }
+
+  /// @returns The previously set expression for analysis purposes.
+  ///
+  /// @pre The expression has been set.
+  Expression& expression() const {
+    assert(expression_ && "The basic event's expression is not set.");
+    return *expression_;
   }
 
   /// @returns The mean probability of this basic event.
@@ -137,28 +145,9 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
-    assert(expression_);
+    assert(expression_ && "The basic event's expression is not set.");
     return expression_->Mean();
   }
-
-  /// Samples probability value from its probability distribution.
-  ///
-  /// @returns Sampled value.
-  ///
-  /// @note The user of this function should make sure
-  ///       that the returned value is acceptable for calculations.
-  ///
-  /// @warning Undefined behavior if the expression is not set.
-  double SampleProbability() noexcept {
-    assert(expression_);
-    return expression_->Sample();
-  }
-
-  /// Resets the sampling.
-  void Reset() noexcept { expression_->Reset(); }
-
-  /// @returns Indication if this event does not have uncertainty.
-  bool IsConstant() noexcept { return expression_->IsConstant(); }
 
   /// Validates the probability expressions for the primary event.
   ///
@@ -301,7 +290,7 @@ class Gate : public Event, public NodeMark {
 };
 
 /// Operators for formulas.
-/// The ordering is the same as analysis operators in the Boolean graph.
+/// The ordering is the same as analysis operators in the PDAG.
 enum Operator : std::uint8_t {
   kAnd = 0,
   kOr,

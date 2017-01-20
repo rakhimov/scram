@@ -75,7 +75,7 @@ Documentation
 
     doc/input_file
     doc/config_file
-    doc/report_layer
+    doc/report_file
     doc/opsa_support
 
 

@@ -20,7 +20,7 @@
 
 #include "model.h"
 
-#include "ext.h"
+#include "ext/find_iterator.h"
 
 namespace scram {
 namespace mef {

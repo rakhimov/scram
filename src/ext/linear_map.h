@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 /// @file linear_map.h
 /// Implementation of a vector-based map for a small number of entries.
 
-#ifndef SCRAM_SRC_LINEAR_MAP_H_
-#define SCRAM_SRC_LINEAR_MAP_H_
+#ifndef SCRAM_SRC_EXT_LINEAR_MAP_H_
+#define SCRAM_SRC_EXT_LINEAR_MAP_H_
 
 #include <cassert>
 
@@ -170,12 +170,12 @@ class linear_map {
   using container_type = Sequence<value_type>;
   /// @}
 
-  /// Iterator-related typedefs.
+  /// Iterator-related typedefs redeclared from the underlying container type.
   /// @{
-  using pointer = value_type*;
-  using const_pointer = const value_type*;
-  using reference = value_type&;
-  using const_reference = const value_type&;
+  using pointer = typename container_type::pointer;
+  using const_pointer = typename container_type::const_pointer;
+  using reference = typename container_type::reference;
+  using const_reference = typename container_type::const_reference;
   using iterator = typename container_type::iterator;
   using const_iterator = typename container_type::const_iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
@@ -431,4 +431,4 @@ class linear_map {
 
 }  // namespace ext
 
-#endif  // SCRAM_SRC_LINEAR_MAP_H_
+#endif  // SCRAM_SRC_EXT_LINEAR_MAP_H_

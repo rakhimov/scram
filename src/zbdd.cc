@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "ext.h"
+#include "ext/algorithm.h"
+#include "ext/find_iterator.h"
 #include "logger.h"
 
 namespace scram {
@@ -62,17 +63,17 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
-Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
-    : Zbdd(*fault_tree->root(), settings) {
-  assert(!fault_tree->complement() && "Complements must be propagated.");
-  if (fault_tree->root()->IsConstant()) {
-    if (fault_tree->root()->state() == kNullState) {
+Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
+    : Zbdd(*graph->root(), settings) {
+  assert(!graph->complement() && "Complements must be propagated.");
+  if (graph->root()->IsConstant()) {
+    if (graph->root()->state() == kNullState) {
       root_ = kEmpty_;
     } else {
       root_ = kBase_;
     }
-  } else if (fault_tree->root()->type() == kNull) {
-    const GatePtr& top_gate = fault_tree->root();
+  } else if (graph->root()->type() == kNull) {
+    const GatePtr& top_gate = graph->root();
     assert(top_gate->args().size() == 1);
     assert(top_gate->args<Gate>().empty());
     int child = *top_gate->args().begin();
@@ -313,7 +314,7 @@ Zbdd::VertexPtr
 Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
                                 Bdd* bdd_graph, int limit_order,
                                 PairTable<VertexPtr>* ites) noexcept {
-  Bdd::Function common = Bdd::Consensus::Calculate(bdd_graph, ite, complement);
+  Bdd::Function common = Bdd::Consensus()(bdd_graph, ite, complement);
   VertexPtr consensus = ConvertBdd(common.vertex, common.complement, bdd_graph,
                                    limit_order, ites);
   if (limit_order == 0) {  // Cut-off on the product order.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <boost/multiprecision/miller_rabin.hpp>
 #include <boost/range/algorithm.hpp>
 
-#include "ext.h"
+#include "ext/find_iterator.h"
 #include "logger.h"
 #include "zbdd.h"
 
@@ -39,22 +39,22 @@ int GetPrimeNumber(int n) {
   return n;
 }
 
-Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
+Bdd::Bdd(const Pdag* graph, const Settings& settings)
     : kSettings_(settings),
-      coherent_(fault_tree->coherent()),
+      coherent_(graph->coherent()),
       kOne_(new Terminal<Ite>(true)),
       function_id_(2) {
   CLOCK(init_time);
-  LOG(DEBUG3) << "Converting Boolean graph into BDD...";
-  if (fault_tree->root()->IsConstant()) {
+  LOG(DEBUG3) << "Converting PDAG into BDD...";
+  if (graph->root()->IsConstant()) {
     // Constant case should only happen to the top gate.
-    if (fault_tree->root()->state() == kNullState) {
+    if (graph->root()->state() == kNullState) {
       root_ = {true, kOne_};
     } else {
       root_ = {false, kOne_};
     }
-  } else if (fault_tree->root()->type() == kNull) {
-    const GatePtr& top_gate = fault_tree->root();
+  } else if (graph->root()->type() == kNull) {
+    const GatePtr& top_gate = graph->root();
     assert(top_gate->args().size() == 1);
     assert(top_gate->args<Gate>().empty());
     int child = *top_gate->args().begin();
@@ -63,8 +63,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
              FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = ConvertGraph(*fault_tree->root(), &gates);
-    root_.complement ^= fault_tree->complement();
+    root_ = ConvertGraph(*graph->root(), &gates);
+    root_.complement ^= graph->complement();
   }
   ClearMarks(false);
   TestStructure(root_.vertex);
@@ -74,7 +74,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << CountIteNodes(root_.vertex);
-  LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
+  LOG(DEBUG3) << "Finished PDAG conversion in " << DUR(init_time);
   ClearMarks(false);
   // Clear tables if no more calculations are expected.
   ClearTables();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ class Parameter : public Expression,
   double Min() noexcept override { return expression_->Min(); }
 
  private:
-  double GetSample() noexcept override { return expression_->Sample(); }
+  double DoSample() noexcept override { return expression_->Sample(); }
 
   Units unit_;  ///< Units of this parameter.
   bool unused_;  ///< Usage state.

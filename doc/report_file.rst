@@ -1,5 +1,5 @@
 ############
-Report Layer
+Report Files
 ############
 
 ****************
@@ -75,7 +75,7 @@ and the UTC date-time is formatted in ISO 8601 extended form.
 Validation Schemas
 ==================
 
-- `RELAX NG Schema <https://github.com/rakhimov/scram/blob/master/share/report_layer.rng>`_
+- `RELAX NG Schema <https://github.com/rakhimov/scram/blob/develop/share/report.rng>`_
 
 
 ***************

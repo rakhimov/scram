@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,12 +87,12 @@ class ImportanceAnalysis : public Analysis {
   /// Gathers all events present in products.
   /// Only this events can have importance factors.
   ///
-  /// @param[in] graph  Boolean graph with basic event indices and pointers.
+  /// @param[in] graph  PDAG with basic event indices and pointers.
   /// @param[in] products  Products with basic event indices.
   ///
   /// @returns A unique collection of important basic events.
   std::vector<std::pair<int, const mef::BasicEvent*>> GatherImportantEvents(
-      const BooleanGraph* graph,
+      const Pdag* graph,
       const std::vector<std::vector<int>>& products) noexcept;
 
  private:
@@ -173,7 +173,7 @@ class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
 
  private:
   double CalculateMif(int index) noexcept override;
-  std::vector<double> p_vars_;  ///< A private copy of variable probabilities.
+  Pdag::IndexMap<double> p_vars_;  ///< A copy of variable probabilities.
 };
 
 template <class Calculator>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include "risk_analysis.h"
 
 #include "bdd.h"
-#include "ext.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
@@ -67,37 +66,39 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 template <class Algorithm>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const mef::Gate& target) noexcept {
-  auto* fta = new FaultTreeAnalyzer<Algorithm>(target, Analysis::settings());
+  auto fta =
+      std::make_unique<FaultTreeAnalyzer<Algorithm>>(target,
+                                                     Analysis::settings());
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {
     if (Analysis::settings().approximation() == "no") {
-      RunAnalysis<Algorithm, Bdd>(name, fta);
+      RunAnalysis<Algorithm, Bdd>(name, fta.get());
     } else if (Analysis::settings().approximation() == "rare-event") {
-      RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
+      RunAnalysis<Algorithm, RareEventCalculator>(name, fta.get());
     } else {
       assert(Analysis::settings().approximation() == "mcub");
-      RunAnalysis<Algorithm, McubCalculator>(name, fta);
+      RunAnalysis<Algorithm, McubCalculator>(name, fta.get());
     }
   }
-  fault_tree_analyses_.emplace(name, ext::make_unique(fta));
+  fault_tree_analyses_.emplace(name, std::move(fta));
 }
 
 template <class Algorithm, class Calculator>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                FaultTreeAnalyzer<Algorithm>* fta) noexcept {
-  auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
+  auto pa = std::make_unique<ProbabilityAnalyzer<Calculator>>(fta);
   pa->Analyze();
   if (Analysis::settings().importance_analysis()) {
-    auto* ia = new ImportanceAnalyzer<Calculator>(pa);
+    auto ia = std::make_unique<ImportanceAnalyzer<Calculator>>(pa.get());
     ia->Analyze();
-    importance_analyses_.emplace(name, ext::make_unique(ia));
+    importance_analyses_.emplace(name, std::move(ia));
   }
   if (Analysis::settings().uncertainty_analysis()) {
-    auto* ua = new UncertaintyAnalyzer<Calculator>(pa);
+    auto ua = std::make_unique<UncertaintyAnalyzer<Calculator>>(pa.get());
     ua->Analyze();
-    uncertainty_analyses_.emplace(name, ext::make_unique(ua));
+    uncertainty_analyses_.emplace(name, std::move(ua));
   }
-  probability_analyses_.emplace(name, ext::make_unique(pa));
+  probability_analyses_.emplace(name, std::move(pa));
 }
 
 }  // namespace core

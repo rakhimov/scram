@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ void UniformDeviate::Validate() const {
   }
 }
 
-double UniformDeviate::GetSample() noexcept {
+double UniformDeviate::DoSample() noexcept {
   return Random::UniformRealGenerator(min_.Sample(), max_.Sample());
 }
 
@@ -69,7 +69,7 @@ void NormalDeviate::Validate() const {
   }
 }
 
-double NormalDeviate::GetSample() noexcept {
+double NormalDeviate::DoSample() noexcept {
   return Random::NormalGenerator(mean_.Sample(), sigma_.Sample());
 }
 
@@ -102,7 +102,7 @@ void LogNormalDeviate::Validate() const {
   }
 }
 
-double LogNormalDeviate::GetSample() noexcept {
+double LogNormalDeviate::DoSample() noexcept {
   double sigma = ComputeScale(level_.Sample(), ef_.Sample());
   double mu = ComputeLocation(mean_.Sample(), sigma);
   return Random::LogNormalGenerator(mu, sigma);
@@ -150,7 +150,7 @@ double GammaDeviate::Max() noexcept {
   return theta_.Max() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
 }
 
-double GammaDeviate::GetSample() noexcept {
+double GammaDeviate::DoSample() noexcept {
   return Random::GammaGenerator(k_.Sample(), theta_.Sample());
 }
 
@@ -179,7 +179,7 @@ double BetaDeviate::Max() noexcept {
   return std::pow(boost::math::ibeta(alpha_.Max(), beta_.Max(), 0.99), -1);
 }
 
-double BetaDeviate::GetSample() noexcept {
+double BetaDeviate::DoSample() noexcept {
   return Random::BetaGenerator(alpha_.Sample(), beta_.Sample());
 }
 
@@ -226,7 +226,7 @@ auto make_sampler(const Iterator& it) {
 
 }  // namespace
 
-double Histogram::GetSample() noexcept {
+double Histogram::DoSample() noexcept {
   return Random::HistogramGenerator(make_sampler(boundaries_.begin()),
                                     make_sampler(boundaries_.end()),
                                     make_sampler(weights_.begin()));

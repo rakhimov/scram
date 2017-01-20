@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ class RandomDeviate : public Expression {
  public:
   using Expression::Expression;
 
-  bool IsConstant() noexcept override { return false; }
+  bool IsDeviate() noexcept override { return true; }
 };
 
 /// Uniform distribution.
@@ -57,7 +57,7 @@ class UniformDeviate : public RandomDeviate {
   double Min() noexcept override { return min_.Min(); }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   Expression& min_;  ///< Minimum value of the distribution.
   Expression& max_;  ///< Maximum value of the distribution.
@@ -88,7 +88,7 @@ class NormalDeviate : public RandomDeviate {
   double Min() noexcept override { return mean_.Min() - 6 * sigma_.Max(); }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   Expression& mean_;  ///< Mean value of normal distribution.
   Expression& sigma_;  ///< Standard deviation of normal distribution.
@@ -123,7 +123,7 @@ class LogNormalDeviate : public RandomDeviate {
   double Min() noexcept override { return 0; }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   /// Computes the scale parameter of the distribution.
   ///
@@ -166,7 +166,7 @@ class GammaDeviate : public RandomDeviate {
   double Min() noexcept override { return 0; }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   Expression& k_;  ///< The shape parameter of the gamma distribution.
   Expression& theta_;  ///< The scale factor of the gamma distribution.
@@ -195,7 +195,7 @@ class BetaDeviate : public RandomDeviate {
   double Min() noexcept override { return 0; }
 
  private:
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   Expression& alpha_;  ///< The alpha shape parameter.
   Expression& beta_;  ///< The beta shape parameter.
@@ -235,7 +235,7 @@ class Histogram : public RandomDeviate {
   using IteratorRange =
       boost::iterator_range<std::vector<ExpressionPtr>::const_iterator>;
 
-  double GetSample() noexcept override;
+  double DoSample() noexcept override;
 
   /// Checks if values of boundary expressions are strictly increasing.
   ///

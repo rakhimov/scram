@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ double GlmExpression::Mean() noexcept {
   return Compute(gamma_.Mean(), lambda_.Mean(), mu_.Mean(), time_.Mean());
 }
 
-double GlmExpression::GetSample() noexcept {
+double GlmExpression::DoSample() noexcept {
   return Compute(gamma_.Sample(), lambda_.Sample(), mu_.Sample(),
                  time_.Sample());
 }
