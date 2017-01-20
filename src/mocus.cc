@@ -34,12 +34,14 @@ namespace core {
 
 Mocus::Mocus(const Pdag* graph, const Settings& settings)
     : graph_(graph),
-      kSettings_(settings) {}
+      kSettings_(settings) {
+  assert(!graph->complement() && "Complements must be propagated.");
+}
 
 void Mocus::Analyze() {
   CLOCK(mcs_time);
-  if (graph_->root().type() == kNull) {
-    LOG(DEBUG2) << "Graph is constant!";
+  if (graph_->IsTrivial()) {
+    LOG(DEBUG2) << "The PDAG is trivial!";
     zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
   } else {
     LOG(DEBUG2) << "Start minimal cut set generation.";

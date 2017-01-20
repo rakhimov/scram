@@ -46,7 +46,7 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting PDAG into BDD...";
-  if (graph->root().type() == kNull) {
+  if (graph->IsTrivial()) {
     const Gate& top_gate = graph->root();
     assert(top_gate.args().size() == 1);
     assert(top_gate.args<Gate>().empty());

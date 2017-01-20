@@ -597,6 +597,42 @@ void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
   parent->AddArg(pdag_gate);
 }
 
+bool Pdag::IsTrivial() noexcept {
+  assert(root_.use_count() == 1 && "Graph gate pointers outside of the graph!");
+  /// @todo Enable the code by decouple the order assignment!
+  /* if (static_cast<const Pdag*>(this)->IsTrivial()) */
+  /*   return true; */
+  if (root_->type() != kNull)
+    return false;
+
+  RemoveNullGates();  // Ensure that the root is the only pass-through gate.
+
+  LOG(DEBUG3) << "The root NULL gate is processed!";
+  assert(root_->args().size() == 1);
+  if (!root_->args<Gate>().empty()) {  // Pull the child gate to the root.
+    int signed_index = root_->args<Gate>().begin()->first;
+    root_ = root_->args<Gate>().begin()->second;  // Destroy the previous root.
+    assert(root_->parents().empty() && !root_->IsConstant() &&
+           root_->type() != kNull);
+    complement() ^= signed_index < 0;
+    return false;
+  }
+  // Only one variable/constant argument.
+  LOG(DEBUG4) << "The root NULL gate has only single variable!";
+  if (complement()) {
+    root_->InvertArgs();
+    complement() = false;
+  }
+  BLOG(DEBUG3, root_->IsConstant()) << "The root gate has become constant!";
+  if (!root_->IsConstant()) {
+    assert(root_->args<Variable>().size() == 1);
+    /// @todo Decouple the order assignment!
+    root_->args<Variable>().begin()->second->order(1);
+  }
+  assert(static_cast<const Pdag*>(this)->IsTrivial());
+  return true;
+}
+
 void Pdag::RemoveNullGates() noexcept {
   BLOG(DEBUG5, HasConstants()) << "Got CONST gates to clear!";
   BLOG(DEBUG5, HasNullGates()) << "Got NULL gates to clear!";

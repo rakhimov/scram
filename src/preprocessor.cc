@@ -90,23 +90,21 @@
 namespace scram {
 namespace core {
 
-Preprocessor::Preprocessor(Pdag* graph) noexcept
-    : graph_(graph),
-      constant_graph_(false) {}
+Preprocessor::Preprocessor(Pdag* graph) noexcept : graph_(graph) {}
 
 void Preprocessor::Run() noexcept {
   CLOCK(time_1);
   LOG(DEBUG2) << "Preprocessing Phase I...";
   RunPhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   RunPhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   if (!graph_->normal()) {
@@ -114,7 +112,7 @@ void Preprocessor::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase III...";
     RunPhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (CheckRootGate())
+    if (graph_->IsTrivial())
       return;
   }
 }
@@ -259,9 +257,8 @@ void Preprocessor::RunPhaseOne() noexcept {
   if (graph_->HasNullGates()) {
     LOG(DEBUG3) << "Removing NULL gates...";
     graph_->RemoveNullGates();
-    constant_graph_ = graph_->root()->IsConstant();
     LOG(DEBUG3) << "Finished cleaning NULL gates!";
-    if (CheckRootGate())
+    if (graph_->IsTrivial())
       return;
   }
   SANITY_ASSERT;
@@ -281,7 +278,7 @@ void Preprocessor::RunPhaseTwo() noexcept {
     continue;
   LOG(DEBUG3) << "Finished multi-definition detection in " << DUR(mult_time);
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Detecting modules...";
@@ -293,7 +290,7 @@ void Preprocessor::RunPhaseTwo() noexcept {
     continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   CLOCK(merge_time);
@@ -301,14 +298,14 @@ void Preprocessor::RunPhaseTwo() noexcept {
   MergeCommonArgs();
   LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Processing Distributivity...";
   DetectDistributivity();
   LOG(DEBUG3) << "Distributivity detection is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Detecting modules...";
@@ -320,7 +317,7 @@ void Preprocessor::RunPhaseTwo() noexcept {
   BooleanOptimization();
   LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   CLOCK(decom_time);
@@ -328,7 +325,7 @@ void Preprocessor::RunPhaseTwo() noexcept {
   DecomposeCommonNodes();
   LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Detecting modules...";
@@ -340,7 +337,7 @@ void Preprocessor::RunPhaseTwo() noexcept {
     continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Detecting modules...";
@@ -359,7 +356,7 @@ void Preprocessor::RunPhaseThree() noexcept {
   graph_->normal(true);
   LOG(DEBUG3) << "Finished the full normalization of gates!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   RunPhaseTwo();
 }
@@ -384,7 +381,7 @@ void Preprocessor::RunPhaseFour() noexcept {
   complements.clear();
   LOG(DEBUG3) << "Complement propagation is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   RunPhaseTwo();
 }
@@ -397,10 +394,10 @@ void Preprocessor::RunPhaseFive() noexcept {
     continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   RunPhaseTwo();
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
 
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
@@ -408,7 +405,7 @@ void Preprocessor::RunPhaseFive() noexcept {
     continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
-  if (CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   graph_->Log();
 }
@@ -466,37 +463,6 @@ bool IsSubgraphWithinGraph(const GatePtr& root, int enter_time,
 }
 
 }  // namespace
-
-bool Preprocessor::CheckRootGate() noexcept {
-  if (graph_->root()->type() != kNull)
-    return false;
-  LOG(DEBUG3) << "The root NULL gate is processed!";
-  GatePtr root = graph_->root();
-  assert(root->args().size() == 1);
-  if (!root->args<Gate>().empty()) {  // Pull the child gate to the root.
-    int signed_index = root->args<Gate>().begin()->first;
-    root = root->args<Gate>().begin()->second;
-    graph_->root(root);  // Destroy the previous root.
-    assert(root->parents().empty() && !root->IsConstant() &&
-           root->type() != kNull);
-    graph_->complement() ^= signed_index < 0;
-  } else {  // Only one variable/constant argument.
-    LOG(DEBUG4) << "The root NULL gate has only single variable!";
-    if (graph_->complement()) {
-      root->InvertArgs();
-      graph_->complement() = false;
-    }
-    if (root->IsConstant()) {
-      LOG(DEBUG3) << "The root gate has become constant!";
-      assert(!(graph_->coherent() && !constant_graph_) &&
-             "Impossible state of the root gate in coherent graphs.");
-    } else {
-      assert(root->args<Variable>().size() == 1);
-      root->args<Variable>().begin()->second->order(1);
-    }
-  }
-  return true;
-}
 
 void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(!graph_->HasNullGates());
@@ -2482,7 +2448,7 @@ void Preprocessor::GatherNodes(const GatePtr& gate,
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
   Preprocessor::Run();
-  if (Preprocessor::CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
@@ -2490,21 +2456,21 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
 
 void CustomPreprocessor<Zbdd>::Run() noexcept {
   Preprocessor::Run();
-  if (Preprocessor::CheckRootGate())
+  if (graph_->IsTrivial())
     return;
-  if (!Preprocessor::graph().coherent()) {
+  if (!graph_->coherent()) {
     CLOCK(time_4);
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::RunPhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (Preprocessor::CheckRootGate())
+    if (graph_->IsTrivial())
       return;
   }
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
   Preprocessor::RunPhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-  if (Preprocessor::CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
@@ -2512,7 +2478,7 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
 
 void CustomPreprocessor<Mocus>::Run() noexcept {
   CustomPreprocessor<Zbdd>::Run();
-  if (Preprocessor::CheckRootGate())
+  if (graph_->IsTrivial())
     return;
   InvertOrder();
 }

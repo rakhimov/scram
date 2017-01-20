@@ -123,20 +123,6 @@ class Preprocessor : private boost::noncopyable {
   /// alternating AND/OR gate layers.
   void RunPhaseFive() noexcept;
 
-  /// Checks the root gate of the graph for further processing.
-  /// The root gate may become constant
-  /// or one-variable-NULL-gate,
-  /// which signals the special case
-  /// and no need for further processing.
-  ///
-  /// @returns true if no more processing is needed.
-  ///
-  /// @post If no more processing is needed,
-  ///       the graph is fully ready for analysis.
-  ///
-  /// @note This function may swap the root gate of the graph.
-  bool CheckRootGate() noexcept;
-
   /// Normalizes the gates of the whole PDAG
   /// into OR, AND gates.
   ///
@@ -1006,12 +992,8 @@ class Preprocessor : private boost::noncopyable {
   void GatherNodes(const GatePtr& gate, std::vector<GatePtr>* gates,
                    std::vector<VariablePtr>* variables) noexcept;
 
-  /// @returns The graph under processing.
-  const Pdag& graph() const { return *graph_; }
-
- private:
+  /// @todo Eliminate the protected data.
   Pdag* graph_;  ///< The PDAG to preprocess.
-  bool constant_graph_;  ///< Graph is constant due to constant events.
 };
 
 /// Undefined template class for specialization of Preprocessor

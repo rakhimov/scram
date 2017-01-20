@@ -66,7 +66,7 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
 Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
     : Zbdd(graph->root(), settings) {
   assert(!graph->complement() && "Complements must be propagated.");
-  if (graph->root().type() == kNull) {
+  if (graph->IsTrivial()) {
     const Gate& top_gate = graph->root();
     assert(top_gate.args().size() == 1);
     assert(top_gate.args<Gate>().empty());

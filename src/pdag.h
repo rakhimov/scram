@@ -865,6 +865,21 @@ class Pdag : private boost::noncopyable {
   /// @returns true if the graph has at least one pass-through logic gate.
   bool HasNullGates() const { return !null_gates_.empty(); }
 
+  /// @returns true if the graph represents a trivial Boolean function;
+  ///               that is, graph = Constant or graph = Variable.
+  ///               The only gate is the root pass-through to the simple arg.
+  ///
+  /// @note The root gate may be swapped with a new one.
+  bool IsTrivial() const {
+    return !complement_ && root_->type() == kNull &&
+           root_->args<Gate>().empty();
+  }
+
+  /// Attempts to make the graph trivial if possible.
+  ///
+  /// @returns true if the graph is trivial or made trivial.
+  bool IsTrivial() noexcept;
+
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The Variable indices map directly to the original basic events.
