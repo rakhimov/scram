@@ -375,14 +375,14 @@ void Preprocessor::RunPhaseFour() noexcept {
   graph_->Log();
   assert(!graph_->coherent());
   LOG(DEBUG3) << "Propagating complements...";
-  if (graph_->root_sign_ < 0) {
+  if (graph_->complement()) {
     const GatePtr& root = graph_->root();
     assert(root->type() == kOr || root->type() == kAnd ||
            root->type() == kNull);
     if (root->type() == kOr || root->type() == kAnd)
       root->type(root->type() == kOr ? kAnd : kOr);
     root->InvertArgs();
-    graph_->root_sign_ = 1;
+    graph_->complement_ = false;
   }
   std::unordered_map<int, GatePtr> complements;
   graph_->ClearGateMarks();
@@ -479,7 +479,7 @@ bool Preprocessor::CheckRootGate() noexcept {
     LOG(DEBUG3) << "The root gate has become constant!";
     assert(!(graph_->coherent() && !constant_graph_) &&
           "Impossible state of the root gate in coherent graphs.");
-    if (graph_->root_sign_ < 0) {
+    if (graph_->complement()) {
       State orig_state = root->state();
       root = std::make_shared<Gate>(kNull, graph_);
       graph_->root(root);
@@ -489,7 +489,7 @@ bool Preprocessor::CheckRootGate() noexcept {
         assert(orig_state == kUnityState);
         root->Nullify();
       }
-      graph_->root_sign_ = 1;
+      graph_->complement_ = false;
     }
     return true;  // No more processing is needed.
   }
@@ -501,13 +501,13 @@ bool Preprocessor::CheckRootGate() noexcept {
       root = root->args<Gate>().begin()->second;
       graph_->root(root);  // Destroy the previous root.
       assert(root->parents().empty());
-      graph_->root_sign_ *= boost::math::sign(signed_index);
+      graph_->complement_ ^= signed_index < 0;
     } else {
       LOG(DEBUG4) << "The root NULL gate has only single variable!";
       assert(root->args<Variable>().size() == 1);
-      if (graph_->root_sign_ < 0)
+      if (graph_->complement())
         root->InvertArgs();
-      graph_->root_sign_ = 1;
+      graph_->complement_ = false;
       root->args<Variable>().begin()->second->order(1);
       return true;  // Only one variable argument.
     }
@@ -607,7 +607,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
     case kNor:
     case kNand:
     case kNot:
-      graph_->root_sign_ *= -1;
+      graph_->complement_ ^= true;
       break;
     default:  // All other types keep the sign of the root.
       assert((type == kAnd || type == kOr || type == kVote ||

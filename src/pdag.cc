@@ -436,7 +436,7 @@ void Gate::ProcessComplementArg(int index) noexcept {
 
 Pdag::Pdag() noexcept
     : node_index_(0),
-      root_sign_(1),
+      complement_(false),
       coherent_(true),
       normal_(true),
       constant_(new Constant(this)) {}

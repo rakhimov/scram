@@ -839,8 +839,8 @@ class Pdag : private boost::noncopyable {
     root_ = gate;
   }
 
-  /// @returns true if the root must be complemented.
-  bool complement() const { return root_sign_ < 0; }
+  /// @returns true if graph = ~root.
+  bool complement() const { return complement_; }
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
@@ -1049,7 +1049,7 @@ class Pdag : private boost::noncopyable {
   void ClearNodeOrders(const GatePtr& gate) noexcept;
 
   int node_index_;  ///< Automatic index of the new node.
-  int root_sign_;  ///< The negative or positive sign of the root node.
+  bool complement_;  ///< The indication of a complement graph.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
   GatePtr root_;  ///< The root gate of this graph.
