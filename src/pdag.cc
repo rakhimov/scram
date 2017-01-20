@@ -312,7 +312,7 @@ void Gate::EraseArg(int index) noexcept {
   }
 }
 
-void Gate::EraseAllArgs() noexcept {
+void Gate::EraseArgs() noexcept {
   args_.clear();
   for (const auto& arg : gate_args_)
     arg.second->EraseParent(Node::index());
@@ -329,7 +329,7 @@ void Gate::EraseAllArgs() noexcept {
 
 void Gate::MakeConstant(bool state) noexcept {
   /* assert(!IsConstant()); */
-  EraseAllArgs();
+  EraseArgs();
   /// @todo Consider using AddArg. (watch out for circular call.)
   const ConstantPtr& arg = Node::graph().constant();
   int index = state ? arg->index() : -arg->index();
@@ -385,7 +385,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     assert(vote_number_ > 2 && "Corrupted number of gate arguments.");
     GatePtr clone_two = this->Clone();
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-    this->EraseAllArgs();
+    this->EraseArgs();
     this->type(kAnd);
     clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
     if (clone_two->vote_number() == 1)
@@ -396,7 +396,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   assert(args_.size() > 2);
   GatePtr clone_one = this->Clone();  // @(k, [y_i])
 
-  this->EraseAllArgs();  // The main gate turns into OR with x.
+  this->EraseArgs();  // The main gate turns into OR with x.
   type(kOr);
   this->AddArg(clone_one);
   if (vote_number_ == 2) {  // No need for the second K/N gate.

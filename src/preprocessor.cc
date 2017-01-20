@@ -581,7 +581,7 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   gate_one->NegateArg(*it);
   gate->ShareArg(*it, gate_two);
 
-  gate->EraseAllArgs();
+  gate->EraseArgs();
   gate->AddArg(gate_one);
   gate->AddArg(gate_two);
 }
@@ -624,7 +624,7 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   grand_arg->mark(true);
 
   gate->type(kOr);
-  gate->EraseAllArgs();
+  gate->EraseArgs();
   gate->AddArg(first_arg);
   gate->AddArg(second_arg);
 

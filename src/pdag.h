@@ -307,7 +307,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// Destructs parent information from the arguments.
   ~Gate() noexcept {
     assert(Node::parents().empty());
-    EraseAllArgs();
+    EraseArgs();
   }
 
   /// Clones arguments and parameters.
@@ -612,7 +612,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void EraseArg(int index) noexcept;
 
   /// Clears all the arguments of this gate.
-  void EraseAllArgs() noexcept;
+  void EraseArgs() noexcept;
 
   /// Sets the logic of this gate to pass-through
   /// and clears all its arguments except for a Boolean constant.
