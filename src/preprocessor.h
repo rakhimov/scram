@@ -137,73 +137,25 @@ class Preprocessor : private boost::noncopyable {
   /// @note This function may swap the root gate of the graph.
   bool CheckRootGate() noexcept;
 
-  /// Removes argument gates of NULL type,
-  /// which means these arg gates have only one argument.
-  /// That one grand arg is transferred to the parent gate,
+  /// Removes gates of Null logic with a single argument (maybe constant).
+  /// That one child arg is transferred to the parent gate,
   /// and the original argument gate is removed from the parent gate.
   ///
-  /// This function is used only once
-  /// to get rid of all NULL type gates
-  /// at the very beginning of preprocessing.
+  /// All Boolean constants from the PDAG are removed
+  /// according to the Boolean logic of the gates
+  /// upon passing these args to parent gates.
   ///
-  /// @note This function assumes
-  ///       that the container for NULL gates is empty.
-  ///       In other words, it is assumed
-  ///       no other function was trying to
-  ///       communicate NULL type gates for future processing.
-  /// @note This function is designed to be called only once
-  ///       at the start of preprocessing
-  ///       after cleaning all the constants from the graph.
+  /// @post If there's still a Null logic gate,
+  ///       then it's the root of the graph with a single variable/constant,
+  ///       and no further processing is required.
   ///
-  /// @warning There still may be only one NULL type gate
-  ///          which is the root of the graph.
-  ///          This must be handled separately.
-  /// @warning NULL gates that are constant are not handled
-  ///          and left for constant propagation functions.
+  /// @post If there's still a constant,
+  ///       it belongs to the root gate,
+  ///       and the whole graph is constant,
+  ///       so no further processing is required.
+  ///
+  /// @warning Gate marks will get cleared by this function.
   void RemoveNullGates() noexcept;
-
-  /// Removes all Boolean constants from the PDAG
-  /// according to the Boolean logic of the gates.
-  /// This function is only used
-  /// to get rid of all constants
-  /// registered by the PDAG
-  /// at the very beginning of preprocessing.
-  ///
-  /// @note This is one of the first preprocessing steps.
-  ///       Other algorithms are safe to assume
-  ///       that there are no house events in the fault tree.
-  ///       Only possible constant nodes are gates
-  ///       that turn NULL or UNITY sets.
-  ///
-  /// @warning There still may be only one constant state gate
-  ///          which is the root of the graph.
-  ///          This must be handled separately.
-  void RemoveConstants() noexcept;
-
-  /// Propagates a Boolean constant bottom-up.
-  /// This is a helper function for initial cleanup of the PDAG.
-  ///
-  /// @param[in,out] constant  The constant to be propagated.
-  ///
-  /// @note This function works together with
-  ///       NULL type and constant gate propagation functions
-  ///       to clean the results of the propagation.
-  void PropagateConstant(const ConstantPtr& constant) noexcept;
-
-  /// Propagates constant gates bottom-up.
-  /// This is a helper function for algorithms
-  /// that may produce and need to remove constant gates.
-  ///
-  /// @param[in,out] gate  The gate that has become constant.
-  ///
-  /// @note This function works together with
-  ///       NULL type gate propagation function
-  ///       to cleanup the structure of the graph.
-  ///
-  /// @warning All parents of the gate will be removed,
-  ///          so the gate itself may get deleted
-  ///          unless it is the top gate.
-  void PropagateConstant(const GatePtr& gate) noexcept;
 
   /// Propagate NULL type gates bottom-up.
   /// This is a helper function for algorithms
@@ -211,26 +163,8 @@ class Preprocessor : private boost::noncopyable {
   ///
   /// @param[in,out] gate  The gate that is NULL type.
   ///
-  /// @note This function works together with
-  ///       constant state gate propagation function
-  ///       to cleanup the structure of the graph.
-  ///
-  /// @warning All parents of the gate will be removed,
-  ///          so the gate itself may get deleted
-  ///          unless it is the top gate.
+  /// @post Null logic gates have no parents.
   void PropagateNullGate(const GatePtr& gate) noexcept;
-
-  /// Clears all constant gates registered for removal
-  /// by algorithms or other preprocessing functions.
-  ///
-  /// @warning Gate marks will get cleared by this function.
-  void ClearConstGates() noexcept;
-
-  /// Clears all NULL type gates registered for removal
-  /// by algorithms or other preprocessing functions.
-  ///
-  /// @warning Gate marks will get cleared by this function.
-  void ClearNullGates() noexcept;
 
   /// Normalizes the gates of the whole PDAG
   /// into OR, AND gates.

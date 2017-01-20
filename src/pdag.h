@@ -268,15 +268,6 @@ enum Operator : std::uint8_t {
 /// This number is useful for optimizations and algorithms.
 const int kNumOperators = 8;  // Update this number if operators change.
 
-/// State of a gate as a set of Boolean variables.
-/// This state helps detect null and unity sets
-/// that are formed upon Boolean operations.
-enum State : std::uint8_t {
-  kNormalState,  ///< The default case with any set that is not null or unity.
-  kNullState,  ///< The set is null. This indicates no failure.
-  kUnityState  ///< The set is unity. This set guarantees failure.
-};
-
 /// An indexed gate for use in a PDAG.
 /// Initially this gate can represent any type of gate or logic;
 /// however, this gate can be only of OR and AND type
@@ -357,11 +348,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @pre The vote number is appropriate for the gate logic and arguments.
   void vote_number(int number) { vote_number_ = number; }
 
-  /// @returns The state of this gate.
-  State state() const { return state_; }
-
   /// @returns true if this gate has become constant.
-  bool IsConstant() const { return state_ != kNormalState; }
+  bool IsConstant() const { return !constant_args_.empty(); }
 
   /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
@@ -519,7 +507,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void AddArg(int index, const std::shared_ptr<T>& arg) noexcept {
     assert(index);
     assert(std::abs(index) == arg->index());
-    assert(state_ == kNormalState);
+    assert(!IsConstant());
     assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
     assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
@@ -626,13 +614,11 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// Clears all the arguments of this gate.
   void EraseAllArgs() noexcept;
 
-  /// Sets the state of this gate to null
-  /// and clears all its arguments.
+  /// Sets the logic of this gate to pass-through
+  /// and clears all its arguments except for a Boolean constant.
   /// This function is expected to be used only once.
   ///
-  /// @param[in] state  true for kUnityState and false for kNullState
-  ///
-  /// @todo Refactor and remove states.
+  /// @param[in] state  The value for the Boolean constant.
   void MakeConstant(bool state) noexcept;
 
  private:
@@ -708,7 +694,6 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void RemoveConstantArg(int index) noexcept;
 
   Operator type_;  ///< Type of this gate.
-  State state_;  ///< Indication if this gate's state is normal, null, or unity.
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
@@ -740,6 +725,18 @@ inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
 template <>
 inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
   return constant_args_;
+}
+
+/// Specialization to handle Boolean constants in arguments.
+/// @copydoc Gate::AddArg
+template <>
+inline void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept {
+  /// @todo Merge the logic of constant argument erasure.
+  assert(constant_args_.empty());
+  args_.insert(index);
+  constant_args_.data().emplace_back(index, arg);
+  arg->AddParent(shared_from_this());
+  ProcessConstantArg(arg, arg->value());  // Remove right away.
 }
 
 class Preprocessor;  ///< @todo This can be decoupled.
@@ -784,16 +781,10 @@ class Pdag : private boost::noncopyable {
   class NullGateRegistrar {
     friend class Gate;
     /// @param[in] gate  A Null gate with a single argument.
-    /// @param[in] constant The single argument is constant.
-    void operator()(GatePtr gate, bool constant = false) const {
+    void operator()(GatePtr gate) const {
       assert(gate->type() == kNull && "Only Null logic gates are expected.");
-      if (!gate->graph().register_null_gates_)
-        return;
-      if (constant) {
-        gate->graph().const_gates_.emplace_back(std::move(gate));
-      } else {
+      if (gate->graph().register_null_gates_)
         gate->graph().null_gates_.emplace_back(std::move(gate));
-      }
     }
   };
 
@@ -848,6 +839,17 @@ class Pdag : private boost::noncopyable {
 
   /// @returns true if graph = ~root.
   bool complement() const { return complement_; }
+
+  /// @returns The single Boolean constant for the whole graph.
+  ///
+  /// @todo Consider limiting access to transform functions and gates.
+  const ConstantPtr& constant() const { return constant_; }
+
+  /// @returns true if the graph contains pass-through gates with a constant.
+  bool HasConstants() const { return !constant_->parents().empty(); }
+
+  /// @returns true if the graph has at least one pass-through logic gate.
+  bool HasNullGates() const { return !null_gates_.empty(); }
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
@@ -1064,12 +1066,8 @@ class Pdag : private boost::noncopyable {
   ConstantPtr constant_;  ///< The single constant TRUE for the whole graph.
   /// Mapping for basic events and their Variable indices.
   IndexMap<const mef::BasicEvent*> basic_events_;
-  /// Container for constant gates to be tracked and cleaned by algorithms.
-  /// These constant gates are created
-  /// because of complement or constant descendants.
-  std::vector<GateWeakPtr> const_gates_;
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
-  /// NULL type gates are created by coherent gates with only one argument.
+  /// NULL type gates are created by gates with only one argument.
   std::vector<GateWeakPtr> null_gates_;
 };
 

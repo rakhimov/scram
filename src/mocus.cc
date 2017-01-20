@@ -33,25 +33,19 @@ namespace scram {
 namespace core {
 
 Mocus::Mocus(const Pdag* graph, const Settings& settings)
-    : constant_graph_(false),
-      graph_(graph),
-      kSettings_(settings) {
-  const GatePtr& top_gate = graph->root();
-  if (top_gate->IsConstant() || top_gate->type() == kNull) {
-    constant_graph_ = true;
-    zbdd_ = std::make_unique<Zbdd>(graph, settings);
-    zbdd_->Analyze();
-  }
-}
+    : graph_(graph),
+      kSettings_(settings) {}
 
 void Mocus::Analyze() {
-  BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
-  if (constant_graph_)
-    return;
-
   CLOCK(mcs_time);
-  LOG(DEBUG2) << "Start minimal cut set generation.";
-  zbdd_ = AnalyzeModule(*graph_->root(), kSettings_);
+  if (graph_->root()->type() == kNull) {
+    LOG(DEBUG2) << "Graph is constant!";
+    zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
+  } else {
+    LOG(DEBUG2) << "Start minimal cut set generation.";
+    zbdd_ = AnalyzeModule(*graph_->root(), kSettings_);
+  }
+
   LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
   zbdd_->Analyze();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);

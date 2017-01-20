@@ -57,7 +57,6 @@ Node::~Node() = default;
 Gate::Gate(Operator type, Pdag* graph) noexcept
     : Node(graph),
       type_(type),
-      state_(kNormalState),
       mark_(false),
       module_(false),
       coherent_(false),
@@ -127,7 +126,7 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
 }
 
 void Gate::InvertArgs() noexcept {
-  assert(constant_args_.empty() && "Improper use case.");
+  /* assert(constant_args_.empty() && "Improper use case."); */
   ArgSet inverted_args;
   for (auto it = args_.rbegin(); it != args_.rend(); ++it)
     inverted_args.insert(inverted_args.end(), -*it);
@@ -136,6 +135,8 @@ void Gate::InvertArgs() noexcept {
   for (auto& arg : gate_args_)
     arg.first *= -1;
   for (auto& arg : variable_args_)
+    arg.first *= -1;
+  for (auto& arg : constant_args_)
     arg.first *= -1;
 }
 
@@ -159,17 +160,17 @@ void Gate::InvertArg(int existing_arg) noexcept {
 void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
   assert(constant_args_.empty() && "Improper use case.");
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
-  assert(arg_gate->state() == kNormalState && "Impossible to join.");
+  assert(!arg_gate->IsConstant() && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
 
   for (const auto& arg : arg_gate->gate_args_) {
     AddArg(arg);
-    if (state_ != kNormalState)
+    if (IsConstant())
       return;
   }
   for (const auto& arg : arg_gate->variable_args_) {
     AddArg(arg);
-    if (state_ != kNormalState)
+    if (IsConstant())
       return;
   }
 
@@ -327,11 +328,16 @@ void Gate::EraseAllArgs() noexcept {
 }
 
 void Gate::MakeConstant(bool state) noexcept {
-  assert(state_ == kNormalState);
-  state_ = state ? kUnityState : kNullState;
-  type_ = kNull;  // Don't use type() member function to avoid double register.
+  /* assert(!IsConstant()); */
   EraseAllArgs();
-  Pdag::NullGateRegistrar()(shared_from_this(), /*constant=*/true);
+  /// @todo Consider using AddArg. (watch out for circular call.)
+  const ConstantPtr& arg = Node::graph().constant();
+  int index = state ? arg->index() : -arg->index();
+  type_ = kNull;  // Don't use type() member function to avoid double register.
+  args_.insert(index);
+  constant_args_.data().emplace_back(index, arg);
+  arg->AddParent(shared_from_this());
+  Pdag::NullGateRegistrar()(shared_from_this());
 }
 
 void Gate::ProcessDuplicateArg(int index) noexcept {
@@ -928,11 +934,10 @@ FormulaSig GetFormulaSig(const Gate& gate) {
 /// @returns The name of the gate with extra information about its state.
 std::string GetName(const Gate& gate) {
   std::string name = "G";
-  if (gate.state() == kNormalState) {
-    if (gate.module())
-      name += "M";
-  } else {  // This gate has become constant.
+  if (gate.IsConstant()) {
     name += "C";
+  } else if (gate.module()) {
+    name += "M";
   }
   name += std::to_string(gate.index());
   return name;
@@ -945,7 +950,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
     return os;
   gate->Visit(1);
   if (gate->IsConstant()) {
-    std::string state = gate->state() == kNullState ? "false" : "true";
+    std::string state = *gate->args().begin() > 0 ? "true" : "false";
     os << "s(" << GetName(*gate) << ") = " << state << "\n";
     return os;
   }
