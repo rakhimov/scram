@@ -125,7 +125,7 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
   }
 }
 
-void Gate::InvertArgs() noexcept {
+void Gate::NegateArgs() noexcept {
   /* assert(constant_args_.empty() && "Improper use case."); */
   ArgSet inverted_args;
   for (auto it = args_.rbegin(); it != args_.rend(); ++it)
@@ -140,7 +140,7 @@ void Gate::InvertArgs() noexcept {
     arg.first *= -1;
 }
 
-void Gate::InvertArg(int existing_arg) noexcept {
+void Gate::NegateArg(int existing_arg) noexcept {
   assert(constant_args_.empty() && "Improper use case.");
   assert(args_.count(existing_arg));
   assert(!args_.count(-existing_arg));
@@ -620,7 +620,7 @@ bool Pdag::IsTrivial() noexcept {
   // Only one variable/constant argument.
   LOG(DEBUG4) << "The root NULL gate has only single variable!";
   if (complement()) {
-    root_->InvertArgs();
+    root_->NegateArgs();
     complement() = false;
   }
   BLOG(DEBUG3, root_->IsConstant()) << "The root gate has become constant!";

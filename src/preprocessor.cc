@@ -372,7 +372,7 @@ void Preprocessor::RunPhaseFour() noexcept {
            root->type() == kNull);
     if (root->type() == kOr || root->type() == kAnd)
       root->type(root->type() == kOr ? kAnd : kOr);
-    root->InvertArgs();
+    root->NegateArgs();
     graph_->complement() = false;
   }
   std::unordered_map<int, GatePtr> complements;
@@ -518,7 +518,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const GatePtr& gate) noexcept {
     }
   }
   for (int index : to_negate)
-    gate->InvertArg(index);  // No constants or NULL.
+    gate->NegateArg(index);  // No constants or NULL.
 }
 
 void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
@@ -574,11 +574,11 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   auto it = gate->args().begin();
   gate->ShareArg(*it, gate_one);
   gate->ShareArg(*it, gate_two);
-  gate_two->InvertArg(*it);
+  gate_two->NegateArg(*it);
 
   ++it;  // Handling the second argument.
   gate->ShareArg(*it, gate_one);
-  gate_one->InvertArg(*it);
+  gate_one->NegateArg(*it);
   gate->ShareArg(*it, gate_two);
 
   gate->EraseAllArgs();
@@ -663,14 +663,14 @@ void Preprocessor::PropagateComplements(
     GatePtr complement;
     if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
       arg_gate->type(complement_type);
-      arg_gate->InvertArgs();
+      arg_gate->NegateArgs();
       complement = arg_gate;
     } else {
       complement = arg_gate->Clone();
       if (arg_gate->module())
         arg_gate->module(false);  // Not good.
       complement->type(complement_type);
-      complement->InvertArgs();
+      complement->NegateArgs();
       complements->emplace(arg_gate->index(), complement);
     }
     to_swap.emplace_back(arg.first, complement);

@@ -553,7 +553,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// and apply the De Morgan's Law.
   ///
   /// @pre No constant arguments are present.
-  void InvertArgs() noexcept;
+  void NegateArgs() noexcept;
 
   /// Replaces an argument with the complement of it.
   /// This is a helper function to propagate a complement gate
@@ -562,7 +562,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @param[in] existing_arg  Positive or negative index of the argument.
   ///
   /// @pre No constant arguments are present.
-  void InvertArg(int existing_arg) noexcept;
+  void NegateArg(int existing_arg) noexcept;
 
   /// Adds arguments of an argument gate to this gate.
   /// This is a helper function for gate coalescing.
