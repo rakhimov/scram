@@ -499,26 +499,10 @@ void Preprocessor::NotifyParentsOfNegativeGates(const GatePtr& gate) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
-  /// @todo More efficient negation by Gate itself.
-  std::vector<int> to_negate;  // Args to get the negation.
+  gate->NegateNonCoherentGateArgs();
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     NotifyParentsOfNegativeGates(arg.second);
-    Operator type = arg.second->type();
-    switch (type) {
-      case kNor:
-      case kNand:
-      case kNot:
-        to_negate.push_back(arg.first);
-        break;
-      default:  // No notification for other types.
-        assert(type != kNull && "NULL gates should have been cleared.");
-        assert((type == kAnd || type == kOr || type == kVote ||
-                type == kXor) &&
-               "Update the logic if new gate types are introduced.");
-    }
   }
-  for (int index : to_negate)
-    gate->NegateArg(index);  // No constants or NULL.
 }
 
 void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
@@ -554,8 +538,7 @@ void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
       break;
     case kNot:
       assert(gate->args().size() == 1);
-      gate->type(kNull);  // Fall-through to NULL operator gate.
-    case kNull:
+      gate->type(kNull);
       break;
     default:  // Already normal gates.
       assert(gate->type() == kAnd || gate->type() == kOr);

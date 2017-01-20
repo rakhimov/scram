@@ -564,6 +564,27 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @pre No constant arguments are present.
   void NegateArg(int existing_arg) noexcept;
 
+  /// Turns all non-coherent arguments of type gate (NOT, NAND, etc.)
+  /// into complement arguments.
+  ///
+  /// This is a helper function for gate normalization
+  /// to efficiently normalize non-coherent gates.
+  void NegateNonCoherentGateArgs() noexcept {
+    for (Arg<Gate>& arg : gate_args_) {
+      switch (arg.second->type()) {
+        case kNor:
+        case kNand:
+        case kNot:
+          args_.erase(arg.first);
+          args_.insert(-arg.first);
+          arg.first = -arg.first;
+          break;
+        default:
+          assert("Update the logic if new gate types are introduced.");
+      }
+    }
+  }
+
   /// Adds arguments of an argument gate to this gate.
   /// This is a helper function for gate coalescing.
   /// The argument gate of the same logic is removed
