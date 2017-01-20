@@ -712,8 +712,8 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   gate->ShareArg(*it, gate_two);
 
   gate->EraseAllArgs();
-  gate->AddArg(gate_one->index(), gate_one);
-  gate->AddArg(gate_two->index(), gate_two);
+  gate->AddArg(gate_one);
+  gate->AddArg(gate_two);
 }
 
 void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
@@ -738,7 +738,7 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   gate->TransferArg(*it, first_arg);
 
   auto grand_arg = std::make_shared<Gate>(kVote, graph_);
-  first_arg->AddArg(grand_arg->index(), grand_arg);
+  first_arg->AddArg(grand_arg);
   grand_arg->vote_number(vote_number - 1);
 
   auto second_arg = std::make_shared<Gate>(kVote, graph_);
@@ -755,8 +755,8 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
 
   gate->type(kOr);
   gate->EraseAllArgs();
-  gate->AddArg(first_arg->index(), first_arg);
-  gate->AddArg(second_arg->index(), second_arg);
+  gate->AddArg(first_arg);
+  gate->AddArg(second_arg);
 
   NormalizeVoteGate(grand_arg);
   NormalizeVoteGate(second_arg);
@@ -810,7 +810,7 @@ void Preprocessor::PropagateComplements(
   for (const auto& arg : to_swap) {
     assert(arg.first < 0);
     gate->EraseArg(arg.first);
-    gate->AddArg(arg.second->index(), arg.second);
+    gate->AddArg(arg.second);
     assert(!gate->IsConstant() && "No duplicates are expected.");
   }
 }
@@ -1097,7 +1097,7 @@ GatePtr Preprocessor::CreateNewModule(
   for (const auto& arg : args) {
     gate->TransferArg(arg.first, module);
   }
-  gate->AddArg(module->index(), module);
+  gate->AddArg(module);
   assert(gate->args().size() > 1);
   LOG(DEBUG4) << "Created a module G" << module->index() << " with "
               << args.size() << " arguments for G" << gate->index();
@@ -1398,7 +1398,7 @@ void Preprocessor::FilterMergeCandidates(
       comp_args = std::move(diff);
       for (int index : common_args)
         comp_gate->EraseArg(index);
-      comp_gate->AddArg(gate->index(), gate);
+      comp_gate->AddArg(gate);
       if (comp_gate->IsConstant()) {  // Complement of gate is arg.
         const_gates_.push_back(comp_gate);
         comp_args.clear();
@@ -1634,7 +1634,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
       }
     }
     for (const GatePtr& common_parent : common_parents) {
-      common_parent->AddArg(merge_gate->index(), merge_gate);
+      common_parent->AddArg(merge_gate);
       if (common_parent->args().size() == 1) {
         common_parent->type(kNull);  // Assumes AND/OR gates only.
         null_gates_.push_back(common_parent);
@@ -1751,7 +1751,7 @@ bool Preprocessor::HandleDistributiveArgs(
     }
     for (const auto& gates : to_swap) {
       gate->EraseArg(gates.first->index());
-      gate->AddArg(gates.second->index(), gates.second);
+      gate->AddArg(gates.second);
       for (MergeTable::Option& option : group) {
         if (option.second.erase(gates.first)) {
           option.second.insert(gates.second);
@@ -1886,13 +1886,13 @@ void Preprocessor::TransformDistributiveArgs(
   } else {
     new_parent = std::make_shared<Gate>(distr_type, graph_);
     new_parent->mark(true);
-    gate->AddArg(new_parent->index(), new_parent);
+    gate->AddArg(new_parent);
   }
 
   auto sub_parent =
       std::make_shared<Gate>(distr_type == kAnd ? kOr : kAnd, graph_);
   sub_parent->mark(true);
-  new_parent->AddArg(sub_parent->index(), sub_parent);
+  new_parent->AddArg(sub_parent);
 
   const GatePtr& rep = *gates.begin();  // Representative of common parents.
   // Getting the common part of the distributive equation.
@@ -1903,7 +1903,7 @@ void Preprocessor::TransformDistributiveArgs(
     assert(member->parents().size() == 1);
     gate->EraseArg(member->index());
 
-    sub_parent->AddArg(member->index(), member);
+    sub_parent->AddArg(member);
     for (int index : args)
       member->EraseArg(index);
 
@@ -2223,14 +2223,14 @@ void Preprocessor::ProcessStateDestinations(
     if (target->type() == type) {  // Reuse of an existing gate.
       if (target->IsConstant())
         continue;  // No need to process.
-      target->AddArg(target->opti_value() * node->index(), node);
+      target->AddArg(node, target->opti_value() < 0);
       if (target->IsConstant())
         const_gates_.push_back(target);
       assert(!(!target->IsConstant() && target->type() == kNull));
       continue;
     }
     auto new_gate = std::make_shared<Gate>(type, graph_);
-    new_gate->AddArg(target->opti_value() * node->index(), node);
+    new_gate->AddArg(node, target->opti_value() < 0);
     if (target->module()) {  // Transfer modularity.
       target->module(false);
       new_gate->module(true);
@@ -2240,7 +2240,7 @@ void Preprocessor::ProcessStateDestinations(
     } else {
       ReplaceGate(target, new_gate);
     }
-    new_gate->AddArg(target->index(), target);  // Only after replacing target!
+    new_gate->AddArg(target);  // Only after replacing target!
     new_gate->descendant(node->index());  // Preserve continuity.
   }
 }
@@ -2448,8 +2448,7 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   }
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
-    ancestor->AddArg(boost::math::sign(arg.first) * arg.second->index(),
-                     arg.second);
+    ancestor->AddArg(arg.second, arg.first < 0);
   }
   if (!node_->parents().count(ancestor->index()) &&
       ext::none_of(ancestor->args<Gate>(), [this](const Gate::Arg<Gate>& arg) {
@@ -2541,7 +2540,7 @@ void Preprocessor::ReplaceGate(const GatePtr& gate,
     GatePtr parent = gate->parents().begin()->second.lock();
     int sign = parent->GetArgSign(gate);
     parent->EraseArg(sign * gate->index());
-    parent->AddArg(sign * replacement->index(), replacement);
+    parent->AddArg(replacement, sign < 0);
 
     if (parent->IsConstant()) {
       const_gates_.push_back(parent);

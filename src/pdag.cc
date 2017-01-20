@@ -95,13 +95,13 @@ void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
 
   if (auto it_g = ext::find(gate_args_, index)) {
     it_g->second->EraseParent(Node::index());
-    recipient->AddArg(index, it_g->second);
+    recipient->AddArg(*it_g);
     gate_args_.erase(it_g);
 
   } else {
     auto it_v = variable_args_.find(index);
     it_v->second->EraseParent(Node::index());
-    recipient->AddArg(index, it_v->second);
+    recipient->AddArg(*it_v);
     variable_args_.erase(it_v);
   }
 }
@@ -111,9 +111,9 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
   assert(index != 0);
   assert(args_.count(index));
   if (auto it_g = ext::find(gate_args_, index)) {
-    recipient->AddArg(index, it_g->second);
+    recipient->AddArg(*it_g);
   } else {
-    recipient->AddArg(index, variable_args_.find(index)->second);
+    recipient->AddArg(*variable_args_.find(index));
   }
 }
 
@@ -154,12 +154,12 @@ void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
   assert(!arg_gate->args().empty() && "Corrupted gate.");
 
   for (const auto& arg : arg_gate->gate_args_) {
-    AddArg(arg.first, arg.second);
+    AddArg(arg);
     if (state_ != kNormalState)
       return;
   }
   for (const auto& arg : arg_gate->variable_args_) {
-    AddArg(arg.first, arg.second);
+    AddArg(arg);
     if (state_ != kNormalState)
       return;
   }
@@ -367,7 +367,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
     if (clone_two->vote_number() == 1)
       clone_two->type(kOr);
-    this->AddArg(clone_two->index(), clone_two);
+    this->AddArg(clone_two);
     return;
   }
   assert(args_.size() > 2);
@@ -375,14 +375,14 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
 
   this->EraseAllArgs();  // The main gate turns into OR with x.
   type_ = kOr;
-  this->AddArg(clone_one->index(), clone_one);
+  this->AddArg(clone_one);
   if (vote_number_ == 2) {  // No need for the second K/N gate.
     clone_one->TransferArg(index, shared_from_this());  // Transferred the x.
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
     auto and_gate = std::make_shared<Gate>(kAnd, &Node::graph());
-    this->AddArg(and_gate->index(), and_gate);
+    this->AddArg(and_gate);
     clone_one->TransferArg(index, and_gate);  // Transferred the x.
 
     // Have to create the second K/N for vote_number > 2.
@@ -390,7 +390,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
     if (clone_two->vote_number() == 1)
       clone_two->type(kOr);
-    and_gate->AddArg(clone_two->index(), clone_two);
+    and_gate->AddArg(clone_two);
 
     assert(and_gate->args().size() == 2);
     assert(this->args_.size() == 2);
@@ -539,7 +539,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
     GatePtr new_gate = ConstructGate(*sub_form, ccf, nodes);
-    parent->AddArg(new_gate->index(), new_gate);
+    parent->AddArg(new_gate);
   }
   return parent;
 }
@@ -551,7 +551,7 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
   } else {
     VariablePtr& var = nodes->variables.find(&basic_event)->second;
     assert(var && "Uninitialized variable.");
-    parent->AddArg(var->index(), var);
+    parent->AddArg(var);
   }
 }
 
@@ -559,9 +559,8 @@ void Pdag::AddArg(const GatePtr& parent,
                   const mef::HouseEvent& house_event) noexcept {
   // Create unique pass-through gates to hold the construction invariant.
   auto null_gate = std::make_shared<Gate>(kNull, this);
-  int index = constant_->index();
-  null_gate->AddArg(house_event.state() ? index : -index, constant_);
-  parent->AddArg(null_gate->index(), null_gate);
+  null_gate->AddArg(constant_, !house_event.state());
+  parent->AddArg(null_gate);
   null_gates_.push_back(null_gate);
 }
 
@@ -571,7 +570,7 @@ void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
   if (!pdag_gate) {
     pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
   }
-  parent->AddArg(pdag_gate->index(), pdag_gate);
+  parent->AddArg(pdag_gate);
 }
 
 void Pdag::ClearGateMarks() noexcept { ClearGateMarks(root_); }

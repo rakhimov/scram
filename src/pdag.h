@@ -534,6 +534,16 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     mutable_args<T>().data().emplace_back(index, arg);
     arg->AddParent(shared_from_this());
   }
+  /// Wrapper to add gate arguments with index retrieval from the arg.
+  template <class T>
+  void AddArg(const std::shared_ptr<T>& arg, bool complement = false) noexcept {
+    return AddArg(complement ? -arg->index() : arg->index(), arg);
+  }
+  /// Wrapper to add arguments from the containers.
+  template <class T>
+  void AddArg(const Arg<T>& arg) noexcept {
+    return AddArg(arg.first, arg.second);
+  }
 
   /// Transfers this gate's argument to another gate.
   ///
