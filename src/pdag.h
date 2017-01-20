@@ -739,8 +739,6 @@ inline void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept {
   ProcessConstantArg(arg, arg->value());  // Remove right away.
 }
 
-class Preprocessor;  ///< @todo This can be decoupled.
-
 /// PDAG is a propositional directed acyclic graph.
 /// This class provides a simpler representation of a fault tree
 /// that takes into account the indices of events
@@ -760,8 +758,6 @@ class Preprocessor;  ///< @todo This can be decoupled.
 ///      which is not the assumption of
 ///      all the other preprocessing and analysis algorithms.
 class Pdag : private boost::noncopyable {
-  friend class Preprocessor;  ///< The main manipulator of PDAGs.
-
  public:
   static const int kVariableStartIndex = 2;  ///< The shift value for mapping.
   /// Sequential mapping of Variable indices to other data of type T.
@@ -820,8 +816,18 @@ class Pdag : private boost::noncopyable {
   /// @returns true if the fault tree is coherent.
   bool coherent() const { return coherent_; }
 
+  /// @param[in] flag  true if fault tree doesn't contain non-coherent gates.
+  ///
+  /// @todo Implement automatic tracking/marking of coherence.
+  void coherent(bool flag) { coherent_ = flag; }
+
   /// @returns true if all gates of the fault tree are normalized AND/OR.
   bool normal() const { return normal_; }
+
+  /// @param[in] flag  true if the graph has been normalized.
+  ///
+  /// @todo Consider processing and tracking internally.
+  void normal(bool flag) { normal_ = flag; }
 
   /// @returns The current root gate of the graph.
   ///          nullptr iff the graph has been constructed root-less.
@@ -838,7 +844,10 @@ class Pdag : private boost::noncopyable {
   }
 
   /// @returns true if graph = ~root.
+  /// @{
   bool complement() const { return complement_; }
+  bool& complement() { return complement_; }  // Allows XOR setting.
+  /// @}
 
   /// @returns The single Boolean constant for the whole graph.
   ///
@@ -877,76 +886,25 @@ class Pdag : private boost::noncopyable {
   /// @warning Gate marks are manipulated.
   void Log() noexcept;
 
- private:
-  /// Holder for nodes that are created from fault tree events.
-  /// This is a helper structure
-  /// for functions that transform a fault tree into a PDAG.
-  struct ProcessedNodes {  /// @{
-    std::unordered_map<const mef::Gate*, GatePtr> gates;
-    std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
-  };  /// @}
-
-  /// Gathers and initializes Variables from Basic Events.
-  /// The gates are gathered but not initialized
-  /// to give the sequential indices for the Variables
-  /// for establishing the construction invariant.
+  /// Removes gates of Null logic with a single argument (maybe constant).
+  /// That one child arg is transferred to the parent gate,
+  /// and the original argument gate is removed from the parent gate.
   ///
-  /// @param[in] formula  The Boolean formula with the source variables.
-  /// @param[in] ccf  A flag to gather CCF basic events and gates.
-  /// @param[in,out] nodes  The mapping of gathered Variables.
-  void GatherVariables(const mef::Formula& formula, bool ccf,
-                       ProcessedNodes* nodes) noexcept;
-
-  /// Initializes Variable from a Basic Event or
-  /// continues the initialization of CCF Events
-  /// belonging to the corresponding CCF gates.
+  /// All Boolean constants from the PDAG are removed
+  /// according to the Boolean logic of the gates
+  /// upon passing these args to parent gates.
   ///
-  /// @param[in] basic_event  A Basic Event belonging to a formula.
-  /// @param[in] ccf  A flag to gather CCF basic events and gates.
-  /// @param[in,out] nodes  The mapping of gathered Variables.
-  void GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
-                       ProcessedNodes* nodes) noexcept;
-
-  /// Processes a Boolean formula of a gate into a PDAG.
+  /// @post If there's still a Null logic gate,
+  ///       then it's the root of the graph with a single variable/constant,
+  ///       and no further processing is required.
   ///
-  /// @param[in] formula  The Boolean formula to be processed.
-  /// @param[in] ccf  A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes  The mapping of processed nodes.
+  /// @post If there's still a constant,
+  ///       it belongs to the root gate,
+  ///       and the whole graph is constant,
+  ///       so no further processing is required.
   ///
-  /// @returns Pointer to the newly created indexed gate.
-  ///
-  /// @pre The Operator enum in the MEF is the same as in PDAG.
-  GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
-                        ProcessedNodes* nodes) noexcept;
-
-  /// Processes a Boolean formula's basic events
-  /// into variable arguments of an indexed gate in the PDAG.
-  /// Basic events are saved for reference in analysis.
-  ///
-  /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] basic_event  The basic event argument of the formula.
-  /// @param[in] ccf  A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes  The mapping of processed nodes.
-  void AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-              bool ccf, ProcessedNodes* nodes) noexcept;
-
-  /// Processes a Boolean formula's house events
-  /// into constant arguments of an indexed gate of the PDAG.
-  ///
-  /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] house_event  The house event argument of the formula.
-  void AddArg(const GatePtr& parent,
-              const mef::HouseEvent& house_event) noexcept;
-
-  /// Processes a Boolean formula's gates
-  /// into gate arguments of an indexed gate of the PDAG.
-  ///
-  /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] gate  The gate argument of the formula.
-  /// @param[in] ccf  A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes  The mapping of processed nodes.
-  void AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-              ProcessedNodes* nodes) noexcept;
+  /// @warning Gate marks will get cleared by this function.
+  void RemoveNullGates() noexcept;
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,
@@ -1056,6 +1014,86 @@ class Pdag : private boost::noncopyable {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeOrders(const GatePtr& gate) noexcept;
+
+ private:
+  /// Holder for nodes that are created from fault tree events.
+  /// This is a helper structure
+  /// for functions that transform a fault tree into a PDAG.
+  struct ProcessedNodes {  /// @{
+    std::unordered_map<const mef::Gate*, GatePtr> gates;
+    std::unordered_map<const mef::BasicEvent*, VariablePtr> variables;
+  };  /// @}
+
+  /// Gathers and initializes Variables from Basic Events.
+  /// The gates are gathered but not initialized
+  /// to give the sequential indices for the Variables
+  /// for establishing the construction invariant.
+  ///
+  /// @param[in] formula  The Boolean formula with the source variables.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::Formula& formula, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
+
+  /// Initializes Variable from a Basic Event or
+  /// continues the initialization of CCF Events
+  /// belonging to the corresponding CCF gates.
+  ///
+  /// @param[in] basic_event  A Basic Event belonging to a formula.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
+
+  /// Processes a Boolean formula of a gate into a PDAG.
+  ///
+  /// @param[in] formula  The Boolean formula to be processed.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  ///
+  /// @pre The Operator enum in the MEF is the same as in PDAG.
+  GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
+                        ProcessedNodes* nodes) noexcept;
+
+  /// Processes a Boolean formula's basic events
+  /// into variable arguments of an indexed gate in the PDAG.
+  /// Basic events are saved for reference in analysis.
+  ///
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] basic_event  The basic event argument of the formula.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
+  void AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+              bool ccf, ProcessedNodes* nodes) noexcept;
+
+  /// Processes a Boolean formula's house events
+  /// into constant arguments of an indexed gate of the PDAG.
+  ///
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] house_event  The house event argument of the formula.
+  void AddArg(const GatePtr& parent,
+              const mef::HouseEvent& house_event) noexcept;
+
+  /// Processes a Boolean formula's gates
+  /// into gate arguments of an indexed gate of the PDAG.
+  ///
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] gate  The gate argument of the formula.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
+  void AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+              ProcessedNodes* nodes) noexcept;
+
+  /// Propagate NULL type gates bottom-up.
+  /// This is a helper function for algorithms
+  /// that may produce and need to remove NULL type gates.
+  ///
+  /// @param[in,out] gate  The gate that is NULL type.
+  ///
+  /// @post Null logic gates have no parents.
+  void PropagateNullGate(const GatePtr& gate) noexcept;
 
   int node_index_;  ///< Automatic index of the new node.
   bool complement_;  ///< The indication of a complement graph.

@@ -137,35 +137,6 @@ class Preprocessor : private boost::noncopyable {
   /// @note This function may swap the root gate of the graph.
   bool CheckRootGate() noexcept;
 
-  /// Removes gates of Null logic with a single argument (maybe constant).
-  /// That one child arg is transferred to the parent gate,
-  /// and the original argument gate is removed from the parent gate.
-  ///
-  /// All Boolean constants from the PDAG are removed
-  /// according to the Boolean logic of the gates
-  /// upon passing these args to parent gates.
-  ///
-  /// @post If there's still a Null logic gate,
-  ///       then it's the root of the graph with a single variable/constant,
-  ///       and no further processing is required.
-  ///
-  /// @post If there's still a constant,
-  ///       it belongs to the root gate,
-  ///       and the whole graph is constant,
-  ///       so no further processing is required.
-  ///
-  /// @warning Gate marks will get cleared by this function.
-  void RemoveNullGates() noexcept;
-
-  /// Propagate NULL type gates bottom-up.
-  /// This is a helper function for algorithms
-  /// that may produce and need to remove NULL type gates.
-  ///
-  /// @param[in,out] gate  The gate that is NULL type.
-  ///
-  /// @post Null logic gates have no parents.
-  void PropagateNullGate(const GatePtr& gate) noexcept;
-
   /// Normalizes the gates of the whole PDAG
   /// into OR, AND gates.
   ///

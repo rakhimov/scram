@@ -258,14 +258,14 @@ void Preprocessor::RunPhaseOne() noexcept {
   graph_->Log();
   if (graph_->HasNullGates()) {
     LOG(DEBUG3) << "Removing NULL gates...";
-    RemoveNullGates();
+    graph_->RemoveNullGates();
     constant_graph_ = graph_->root()->IsConstant();
     LOG(DEBUG3) << "Finished cleaning NULL gates!";
     if (CheckRootGate())
       return;
   }
   SANITY_ASSERT;
-  if (!graph_->coherent_) {
+  if (!graph_->coherent()) {
     LOG(DEBUG3) << "Partial normalization of gates...";
     NormalizeGates(/*full=*/false);
     LOG(DEBUG3) << "Finished the partial normalization of gates!";
@@ -353,10 +353,10 @@ void Preprocessor::RunPhaseTwo() noexcept {
 void Preprocessor::RunPhaseThree() noexcept {
   SANITY_ASSERT;
   graph_->Log();
-  assert(!graph_->normal_);
+  assert(!graph_->normal());
   LOG(DEBUG3) << "Full normalization of gates...";
   NormalizeGates(/*full=*/true);
-  graph_->normal_ = true;
+  graph_->normal(true);
   LOG(DEBUG3) << "Finished the full normalization of gates!";
 
   if (CheckRootGate())
@@ -376,7 +376,7 @@ void Preprocessor::RunPhaseFour() noexcept {
     if (root->type() == kOr || root->type() == kAnd)
       root->type(root->type() == kOr ? kAnd : kOr);
     root->InvertArgs();
-    graph_->complement_ = false;
+    graph_->complement() = false;
   }
   std::unordered_map<int, GatePtr> complements;
   graph_->ClearGateMarks();
@@ -479,12 +479,12 @@ bool Preprocessor::CheckRootGate() noexcept {
     graph_->root(root);  // Destroy the previous root.
     assert(root->parents().empty() && !root->IsConstant() &&
            root->type() != kNull);
-    graph_->complement_ ^= signed_index < 0;
+    graph_->complement() ^= signed_index < 0;
   } else {  // Only one variable/constant argument.
     LOG(DEBUG4) << "The root NULL gate has only single variable!";
     if (graph_->complement()) {
       root->InvertArgs();
-      graph_->complement_ = false;
+      graph_->complement() = false;
     }
     if (root->IsConstant()) {
       LOG(DEBUG3) << "The root gate has become constant!";
@@ -496,34 +496,6 @@ bool Preprocessor::CheckRootGate() noexcept {
     }
   }
   return true;
-}
-
-void Preprocessor::RemoveNullGates() noexcept {
-  BLOG(DEBUG5, graph_->HasConstants()) << "Got CONST gates to clear!";
-  BLOG(DEBUG5, graph_->HasNullGates()) << "Got NULL gates to clear!";
-  graph_->ClearGateMarks();  // New gates may get created without marks!
-  graph_->register_null_gates_ = false;
-  for (const GateWeakPtr& ptr : graph_->null_gates_) {
-    if (ptr.expired())
-      continue;
-    PropagateNullGate(ptr.lock());
-  }
-  graph_->null_gates_.clear();
-  graph_->register_null_gates_ = true;
-  assert(graph_->root()->IsConstant() || !graph_->HasConstants());
-  assert(graph_->root()->type() == kNull || !graph_->HasNullGates());
-}
-
-void Preprocessor::PropagateNullGate(const GatePtr& gate) noexcept {
-  assert(gate->type() == kNull);
-  while (!gate->parents().empty()) {
-    GatePtr parent = gate->parents().begin()->second.lock();
-    int sign = parent->GetArgSign(gate);
-    parent->JoinNullGate(sign * gate->index());
-    if (parent->type() == kNull) {
-      PropagateNullGate(parent);
-    }
-  }
 }
 
 void Preprocessor::NormalizeGates(bool full) noexcept {
@@ -538,7 +510,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
     case kNor:
     case kNand:
     case kNot:
-      graph_->complement_ ^= true;
+      graph_->complement() ^= true;
       break;
     default:  // All other types keep the sign of the root.
       assert((type == kAnd || type == kOr || type == kVote ||
@@ -554,7 +526,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
   NormalizeGate(root_gate, full);  // Registers null gates only.
 
   assert(!graph_->HasConstants());
-  RemoveNullGates();
+  graph_->RemoveNullGates();
 }
 
 void Preprocessor::NotifyParentsOfNegativeGates(const GatePtr& gate) noexcept {
@@ -754,7 +726,7 @@ bool Preprocessor::CoalesceGates(bool common) noexcept {
   graph_->ClearGateMarks();
   bool ret = CoalesceGates(graph_->root(), common);
 
-  RemoveNullGates();  // Actually, only pass-through with constants is created.
+  graph_->RemoveNullGates();  // Actually, only constants are created.
   return ret;
 }
 
@@ -835,7 +807,7 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
       ReplaceGate(duplicate.lock(), def.first);
     }
   }
-  RemoveNullGates();
+  graph_->RemoveNullGates();
   return true;
 }
 
@@ -1216,7 +1188,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
         TransformCommonArgs(&member_group);
       }
     }
-    RemoveNullGates();
+    graph_->RemoveNullGates();
   }
   return changed;
 }
@@ -1582,7 +1554,7 @@ bool Preprocessor::DetectDistributivity() noexcept {
   graph_->ClearGateMarks();
   bool changed = DetectDistributivity(graph_->root());
   assert(!graph_->HasConstants());
-  RemoveNullGates();
+  graph_->RemoveNullGates();
   return changed;
 }
 
@@ -1937,7 +1909,7 @@ void Preprocessor::ProcessCommonNode(
   }
   ClearStateMarks(root);
   node->opti_value(0);
-  RemoveNullGates();
+  graph_->RemoveNullGates();
 }
 
 void Preprocessor::MarkAncestors(const NodePtr& node,
@@ -2304,7 +2276,8 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
     preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
   }
-  preprocessor_->RemoveNullGates();  // Actual propagation of the constant.
+  // Actual propagation of the constant.
+  preprocessor_->graph_->RemoveNullGates();
   return changed;
 }
 
@@ -2400,8 +2373,8 @@ void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
 void Preprocessor::MarkCoherence() noexcept {
   graph_->ClearGateMarks();
   MarkCoherence(graph_->root());
-  assert(!(graph_->coherent_ && !graph_->root()->coherent()));
-  graph_->coherent_ = !graph_->complement() && graph_->root()->coherent();
+  assert(!(graph_->coherent() && !graph_->root()->coherent()));
+  graph_->coherent(!graph_->complement() && graph_->root()->coherent());
 }
 
 void Preprocessor::MarkCoherence(const GatePtr& gate) noexcept {

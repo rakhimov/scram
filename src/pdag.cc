@@ -597,6 +597,34 @@ void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
   parent->AddArg(pdag_gate);
 }
 
+void Pdag::RemoveNullGates() noexcept {
+  BLOG(DEBUG5, HasConstants()) << "Got CONST gates to clear!";
+  BLOG(DEBUG5, HasNullGates()) << "Got NULL gates to clear!";
+  ClearGateMarks();  // New gates may get created without marks!
+  register_null_gates_ = false;
+  for (const GateWeakPtr& ptr : null_gates_) {
+    if (ptr.expired())
+      continue;
+    PropagateNullGate(ptr.lock());
+  }
+  null_gates_.clear();
+  register_null_gates_ = true;
+  assert(root()->IsConstant() || !HasConstants());
+  assert(root()->type() == kNull || !HasNullGates());
+}
+
+void Pdag::PropagateNullGate(const GatePtr& gate) noexcept {
+  assert(gate->type() == kNull);
+  while (!gate->parents().empty()) {
+    GatePtr parent = gate->parents().begin()->second.lock();
+    int sign = parent->GetArgSign(gate);
+    parent->JoinNullGate(sign * gate->index());
+    if (parent->type() == kNull) {
+      PropagateNullGate(parent);
+    }
+  }
+}
+
 void Pdag::ClearGateMarks() noexcept { ClearGateMarks(root_); }
 
 void Pdag::ClearGateMarks(const GatePtr& gate) noexcept {
