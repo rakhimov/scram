@@ -1174,14 +1174,13 @@ class Pdag : private boost::noncopyable {
 
 /// Prints PDAG nodes in the Aralia format.
 /// @{
-std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant);
-std::ostream& operator<<(std::ostream& os, const VariablePtr& variable);
+std::ostream& operator<<(std::ostream& os, const Constant& constant);
+std::ostream& operator<<(std::ostream& os, const Variable& variable);
 std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 /// @}
 
 /// Prints the PDAG as a fault tree in the Aralia format.
 /// This function is mostly for debugging purposes.
-/// The output is not meant to be human readable.
 ///
 /// @param[in,out] os  Output stream.
 /// @param[in] graph  The PDAG to be printed.

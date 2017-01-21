@@ -919,14 +919,14 @@ void Pdag::Log() noexcept {
   ClearGateMarks();
 }
 
-std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {
-  os << "s(H" << constant->index() << ") = "
-     << (constant->value() ? "true" : "false") << "\n";
+std::ostream& operator<<(std::ostream& os, const Constant& constant) {
+  os << "s(H" << constant.index() << ") = "
+     << (constant.value() ? "true" : "false") << "\n";
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
-  os << "p(B" << variable->index() << ") = " << 1 << "\n";
+std::ostream& operator<<(std::ostream& os, const Variable& variable) {
+  os << "p(B" << variable.index() << ") = " << 1 << "\n";
   return os;
 }
 
@@ -1020,7 +1020,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
       formula += sig.op;
     if (!basic.second->Visited()) {
       basic.second->Visit(1);
-      os << basic.second;
+      os << *basic.second;
     }
   }
 
@@ -1029,7 +1029,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
     int index = *gate->args().begin();
     if (index < 0)
       formula += "~";  // Negation.
-    formula += "H" + std::to_string(index);
+    formula += "H" + std::to_string(std::abs(index));
   }
   os << GetName(*gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;
@@ -1038,7 +1038,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
 std::ostream& operator<<(std::ostream& os, Pdag* graph) {
   os << "PDAG" << "\n\n" << graph->root();
   if (!graph->constant()->parents().empty())
-    os << graph->constant();
+    os << *graph->constant();
   return os;
 }
 
