@@ -354,6 +354,12 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
 
+  /// @tparam T  The type of the argument nodes.
+  ///
+  /// @returns The number of arguments of specific type.
+  template <class T>
+  int num_args() const { return args<T>().size(); }
+
   /// Generic accessor to the gate argument containers.
   ///
   /// @tparam T  The type of the argument nodes.
@@ -740,12 +746,6 @@ inline const Gate::ArgMap<Gate>& Gate::args<Gate>() const { return gate_args_; }
 template <>
 inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
   return variable_args_;
-}
-
-/// @returns The Constant type arguments of a gate.
-template <>
-inline const Gate::ArgMap<Constant>& Gate::args<Constant>() const {
-  return constant_args_;
 }
 
 /// Specialization to handle Boolean constants in arguments.

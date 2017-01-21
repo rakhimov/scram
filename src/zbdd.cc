@@ -927,7 +927,7 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
 
 Zbdd::VertexPtr CutSetContainer::ConvertGate(const Gate& gate) noexcept {
   assert(gate.type() == kAnd || gate.type() == kOr);
-  assert(gate.args<Constant>().empty());
+  assert(!gate.IsConstant());
   assert(gate.args().size() > 1);
   std::vector<SetNodePtr> args;
   for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {

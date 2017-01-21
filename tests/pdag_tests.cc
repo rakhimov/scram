@@ -75,7 +75,6 @@ class GateTest : public ::testing::Test {
     assert(g->args().size() == num_vars);
     assert(g->args<Variable>().size() == num_vars);
     assert(g->args<Gate>().empty());
-    assert(g->args<Constant>().empty());
   }
 
   GatePtr g;  // Main gate for manipulations.
@@ -122,8 +121,7 @@ TEST_F(GateTest, AddArgDeathTests) {
   ASSERT_FALSE(g->IsConstant());                   \
   EXPECT_EQ(num_vars, g->args().size());           \
   EXPECT_EQ(num_vars, g->args<Variable>().size()); \
-  EXPECT_TRUE(g->args<Gate>().empty());            \
-  EXPECT_TRUE(g->args<Constant>().empty())
+  EXPECT_TRUE(g->args<Gate>().empty())
 
 /// Tests addition of an existing argument to PDAG gates
 /// that do not change the type of the gate.
@@ -166,7 +164,6 @@ TEST_F(GateTest, DuplicateArgXor) {
   g->AddArg(var_one);
   ASSERT_TRUE(g->IsConstant());
   ASSERT_EQ(1, g->args().size());
-  ASSERT_EQ(1, g->args<Constant>().size());
   EXPECT_GT(0, *g->args().begin());
 }
 
@@ -272,7 +269,6 @@ TEST_F(GateTest, DuplicateArgVoteToOrWithTwoClones) {
     g->AddArg(var_one, true);                            \
     ASSERT_TRUE(g->IsConstant());                        \
     ASSERT_EQ(1, g->args().size());                      \
-    ASSERT_EQ(1, g->args<Constant>().size());            \
     ASSERT_##const_state(*g->args().begin() > 0);        \
     EXPECT_TRUE(g->args<Variable>().empty());            \
     EXPECT_TRUE(g->args<Gate>().empty());                \
@@ -303,7 +299,6 @@ TEST_ADD_COMPLEMENT_ARG(Xor, TRUE)
     EXPECT_EQ(num_vars - 1, g->args<Variable>().size());        \
     EXPECT_EQ(v_num - 1, g->vote_number());                     \
     EXPECT_TRUE(g->args<Gate>().empty());                       \
-    EXPECT_TRUE(g->args<Constant>().empty());                   \
   }
 
 TEST_ADD_COMPLEMENT_ARG_KN(2, 2, Null)  // Join operation.
@@ -325,7 +320,6 @@ TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And)  // Join operation.
     g->ProcessConstantArg(var_one, arg_state);                               \
     ASSERT_TRUE(g->IsConstant());                                            \
     ASSERT_EQ(1, g->args().size());                                          \
-    ASSERT_EQ(1, g->args<Constant>().size());                                \
     ASSERT_##const_state(*g->args().begin() > 0);                            \
     EXPECT_TRUE(g->args<Variable>().empty());                                \
     EXPECT_TRUE(g->args<Gate>().empty());                                    \
@@ -362,7 +356,6 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, TRUE)
     EXPECT_EQ(num_vars - 1, g->args().size());                          \
     EXPECT_EQ(num_vars - 1, g->args<Variable>().size());                \
     EXPECT_TRUE(g->args<Gate>().empty());                               \
-    EXPECT_TRUE(g->args<Constant>().empty());                           \
   }
 
 TEST_CONSTANT_ARG_VNUM(true, 3, 2, Vote, Or)

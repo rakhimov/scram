@@ -804,7 +804,7 @@ void Preprocessor::DetectModules() noexcept {
 int Preprocessor::AssignTiming(int time, const GatePtr& gate) noexcept {
   if (gate->Visit(++time))
     return time;  // Revisited gate.
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     time = AssignTiming(time, arg.second);
@@ -1163,7 +1163,7 @@ void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
   for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     arg.second->AddCount(arg.first > 0);
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 }
 
 void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
@@ -1196,7 +1196,7 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
     if (count > 1)
       common_args.push_back(arg.first);
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 
   if (common_args.size() < 2)
     return;  // Can't be merged anyway.
@@ -1912,7 +1912,7 @@ int Preprocessor::PropagateState(const GatePtr& gate,
       ++num_success;
     }  // Ignore when 0.
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
   DetermineGateState(gate, num_failure, num_success);
   int mult_add = gate->parents().size();
   if (!gate->opti_value() || mult_add < 2)
@@ -2354,7 +2354,7 @@ void Preprocessor::MarkCoherence(const GatePtr& gate) noexcept {
       }
     }
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
   gate->coherent(coherent);
 }
 
@@ -2388,7 +2388,7 @@ int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
     if (!arg->order())
       arg->order(++order);
   }
-  assert(root->args<Constant>().empty());
+  assert(!root->IsConstant());
   root->order(++order);
   return order;
 }

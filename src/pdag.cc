@@ -676,6 +676,8 @@ void Pdag::ClearNodeVisits() noexcept {
   LOG(DEBUG5) << "Clearing node visit times...";
   ClearGateMarks();
   ClearNodeVisits(root_);
+  if (!constant_->parents().empty())
+    constant_->ClearVisits();
   ClearGateMarks();
   LOG(DEBUG5) << "Node visit times are clear!";
 }
@@ -692,10 +694,6 @@ void Pdag::ClearNodeVisits(const GatePtr& gate) noexcept {
     ClearNodeVisits(arg.second);
   }
   for (const auto& arg : gate->args<Variable>()) {
-    if (arg.second->Visited())
-      arg.second->ClearVisits();
-  }
-  for (const auto& arg : gate->args<Constant>()) {
     if (arg.second->Visited())
       arg.second->ClearVisits();
   }
@@ -721,7 +719,7 @@ void Pdag::ClearOptiValues(const GatePtr& gate) noexcept {
   for (const auto& arg : gate->args<Variable>()) {
     arg.second->opti_value(0);
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 }
 
 void Pdag::ClearNodeCounts() noexcept {
@@ -744,7 +742,7 @@ void Pdag::ClearNodeCounts(const GatePtr& gate) noexcept {
   for (const auto& arg : gate->args<Variable>()) {
     arg.second->ResetCount();
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 }
 
 void Pdag::ClearDescendantMarks() noexcept {
@@ -805,7 +803,7 @@ void Pdag::ClearNodeOrders(const GatePtr& gate) noexcept {
     if (arg.second->order())
       arg.second->order(0);
   }
-  assert(gate->args<Constant>().empty());
+  assert(!gate->IsConstant());
 }
 
 namespace {  // Helper facilities to log the PDAG.
@@ -846,8 +844,6 @@ struct GraphLogger {
       gates.insert(arg.first);
     for (const auto& arg : gate->args<Variable>())
       variables.insert(arg.first);
-    for (const auto& arg : gate->args<Constant>())
-      constants.insert(arg.first);
   }
 
   /// @param[in] container  Collection of indices of elements.
@@ -879,7 +875,6 @@ struct GraphLogger {
   std::unordered_set<int> gates;  ///< Collection of gates.
   std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
   std::unordered_set<int> variables;  ///< Collection of variables.
-  std::unordered_set<int> constants;  ///< Collection of constants.
 };
 
 }  // namespace
@@ -921,25 +916,19 @@ void Pdag::Log() noexcept {
   LOG(DEBUG4) << "# of variables with positive and negative indices: "
               << logger.CountOverlap(logger.variables);
 
-  BLOG(DEBUG4, !logger.constants.empty()) << "Total # of constants: "
-                                          << logger.Count(logger.constants);
+  BLOG(DEBUG4, !constant_->parents().empty()) << "Total # of constants: "
+                                              << constant_->parents().size();
 
   ClearGateMarks();
 }
 
 std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {
-  if (constant->Visited())
-    return os;
-  constant->Visit(1);
-  std::string state = constant->value() ? "true" : "false";
-  os << "s(H" << constant->index() << ") = " << state << "\n";
+  os << "s(H" << constant->index() << ") = "
+     << (constant->value() ? "true" : "false") << "\n";
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
-  if (variable->Visited())
-    return os;
-  variable->Visit(1);
   os << "p(B" << variable->index() << ") = " << 1 << "\n";
   return os;
 }
@@ -1013,11 +1002,6 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   if (gate->Visited())
     return os;
   gate->Visit(1);
-  if (gate->IsConstant()) {
-    std::string state = *gate->args().begin() > 0 ? "true" : "false";
-    os << "s(" << GetName(*gate) << ") = " << state << "\n";
-    return os;
-  }
   std::string formula;  // The formula of the gate for printing.
   const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
@@ -1037,16 +1021,18 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
     formula += "B" + std::to_string(basic.second->index());
     if (--num_args)
       formula += sig.op;
-    os << basic.second;
+    if (!basic.second->Visited()) {
+      basic.second->Visit(1);
+      os << basic.second;
+    }
   }
 
-  for (const auto& constant : gate->args<Constant>()) {
-    if (constant.first < 0)
+  if (gate->IsConstant()) {
+    assert(gate->type() == kNull);
+    int index = *gate->args().begin();
+    if (index < 0)
       formula += "~";  // Negation.
-    formula += "H" + std::to_string(constant.second->index());
-    if (--num_args)
-      formula += sig.op;
-    os << constant.second;
+    formula += "H" + std::to_string(index);
   }
   os << GetName(*gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;
@@ -1054,6 +1040,8 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
 
 std::ostream& operator<<(std::ostream& os, Pdag* graph) {
   os << "PDAG" << "\n\n" << graph->root();
+  if (!graph->constant()->parents().empty())
+    os << graph->constant();
   return os;
 }
 
