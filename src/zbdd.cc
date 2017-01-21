@@ -76,8 +76,8 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
     } else if (child < 0) {
       root_ = kBase_;
     } else {
-      const VariablePtr& var = top_gate.args<Variable>().begin()->second;
-      root_ = FindOrAddVertex(var->index(), kBase_, kEmpty_, var->order());
+      const Variable& var = top_gate.args<Variable>().begin()->second;
+      root_ = FindOrAddVertex(var.index(), kBase_, kEmpty_, var.order());
     }
   }
   CHECK_ZBDD(true);
@@ -346,17 +346,17 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     return result;
   }
   std::vector<VertexPtr> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
+        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second.order()));
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    if (arg.second->module()) {
-      module_gates->emplace(arg.first, arg.second.get());
-      args.push_back(FindOrAddVertex(*arg.second, kBase_, kEmpty_));
+    if (arg.second.module()) {
+      module_gates->emplace(arg.first, &arg.second);
+      args.push_back(FindOrAddVertex(arg.second, kBase_, kEmpty_));
     } else {
-      args.push_back(ConvertGraph(*arg.second, gates, module_gates));
+      args.push_back(ConvertGraph(arg.second, gates, module_gates));
     }
   }
   boost::sort(args, [](const VertexPtr& lhs, const VertexPtr& rhs) {
@@ -930,13 +930,13 @@ Zbdd::VertexPtr CutSetContainer::ConvertGate(const Gate& gate) noexcept {
   assert(!gate.constant());
   assert(gate.args().size() > 1);
   std::vector<SetNodePtr> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
+        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second.order()));
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    args.push_back(FindOrAddVertex(*arg.second, kBase_, kEmpty_));
+    args.push_back(FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }
   boost::sort(args, [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
     return lhs->order() > rhs->order();

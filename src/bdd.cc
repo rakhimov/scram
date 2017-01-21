@@ -55,9 +55,9 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       // Constant case should only happen to the top gate.
       root_ = {child < 0, kOne_};
     } else {
-      VariablePtr var = top_gate.args<Variable>().begin()->second;
+      const Variable& var = top_gate.args<Variable>().begin()->second;
       root_ = {child < 0,
-               FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
+               FindOrAddVertex(var.index(), kOne_, kOne_, true, var.order())};
     }
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
@@ -161,17 +161,17 @@ Bdd::Function Bdd::ConvertGraph(
     return result;
   }
   std::vector<Function> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        {arg.first < 0, FindOrAddVertex(arg.second->index(), kOne_, kOne_, true,
-                                        arg.second->order())});
-    index_to_order_.emplace(arg.second->index(), arg.second->order());
+        {arg.first < 0, FindOrAddVertex(arg.second.index(), kOne_, kOne_, true,
+                                        arg.second.order())});
+    index_to_order_.emplace(arg.second.index(), arg.second.order());
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
-    Function res = ConvertGraph(*arg.second, gates);
-    if (arg.second->module()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
+    Function res = ConvertGraph(arg.second, gates);
+    if (arg.second.module()) {
       args.push_back(
-          {arg.first < 0, FindOrAddVertex(*arg.second, kOne_, kOne_, true)});
+          {arg.first < 0, FindOrAddVertex(arg.second, kOne_, kOne_, true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});

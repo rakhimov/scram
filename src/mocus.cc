@@ -65,9 +65,9 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate.index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, const Gate*> gates;
-  auto add_gates = [&gates](const Gate::ArgMap<Gate>& args) {
-    for (const Gate::Arg<Gate>& arg : args)
-      gates.emplace(arg.first, arg.second.get());
+  auto add_gates = [&gates](const auto& args) {
+    for (const Gate::ConstArg<Gate>& arg : args)
+      gates.emplace(arg.first, &arg.second);
   };
   add_gates(gate.args<Gate>());
   const int kMaxVariableIndex =

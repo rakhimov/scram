@@ -971,7 +971,7 @@ class Preprocessor : private boost::noncopyable {
   ///
   /// @returns An ordered, stable list of arguments.
   template <class T>
-  std::vector<T*> OrderArguments(const Gate& gate) noexcept;
+  std::vector<T*> OrderArguments(Gate* gate) noexcept;
 
   /// Gathers all nodes in the PDAG.
   ///

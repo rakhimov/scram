@@ -193,7 +193,7 @@ class TestGateMarks {
       return false;
     assert(gate.mark() == mark && "Found discontinuous gate mark.");
     for (const auto& arg : gate.args<Gate>())
-      (*this)(*arg.second, mark);
+      (*this)(arg.second, mark);
     return true;
   }
 
@@ -231,7 +231,7 @@ class TestGateStructure {
         assert(gate.args().size() > 1 && "Missing arguments!");
     }
     for (const auto& arg : gate.args<Gate>())
-      (*this)(*arg.second);
+      (*this)(arg.second);
     return true;
   }
 
@@ -2381,10 +2381,10 @@ void Preprocessor::AssignOrder() noexcept {
 int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
   if (root->order())
     return order;
-  for (Gate* arg : OrderArguments<Gate>(*root)) {
+  for (Gate* arg : OrderArguments<Gate>(root)) {
     order = TopologicalOrder(arg, order);
   }
-  for (Variable* arg : OrderArguments<Variable>(*root)) {
+  for (Variable* arg : OrderArguments<Variable>(root)) {
     if (!arg->order())
       arg->order(++order);
   }
@@ -2394,9 +2394,9 @@ int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
 }
 
 template <class T>
-std::vector<T*> Preprocessor::OrderArguments(const Gate& gate) noexcept {
+std::vector<T*> Preprocessor::OrderArguments(Gate* gate) noexcept {
   std::vector<T*> args;
-  for (const Gate::Arg<T>& arg : gate.args<T>()) {
+  for (const Gate::Arg<T>& arg : gate->args<T>()) {
     args.push_back(arg.second.get());
   }
   boost::sort(args, [](T* lhs, T* rhs) {

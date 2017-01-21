@@ -41,6 +41,7 @@
 
 #include <boost/container/flat_set.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "ext/find_iterator.h"
 #include "ext/index_map.h"
@@ -281,9 +282,16 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// the positive or negative index (indicating a complement)
   /// and the pointer to the argument node.
   ///
+  /// The constant version is to simulate transitive const
+  /// so that the reference count of the argument cannot be changed.
+  ///
   /// @tparam T  The type of the argument node.
+  /// @{
   template <class T>
   using Arg = std::pair<int, std::shared_ptr<T>>;
+  template <class T>
+  using ConstArg = std::pair<int, const T&>;
+  /// @}
 
   /// An associative container type to store the gate arguments.
   /// This container type maps the index of the argument to the pointer to it.
@@ -354,19 +362,27 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
 
-  /// @tparam T  The type of the argument nodes.
-  ///
-  /// @returns The number of arguments of specific type.
-  template <class T>
-  int num_args() const { return args<T>().size(); }
-
   /// Generic accessor to the gate argument containers.
   ///
   /// @tparam T  The type of the argument nodes.
   ///
   /// @returns The map container of the gate arguments with the given type.
   template <class T>
-  const ArgMap<T>& args() const;
+  const ArgMap<T>& args();
+
+  /// Provides const access to gate arguments
+  /// w/o exposing the shared pointers.
+  /// The arguments are provided by reference.
+  ///
+  /// @tparam  The type of the arguments.
+  ///
+  /// @returns Forward-iterable range with ConstArg value type.
+  template <class T>
+  auto args() const {
+    return boost::adaptors::transform(
+        const_cast<Gate*>(this)->args<T>(),
+        [](const Arg<T>& arg) { return ConstArg<T>{arg.first, *arg.second}; });
+  }
 
   /// Marks are used for linear traversal of graphs.
   /// This can be an alternative
@@ -649,6 +665,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void MakeConstant(bool state) noexcept;
 
  private:
+  using std::enable_shared_from_this<Gate>::shared_from_this;
+
   /// Mutable getter for the gate arguments.
   ///
   /// @tparam T  The type of the argument nodes.
@@ -656,7 +674,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @returns The map container of the argument nodes with the given type.
   template <class T>
   ArgMap<T>& mutable_args() {
-    return const_cast<ArgMap<T>&>(static_cast<const Gate*>(this)->args<T>());
+    return const_cast<ArgMap<T>&>(args<T>());
   }
 
   /// Process an addition of an argument
@@ -744,11 +762,11 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
 
 /// @returns The Gate type arguments of a gate.
 template <>
-inline const Gate::ArgMap<Gate>& Gate::args<Gate>() const { return gate_args_; }
+inline const Gate::ArgMap<Gate>& Gate::args<Gate>() { return gate_args_; }
 
 /// @returns The Variable type arguments of a gate.
 template <>
-inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
+inline const Gate::ArgMap<Variable>& Gate::args<Variable>() {
   return variable_args_;
 }
 
