@@ -71,7 +71,7 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
     assert(top_gate.args().size() == 1);
     assert(top_gate.args<Gate>().empty());
     int child = *top_gate.args().begin();
-    if (top_gate.IsConstant()) {
+    if (top_gate.constant()) {
       root_ = child < 0 ? kEmpty_ : kBase_;
     } else if (child < 0) {
       root_ = kBase_;
@@ -160,7 +160,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
 
 Zbdd::Zbdd(const Gate& gate, const Settings& settings) noexcept
     : Zbdd(settings, gate.coherent(), gate.index()) {
-  if (gate.IsConstant() || gate.type() == kNull)
+  if (gate.constant() || gate.type() == kNull)
     return;
   assert(!settings.prime_implicants() && "Not implemented.");
   CLOCK(init_time);
@@ -335,7 +335,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     const Gate& gate,
     std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
     std::unordered_map<int, const Gate*>* module_gates) noexcept {
-  assert(!gate.IsConstant() && "Unexpected constant gate!");
+  assert(!gate.constant() && "Unexpected constant gate!");
   VertexPtr result;
   if (auto it_entry = ext::find(*gates, gate.index())) {
     std::pair<VertexPtr, int>& entry = it_entry->second;
@@ -927,7 +927,7 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
 
 Zbdd::VertexPtr CutSetContainer::ConvertGate(const Gate& gate) noexcept {
   assert(gate.type() == kAnd || gate.type() == kOr);
-  assert(!gate.IsConstant());
+  assert(!gate.constant());
   assert(gate.args().size() > 1);
   std::vector<SetNodePtr> args;
   for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {

@@ -214,7 +214,7 @@ class TestGateStructure {
   bool operator()(const Gate& gate) noexcept {
     if (tested_gates_.insert(gate.index()).second == false)
       return false;
-    assert(!gate.IsConstant() && "Constant gates are not clear!");
+    assert(!gate.constant() && "Constant gates are not clear!");
     switch (gate.type()) {
       case kNull:
       case kNot:
@@ -509,7 +509,7 @@ void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
   assert(!gate->args().empty());
   // Depth-first traversal before the arguments may get changed.
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
@@ -664,13 +664,13 @@ void Preprocessor::PropagateComplements(
     assert(arg.first < 0);
     gate->EraseArg(arg.first);
     gate->AddArg(arg.second);
-    assert(!gate->IsConstant() && "No duplicates are expected.");
+    assert(!gate->constant() && "No duplicates are expected.");
   }
 }
 
 bool Preprocessor::CoalesceGates(bool common) noexcept {
   assert(!graph_->HasNullGates());
-  if (graph_->root()->IsConstant())
+  if (graph_->root()->constant())
     return false;
   graph_->ClearGateMarks();
   bool ret = CoalesceGates(graph_->root(), common);
@@ -707,7 +707,7 @@ bool Preprocessor::CoalesceGates(const GatePtr& gate, bool common) noexcept {
 
     if (target_type == kNull)
       continue;  // Coalescing is impossible.
-    if (arg_gate->IsConstant())
+    if (arg_gate->constant())
       continue;  // No args to join.
     if (arg.first < 0)
       continue;  // Cannot coalesce a negative arg gate.
@@ -723,7 +723,7 @@ bool Preprocessor::CoalesceGates(const GatePtr& gate, bool common) noexcept {
   changed |= !to_join.empty();
   for (const GatePtr& arg : to_join) {
     gate->CoalesceGate(arg);
-    if (gate->IsConstant())
+    if (gate->constant())
       break;  // The parent is constant. No need to join other arguments.
     assert(gate->args().size() > 1);  // Does not produce NULL type gates.
   }
@@ -732,7 +732,7 @@ bool Preprocessor::CoalesceGates(const GatePtr& gate, bool common) noexcept {
 
 bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   assert(!graph_->HasNullGates());
-  if (graph_->root()->IsConstant())
+  if (graph_->root()->constant())
     return false;
 
   graph_->ClearGateMarks();
@@ -767,7 +767,7 @@ void Preprocessor::DetectMultipleDefinitions(
   if (gate->mark())
     return;
   gate->mark(true);
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 
   if (!gate->module()) {  // Modules are unique by definition.
     std::pair<GatePtr, bool> ret = unique_gates->insert(gate);
@@ -804,7 +804,7 @@ void Preprocessor::DetectModules() noexcept {
 int Preprocessor::AssignTiming(int time, const GatePtr& gate) noexcept {
   if (gate->Visit(++time))
     return time;  // Revisited gate.
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     time = AssignTiming(time, arg.second);
@@ -1067,7 +1067,7 @@ std::vector<GateWeakPtr> Preprocessor::GatherModules() noexcept {
     assert(gate->mark());
     for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
       const GatePtr& arg_gate = arg.second;
-      assert(!arg_gate->IsConstant());
+      assert(!arg_gate->constant());
       if (arg_gate->mark())
         continue;
       arg_gate->mark(true);
@@ -1151,7 +1151,7 @@ void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
 
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     const GatePtr& arg_gate = arg.second;
-    assert(!arg_gate->IsConstant());
+    assert(!arg_gate->constant());
     MarkCommonArgs(arg_gate, op);
     if (in_group)
       arg_gate->AddCount(arg.first > 0);
@@ -1163,7 +1163,7 @@ void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
   for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
     arg.second->AddCount(arg.first > 0);
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 }
 
 void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
@@ -1177,7 +1177,7 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
   std::vector<int> common_args;
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     const GatePtr& arg_gate = arg.second;
-    assert(!arg_gate->IsConstant());
+    assert(!arg_gate->constant());
     if (!arg_gate->module())
       GatherCommonArgs(arg_gate, op, group);
     if (!in_group)
@@ -1196,7 +1196,7 @@ void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
     if (count > 1)
       common_args.push_back(arg.first);
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 
   if (common_args.size() < 2)
     return;  // Can't be merged anyway.
@@ -1218,7 +1218,7 @@ void Preprocessor::FilterMergeCandidates(
     MergeTable::CommonArgs& common_args = it->second;
     if (gate->args().size() == 1)
       continue;
-    if (gate->IsConstant())
+    if (gate->constant())
       continue;
     if (common_args.size() < 2)
       continue;
@@ -1230,7 +1230,7 @@ void Preprocessor::FilterMergeCandidates(
       MergeTable::CommonArgs& comp_args = it_next->second;
       if (comp_args.size() < common_args.size())
         continue;  // Changed gate.
-      assert(!comp_gate->IsConstant());
+      assert(!comp_gate->constant());
       if (!boost::includes(comp_args, common_args))
         continue;
 
@@ -1242,7 +1242,7 @@ void Preprocessor::FilterMergeCandidates(
       for (int index : common_args)
         comp_gate->EraseArg(index);
       comp_gate->AddArg(gate);
-      if (comp_gate->IsConstant()) {  // Complement of gate is arg.
+      if (comp_gate->constant()) {  // Complement of gate is arg.
         comp_args.clear();
         cleanup = true;
       } else if (comp_gate->args().size() == 1) {  // Perfect substitution.
@@ -1257,7 +1257,7 @@ void Preprocessor::FilterMergeCandidates(
   if (!cleanup)
     return;
   boost::remove_erase_if(*candidates, [](const MergeTable::Candidate& mem) {
-    return mem.first->IsConstant() || mem.first->type() == kNull ||
+    return mem.first->constant() || mem.first->type() == kNull ||
            mem.second.size() == 1;
   });
 }
@@ -1479,7 +1479,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
       if (common_parent->args().size() == 1) {
         common_parent->type(kNull);  // Assumes AND/OR gates only.
       }
-      assert(!common_parent->IsConstant());
+      assert(!common_parent->constant());
     }
     // Substitute args in superset common args with the new gate.
     MergeTable::MergeGroup::iterator it_rest = it;
@@ -1511,7 +1511,7 @@ bool Preprocessor::DetectDistributivity(const GatePtr& gate) noexcept {
   if (gate->mark())
     return false;
   gate->mark(true);
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
   bool changed = false;
   Operator distr_type = kNull;  // Implicit flag of no operation!
   switch (gate->type()) {
@@ -1531,7 +1531,7 @@ bool Preprocessor::DetectDistributivity(const GatePtr& gate) noexcept {
   for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
     const GatePtr& child_gate = arg.second;
     changed |= DetectDistributivity(child_gate);
-    assert(!child_gate->IsConstant() && "Impossible state.");
+    assert(!child_gate->constant() && "Impossible state.");
     if (distr_type == kNull)
       continue;  // Distributivity is not possible.
     if (arg.first < 0)
@@ -1790,7 +1790,7 @@ void Preprocessor::GatherCommonNodes(
     gates_queue.pop();
     for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
       const GatePtr& arg_gate = arg.second;
-      assert(!arg_gate->IsConstant());
+      assert(!arg_gate->constant());
       if (arg_gate->Visited())
         continue;
       arg_gate->Visit(1);
@@ -1912,7 +1912,7 @@ int Preprocessor::PropagateState(const GatePtr& gate,
       ++num_success;
     }  // Ignore when 0.
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
   DetermineGateState(gate, num_failure, num_success);
   int mult_add = gate->parents().size();
   if (!gate->opti_value() || mult_add < 2)
@@ -2050,10 +2050,10 @@ void Preprocessor::ProcessStateDestinations(
     assert(target->opti_value() == 1 || target->opti_value() == -1);
     Operator type = target->opti_value() == 1 ? kOr : kAnd;
     if (target->type() == type) {  // Reuse of an existing gate.
-      if (target->IsConstant())
+      if (target->constant())
         continue;  // No need to process.
       target->AddArg(node, target->opti_value() < 0);
-      assert(!(!target->IsConstant() && target->type() == kNull));
+      assert(!(!target->constant() && target->type() == kNull));
       continue;
     }
     auto new_gate = std::make_shared<Gate>(type, graph_);
@@ -2354,7 +2354,7 @@ void Preprocessor::MarkCoherence(const GatePtr& gate) noexcept {
       }
     }
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
   gate->coherent(coherent);
 }
 
@@ -2370,7 +2370,7 @@ void Preprocessor::ReplaceGate(const GatePtr& gate,
 }
 
 bool Preprocessor::RegisterToClear(const GatePtr& gate) noexcept {
-  return gate->IsConstant() || gate->type() == kNull;  // automatic register.
+  return gate->constant() || gate->type() == kNull;  // automatic register.
 }
 
 void Preprocessor::AssignOrder() noexcept {
@@ -2388,7 +2388,7 @@ int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
     if (!arg->order())
       arg->order(++order);
   }
-  assert(!root->IsConstant());
+  assert(!root->constant());
   root->order(++order);
   return order;
 }

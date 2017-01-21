@@ -76,7 +76,7 @@ void Gate::type(Operator type) {  // Don't use in Gate constructor!
 
 GatePtr Gate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
-  assert(!IsConstant() && type_ != kNull);
+  assert(!constant() && type_ != kNull);
   auto clone = std::make_shared<Gate>(type_, &Node::graph());  // The same type.
   clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
@@ -96,7 +96,7 @@ GatePtr Gate::Clone() noexcept {
 }
 
 void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
-  assert(!IsConstant() && "Improper use case.");
+  assert(!constant() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
@@ -115,7 +115,7 @@ void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
 }
 
 void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
-  assert(!IsConstant() && "Improper use case.");
+  assert(!constant() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
   if (auto it_g = ext::find(gate_args_, index)) {
@@ -126,7 +126,7 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
 }
 
 void Gate::NegateArgs() noexcept {
-  /* assert(!IsConstant() && "Improper use case."); */
+  /* assert(!constant() && "Improper use case."); */
   /// @todo Consider in place inversion.
   ArgSet inverted_args;
   for (auto it = args_.rbegin(); it != args_.rend(); ++it)
@@ -140,7 +140,7 @@ void Gate::NegateArgs() noexcept {
 }
 
 void Gate::NegateArg(int existing_arg) noexcept {
-  assert(!IsConstant() && "Improper use case.");
+  assert(!constant() && "Improper use case.");
   assert(args_.count(existing_arg));
   assert(!args_.count(-existing_arg));
 
@@ -157,19 +157,19 @@ void Gate::NegateArg(int existing_arg) noexcept {
 }
 
 void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
-  assert(!IsConstant() && "Improper use case.");
+  assert(!constant() && "Improper use case.");
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
-  assert(!arg_gate->IsConstant() && "Impossible to join.");
+  assert(!arg_gate->constant() && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
 
   for (const auto& arg : arg_gate->gate_args_) {
     AddArg(arg);
-    if (IsConstant())
+    if (constant())
       return;
   }
   for (const auto& arg : arg_gate->variable_args_) {
     AddArg(arg);
-    if (IsConstant())
+    if (constant())
       return;
   }
 
@@ -327,7 +327,7 @@ void Gate::EraseArgs() noexcept {
 }
 
 void Gate::MakeConstant(bool state) noexcept {
-  /* assert(!IsConstant()); */
+  /* assert(!constant()); */
   EraseArgs();
   /// @todo Consider using AddArg. (watch out for circular call.)
   type(kNull);
@@ -609,7 +609,7 @@ bool Pdag::IsTrivial() noexcept {
   if (!root_->args<Gate>().empty()) {  // Pull the child gate to the root.
     int signed_index = root_->args<Gate>().begin()->first;
     root_ = root_->args<Gate>().begin()->second;  // Destroy the previous root.
-    assert(root_->parents().empty() && !root_->IsConstant() &&
+    assert(root_->parents().empty() && !root_->constant() &&
            root_->type() != kNull);
     complement() ^= signed_index < 0;
     return false;
@@ -620,8 +620,8 @@ bool Pdag::IsTrivial() noexcept {
     root_->NegateArgs();
     complement() = false;
   }
-  BLOG(DEBUG3, root_->IsConstant()) << "The root gate has become constant!";
-  if (!root_->IsConstant()) {
+  BLOG(DEBUG3, root_->constant()) << "The root gate has become constant!";
+  if (!root_->constant()) {
     assert(root_->args<Variable>().size() == 1);
     /// @todo Decouple the order assignment!
     root_->args<Variable>().begin()->second->order(1);
@@ -642,7 +642,7 @@ void Pdag::RemoveNullGates() noexcept {
   }
   null_gates_.clear();
   register_null_gates_ = true;
-  assert(root()->IsConstant() || !HasConstants());
+  assert(root()->constant() || !HasConstants());
   assert(root()->type() == kNull || !HasNullGates());
 }
 
@@ -716,7 +716,7 @@ void Pdag::ClearOptiValues(const GatePtr& gate) noexcept {
   for (const auto& arg : gate->args<Variable>()) {
     arg.second->opti_value(0);
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 }
 
 void Pdag::ClearNodeCounts() noexcept {
@@ -739,7 +739,7 @@ void Pdag::ClearNodeCounts(const GatePtr& gate) noexcept {
   for (const auto& arg : gate->args<Variable>()) {
     arg.second->ResetCount();
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 }
 
 void Pdag::ClearDescendantMarks() noexcept {
@@ -800,7 +800,7 @@ void Pdag::ClearNodeOrders(const GatePtr& gate) noexcept {
     if (arg.second->order())
       arg.second->order(0);
   }
-  assert(!gate->IsConstant());
+  assert(!gate->constant());
 }
 
 namespace {  // Helper facilities to log the PDAG.
@@ -984,7 +984,7 @@ FormulaSig GetFormulaSig(const Gate& gate) {
 /// @returns The name of the gate with extra information about its state.
 std::string GetName(const Gate& gate) {
   std::string name = "G";
-  if (gate.IsConstant()) {
+  if (gate.constant()) {
     name += "C";
   } else if (gate.module()) {
     name += "M";
@@ -1024,7 +1024,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
     }
   }
 
-  if (gate->IsConstant()) {
+  if (gate->constant()) {
     assert(gate->type() == kNull);
     int index = *gate->args().begin();
     if (index < 0)

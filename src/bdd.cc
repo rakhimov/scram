@@ -51,7 +51,7 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
     assert(top_gate.args().size() == 1);
     assert(top_gate.args<Gate>().empty());
     int child = *top_gate.args().begin();
-    if (top_gate.IsConstant()) {
+    if (top_gate.constant()) {
       // Constant case should only happen to the top gate.
       root_ = {child < 0, kOne_};
     } else {
@@ -149,7 +149,7 @@ ItePtr Bdd::FindOrAddVertex(const Gate& gate, const VertexPtr& high,
 Bdd::Function Bdd::ConvertGraph(
     const Gate& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
-  assert(!gate.IsConstant() && "Unexpected constant gate!");
+  assert(!gate.constant() && "Unexpected constant gate!");
   Function result;  // For the NRVO, due to memoization.
   // Memoization check.
   if (auto it_entry = ext::find(*gates, gate.index())) {

@@ -349,7 +349,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void vote_number(int number) { vote_number_ = number; }
 
   /// @returns true if this gate has become constant.
-  bool IsConstant() const { return constant_ != nullptr; }
+  bool constant() const { return constant_ != nullptr; }
 
   /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
@@ -513,7 +513,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void AddArg(int index, const std::shared_ptr<T>& arg) noexcept {
     assert(index);
     assert(std::abs(index) == arg->index());
-    assert(!IsConstant());
+    assert(!constant_);
     assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
     assert(!(type_ == kXor && args_.size() > 1));
     assert(vote_number_ >= 0);
