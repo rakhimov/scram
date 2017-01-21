@@ -84,19 +84,19 @@ GatePtr Gate::Clone() noexcept {
   clone->args_ = args_;
   clone->gate_args_ = gate_args_;
   clone->variable_args_ = variable_args_;
-  clone->constant_args_ = constant_args_;
+  clone->constant_ = constant_;
   // Introducing the new parent to the args.
   for (const auto& arg : gate_args_)
     arg.second->AddParent(clone);
   for (const auto& arg : variable_args_)
     arg.second->AddParent(clone);
-  for (const auto& arg : constant_args_)
-    arg.second->AddParent(clone);
+  if (constant_)
+    constant_->AddParent(clone);
   return clone;
 }
 
 void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
-  assert(constant_args_.empty() && "Improper use case.");
+  assert(!IsConstant() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
   args_.erase(index);
@@ -115,7 +115,7 @@ void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
 }
 
 void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
-  assert(constant_args_.empty() && "Improper use case.");
+  assert(!IsConstant() && "Improper use case.");
   assert(index != 0);
   assert(args_.count(index));
   if (auto it_g = ext::find(gate_args_, index)) {
@@ -126,7 +126,8 @@ void Gate::ShareArg(int index, const GatePtr& recipient) noexcept {
 }
 
 void Gate::NegateArgs() noexcept {
-  /* assert(constant_args_.empty() && "Improper use case."); */
+  /* assert(!IsConstant() && "Improper use case."); */
+  /// @todo Consider in place inversion.
   ArgSet inverted_args;
   for (auto it = args_.rbegin(); it != args_.rend(); ++it)
     inverted_args.insert(inverted_args.end(), -*it);
@@ -136,12 +137,10 @@ void Gate::NegateArgs() noexcept {
     arg.first *= -1;
   for (auto& arg : variable_args_)
     arg.first *= -1;
-  for (auto& arg : constant_args_)
-    arg.first *= -1;
 }
 
 void Gate::NegateArg(int existing_arg) noexcept {
-  assert(constant_args_.empty() && "Improper use case.");
+  assert(!IsConstant() && "Improper use case.");
   assert(args_.count(existing_arg));
   assert(!args_.count(-existing_arg));
 
@@ -158,7 +157,7 @@ void Gate::NegateArg(int existing_arg) noexcept {
 }
 
 void Gate::CoalesceGate(const GatePtr& arg_gate) noexcept {
-  assert(constant_args_.empty() && "Improper use case.");
+  assert(!IsConstant() && "Improper use case.");
   assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
   assert(!arg_gate->IsConstant() && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
@@ -201,8 +200,8 @@ void Gate::JoinNullGate(int index) noexcept {
   } else if (!null_gate->variable_args_.empty()) {
     AddArg(arg_index, null_gate->variable_args_.begin()->second);
   } else {
-    assert(!null_gate->constant_args_.empty());
-    AddArg(arg_index, null_gate->constant_args_.begin()->second);
+    assert(null_gate->constant_);
+    AddArg(arg_index, null_gate->constant_);
   }
 }
 
@@ -306,9 +305,9 @@ void Gate::EraseArg(int index) noexcept {
     variable_args_.erase(it_v);
 
   } else {
-    auto it_c = constant_args_.find(index);
-    it_c->second->EraseParent(Node::index());
-    constant_args_.erase(it_c);
+    assert(constant_);
+    constant_->EraseParent(Node::index());
+    constant_ = nullptr;
   }
 }
 
@@ -322,22 +321,20 @@ void Gate::EraseArgs() noexcept {
     arg.second->EraseParent(Node::index());
   variable_args_.clear();
 
-  for (const auto& arg : constant_args_)
-    arg.second->EraseParent(Node::index());
-  constant_args_.clear();
+  if (constant_)
+    constant_->EraseParent(Node::index());
+  constant_ = nullptr;
 }
 
 void Gate::MakeConstant(bool state) noexcept {
   /* assert(!IsConstant()); */
   EraseArgs();
   /// @todo Consider using AddArg. (watch out for circular call.)
-  const ConstantPtr& arg = Node::graph().constant();
-  int index = state ? arg->index() : -arg->index();
-  type_ = kNull;  // Don't use type() member function to avoid double register.
+  type(kNull);
+  constant_ = Node::graph().constant();
+  int index = state ? constant_->index() : -constant_->index();
   args_.insert(index);
-  constant_args_.data().emplace_back(index, arg);
-  arg->AddParent(shared_from_this());
-  Pdag::NullGateRegistrar()(shared_from_this());
+  constant_->AddParent(shared_from_this());
 }
 
 void Gate::ProcessDuplicateArg(int index) noexcept {

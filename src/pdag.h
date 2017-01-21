@@ -349,7 +349,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   void vote_number(int number) { vote_number_ = number; }
 
   /// @returns true if this gate has become constant.
-  bool IsConstant() const { return !constant_args_.empty(); }
+  bool IsConstant() const { return constant_ != nullptr; }
 
   /// @returns The ordered set of argument indices of this gate.
   const ArgSet& args() const { return args_; }
@@ -474,8 +474,8 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
 
     if (auto it = ext::find(variable_args_, index))
       return it->second;
-
-    return constant_args_.find(index)->second;
+    assert(constant_ && std::abs(index) == constant_->index());
+    return constant_;
   }
 
   /// Adds an argument node to this gate.
@@ -734,8 +734,12 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @{
   ArgMap<Gate> gate_args_;
   ArgMap<Variable> variable_args_;
-  ArgMap<Constant> constant_args_;
   /// @}
+
+  /// The single constant argument for the whole graph.
+  /// The gate is considered constant if this argument is set.
+  /// nullptr if the gate doesn't have the Constant argument.
+  ConstantPtr constant_;
 };
 
 /// @returns The Gate type arguments of a gate.
@@ -753,9 +757,9 @@ inline const Gate::ArgMap<Variable>& Gate::args<Variable>() const {
 template <>
 inline void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept {
   /// @todo Merge the logic of constant argument erasure.
-  assert(constant_args_.empty());
+  assert(!constant_);
   args_.insert(index);
-  constant_args_.data().emplace_back(index, arg);
+  constant_ = arg;
   arg->AddParent(shared_from_this());
   ProcessConstantArg(arg, arg->value());  // Remove right away.
 }
