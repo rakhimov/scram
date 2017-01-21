@@ -21,6 +21,10 @@ if [[ -n "${INTEL_COMPILER}" ]]; then
   ./icc-travis/install-icc.sh
 fi
 
+if [[ "$CXX" = "clang++" ]]; then
+  sudo apt-get install -qq clang-${CLANG_VERSION}
+fi
+
 # Installing dependencies from source.
 PROJECT_DIR=$PWD
 cd /tmp

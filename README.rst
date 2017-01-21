@@ -92,7 +92,7 @@ Compilers
 Package                Minimum Version
 ====================   ==================
 GCC/G++                4.9
-Clang/LLVM             3.4
+Clang/LLVM             3.6
 Intel                  17.0.1
 ====================   ==================
 
