@@ -459,7 +459,7 @@ Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
 }
 
 void Pdag::Print() {
-  ClearNodeVisits();
+  Clear<kVisit>();
   std::cerr << "\n" << this << std::endl;
 }
 
@@ -623,7 +623,7 @@ bool Pdag::IsTrivial() noexcept {
 void Pdag::RemoveNullGates() noexcept {
   BLOG(DEBUG5, HasConstants()) << "Got CONST gates to clear!";
   BLOG(DEBUG5, HasNullGates()) << "Got NULL gates to clear!";
-  ClearGateMarks();  // New gates may get created without marks!
+  Clear<kGateMark>();  // New gates may get created without marks!
   register_null_gates_ = false;
   for (const GateWeakPtr& ptr : null_gates_) {
     if (ptr.expired())
@@ -648,151 +648,6 @@ void Pdag::PropagateNullGate(const GatePtr& gate) noexcept {
   }
 }
 
-void Pdag::ClearGateMarks() noexcept { ClearGateMarks(root_); }
-
-void Pdag::ClearGateMarks(const GatePtr& gate) noexcept {
-  if (!gate->mark())
-    return;
-  gate->mark(false);
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearGateMarks(arg.second);
-  }
-}
-
-void Pdag::ClearNodeVisits() noexcept {
-  LOG(DEBUG5) << "Clearing node visit times...";
-  ClearGateMarks();
-  ClearNodeVisits(root_);
-  if (!constant_->parents().empty())
-    constant_->ClearVisits();
-  ClearGateMarks();
-  LOG(DEBUG5) << "Node visit times are clear!";
-}
-
-void Pdag::ClearNodeVisits(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-
-  if (gate->Visited())
-    gate->ClearVisits();
-
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearNodeVisits(arg.second);
-  }
-  for (const auto& arg : gate->args<Variable>()) {
-    if (arg.second->Visited())
-      arg.second->ClearVisits();
-  }
-}
-
-void Pdag::ClearOptiValues() noexcept {
-  LOG(DEBUG5) << "Clearing OptiValues...";
-  ClearGateMarks();
-  ClearOptiValues(root_);
-  ClearGateMarks();
-  LOG(DEBUG5) << "Node OptiValues are clear!";
-}
-
-void Pdag::ClearOptiValues(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-
-  gate->opti_value(0);
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearOptiValues(arg.second);
-  }
-  for (const auto& arg : gate->args<Variable>()) {
-    arg.second->opti_value(0);
-  }
-  assert(!gate->constant());
-}
-
-void Pdag::ClearNodeCounts() noexcept {
-  LOG(DEBUG5) << "Clearing node counts...";
-  ClearGateMarks();
-  ClearNodeCounts(root_);
-  ClearGateMarks();
-  LOG(DEBUG5) << "Node counts are clear!";
-}
-
-void Pdag::ClearNodeCounts(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-
-  gate->ResetCount();
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearNodeCounts(arg.second);
-  }
-  for (const auto& arg : gate->args<Variable>()) {
-    arg.second->ResetCount();
-  }
-  assert(!gate->constant());
-}
-
-void Pdag::ClearDescendantMarks() noexcept {
-  LOG(DEBUG5) << "Clearing gate descendant marks...";
-  ClearGateMarks();
-  ClearDescendantMarks(root_);
-  ClearGateMarks();
-  LOG(DEBUG5) << "Descendant marks are clear!";
-}
-
-void Pdag::ClearDescendantMarks(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-  gate->descendant(0);
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearDescendantMarks(arg.second);
-  }
-}
-
-void Pdag::ClearAncestorMarks() noexcept {
-  LOG(DEBUG5) << "Clearing gate descendant marks...";
-  ClearGateMarks();
-  ClearAncestorMarks(root_);
-  ClearGateMarks();
-  LOG(DEBUG5) << "Descendant marks are clear!";
-}
-
-void Pdag::ClearAncestorMarks(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-  gate->ancestor(0);
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearAncestorMarks(arg.second);
-  }
-}
-
-void Pdag::ClearNodeOrders() noexcept {
-  LOG(DEBUG5) << "Clearing node order marks...";
-  ClearGateMarks();
-  ClearNodeOrders(root_);
-  ClearGateMarks();
-  LOG(DEBUG5) << "Node order marks are clear!";
-}
-
-void Pdag::ClearNodeOrders(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-  if (gate->order())
-    gate->order(0);
-
-  for (const auto& arg : gate->args<Gate>()) {
-    ClearNodeOrders(arg.second);
-  }
-  for (const auto& arg : gate->args<Variable>()) {
-    if (arg.second->order())
-      arg.second->order(0);
-  }
-  assert(!gate->constant());
-}
-
 namespace {  // Helper facilities to log the PDAG.
 
 /// Container for properties of PDAGs.
@@ -809,13 +664,7 @@ struct GraphLogger {
   ///
   /// @param[in] gate  The starting gate for traversal.
   void GatherInformation(const GatePtr& gate) noexcept {
-    if (gate->mark())
-      return;
-    gate->mark(true);
-    Log(gate);
-    for (const auto& arg : gate->args<Gate>()) {
-      GatherInformation(arg.second);
-    }
+    TraverseGates(gate, [this](const GatePtr& node) { Log(node); });
   }
 
   /// Collects data from a gate.
@@ -869,9 +718,10 @@ struct GraphLogger {
 void Pdag::Log() noexcept {
   if (DEBUG4 > scram::Logger::report_level())
     return;
-  ClearGateMarks();
+  Clear<kGateMark>();
   GraphLogger logger(root_);
   logger.GatherInformation(root_);
+  Clear<kGateMark>();
   LOG(DEBUG4) << "PDAG with root G" << root_->index();
   LOG(DEBUG4) << "Total # of gates: " << logger.Count(logger.gates);
   LOG(DEBUG4) << "# of modules: " << logger.num_modules;
@@ -905,8 +755,6 @@ void Pdag::Log() noexcept {
 
   BLOG(DEBUG4, !constant_->parents().empty()) << "Total # of constants: "
                                               << constant_->parents().size();
-
-  ClearGateMarks();
 }
 
 std::ostream& operator<<(std::ostream& os, const Constant& constant) {

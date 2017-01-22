@@ -376,7 +376,7 @@ void Preprocessor::RunPhaseFour() noexcept {
     graph_->complement() = false;
   }
   std::unordered_map<int, GatePtr> complements;
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   PropagateComplements(graph_->root(), false, &complements);
   complements.clear();
   LOG(DEBUG3) << "Complement propagation is done!";
@@ -467,7 +467,7 @@ bool IsSubgraphWithinGraph(const GatePtr& root, int enter_time,
 void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(!graph_->HasNullGates());
   if (full) {
-    graph_->ClearNodeOrders();
+    graph_->Clear<Pdag::kOrder>();
     AssignOrder();  // K/N gates need order.
   }
   const GatePtr& root_gate = graph_->root();
@@ -485,10 +485,10 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
   }
   // Process negative gates.
   // Note that root's negative gate is processed in the above lines.
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   NotifyParentsOfNegativeGates(root_gate);
 
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   NormalizeGate(root_gate, full);  // Registers null gates only.
 
   assert(!graph_->HasConstants());
@@ -672,7 +672,7 @@ bool Preprocessor::CoalesceGates(bool common) noexcept {
   assert(!graph_->HasNullGates());
   if (graph_->root()->constant())
     return false;
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   bool ret = CoalesceGates(graph_->root(), common);
 
   graph_->RemoveNullGates();  // Actually, only constants are created.
@@ -735,14 +735,14 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   if (graph_->root()->constant())
     return false;
 
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   // The original gate and its multiple definitions.
   std::unordered_map<GatePtr, std::vector<GateWeakPtr>> multi_def;
   {
     GateSet unique_gates;
     DetectMultipleDefinitions(graph_->root(), &multi_def, &unique_gates);
   }
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
 
   if (multi_def.empty())
     return false;
@@ -789,11 +789,11 @@ void Preprocessor::DetectModules() noexcept {
   // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
   LOG(DEBUG4) << "Assigning timings to nodes...";
-  graph_->ClearNodeVisits();
+  graph_->Clear<Pdag::kVisit>();
   AssignTiming(0, root_gate);
   LOG(DEBUG4) << "Timings are assigned to nodes.";
 
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   FindModules(root_gate);
 
   assert(!root_gate->Revisited());  // Sanity checks.
@@ -1052,7 +1052,7 @@ void Preprocessor::CreateNewModules(
 }
 
 std::vector<GateWeakPtr> Preprocessor::GatherModules() noexcept {
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   const GatePtr& root = graph_->root();
   assert(!root->mark());
   assert(root->module());
@@ -1097,14 +1097,14 @@ bool Preprocessor::MergeCommonArgs() noexcept {
 
 bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
   assert(op == kAnd || op == kOr);
-  graph_->ClearNodeCounts();
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kCount>();
+  graph_->Clear<Pdag::kGateMark>();
   // Gather and group gates
   // by their operator types and common arguments.
   MarkCommonArgs(graph_->root(), op);
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   std::vector<GateWeakPtr> modules = GatherModules();
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   LOG(DEBUG4) << "Working with " << modules.size() << " modules...";
   bool changed = false;
   for (const auto& module : modules) {
@@ -1113,7 +1113,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
     GatePtr root = module.lock();
     MergeTable::Candidates candidates;
     GatherCommonArgs(root, op, &candidates);
-    graph_->ClearGateMarks(root);
+    graph_->Clear<Pdag::kGateMark>(root);
     if (candidates.size() < 2)
       continue;
     FilterMergeCandidates(&candidates);
@@ -1500,7 +1500,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
 
 bool Preprocessor::DetectDistributivity() noexcept {
   assert(!graph_->HasNullGates());
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   bool changed = DetectDistributivity(graph_->root());
   assert(!graph_->HasConstants());
   graph_->RemoveNullGates();
@@ -1764,9 +1764,9 @@ void Preprocessor::TransformDistributiveArgs(
 
 void Preprocessor::BooleanOptimization() noexcept {
   assert(!graph_->HasNullGates());
-  graph_->ClearGateMarks();
-  graph_->ClearOptiValues();
-  graph_->ClearDescendantMarks();
+  graph_->Clear<Pdag::kGateMark>();
+  graph_->Clear<Pdag::kOptiValue>();
+  graph_->Clear<Pdag::kDescendant>();
   if (graph_->root()->module() == false)
     graph_->root()->module(true);
 
@@ -1782,7 +1782,7 @@ void Preprocessor::BooleanOptimization() noexcept {
 void Preprocessor::GatherCommonNodes(
       std::vector<GateWeakPtr>* common_gates,
       std::vector<std::weak_ptr<Variable>>* common_variables) noexcept {
-  graph_->ClearNodeVisits();
+  graph_->Clear<Pdag::kVisit>();
   std::queue<Gate*> gates_queue;
   gates_queue.push(graph_->root().get());
   while (!gates_queue.empty()) {
@@ -2092,11 +2092,11 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   std::vector<std::weak_ptr<Variable>> common_variables;
   GatherCommonNodes(&common_gates, &common_variables);
 
-  graph_->ClearNodeVisits();
+  graph_->Clear<Pdag::kVisit>();
   AssignTiming(0, graph_->root());  // Required for optimization.
-  graph_->ClearDescendantMarks();  // Used for ancestor detection.
-  graph_->ClearAncestorMarks();  // Used for sub-graph detection.
-  graph_->ClearGateMarks();  // Important for linear traversal.
+  graph_->Clear<Pdag::kDescendant>();  // Used for ancestor detection.
+  graph_->Clear<Pdag::kAncestor>();  // Used for sub-graph detection.
+  graph_->Clear<Pdag::kGateMark>();  // Important for linear traversal.
 
   bool changed = false;
   // The processing is done deepest-layer-first.
@@ -2222,7 +2222,8 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
     assert(!parent->mark() && "Subgraph is not clean!");
     bool ret = ProcessAncestors(parent, state, parent);
     changed |= ret;
-    preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
+    // Keep the graph clean.
+    preprocessor_->graph_->Clear<Pdag::kGateMark>(parent);
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
   }
   // Actual propagation of the constant.
@@ -2320,7 +2321,7 @@ void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
 }
 
 void Preprocessor::MarkCoherence() noexcept {
-  graph_->ClearGateMarks();
+  graph_->Clear<Pdag::kGateMark>();
   MarkCoherence(graph_->root());
   assert(!(graph_->coherent() && !graph_->root()->coherent()));
   graph_->coherent(!graph_->complement() && graph_->root()->coherent());
@@ -2374,7 +2375,7 @@ bool Preprocessor::RegisterToClear(const GatePtr& gate) noexcept {
 }
 
 void Preprocessor::AssignOrder() noexcept {
-  graph_->ClearNodeOrders();
+  graph_->Clear<Pdag::kOrder>();
   TopologicalOrder(graph_->root().get(), 0);
 }
 
@@ -2407,7 +2408,7 @@ std::vector<T*> Preprocessor::OrderArguments(Gate* gate) noexcept {
 
 void Preprocessor::GatherNodes(std::vector<GatePtr>* gates,
                                std::vector<VariablePtr>* variables) noexcept {
-  graph_->ClearNodeVisits();
+  graph_->Clear<Pdag::kVisit>();
   GatherNodes(graph_->root(), gates, variables);
 }
 
