@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,13 +57,13 @@ TEST(ConfigTest, FullSettings) {
   EXPECT_EQ("temp_results.xml", config->output_path());
 
   const core::Settings& settings = config->settings();
-  EXPECT_EQ("bdd", settings.algorithm());
+  EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
   EXPECT_FALSE(settings.prime_implicants());
   EXPECT_EQ(true, settings.probability_analysis());
   EXPECT_EQ(true, settings.importance_analysis());
   EXPECT_EQ(true, settings.uncertainty_analysis());
   EXPECT_EQ(true, settings.ccf_analysis());
-  EXPECT_EQ("rare-event", settings.approximation());
+  EXPECT_EQ(core::Approximation::kRareEvent, settings.approximation());
   EXPECT_EQ(11, settings.limit_order());
   EXPECT_EQ(48, settings.mission_time());
   EXPECT_EQ(0.009, settings.cut_off());
@@ -85,7 +85,7 @@ TEST(ConfigTest, PrimeImplicantsSettings) {
   EXPECT_EQ("temp_results.xml", config->output_path());
 
   const core::Settings& settings = config->settings();
-  EXPECT_EQ("bdd", settings.algorithm());
+  EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
   EXPECT_TRUE(settings.prime_implicants());
 }
 

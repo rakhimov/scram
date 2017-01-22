@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.004804, p_total(), 1e-5);
   } else {
     EXPECT_NEAR(0.0045691, p_total(), 1e-5);

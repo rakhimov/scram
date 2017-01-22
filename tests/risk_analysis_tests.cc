@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -230,7 +230,7 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   ASSERT_NO_THROW(analysis->Analyze());
 
   EXPECT_EQ(mcs, products());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(1, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.646, p_total());
@@ -246,7 +246,7 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
 TEST_P(RiskAnalysisTest, EnforceExactProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  settings.probability_analysis(true).approximation("no");
+  settings.probability_analysis(true).approximation("none");
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());

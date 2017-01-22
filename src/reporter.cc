@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,13 +85,15 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
   }
   {
     XmlStreamElement methods = information->AddChild("calculation-method");
-    if (settings.algorithm() == "bdd") {
-      methods.SetAttribute("name", "Binary Decision Diagram");
-    } else if (settings.algorithm() == "zbdd") {
-      methods.SetAttribute("name", "Zero-Suppressed Binary Decision Diagram");
-    } else {
-      assert(settings.algorithm() == "mocus");
-      methods.SetAttribute("name", "MOCUS");
+    switch (settings.algorithm()) {
+      case core::Algorithm::kBdd:
+        methods.SetAttribute("name", "Binary Decision Diagram");
+        break;
+      case core::Algorithm::kZbdd:
+        methods.SetAttribute("name", "Zero-Suppressed Binary Decision Diagram");
+        break;
+      case core::Algorithm::kMocus:
+        methods.SetAttribute("name", "MOCUS");
     }
     methods.AddChild("limits")
         .AddChild("product-order")
@@ -114,16 +116,20 @@ void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
       .SetAttribute("name", "Probability Analysis")
       .SetAttribute("definition",
                     "Quantitative analysis of failure probability")
-      .SetAttribute("approximation", settings.approximation());
+      .SetAttribute("approximation",
+                    core::kApproximationToString[static_cast<int>(
+                        settings.approximation())]);
 
   XmlStreamElement methods = information->AddChild("calculation-method");
-  if (settings.approximation() == "rare-event") {
-    methods.SetAttribute("name", "Rare-Event Approximation");
-  } else if (settings.approximation() == "mcub") {
-    methods.SetAttribute("name", "MCUB Approximation");
-  } else {
-    assert(settings.approximation() == "no");
-    methods.SetAttribute("name", "Binary Decision Diagram");
+  switch (settings.approximation()) {
+    case core::Approximation::kNone:
+      methods.SetAttribute("name", "Binary Decision Diagram");
+      break;
+    case core::Approximation::kRareEvent:
+      methods.SetAttribute("name", "Rare-Event Approximation");
+      break;
+    case core::Approximation::kMcub:
+      methods.SetAttribute("name", "MCUB Approximation");
   }
   XmlStreamElement limits = methods.AddChild("limits");
   limits.AddChild("mission-time").AddText(settings.mission_time());

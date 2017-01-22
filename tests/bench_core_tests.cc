@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ TEST_P(RiskAnalysisTest, ABC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.6, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.496, p_total());
@@ -46,7 +46,7 @@ TEST_P(RiskAnalysisTest, ABorBC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.08, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.074, p_total());
@@ -63,7 +63,7 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.32, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.29, p_total());
@@ -87,7 +87,7 @@ TEST_P(RiskAnalysisTest, Vote) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.11, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.098, p_total());
@@ -119,7 +119,7 @@ TEST_P(RiskAnalysisTest, AorNotB) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(1, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.82, p_total());
@@ -150,7 +150,7 @@ TEST_P(RiskAnalysisTest, AandNotB) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.1, p_total());
   } else {
     EXPECT_NEAR(0.08, p_total(), 1e-5);
@@ -173,7 +173,7 @@ TEST_P(RiskAnalysisTest, AorNotAB) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.3, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.28, p_total());
@@ -208,7 +208,7 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(1, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.9, p_total());
@@ -335,7 +335,7 @@ TEST_P(RiskAnalysisTest, XorABC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.6, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.404, p_total());
@@ -396,7 +396,7 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.044096, p_total(), 1e-5);
   } else {
     EXPECT_NEAR(0.04308, p_total(), 1e-5);
@@ -422,7 +422,7 @@ TEST_P(RiskAnalysisTest, PhiFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.04434, p_total(), 1e-5);
   } else {
     EXPECT_NEAR(0.04104, p_total(), 1e-5);
@@ -438,7 +438,7 @@ TEST_P(RiskAnalysisTest, MGLFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.01771, p_total(), 1e-5);
   } else {
     EXPECT_NEAR(0.01630, p_total(), 1e-5);
@@ -454,7 +454,7 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.05488, p_total(), 1e-5);
   } else {
     EXPECT_NEAR(0.05298, p_total(), 1e-5);

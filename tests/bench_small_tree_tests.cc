@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ TEST_P(RiskAnalysisTest, SmallTree) {
   std::set<std::set<std::string>> mcs = {{"e1", "e2"}, {"e3", "e4"}};
   EXPECT_EQ(2, products().size());
   EXPECT_EQ(mcs, products());
-  if (settings.approximation() == "rare-event") {
+  if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.02696, p_total(), 1e-5);
     EXPECT_NEAR(0.0255, mean(), 1e-3);
     EXPECT_NEAR(0.0225, sigma(), 2e-3);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,32 @@
 #ifndef SCRAM_SRC_SETTINGS_H_
 #define SCRAM_SRC_SETTINGS_H_
 
+#include <cstdint>
+
 #include <string>
 
 namespace scram {
 namespace core {
+
+/// Qualitative analysis algorithms.
+enum class Algorithm : std::uint8_t {
+  kBdd = 0,
+  kZbdd,
+  kMocus
+};
+
+/// String representations for algorithms.
+const char* const kAlgorithmToString[] = {"bdd", "zbdd", "mocus"};
+
+/// Quantitative analysis approximations.
+enum class Approximation : std::uint8_t {
+  kNone = 0,
+  kRareEvent,
+  kMcub
+};
+
+/// String representations for approximations.
+const char* const kApproximationToString[] = {"none", "rare-event", "mcub"};
 
 /// Builder for analysis settings.
 /// Analysis facilities are guaranteed not to throw or fail
@@ -37,7 +59,7 @@ namespace core {
 class Settings {
  public:
   /// @returns The Qualitative analysis algorithm.
-  const std::string& algorithm() const { return algorithm_; }
+  Algorithm algorithm() const { return algorithm_; }
 
   /// Sets the algorithm for Qualitative analysis.
   /// Appropriate defaults are given to other settings
@@ -47,12 +69,35 @@ class Settings {
   /// with the Rare-Event approximation by default.
   /// Whereas, BDD based analyses run with exact quantitative analysis.
   ///
-  /// @param[in] algorithm  The name of the algorithm in lower case.
+  /// @param[in] value  The algorithm kind.
+  ///
+  /// @returns Reference to this object.
+  Settings& algorithm(Algorithm value) noexcept;
+
+  /// Provides a convenient wrapper for algorithm setting from a string.
+  ///
+  /// @param[in] value  The string representation of the algorithm.
+  ///
+  /// @throws InvalidArgument  The algorithm is not recognized.
+  ///
+  /// @returns Reference to this object.
+  Settings& algorithm(const std::string& value);
+
+  /// @returns The quantitative analysis approximation.
+  Approximation approximation() const { return approximation_; }
+
+  /// Sets the approximation for quantitative analysis.
+  ///
+  /// @param[in] value  Approximation kind to be applied.
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The algorithm is not recognized.
-  Settings& algorithm(const std::string& algorithm);
+  /// @throws InvalidArgument  The approximation is not recognized
+  ///                          or inappropriate for analysis.
+  /// @{
+  Settings& approximation(Approximation value);
+  Settings& approximation(const std::string& value);
+  /// @}
 
   /// @returns true if prime implicants are to be calculated
   ///               instead of minimal cut sets.
@@ -95,21 +140,6 @@ class Settings {
   ///
   /// @throws InvalidArgument  The probability is not in the [0, 1] range.
   Settings& cut_off(double prob);
-
-  /// @returns "no" if no quantitative approximation is requested.
-  /// @returns "rare-event" for the rare-event approximation.
-  /// @returns "mcub" for the min-cut-upper bound approximation.
-  const std::string& approximation() const { return approximation_; }
-
-  /// Sets the approximation for quantitative analysis.
-  ///
-  /// @param[in] approx  Approximation to be applied.
-  ///
-  /// @returns Reference to this object.
-  ///
-  /// @throws InvalidArgument  The approximation is not recognized
-  ///                          or inappropriate for analysis.
-  Settings& approximation(const std::string& approx);
 
   /// @returns The number of trials for Monte-Carlo simulations.
   int num_trials() const { return num_trials_; }
@@ -246,16 +276,18 @@ class Settings {
   bool importance_analysis_ = false;  ///< A flag for importance analysis.
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
-  std::string algorithm_ = "bdd";  ///< Qualitative analysis algorithm.
   bool prime_implicants_ = false;  ///< Calculation of prime implicants.
+  /// Qualitative analysis algorithm.
+  Algorithm algorithm_ = Algorithm::kBdd;
+  /// The approximations for calculations.
+  Approximation approximation_ = Approximation::kNone;
   int limit_order_ = 20;  ///< Limit on the order of products.
-  double mission_time_ = 8760;  ///< System mission time.
-  double cut_off_ = 1e-8;  ///< The cut-off probability for products.
-  std::string approximation_ = "no";  ///< The approximations for calculations.
   int seed_ = 0;  ///< The seed for the pseudo-random number generator.
   int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.
   int num_quantiles_ = 20;  ///< The number of quantiles for distributions.
   int num_bins_ = 20;  ///< The number of bins for histograms.
+  double mission_time_ = 8760;  ///< System mission time.
+  double cut_off_ = 1e-8;  ///< The cut-off probability for products.
 };
 
 }  // namespace core

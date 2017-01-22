@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,35 +20,61 @@
 
 #include "settings.h"
 
+#include <boost/range/algorithm.hpp>
+
 #include "error.h"
 
 namespace scram {
 namespace core {
 
-Settings& Settings::algorithm(const std::string& algorithm) {
-  if (algorithm != "mocus" && algorithm != "bdd" && algorithm != "zbdd")
-    throw InvalidArgument(
-        "The qualitative analysis algorithm is not recognized.");
-
-  algorithm_ = algorithm;
-  if (algorithm_ == "bdd") {
-    approximation("no");
-  } else {
-    if (approximation_ == "no")
-      approximation("rare-event");
-    if (prime_implicants_)
-      prime_implicants(false);
+Settings& Settings::algorithm(Algorithm value) noexcept {
+  algorithm_ = value;
+  switch (algorithm_) {
+    case Algorithm::kBdd:
+      approximation(Approximation::kNone);
+      break;
+    default:
+      if (approximation_ == Approximation::kNone)
+        approximation(Approximation::kRareEvent);
+      if (prime_implicants_)
+        prime_implicants(false);
   }
   return *this;
 }
 
+Settings& Settings::algorithm(const std::string& value) {
+  auto it = boost::find(kAlgorithmToString, value);
+  if (it == std::end(kAlgorithmToString))
+    throw InvalidArgument("The qualitative analysis algorithm '" + value +
+                          "' is not recognized.");
+  return algorithm(
+      static_cast<Algorithm>(std::distance(kAlgorithmToString, it)));
+}
+
+Settings& Settings::approximation(Approximation value) {
+  if (value != Approximation::kNone && prime_implicants_)
+    throw InvalidArgument(
+        "Prime implicants require no quantitative approximation.");
+  approximation_ = value;
+  return *this;
+}
+
+Settings& Settings::approximation(const std::string& value) {
+  auto it = boost::find(kApproximationToString, value);
+  if (it == std::end(kApproximationToString))
+    throw InvalidArgument("The probability approximation '" + value +
+                          "'is not recognized.");
+  return approximation(
+      static_cast<Approximation>(std::distance(kApproximationToString, it)));
+}
+
 Settings& Settings::prime_implicants(bool flag) {
-  if (flag && algorithm_ != "bdd")
+  if (flag && algorithm_ != Algorithm::kBdd)
     throw InvalidArgument("Prime implicants can only be calculated with BDD");
 
   prime_implicants_ = flag;
   if (prime_implicants_)
-    approximation("no");
+    approximation(Approximation::kNone);
   return *this;
 }
 
@@ -65,18 +91,6 @@ Settings& Settings::cut_off(double prob) {
     throw InvalidArgument("The cut-off probability cannot be negative or"
                           " more than 1.");
   cut_off_ = prob;
-  return *this;
-}
-
-Settings& Settings::approximation(const std::string& approx) {
-  if (approx != "no" && approx != "rare-event" && approx != "mcub")
-    throw InvalidArgument("The probability approximation is not recognized.");
-
-  if (approx != "no" && prime_implicants_)
-    throw InvalidArgument(
-        "Prime implicants require no quantitative approximation.");
-
-  approximation_ = approx;
   return *this;
 }
 
