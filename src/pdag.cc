@@ -95,6 +95,75 @@ GatePtr Gate::Clone() noexcept {
   return clone;
 }
 
+/// Specialization to handle True constant arg addition.
+template <>
+void Gate::AddConstantArg<true>() noexcept {
+  switch (type_) {
+    case kNull:
+    case kOr:
+      MakeConstant(true);
+      break;
+    case kNand:
+      ReduceLogic(kNot);
+      break;
+    case kAnd:
+      ReduceLogic(kNull);
+      break;
+    case kNor:
+    case kNot:
+      MakeConstant(false);
+      break;
+    case kXor:  // Special handling due to its internal negation.
+      assert(args_.size() == 1);
+      type(kNot);
+      break;
+    case kVote:  // (K - 1) / (N - 1).
+      assert(args_.size() >= 2);
+      assert(vote_number_ > 0);
+      --vote_number_;
+      if (vote_number_ == 1)
+        type(kOr);
+      break;
+  }
+}
+
+/// Specialization to handle False constant arg addition.
+template <>
+void Gate::AddConstantArg<false>() noexcept {
+  switch (type_) {
+    case kNull:
+    case kAnd:
+      MakeConstant(false);
+      break;
+    case kNand:
+    case kNot:
+      MakeConstant(true);
+      break;
+    case kNor:
+      ReduceLogic(kNot);
+      break;
+    case kOr:
+      ReduceLogic(kNull);
+      break;
+    case kXor:
+      assert(args_.size() == 1);
+      type(kNull);
+      break;
+    case kVote:  // K / (N - 1).
+      assert(args_.size() >= 2);
+      ReduceLogic(kAnd, vote_number_);
+      break;
+  }
+}
+
+/// Convenient wrapper to dispatch appropriate constant arg handler.
+template <>
+void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept {
+  assert(!constant_);
+  assert(arg->value());
+  return index > 0 ? AddConstantArg<true>() : AddConstantArg<false>();
+}
+
 void Gate::TransferArg(int index, const GatePtr& recipient) noexcept {
   assert(!constant() && "Improper use case.");
   assert(index != 0);
@@ -209,86 +278,8 @@ void Gate::ProcessConstantArg(const NodePtr& arg, bool state) noexcept {
   int index = GetArgSign(arg) * arg->index();
   if (index < 0)
     state = !state;
-  if (state) {  // Unity state or True index.
-    ProcessTrueArg(index);
-  } else {  // Null state or False index.
-    ProcessFalseArg(index);
-  }
-}
-
-void Gate::ProcessTrueArg(int index) noexcept {
-  switch (type_) {
-    case kNull:
-    case kOr:
-      MakeConstant(true);
-      break;
-    case kNand:
-    case kAnd:
-      RemoveConstantArg(index);
-      break;
-    case kNor:
-    case kNot:
-      MakeConstant(false);
-      break;
-    case kXor:  // Special handling due to its internal negation.
-      assert(args_.size() == 2);
-      EraseArg(index);
-      assert(args_.size() == 1);
-      type(kNot);
-      break;
-    case kVote:  // (K - 1) / (N - 1).
-      assert(args_.size() > 2);
-      EraseArg(index);
-      assert(vote_number_ > 0);
-      --vote_number_;
-      if (vote_number_ == 1)
-        type(kOr);
-      break;
-  }
-}
-
-void Gate::ProcessFalseArg(int index) noexcept {
-  switch (type_) {
-    case kNor:
-    case kXor:
-    case kOr:
-      RemoveConstantArg(index);
-      break;
-    case kNull:
-    case kAnd:
-      MakeConstant(false);
-      break;
-    case kNand:
-    case kNot:
-      MakeConstant(true);
-      break;
-    case kVote:  // K / (N - 1).
-      assert(args_.size() > 2);
-      EraseArg(index);
-      if (vote_number_ == args_.size())
-        type(kAnd);
-      break;
-  }
-}
-
-void Gate::RemoveConstantArg(int index) noexcept {
-  assert(args_.size() > 1 && "One-arg gate must have become constant.");
   EraseArg(index);
-  if (args_.size() == 1) {
-    switch (type_) {
-      case kXor:
-      case kOr:
-      case kAnd:
-        type(kNull);
-        break;
-      case kNor:
-      case kNand:
-        type(kNot);
-        break;
-      default:
-        assert(false && "NULL/NOT one-arg gates should not appear.");
-    }
-  }  // More complex cases with K/N gates are handled by the caller functions.
+  return state ? AddConstantArg<true>() : AddConstantArg<false>();
 }
 
 void Gate::EraseArg(int index) noexcept {
@@ -327,9 +318,8 @@ void Gate::EraseArgs() noexcept {
 }
 
 void Gate::MakeConstant(bool state) noexcept {
-  /* assert(!constant()); */
+  assert(!constant());
   EraseArgs();
-  /// @todo Consider using AddArg. (watch out for circular call.)
   type(kNull);
   constant_ = Node::graph().constant();
   int index = state ? constant_->index() : -constant_->index();

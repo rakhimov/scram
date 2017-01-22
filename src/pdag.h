@@ -106,6 +106,8 @@ class Pdag;  // Manager of the graph, node indices and uniqueness.
 /// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
+///
+/// @pre A node does not outlive its PDAG.
 class Node : public NodeParentManager {
  public:
   /// Creates a unique graph node as a member of a PDAG.
@@ -632,7 +634,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// Changes the state of a gate
   /// or removes a constant argument.
   /// The function determines its actions depending on
-  /// the type of a gate and state of an argument.
+  /// the type of the gate and state of an argument.
   ///
   /// @param[in] arg  The pointer the argument of this gate.
   /// @param[in] state  False or True constant state of the argument.
@@ -700,43 +702,22 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @param[in] index  Positive or negative index of the argument.
   void ProcessComplementArg(int index) noexcept;
 
-  /// Processes Boolean constant argument with True value.
+  /// Processes the addition of a constant to the gate.
   ///
-  /// @param[in] index  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants.
-  /// @note This function may change the state of the gate.
-  /// @note This function may change type and parameters of the gate.
-  void ProcessTrueArg(int index) noexcept;
+  /// @tparam State  The Boolean Constant value.
+  template <bool State>
+  void AddConstantArg() noexcept;
 
-  /// Processes Boolean constant argument with False value.
+  /// Downgrades the logic of the gate
+  /// if the number of arguments meets a certain number.
   ///
-  /// @param[in] index  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants.
-  /// @note This function may change the state of the gate.
-  /// @note This function may change type and parameters of the gate.
-  void ProcessFalseArg(int index) noexcept;
-
-  /// Removes Boolean constant arguments from a gate
-  /// taking into account the logic.
-  /// This is a helper function
-  /// for NULL and UNITY set or constant propagation for the graph.
-  /// If the final gate is empty,
-  /// its state is turned into NULL or UNITY
-  /// depending on the logic of the gate
-  /// and the logic of the Boolean constant propagation.
-  ///
-  /// @param[in] index  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants,
-  ///       so it is coupled with the logic of
-  ///       the constant propagation algorithms.
-  ///
-  /// @warning This function does not handle complex K/N gate parents.
-  ///          The logic is not simple for K/N gates,
-  ///          so it must be handled by the caller.
-  void RemoveConstantArg(int index) noexcept;
+  /// @param[in] target_type  The logic compatible with the current one.
+  /// @param[in] num_args  The number of required arguments.
+  void ReduceLogic(Operator target_type, int num_args = 1) noexcept {
+    assert(!args_.empty());
+    if (args_.size() == num_args)
+      type(target_type);
+  }
 
   Operator type_;  ///< Type of this gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
@@ -773,14 +754,7 @@ inline const Gate::ArgMap<Variable>& Gate::args<Variable>() {
 /// Specialization to handle Boolean constants in arguments.
 /// @copydoc Gate::AddArg
 template <>
-inline void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept {
-  /// @todo Merge the logic of constant argument erasure.
-  assert(!constant_);
-  args_.insert(index);
-  constant_ = arg;
-  arg->AddParent(shared_from_this());
-  ProcessConstantArg(arg, arg->value());  // Remove right away.
-}
+void Gate::AddArg<Constant>(int index, const ConstantPtr& arg) noexcept;
 
 /// PDAG is a propositional directed acyclic graph.
 /// This class provides a simpler representation of a fault tree
