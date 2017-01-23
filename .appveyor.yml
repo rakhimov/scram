@@ -5,7 +5,8 @@ platform:
 
 configuration:
     # - Debug
-    - Release
+    # - Release
+    - RelWithDebInfo
 
 install:
     - git submodule update --init --recursive
