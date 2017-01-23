@@ -64,24 +64,20 @@ Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
 }
 
 Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
-    : Zbdd(*graph->root(), settings) {
+    : Zbdd(graph->root(), settings) {
   assert(!graph->complement() && "Complements must be propagated.");
-  if (graph->root()->IsConstant()) {
-    if (graph->root()->state() == kNullState) {
-      root_ = kEmpty_;
-    } else {
-      root_ = kBase_;
-    }
-  } else if (graph->root()->type() == kNull) {
-    const GatePtr& top_gate = graph->root();
-    assert(top_gate->args().size() == 1);
-    assert(top_gate->args<Gate>().empty());
-    int child = *top_gate->args().begin();
-    if (child < 0) {
+  if (graph->IsTrivial()) {
+    const Gate& top_gate = graph->root();
+    assert(top_gate.args().size() == 1);
+    assert(top_gate.args<Gate>().empty());
+    int child = *top_gate.args().begin();
+    if (top_gate.constant()) {
+      root_ = child < 0 ? kEmpty_ : kBase_;
+    } else if (child < 0) {
       root_ = kBase_;
     } else {
-      const VariablePtr& var = top_gate->args<Variable>().begin()->second;
-      root_ = FindOrAddVertex(var->index(), kBase_, kEmpty_, var->order());
+      const Variable& var = top_gate.args<Variable>().begin()->second;
+      root_ = FindOrAddVertex(var.index(), kBase_, kEmpty_, var.order());
     }
   }
   CHECK_ZBDD(true);
@@ -164,7 +160,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
 
 Zbdd::Zbdd(const Gate& gate, const Settings& settings) noexcept
     : Zbdd(settings, gate.coherent(), gate.index()) {
-  if (gate.IsConstant() || gate.type() == kNull)
+  if (gate.constant() || gate.type() == kNull)
     return;
   assert(!settings.prime_implicants() && "Not implemented.");
   CLOCK(init_time);
@@ -339,7 +335,7 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     const Gate& gate,
     std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
     std::unordered_map<int, const Gate*>* module_gates) noexcept {
-  assert(!gate.IsConstant() && "Unexpected constant gate!");
+  assert(!gate.constant() && "Unexpected constant gate!");
   VertexPtr result;
   if (auto it_entry = ext::find(*gates, gate.index())) {
     std::pair<VertexPtr, int>& entry = it_entry->second;
@@ -350,17 +346,17 @@ Zbdd::VertexPtr Zbdd::ConvertGraph(
     return result;
   }
   std::vector<VertexPtr> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
+        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second.order()));
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    if (arg.second->module()) {
-      module_gates->emplace(arg.first, arg.second.get());
-      args.push_back(FindOrAddVertex(*arg.second, kBase_, kEmpty_));
+    if (arg.second.module()) {
+      module_gates->emplace(arg.first, &arg.second);
+      args.push_back(FindOrAddVertex(arg.second, kBase_, kEmpty_));
     } else {
-      args.push_back(ConvertGraph(*arg.second, gates, module_gates));
+      args.push_back(ConvertGraph(arg.second, gates, module_gates));
     }
   }
   boost::sort(args, [](const VertexPtr& lhs, const VertexPtr& rhs) {
@@ -931,16 +927,16 @@ CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
 
 Zbdd::VertexPtr CutSetContainer::ConvertGate(const Gate& gate) noexcept {
   assert(gate.type() == kAnd || gate.type() == kOr);
-  assert(gate.args<Constant>().empty());
+  assert(!gate.constant());
   assert(gate.args().size() > 1);
   std::vector<SetNodePtr> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second->order()));
+        FindOrAddVertex(arg.first, kBase_, kEmpty_, arg.second.order()));
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    args.push_back(FindOrAddVertex(*arg.second, kBase_, kEmpty_));
+    args.push_back(FindOrAddVertex(arg.second, kBase_, kEmpty_));
   }
   boost::sort(args, [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
     return lhs->order() > rhs->order();

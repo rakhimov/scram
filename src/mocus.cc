@@ -33,25 +33,21 @@ namespace scram {
 namespace core {
 
 Mocus::Mocus(const Pdag* graph, const Settings& settings)
-    : constant_graph_(false),
-      graph_(graph),
+    : graph_(graph),
       kSettings_(settings) {
-  const GatePtr& top_gate = graph->root();
-  if (top_gate->IsConstant() || top_gate->type() == kNull) {
-    constant_graph_ = true;
-    zbdd_ = std::make_unique<Zbdd>(graph, settings);
-    zbdd_->Analyze();
-  }
+  assert(!graph->complement() && "Complements must be propagated.");
 }
 
 void Mocus::Analyze() {
-  BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
-  if (constant_graph_)
-    return;
-
   CLOCK(mcs_time);
-  LOG(DEBUG2) << "Start minimal cut set generation.";
-  zbdd_ = AnalyzeModule(*graph_->root(), kSettings_);
+  if (graph_->IsTrivial()) {
+    LOG(DEBUG2) << "The PDAG is trivial!";
+    zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
+  } else {
+    LOG(DEBUG2) << "Start minimal cut set generation.";
+    zbdd_ = AnalyzeModule(graph_->root(), kSettings_);
+  }
+
   LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
   zbdd_->Analyze();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
@@ -69,9 +65,9 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate.index();
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, const Gate*> gates;
-  auto add_gates = [&gates](const Gate::ArgMap<Gate>& args) {
-    for (const Gate::Arg<Gate>& arg : args)
-      gates.emplace(arg.first, arg.second.get());
+  auto add_gates = [&gates](const auto& args) {
+    for (const Gate::ConstArg<Gate>& arg : args)
+      gates.emplace(arg.first, &arg.second);
   };
   add_gates(gate.args<Gate>());
   const int kMaxVariableIndex =

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@
 
 #include <string>
 #include <vector>
+
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "event.h"
 #include "parameter.h"
@@ -57,14 +60,12 @@ inline const std::vector<GatePtr>& GetNodes(const FormulaPtr& connector) {
 inline const std::vector<GatePtr>& GetNodes(const Formula* connector) {
   return connector->gate_args();
 }
-inline std::vector<Parameter*> GetNodes(Expression* connector) {
-  std::vector<Parameter*> nodes;
-  for (const ExpressionPtr& arg : connector->args()) {
-    auto* ptr = dynamic_cast<Parameter*>(arg.get());
-    if (ptr)
-      nodes.push_back(ptr);
-  }
-  return nodes;
+inline auto GetNodes(Expression* connector) {
+  return connector->args() |
+         boost::adaptors::transformed([](const ExpressionPtr& arg) {
+           return dynamic_cast<Parameter*>(arg.get());
+         }) |
+         boost::adaptors::filtered([](auto* ptr) { return ptr != nullptr; });
 }
 /// @}
 
@@ -82,13 +83,13 @@ const std::vector<FormulaPtr>& GetConnectors(const FormulaPtr& connector) {
 inline const std::vector<FormulaPtr>& GetConnectors(const Formula* connector) {
   return connector->formula_args();
 }
-inline std::vector<Expression*> GetConnectors(Expression* connector) {
-  std::vector<Expression*> connectors;
-  for (const ExpressionPtr& arg : connector->args()) {
-    if (dynamic_cast<Parameter*>(arg.get()) == nullptr)
-      connectors.push_back(arg.get());
-  }
-  return connectors;
+inline auto GetConnectors(Expression* connector) {
+  return connector->args() |
+         boost::adaptors::filtered([](const ExpressionPtr& arg) {
+           return dynamic_cast<Parameter*>(arg.get()) == nullptr;
+         }) |
+         boost::adaptors::transformed(
+             [](const ExpressionPtr& arg) { return arg.get(); });
 }
 /// @}
 

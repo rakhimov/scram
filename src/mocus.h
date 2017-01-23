@@ -69,7 +69,6 @@ class Mocus : private boost::noncopyable {
   std::unique_ptr<zbdd::CutSetContainer>
   AnalyzeModule(const Gate& gate, const Settings& settings) noexcept;
 
-  bool constant_graph_;  ///< No need for analysis.
   const Pdag* graph_;  ///< The analysis PDAG.
   const Settings kSettings_;  ///< Analysis settings.
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.

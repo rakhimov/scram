@@ -46,24 +46,22 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting PDAG into BDD...";
-  if (graph->root()->IsConstant()) {
-    // Constant case should only happen to the top gate.
-    if (graph->root()->state() == kNullState) {
-      root_ = {true, kOne_};
+  if (graph->IsTrivial()) {
+    const Gate& top_gate = graph->root();
+    assert(top_gate.args().size() == 1);
+    assert(top_gate.args<Gate>().empty());
+    int child = *top_gate.args().begin();
+    if (top_gate.constant()) {
+      // Constant case should only happen to the top gate.
+      root_ = {child < 0, kOne_};
     } else {
-      root_ = {false, kOne_};
+      const Variable& var = top_gate.args<Variable>().begin()->second;
+      root_ = {child < 0,
+               FindOrAddVertex(var.index(), kOne_, kOne_, true, var.order())};
     }
-  } else if (graph->root()->type() == kNull) {
-    const GatePtr& top_gate = graph->root();
-    assert(top_gate->args().size() == 1);
-    assert(top_gate->args<Gate>().empty());
-    int child = *top_gate->args().begin();
-    VariablePtr var = top_gate->args<Variable>().begin()->second;
-    root_ = {child < 0,
-             FindOrAddVertex(var->index(), kOne_, kOne_, true, var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = ConvertGraph(*graph->root(), &gates);
+    root_ = ConvertGraph(graph->root(), &gates);
     root_.complement ^= graph->complement();
   }
   ClearMarks(false);
@@ -151,7 +149,7 @@ ItePtr Bdd::FindOrAddVertex(const Gate& gate, const VertexPtr& high,
 Bdd::Function Bdd::ConvertGraph(
     const Gate& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
-  assert(!gate.IsConstant() && "Unexpected constant gate!");
+  assert(!gate.constant() && "Unexpected constant gate!");
   Function result;  // For the NRVO, due to memoization.
   // Memoization check.
   if (auto it_entry = ext::find(*gates, gate.index())) {
@@ -163,17 +161,17 @@ Bdd::Function Bdd::ConvertGraph(
     return result;
   }
   std::vector<Function> args;
-  for (const Gate::Arg<Variable>& arg : gate.args<Variable>()) {
+  for (const Gate::ConstArg<Variable>& arg : gate.args<Variable>()) {
     args.push_back(
-        {arg.first < 0, FindOrAddVertex(arg.second->index(), kOne_, kOne_, true,
-                                        arg.second->order())});
-    index_to_order_.emplace(arg.second->index(), arg.second->order());
+        {arg.first < 0, FindOrAddVertex(arg.second.index(), kOne_, kOne_, true,
+                                        arg.second.order())});
+    index_to_order_.emplace(arg.second.index(), arg.second.order());
   }
-  for (const Gate::Arg<Gate>& arg : gate.args<Gate>()) {
-    Function res = ConvertGraph(*arg.second, gates);
-    if (arg.second->module()) {
+  for (const Gate::ConstArg<Gate>& arg : gate.args<Gate>()) {
+    Function res = ConvertGraph(arg.second, gates);
+    if (arg.second.module()) {
       args.push_back(
-          {arg.first < 0, FindOrAddVertex(*arg.second, kOne_, kOne_, true)});
+          {arg.first < 0, FindOrAddVertex(arg.second, kOne_, kOne_, true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});

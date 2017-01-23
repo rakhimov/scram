@@ -52,14 +52,15 @@ void RiskAnalysis::Analyze() noexcept {
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const mef::Gate& target) noexcept {
-  const std::string& algorithm = Analysis::settings().algorithm();
-  if (algorithm == "bdd") {
-    RunAnalysis<Bdd>(name, target);
-  } else if (algorithm == "zbdd") {
-    RunAnalysis<Zbdd>(name, target);
-  } else {
-    assert(algorithm == "mocus");
-    RunAnalysis<Mocus>(name, target);
+  switch (Analysis::settings().algorithm()) {
+    case Algorithm::kBdd:
+      RunAnalysis<Bdd>(name, target);
+      break;
+    case Algorithm::kZbdd:
+      RunAnalysis<Zbdd>(name, target);
+      break;
+    case Algorithm::kMocus:
+      RunAnalysis<Mocus>(name, target);
   }
 }
 
@@ -71,13 +72,15 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
                                                      Analysis::settings());
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {
-    if (Analysis::settings().approximation() == "no") {
-      RunAnalysis<Algorithm, Bdd>(name, fta.get());
-    } else if (Analysis::settings().approximation() == "rare-event") {
-      RunAnalysis<Algorithm, RareEventCalculator>(name, fta.get());
-    } else {
-      assert(Analysis::settings().approximation() == "mcub");
-      RunAnalysis<Algorithm, McubCalculator>(name, fta.get());
+    switch (Analysis::settings().approximation()) {
+      case Approximation::kNone:
+        RunAnalysis<Algorithm, Bdd>(name, fta.get());
+        break;
+      case Approximation::kRareEvent:
+        RunAnalysis<Algorithm, RareEventCalculator>(name, fta.get());
+        break;
+      case Approximation::kMcub:
+        RunAnalysis<Algorithm, McubCalculator>(name, fta.get());
     }
   }
   fault_tree_analyses_.emplace(name, std::move(fta));
