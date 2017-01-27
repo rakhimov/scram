@@ -1,0 +1,27 @@
+internal:
+    - name: scram
+      path: .
+      packages:
+          - name: include
+            include: .
+          - name: core
+            src: src
+          - name: gui
+            src: gui
+external:
+    - name: Dependencies
+      path: /usr/include
+      packages:
+          - name: STL
+            pattern: "[a-z_]+$"
+          - name: Boost
+            pattern: boost
+          - name: LibXML
+            pattern:
+                - libxml
+          - name: Qt5
+            pattern:
+                - Q\w+
+                - ui_
+          - name: Windows System
+            pattern: windows.h
