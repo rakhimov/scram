@@ -74,11 +74,13 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_definitions("-fpermissive")
   endif()
 
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-       "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  CHECK_COMPILER_VERSION("3.4")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  CHECK_COMPILER_VERSION("3.6")
   set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
+
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  CHECK_COMPILER_VERSION("6.1")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("17.0.1")
