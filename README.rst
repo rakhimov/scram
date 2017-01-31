@@ -48,9 +48,9 @@ The latest stable release is packaged for `quick installation`_ on various platf
 
 .. _Open-PSA: http://open-psa.org
 .. _Model Exchange Format: http://open-psa.github.io/mef
-.. _MEF Support: http://scram-pra.org/doc/opsa_support.html
-.. _documentation: http://scram-pra.org
-.. _quick installation: http://scram-pra.org/doc/installation.html
+.. _MEF Support: https://scram-pra.org/doc/opsa_support.html
+.. _documentation: https://scram-pra.org
+.. _quick installation: https://scram-pra.org/doc/installation.html
 
 .. contents:: **Table of Contents**
     :depth: 2

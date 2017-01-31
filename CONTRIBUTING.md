@@ -29,7 +29,7 @@ Best practices are encouraged:
 7. Submit your [pull request] from **your topic** branch to the **upstream develop** branch.
 8. Your pull request will be reviewed by another developer before merging.
 
-[Coding Style and Quality Assurance]: http://scram-pra.org/doc/coding_standards.html
+[Coding Style and Quality Assurance]: https://scram-pra.org/doc/coding_standards.html
 [developer mailing list]: https://groups.google.com/forum/#!forum/scram-dev
 [pull request]: https://help.github.com/articles/using-pull-requests/
 
