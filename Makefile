@@ -66,7 +66,7 @@ doxygen: build/complexity_report.txt
 
 build/dep_report.txt scram_core.dot:
 	@echo "Generating cppdep report.."
-	cppdep -c cppdep.xml > build/dep_report.txt
+	cppdep > build/dep_report.txt
 	@echo "Generated cppdep report."
 
 build/scram_core.svg: scram_core.dot
