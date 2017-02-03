@@ -6,8 +6,16 @@ internal:
             include: .
           - name: core
             src: src
+            ignore:
+                - src/tags
+                - src/ext
           - name: gui
             src: gui
+            ignore:
+                - gui/tests
+                - gui/main.cpp
+          - name: ext
+            src: src/ext
 external:
     - name: Dependencies
       path: /usr/include
