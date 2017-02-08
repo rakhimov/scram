@@ -55,7 +55,5 @@ sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq lcov
 
-gem install coveralls-lcov
-
 sudo -H pip install -r requirements-dev.txt
 sudo -H pip install -r requirements-tests.txt

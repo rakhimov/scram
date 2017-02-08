@@ -22,16 +22,12 @@ ccache -s
 ./.travis/run_tests.sh
 
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
-# Submit coverage of C++
+# Submit coverage of C++ and Python.
 COV_DIR="build/src/CMakeFiles/scramcore.dir/"
 TRACE_FILE="coverage.info"
-
 lcov --no-compat-libtool --directory \
   $COV_DIR -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q 2> /dev/null
 lcov --extract $TRACE_FILE '*/scram/*' -o $TRACE_FILE
-coveralls-lcov $TRACE_FILE
-
-# Submit coverage of Python
 codecov > /dev/null
 
 # Check for memory leaks with Valgrind

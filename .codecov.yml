@@ -1,8 +1,11 @@
+codecov:
+    notify:
+        require_ci_to_pass: no
+
 comment:
     layout: header, changes, diff
 
 coverage:
     ignore:
-        - tests/*
-        - src/*
-        - scripts/test/*
+        - tests/**/*
+        - scripts/test/**/*
