@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "bdd.h"
@@ -154,6 +155,77 @@ class Zbdd : private boost::noncopyable {
  public:
   using VertexPtr = IntrusivePtr<Vertex<SetNode>>;  ///< ZBDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<SetNode>>;  ///< Terminal vertex.
+
+  /// Iterator over products in a ZBDD container.
+  class const_iterator
+      : public boost::iterator_facade<const_iterator, const std::vector<int>,
+                                      boost::forward_traversal_tag> {
+    friend class boost::iterator_core_access;
+
+   public:
+    /// @param[in] zbdd  The container to iterate over.
+    /// @param[in] sentinel  The flag to turn the iterator into an end sentinel.
+    ///
+    /// @pre The ZBDD container is not modified during the iteration.
+    explicit const_iterator(const Zbdd& zbdd, bool sentinel = false)
+        : sentinel_(sentinel), zbdd_(zbdd) {
+      if (!sentinel_)
+        sentinel_ = !GenerateProduct(zbdd.root());
+    }
+
+   private:
+    /// Standard forward iterator functionality returning products.
+    /// @{
+    void increment() {
+      if (!sentinel_) {
+        while (!product_.empty() && !GenerateProduct(Pop()->low()))
+          continue;
+        sentinel_ = product_.empty();
+      }
+    }
+    bool equal(const const_iterator& other) const {
+      return sentinel_ == other.sentinel_ && &zbdd_ == &other.zbdd_ &&
+             product_ == other.product_;
+    }
+    const std::vector<int>& dereference() const {
+      assert(!sentinel_ && "Dereferencing end iterator.");
+      return product_;
+    }
+    /// @}
+
+    /// Generates a next product in the ZBDD traversal.
+    ///
+    /// @param[in] vertex  The vertex to start adding into the product.
+    ///
+    /// @returns true if a new product has been generated.
+    ///
+    /// @post If the new product is generated,
+    ///       the product and stack containers are updated accordingly.
+    bool GenerateProduct(const VertexPtr& vertex) noexcept;
+
+    /// Removes the current leaf node from the product.
+    ///
+    /// @returns The current leaf node in the product.
+    const SetNode* Pop() noexcept {
+      const SetNode* leaf = node_stack_.back();
+      node_stack_.pop_back();
+      product_.pop_back();
+      return leaf;
+    }
+
+    /// Updates the current product with a literal.
+    ///
+    /// @param[in] set_node  The current leaf set node to add to the product.
+    void Push(const SetNodePtr& set_node) noexcept {
+      node_stack_.push_back(set_node.get());
+      product_.push_back(set_node->index());
+    }
+
+    bool sentinel_;  ///< The marker for the end of traversal.
+    const Zbdd& zbdd_;  ///< The source container for the products.
+    std::vector<const SetNode*> node_stack_;  ///< The traversal stack.
+    std::vector<int> product_;  ///< The current product.
+  };
 
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.

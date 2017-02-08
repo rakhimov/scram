@@ -99,7 +99,12 @@ void Zbdd::Analyze() noexcept {
   ClearCounts(root_, false);
   EncodeLimitOrder(root_, kSettings_.limit_order());
   ClearMarks(root_, false);
-  products_ = GenerateProducts(root_);
+  if (modules_.empty()) {
+    products_.insert(products_.end(), const_iterator(*this),
+                     const_iterator(*this, true));
+  } else {
+    products_ = GenerateProducts(root_);
+  }
 
   // Cleanup of temporary products.
   modules_.clear();
@@ -765,6 +770,17 @@ void Zbdd::EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept {
   node->count(limit_order);
   EncodeLimitOrder(node->high(), limit_order - 1);
   EncodeLimitOrder(node->low(), limit_order);
+}
+
+bool Zbdd::const_iterator::GenerateProduct(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal())
+    return Terminal<SetNode>::Ptr(vertex)->value();
+  SetNodePtr node = SetNode::Ptr(vertex);  /// @todo Optimize the cast away.
+  if (node->count() <= 0)
+    return false;  // The result of a conservative count.
+  assert(!node->module());  /// @todo Implement for modules.
+  Push(node.get());
+  return GenerateProduct(node->high()) || GenerateProduct(Pop()->low());
 }
 
 std::vector<std::vector<int>>
