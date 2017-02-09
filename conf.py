@@ -72,11 +72,12 @@ project = u'SCRAM'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = check_output(['git', 'describe', '--tags', '--abbrev=0']).decode()
+release = check_output(['git', 'describe', '--tags',
+                        '--abbrev=0']).strip().decode()
 # The short X.Y version.
 version = release.rsplit('.', 1)[0]
 release_date = check_output(['git', 'log', '-n', '1', '--format=format:%cd',
-                             '--date=short', 'doc/']).decode()
+                             '--date=short', 'doc/']).strip().decode()
 release_year = release_date.split('-', 1)[0]
 copyright = u'2015-%(release_year)s, Olzhas Rakhimov, CC BY-SA 4.0' % locals()
 
