@@ -83,7 +83,20 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
+const std::vector<std::vector<int>>& Zbdd::products() const {
+  if (!products_) {
+    CLOCK(gen_time);
+    LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
+    products_ =
+        std::make_unique<std::vector<Product>>(this->begin(), this->end());
+    LOG(DEBUG4) << "# of generated products: " << products_->size();
+    LOG(DEBUG3) << "G" << module_index_ << " product time: " << DUR(gen_time);
+  }
+  return *products_;
+}
+
 void Zbdd::Analyze() noexcept {
+  CLOCK(zbdd_time);
   assert(root_->terminal() ||
          SetNode::Ptr(root_)->max_set_order() <= kSettings_.limit_order());
   root_ = Minimize(root_);  // Likely to be minimal by now.
@@ -91,26 +104,9 @@ void Zbdd::Analyze() noexcept {
   for (const auto& entry : modules_)
     entry.second->Analyze();
 
-  CLOCK(gen_time);
-  LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
-  // Complete cleanup of the memory.
-  ReleaseTables();
-  ClearMarks(root_, false);
-  ClearCounts(root_, false);
-  EncodeLimitOrder(root_, kSettings_.limit_order());
-  ClearMarks(root_, false);
-  if (modules_.empty()) {
-    products_.insert(products_.end(), const_iterator(*this),
-                     const_iterator(*this, true));
-  } else {
-    products_ = GenerateProducts(root_);
-  }
-
-  // Cleanup of temporary products.
-  modules_.clear();
-  root_ = kEmpty_;
-  LOG(DEBUG4) << "# of generated products: " << products_.size();
-  LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(gen_time);
+  Prune(root_, kSettings_.limit_order());
+  ReleaseTables();  // Complete cleanup of the memory.
+  LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(zbdd_time);
 }
 
 Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
@@ -770,17 +766,6 @@ void Zbdd::EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept {
   node->count(limit_order);
   EncodeLimitOrder(node->high(), limit_order - 1);
   EncodeLimitOrder(node->low(), limit_order);
-}
-
-bool Zbdd::const_iterator::GenerateProduct(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal())
-    return Terminal<SetNode>::Ptr(vertex)->value();
-  SetNodePtr node = SetNode::Ptr(vertex);  /// @todo Optimize the cast away.
-  if (node->count() <= 0)
-    return false;  // The result of a conservative count.
-  assert(!node->module());  /// @todo Implement for modules.
-  Push(node.get());
-  return GenerateProduct(node->high()) || GenerateProduct(Pop()->low());
 }
 
 std::vector<std::vector<int>>
