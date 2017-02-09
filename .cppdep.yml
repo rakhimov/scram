@@ -3,19 +3,33 @@ internal:
       path: .
       packages:
           - name: include
-            include: .
+            include:
+                - .
           - name: core
-            src: src
+            src:
+                - src
+            ignore:
+                - src/tags
+                - src/ext
           - name: gui
-            src: gui
+            src:
+                - gui
+            ignore:
+                - gui/tests
+                - gui/main.cpp
+          - name: ext
+            src:
+                - src/ext
 external:
     - name: Dependencies
       path: /usr/include
       packages:
           - name: STL
-            pattern: "[a-z_]+$"
+            pattern:
+                - "[a-z_]+$"
           - name: Boost
-            pattern: boost
+            pattern:
+                - boost
           - name: LibXML
             pattern:
                 - libxml
@@ -24,4 +38,5 @@ external:
                 - Q\w+
                 - ui_
           - name: Windows System
-            pattern: windows.h
+            pattern:
+                - windows.h
