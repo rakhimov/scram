@@ -184,6 +184,8 @@ double CalculateProbability(const Product& product);
 /// @note An empty set is assumed to indicate the Base/Unity set.
 int GetOrder(const Product& product);
 
+class Zbdd;  // The analysis container of products with indices.
+
 /// Fault tree analysis functionality.
 /// The analysis must be done on
 /// a validated and fully initialized fault trees.
@@ -254,10 +256,9 @@ class FaultTreeAnalysis : public Analysis {
   /// for future reporting.
   /// This function also collects basic events in products.
   ///
-  /// @param[in] results  A sets with indices of events from calculations.
+  /// @param[in] results  Sets with indices of events from calculations.
   /// @param[in] graph  PDAG with basic event indices and pointers.
-  void Convert(const std::vector<std::vector<int>>& results,
-               const Pdag* graph) noexcept;
+  void Convert(const Zbdd& results, const Pdag* graph) noexcept;
 
  private:
   const mef::Gate& top_event_;  ///< The root of the graph under analysis.

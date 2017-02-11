@@ -83,18 +83,6 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
-const std::vector<std::vector<int>>& Zbdd::products() const {
-  if (!products_) {
-    CLOCK(gen_time);
-    LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
-    products_ =
-        std::make_unique<std::vector<Product>>(this->begin(), this->end());
-    LOG(DEBUG4) << "# of generated products: " << products_->size();
-    LOG(DEBUG3) << "G" << module_index_ << " product time: " << DUR(gen_time);
-  }
-  return *products_;
-}
-
 void Zbdd::Analyze() noexcept {
   CLOCK(zbdd_time);
   assert(root_->terminal() ||

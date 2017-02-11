@@ -184,16 +184,16 @@ CEA9601 -l 5 (mcs = 1615876)
 Release build:
 ~~~~~~~~~~~~~~
 
-- ZBDD Time: 2.0
+- ZBDD Time: 0.80
 
 - Reporting (/dev/null): 2.6
 
 - # of ZBDD vertices created: 42580
 - # of Nodes in ZBDD: 10621
-- ZBDD Cut set extraction memory: 100
 - Cut set indices to pointers memory: 90
+- Cut set indices to pointers time: 0.33
 
-- Memory: 310
+- Memory: 210
 
 - Cache-misses:  34 %
 
@@ -204,17 +204,16 @@ CEA9601 -l 6 (mcs = 9323572)
 Release build:
 ~~~~~~~~~~~~~~
 
-- ZBDD Time: 11
+- ZBDD Time: 2.0
 
 - Reporting (/dev/null): 17.5
 
 - # of ZBDD vertices created: 213970
 - # of Nodes in ZBDD: 20426
-- ZBDD Cut set extraction memory: 800
 - Cut set indices to pointers memory: 600
-- Cut set indices to pointers time: 0.95
+- Cut set indices to pointers time: 0.95  |  1.9
 
-- Memory:   1350
+- Memory:   700
 
 
 Uncertainty Analysis

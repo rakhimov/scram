@@ -28,6 +28,7 @@
 #include <boost/range/algorithm.hpp>
 
 #include "event.h"
+#include "zbdd.h"
 
 namespace scram {
 namespace core {
@@ -90,14 +91,8 @@ FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
     : Analysis(settings),
       top_event_(root) {}
 
-void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
+void FaultTreeAnalysis::Convert(const Zbdd& results,
                                 const Pdag* graph) noexcept {
-  // Special cases of sets.
-  if (results.empty()) {
-    Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
-  } else if (results.size() == 1 && results.back().empty()) {
-    Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
-  }
   assert(products_.empty());
   products_.reserve(results.size());
 
@@ -114,12 +109,18 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     decltype(product_events_)& product_events;
   };
 
-  for (const auto& result_set : results) {
+  for (const std::vector<int>& result_set : results) {
     assert(result_set.size() <= Analysis::settings().limit_order() &&
            "Miscalculated product sets with larger-than-required order.");
     products_.emplace_back(
         result_set.size(),
         GeneratorIterator{result_set.begin(), *graph, product_events_});
+  }
+  // Special cases of sets.
+  if (products_.empty()) {
+    Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
+  } else if (products_.size() == 1 && products_.back().empty()) {
+    Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
   }
 #ifndef NDEBUG
   if (Analysis::settings().print)

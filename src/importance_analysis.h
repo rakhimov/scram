@@ -48,6 +48,8 @@ struct ImportanceFactors {
   double rrw;  ///< Risk reduction worth factor.
 };
 
+class Zbdd;  // The container of products to be queries for important events.
+
 /// Analysis of importance factors of risk model variables.
 class ImportanceAnalysis : public Analysis {
  public:
@@ -93,7 +95,7 @@ class ImportanceAnalysis : public Analysis {
   /// @returns A unique collection of important basic events.
   std::vector<std::pair<int, const mef::BasicEvent*>> GatherImportantEvents(
       const Pdag* graph,
-      const std::vector<std::vector<int>>& products) noexcept;
+      const Zbdd& products) noexcept;
 
  private:
   /// @returns Total probability from the probability analysis.

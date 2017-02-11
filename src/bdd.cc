@@ -96,9 +96,9 @@ void Bdd::Analyze() noexcept {
   }
 }
 
-const std::vector<std::vector<int>>& Bdd::products() const {
+const Zbdd& Bdd::products() const {
   assert(zbdd_ && "Analysis is not done.");
-  return zbdd_->products();
+  return *zbdd_;
 }
 
 ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,

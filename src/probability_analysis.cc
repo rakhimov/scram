@@ -24,6 +24,7 @@
 #include "event.h"
 #include "logger.h"
 #include "settings.h"
+#include "zbdd.h"
 
 namespace scram {
 namespace core {
@@ -47,10 +48,8 @@ void ProbabilityAnalysis::Analyze() noexcept {
 }
 
 double CutSetProbabilityCalculator::Calculate(
-    const CutSet& cut_set,
+    const std::vector<int>& cut_set,
     const Pdag::IndexMap<double>& p_vars) noexcept {
-  if (cut_set.empty())
-    return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
     assert(member > 0 && "Complements in a cut set.");
@@ -60,26 +59,20 @@ double CutSetProbabilityCalculator::Calculate(
 }
 
 double RareEventCalculator::Calculate(
-    const std::vector<CutSet>& cut_sets,
+    const Zbdd& cut_sets,
     const Pdag::IndexMap<double>& p_vars) noexcept {
-  if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
-    return 1;
   double sum = 0;
-  for (const auto& cut_set : cut_sets) {
-    assert(!cut_set.empty() && "Detected an empty cut set.");
+  for (const std::vector<int>& cut_set : cut_sets) {
     sum += CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
   return sum > 1 ? 1 : sum;
 }
 
 double McubCalculator::Calculate(
-    const std::vector<CutSet>& cut_sets,
+    const Zbdd& cut_sets,
     const Pdag::IndexMap<double>& p_vars) noexcept {
-  if (CutSetProbabilityCalculator::CheckUnity(cut_sets))
-    return 1;
   double m = 1;
-  for (const auto& cut_set : cut_sets) {
-    assert(!cut_set.empty() && "Detected an empty cut set.");
+  for (const std::vector<int>& cut_set : cut_sets) {
     m *= 1 - CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
   return 1 - m;

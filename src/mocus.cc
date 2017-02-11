@@ -53,11 +53,6 @@ void Mocus::Analyze() {
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-const std::vector<std::vector<int>>& Mocus::products() const {
-  assert(zbdd_ && "Analysis is not done.");
-  return zbdd_->products();
-}
-
 std::unique_ptr<zbdd::CutSetContainer>
 Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   assert(gate.module() && "Expected only module gates.");
