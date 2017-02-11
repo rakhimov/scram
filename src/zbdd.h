@@ -81,18 +81,6 @@ class SetNode : public NonTerminal<SetNode> {
   ///       this general-purpose field saves space and time.
   void count(std::int64_t number) { count_ = number; }
 
-  /// @returns Products found in the ZBDD represented by this node.
-  const std::vector<std::vector<int>>& products() const { return products_; }
-
-  /// Sets the products belonging to this ZBDD.
-  ///
-  /// @param[in] products  Products calculated from low and high edges.
-  void products(const std::vector<std::vector<int>>& products) {
-    products_ = products;
-  }
-
-  using NonTerminal::CutBranches;  ///< For destructive extraction of products.
-
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
@@ -106,7 +94,6 @@ class SetNode : public NonTerminal<SetNode> {
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
   int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
-  std::vector<std::vector<int>> products_;  ///< Products of this node.
   std::int64_t count_ = 0;  ///< The number of products, nodes, or anything.
 };
 
@@ -802,41 +789,6 @@ class Zbdd : private boost::noncopyable {
   ///
   /// @returns false if the passed node can never be Unity.
   bool MayBeUnity(const SetNodePtr& node) noexcept;
-
-  /// Encodes the limit order for sub-sets for product generation.
-  /// The encoding lets avoid generation of unnecessary products.
-  ///
-  /// @param[in,out] vertex  The vertex to start the encoding.
-  /// @param[in] limit_order  The limit on the product order.
-  ///
-  /// @pre 'count' fields of nodes are clear.
-  /// @pre All processing is done,
-  ///      such minimization and constant module elimination.
-  /// @pre The encoding is done before the product generation.
-  ///
-  /// @post The limit order is encoded in the node count field.
-  /// @post The encoding is not propagated to sub-modules.
-  void EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept;
-
-  /// Traverses the reduced ZBDD graph to generate products.
-  /// ZBDD is destructively converted into products.
-  ///
-  /// @param[in] vertex  The root node in traversal.
-  ///
-  /// @returns A collection of products
-  ///          generated from the ZBDD subgraph.
-  ///
-  /// @pre The ZBDD node marks are clear.
-  /// @pre The ZBDD is minimized.
-  /// @pre There are no constant modules.
-  /// @pre The internal limit order for generation
-  ///      is encoded in the node counts.
-  ///
-  /// @post The products of modules are incorporated to the result.
-  ///
-  /// @warning Product generation will destroy ZBDD.
-  std::vector<std::vector<int>>
-  GenerateProducts(const VertexPtr& vertex) noexcept;
 
   /// Counts the number of SetNodes
   /// excluding the nodes in the modules.

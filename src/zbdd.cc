@@ -757,67 +757,6 @@ int Zbdd::GatherModules(const VertexPtr& vertex,
   return std::min(min_high + contribution, min_low);
 }
 
-void Zbdd::EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept {
-  if (vertex->terminal())
-    return;
-  SetNodePtr node = SetNode::Ptr(vertex);
-  if (node->count() >= limit_order)
-    return;
-  node->count(limit_order);
-  EncodeLimitOrder(node->high(), limit_order - 1);
-  EncodeLimitOrder(node->low(), limit_order);
-}
-
-std::vector<std::vector<int>>
-Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) {
-    if (Terminal<SetNode>::Ptr(vertex)->value())
-      return {{}};  // The Base set.
-    return {};  // Don't include 0/NULL sets.
-  }
-  SetNodePtr node = SetNode::Ptr(vertex);
-  assert(node->minimal() && "Detected non-minimal ZBDD.");
-  if (node->count() <= 0)
-    return {};  // The result of a conservative count.
-
-  if (node->mark())
-    return node->products();
-  node->mark(true);
-  std::vector<Product> low = GenerateProducts(node->low());
-  std::vector<Product> high = GenerateProducts(node->high());
-  std::vector<Product> result;
-  for (auto& product : low) {
-    if (product.size() <= node->count())
-      result.emplace_back(std::move(product));
-  }
-  if (node->module()) {
-    Zbdd* module = modules_.find(node->index())->second.get();
-    for (const auto& product : high) {  // Cross-product.
-      for (const auto& module_set : module->products()) {
-        if (product.size() + module_set.size() > node->count())
-          continue;  // Cut-off on the product size.
-        Product combo = product;
-        combo.insert(combo.end(), module_set.begin(), module_set.end());
-        result.emplace_back(std::move(combo));
-      }
-    }
-  } else {
-    for (auto& product : high) {
-      if (product.size() < node->count()) {
-        product.push_back(node->index());
-        result.emplace_back(std::move(product));
-      }
-    }
-  }
-
-  // Destroy the subgraph to remove extra reference counts.
-  node->CutBranches();
-
-  if (node->use_count() > 2)
-    node->products(result);
-  return result;
-}
-
 int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
   if (vertex->terminal())
     return 0;

@@ -61,7 +61,7 @@ TEST(RegressionTest, ObjectSize) {
   EXPECT_EQ(16, sizeof(Vertex<Ite>));
   EXPECT_EQ(48, sizeof(NonTerminal<Ite>));
   EXPECT_EQ(64, sizeof(Ite));
-  EXPECT_EQ(80, sizeof(SetNode));
+  EXPECT_EQ(56, sizeof(SetNode));
 }
 #endif
 

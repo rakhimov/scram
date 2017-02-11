@@ -297,15 +297,6 @@ class NonTerminal : public Vertex<T> {
  protected:
   ~NonTerminal() = default;
 
-  /// Cuts off this node from its high and low branches.
-  /// This is for destructive operations on the BDD graph.
-  ///
-  /// @pre These branches are not going to be used again.
-  void CutBranches() {
-    high_.reset();
-    low_.reset();
-  }
-
  private:
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
