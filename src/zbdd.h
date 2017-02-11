@@ -221,17 +221,15 @@ class Zbdd : private boost::noncopyable {
       ///
       /// @post If the new product is generated,
       ///       the product and stack containers are updated accordingly.
-      ///
-      /// @todo Optimize the smart pointer away.
       bool GenerateProduct(const VertexPtr& vertex) noexcept {
         if (vertex->terminal())
-          return Terminal<SetNode>::Ptr(vertex)->value();
+          return static_cast<const Terminal<SetNode>&>(*vertex).value();
         if (it_.product_.size() >= it_.zbdd_.settings().limit_order())
           return false;
-        SetNodePtr node = SetNode::Ptr(vertex);
+        const SetNode* node = static_cast<SetNode*>(vertex.get());
         if (node->module()) {
           module_stack_.emplace_back(
-              node.get(), *zbdd_.modules_.find(node->index())->second, &it_);
+              node, *zbdd_.modules_.find(node->index())->second, &it_);
           for (; module_stack_.back(); ++module_stack_.back()) {
             if (GenerateProduct(node->high()))
               return true;
@@ -241,7 +239,7 @@ class Zbdd : private boost::noncopyable {
           return GenerateProduct(node->low());
 
         } else {
-          Push(node.get());
+          Push(node);
           return GenerateProduct(node->high()) || GenerateProduct(Pop()->low());
         }
       }
@@ -260,8 +258,8 @@ class Zbdd : private boost::noncopyable {
       /// Updates the current product with a literal.
       ///
       /// @param[in] set_node  The current leaf set node to add to the product.
-      void Push(const SetNodePtr& set_node) noexcept {
-        it_.node_stack_.push_back(set_node.get());
+      void Push(const SetNode* set_node) noexcept {
+        it_.node_stack_.push_back(set_node);
         it_.product_.push_back(set_node->index());
       }
 

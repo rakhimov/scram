@@ -211,7 +211,7 @@ Release build:
 - # of ZBDD vertices created: 213970
 - # of Nodes in ZBDD: 20426
 - Cut set indices to pointers memory: 600
-- Cut set indices to pointers time: 0.95  |  1.9
+- Cut set indices to pointers time: 0.95  |  1.8
 
 - Memory:   700
 
