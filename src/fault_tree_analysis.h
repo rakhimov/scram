@@ -243,7 +243,7 @@ class FaultTreeAnalysis : public Analysis {
   ///          the analysis will be invalid or fail.
   virtual void Analyze() noexcept = 0;
 
-  /// @returns A set of Boolean products as the analysis results.
+  /// @returns A collection of Boolean products as the analysis results.
   const std::vector<Product>& products() const { return products_; }
 
   /// @returns Collection of basic events that are in the products.

@@ -207,6 +207,7 @@ Release build:
 - ZBDD Time: 2.0
 
 - Reporting (/dev/null): 17.5
+- Reporting with probability: 28 | 29
 
 - # of ZBDD vertices created: 213970
 - # of Nodes in ZBDD: 20426

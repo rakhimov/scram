@@ -290,21 +290,16 @@ void Reporter::ReportResults(const std::string& ft_name,
 
   CLOCK(cs_time);
   LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
-  std::vector<double> probs;  // Product probabilities.
   double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
-    for (const core::Product& product_set : fta.products()) {
-      double prob = CalculateProbability(product_set);
-      sum += prob;
-      probs.push_back(prob);
-    }
-  }  // Ugliness because FTA and Probability analyses are not integrated.
-  for (int i = 0; i < fta.products().size(); ++i) {
-    const core::Product& product_set = fta.products()[i];
+    for (const core::Product& product_set : fta.products())
+      sum += CalculateProbability(product_set);
+  }
+  for (const core::Product& product_set : fta.products()) {
     XmlStreamElement product = sum_of_products.AddChild("product");
     product.SetAttribute("order", GetOrder(product_set));
     if (prob_analysis) {
-      double prob = probs[i];
+      double prob = CalculateProbability(product_set);
       product.SetAttribute("probability", prob);
       product.SetAttribute("contribution", prob / sum);
     }
