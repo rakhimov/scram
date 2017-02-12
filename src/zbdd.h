@@ -368,6 +368,9 @@ class Zbdd : private boost::noncopyable {
   /// @returns true for ZBDD with no products.
   bool empty() const { return begin() == end(); }
 
+  /// @returns true if the ZBDD represents a base/unity set.
+  bool base() const { return root_ == kBase_; }
+
  protected:
   /// The common constructor to initialize member variables.
   ///

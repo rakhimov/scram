@@ -276,7 +276,7 @@ void Reporter::ReportResults(const std::string& ft_name,
                              XmlStreamElement* results) {
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
   sum_of_products.SetAttribute("name", ft_name)
-      .SetAttribute("basic-events", fta.product_events().size())
+      .SetAttribute("basic-events", fta.products().product_events().size())
       .SetAttribute("products", fta.products().size());
 
   std::string warning = fta.warnings();
