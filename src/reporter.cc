@@ -293,13 +293,13 @@ void Reporter::ReportResults(const std::string& ft_name,
   double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
     for (const core::Product& product_set : fta.products())
-      sum += CalculateProbability(product_set);
+      sum += product_set.p();
   }
   for (const core::Product& product_set : fta.products()) {
     XmlStreamElement product = sum_of_products.AddChild("product");
-    product.SetAttribute("order", GetOrder(product_set));
+    product.SetAttribute("order", product_set.order());
     if (prob_analysis) {
-      double prob = CalculateProbability(product_set);
+      double prob = product_set.p();
       product.SetAttribute("probability", prob);
       product.SetAttribute("contribution", prob / sum);
     }

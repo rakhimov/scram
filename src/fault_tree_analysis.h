@@ -81,6 +81,16 @@ class Product {
   /// @returns The number of literals in the product.
   int size() const { return data_.size(); }
 
+  /// @returns The order of the product.
+  ///
+  /// @note An empty set indicates the Base/Unity set.
+  int order() const { return empty() ? 1 : size(); }
+
+  /// @returns The product of the literal probabilities.
+  ///
+  /// @pre Events are initialized with expressions.
+  double p() const;
+
   /// @returns A read proxy iterator that points to the first element.
   auto begin() const {
     return boost::make_transform_iterator(data_.begin(),
@@ -166,24 +176,6 @@ class ProductContainer {
 ///
 /// @param[in] products  Valid, unique collection of analysis results.
 void Print(const ProductContainer& products);
-
-/// Helper function to compute a Boolean product probability.
-///
-/// @param[in] product  A set of literals.
-///
-/// @returns Product of probabilities of the literals.
-///
-/// @pre Events are initialized with expressions.
-double CalculateProbability(const Product& product);
-
-/// Helper function to determine order of a Boolean product.
-///
-/// @param[in] product  A set of literals.
-///
-/// @returns The order of the product.
-///
-/// @note An empty set is assumed to indicate the Base/Unity set.
-int GetOrder(const Product& product);
 
 /// Fault tree analysis functionality.
 /// The analysis must be done on

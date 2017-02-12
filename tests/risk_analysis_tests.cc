@@ -87,7 +87,7 @@ std::vector<int> RiskAnalysisTest::ProductDistribution() {
   const FaultTreeAnalysis* fta =
       analysis->fault_tree_analyses().begin()->second.get();
   for (const Product& product : fta->products()) {
-    distr[GetOrder(product) - 1]++;
+    distr[product.order() - 1]++;
   }
   while (!distr.empty() && !distr.back())
     distr.pop_back();
@@ -110,8 +110,7 @@ RiskAnalysisTest::product_probability() {
     const FaultTreeAnalysis* fta =
         analysis->fault_tree_analyses().begin()->second.get();
     for (const Product& product : fta->products()) {
-      result_.product_probability.emplace(Convert(product),
-                                          CalculateProbability(product));
+      result_.product_probability.emplace(Convert(product), product.p());
     }
   }
   return result_.product_probability;

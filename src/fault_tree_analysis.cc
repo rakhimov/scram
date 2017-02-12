@@ -72,16 +72,12 @@ void Print(const ProductContainer& products) {
   std::cerr << std::flush;
 }
 
-double CalculateProbability(const Product& product) {
+double Product::p() const {
   double p = 1;
-  for (const Literal& literal : product) {
+  for (const Literal& literal : *this) {
     p *= literal.complement ? 1 - literal.event.p() : literal.event.p();
   }
   return p;
-}
-
-int GetOrder(const Product& product) {
-  return product.empty() ? 1 : product.size();
 }
 
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
