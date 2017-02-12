@@ -63,12 +63,14 @@ Release
 - [ ] Release with GitHub automatic tagging with the release notes
 
     * [ ] Close the milestone on GitHub
+    * [ ] Fetch the tags
 
 - [ ] Rebase Master on Develop (Avoid merging)
 
 - [ ] Update the website
 
     * [ ] Lizard CCN report
+    * [ ] cppdep report
     * [ ] Sitemap
 
 - [ ] Publish the release notes on the scram-announce mailing list
@@ -79,3 +81,4 @@ Distribution
 
 - [ ] Update Alioth/PPA (Debian/Ubuntu)
 - [ ] Installation package (NSIS/Windows)
+- [ ] Homebrew
