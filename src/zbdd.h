@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "bdd.h"
@@ -80,18 +81,6 @@ class SetNode : public NonTerminal<SetNode> {
   ///       this general-purpose field saves space and time.
   void count(std::int64_t number) { count_ = number; }
 
-  /// @returns Products found in the ZBDD represented by this node.
-  const std::vector<std::vector<int>>& products() const { return products_; }
-
-  /// Sets the products belonging to this ZBDD.
-  ///
-  /// @param[in] products  Products calculated from low and high edges.
-  void products(const std::vector<std::vector<int>>& products) {
-    products_ = products;
-  }
-
-  using NonTerminal::CutBranches;  ///< For destructive extraction of products.
-
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
@@ -105,7 +94,6 @@ class SetNode : public NonTerminal<SetNode> {
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
   int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
-  std::vector<std::vector<int>> products_;  ///< Products of this node.
   std::int64_t count_ = 0;  ///< The number of products, nodes, or anything.
 };
 
@@ -155,6 +143,182 @@ class Zbdd : private boost::noncopyable {
   using VertexPtr = IntrusivePtr<Vertex<SetNode>>;  ///< ZBDD vertex base.
   using TerminalPtr = IntrusivePtr<Terminal<SetNode>>;  ///< Terminal vertex.
 
+  /// Iterator over products in a ZBDD container.
+  /// The implementation is complicated with the incorporation of modules.
+  /// A single stack is used by all consecutive and recursive modules.
+  ///
+  /// @pre No constant ZBDD modules resulting in the Base set.
+  class const_iterator
+      : public boost::iterator_facade<const_iterator, const std::vector<int>,
+                                      boost::forward_traversal_tag> {
+    friend class boost::iterator_core_access;
+
+    /// Iterator over sets in the module ZBDD represented by a proxy node.
+    /// Modules within a module (i.e., sub-modules) are recursive,
+    /// while consecutive modules are not.
+    class module_iterator {
+     public:
+      /// Constructs module iterator based on the host ZBDD iterator.
+      ///
+      /// @param[in] node  The proxy node for module.
+      ///                  nullptr for the root ZBDD itself.
+      /// @param[in] zbdd  The module ZBDD.
+      /// @param[in,out] it  The host iterator with product stacks for output.
+      /// @param[in] sentinel  The flag for end iterators.
+      module_iterator(const SetNode* node, const Zbdd& zbdd, const_iterator* it,
+                      bool sentinel = false)
+          : sentinel_(sentinel),
+            start_pos_(it->product_.size()),
+            end_pos_(start_pos_),
+            it_(*it),
+            node_(node),
+            zbdd_(zbdd) {
+        if (!sentinel_) {
+          sentinel_ = !GenerateProduct(zbdd_.root());
+          end_pos_ = it_.product_.size();
+        }
+      }
+
+      /// Only single iterator per module is allowed.
+      module_iterator(module_iterator&&) noexcept = default;
+
+      /// @returns true if a new product has been generated for the host set.
+      explicit operator bool() const { return !sentinel_; }
+
+      /// Generates the next set.
+      void operator++() {
+        if (sentinel_)
+          return;
+        assert(end_pos_ >= start_pos_ && "Corrupted sentinel.");
+        while (start_pos_ != it_.product_.size()) {
+          if (!module_stack_.empty() &&
+              it_.product_.size() == module_stack_.back().end_pos_) {
+            const SetNode* node = module_stack_.back().node_;
+            for (++module_stack_.back(); module_stack_.back();
+                 ++module_stack_.back()) {
+              if (GenerateProduct(node->high()))
+                goto outer_break;
+            }
+            module_stack_.pop_back();
+            if (GenerateProduct(node->low()))
+              break;
+
+          } else if (GenerateProduct(Pop()->low())) {
+            break;
+          }
+        }
+      outer_break:
+        end_pos_ = it_.product_.size();
+        sentinel_ = start_pos_ == end_pos_;
+      }
+
+     private:
+      /// Generates a next product in the ZBDD traversal.
+      ///
+      /// @param[in] vertex  The vertex to start adding into the product.
+      ///
+      /// @returns true if a new product has been generated.
+      ///
+      /// @post If the new product is generated,
+      ///       the product and stack containers are updated accordingly.
+      bool GenerateProduct(const VertexPtr& vertex) noexcept {
+        if (vertex->terminal())
+          return static_cast<const Terminal<SetNode>&>(*vertex).value();
+        if (it_.product_.size() >= it_.zbdd_.settings().limit_order())
+          return false;
+        const SetNode* node = static_cast<SetNode*>(vertex.get());
+        if (node->module()) {
+          module_stack_.emplace_back(
+              node, *zbdd_.modules_.find(node->index())->second, &it_);
+          for (; module_stack_.back(); ++module_stack_.back()) {
+            if (GenerateProduct(node->high()))
+              return true;
+          }
+          assert(it_.product_.size() == module_stack_.back().start_pos_);
+          module_stack_.pop_back();
+          return GenerateProduct(node->low());
+
+        } else {
+          Push(node);
+          return GenerateProduct(node->high()) || GenerateProduct(Pop()->low());
+        }
+      }
+
+      /// Removes the current leaf node from the product.
+      ///
+      /// @returns The current leaf node in the product.
+      const SetNode* Pop() noexcept {
+        assert(start_pos_ < it_.product_.size() && "Access beyond the range!");
+        const SetNode* leaf = it_.node_stack_.back();
+        it_.node_stack_.pop_back();
+        it_.product_.pop_back();
+        return leaf;
+      }
+
+      /// Updates the current product with a literal.
+      ///
+      /// @param[in] set_node  The current leaf set node to add to the product.
+      void Push(const SetNode* set_node) noexcept {
+        it_.node_stack_.push_back(set_node);
+        it_.product_.push_back(set_node->index());
+      }
+
+      bool sentinel_;  ///< The signal to end the iteration.
+      const int start_pos_;  ///< The initial position on the start.
+      int end_pos_;  ///< The current end position in the product.
+      const_iterator& it_;  ///< The host iterator.
+      const SetNode* node_;  ///< The proxy node representing the module.
+      const Zbdd& zbdd_;  ///< The module ZBDD.
+      /// The stack for consecutive modules' iterators.
+      std::vector<module_iterator> module_stack_;
+    };
+
+   public:
+    /// @param[in] zbdd  The container to iterate over.
+    /// @param[in] sentinel  The flag to turn the iterator into an end sentinel.
+    ///
+    /// @pre The ZBDD container is not modified during the iteration.
+    explicit const_iterator(const Zbdd& zbdd, bool sentinel = false)
+        : sentinel_(sentinel), zbdd_(zbdd), it_(nullptr, zbdd, this, sentinel) {
+      sentinel_ = !it_;
+    }
+
+    /// The copy constructor is only for begin and end iterators.
+    ///
+    /// @param[in] other  Begin or End iterator.
+    const_iterator(const const_iterator& other) noexcept
+        : sentinel_(other.sentinel_),
+          zbdd_(other.zbdd_),
+          it_(nullptr, zbdd_, this, sentinel_) {
+      assert(*this == other && "Copy ctor is only for begin/end iterators.");
+    }
+
+   private:
+    /// Standard forward iterator functionality returning products.
+    /// @{
+    void increment() {
+      assert(!sentinel_ && "Incrementing an end iterator.");
+      ++it_;
+      sentinel_ = !it_;
+    }
+    bool equal(const const_iterator& other) const {
+      assert(!(sentinel_ && !product_.empty()) && "Uncleared products.");
+      return sentinel_ == other.sentinel_ && &zbdd_ == &other.zbdd_ &&
+             product_ == other.product_;
+    }
+    const std::vector<int>& dereference() const {
+      assert(!sentinel_ && "Dereferencing end iterator.");
+      return product_;
+    }
+    /// @}
+
+    bool sentinel_;  ///< The marker for the end of traversal.
+    const Zbdd& zbdd_;  ///< The source container for the products.
+    std::vector<int> product_;  ///< The current product.
+    std::vector<const SetNode*> node_stack_;  ///< The traversal stack.
+    module_iterator it_;  ///< The root module iterator for the whole ZBDD.
+  };
+
   /// Converts Reduced Ordered BDD
   /// into Zero-Suppressed BDD.
   ///
@@ -184,14 +348,28 @@ class Zbdd : private boost::noncopyable {
 
   /// Runs the analysis
   /// with the representation of a PDAG as ZBDD.
-  ///
-  /// @warning The analysis will destroy ZBDD.
-  ///
-  /// @post Products are generated with ZBDD analysis.
   void Analyze() noexcept;
 
   /// @returns Products generated by the analysis.
-  const std::vector<std::vector<int>>& products() const { return products_; }
+  const Zbdd& products() const { return *this; }
+
+  /// @returns Iterators over sets in the ZBDD.
+  /// @{
+  auto begin() const { return const_iterator(*this); }
+  auto end() const { return const_iterator(*this, /*sentinel=*/true); }
+  /// @}
+
+  /// @returns The number of *products* in the ZBDD.
+  ///
+  /// @note This is not cheap.
+  ///       The complexity is O(N) on the number of *sets* in ZBDD.
+  std::size_t size() const { return std::distance(begin(), end()); }
+
+  /// @returns true for ZBDD with no products.
+  bool empty() const { return begin() == end(); }
+
+  /// @returns true if the ZBDD represents a base/unity set.
+  bool base() const { return root_ == kBase_; }
 
  protected:
   /// The common constructor to initialize member variables.
@@ -389,7 +567,6 @@ class Zbdd : private boost::noncopyable {
  private:
   using SetNodeWeakPtr = WeakIntrusivePtr<SetNode>;  ///< Pointer for tables.
   using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
-  using Product = std::vector<int>;  ///< For clarity of expected results.
   /// Module entry in the tables with its original gate index.
   using ModuleEntry = std::pair<const int, std::unique_ptr<Zbdd>>;
 
@@ -622,41 +799,6 @@ class Zbdd : private boost::noncopyable {
   /// @returns false if the passed node can never be Unity.
   bool MayBeUnity(const SetNodePtr& node) noexcept;
 
-  /// Encodes the limit order for sub-sets for product generation.
-  /// The encoding lets avoid generation of unnecessary products.
-  ///
-  /// @param[in,out] vertex  The vertex to start the encoding.
-  /// @param[in] limit_order  The limit on the product order.
-  ///
-  /// @pre 'count' fields of nodes are clear.
-  /// @pre All processing is done,
-  ///      such minimization and constant module elimination.
-  /// @pre The encoding is done before the product generation.
-  ///
-  /// @post The limit order is encoded in the node count field.
-  /// @post The encoding is not propagated to sub-modules.
-  void EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept;
-
-  /// Traverses the reduced ZBDD graph to generate products.
-  /// ZBDD is destructively converted into products.
-  ///
-  /// @param[in] vertex  The root node in traversal.
-  ///
-  /// @returns A collection of products
-  ///          generated from the ZBDD subgraph.
-  ///
-  /// @pre The ZBDD node marks are clear.
-  /// @pre The ZBDD is minimized.
-  /// @pre There are no constant modules.
-  /// @pre The internal limit order for generation
-  ///      is encoded in the node counts.
-  ///
-  /// @post The products of modules are incorporated to the result.
-  ///
-  /// @warning Product generation will destroy ZBDD.
-  std::vector<std::vector<int>>
-  GenerateProducts(const VertexPtr& vertex) noexcept;
-
   /// Counts the number of SetNodes
   /// excluding the nodes in the modules.
   ///
@@ -735,7 +877,6 @@ class Zbdd : private boost::noncopyable {
 
   std::map<int, std::unique_ptr<Zbdd>> modules_;  ///< Module graphs.
   int set_id_;  ///< Identification assignment for new set graphs.
-  std::vector<Product> products_;  ///< Generated products.
 };
 
 namespace zbdd {

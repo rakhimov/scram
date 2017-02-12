@@ -26,6 +26,7 @@
 
 #include "event.h"
 #include "logger.h"
+#include "zbdd.h"
 
 namespace scram {
 namespace core {
@@ -55,12 +56,11 @@ void ImportanceAnalysis::Analyze() noexcept {
 }
 
 std::vector<std::pair<int, const mef::BasicEvent*>>
-ImportanceAnalysis::GatherImportantEvents(
-    const Pdag* graph,
-    const std::vector<std::vector<int>>& products) noexcept {
+ImportanceAnalysis::GatherImportantEvents(const Pdag* graph,
+                                          const Zbdd& products) noexcept {
   std::vector<std::pair<int, const mef::BasicEvent*>> important_events;
   std::unordered_set<int> unique_indices;
-  for (const auto& product : products) {
+  for (const std::vector<int>& product : products) {
     for (int index : product) {
       int pos_index = std::abs(index);
       if (unique_indices.insert(pos_index).second == false)

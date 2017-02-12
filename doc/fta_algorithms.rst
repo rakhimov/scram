@@ -197,6 +197,23 @@ However, the application of Boolean operators on the ZBDD decomposition
 requires extra computations compared to the BDD approach.
 
 
+Product Container
+-----------------
+
+All the FTA algorithms in SCRAM produce ZBDD as a result of analysis
+to encode the sum of products.
+An alternative representation, for example,
+would be an array (of sets, bitsets, arrays, etc.),
+which is a very general data structure
+providing a flexible interface and standard algorithms
+(sort, partition, query, iteration, etc.);
+however, this kind of alternatives is not as space and time efficient as ZBDD.
+Moreover, there's great overhead in converting the resultant ZBDD into some other data structures.
+For these performance reasons,
+other analysis and post-processing facilities utilize or are expected to work with
+the ZBDD representation directly.
+
+
 ********************
 UNITY and NULL Cases
 ********************

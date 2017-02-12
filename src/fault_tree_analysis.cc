@@ -20,9 +20,8 @@
 
 #include "fault_tree_analysis.h"
 
-#include <algorithm>
 #include <iostream>
-#include <utility>
+#include <string>
 
 #include <boost/container/flat_set.hpp>
 #include <boost/range/algorithm.hpp>
@@ -32,21 +31,21 @@
 namespace scram {
 namespace core {
 
-void Print(const std::vector<Product>& products) {
+void Print(const ProductContainer& products) {
   if (products.empty()) {
     std::cerr << "No products!" << std::endl;
     return;
   }
-  if (products.front().empty()) {
+  if (products.begin()->empty()) {
     assert(products.size() == 1 && "Unity case must have only one product.");
     std::cerr << "Single Unity product." << std::endl;
     return;
   }
   using ProductSet = boost::container::flat_set<std::string>;
   std::vector<ProductSet> to_print;
-  for (const auto& product : products) {
+  for (const Product& product : products) {
     ProductSet ids;
-    for (const auto& literal : product) {
+    for (const Literal& literal : product) {
       ids.insert((literal.complement ? "~" : "") + literal.event.name());
     }
     to_print.push_back(std::move(ids));
@@ -73,16 +72,12 @@ void Print(const std::vector<Product>& products) {
   std::cerr << std::flush;
 }
 
-double CalculateProbability(const Product& product) {
+double Product::p() const {
   double p = 1;
-  for (const Literal& literal : product) {
+  for (const Literal& literal : *this) {
     p *= literal.complement ? 1 - literal.event.p() : literal.event.p();
   }
   return p;
-}
-
-int GetOrder(const Product& product) {
-  return product.empty() ? 1 : product.size();
 }
 
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
@@ -90,40 +85,23 @@ FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
     : Analysis(settings),
       top_event_(root) {}
 
-void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
-                                const Pdag* graph) noexcept {
+void FaultTreeAnalysis::Store(const Zbdd& products,
+                              const Pdag& graph) noexcept {
   // Special cases of sets.
-  if (results.empty()) {
+  if (products.empty()) {
     Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
-  } else if (results.size() == 1 && results.back().empty()) {
+  } else if (products.base()) {
     Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
   }
-  assert(products_.empty());
-  products_.reserve(results.size());
+  products_ = std::make_unique<const ProductContainer>(products, graph);
 
-  struct GeneratorIterator {
-    void operator++() { ++it; }
-    /// Populates the Product with Literals.
-    std::pair<bool, const mef::BasicEvent*> operator*() {
-      const mef::BasicEvent* basic_event = graph.basic_events()[std::abs(*it)];
-      product_events.insert(basic_event);
-      return {*it < 0, basic_event};
-    }
-    std::vector<int>::const_iterator it;
-    const Pdag& graph;
-    decltype(product_events_)& product_events;
-  };
-
-  for (const auto& result_set : results) {
-    assert(result_set.size() <= Analysis::settings().limit_order() &&
-           "Miscalculated product sets with larger-than-required order.");
-    products_.emplace_back(
-        result_set.size(),
-        GeneratorIterator{result_set.begin(), *graph, product_events_});
-  }
 #ifndef NDEBUG
+  for (const Product& product : *products_)
+    assert(product.size() <= Analysis::settings().limit_order() &&
+           "Miscalculated product sets with larger-than-required order.");
+
   if (Analysis::settings().print)
-    Print(products_);
+    Print(*products_);
 #endif
 }
 

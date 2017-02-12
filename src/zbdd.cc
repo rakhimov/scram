@@ -84,6 +84,7 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
 }
 
 void Zbdd::Analyze() noexcept {
+  CLOCK(zbdd_time);
   assert(root_->terminal() ||
          SetNode::Ptr(root_)->max_set_order() <= kSettings_.limit_order());
   root_ = Minimize(root_);  // Likely to be minimal by now.
@@ -91,21 +92,9 @@ void Zbdd::Analyze() noexcept {
   for (const auto& entry : modules_)
     entry.second->Analyze();
 
-  CLOCK(gen_time);
-  LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
-  // Complete cleanup of the memory.
-  ReleaseTables();
-  ClearMarks(root_, false);
-  ClearCounts(root_, false);
-  EncodeLimitOrder(root_, kSettings_.limit_order());
-  ClearMarks(root_, false);
-  products_ = GenerateProducts(root_);
-
-  // Cleanup of temporary products.
-  modules_.clear();
-  root_ = kEmpty_;
-  LOG(DEBUG4) << "# of generated products: " << products_.size();
-  LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(gen_time);
+  Prune(root_, kSettings_.limit_order());
+  ReleaseTables();  // Complete cleanup of the memory.
+  LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(zbdd_time);
 }
 
 Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
@@ -754,67 +743,6 @@ int Zbdd::GatherModules(const VertexPtr& vertex,
   if (min_low == -1)
     return min_high + contribution;
   return std::min(min_high + contribution, min_low);
-}
-
-void Zbdd::EncodeLimitOrder(const VertexPtr& vertex, int limit_order) noexcept {
-  if (vertex->terminal())
-    return;
-  SetNodePtr node = SetNode::Ptr(vertex);
-  if (node->count() >= limit_order)
-    return;
-  node->count(limit_order);
-  EncodeLimitOrder(node->high(), limit_order - 1);
-  EncodeLimitOrder(node->low(), limit_order);
-}
-
-std::vector<std::vector<int>>
-Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) {
-    if (Terminal<SetNode>::Ptr(vertex)->value())
-      return {{}};  // The Base set.
-    return {};  // Don't include 0/NULL sets.
-  }
-  SetNodePtr node = SetNode::Ptr(vertex);
-  assert(node->minimal() && "Detected non-minimal ZBDD.");
-  if (node->count() <= 0)
-    return {};  // The result of a conservative count.
-
-  if (node->mark())
-    return node->products();
-  node->mark(true);
-  std::vector<Product> low = GenerateProducts(node->low());
-  std::vector<Product> high = GenerateProducts(node->high());
-  std::vector<Product> result;
-  for (auto& product : low) {
-    if (product.size() <= node->count())
-      result.emplace_back(std::move(product));
-  }
-  if (node->module()) {
-    Zbdd* module = modules_.find(node->index())->second.get();
-    for (const auto& product : high) {  // Cross-product.
-      for (const auto& module_set : module->products()) {
-        if (product.size() + module_set.size() > node->count())
-          continue;  // Cut-off on the product size.
-        Product combo = product;
-        combo.insert(combo.end(), module_set.begin(), module_set.end());
-        result.emplace_back(std::move(combo));
-      }
-    }
-  } else {
-    for (auto& product : high) {
-      if (product.size() < node->count()) {
-        product.push_back(node->index());
-        result.emplace_back(std::move(product));
-      }
-    }
-  }
-
-  // Destroy the subgraph to remove extra reference counts.
-  node->CutBranches();
-
-  if (node->use_count() > 2)
-    node->products(result);
-  return result;
 }
 
 int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {

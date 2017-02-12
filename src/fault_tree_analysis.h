@@ -21,21 +21,21 @@
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
-#include <cstdint>
+#include <cmath>
 
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include "analysis.h"
 #include "logger.h"
 #include "pdag.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "zbdd.h"
 
 namespace scram {
 
@@ -54,105 +54,116 @@ struct Literal {
 };
 
 /// Collection of unique literals.
-/// This collection is designed as a space-efficient drop-in replacement
-/// for const std::vector<const Literal>.
-///
-/// The major differences from std::vector:
-///
-///     1. Iterators are proxies.
-///     2. The size is fixed upon construction.
-///     3. The size is limited to 32 literals.
-///     4. Only necessary and required API is provided for the use-cases.
-///     5. The construction is handled differently.
 class Product {
- public:
-  /// Read iterator over Product Literals.
-  class iterator
-      : public boost::iterator_facade<iterator, Literal,
-                                      boost::forward_traversal_tag, Literal> {
-    friend class boost::iterator_core_access;
-
-   public:
-    /// Constructs an iterator on a position in a specific product.
+  /// Converter of indices in products to Literals.
+  struct LiteralExtractor {
+    /// @param[in] index  The index in a result product.
     ///
-    /// @param[in] pos  Valid position.
-    /// @param[in] product  The host container.
-    iterator(int pos, const Product& product) : pos_(pos), product_(product) {}
-
-   private:
-    /// Standard forward iterator functionality returning Literal in products.
-    /// @{
-    void increment() { ++pos_; }
-    bool equal(const iterator& other) const {
-      return &product_ == &other.product_ && pos_ == other.pos_;
+    /// @returns Literal representing the event with the index.
+    Literal operator()(int index) const {
+      return {index < 0, *graph.basic_events()[std::abs(index)]};
     }
-    Literal dereference() const {
-      return {product_.GetComplement(pos_), *product_.data_[pos_]};
-    }
-    /// @}
-    int pos_;  ///< The current position of the iterator.
-    const Product& product_;  ///< The container to be iterated over.
+    const Pdag& graph;  ///< The host graph.
   };
 
+ public:
   /// Initializes product literals.
   ///
-  /// @tparam GeneratorIterator  Iterator type with its operator* returning
-  ///                            std::pair or struct with
-  ///                            ``first`` being complement flag of the Literal,
-  ///                            ``second`` being pointer to the event.
+  /// @param[in] data  The underlying set.
+  /// @param[in] graph  The graph with indices to events map.
+  Product(const std::vector<int>& data, const Pdag& graph) noexcept
+      : data_(data),
+        graph_(graph) {}
+
+  /// @returns true for unity product with no literals.
+  bool empty() const { return data_.empty(); }
+
+  /// @returns The number of literals in the product.
+  int size() const { return data_.size(); }
+
+  /// @returns The order of the product.
   ///
-  /// @param[in] size  The number of literals in the product.
-  /// @param[in] it  The generator of literals for this product.
-  template <class GeneratorIterator>
-  Product(int size, GeneratorIterator it) noexcept
-      : size_(size),
-        complement_vector_(0),
-        data_(new const mef::BasicEvent*[size]) {
-    assert(size >= 0 && size <= 32);
-    for (int i = 0; i < size; ++i, ++it) {
-      const auto& literal = *it;
-      if (literal.first)
-        complement_vector_ |= 1 << i;  // The complement flag.
-      data_[i] = literal.second;  // The variable itself.
+  /// @note An empty set indicates the Base/Unity set.
+  int order() const { return empty() ? 1 : size(); }
+
+  /// @returns The product of the literal probabilities.
+  ///
+  /// @pre Events are initialized with expressions.
+  double p() const;
+
+  /// @returns A read proxy iterator that points to the first element.
+  auto begin() const {
+    return boost::make_transform_iterator(data_.begin(),
+                                          LiteralExtractor{graph_});
+  }
+
+  /// @returns A sentinel iterator signifying the end of iteration.
+  auto end() const {
+    return boost::make_transform_iterator(data_.end(),
+                                          LiteralExtractor{graph_});
+  }
+
+ private:
+  const std::vector<int>& data_;  ///< The collection of event indices.
+  const Pdag& graph_;  ///< The host graph.
+};
+
+/// A container of analysis result products with Literals.
+/// This is a wrapper of the analysis resultant ZBDD to work with Literals.
+class ProductContainer {
+  /// Converter of analysis products with indices into products with literals.
+  struct ProductExtractor {
+    /// @param[in] product  The product with indices from analysis results.
+    ///
+    /// @returns The wrapped product of Literals.
+    Product operator()(const std::vector<int>& product) const {
+      return Product(product, graph);
+    }
+    const Pdag& graph;  ///< The host graph.
+  };
+
+ public:
+  /// The constructor also collects basic events in products.
+  ///
+  /// @param[in] products  Sets with indices of events from calculations.
+  /// @param[in] graph  PDAG with basic event indices and pointers.
+  ProductContainer(const Zbdd& products, const Pdag& graph) noexcept
+      : products_(products),
+        graph_(graph) {
+    for (const std::vector<int>& result_set : products_) {
+      for (int i : result_set)
+        product_events_.insert(graph_.basic_events()[i]);
     }
   }
 
-  /// Move constructor for products to store in a database.
-  ///
-  /// @param[in] other  Fully initialized product.
-  Product(Product&& other) noexcept
-      : size_(other.size_),
-        complement_vector_(other.complement_vector_),
-        data_(std::move(other.data_)) {
-    other.size_ = other.complement_vector_ = 0;
+  /// @returns Collection of basic events that are in the products.
+  const std::unordered_set<const mef::BasicEvent*>& product_events() const {
+    return product_events_;
   }
 
-  /// @returns true for unity product with no literals.
-  bool empty() const { return size_ == 0; }
+  /// Begin and end iterators over products in the container.
+  /// @{
+  auto begin() const {
+    return boost::make_transform_iterator(products_.begin(),
+                                          ProductExtractor{graph_});
+  }
+  auto end() const {
+    return boost::make_transform_iterator(products_.end(),
+                                          ProductExtractor{graph_});
+  }
+  /// @}
 
-  /// @returns The number of literals in the product.
-  int size() const { return size_; }
+  /// @returns true if no products in the container.
+  bool empty() const { return products_.empty(); }
 
-  /// @returns A read proxy iterator that points to the first element.
-  iterator begin() const { return iterator(0, *this); }
-
-  /// @returns A sentinel iterator signifying the end of iteration.
-  iterator end() const { return iterator(size_, *this); }
+  /// @returns The number of products in the container.
+  int size() const { return products_.size(); }
 
  private:
-  /// Determines if the literal is complement.
-  ///
-  /// @param[in] pos  The position of the literal.
-  ///
-  /// @returns true if the literal is complement.
-  bool GetComplement(int pos) const {
-    return complement_vector_ & (1 << pos);
-  }
-
-  std::uint8_t size_;  ///< The number of literals in the product.
-  std::uint32_t complement_vector_;  ///< The complement flags of the literals.
-  /// The collection of literal events.
-  std::unique_ptr<const mef::BasicEvent*[]> data_;
+  const Zbdd& products_;  ///< Container of analysis results.
+  const Pdag& graph_;  ///< The analysis graph.
+  /// The set of events in the resultant products.
+  std::unordered_set<const mef::BasicEvent*> product_events_;
 };
 
 /// Prints a collection of products to the standard error.
@@ -164,25 +175,7 @@ class Product {
 /// The literals of a product are sorted by their names.
 ///
 /// @param[in] products  Valid, unique collection of analysis results.
-void Print(const std::vector<Product>& products);
-
-/// Helper function to compute a Boolean product probability.
-///
-/// @param[in] product  A set of literals.
-///
-/// @returns Product of probabilities of the literals.
-///
-/// @pre Events are initialized with expressions.
-double CalculateProbability(const Product& product);
-
-/// Helper function to determine order of a Boolean product.
-///
-/// @param[in] product  A set of literals.
-///
-/// @returns The order of the product.
-///
-/// @note An empty set is assumed to indicate the Base/Unity set.
-int GetOrder(const Product& product);
+void Print(const ProductContainer& products);
 
 /// Fault tree analysis functionality.
 /// The analysis must be done on
@@ -241,29 +234,24 @@ class FaultTreeAnalysis : public Analysis {
   ///          the analysis will be invalid or fail.
   virtual void Analyze() noexcept = 0;
 
-  /// @returns A set of Boolean products as the analysis results.
-  const std::vector<Product>& products() const { return products_; }
-
-  /// @returns Collection of basic events that are in the products.
-  const std::unordered_set<const mef::BasicEvent*>& product_events() const {
-    return product_events_;
+  /// @returns A collection of Boolean products as the analysis results.
+  ///
+  /// @pre The analysis is done.
+  const ProductContainer& products() const {
+    assert(products_ && "The analysis is not done!");
+    return *products_;
   }
 
  protected:
-  /// Converts resultant sets of basic event indices to strings
-  /// for future reporting.
-  /// This function also collects basic events in products.
+  /// Stores resultant sets of products for future reporting.
   ///
-  /// @param[in] results  A sets with indices of events from calculations.
+  /// @param[in] products  Sets with indices of events from calculations.
   /// @param[in] graph  PDAG with basic event indices and pointers.
-  void Convert(const std::vector<std::vector<int>>& results,
-               const Pdag* graph) noexcept;
+  void Store(const Zbdd& products, const Pdag& graph) noexcept;
 
  private:
   const mef::Gate& top_event_;  ///< The root of the graph under analysis.
-  std::vector<Product> products_;  ///< Container of analysis results.
-  /// The set of events in the resultant products.
-  std::unordered_set<const mef::BasicEvent*> product_events_;
+  std::unique_ptr<const ProductContainer> products_;  ///< Container of results.
 };
 
 /// Fault tree analysis facility with specific algorithms.
@@ -318,9 +306,9 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   LOG(DEBUG2) << "# of products: " << algorithm_->products().size();
 
   Analysis::AddAnalysisTime(DUR(analysis_time));
-  CLOCK(convert_time);
-  FaultTreeAnalysis::Convert(algorithm_->products(), graph_.get());
-  LOG(DEBUG2) << "Converted indices to pointers in " << DUR(convert_time);
+  CLOCK(store_time);
+  FaultTreeAnalysis::Store(algorithm_->products(), *graph_);
+  LOG(DEBUG2) << "Stored the result for reporting in " << DUR(store_time);
 }
 
 }  // namespace core

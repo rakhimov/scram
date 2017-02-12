@@ -67,8 +67,6 @@ class ProbabilityAnalysis : public Analysis {
 /// Quantitative calculator of a probability value of a single cut set.
 class CutSetProbabilityCalculator {
  public:
-  using CutSet = std::vector<int>;  ///< Alias for clarity.
-
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
@@ -77,25 +75,16 @@ class CutSetProbabilityCalculator {
   /// @param[in] p_vars  Probabilities of events mapped by the variable indices.
   ///
   /// @returns The total probability of the cut set.
+  /// @returns 1 for an empty cut set indicating the base set.
   ///
   /// @pre The cut set doesn't contain complements.
   /// @pre Probability values are non-negative.
   /// @pre Indices of events directly map to vector indices.
-  double Calculate(const CutSet& cut_set,
+  double Calculate(const std::vector<int>& cut_set,
                    const Pdag::IndexMap<double>& p_vars) noexcept;
-
-  /// Checks the special case of a unity set with probability 1.
-  ///
-  /// @param[in] cut_sets  Collection of ALL cut sets.
-  ///
-  /// @returns true if the Unity set is detected.
-  ///
-  /// @pre The unity set is indicated by a single empty set.
-  /// @pre Provided cut sets are ALL the cut sets under consideration.
-  double CheckUnity(const std::vector<CutSet>& cut_sets) noexcept {
-    return cut_sets.size() == 1 && cut_sets.front().empty();
-  }
 };
+
+class Zbdd;  // The container of analysis products for computations.
 
 /// Quantitative calculator of probability values
 /// with the Rare-Event approximation.
@@ -113,7 +102,7 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
   ///       the probability is adjusted to 1.
   ///       It is very unwise to use the rare-event approximation
   ///       with large probability values.
-  double Calculate(const std::vector<CutSet>& cut_sets,
+  double Calculate(const Zbdd& cut_sets,
                    const Pdag::IndexMap<double>& p_vars) noexcept;
 };
 
@@ -128,15 +117,13 @@ class McubCalculator : private CutSetProbabilityCalculator {
   /// @param[in] p_vars  Probabilities of events mapped by the variable indices.
   ///
   /// @returns The total probability with the MCUB approximation.
-  double Calculate(const std::vector<CutSet>& cut_sets,
+  double Calculate(const Zbdd& cut_sets,
                    const Pdag::IndexMap<double>& p_vars) noexcept;
 };
 
 /// Base class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
-  using Product = std::vector<int>;  ///< Alias for clarity.
-
   /// Constructs probability analyzer from a fault tree analyzer.
   ///
   /// @tparam Algorithm  Qualitative analysis algorithm.
@@ -154,7 +141,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   const Pdag* graph() const { return graph_; }
 
   /// @returns The resulting products of the fault tree analyzer.
-  const std::vector<Product>& products() const { return products_; }
+  const Zbdd& products() const { return products_; }
 
   /// @returns A mapping for probability values with indices.
   const Pdag::IndexMap<double>& p_vars() const { return p_vars_; }
@@ -174,7 +161,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   void ExtractVariableProbabilities();
 
   const Pdag* graph_;  ///< PDAG from the fault tree analysis.
-  const std::vector<Product>& products_;  ///< A collection of products.
+  const Zbdd& products_;  ///< A collection of products.
   Pdag::IndexMap<double> p_vars_;  ///< Variable probabilities.
 };
 

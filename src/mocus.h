@@ -56,7 +56,10 @@ class Mocus : private boost::noncopyable {
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  const std::vector<std::vector<int>>& products() const;
+  const Zbdd& products() const {
+    assert(zbdd_ && "Analysis is not done.");
+    return *zbdd_;
+  }
 
  private:
   /// Runs analysis on a module gate.
