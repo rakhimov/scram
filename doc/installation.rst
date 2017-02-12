@@ -28,9 +28,7 @@ Installation with homebrew_:
 
 .. code-block:: bash
 
-    brew tap rakhimov/scram
-
-    brew install scram
+    brew install homebrew/science/scram
 
 .. _homebrew: http://brew.sh/
 
