@@ -113,3 +113,6 @@ The following importance factors are calculated:
 
 The short description and interpretation of the factors
 can be found in :ref:`theory`.
+
+Alongside the importance factors,
+the analysis provides the probabilities of events and their number of occurrences in products.
