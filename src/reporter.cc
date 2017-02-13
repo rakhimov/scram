@@ -210,11 +210,15 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   XmlStreamElement model_features = information->AddChild("model-features");
   if (!model.name().empty())
     model_features.SetAttribute("name", model.name());
-  model_features.AddChild("gates").AddText(model.gates().size());
-  model_features.AddChild("basic-events").AddText(model.basic_events().size());
-  model_features.AddChild("house-events").AddText(model.house_events().size());
-  model_features.AddChild("ccf-groups").AddText(model.ccf_groups().size());
-  model_features.AddChild("fault-trees").AddText(model.fault_trees().size());
+  auto feature = [&model_features](const char* name, const auto& container) {
+    if (!container.empty())
+      model_features.AddChild(name).AddText(container.size());
+  };
+  feature("gates", model.gates());
+  feature("basic-events", model.basic_events());
+  feature("house-events", model.house_events());
+  feature("ccf-groups", model.ccf_groups());
+  feature("fault-trees", model.fault_trees());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
