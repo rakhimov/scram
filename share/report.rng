@@ -474,6 +474,12 @@
 
   <define name="importance-factors">
     <optional>
+      <attribute name="occurrence"> <data type="nonNegativeInteger"/> </attribute>
+    </optional>
+    <optional>
+      <attribute name="probability"> <data type="double"/> </attribute>
+    </optional>
+    <optional>
       <attribute name="DIF"> <data type="double"/> </attribute>
     </optional>
     <optional>
