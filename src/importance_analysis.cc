@@ -44,6 +44,7 @@ void ImportanceAnalysis::Analyze() noexcept {
     const mef::BasicEvent& event = *basic_events[i];
     double p_var = event.p();
     ImportanceFactors imp;
+    imp.occurrence = occurrences[i];
     imp.mif = this->CalculateMif(i);
     imp.cif = p_var * imp.mif / p_total;
     imp.raw = 1 + (1 - p_var) * imp.mif / p_total;

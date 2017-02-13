@@ -38,6 +38,7 @@ namespace core {
 
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
+  int occurrence;  ///< The number of products the variable is present in.
   double mif;  ///< Birnbaum marginal importance factor.
   double cif;  ///< Critical importance factor.
   double dif;  ///< Fussel-Vesely diagnosis importance factor.

@@ -330,7 +330,8 @@ void Reporter::ReportResults(
     const core::ImportanceFactors& factors = entry.factors;
     const mef::BasicEvent& event = entry.event;
     auto add_data = [&event, &factors](XmlStreamElement* element) {
-      element->SetAttribute("probability", event.p())
+      element->SetAttribute("occurrence", factors.occurrence)
+          .SetAttribute("probability", event.p())
           .SetAttribute("MIF", factors.mif)
           .SetAttribute("CIF", factors.cif)
           .SetAttribute("DIF", factors.dif)
