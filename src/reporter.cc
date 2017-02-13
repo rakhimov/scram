@@ -328,14 +328,16 @@ void Reporter::ReportResults(
 
   for (const core::ImportanceRecord& entry : importance_analysis.importance()) {
     const core::ImportanceFactors& factors = entry.factors;
-    auto add_data = [&factors](XmlStreamElement* element) {
-      element->SetAttribute("MIF", factors.mif)
+    const mef::BasicEvent& event = entry.event;
+    auto add_data = [&event, &factors](XmlStreamElement* element) {
+      element->SetAttribute("probability", event.p())
+          .SetAttribute("MIF", factors.mif)
           .SetAttribute("CIF", factors.cif)
           .SetAttribute("DIF", factors.dif)
           .SetAttribute("RAW", factors.raw)
           .SetAttribute("RRW", factors.rrw);
     };
-    ReportBasicEvent(entry.event, &importance, add_data);
+    ReportBasicEvent(event, &importance, add_data);
   }
 }
 
