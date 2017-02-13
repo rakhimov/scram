@@ -23,6 +23,7 @@
 #include <set>
 #include <vector>
 
+#include <boost/range/algorithm.hpp>
 #include <gtest/gtest.h>
 
 namespace scram {
@@ -81,10 +82,16 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   /// @returns Products and their probabilities.
   const std::map<std::set<std::string>, double>& product_probability();
 
-  const ImportanceFactors& importance(std::string id) {
+  const ImportanceFactors& importance(const std::string& id) {
     assert(!analysis->importance_analyses().empty());
     assert(analysis->importance_analyses().size() == 1);
-    return analysis->importance_analyses().begin()->second->importance().at(id);
+    const auto& importance =
+        analysis->importance_analyses().begin()->second->importance();
+    auto it = boost::find_if(importance, [&id](const ImportanceRecord& record) {
+      return record.event.id() == id;
+    });
+    assert(it != importance.end());
+    return it->factors;
   }
 
   // Uncertainty analysis.

@@ -48,8 +48,7 @@ void ImportanceAnalysis::Analyze() noexcept {
     imp.raw = 1 + (1 - p_var) * imp.mif / p_total;
     imp.dif = p_var * imp.raw;
     imp.rrw = p_total / (p_total - p_var * imp.mif);
-    importance_.emplace(event.second->id(), imp);
-    important_events_.emplace_back(event.second, imp);
+    importance_.push_back({*event.second, imp});
   }
   LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
   Analysis::AddAnalysisTime(DUR(imp_time));

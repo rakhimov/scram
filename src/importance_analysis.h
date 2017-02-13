@@ -48,14 +48,17 @@ struct ImportanceFactors {
   double rrw;  ///< Risk reduction worth factor.
 };
 
+/// Mapping of an event and its importance.
+struct ImportanceRecord {
+  const mef::BasicEvent& event;  ///< The event occurring in products.
+  const ImportanceFactors factors;  ///< The importance factors of the event.
+};
+
 class Zbdd;  // The container of products to be queries for important events.
 
 /// Analysis of importance factors of risk model variables.
 class ImportanceAnalysis : public Analysis {
  public:
-  /// Mapping of an event and its importance.
-  using ImportanceRecord = std::pair<const mef::BasicEvent*, ImportanceFactors>;
-
   /// Importance analysis
   /// on the fault tree represented by
   /// its probability analysis.
@@ -71,18 +74,11 @@ class ImportanceAnalysis : public Analysis {
   /// @pre Analysis is called only once.
   void Analyze() noexcept;
 
-  /// @returns Map with basic events and their importance factors.
-  ///
-  /// @pre The importance analysis is done.
-  const std::unordered_map<std::string, ImportanceFactors>& importance() const {
-    return importance_;
-  }
-
   /// @returns A collection of important events and their importance factors.
   ///
   /// @pre The importance analysis is done.
-  const std::vector<ImportanceRecord>& important_events() const {
-    return important_events_;
+  const std::vector<ImportanceRecord>& importance() const {
+    return importance_;
   }
 
  protected:
@@ -114,10 +110,8 @@ class ImportanceAnalysis : public Analysis {
   /// @returns Calculated value for MIF.
   virtual double CalculateMif(int index) noexcept = 0;
 
-  /// Container for basic event importance factors.
-  std::unordered_map<std::string, ImportanceFactors> importance_;
-  /// Container of pointers to important events and their importance factors.
-  std::vector<ImportanceRecord> important_events_;
+  /// Container of important events and their importance factors.
+  std::vector<ImportanceRecord> importance_;
 };
 
 /// Base class for analyzers of importance factors

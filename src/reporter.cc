@@ -326,9 +326,8 @@ void Reporter::ReportResults(
     importance.AddChild("warning").AddText(importance_analysis.warnings());
   }
 
-  for (const core::ImportanceAnalysis::ImportanceRecord& entry :
-       importance_analysis.important_events()) {
-    const core::ImportanceFactors& factors = entry.second;
+  for (const core::ImportanceRecord& entry : importance_analysis.importance()) {
+    const core::ImportanceFactors& factors = entry.factors;
     auto add_data = [&factors](XmlStreamElement* element) {
       element->SetAttribute("MIF", factors.mif)
           .SetAttribute("CIF", factors.cif)
@@ -336,7 +335,7 @@ void Reporter::ReportResults(
           .SetAttribute("RAW", factors.raw)
           .SetAttribute("RRW", factors.rrw);
     };
-    ReportBasicEvent(*entry.first, &importance, add_data);
+    ReportBasicEvent(entry.event, &importance, add_data);
   }
 }
 
