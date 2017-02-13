@@ -73,13 +73,13 @@ ImportanceAnalysis::GatherImportantEvents(const Pdag* graph,
 }
 
 double ImportanceAnalyzer<Bdd>::CalculateMif(int index) noexcept {
-  Bdd::VertexPtr root = bdd_graph_->root().vertex;
+  const Bdd::VertexPtr& root = bdd_graph_->root().vertex;
   if (root->terminal())
     return 0;
-  bool original_mark = Ite::Ptr(root)->mark();
+  bool original_mark = static_cast<Ite*>(root.get())->mark();
 
   int order = bdd_graph_->index_to_order().find(index)->second;
-  double mif = CalculateMif(bdd_graph_->root().vertex, order, !original_mark);
+  double mif = CalculateMif(root, order, !original_mark);
   bdd_graph_->ClearMarks(original_mark);
   return mif;
 }
@@ -88,7 +88,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const Bdd::VertexPtr& vertex,
                                              int order, bool mark) noexcept {
   if (vertex->terminal())
     return 0;
-  ItePtr ite = Ite::Ptr(vertex);
+  Ite* ite = static_cast<Ite*>(vertex.get());
   if (ite->mark() == mark)
     return ite->factor();
   ite->mark(mark);
@@ -142,7 +142,7 @@ double ImportanceAnalyzer<Bdd>::RetrieveProbability(
     const Bdd::VertexPtr& vertex) noexcept {
   if (vertex->terminal())
     return 1;
-  return Ite::Ptr(vertex)->p();
+  return static_cast<Ite*>(vertex.get())->p();
 }
 
 }  // namespace core

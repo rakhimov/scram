@@ -89,8 +89,8 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
       owner_(false) {
   LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
   bdd_graph_ = fta->algorithm();
-  Bdd::VertexPtr root = bdd_graph_->root().vertex;
-  current_mark_ = root->terminal() ? false : Ite::Ptr(root)->mark();
+  const Bdd::VertexPtr& root = bdd_graph_->root().vertex;
+  current_mark_ = root->terminal() ? false : static_cast<Ite&>(*root).mark();
 }
 
 ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
@@ -138,7 +138,7 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Pdag::IndexMap<double>& p_vars) noexcept {
   if (vertex->terminal())
     return 1;
-  ItePtr ite = Ite::Ptr(vertex);
+  Ite* ite = static_cast<Ite*>(vertex.get());
   if (ite->mark() == mark)
     return ite->p();
   ite->mark(mark);
