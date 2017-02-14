@@ -21,7 +21,7 @@
 
 #include "importance_analysis.h"
 
-#include <cmath>
+#include <cstdlib>
 
 #include "event.h"
 #include "logger.h"

@@ -20,6 +20,8 @@
 
 #include "zbdd.h"
 
+#include <cstdlib>
+
 #include <algorithm>
 
 #include <boost/range/algorithm.hpp>

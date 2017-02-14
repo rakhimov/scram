@@ -72,6 +72,8 @@
 
 #include "preprocessor.h"
 
+#include <cstdlib>
+
 #include <algorithm>
 #include <array>
 #include <list>

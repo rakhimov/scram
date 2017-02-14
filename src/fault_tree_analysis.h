@@ -21,7 +21,7 @@
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
-#include <cmath>
+#include <cstdlib>
 
 #include <memory>
 #include <unordered_set>
