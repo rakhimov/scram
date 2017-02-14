@@ -61,7 +61,7 @@ _scram() {
   _init_completion -n = || return
 
   case "${prev}" in
-    -o|--output-path|--input-files|--config-file)
+    -o|--output-path|--config-file)
       _filedir
       return
       ;;
