@@ -121,11 +121,11 @@ class Settings {
 
   /// Sets the limit order for products.
   ///
-  /// @param[in] order  A natural number for the limit order.
+  /// @param[in] order  A non-negative number for the limit order.
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 0 or too large.
+  /// @throws InvalidArgument  The number is less than 0.
   Settings& limit_order(int order);
 
   /// @returns The minimum required probability for products.

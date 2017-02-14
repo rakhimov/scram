@@ -33,7 +33,6 @@ TEST(SettingsTest, IncorrectSetup) {
   EXPECT_THROW(s.approximation("approx"), InvalidArgument);
   // Incorrect limit order for products.
   EXPECT_THROW(s.limit_order(-1), InvalidArgument);
-  EXPECT_THROW(s.limit_order(33), InvalidArgument);
   // Incorrect cut-off probability.
   EXPECT_THROW(s.cut_off(-1), InvalidArgument);
   EXPECT_THROW(s.cut_off(10), InvalidArgument);
@@ -66,6 +65,7 @@ TEST(SettingsTest, CorrectSetup) {
   // Correct limit order for products.
   EXPECT_NO_THROW(s.limit_order(1));
   EXPECT_NO_THROW(s.limit_order(32));
+  EXPECT_NO_THROW(s.limit_order(1e9));
 
   // Correct cut-off probability.
   EXPECT_NO_THROW(s.cut_off(1));

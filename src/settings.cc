@@ -79,9 +79,9 @@ Settings& Settings::prime_implicants(bool flag) {
 }
 
 Settings& Settings::limit_order(int order) {
-  if (order < 0 || order > 32)
+  if (order < 0)
     throw InvalidArgument("The limit on the order of products "
-                          "cannot be less than 0 or more than 32.");
+                          "cannot be less than 0.");
   limit_order_ = order;
   return *this;
 }
