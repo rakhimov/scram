@@ -112,38 +112,49 @@ class LogNormalDeviate : public RandomDeviate {
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level);
 
-  /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
-  void Validate() const override;
-
-  double Mean() noexcept override { return mean_.Mean(); }
+  void Validate() const override { flavor_->Validate(); };
+  double Mean() noexcept override { return flavor_->mean(); }
 
   /// 99.9 percentile estimate.
   double Max() noexcept override;
-
   double Min() noexcept override { return 0; }
 
  private:
   double DoSample() noexcept override;
 
-  /// Computes the scale parameter of the distribution.
-  ///
-  /// @param[in] level  The confidence level.
-  /// @param[in] ef  The error factor of the log-normal distribution.
-  ///
-  /// @returns Scale parameter (sigma) value.
-  double ComputeScale(double level, double ef) noexcept;
+  /// Support for parametrization differences.
+  struct Flavor {
+    virtual ~Flavor() = default;
+    /// @returns Scale parameter (sigma) value.
+    virtual double scale() noexcept = 0;
+    /// @returns Value of location parameter (mu) value.
+    virtual double location() noexcept = 0;
+    /// @returns The mean value of the distribution.
+    virtual double mean() noexcept = 0;
+    /// @copydoc Expression::Validate
+    virtual void Validate() const = 0;
+  };
 
-  /// Computes the location parameter of the distribution.
-  ///
-  /// @param[in] mean  The mean of the log-normal distribution.
-  /// @param[in] sigma  The scale parameter of the distribution.
-  ///
-  /// @returns Value of location parameter (mu) value.
-  double ComputeLocation(double mean, double sigma) noexcept;
+  /// Computation with the log-normal mean and error factor.
+  class Logarithmic final : public Flavor {
+   public:
+    /// @copydoc LogNormalDeviate::LogNormalDeviate
+    Logarithmic(const ExpressionPtr& mean, const ExpressionPtr& ef,
+                const ExpressionPtr& level)
+        : mean_(*mean), ef_(*ef), level_(*level) {}
+    double scale() noexcept override;
+    double location() noexcept override;
+    double mean() noexcept override { return mean_.Mean(); }
+    /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level.
+    void Validate() const override;
 
-  Expression& mean_;  ///< Mean value of the log-normal distribution.
-  Expression& ef_;  ///< Error factor of the log-normal distribution.
-  Expression& level_;  ///< Confidence level of the log-normal distribution.
+   private:
+    Expression& mean_;  ///< Mean value of the log-normal distribution.
+    Expression& ef_;  ///< Error factor of the log-normal distribution.
+    Expression& level_;  ///< Confidence level of the log-normal distribution.
+  };
+
+  std::unique_ptr<Flavor> flavor_;  ///< The parametrization flavor.
 };
 
 /// Gamma distribution.

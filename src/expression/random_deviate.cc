@@ -77,11 +77,9 @@ LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
                                    const ExpressionPtr& ef,
                                    const ExpressionPtr& level)
     : RandomDeviate({mean, ef, level}),
-      mean_(*mean),
-      ef_(*ef),
-      level_(*level) {}
+      flavor_(new LogNormalDeviate::Logarithmic(mean, ef, level)) {}
 
-void LogNormalDeviate::Validate() const {
+void LogNormalDeviate::Logarithmic::Validate() const {
   if (level_.Mean() <= 0 || level_.Mean() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
   } else if (ef_.Mean() <= 1) {
@@ -103,24 +101,20 @@ void LogNormalDeviate::Validate() const {
 }
 
 double LogNormalDeviate::DoSample() noexcept {
-  double sigma = ComputeScale(level_.Sample(), ef_.Sample());
-  double mu = ComputeLocation(mean_.Sample(), sigma);
-  return Random::LogNormalGenerator(mu, sigma);
+  return Random::LogNormalGenerator(flavor_->location(), flavor_->scale());
 }
 
 double LogNormalDeviate::Max() noexcept {
-  double sigma = ComputeScale(level_.Mean(), ef_.Mean());
-  double mu = ComputeLocation(mean_.Max(), sigma);
-  return std::exp(3 * sigma + mu);
+  return std::exp(3 * flavor_->scale() + flavor_->location());
 }
 
-double LogNormalDeviate::ComputeScale(double level, double ef) noexcept {
-  double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level);
-  return std::log(ef) / z;
+double LogNormalDeviate::Logarithmic::scale() noexcept {
+  double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level_.Mean());
+  return std::log(ef_.Mean()) / z;
 }
 
-double LogNormalDeviate::ComputeLocation(double mean, double sigma) noexcept {
-  return std::log(mean) - std::pow(sigma, 2) / 2;
+double LogNormalDeviate::Logarithmic::location() noexcept {
+  return std::log(mean_.Mean()) - std::pow(scale(), 2) / 2;
 }
 
 GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
