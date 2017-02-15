@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<config>
+<scram>
   <input-files>
     <file>two_train.xml</file>
   </input-files>
@@ -11,4 +11,4 @@
       <cut-off>0.001</cut-off>
     </limits>
   </options>
-</config>
+</scram>

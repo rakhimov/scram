@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ Config::Config(const std::string& config_file) {
     throw ValidationError("In file '" + config_file + "', " + err.what());
   }
   const xmlpp::Node* root = parser->get_document()->get_root_node();
-  assert(root->get_name() == "config");
+  assert(root->get_name() == "scram");
   GatherInputFiles(root);
   GetOutputPath(root);
   try {

@@ -2,7 +2,7 @@
 <!--
 This configuration file is missing the required input files.
 -->
-<config>
+<scram>
   <output-path>temp_results.xml</output-path>
   <options>
     <analysis probability="true" importance="true" uncertainty="true" ccf="true"/>
@@ -15,4 +15,4 @@ This configuration file is missing the required input files.
       <seed>97531</seed>
     </limits>
   </options>
-</config>
+</scram>
