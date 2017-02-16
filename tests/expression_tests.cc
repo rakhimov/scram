@@ -519,18 +519,18 @@ TEST(ExpressionTest, Histogram) {
 
   ASSERT_NO_THROW(dev->Validate());
   b1->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   b1->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   b1->sample = b2->sample;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   b1->sample = b2->sample + 1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   b1->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 
   w1->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   w1->sample = 2;
   ASSERT_NO_THROW(dev->Validate());
 

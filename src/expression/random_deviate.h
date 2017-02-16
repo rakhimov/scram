@@ -254,10 +254,7 @@ class Histogram : public RandomDeviate {
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
-  void Validate() const override {
-    CheckBoundaries();
-    CheckWeights();
-  }
+  void Validate() const override;
 
   double Mean() noexcept override;
   double Max() noexcept override {
@@ -271,16 +268,6 @@ class Histogram : public RandomDeviate {
       boost::iterator_range<std::vector<ExpressionPtr>::const_iterator>;
 
   double DoSample() noexcept override;
-
-  /// Checks if values of boundary expressions are strictly increasing.
-  ///
-  /// @throws InvalidArgument  The mean values are not strictly increasing.
-  void CheckBoundaries() const;
-
-  /// Checks if values of weights are non-negative.
-  ///
-  /// @throws InvalidArgument  The mean values are negative.
-  void CheckWeights() const;
 
   IteratorRange boundaries_;  ///< Boundaries of the intervals.
   IteratorRange weights_;  ///< Weights of the intervals.

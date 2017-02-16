@@ -28,8 +28,10 @@
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/special_functions/gamma.hpp>
+#include <boost/range/algorithm_ext/is_sorted.hpp>
 
 #include "src/error.h"
+#include "src/ext/algorithm.h"
 #include "src/random.h"
 
 namespace scram {
@@ -209,6 +211,18 @@ Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
   weights_ = IteratorRange(midpoint, Expression::args().end());
 }
 
+void Histogram::Validate() const {
+  if (ext::any_of(weights_, [](const auto& expr) { return expr->Mean() < 0; }))
+    throw InvalidArgument("Histogram weights cannot be negative.");
+
+  if (!boost::is_sorted(boundaries_, [](const auto& lhs, const auto& rhs) {
+        return lhs->Mean() <= rhs->Mean();
+      })) {
+    throw InvalidArgument("Histogram upper boundaries are not strictly"
+                          " increasing.");
+  }
+}
+
 double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
@@ -226,10 +240,10 @@ double Histogram::Mean() noexcept {
 
 namespace {
 
-/// Provides a helper iterator adaptor for retrieving sampled values.
+/// Provides a helper iterator adaptor for retrieving mean values.
 template <class Iterator>
 auto make_sampler(const Iterator& it) {
-  return boost::make_transform_iterator(it, std::mem_fn(&Expression::Sample));
+  return boost::make_transform_iterator(it, std::mem_fn(&Expression::Mean));
 }
 
 }  // namespace
@@ -238,31 +252,6 @@ double Histogram::DoSample() noexcept {
   return Random::HistogramGenerator(make_sampler(boundaries_.begin()),
                                     make_sampler(boundaries_.end()),
                                     make_sampler(weights_.begin()));
-}
-
-void Histogram::CheckBoundaries() const {
-  for (auto it = boundaries_.begin(); it != std::prev(boundaries_.end());
-       ++it) {
-    const auto& prev_expr = *it;
-    const auto& cur_expr = *std::next(it);
-    if (prev_expr->Mean() >= cur_expr->Mean()) {
-      throw InvalidArgument("Histogram upper boundaries are not strictly"
-                            " increasing.");
-    } else if (prev_expr->Max() >= cur_expr->Min()) {
-      throw InvalidArgument("Histogram sampled upper boundaries must"
-                            " be strictly increasing.");
-    }
-  }
-}
-
-void Histogram::CheckWeights() const {
-  for (const auto& expr : weights_) {
-    if (expr->Mean() < 0) {
-      throw InvalidArgument("Histogram weights can't be negative.");
-    } else if (expr->Min() < 0) {
-      throw InvalidArgument("Histogram sampled weights can't be negative.");
-    }
-  }
 }
 
 }  // namespace mef
