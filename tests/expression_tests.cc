@@ -244,7 +244,7 @@ TEST(ExpressionTest, UniformDeviate) {
 
   ASSERT_NO_THROW(dev->Validate());
   min->sample = 10;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);  // min > max
+  EXPECT_NO_THROW(dev->Validate());
   min->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -280,9 +280,9 @@ TEST(ExpressionTest, NormalDeviate) {
 
   ASSERT_NO_THROW(dev->Validate());
   sigma->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);  // sigma < 0
+  EXPECT_NO_THROW(dev->Validate());
   sigma->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);  // sigma = 0
+  EXPECT_NO_THROW(dev->Validate());
   sigma->sample = 1;
   EXPECT_NO_THROW(dev->Validate());
 
@@ -330,15 +330,15 @@ TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
 
   ASSERT_NO_THROW(dev->Validate());
   mean->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   mean->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   mean->sample = 5;
   ASSERT_NO_THROW(dev->Validate());
   ef->sample = 1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   ef->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   ef->sample = 3;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -407,16 +407,16 @@ TEST(ExpressionTest, GammaDeviate) {
 
   ASSERT_NO_THROW(dev->Validate());
   k->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   k->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   k->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 
   theta->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   theta->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   theta->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -452,16 +452,16 @@ TEST(ExpressionTest, BetaDeviate) {
 
   ASSERT_NO_THROW(dev->Validate());
   alpha->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   alpha->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   alpha->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 
   beta->sample = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   beta->sample = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   beta->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
 

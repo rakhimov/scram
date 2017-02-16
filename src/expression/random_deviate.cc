@@ -47,14 +47,11 @@ void UniformDeviate::Validate() const {
   if (min_.Mean() >= max_.Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
                           " distribution.");
-  } else if (min_.Max() >= max_.Min()) {
-    throw InvalidArgument("Sampled min value is more than sampled max"
-                          " for Uniform distribution.");
   }
 }
 
 double UniformDeviate::DoSample() noexcept {
-  return Random::UniformRealGenerator(min_.Sample(), max_.Sample());
+  return Random::UniformRealGenerator(min_.Mean(), max_.Mean());
 }
 
 NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
@@ -66,13 +63,11 @@ NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
 void NormalDeviate::Validate() const {
   if (sigma_.Mean() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
-  } else if (sigma_.Min() <= 0) {
-    throw InvalidArgument("Sampled standard deviation is negative or zero.");
   }
 }
 
 double NormalDeviate::DoSample() noexcept {
-  return Random::NormalGenerator(mean_.Sample(), sigma_.Sample());
+  return Random::NormalGenerator(mean_.Mean(), sigma_.Mean());
 }
 
 LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
@@ -95,15 +90,6 @@ void LogNormalDeviate::Logarithmic::Validate() const {
   } else if (mean_.Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
-  } else if (level_.Min() <= 0 || level_.Max() >= 1) {
-    throw InvalidArgument("The confidence level doesn't sample within (0, 1).");
-
-  } else if (ef_.Min() <= 1) {
-    throw InvalidArgument("The Sampled Error Factor for Log-Normal"
-                          " distribution cannot be less than 1.");
-  } else if (mean_.Min() <= 0) {
-    throw InvalidArgument("The sampled mean of Log-Normal distribution"
-                          " cannot be negative or zero.");
   }
 }
 
@@ -145,23 +131,17 @@ void GammaDeviate::Validate() const {
   } else if (theta_.Mean() <= 0) {
     throw InvalidArgument("The theta scale parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (k_.Min() <= 0) {
-    throw InvalidArgument("Sampled k shape parameter for Gamma distribution"
-                          " cannot be negative or zero.");
-  } else if (theta_.Min() <= 0) {
-    throw InvalidArgument("Sampled theta scale parameter for Gamma "
-                          "distribution cannot be negative or zero.");
   }
 }
 
 double GammaDeviate::Max() noexcept {
   using boost::math::gamma_q;
-  double k_max = k_.Max();
-  return theta_.Max() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
+  double k_max = k_.Mean();
+  return theta_.Mean() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
 }
 
 double GammaDeviate::DoSample() noexcept {
-  return Random::GammaGenerator(k_.Sample(), theta_.Sample());
+  return Random::GammaGenerator(k_.Mean(), theta_.Mean());
 }
 
 BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
@@ -176,21 +156,15 @@ void BetaDeviate::Validate() const {
   } else if (beta_.Mean() <= 0) {
     throw InvalidArgument("The beta shape parameter for Beta distribution"
                           " cannot be negative or zero.");
-  } else if (alpha_.Min() <= 0) {
-    throw InvalidArgument("Sampled alpha shape parameter for"
-                          " Beta distribution cannot be negative or zero.");
-  } else if (beta_.Min() <= 0) {
-    throw InvalidArgument("Sampled beta shape parameter for Beta"
-                          " distribution cannot be negative or zero.");
   }
 }
 
 double BetaDeviate::Max() noexcept {
-  return std::pow(boost::math::ibeta(alpha_.Max(), beta_.Max(), 0.99), -1);
+  return std::pow(boost::math::ibeta(alpha_.Mean(), beta_.Mean(), 0.99), -1);
 }
 
 double BetaDeviate::DoSample() noexcept {
-  return Random::BetaGenerator(alpha_.Sample(), beta_.Sample());
+  return Random::BetaGenerator(alpha_.Mean(), beta_.Mean());
 }
 
 Histogram::Histogram(std::vector<ExpressionPtr> boundaries,

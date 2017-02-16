@@ -53,8 +53,8 @@ class UniformDeviate : public RandomDeviate {
   void Validate() const override;
 
   double Mean() noexcept override { return (min_.Mean() + max_.Mean()) / 2; }
-  double Max() noexcept override { return max_.Max(); }
-  double Min() noexcept override { return min_.Min(); }
+  double Max() noexcept override { return max_.Mean(); }
+  double Min() noexcept override { return min_.Mean(); }
 
  private:
   double DoSample() noexcept override;
@@ -78,14 +78,10 @@ class NormalDeviate : public RandomDeviate {
   double Mean() noexcept override { return mean_.Mean(); }
 
   /// @returns ~99.9% percentile value.
-  ///
-  /// @warning This is only an approximation of the maximum value.
-  double Max() noexcept override { return mean_.Max() + 6 * sigma_.Max(); }
+  double Max() noexcept override { return mean_.Mean() + 6 * sigma_.Mean(); }
 
   /// @returns Less than 0.1% percentile value.
-  ///
-  /// @warning This is only an approximation.
-  double Min() noexcept override { return mean_.Min() - 6 * sigma_.Max(); }
+  double Min() noexcept override { return mean_.Mean() - 6 * sigma_.Mean(); }
 
  private:
   double DoSample() noexcept override;
