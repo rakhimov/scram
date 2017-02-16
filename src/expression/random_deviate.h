@@ -94,11 +94,11 @@ class NormalDeviate : public RandomDeviate {
   Expression& sigma_;  ///< Standard deviation of normal distribution.
 };
 
-/// Log-normal distribution defined by
-/// its expected value and error factor of certain confidence level.
+/// Log-normal distribution.
 class LogNormalDeviate : public RandomDeviate {
  public:
-  /// Setup for log-normal distribution.
+  /// The log-normal deviate parametrization with
+  /// its expected value and error factor of certain confidence level.
   ///
   /// @param[in] mean  The mean of the log-normal distribution
   ///                  not the mean of underlying normal distribution,
@@ -111,6 +111,12 @@ class LogNormalDeviate : public RandomDeviate {
   /// @param[in] level  The confidence level.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level);
+
+  /// The parametrization with underlying normal distribution parameters.
+  ///
+  /// @param[in] mu  The mean of the normal distribution.
+  /// @param[in] sigma  The standard deviation of the normal distribution.
+  LogNormalDeviate(const ExpressionPtr& mu, const ExpressionPtr& sigma);
 
   void Validate() const override { flavor_->Validate(); };
   double Mean() noexcept override { return flavor_->mean(); }
@@ -152,6 +158,24 @@ class LogNormalDeviate : public RandomDeviate {
     Expression& mean_;  ///< Mean value of the log-normal distribution.
     Expression& ef_;  ///< Error factor of the log-normal distribution.
     Expression& level_;  ///< Confidence level of the log-normal distribution.
+  };
+
+  /// Computation with normal mean and standard distribution.
+  class Normal final : public Flavor {
+   public:
+    /// @param[in] mu  The mean of the normal distribution.
+    /// @param[in] sigma  The standard deviation of the normal distribution.
+    Normal(const ExpressionPtr& mu, const ExpressionPtr& sigma)
+        : mu_(*mu), sigma_(*sigma) {}
+    double scale() noexcept override { return sigma_.Mean(); }
+    double location() noexcept override { return mu_.Mean(); }
+    double mean() noexcept override;
+    /// @throws InvalidArgument  (sigma <= 0).
+    void Validate() const override;
+
+   private:
+    Expression& mu_;  ///< The mean value of the normal distribution.
+    Expression& sigma_;  ///< The standard deviation of the normal distribution.
   };
 
   std::unique_ptr<Flavor> flavor_;  ///< The parametrization flavor.

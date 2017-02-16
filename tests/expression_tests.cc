@@ -263,6 +263,14 @@ TEST(ExpressionTest, NormalDeviate) {
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new NormalDeviate(mean, sigma)));
 
+  ASSERT_NO_THROW(dev->Validate());
+  mean->mean = 2;
+  EXPECT_NO_THROW(dev->Validate());
+  mean->mean = 0;
+  EXPECT_NO_THROW(dev->Validate());
+  mean->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
   sigma->mean = -5;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   sigma->mean = 0;
@@ -287,12 +295,15 @@ TEST(ExpressionTest, NormalDeviate) {
 }
 
 // Log-Normal deviate test for invalid mean, error factor, and level.
-TEST(ExpressionTest, LogNormalDeviate) {
+TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
   OpenExpressionPtr mean(new OpenExpression(10, 5));
   OpenExpressionPtr ef(new OpenExpression(5, 3));
   OpenExpressionPtr level(new OpenExpression(0.95, 0.95, 0.6, 0.9));
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new LogNormalDeviate(mean, ef, level)));
+
+  EXPECT_EQ(mean->Mean(), dev->Mean());
+  EXPECT_EQ(0, dev->Min());
 
   ASSERT_NO_THROW(dev->Validate());
   level->mean = -0.5;
@@ -329,6 +340,39 @@ TEST(ExpressionTest, LogNormalDeviate) {
   ef->sample = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   ef->sample = 3;
+  ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_TRUE(dev->IsDeviate());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
+}
+
+// Log-Normal deviate with invalid normal mean and standard deviation.
+TEST(ExpressionTest, LogNormalDeviateNormal) {
+  OpenExpressionPtr mu(new OpenExpression(10, 1));
+  OpenExpressionPtr sigma(new OpenExpression(5, 4));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new LogNormalDeviate(mu, sigma)));
+
+  EXPECT_NEAR(5.9105e9, dev->Mean(), 1e6);
+  EXPECT_EQ(0, dev->Min());
+
+  ASSERT_NO_THROW(dev->Validate());
+  mu->mean = 2;
+  EXPECT_NO_THROW(dev->Validate());
+  mu->mean = 0;
+  EXPECT_NO_THROW(dev->Validate());
+  mu->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  sigma->mean = -5;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  sigma->mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  sigma->mean = 5;
   ASSERT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;

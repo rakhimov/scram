@@ -83,11 +83,17 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0.02"/>
       </normal-deviate>
     </define-basic-event>
-    <define-basic-event name="LogNormalDeviate">
+    <define-basic-event name="LogNormalDeviate3">
       <lognormal-deviate>
         <float value="2e-3"/>
         <float value="2"/>
         <float value="0.95"/>
+      </lognormal-deviate>
+    </define-basic-event>
+    <define-basic-event name="LogNormalDeviate2">
+      <lognormal-deviate>
+        <float value="-10"/>
+        <float value="2"/>
       </lognormal-deviate>
     </define-basic-event>
     <define-basic-event name="GammaDeviate">

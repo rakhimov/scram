@@ -79,6 +79,11 @@ LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
     : RandomDeviate({mean, ef, level}),
       flavor_(new LogNormalDeviate::Logarithmic(mean, ef, level)) {}
 
+LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mu,
+                                   const ExpressionPtr& sigma)
+    : RandomDeviate({mu, sigma}),
+      flavor_(new LogNormalDeviate::Normal(mu, sigma)) {}
+
 void LogNormalDeviate::Logarithmic::Validate() const {
   if (level_.Mean() <= 0 || level_.Mean() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
@@ -115,6 +120,15 @@ double LogNormalDeviate::Logarithmic::scale() noexcept {
 
 double LogNormalDeviate::Logarithmic::location() noexcept {
   return std::log(mean_.Mean()) - std::pow(scale(), 2) / 2;
+}
+
+void LogNormalDeviate::Normal::Validate() const {
+  if (sigma_.Mean() <= 0)
+    throw InvalidArgument("Standard deviation cannot be negative or zero.");
+}
+
+double LogNormalDeviate::Normal::mean() noexcept {
+  return std::exp(location() + std::pow(scale(), 2) / 2);
 }
 
 GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)

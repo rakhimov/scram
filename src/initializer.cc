@@ -693,6 +693,17 @@ ExpressionPtr Initializer::Extract<Histogram>(const xmlpp::NodeSet& args,
   return std::make_shared<Histogram>(std::move(boundaries), std::move(weights));
 }
 
+/// Specialization due to overloaded constructors.
+template <>
+ExpressionPtr Initializer::Extract<LogNormalDeviate>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  if (args.size() == 3)
+    return Extractor<LogNormalDeviate, 3>()(args, base_path, init);
+  return Extractor<LogNormalDeviate, 2>()(args, base_path, init);
+}
+
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"exponential", &Extract<ExponentialExpression>},
     {"GLM", &Extract<GlmExpression>},

@@ -649,7 +649,9 @@
       <element name="lognormal-deviate">
         <ref name="expression"/>
         <ref name="expression"/>
-        <ref name="expression"/>
+        <optional>
+          <ref name="expression"/>
+        </optional>
       </element>
     </define>
 
