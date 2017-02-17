@@ -160,7 +160,7 @@ PeriodicTest::PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
       flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
 
 void PeriodicTest::InstantRepair::Validate() const {
-  THROW_NEGATIVE_EXPR(lambda_, "rate of failure");
+  THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
   THROW_NON_POSITIVE_EXPR(tau_, "time between tests");
   THROW_NEGATIVE_EXPR(theta_, "time before tests");
   THROW_NEGATIVE_EXPR(time_, "mission time");
@@ -198,25 +198,28 @@ double PeriodicTest::InstantTest::Compute(double lambda, double mu, double tau,
     return p_exp(lambda, time);
 
   // Carry fraction from probability of a previous period.
-  auto carry = [&lambda, &mu](double p_lambda, double p_mu) {
+  auto carry = [&lambda, &mu](double p_lambda, double p_mu, double t) {
     // Probability of failure after repair.
-    double p_mu_lambda = (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+    double p_mu_lambda = lambda == mu
+                             ? p_lambda - (1 - p_lambda) * lambda * t
+                             : (lambda * p_mu - mu * p_lambda) / (lambda - mu);
     return 1 - p_mu + p_mu_lambda - p_lambda;
   };
 
   double prob = p_exp(lambda, theta);  // The current rolling probability.
-  auto p_period = [&prob, &carry](double p_lambda, double p_mu) {
-    return prob * carry(p_lambda, p_mu) + p_lambda;
+  auto p_period = [&prob, &carry](double p_lambda, double p_mu, double t) {
+    return prob * carry(p_lambda, p_mu, t) + p_lambda;
   };
 
   double delta = time - theta;
   int num_periods = delta / tau;
-  double fraction = carry(p_exp(lambda, tau), p_exp(mu, tau));
+  double fraction = carry(p_exp(lambda, tau), p_exp(mu, tau), tau);
   double compound = std::pow(fraction, num_periods);  // Geometric progression.
   prob = prob * compound + p_exp(lambda, tau) * (compound - 1) / (fraction - 1);
 
   double time_after_test = delta - num_periods * tau;
-  return p_period(p_exp(lambda, time_after_test), p_exp(mu, time_after_test));
+  return p_period(p_exp(lambda, time_after_test), p_exp(mu, time_after_test),
+                  time_after_test);
 }
 
 double PeriodicTest::InstantTest::Mean() noexcept {

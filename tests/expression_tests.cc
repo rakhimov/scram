@@ -276,13 +276,16 @@ TEST(ExpressionTest, PeriodicTest5) {
       dev = ExpressionPtr(new PeriodicTest(lambda, mu, tau, theta, time)));
   EXPECT_FALSE(dev->IsDeviate());
   EXPECT_EQ(dev->Mean(), dev->Sample());
-  EXPECT_NEAR(0.817508, dev->Mean(), 1e-3);
+  EXPECT_NEAR(0.817508, dev->Mean(), 1e-5);
 
   tau->mean = 2010;
-  EXPECT_NEAR(0.736611, dev->Mean(), 1e-3);
+  EXPECT_NEAR(0.736611, dev->Mean(), 1e-5);
 
   tau->mean = 120;
-  EXPECT_NEAR(0.645377, dev->Mean(), 1e-3);
+  EXPECT_NEAR(0.645377, dev->Mean(), 1e-5);
+
+  mu->mean = lambda->mean;  // Special case when divisor cannot be 0.
+  EXPECT_NEAR(0.511579, dev->Mean(), 1e-5);
 
   mu->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
