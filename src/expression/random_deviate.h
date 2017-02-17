@@ -22,6 +22,7 @@
 #ifndef SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 #define SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 
+#include <memory>
 #include <vector>
 
 #include <boost/range/iterator_range.hpp>

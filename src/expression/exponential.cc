@@ -20,10 +20,40 @@
 
 #include "exponential.h"
 
+#include <cmath>
+
 #include "src/error.h"
 
 namespace scram {
 namespace mef {
+
+/// Checks and throws if an expression is negative.
+#define THROW_NEGATIVE_EXPR(expr, description)                          \
+  do {                                                                  \
+    if (expr.Mean() < 0)                                                \
+      throw InvalidArgument("The " description " cannot be negative."); \
+    if (expr.Min() < 0)                                                 \
+      throw InvalidArgument("The sampled " description                  \
+                            " cannot be negative.");                    \
+  } while (false)
+
+/// Check and throws if an expression is negative or 0.
+#define THROW_NON_POSITIVE_EXPR(expr, description)                            \
+  do {                                                                        \
+    if (expr.Mean() <= 0)                                                     \
+      throw InvalidArgument("The " description " must be positive.");         \
+    if (expr.Min() <= 0)                                                      \
+      throw InvalidArgument("The sampled " description " must be positive."); \
+  } while (false)
+
+namespace {
+
+/// Negative exponential law probability.
+double p_exp(double lambda, double time) {
+  return 1 - std::exp(-lambda * time);
+}
+
+}  // namespace
 
 ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
                                              const ExpressionPtr& t)
@@ -32,15 +62,16 @@ ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
       time_(*t) {}
 
 void ExponentialExpression::Validate() const {
-  if (lambda_.Mean() < 0) {
-    throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (time_.Mean() < 0) {
-    throw InvalidArgument("The mission time cannot be negative.");
-  } else if (lambda_.Min() < 0) {
-    throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (time_.Min() < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
-  }
+  THROW_NEGATIVE_EXPR(lambda_, "rate of failure");
+  THROW_NEGATIVE_EXPR(time_, "mission time");
+}
+
+double ExponentialExpression::Mean() noexcept {
+  return p_exp(lambda_.Mean(), time_.Mean());
+}
+
+double ExponentialExpression::DoSample() noexcept {
+  return p_exp(lambda_.Sample(), time_.Sample());
 }
 
 GlmExpression::GlmExpression(const ExpressionPtr& gamma,
@@ -54,22 +85,13 @@ GlmExpression::GlmExpression(const ExpressionPtr& gamma,
       time_(*t) {}
 
 void GlmExpression::Validate() const {
-  if (lambda_.Mean() < 0) {
-    throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (mu_.Mean() < 0) {
-    throw InvalidArgument("The rate of repair cannot be negative.");
-  } else if (gamma_.Mean() < 0 || gamma_.Mean() > 1) {
+  THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
+  THROW_NEGATIVE_EXPR(mu_, "rate of repair");
+  THROW_NEGATIVE_EXPR(time_, "mission time");
+  if (gamma_.Mean() < 0 || gamma_.Mean() > 1) {
     throw InvalidArgument("Invalid value for probability.");
-  } else if (time_.Mean() < 0) {
-    throw InvalidArgument("The mission time cannot be negative.");
-  } else if (lambda_.Min() < 0) {
-    throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (mu_.Min() < 0) {
-    throw InvalidArgument("The sampled rate of repair cannot be negative.");
   } else if (gamma_.Min() < 0 || gamma_.Max() > 1) {
     throw InvalidArgument("Invalid sampled gamma value for probability.");
-  } else if (time_.Min() < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
   }
 }
 
@@ -99,28 +121,13 @@ WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
       time_(*time) {}
 
 void WeibullExpression::Validate() const {
-  if (alpha_.Mean() <= 0) {
-    throw InvalidArgument("The scale parameter for Weibull distribution must"
-                          " be positive.");
-  } else if (beta_.Mean() <= 0) {
-    throw InvalidArgument("The shape parameter for Weibull distribution must"
-                          " be positive.");
-  } else if (t0_.Mean() < 0) {
-    throw InvalidArgument("Invalid value for time shift.");
-  } else if (time_.Mean() < 0) {
-    throw InvalidArgument("The mission time cannot be negative.");
-  } else if (time_.Mean() < t0_.Mean()) {
+  THROW_NON_POSITIVE_EXPR(alpha_, "scale parameter for Weibull distribution");
+  THROW_NON_POSITIVE_EXPR(beta_, "shape parameter for Weibull distribution");
+  THROW_NEGATIVE_EXPR(t0_, "time shift");
+  THROW_NEGATIVE_EXPR(time_, "mission time");
+
+  if (time_.Mean() < t0_.Mean()) {
     throw InvalidArgument("The mission time must be longer than time shift.");
-  } else if (alpha_.Min() <= 0) {
-    throw InvalidArgument("The scale parameter for Weibull distribution must"
-                          " be positive for sampled values.");
-  } else if (beta_.Min() <= 0) {
-    throw InvalidArgument("The shape parameter for Weibull distribution must"
-                          " be positive for sampled values.");
-  } else if (t0_.Min() < 0) {
-    throw InvalidArgument("Invalid value for time shift in sampled values.");
-  } else if (time_.Min() < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
   } else if (time_.Min() < t0_.Max()) {
     throw InvalidArgument("The sampled mission time must be"
                           " longer than time shift.");
@@ -130,6 +137,14 @@ void WeibullExpression::Validate() const {
 double WeibullExpression::Compute(double alpha, double beta,
                                   double t0, double time) noexcept {
   return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+}
+
+double WeibullExpression::Mean() noexcept {
+  return Compute(alpha_.Mean(), beta_.Mean(), t0_.Mean(), time_.Mean());
+}
+
+double WeibullExpression::DoSample() noexcept {
+  return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(), time_.Sample());
 }
 
 PeriodicTest::PeriodicTest(const ExpressionPtr& lambda,
@@ -144,19 +159,9 @@ PeriodicTest::PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
     : Expression({lambda, mu, tau, theta, time}),
       flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
 
-/// Checks and throws if an expression is negative.
-#define THROW_NEGATIVE_EXPR(expr, description)                          \
-  do {                                                                  \
-    if (expr.Mean() < 0)                                                \
-      throw InvalidArgument("The " description " cannot be negative."); \
-    if (expr.Min() < 0)                                                 \
-      throw InvalidArgument("The sampled " description                  \
-                            " cannot be negative.");                    \
-  } while (false)
-
 void PeriodicTest::InstantRepair::Validate() const {
   THROW_NEGATIVE_EXPR(lambda_, "rate of failure");
-  THROW_NEGATIVE_EXPR(tau_, "time between tests");
+  THROW_NON_POSITIVE_EXPR(tau_, "time between tests");
   THROW_NEGATIVE_EXPR(theta_, "time before tests");
   THROW_NEGATIVE_EXPR(time_, "mission time");
 }
@@ -167,15 +172,6 @@ void PeriodicTest::InstantTest::Validate() const {
 }
 
 #undef THROW_NEGATIVE_EXPR
-
-namespace {
-
-/// Negative exponential law probability.
-double p_exp(double lambda, double time) {
-  return 1 - std::exp(-lambda * time);
-}
-
-}  // namespace
 
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
                                             double theta,

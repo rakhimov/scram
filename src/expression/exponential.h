@@ -22,7 +22,7 @@
 #ifndef SCRAM_SRC_EXPRESSION_EXPONENTIAL_H_
 #define SCRAM_SRC_EXPRESSION_EXPONENTIAL_H_
 
-#include <cmath>
+#include <memory>
 
 #include "src/expression.h"
 
@@ -41,23 +41,12 @@ class ExponentialExpression : public Expression {
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
-
-  double Mean() noexcept override {
-    return 1 - std::exp(-(lambda_.Mean() * time_.Mean()));
-  }
-
-  double Max() noexcept override {
-    return 1 - std::exp(-(lambda_.Max() * time_.Max()));
-  }
-
-  double Min() noexcept override {
-    return 1 - std::exp(-(lambda_.Min() * time_.Min()));
-  }
+  double Mean() noexcept override;
+  double Max() noexcept override { return 1; }
+  double Min() noexcept override { return 0; }
 
  private:
-  double DoSample() noexcept override {
-    return 1 - std::exp(-(lambda_.Sample() * time_.Sample()));
-  }
+  double DoSample() noexcept override;
 
   Expression& lambda_;  ///< Failure rate in hours.
   Expression& time_;  ///< Mission time in hours.
@@ -65,8 +54,6 @@ class ExponentialExpression : public Expression {
 
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
-///
-/// @todo Find the minimum and maximum values.
 class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
@@ -79,7 +66,6 @@ class GlmExpression : public Expression {
                 const ExpressionPtr& mu, const ExpressionPtr& t);
 
   void Validate() const override;
-
   double Mean() noexcept override;
   double Max() noexcept override { return 1; }
   double Min() noexcept override { return 0; }
@@ -88,13 +74,6 @@ class GlmExpression : public Expression {
   double DoSample() noexcept override;
 
   /// Computes the value for GLM expression.
-  ///
-  /// @param[in] gamma  Value for probability on demand.
-  /// @param[in] lambda  Value for hourly rate of failure.
-  /// @param[in] mu  Value for hourly repair rate.
-  /// @param[in] time  Mission time in hours.
-  ///
-  /// @returns Probability of failure on demand.
   double Compute(double gamma, double lambda, double mu, double time) noexcept;
 
   Expression& gamma_;  ///< Probability of failure on demand.
@@ -116,33 +95,14 @@ class WeibullExpression : public Expression {
                     const ExpressionPtr& t0, const ExpressionPtr& time);
 
   void Validate() const override;
-
-  double Mean() noexcept override {
-    return Compute(alpha_.Mean(), beta_.Mean(), t0_.Mean(), time_.Mean());
-  }
-
-  double Max() noexcept override {
-    return Compute(alpha_.Min(), beta_.Max(), t0_.Min(), time_.Max());
-  }
-
-  double Min() noexcept override {
-    return Compute(alpha_.Max(), beta_.Min(), t0_.Max(), time_.Min());
-  }
+  double Mean() noexcept override;
+  double Max() noexcept override { return 1; }
+  double Min() noexcept override { return 0; }
 
  private:
-  double DoSample() noexcept override {
-    return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(),
-                   time_.Sample());
-  }
+  double DoSample() noexcept override;
 
   /// Calculates Weibull expression.
-  ///
-  /// @param[in] alpha  Scale parameter.
-  /// @param[in] beta  Shape parameter.
-  /// @param[in] t0  Time shift.
-  /// @param[in] time  Mission time.
-  ///
-  /// @returns Calculated value.
   double Compute(double alpha, double beta, double t0, double time) noexcept;
 
   Expression& alpha_;  ///< Scale parameter.
