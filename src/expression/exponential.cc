@@ -201,22 +201,24 @@ double PeriodicTest::InstantTest::Compute(double lambda, double mu, double tau,
   if (time <= theta)  // No test has been performed.
     return p_exp(lambda, time);
 
-  // Probability of failure after repair.
-  auto p_mu_lambda = [&lambda, &mu] (double p_lambda, double p_mu) {
-    return (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+  // Carry fraction from probability of a previous period.
+  auto carry = [&lambda, &mu](double p_lambda, double p_mu) {
+    // Probability of failure after repair.
+    double p_mu_lambda = (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+    return 1 - p_mu + p_mu_lambda - p_lambda;
   };
 
   double prob = p_exp(lambda, theta);  // The current rolling probability.
-  auto p_period = [&prob, &p_mu_lambda](double p_lambda, double p_mu) {
-    return prob * (1 - p_mu + p_mu_lambda(p_lambda, p_mu)) +
-           (1 - prob) * p_lambda;
+  auto p_period = [&prob, &carry](double p_lambda, double p_mu) {
+    return prob * carry(p_lambda, p_mu) + p_lambda;
   };
 
   double delta = time - theta;
   int num_periods = delta / tau;
-  for (int i = 0; i < num_periods; ++i) {
-    prob = p_period(p_exp(lambda, tau), p_exp(mu, tau));
-  }
+  double fraction = carry(p_exp(lambda, tau), p_exp(mu, tau));
+  double compound = std::pow(fraction, num_periods);  // Geometric progression.
+  prob = prob * compound + p_exp(lambda, tau) * (compound - 1) / (fraction - 1);
+
   double time_after_test = delta - num_periods * tau;
   return p_period(p_exp(lambda, time_after_test), p_exp(mu, time_after_test));
 }

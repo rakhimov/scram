@@ -275,7 +275,14 @@ TEST(ExpressionTest, PeriodicTest5) {
   ASSERT_NO_THROW(
       dev = ExpressionPtr(new PeriodicTest(lambda, mu, tau, theta, time)));
   EXPECT_FALSE(dev->IsDeviate());
+  EXPECT_EQ(dev->Mean(), dev->Sample());
   EXPECT_NEAR(0.817508, dev->Mean(), 1e-3);
+
+  tau->mean = 2010;
+  EXPECT_NEAR(0.736611, dev->Mean(), 1e-3);
+
+  tau->mean = 120;
+  EXPECT_NEAR(0.645377, dev->Mean(), 1e-3);
 
   mu->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
