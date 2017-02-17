@@ -264,6 +264,34 @@ TEST(ExpressionTest, PeriodicTest4) {
   ASSERT_FALSE(dev->IsDeviate());
 }
 
+TEST(ExpressionTest, PeriodicTest5) {
+  OpenExpressionPtr lambda(new OpenExpression(7e-4, 7e-4));
+  OpenExpressionPtr mu(new OpenExpression(4e-4, 4e-4));
+  OpenExpressionPtr tau(new OpenExpression(4020, 4020));
+  OpenExpressionPtr theta(new OpenExpression(4740, 4740));
+  OpenExpressionPtr time(new OpenExpression(8760, 8760));
+  ExpressionPtr dev;
+
+  ASSERT_NO_THROW(
+      dev = ExpressionPtr(new PeriodicTest(lambda, mu, tau, theta, time)));
+  EXPECT_FALSE(dev->IsDeviate());
+  EXPECT_NEAR(0.817508, dev->Mean(), 1e-3);
+
+  mu->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  mu->mean = 0.0;
+  EXPECT_NO_THROW(dev->Validate());
+  mu->mean = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  mu->sample = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  mu->sample = 0.0;
+  EXPECT_NO_THROW(dev->Validate());
+  mu->sample = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+}
+
 // Uniform deviate test for invalid minimum and maximum values.
 TEST(ExpressionTest, UniformDeviate) {
   OpenExpressionPtr min(new OpenExpression(1, 2));

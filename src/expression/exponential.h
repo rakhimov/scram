@@ -163,10 +163,19 @@ class PeriodicTest : public Expression {
   PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& tau,
                const ExpressionPtr& theta, const ExpressionPtr& time);
 
+  /// Periodic tests with tests instantaneous and always successful.
+  /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
+  ///                           const ExpressionPtr&, const ExpressionPtr&)
+  ///
+  /// @param[in] mu  The repair rate (hourly).
+  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
+               const ExpressionPtr& tau, const ExpressionPtr& theta,
+               const ExpressionPtr& time);
+
   void Validate() const override { flavor_->Validate(); }
   double Mean() noexcept override { return flavor_->Mean(); }
-  double Max() noexcept override { return flavor_->Max(); }
-  double Min() noexcept override { return flavor_->Min(); }
+  double Max() noexcept override { return 1; }
+  double Min() noexcept override { return 0; }
 
  private:
   double DoSample() noexcept override { return flavor_->Sample(); }
@@ -178,37 +187,54 @@ class PeriodicTest : public Expression {
     virtual void Validate() const = 0;
     /// @copydoc Expression::Mean
     virtual double Mean() noexcept = 0;
-    /// @copydoc Expression::Max
-    virtual double Max() noexcept = 0;
-    /// @copydoc Expression::Min
-    virtual double Min() noexcept = 0;
     /// @copydoc Expression::Sample
     virtual double Sample() noexcept = 0;
   };
 
-  /// @copybrief PeriodicTest::PeriodicTest
+  /// The tests and repairs are instantaneous and always successful.
   class InstantRepair : public Flavor {
    public:
-    /// @copydoc PeriodicTest::PeriodicTest
+    /// The same semantics as for 4 argument periodic-test.
     InstantRepair(const ExpressionPtr& lambda, const ExpressionPtr& tau,
                   const ExpressionPtr& theta, const ExpressionPtr& time)
         : lambda_(*lambda), tau_(*tau), theta_(*theta), time_(*time) {}
 
     void Validate() const override;
     double Mean() noexcept override;
-    double Max() noexcept override;
-    double Min() noexcept override;
     double Sample() noexcept override;
+
+   protected:
+    Expression& lambda_;  ///< The failure rate when functioning.
+    Expression& tau_;  ///< The time between tests in hours.
+    Expression& theta_;  ///< The time before the first test.
+    Expression& time_;  ///< The current time.
 
    private:
     /// Computes the expression value.
     double Compute(double lambda, double tau, double theta,
                    double time) noexcept;
+  };
 
-    Expression& lambda_;  ///< The failure rate when functioning.
-    Expression& tau_;  ///< The time between tests in hours.
-    Expression& theta_;  ///< The time before the first test.
-    Expression& time_;  ///< The current time.
+  /// The tests are instantaneous and always successful,
+  /// but repairs are not.
+  class InstantTest : public InstantRepair {
+   public:
+    /// The same semantics as for 5 argument periodic-test.
+    InstantTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
+                const ExpressionPtr& tau, const ExpressionPtr& theta,
+                const ExpressionPtr& time)
+        : InstantRepair(lambda, tau, theta, time), mu_(*mu) {}
+
+    void Validate() const override;
+    double Mean() noexcept override;
+    double Sample() noexcept override;
+
+   private:
+    /// Computes the expression value.
+    double Compute(double lambda, double mu, double tau, double theta,
+                   double time) noexcept;
+
+    Expression& mu_;  ///< The repair rate.
   };
 
   std::unique_ptr<Flavor> flavor_;  ///< Specialized flavor of calculations.

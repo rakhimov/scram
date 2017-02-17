@@ -20,8 +20,6 @@
 
 #include "exponential.h"
 
-#include <algorithm>
-
 #include "src/error.h"
 
 namespace scram {
@@ -140,6 +138,12 @@ PeriodicTest::PeriodicTest(const ExpressionPtr& lambda,
     : Expression({lambda, tau, theta, time}),
       flavor_(new PeriodicTest::InstantRepair(lambda, tau, theta, time)) {}
 
+PeriodicTest::PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
+                           const ExpressionPtr& tau, const ExpressionPtr& theta,
+                           const ExpressionPtr& time)
+    : Expression({lambda, mu, tau, theta, time}),
+      flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
+
 /// Checks and throws if an expression is negative.
 #define THROW_NEGATIVE_EXPR(expr, description)                          \
   do {                                                                  \
@@ -157,6 +161,11 @@ void PeriodicTest::InstantRepair::Validate() const {
   THROW_NEGATIVE_EXPR(time_, "mission time");
 }
 
+void PeriodicTest::InstantTest::Validate() const {
+  InstantRepair::Validate();
+  THROW_NEGATIVE_EXPR(mu_, "rate of repair");
+}
+
 #undef THROW_NEGATIVE_EXPR
 
 namespace {
@@ -171,7 +180,7 @@ double p_exp(double lambda, double time) {
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
                                             double theta,
                                             double time) noexcept {
-  if (time <= theta)
+  if (time <= theta)  // No test has been performed.
     return p_exp(lambda, time);
   double delta = time - theta;
   double time_after_test = delta - static_cast<int>(delta / tau) * tau;
@@ -182,18 +191,43 @@ double PeriodicTest::InstantRepair::Mean() noexcept {
   return Compute(lambda_.Mean(), tau_.Mean(), theta_.Mean(), time_.Mean());
 }
 
-double PeriodicTest::InstantRepair::Max() noexcept {
-  return std::max(p_exp(lambda_.Max(), theta_.Max()),
-                  p_exp(lambda_.Max(), tau_.Max()));
-}
-
-double PeriodicTest::InstantRepair::Min() noexcept {
-  return std::min(p_exp(lambda_.Min(), theta_.Min()),
-                  p_exp(lambda_.Min(), tau_.Min()));
-}
-
 double PeriodicTest::InstantRepair::Sample() noexcept {
   return Compute(lambda_.Sample(), tau_.Sample(), theta_.Sample(),
+                 time_.Sample());
+}
+
+double PeriodicTest::InstantTest::Compute(double lambda, double mu, double tau,
+                                          double theta, double time) noexcept {
+  if (time <= theta)  // No test has been performed.
+    return p_exp(lambda, time);
+
+  // Probability of failure after repair.
+  auto p_mu_lambda = [&lambda, &mu] (double p_lambda, double p_mu) {
+    return (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+  };
+
+  double prob = p_exp(lambda, theta);  // The current rolling probability.
+  auto p_period = [&prob, &p_mu_lambda](double p_lambda, double p_mu) {
+    return prob * (1 - p_mu + p_mu_lambda(p_lambda, p_mu)) +
+           (1 - prob) * p_lambda;
+  };
+
+  double delta = time - theta;
+  int num_periods = delta / tau;
+  for (int i = 0; i < num_periods; ++i) {
+    prob = p_period(p_exp(lambda, tau), p_exp(mu, tau));
+  }
+  double time_after_test = delta - num_periods * tau;
+  return p_period(p_exp(lambda, time_after_test), p_exp(mu, time_after_test));
+}
+
+double PeriodicTest::InstantTest::Mean() noexcept {
+  return Compute(lambda_.Mean(), mu_.Mean(), tau_.Mean(), theta_.Mean(),
+                 time_.Mean());
+}
+
+double PeriodicTest::InstantTest::Sample() noexcept {
+  return Compute(lambda_.Sample(), mu_.Sample(), tau_.Sample(), theta_.Sample(),
                  time_.Sample());
 }
 
