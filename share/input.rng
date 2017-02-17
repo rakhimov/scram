@@ -513,6 +513,7 @@
       <ref name="exponential"/>
       <ref name="GLM"/>
       <ref name="Weibull"/>
+      <ref name="periodic-test"/>
     </choice>
   </define>
 
@@ -624,6 +625,14 @@
         <ref name="expression"/>
         <ref name="expression"/>
         <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="periodic-test">
+      <element name="periodic-test">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
       </element>
     </define>
 

@@ -704,10 +704,22 @@ ExpressionPtr Initializer::Extract<LogNormalDeviate>(
   return Extractor<LogNormalDeviate, 2>()(args, base_path, init);
 }
 
+/// Specialization due to overloaded constructors and un-fixed number of args.
+template <>
+ExpressionPtr Initializer::Extract<PeriodicTest>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  if (args.size() == 4)
+    return Extractor<PeriodicTest, 4>()(args, base_path, init);
+  throw InvalidArgument("Invalid number of arguments for Periodic Test.");
+}
+
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"exponential", &Extract<ExponentialExpression>},
     {"GLM", &Extract<GlmExpression>},
     {"Weibull", &Extract<WeibullExpression>},
+    {"periodic-test", &Extract<PeriodicTest>},
     {"uniform-deviate", &Extract<UniformDeviate>},
     {"normal-deviate", &Extract<NormalDeviate>},
     {"lognormal-deviate", &Extract<LogNormalDeviate>},

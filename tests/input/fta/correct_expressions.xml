@@ -71,6 +71,14 @@ The input tries to utilize all the functionality including optional cases.
         <system-mission-time/>
       </Weibull>
     </define-basic-event>
+    <define-basic-event name="PeriodicTest4">
+      <periodic-test>
+        <float value="0.3"/>
+        <float value="100"/>
+        <float value="200"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
     <define-basic-event name="UniformDeviate">
       <uniform-deviate>
         <float value="0"/>

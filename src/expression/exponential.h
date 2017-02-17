@@ -151,6 +151,69 @@ class WeibullExpression : public Expression {
   Expression& time_;  ///< Mission time in hours.
 };
 
+/// Periodic test with 3 phases: deploy, test, functioning.
+class PeriodicTest : public Expression {
+ public:
+  /// Periodic tests with tests and repairs instantaneous and always successful.
+  ///
+  /// @param[in] lambda  The failure rate (hourly) when functioning.
+  /// @param[in] tau  The time between tests in hours.
+  /// @param[in] theta  The time before the first test in hours.
+  /// @param[in] time  The current mission time in hours.
+  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& tau,
+               const ExpressionPtr& theta, const ExpressionPtr& time);
+
+  void Validate() const override { flavor_->Validate(); }
+  double Mean() noexcept override { return flavor_->Mean(); }
+  double Max() noexcept override { return flavor_->Max(); }
+  double Min() noexcept override { return flavor_->Min(); }
+
+ private:
+  double DoSample() noexcept override { return flavor_->Sample(); }
+
+  /// The base class for various flavors of periodic-test computation.
+  struct Flavor {
+    virtual ~Flavor() = default;
+    /// @copydoc Expression::Validate
+    virtual void Validate() const = 0;
+    /// @copydoc Expression::Mean
+    virtual double Mean() noexcept = 0;
+    /// @copydoc Expression::Max
+    virtual double Max() noexcept = 0;
+    /// @copydoc Expression::Min
+    virtual double Min() noexcept = 0;
+    /// @copydoc Expression::Sample
+    virtual double Sample() noexcept = 0;
+  };
+
+  /// @copybrief PeriodicTest::PeriodicTest
+  class InstantRepair : public Flavor {
+   public:
+    /// @copydoc PeriodicTest::PeriodicTest
+    InstantRepair(const ExpressionPtr& lambda, const ExpressionPtr& tau,
+                  const ExpressionPtr& theta, const ExpressionPtr& time)
+        : lambda_(*lambda), tau_(*tau), theta_(*theta), time_(*time) {}
+
+    void Validate() const override;
+    double Mean() noexcept override;
+    double Max() noexcept override;
+    double Min() noexcept override;
+    double Sample() noexcept override;
+
+   private:
+    /// Computes the expression value.
+    double Compute(double lambda, double tau, double theta,
+                   double time) noexcept;
+
+    Expression& lambda_;  ///< The failure rate when functioning.
+    Expression& tau_;  ///< The time between tests in hours.
+    Expression& theta_;  ///< The time before the first test.
+    Expression& time_;  ///< The current time.
+  };
+
+  std::unique_ptr<Flavor> flavor_;  ///< Specialized flavor of calculations.
+};
+
 }  // namespace mef
 }  // namespace scram
 

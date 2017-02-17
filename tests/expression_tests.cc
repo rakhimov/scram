@@ -106,7 +106,6 @@ TEST(ExpressionTest, GLM) {
   EXPECT_DOUBLE_EQ((10 - (10 - 0.10 * 110) * std::exp(-110 * 5)) / 110,
                    dev->Mean());
 
-
   gamma->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   gamma->mean = 10;
@@ -169,7 +168,6 @@ TEST(ExpressionTest, Weibull) {
   EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)),
                    dev->Mean());
 
-
   alpha->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   alpha->mean = 0;
@@ -227,6 +225,43 @@ TEST(ExpressionTest, Weibull) {
   ASSERT_FALSE(dev->IsDeviate());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
   EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+}
+
+TEST(ExpressionTest, PeriodicTest4) {
+  OpenExpressionPtr lambda(new OpenExpression(0.10, 0.10));
+  OpenExpressionPtr tau(new OpenExpression());
+  OpenExpressionPtr theta(new OpenExpression(2, 2));
+  OpenExpressionPtr time(new OpenExpression(5, 5));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(
+      dev = ExpressionPtr(new PeriodicTest(lambda, tau, theta, time)));
+  EXPECT_DOUBLE_EQ(1 - std::exp(-0.10), dev->Mean());
+
+  lambda->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  lambda->mean = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  time->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  time->mean = 5;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Validate());
+  lambda->sample = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  lambda->sample = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  time->sample = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  time->sample = 5;
+  ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_FALSE(dev->IsDeviate());
 }
 
 // Uniform deviate test for invalid minimum and maximum values.

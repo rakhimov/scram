@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,6 +169,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "cyclic_parameter.xml",
       "cyclic_expression.xml",
       "invalid_expression.xml",
+      "invalid_periodic_test_num_args.xml",
       "repeated_child.xml",
       "repeated_attribute.xml",
       "alpha_ccf_level_error.xml",

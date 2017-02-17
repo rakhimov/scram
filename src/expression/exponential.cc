@@ -20,6 +20,8 @@
 
 #include "exponential.h"
 
+#include <algorithm>
+
 #include "src/error.h"
 
 namespace scram {
@@ -130,6 +132,69 @@ void WeibullExpression::Validate() const {
 double WeibullExpression::Compute(double alpha, double beta,
                                   double t0, double time) noexcept {
   return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+}
+
+PeriodicTest::PeriodicTest(const ExpressionPtr& lambda,
+                           const ExpressionPtr& tau, const ExpressionPtr& theta,
+                           const ExpressionPtr& time)
+    : Expression({lambda, tau, theta, time}),
+      flavor_(new PeriodicTest::InstantRepair(lambda, tau, theta, time)) {}
+
+/// Checks and throws if an expression is negative.
+#define THROW_NEGATIVE_EXPR(expr, description)                          \
+  do {                                                                  \
+    if (expr.Mean() < 0)                                                \
+      throw InvalidArgument("The " description " cannot be negative."); \
+    if (expr.Min() < 0)                                                 \
+      throw InvalidArgument("The sampled " description                  \
+                            " cannot be negative.");                    \
+  } while (false)
+
+void PeriodicTest::InstantRepair::Validate() const {
+  THROW_NEGATIVE_EXPR(lambda_, "rate of failure");
+  THROW_NEGATIVE_EXPR(tau_, "time between tests");
+  THROW_NEGATIVE_EXPR(theta_, "time before tests");
+  THROW_NEGATIVE_EXPR(time_, "mission time");
+}
+
+#undef THROW_NEGATIVE_EXPR
+
+namespace {
+
+/// Negative exponential law probability.
+double p_exp(double lambda, double time) {
+  return 1 - std::exp(-lambda * time);
+}
+
+}  // namespace
+
+double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
+                                            double theta,
+                                            double time) noexcept {
+  if (time <= theta)
+    return p_exp(lambda, time);
+  double delta = time - theta;
+  double time_after_test = delta - static_cast<int>(delta / tau) * tau;
+  return p_exp(lambda, time_after_test ? time_after_test : tau);
+}
+
+double PeriodicTest::InstantRepair::Mean() noexcept {
+  return Compute(lambda_.Mean(), tau_.Mean(), theta_.Mean(), time_.Mean());
+}
+
+double PeriodicTest::InstantRepair::Max() noexcept {
+  return std::max(p_exp(lambda_.Max(), theta_.Max()),
+                  p_exp(lambda_.Max(), tau_.Max()));
+}
+
+double PeriodicTest::InstantRepair::Min() noexcept {
+  return std::min(p_exp(lambda_.Min(), theta_.Min()),
+                  p_exp(lambda_.Min(), tau_.Min()));
+}
+
+double PeriodicTest::InstantRepair::Sample() noexcept {
+  return Compute(lambda_.Sample(), tau_.Sample(), theta_.Sample(),
+                 time_.Sample());
 }
 
 }  // namespace mef

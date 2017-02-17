@@ -82,7 +82,7 @@ to identify the supported and unsupported features.
     * Arithmetic expressions
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential with two parameters,
-      exponential with four parameters, Weibull)
+      exponential with four parameters, Weibull, periodic-test)
 
 
 Deviations from the Open-PSA MEF
