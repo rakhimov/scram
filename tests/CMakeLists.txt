@@ -41,6 +41,7 @@ set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_baobab1_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_baobab2_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_CEA9601_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_hipps_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/performance_tests.cc"
   )
 
