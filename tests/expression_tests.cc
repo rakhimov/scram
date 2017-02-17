@@ -287,6 +287,9 @@ TEST(ExpressionTest, PeriodicTest5) {
   mu->mean = lambda->mean;  // Special case when divisor cannot be 0.
   EXPECT_NEAR(0.511579, dev->Mean(), 1e-5);
 
+  mu->mean = 1e300;  // The same value is expected as for 4 arg periodic-test.
+  EXPECT_NEAR(PeriodicTest(lambda, tau, theta, time).Mean(), dev->Mean(), 1e-5);
+
   mu->mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   mu->mean = 0.0;
