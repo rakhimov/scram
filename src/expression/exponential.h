@@ -60,7 +60,7 @@ class GlmExpression : public Expression {
   ///
   /// @param[in] gamma  Probability of failure on demand.
   /// @param[in] lambda  Hourly rate of failure.
-  /// @param[in] mu  Hourly repairing rate.
+  /// @param[in] mu  Hourly repair rate.
   /// @param[in] t  Mission time in hours.
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t);
@@ -132,6 +132,25 @@ class PeriodicTest : public Expression {
                const ExpressionPtr& tau, const ExpressionPtr& theta,
                const ExpressionPtr& time);
 
+  /// Fully parametrized periodic-test description.
+  /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
+  ///                           const ExpressionPtr&, const ExpressionPtr&,
+  ///                           const ExpressionPtr&)
+  ///
+  /// @param[in] lambda_test  The component failure rate while under test.
+  /// @param[in] gamma  The failure probability due to or at test start.
+  /// @param[in] test_duration  The duration of the test phase.
+  /// @param[in] available_at_test  Indicator of component availability at test.
+  /// @param[in] sigma  The probability of failure detection upon test.
+  /// @param[in] omega  The probability of failure at restart after repair/test.
+  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
+               const ExpressionPtr& mu, const ExpressionPtr& tau,
+               const ExpressionPtr& theta, const ExpressionPtr& gamma,
+               const ExpressionPtr& test_duration,
+               const ExpressionPtr& available_at_test,
+               const ExpressionPtr& sigma, const ExpressionPtr& omega,
+               const ExpressionPtr& time);
+
   void Validate() const override { flavor_->Validate(); }
   double Mean() noexcept override { return flavor_->Mean(); }
   double Max() noexcept override { return 1; }
@@ -189,12 +208,42 @@ class PeriodicTest : public Expression {
     double Mean() noexcept override;
     double Sample() noexcept override;
 
+   protected:
+    Expression& mu_;  ///< The repair rate.
+
    private:
     /// Computes the expression value.
     double Compute(double lambda, double mu, double tau, double theta,
                    double time) noexcept;
+  };
 
-    Expression& mu_;  ///< The repair rate.
+  /// The full representation of periodic test with 11 arguments.
+  class Complete : public InstantTest {
+   public:
+    /// The parameters have the same semantics as 11 argument periodic-test.
+    Complete(const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
+             const ExpressionPtr& mu, const ExpressionPtr& tau,
+             const ExpressionPtr& theta, const ExpressionPtr& gamma,
+             const ExpressionPtr& test_duration,
+             const ExpressionPtr& available_at_test, const ExpressionPtr& sigma,
+             const ExpressionPtr& omega, const ExpressionPtr& time)
+        : InstantTest(lambda, mu, tau, theta, time),
+          lambda_test_(*lambda_test),
+          gamma_(*gamma),
+          test_duration_(*test_duration),
+          available_at_test_(*available_at_test),
+          sigma_(*sigma),
+          omega_(*omega) {}
+
+    void Validate() const override;
+
+   private:
+    Expression& lambda_test_;  ///< The failure rate while under test.
+    Expression& gamma_;  ///< The failure probability due to or at test start.
+    Expression& test_duration_;  ///< The duration of the test phase.
+    Expression& available_at_test_;  ///< The indicator of availability at test.
+    Expression& sigma_;  ///< The probability of failure detection upon test.
+    Expression& omega_;  ///< The probability of failure at restart.
   };
 
   std::unique_ptr<Flavor> flavor_;  ///< Specialized flavor of calculations.

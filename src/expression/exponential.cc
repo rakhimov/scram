@@ -37,13 +37,23 @@ namespace mef {
                             " cannot be negative.");                    \
   } while (false)
 
-/// Check and throws if an expression is negative or 0.
+/// Checks and throws if an expression is negative or 0.
 #define THROW_NON_POSITIVE_EXPR(expr, description)                            \
   do {                                                                        \
     if (expr.Mean() <= 0)                                                     \
       throw InvalidArgument("The " description " must be positive.");         \
     if (expr.Min() <= 0)                                                      \
       throw InvalidArgument("The sampled " description " must be positive."); \
+  } while (false)
+
+/// Checks and throws if probability expression values are invalid.
+#define THROW_INVALID_PROBABILITY(expr, description)                       \
+  do {                                                                     \
+    if (expr.Mean() < 0 || expr.Mean() > 1)                                \
+      throw InvalidArgument("Invalid probability value for " description); \
+    if (expr.Min() < 0 || expr.Max() > 1)                                  \
+      throw InvalidArgument(                                               \
+          "Invalid probability sampled value for " description);           \
   } while (false)
 
 namespace {
@@ -88,11 +98,7 @@ void GlmExpression::Validate() const {
   THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
   THROW_NEGATIVE_EXPR(mu_, "rate of repair");
   THROW_NEGATIVE_EXPR(time_, "mission time");
-  if (gamma_.Mean() < 0 || gamma_.Mean() > 1) {
-    throw InvalidArgument("Invalid value for probability.");
-  } else if (gamma_.Min() < 0 || gamma_.Max() > 1) {
-    throw InvalidArgument("Invalid sampled gamma value for probability.");
-  }
+  THROW_INVALID_PROBABILITY(gamma_, "failure on demand");
 }
 
 double GlmExpression::Mean() noexcept {
@@ -159,6 +165,19 @@ PeriodicTest::PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
     : Expression({lambda, mu, tau, theta, time}),
       flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
 
+PeriodicTest::PeriodicTest(
+    const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
+    const ExpressionPtr& mu, const ExpressionPtr& tau,
+    const ExpressionPtr& theta, const ExpressionPtr& gamma,
+    const ExpressionPtr& test_duration, const ExpressionPtr& available_at_test,
+    const ExpressionPtr& sigma, const ExpressionPtr& omega,
+    const ExpressionPtr& time)
+    : Expression({lambda, lambda_test, mu, tau, theta, gamma, test_duration,
+                  available_at_test, sigma, omega, time}),
+      flavor_(new PeriodicTest::Complete(
+          lambda, lambda_test, mu, tau, theta, gamma, test_duration,
+          available_at_test, sigma, omega, time)) {}
+
 void PeriodicTest::InstantRepair::Validate() const {
   THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
   THROW_NON_POSITIVE_EXPR(tau_, "time between tests");
@@ -171,7 +190,25 @@ void PeriodicTest::InstantTest::Validate() const {
   THROW_NEGATIVE_EXPR(mu_, "rate of repair");
 }
 
+void PeriodicTest::Complete::Validate() const {
+  InstantTest::Validate();
+  THROW_NEGATIVE_EXPR(lambda_test_, "rate of failure while under test");
+  THROW_NON_POSITIVE_EXPR(test_duration_, "duration of the test phase");
+  THROW_INVALID_PROBABILITY(gamma_, "failure at test start");
+  THROW_INVALID_PROBABILITY(sigma_, "failure detection upon test");
+  THROW_INVALID_PROBABILITY(omega_, "failure at restart");
+
+  if (test_duration_.Mean() > tau_.Mean())
+    throw InvalidArgument(
+        "The test duration must be less than the time between tests.");
+  if (test_duration_.Max() > tau_.Min())
+    throw InvalidArgument(
+        "The sampled test duration must be less than the time between tests.");
+}
+
 #undef THROW_NEGATIVE_EXPR
+#undef THROW_NON_POSITIVE_EXPR
+#undef THROW_INVALID_PROBABILITY
 
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
                                             double theta,
