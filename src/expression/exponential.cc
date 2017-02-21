@@ -58,9 +58,78 @@ namespace mef {
 
 namespace {
 
-/// Negative exponential law probability.
+/// Negative exponential law probability for Poisson process.
+///
+/// @param[in] lambda  The rate of the process.
+/// @param[in] time  The time lapse since the last observation.
+///
+/// @returns The probability that the process has occurred by the given time.
 double p_exp(double lambda, double time) {
   return 1 - std::exp(-lambda * time);
+}
+
+/// The probability description for two consecutive Poisson processes
+/// starting one after another.
+/// In other words,
+/// the second process is dependent upon the first process.
+///
+/// @param[in] p_mu  The probability of the first process (dependency).
+/// @param[in] p_lambda  The probability of the second process (dependent).
+/// @param[in] mu  The rate of the first process.
+/// @param[in] lambda  The rate of the second process.
+/// @param[in] time  The time period under question.
+///
+/// @returns The probability that the second process has occurred.
+double p_exp(double p_mu, double p_lambda, double mu, double lambda,
+             double time) {
+  return lambda == mu ? p_lambda - (1 - p_lambda) * lambda * time
+                      : (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+}
+
+/// The probability description of two consecutive Poisson process
+/// where the second (dependent) process never happens.
+/// @copydetails p_exp(double, double, double, double, double)
+///
+/// @returns The probability of the second event not occurring
+///          while the first event occurs.
+double p_exp_complement(double p_mu, double p_lambda, double mu, double lambda,
+                        double time) {
+  return lambda == mu ? (1 - p_lambda) * lambda * time
+                      : (p_lambda - p_mu) * lambda / (lambda - mu);
+}
+
+/// The probability description for three consecutive Poisson processes
+/// running one after another.
+/// @copydetails p_exp(double, double, double, double, double)
+///
+/// @param[in] p_eta  The probability of the initial process.
+/// @param[in] eta  The rate of the initial process.
+///
+/// @returns The probability that the last process has occurred.
+double p_exp(double p_eta, double p_mu, double p_lambda, double eta, double mu,
+             double lambda, double time) {
+  if (eta == mu && mu == lambda)
+    return 1 + p_lambda - (1 - p_lambda) * std::pow(lambda * time + 1, 2);
+
+  // phi is the representative of the equal rate.
+  auto equal_rate = [&time](double p_phi, double p_zeta, double phi,
+                            double zeta) {
+    double delta = phi - zeta;
+    return std::pow(phi / delta, 2) * p_zeta -
+           (phi * zeta) / std::pow(delta, 2) * p_phi -
+           zeta / delta * (p_phi - (1 - p_phi) * phi * time);
+  };
+
+  if (eta == mu)
+    return equal_rate(p_eta, p_lambda, eta, lambda);
+  if (mu == lambda)
+    return equal_rate(p_mu, p_eta, mu, eta);
+  if (eta == lambda)
+    return equal_rate(p_eta, p_mu, eta, mu);
+
+  return eta * mu * lambda / (eta - mu) *
+         (p_lambda / lambda * (1 / (mu - lambda) - 1 / (eta - lambda)) -
+          p_mu / mu / (mu - lambda) + p_eta / eta / (eta - lambda));
 }
 
 }  // namespace
@@ -237,9 +306,7 @@ double PeriodicTest::InstantTest::Compute(double lambda, double mu, double tau,
   // Carry fraction from probability of a previous period.
   auto carry = [&lambda, &mu](double p_lambda, double p_mu, double t) {
     // Probability of failure after repair.
-    double p_mu_lambda = lambda == mu
-                             ? p_lambda - (1 - p_lambda) * lambda * t
-                             : (lambda * p_mu - mu * p_lambda) / (lambda - mu);
+    double p_mu_lambda = p_exp(p_lambda, p_mu, lambda, mu, t);
     return 1 - p_mu + p_mu_lambda - p_lambda;
   };
 
@@ -267,6 +334,104 @@ double PeriodicTest::InstantTest::Mean() noexcept {
 double PeriodicTest::InstantTest::Sample() noexcept {
   return Compute(lambda_.Sample(), mu_.Sample(), tau_.Sample(), theta_.Sample(),
                  time_.Sample());
+}
+
+double PeriodicTest::Complete::Compute(double lambda, double lambda_test,
+                                       double mu, double tau, double theta,
+                                       double gamma, double test_duration,
+                                       bool available_at_test, double sigma,
+                                       double omega, double time) noexcept {
+  assert(available_at_test);  /// @todo Derive the formula.
+  if (time <= theta)  // No test has been performed.
+    return p_exp(lambda, time);
+
+  double p_fail = p_exp(lambda, theta);
+  double p_repair = 0;
+  double p_available = 1 - p_fail;
+
+  // Failure after repair.
+  auto p_mu_lambda = [&](double p_mu, double p_lambda, double t) {
+    return p_mu * omega + (1 - omega) * p_exp(p_mu, p_lambda, mu, lambda, t);
+  };
+
+  auto p_test = [&](double p_lambda_test, double p_mu, double p_lambda,
+                    double t) {
+    double p_no_repair_after_test =
+        p_exp_complement(p_lambda_test, p_mu, lambda_test, mu, t);
+    double p_repair_update =
+        (1 - p_mu) * (p_repair + sigma * (p_fail + p_available * gamma)) +
+        p_available * (1 - gamma) * sigma * p_no_repair_after_test;
+    double p_fail_after_repair = p_mu_lambda(p_mu, p_lambda, t);
+    double p_fail_after_fail = (p_fail + p_available * gamma) *
+                               (1 - sigma + sigma * p_fail_after_repair);
+    double p_fail_after_available =
+        (1 - gamma) * p_available *
+        (p_lambda_test * (1 - sigma) +
+         sigma * (omega * p_exp(p_lambda_test, p_mu, lambda_test, mu, t) +
+                  (1 - omega) * p_exp(p_lambda_test, p_mu, p_lambda,
+                                      lambda_test, mu, lambda, t)));
+    double p_fail_update = p_fail_after_fail + p_repair * p_fail_after_repair +
+                           p_fail_after_available;
+    p_repair = p_repair_update;
+    p_fail = p_fail_update;
+    p_available = 1 - p_fail - p_repair;
+    assert(p_repair >= 0 && p_repair <= 1);
+    assert(p_fail >= 0 && p_fail <= 1);
+    assert(p_available >= 0 && p_available <= 1);
+  };
+  // Time after test.
+  auto p_period = [&](double p_lambda, double p_mu, double t) {
+    p_fail = p_available * p_lambda + p_fail +
+             p_repair * p_mu_lambda(p_mu, p_lambda, t);
+    p_repair = p_repair * (1 - p_mu);
+    p_available = 1 - p_fail - p_repair;
+    assert(p_repair >= 0 && p_repair <= 1);
+    assert(p_fail >= 0 && p_fail <= 1);
+    assert(p_available >= 0 && p_available <= 1);
+  };
+
+  double delta = time - theta;
+  int num_periods = delta / tau;
+  double delta_period = tau - test_duration;
+
+  double p_lambda_test = p_exp(lambda_test, test_duration);
+  double p_lambda_at_test = p_exp(lambda, test_duration);
+  double p_mu_at_test = p_exp(mu, test_duration);
+
+  double p_lambda = p_exp(lambda, delta_period);
+  double p_mu = p_exp(mu, delta_period);
+
+  for (int i = 0; i < num_periods; ++i) {
+    p_test(p_lambda_test, p_mu_at_test, p_lambda_at_test, test_duration);
+    p_period(p_lambda, p_mu, delta_period);
+  }
+
+  double time_after_test = delta - num_periods * tau;
+  if (time_after_test <= test_duration) {
+    p_test(p_exp(lambda_test, time_after_test), p_exp(mu, time_after_test),
+           p_exp(lambda, time_after_test), time_after_test);
+  } else {
+    p_test(p_lambda_test, p_mu_at_test, p_lambda_at_test, test_duration);
+    double leftover_time = time_after_test - test_duration;
+    p_period(p_exp(lambda, leftover_time), p_exp(mu, leftover_time),
+             leftover_time);
+  }
+  assert(p_available >= 0 && p_available <= 1);
+  return 1 - p_available;
+}
+
+double PeriodicTest::Complete::Mean() noexcept {
+  return Compute(lambda_.Mean(), lambda_test_.Mean(), mu_.Mean(), tau_.Mean(),
+                 theta_.Mean(), gamma_.Mean(), test_duration_.Mean(),
+                 available_at_test_.Mean(), sigma_.Mean(), omega_.Mean(),
+                 time_.Mean());
+}
+
+double PeriodicTest::Complete::Sample() noexcept {
+  return Compute(lambda_.Sample(), lambda_test_.Sample(), mu_.Sample(),
+                 tau_.Sample(), theta_.Sample(), gamma_.Sample(),
+                 test_duration_.Sample(), available_at_test_.Sample(),
+                 sigma_.Sample(), omega_.Sample(), time_.Sample());
 }
 
 }  // namespace mef

@@ -272,15 +272,15 @@ TEST(ExpressionTest, PeriodicTest5) {
 
 TEST(ExpressionTest, PeriodicTest11) {
   OpenExpressionPtr lambda(new OpenExpression(7e-4, 7e-4));
-  OpenExpressionPtr lambda_test(new OpenExpression(8e-4, 8e-4));
+  OpenExpressionPtr lambda_test(new OpenExpression(6e-4, 6e-4));
   OpenExpressionPtr mu(new OpenExpression(4e-4, 4e-4));
-  OpenExpressionPtr tau(new OpenExpression(4020, 4020));
+  OpenExpressionPtr tau(new OpenExpression(120, 120));
   OpenExpressionPtr theta(new OpenExpression(4740, 4740));
   OpenExpressionPtr gamma(new OpenExpression(0.01, 0.01));
-  OpenExpressionPtr test_duration(new OpenExpression(100, 100));
+  OpenExpressionPtr test_duration(new OpenExpression(20, 20));
   OpenExpressionPtr available_at_test(new OpenExpression(1, 1));
-  OpenExpressionPtr sigma(new OpenExpression(0.02, 0.02));
-  OpenExpressionPtr omega(new OpenExpression(0.03, 0.03));
+  OpenExpressionPtr sigma(new OpenExpression(0.9, 0.9));
+  OpenExpressionPtr omega(new OpenExpression(0.01, 0.01));
   OpenExpressionPtr time(new OpenExpression(8760, 8760));
   ExpressionPtr dev;
 
@@ -293,6 +293,31 @@ TEST(ExpressionTest, PeriodicTest11) {
   TestProbability(dev, gamma);
   TestProbability(dev, sigma);
   TestProbability(dev, omega);
+
+  /* tau->mean = 120; */
+  EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
+
+  lambda_test->mean = mu->mean = lambda->mean;
+  EXPECT_NEAR(0.543401, dev->Mean(), 1e-5);
+  mu->mean = 4e-4;
+  lambda_test->mean = 6e-4;
+
+  test_duration->mean = 120;
+  EXPECT_NEAR(0.6469, dev->Mean(), 1e-5);
+
+  tau->mean = 4020;
+  test_duration->mean = 4020;
+  EXPECT_NEAR(0.996785, dev->Mean(), 1e-5);
+
+  tau->mean = 4020;
+  test_duration->mean = 0;
+  omega->mean = 0;
+  sigma->mean = 1;
+  gamma->mean = 0;
+  EXPECT_NEAR(0.817508, dev->Mean(), 1e-5);
+
+  tau->mean = 120;
+  EXPECT_NEAR(0.645377, dev->Mean(), 1e-5);
 }
 
 // Uniform deviate test for invalid minimum and maximum values.

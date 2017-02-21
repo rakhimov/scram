@@ -710,11 +710,16 @@ ExpressionPtr Initializer::Extract<PeriodicTest>(
     const xmlpp::NodeSet& args,
     const std::string& base_path,
     Initializer* init) {
-  if (args.size() == 4)
-    return Extractor<PeriodicTest, 4>()(args, base_path, init);
-  if (args.size() == 5)
-    return Extractor<PeriodicTest, 5>()(args, base_path, init);
-  throw InvalidArgument("Invalid number of arguments for Periodic Test.");
+  switch (args.size()) {
+    case 4:
+      return Extractor<PeriodicTest, 4>()(args, base_path, init);
+    case 5:
+      return Extractor<PeriodicTest, 5>()(args, base_path, init);
+    case 11:
+      return Extractor<PeriodicTest, 11>()(args, base_path, init);
+    default:
+      throw InvalidArgument("Invalid number of arguments for Periodic Test.");
+  }
 }
 
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {

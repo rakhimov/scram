@@ -236,8 +236,22 @@ class PeriodicTest : public Expression {
           omega_(*omega) {}
 
     void Validate() const override;
+    double Mean() noexcept override;
+    double Sample() noexcept override;
 
    private:
+    /// @returns The expression value.
+    /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
+    ///                           const ExpressionPtr&, const ExpressionPtr&,
+    ///                           const ExpressionPtr&, const ExpressionPtr&,
+    ///                           const ExpressionPtr&,
+    ///                           const ExpressionPtr&, const ExpressionPtr&,
+    ///                           const ExpressionPtr&, const ExpressionPtr&)
+    double Compute(double lambda, double lambda_test, double mu, double tau,
+                   double theta, double gamma, double test_duration,
+                   bool available_at_test, double sigma, double omega,
+                   double time) noexcept;
+
     Expression& lambda_test_;  ///< The failure rate while under test.
     Expression& gamma_;  ///< The failure probability due to or at test start.
     Expression& test_duration_;  ///< The duration of the test phase.
