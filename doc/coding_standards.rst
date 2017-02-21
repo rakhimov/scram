@@ -419,7 +419,7 @@ General
 -------
 
 - Prefer the :ref:`Aralia_format` for the Boolean formula documentation.
-  This format uses the C-style bit-wise logical operators for equations.
+  This format uses the C-style bit-wise logical operators for formulas.
 
 
 reST Documentation Style

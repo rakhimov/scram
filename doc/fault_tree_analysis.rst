@@ -3,7 +3,7 @@ Fault Tree Analysis
 ###################
 
 Fault trees have various types of gates and events
-to represent Boolean equation and systems for analysis [FTA]_.
+to represent Boolean formulas and systems for analysis [FTA]_.
 However, extra information for visual or informative purposes for the analyst
 may be irrelevant for the core analysis.
 Support for more advanced types and event descriptions will be introduced as needed in SCRAM.

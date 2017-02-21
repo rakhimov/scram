@@ -87,7 +87,7 @@ Aralia Input Format
 
 A more convenient format than the XML for writing simple fault trees
 utilizes a shorter notation for gates, operators (``&``, ``|``, ``@``, ``~``, ``^``), and events
-to create a collection of Boolean equations.
+to create a collection of Boolean formulas.
 The Aralia format can be converted into the XML format with `this script`_.
 
 .. _this script:
