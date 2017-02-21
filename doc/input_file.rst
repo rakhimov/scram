@@ -45,7 +45,7 @@ Steps in XML Input Validation
 
     - Event names and references are case-sensitive.
     - Leading and trailing whitespace characters are trimmed.
-    - Names and references should conform to the rules defined in :ref:`naming_rules` section.
+    - Names and references should conform to the MEF recommendations.
     - Public names must be unique globally,
       and private names must be unique locally within containers.
     - References are followed according to the public and private roles
@@ -70,35 +70,6 @@ Steps in XML Input Validation
 
     - Orphan primary events.
     - Unused parameters.
-
-
-.. _naming_rules:
-
-Identifiers and References
---------------------------
-
-Names are used as identifiers for many constructs,
-such as events and parameters.
-To avoid ambiguity and achieve consistency,
-names must conform to the following rules.
-
-- Consistent with `XML NCName datatype`_
-
-    * The first character must be alphabetic.
-    * May contain alphanumeric characters and special characters like ``_``, ``-``.
-    * No whitespace or other special characters like ``:``, ``,``, ``/``, etc.
-
-- No double dashes ``--``
-- No trailing dash
-- No periods ``.``
-
-References to constructs, such as gates, events, and parameters,
-may include names of fault trees or components to access public or private members.
-This feature requires a period ``.`` between names;
-thus references may follow the pattern ``fault_tree.component.event``.
-
-.. _XML NCName datatype:
-    http://stackoverflow.com/questions/1631396/what-is-an-xsncname-type-and-when-should-it-be-used
 
 
 .. _schema:
