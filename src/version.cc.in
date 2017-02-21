@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,9 @@
 
 #include "version.h"
 
+#include <boost/preprocessor/stringize.hpp>
 #include <boost/version.hpp>
-#include <libxml/xmlversion.h>
+#include <libxml++config.h>
 
 namespace scram {
 namespace version {
@@ -39,7 +40,10 @@ const char* core() {
 
 const char* boost() { return BOOST_LIB_VERSION; }
 
-const char* xml2() { return LIBXML_DOTTED_VERSION; }
+const char* xml() {
+  return BOOST_PP_STRINGIZE(LIBXMLXX_MAJOR_VERSION) "." BOOST_PP_STRINGIZE(
+      LIBXMLXX_MINOR_VERSION) "." BOOST_PP_STRINGIZE(LIBXMLXX_MICRO_VERSION);
+}
 
 }  // namespace version
 }  // namespace scram

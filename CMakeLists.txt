@@ -236,10 +236,9 @@ endif()
 
 # Include all the discovered system directories.
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
-include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")  # TODO: libxml++ dependency.
 include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
-include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})  # TODO: libxml++ dependency.
+include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
 
 include_directories("${PROJECT_SOURCE_DIR}")  # Include the core headers via "src".
 
