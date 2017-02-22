@@ -49,6 +49,29 @@ using IntrusivePtr = boost::intrusive_ptr<T>;
 template <class T>
 class Vertex;  // Manager of its own entry in the unique table.
 
+/// Provides pointer and reference cast wrappers for intrusive Vertex pointers.
+///
+/// @tparam T  The type of the main functional BDD vertex.
+/// @tparam W  The wrapper type to cast to.
+template <class T, class W = T>
+struct IntrusivePtrCast {
+  /// @param[in] vertex  Pointer to a Vertex known to be convertible to W.
+  ///
+  /// @returns The cast reference-counted pointer to the vertex,
+  ///          or the cast reference (without count increment!) to the vertex.
+  ///
+  /// @pre static_cast<W>(Vertex<T>) is successful.
+  ///
+  /// @{
+  static IntrusivePtr<W> Ptr(const IntrusivePtr<Vertex<T>>& vertex) {
+    return boost::static_pointer_cast<W>(vertex);
+  }
+  static W& Ref(const IntrusivePtr<Vertex<T>>& vertex) {
+    return static_cast<W&>(*vertex);
+  }
+  /// @}
+};
+
 /// A weak pointer to store in BDD unique tables.
 /// This weak pointer is unique pointer as well
 /// because vertices should not be easily shared among multiple BDDs.
@@ -190,7 +213,7 @@ class Vertex : private boost::noncopyable {
 ///
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
-class Terminal : public Vertex<T> {
+class Terminal : public Vertex<T>, public IntrusivePtrCast<T, Terminal<T>> {
  public:
   /// @param[in] value  True or False (1 or 0) terminal.
   explicit Terminal(bool value) : Vertex<T>(value) {}
@@ -201,15 +224,6 @@ class Terminal : public Vertex<T> {
   ///       Non-terminal if-then-else vertices should never have
   ///       identifications of value 0 or 1.
   bool value() const { return Vertex<T>::id(); }
-
-  /// Recovers a shared pointer to Terminal from a pointer to Vertex.
-  ///
-  /// @param[in] vertex  Pointer to a Vertex known to be a Terminal.
-  ///
-  /// @return Casted pointer to Terminal.
-  static IntrusivePtr<Terminal<T>> Ptr(const IntrusivePtr<Vertex<T>>& vertex) {
-    return boost::static_pointer_cast<Terminal<T>>(vertex);
-  }
 };
 
 /// Representation of non-terminal vertices in BDD graphs.
@@ -218,7 +232,7 @@ class Terminal : public Vertex<T> {
 ///
 /// @tparam T  The type of the main functional BDD vertex.
 template <class T>
-class NonTerminal : public Vertex<T> {
+class NonTerminal : public Vertex<T>, public IntrusivePtrCast<T> {
   using VertexPtr = IntrusivePtr<Vertex<T>>;  ///< Convenient change point.
 
   /// Default logic for getting signature high and low ids.
@@ -351,15 +365,6 @@ class Ite : public NonTerminal<Ite> {
   ///
   /// @param[in] value  Calculation results for importance factor.
   void factor(double value) { factor_ = value; }
-
-  /// Recovers a shared pointer to Ite from a pointer to Vertex.
-  ///
-  /// @param[in] vertex  Pointer to a Vertex known to be an Ite.
-  ///
-  /// @return Casted pointer to Ite.
-  static IntrusivePtr<Ite> Ptr(const IntrusivePtr<Vertex<Ite>>& vertex) {
-    return boost::static_pointer_cast<Ite>(vertex);
-  }
 
  private:
   bool complement_edge_ = false;  ///< Flag for complement edge.

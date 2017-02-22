@@ -81,16 +81,6 @@ class SetNode : public NonTerminal<SetNode> {
   ///       this general-purpose field saves space and time.
   void count(std::int64_t number) { count_ = number; }
 
-  /// Recovers a shared pointer to SetNode from a pointer to Vertex.
-  ///
-  /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
-  ///
-  /// @return Casted pointer to SetNode.
-  static IntrusivePtr<SetNode> Ptr(
-      const IntrusivePtr<Vertex<SetNode>>& vertex) {
-    return boost::static_pointer_cast<SetNode>(vertex);
-  }
-
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
   int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
