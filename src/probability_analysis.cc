@@ -90,7 +90,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
   LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
   bdd_graph_ = fta->algorithm();
   const Bdd::VertexPtr& root = bdd_graph_->root().vertex;
-  current_mark_ = root->terminal() ? false : static_cast<Ite&>(*root).mark();
+  current_mark_ = root->terminal() ? false : Ite::Ref(root).mark();
 }
 
 ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
@@ -138,25 +138,25 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Pdag::IndexMap<double>& p_vars) noexcept {
   if (vertex->terminal())
     return 1;
-  Ite* ite = static_cast<Ite*>(vertex.get());
-  if (ite->mark() == mark)
-    return ite->p();
-  ite->mark(mark);
+  Ite& ite = Ite::Ref(vertex);
+  if (ite.mark() == mark)
+    return ite.p();
+  ite.mark(mark);
   double p_var = 0;
-  if (ite->module()) {
-    const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
+  if (ite.module()) {
+    const Bdd::Function& res = bdd_graph_->modules().find(ite.index())->second;
     p_var = CalculateProbability(res.vertex, mark, p_vars);
     if (res.complement)
       p_var = 1 - p_var;
   } else {
-    p_var = p_vars[ite->index()];
+    p_var = p_vars[ite.index()];
   }
-  double high = CalculateProbability(ite->high(), mark, p_vars);
-  double low = CalculateProbability(ite->low(), mark, p_vars);
-  if (ite->complement_edge())
+  double high = CalculateProbability(ite.high(), mark, p_vars);
+  double low = CalculateProbability(ite.low(), mark, p_vars);
+  if (ite.complement_edge())
     low = 1 - low;
-  ite->p(p_var * high + (1 - p_var) * low);
-  return ite->p();
+  ite.p(p_var * high + (1 - p_var) * low);
+  return ite.p();
 }
 
 }  // namespace core

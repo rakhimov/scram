@@ -96,11 +96,6 @@ void Bdd::Analyze() noexcept {
   }
 }
 
-const Zbdd& Bdd::products() const {
-  assert(zbdd_ && "Analysis is not done.");
-  return *zbdd_;
-}
-
 ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,
                             const VertexPtr& low, bool complement_edge,
                             int order) noexcept {
@@ -182,7 +177,7 @@ Bdd::Function Bdd::ConvertGraph(
       return true;
     if (rhs.vertex->terminal())
       return false;
-    return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
+    return Ite::Ref(lhs.vertex).order() > Ite::Ref(rhs.vertex).order();
   });
   auto it = args.cbegin();
   for (result = *it++; it != args.cend(); ++it) {
@@ -331,59 +326,59 @@ Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
   if (vertex->terminal())
     return 0;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark())
+  Ite& ite = Ite::Ref(vertex);
+  if (ite.mark())
     return 0;
-  ite->mark(true);
+  ite.mark(true);
   int in_module = 0;
-  if (ite->module()) {
-    const Function& module = modules_.find(ite->index())->second;
+  if (ite.module()) {
+    const Function& module = modules_.find(ite.index())->second;
     in_module = CountIteNodes(module.vertex);
   }
-  return 1 + in_module + CountIteNodes(ite->high()) + CountIteNodes(ite->low());
+  return 1 + in_module + CountIteNodes(ite.high()) + CountIteNodes(ite.low());
 }
 
 void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
   if (vertex->terminal())
     return;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark)
+  Ite& ite = Ite::Ref(vertex);
+  if (ite.mark() == mark)
     return;
-  ite->mark(mark);
-  if (ite->module()) {
-    const Function& res = modules_.find(ite->index())->second;
+  ite.mark(mark);
+  if (ite.module()) {
+    const Function& res = modules_.find(ite.index())->second;
     ClearMarks(res.vertex, mark);
   }
-  ClearMarks(ite->high(), mark);
-  ClearMarks(ite->low(), mark);
+  ClearMarks(ite.high(), mark);
+  ClearMarks(ite.low(), mark);
 }
 
 void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
   if (vertex->terminal())
     return;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark())
+  Ite& ite = Ite::Ref(vertex);
+  if (ite.mark())
     return;
-  ite->mark(true);
-  assert(ite->index() && "Illegal index for a node.");
-  assert(ite->order() && "Improper order for nodes.");
-  assert(ite->high() && ite->low() && "Malformed node high/low pointers.");
+  ite.mark(true);
+  assert(ite.index() && "Illegal index for a node.");
+  assert(ite.order() && "Improper order for nodes.");
+  assert(ite.high() && ite.low() && "Malformed node high/low pointers.");
   assert(
-      !(!ite->complement_edge() && ite->high()->id() == ite->low()->id()) &&
+      !(!ite.complement_edge() && ite.high()->id() == ite.low()->id()) &&
       "Reduction rule failure.");
-  assert(!(!ite->high()->terminal() &&
-           ite->order() >= Ite::Ptr(ite->high())->order()) &&
+  assert(!(!ite.high()->terminal() &&
+           ite.order() >= Ite::Ref(ite.high()).order()) &&
          "Ordering of nodes failed.");
-  assert(!(!ite->low()->terminal() &&
-           ite->order() >= Ite::Ptr(ite->low())->order()) &&
+  assert(!(!ite.low()->terminal() &&
+           ite.order() >= Ite::Ref(ite.low()).order()) &&
          "Ordering of nodes failed.");
-  if (ite->module()) {
-    const Function& res = modules_.find(ite->index())->second;
+  if (ite.module()) {
+    const Function& res = modules_.find(ite.index())->second;
     assert(!res.vertex->terminal() && "Terminal modules must be removed.");
     TestStructure(res.vertex);
   }
-  TestStructure(ite->high());
-  TestStructure(ite->low());
+  TestStructure(ite.high());
+  TestStructure(ite.low());
 }
 
 }  // namespace core

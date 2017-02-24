@@ -70,7 +70,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(int index) noexcept {
   const Bdd::VertexPtr& root = bdd_graph_->root().vertex;
   if (root->terminal())
     return 0;
-  bool original_mark = static_cast<Ite*>(root.get())->mark();
+  bool original_mark = Ite::Ref(root).mark();
 
   int order = bdd_graph_->index_to_order().find(index)->second;
   double mif = CalculateMif(root, order, !original_mark);
@@ -82,61 +82,61 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const Bdd::VertexPtr& vertex,
                                              int order, bool mark) noexcept {
   if (vertex->terminal())
     return 0;
-  Ite* ite = static_cast<Ite*>(vertex.get());
-  if (ite->mark() == mark)
-    return ite->factor();
-  ite->mark(mark);
-  if (ite->order() > order) {
-    if (!ite->module()) {
-      ite->factor(0);
+  Ite& ite = Ite::Ref(vertex);
+  if (ite.mark() == mark)
+    return ite.factor();
+  ite.mark(mark);
+  if (ite.order() > order) {
+    if (!ite.module()) {
+      ite.factor(0);
     } else {  /// @todo Detect if the variable is in the module.
       // The assumption is
       // that the order of a module is always larger
       // than the order of its variables.
-      double high = RetrieveProbability(ite->high());
-      double low = RetrieveProbability(ite->low());
-      if (ite->complement_edge())
+      double high = RetrieveProbability(ite.high());
+      double low = RetrieveProbability(ite.low());
+      if (ite.complement_edge())
         low = 1 - low;
       const Bdd::Function& res =
-          bdd_graph_->modules().find(ite->index())->second;
+          bdd_graph_->modules().find(ite.index())->second;
       double mif = CalculateMif(res.vertex, order, mark);
       if (res.complement)
         mif = -mif;
-      ite->factor((high - low) * mif);
+      ite.factor((high - low) * mif);
     }
-  } else if (ite->order() == order) {
-    assert(!ite->module() && "A variable can't be a module.");
-    double high = RetrieveProbability(ite->high());
-    double low = RetrieveProbability(ite->low());
-    if (ite->complement_edge())
+  } else if (ite.order() == order) {
+    assert(!ite.module() && "A variable can't be a module.");
+    double high = RetrieveProbability(ite.high());
+    double low = RetrieveProbability(ite.low());
+    if (ite.complement_edge())
       low = 1 - low;
-    ite->factor(high - low);
+    ite.factor(high - low);
   } else  {
-    assert(ite->order() < order);
+    assert(ite.order() < order);
     double p_var = 0;
-    if (ite->module()) {
+    if (ite.module()) {
       const Bdd::Function& res =
-          bdd_graph_->modules().find(ite->index())->second;
+          bdd_graph_->modules().find(ite.index())->second;
       p_var = RetrieveProbability(res.vertex);
       if (res.complement)
         p_var = 1 - p_var;
     } else {
-      p_var = prob_analyzer()->p_vars()[ite->index()];
+      p_var = prob_analyzer()->p_vars()[ite.index()];
     }
-    double high = CalculateMif(ite->high(), order, mark);
-    double low = CalculateMif(ite->low(), order, mark);
-    if (ite->complement_edge())
+    double high = CalculateMif(ite.high(), order, mark);
+    double low = CalculateMif(ite.low(), order, mark);
+    if (ite.complement_edge())
       low = -low;
-    ite->factor(p_var * high + (1 - p_var) * low);
+    ite.factor(p_var * high + (1 - p_var) * low);
   }
-  return ite->factor();
+  return ite.factor();
 }
 
 double ImportanceAnalyzer<Bdd>::RetrieveProbability(
     const Bdd::VertexPtr& vertex) noexcept {
   if (vertex->terminal())
     return 1;
-  return static_cast<Ite*>(vertex.get())->p();
+  return Ite::Ref(vertex).p();
 }
 
 }  // namespace core
