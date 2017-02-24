@@ -524,8 +524,11 @@ class Zbdd : private boost::noncopyable {
     prune_results_.clear();
   }
 
+  /// Freezes the graph.
   /// Releases all possible memory from memoization and unique tables.
-  void ReleaseTables() noexcept {
+  ///
+  /// @pre No more graph modifications after the freeze.
+  void Freeze() noexcept {
     unique_table_.Release();
     Zbdd::ClearTables();
     and_table_.reserve(0);

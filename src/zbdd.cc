@@ -95,7 +95,7 @@ void Zbdd::Analyze() noexcept {
     entry.second->Analyze();
 
   Prune(root_, kSettings_.limit_order());
-  ReleaseTables();  // Complete cleanup of the memory.
+  Freeze();  // Complete cleanup of the memory.
   LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(zbdd_time);
 }
 

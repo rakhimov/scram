@@ -422,6 +422,7 @@ class UniqueTable {
   void clear() {
     for (Bucket& chain : table_)
       chain.clear();
+    size_ = 0;
   }
 
   /// Releases all the memory associated with managing this table with BDD.
@@ -434,9 +435,7 @@ class UniqueTable {
   ///       considering the responsibilities of the BDD.
   ///       The release keeps the data about the table,
   ///       such as its size and capacity.
-  void Release() {
-    Table().swap(table_);
-  }
+  void Release() { table_ = Table(); }
 
   /// Finds an existing BDD vertex or
   /// inserts a default constructed weak pointer for a new vertex.
@@ -612,7 +611,7 @@ class CacheTable {
   ///       Using after release of memory is undefined.
   void reserve(int n) {
     if (size_ == 0 && n == 0) {
-      decltype(table_)().swap(table_);
+      table_ = decltype(table_)();
       return;
     }
     if (n <= size_)
@@ -951,6 +950,17 @@ class Bdd : private boost::noncopyable {
   void ClearTables() noexcept {
     and_table_.clear();
     or_table_.clear();
+  }
+
+  /// Freezes the graph.
+  /// Releases all possible memory from memoization and unique tables.
+  ///
+  /// @pre No more graph modifications after the freeze.
+  void Freeze() noexcept {
+    unique_table_.Release();
+    ClearTables();
+    and_table_.reserve(0);
+    or_table_.reserve(0);
   }
 
   const Settings kSettings_;  ///< Analysis settings.

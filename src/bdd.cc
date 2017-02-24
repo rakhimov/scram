@@ -74,12 +74,10 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
   LOG(DEBUG4) << "# of ITE in BDD: " << CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished PDAG conversion in " << DUR(init_time);
   ClearMarks(false);
-  // Clear tables if no more calculations are expected.
-  ClearTables();
-  if (coherent_) {
-    unique_table_.Release();
-    and_table_.reserve(0);
-    or_table_.reserve(0);
+  if (coherent_) {  // Clear tables if no more calculations are expected.
+    Freeze();
+  } else {  // To be used by ZBDD for prime implicant calculations.
+    ClearTables();
   }
 }
 
@@ -88,12 +86,8 @@ Bdd::~Bdd() noexcept = default;
 void Bdd::Analyze() noexcept {
   zbdd_ = std::make_unique<Zbdd>(this, kSettings_);
   zbdd_->Analyze();
-  if (!coherent_) {  // The BDD has been used by the ZBDD.
-    ClearTables();
-    unique_table_.Release();
-    and_table_.reserve(0);
-    or_table_.reserve(0);
-  }
+  if (!coherent_)  // The BDD has been used by the ZBDD.
+    Freeze();
 }
 
 ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,
