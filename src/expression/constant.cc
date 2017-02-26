@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 
 #include <boost/math/constants/constants.hpp>
 
-#include "src/error.h"
-
 namespace scram {
 namespace mef {
 
@@ -41,13 +39,6 @@ ConstantExpression::ConstantExpression(int value)
 
 ConstantExpression::ConstantExpression(bool value)
     : ConstantExpression(static_cast<double>(value)) {}
-
-MissionTime::MissionTime(double time, Units unit)
-    : ConstantExpression(time),
-      unit_(unit) {
-  if (time < 0)
-    throw LogicError("Mission time cannot be negative.");
-}
 
 }  // namespace mef
 }  // namespace scram

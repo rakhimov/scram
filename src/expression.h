@@ -133,27 +133,6 @@ class Expression : private boost::noncopyable {
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
 
-/// Provides units for parameters.
-enum Units : std::uint8_t {
-  kUnitless = 0,
-  kBool,
-  kInt,
-  kFloat,
-  kHours,
-  kInverseHours,
-  kYears,
-  kInverseYears,
-  kFit,
-  kDemands
-};
-
-const int kNumUnits = 10;  ///< The number of elements in the Units enum.
-
-/// String representations of the Units in the same order as the enum.
-const char* const kUnitsToString[] = {"unitless", "bool",    "int",   "float",
-                                      "hours",    "hours-1", "years", "years-1",
-                                      "fit",      "demands"};
-
 }  // namespace mef
 }  // namespace scram
 
