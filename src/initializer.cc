@@ -65,8 +65,7 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 
 Initializer::Initializer(const std::vector<std::string>& xml_files,
                          core::Settings settings)
-    : settings_(std::move(settings)),
-      mission_time_(std::make_shared<MissionTime>(settings_.mission_time())) {
+    : settings_(std::move(settings)) {
   try {
     ProcessInputFiles(xml_files);
   } catch (const CycleError&) {
@@ -163,6 +162,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!model_) {  // Create only one model for multiple files.
     const xmlpp::Element* root_element = XmlElement(root);
     model_ = std::make_shared<Model>(GetAttributeValue(root_element, "name"));
+    model_->mission_time()->value(settings_.mission_time());
     AttachLabelAndAttributes(root_element, model_.get());
   }
 
@@ -799,8 +799,8 @@ ExpressionPtr Initializer::GetParameterExpression(
     }
   } else {
     assert(expr_name == "system-mission-time");
-    param_unit = kUnitsToString[mission_time_->unit()];
-    expression = mission_time_;
+    param_unit = kUnitsToString[model_->mission_time()->unit()];
+    expression = model_->mission_time();
   }
   // Check units.
   std::string unit = GetAttributeValue(expr_element, "unit");

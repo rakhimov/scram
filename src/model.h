@@ -56,6 +56,9 @@ class Model : public Element, private boost::noncopyable {
   const IdTable<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
   }
+  const std::shared_ptr<MissionTime>& mission_time() const {
+    return mission_time_;
+  }
   const IdTable<HouseEventPtr>& house_events() const {
     return house_events_.entities_by_id;
   }
@@ -202,6 +205,7 @@ class Model : public Element, private boost::noncopyable {
   LookupTable<HouseEvent> house_events_;
   LookupTable<BasicEvent> basic_events_;
   LookupTable<Parameter> parameters_;
+  std::shared_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
   /// @}
   IdTable<Event*> events_;  ///< All events by ids.

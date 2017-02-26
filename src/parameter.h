@@ -58,7 +58,7 @@ class MissionTime : public Expression {
   /// @param[in] unit  The unit of the given ``time`` argument.
   ///
   /// @throws LogicError  The time value is negative.
-  explicit MissionTime(double time, Units unit = kHours);
+  explicit MissionTime(double time = 0, Units unit = kHours);
 
   /// @returns The unit of the system mission time.
   Units unit() const { return unit_; }

@@ -400,7 +400,6 @@ class Initializer : private boost::noncopyable {
 
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
-  std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
