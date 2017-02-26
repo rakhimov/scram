@@ -75,6 +75,9 @@
           <element name="mission-time"> <data type="double"/> </element>
         </optional>
         <optional>
+          <element name="time-step"> <data type="double"/> </element>
+        </optional>
+        <optional>
           <element name="cut-off"> <data type="double"/> </element>
         </optional>
         <optional>

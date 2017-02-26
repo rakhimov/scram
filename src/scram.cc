@@ -61,6 +61,8 @@ po::options_description ConstructOptions() {
       ("limit-order,l", po::value<int>(), "Upper limit for the product order")
       ("cut-off", po::value<double>(), "Cut-off probability for products")
       ("mission-time", po::value<double>(), "System mission time in hours")
+      ("time-step", po::value<double>(),
+       "Time step in hours for probability analysis")
       ("num-trials", po::value<int>(),
        "Number of trials for Monte Carlo simulations")
       ("num-quantiles", po::value<int>(),
@@ -184,6 +186,7 @@ void ConstructSettings(const po::variables_map& vm,
   SET("limit-order", int, limit_order);
   SET("cut-off", double, cut_off);
   SET("mission-time", double, mission_time);
+  SET("time-step", double, time_step);
   SET("num-trials", int, num_trials);
   SET("num-quantiles", int, num_quantiles);
   SET("num-bins", int, num_bins);

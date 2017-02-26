@@ -134,5 +134,13 @@ Settings& Settings::mission_time(double time) {
   return *this;
 }
 
+Settings& Settings::time_step(double time) {
+  if (time < 0)
+    throw InvalidArgument("The time step cannot be negative.");
+
+  time_step_ = time;
+  return *this;
+}
+
 }  // namespace core
 }  // namespace scram

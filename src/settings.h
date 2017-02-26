@@ -201,6 +201,20 @@ class Settings {
   /// @throws InvalidArgument  The time value is negative.
   Settings& mission_time(double time);
 
+  /// @returns The time step in hours for probability analyses.
+  ///          0 if the time step doesn't apply.
+  double time_step() const { return time_step_; }
+
+  /// Sets the time step for probability analyses.
+  /// 0 value signifies that the time step doesn't apply.
+  ///
+  /// @param[in] time  The time in hours to partition the mission time.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument The time value is negative.
+  Settings& time_step(double time);
+
   /// @returns true if probability analysis is requested.
   bool probability_analysis() const { return probability_analysis_; }
 
@@ -287,6 +301,7 @@ class Settings {
   int num_quantiles_ = 20;  ///< The number of quantiles for distributions.
   int num_bins_ = 20;  ///< The number of bins for histograms.
   double mission_time_ = 8760;  ///< System mission time.
+  double time_step_ = 0;  ///< The time step for probability analyses.
   double cut_off_ = 1e-8;  ///< The cut-off probability for products.
 };
 

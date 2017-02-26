@@ -133,6 +133,8 @@ void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
   }
   XmlStreamElement limits = methods.AddChild("limits");
   limits.AddChild("mission-time").AddText(settings.mission_time());
+  if (settings.time_step())
+    limits.AddChild("time-step").AddText(settings.time_step());
 }
 
 /// Describes the importance analysis and techniques.

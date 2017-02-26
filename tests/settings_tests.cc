@@ -49,6 +49,8 @@ TEST(SettingsTest, IncorrectSetup) {
   EXPECT_THROW(s.seed(-1), InvalidArgument);
   // Incorrect mission time.
   EXPECT_THROW(s.mission_time(-10), InvalidArgument);
+  // Incorrect time step.
+  EXPECT_THROW(s.time_step(-1), InvalidArgument);
 }
 
 TEST(SettingsTest, CorrectSetup) {
@@ -91,6 +93,11 @@ TEST(SettingsTest, CorrectSetup) {
   EXPECT_NO_THROW(s.mission_time(0));
   EXPECT_NO_THROW(s.mission_time(10));
   EXPECT_NO_THROW(s.mission_time(1e6));
+
+  // Correct time step.
+  EXPECT_NO_THROW(s.time_step(0));
+  EXPECT_NO_THROW(s.time_step(10));
+  EXPECT_NO_THROW(s.time_step(1e6));
 }
 
 TEST(SettingsTest, SetupForPrimeImplicants) {

@@ -159,6 +159,9 @@ void Config::SetLimits(const xmlpp::Element* limits) {
     } else if (name == "mission-time") {
       settings_.mission_time(CastChildText<double>(limit));
 
+    } else if (name == "time-step") {
+      settings_.time_step(CastChildText<double>(limit));
+
     } else if (name == "number-of-trials") {
       settings_.num_trials(CastChildText<int>(limit));
 

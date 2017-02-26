@@ -11,6 +11,7 @@
     <limits>
       <product-order>11</product-order>
       <mission-time>48</mission-time>
+      <time-step>0</time-step>
       <cut-off>0.009</cut-off>
       <number-of-trials>777</number-of-trials>
       <number-of-quantiles>13</number-of-quantiles>
