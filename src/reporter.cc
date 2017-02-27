@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 #include <boost/date_time.hpp>
@@ -49,6 +50,10 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
       prob_analysis = risk_an.probability_analyses().at(id).get();
     }
     ReportResults(id, *fta.second, prob_analysis, &results);
+
+    if (prob_analysis) {
+      ReportResults(id, *prob_analysis, &results);
+    }
 
     if (risk_an.settings().importance_analysis()) {
       ReportResults(id, *risk_an.importance_analyses().at(id), &results);
@@ -314,6 +319,24 @@ void Reporter::ReportResults(const std::string& ft_name,
     }
   }
   LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
+}
+
+void Reporter::ReportResults(const std::string& ft_name,
+                             const core::ProbabilityAnalysis& prob_analysis,
+                             XmlStreamElement* results) {
+  if (!prob_analysis.p_time().empty()) {
+    XmlStreamElement curve = results->AddChild("curve");
+    curve.SetAttribute("name", ft_name)
+        .SetAttribute("description", "Probability values over time")
+        .SetAttribute("X-title", "Mission time")
+        .SetAttribute("Y-title", "Probability")
+        .SetAttribute("X-unit", "hours");
+    for (const std::pair<double, double>& p_vs_time : prob_analysis.p_time()) {
+      curve.AddChild("point")
+          .SetAttribute("X", p_vs_time.second)
+          .SetAttribute("Y", p_vs_time.first);
+    }
+  }
 }
 
 void Reporter::ReportResults(

@@ -333,6 +333,31 @@ TEST_P(RiskAnalysisTest, AnalyzeMC) {
   ASSERT_NO_THROW(analysis->Analyze());
 }
 
+TEST_P(RiskAnalysisTest, AnalyzeProbabilityOverTime) {
+  std::string tree_input = "./share/scram/input/core/single_exponential.xml";
+  settings.probability_analysis(true).time_step(24).mission_time(120);
+  std::vector<double> curve = {0,        2.399e-4, 4.7989e-4,
+                               7.197e-4, 9.595e-4, 1.199e-3};
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  ASSERT_FALSE(analysis->probability_analyses().empty());
+  auto it = curve.begin();
+  double time = 0;
+  for (const std::pair<double, double>& p_vs_time :
+       analysis->probability_analyses().begin()->second->p_time()) {
+    ASSERT_NE(curve.end(), it);
+    if (time >= settings.mission_time()) {
+      EXPECT_EQ(settings.mission_time(), p_vs_time.second);
+    } else {
+      EXPECT_EQ(time, p_vs_time.second);
+    }
+    EXPECT_NEAR(*it, p_vs_time.first, *it * 0.001);
+    time += settings.time_step();
+    ++it;
+  }
+  ASSERT_TRUE(time);
+}
+
 // Test Reporting capabilities
 // Tests the output against the schema. However the contents of the
 // output are not verified or validated.

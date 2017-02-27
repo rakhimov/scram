@@ -127,6 +127,15 @@ class Reporter {
                      const core::ProbabilityAnalysis* prob_analysis,
                      XmlStreamElement* results);
 
+  /// Reports results of probability analysis.
+  ///
+  /// @param[in] ft_name  The original name of a fault tree.
+  /// @param[in] prob_analysis  Probability Analysis with results.
+  /// @param[in,out] results  XML element to for all results.
+  void ReportResults(const std::string& ft_name,
+                     const core::ProbabilityAnalysis& prob_analysis,
+                     XmlStreamElement* results);
+
   /// Reports results of importance analysis.
   ///
   /// @param[in] ft_name  The original name of a fault tree.

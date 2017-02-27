@@ -23,15 +23,18 @@
 
 #include "event.h"
 #include "logger.h"
+#include "parameter.h"
 #include "settings.h"
 #include "zbdd.h"
 
 namespace scram {
 namespace core {
 
-ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
+ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta,
+                                         mef::MissionTime* mission_time)
     : Analysis(fta->settings()),
-      p_total_(0) {}
+      p_total_(0),
+      mission_time_(mission_time) {}
 
 void ProbabilityAnalysis::Analyze() noexcept {
   CLOCK(p_time);
@@ -43,6 +46,7 @@ void ProbabilityAnalysis::Analyze() noexcept {
     Analysis::AddWarning("Probability value exceeded 1 and was adjusted to 1.");
     p_total_ = 1;
   }
+  p_time_ = this->CalculateProbabilityOverTime();
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   Analysis::AddAnalysisTime(DUR(p_time));
 }
@@ -84,8 +88,34 @@ void ProbabilityAnalyzerBase::ExtractVariableProbabilities() {
     p_vars_.push_back(event->p());
 }
 
-ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
-    : ProbabilityAnalyzerBase(fta),
+std::vector<std::pair<double, double>>
+ProbabilityAnalyzerBase::CalculateProbabilityOverTime() noexcept {
+  std::vector<std::pair<double, double>> p_time;
+  double time_step = Analysis::settings().time_step();
+  if (!time_step)
+    return p_time;
+
+  assert(Analysis::settings().mission_time() ==
+         ProbabilityAnalysis::mission_time().Mean());
+  double total_time = ProbabilityAnalysis::mission_time().Mean();
+
+  auto update = [this, &p_time] (double time) {
+    mission_time().value(time);
+    auto it_p = p_vars_.begin();
+    for (const mef::BasicEvent* event : graph_->basic_events())
+      *it_p++ = event->p();
+    p_time.emplace_back(this->CalculateTotalProbability(p_vars_), time);
+  };
+
+  for (double time = 0; time < total_time; time += time_step)
+    update(time);
+  update(total_time);  // Handle cases when total_time is not divisible by step.
+  return p_time;
+}
+
+ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta,
+                                              mef::MissionTime* mission_time)
+    : ProbabilityAnalyzerBase(fta, mission_time),
       owner_(false) {
   LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
   bdd_graph_ = fta->algorithm();
