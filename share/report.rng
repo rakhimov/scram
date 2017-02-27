@@ -87,9 +87,10 @@
                   </element>
                 </optional>
                 <optional>
-                  <element name="mission-time">
-                    <data type="nonNegativeInteger"/>
-                  </element>
+                  <element name="mission-time"> <data type="double"/> </element>
+                </optional>
+                <optional>
+                  <element name="time-step"> <data type="double"/> </element>
                 </optional>
                 <optional>
                   <element name="cut-off"> <ref name="probability-data"/> </element>
@@ -402,10 +403,12 @@
       </optional>
       <optional>
         <attribute name="X-unit"> <ref name="unit"/> </attribute>
+      </optional>
+      <optional>
         <attribute name="Y-unit"> <ref name="unit"/> </attribute>
-        <optional>
-          <attribute name="Z-unit"> <ref name="unit"/> </attribute>
-        </optional>
+      </optional>
+      <optional>
+        <attribute name="Z-unit"> <ref name="unit"/> </attribute>
       </optional>
       <zeroOrMore>
         <element name="point">
@@ -423,6 +426,10 @@
     <choice>
       <value>seconds</value>
       <value>hours</value>
+      <value>seconds-1</value>
+      <value>hours-1</value>
+      <value>years</value>
+      <value>years-1</value>
     </choice>
   </define>
 

@@ -383,6 +383,12 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
   CheckReport(tree_input);
 }
 
+TEST_F(RiskAnalysisTest, ReportProbabilityCurve) {
+  std::string tree_input = "./share/scram/input/core/single_exponential.xml";
+  settings.probability_analysis(true).time_step(24).mission_time(720);
+  CheckReport(tree_input);
+}
+
 // Reporting of importance analysis.
 TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   std::string tree_input =
