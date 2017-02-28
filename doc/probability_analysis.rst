@@ -116,3 +116,15 @@ can be found in :ref:`theory`.
 
 Alongside the importance factors,
 the analysis provides the probabilities of events and their number of occurrences in products.
+
+
+***********************
+Safety Integrity Levels
+***********************
+
+[IEC_61508]_ standard metrics and Safety Integrity Levels [SIL]_
+are approximated with quantitative analysis on fault trees [DR05]_.
+Time fractions spent in every SIL bucket
+for PFD and PFH is reported with a histogram,
+as suggested by [DRS08]_.
+Note that these computations require probability analysis over a period of time.
