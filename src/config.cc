@@ -81,6 +81,7 @@ void Config::GatherOptions(const xmlpp::Node* root) {
   assert(!all_options.empty());
   int line_number = 0;  // For error reporting.
   try {
+    const xmlpp::Element* analysis_group = nullptr;  // Needs to be set last.
     // The loop is used instead of query
     // because the order of options matters,
     // yet this function should not know what the order is.
@@ -92,7 +93,7 @@ void Config::GatherOptions(const xmlpp::Node* root) {
         SetAlgorithm(option_group);
 
       } else if (name == "analysis") {
-        SetAnalysis(option_group);
+        analysis_group = option_group;
 
       } else if (name == "prime-implicants") {
         settings_.prime_implicants(true);
@@ -104,6 +105,8 @@ void Config::GatherOptions(const xmlpp::Node* root) {
         SetLimits(option_group);
       }
     }
+    if (analysis_group)
+      SetAnalysis(analysis_group);
   } catch (InvalidArgument& err) {
     err.msg("Line " + std::to_string(line_number) + ":\n" + err.msg());
     throw;
@@ -138,6 +141,9 @@ void Config::SetAnalysis(const xmlpp::Element* analysis) {
 
     } else if (name == "ccf") {
       settings_.ccf_analysis(flag);
+
+    } else if (name == "sil") {
+      settings_.safety_integrity_levels(flag);
     }
   }
 }

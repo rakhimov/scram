@@ -46,6 +46,9 @@
             <optional>
               <attribute name="ccf"> <data type="boolean"/> </attribute>
             </optional>
+            <optional>
+              <attribute name="sil"> <data type="boolean"/> </attribute>
+            </optional>
           </interleave>
         </element>
       </optional>

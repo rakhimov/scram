@@ -51,6 +51,12 @@ TEST(SettingsTest, IncorrectSetup) {
   EXPECT_THROW(s.mission_time(-10), InvalidArgument);
   // Incorrect time step.
   EXPECT_THROW(s.time_step(-1), InvalidArgument);
+  // The time step is not set for the SIL calculations.
+  EXPECT_THROW(s.safety_integrity_levels(true), InvalidArgument);
+  // Disable time step while the SIL is requested.
+  EXPECT_NO_THROW(s.time_step(1));
+  EXPECT_NO_THROW(s.safety_integrity_levels(true));
+  EXPECT_THROW(s.time_step(0), InvalidArgument);
 }
 
 TEST(SettingsTest, CorrectSetup) {
@@ -98,6 +104,10 @@ TEST(SettingsTest, CorrectSetup) {
   EXPECT_NO_THROW(s.time_step(0));
   EXPECT_NO_THROW(s.time_step(10));
   EXPECT_NO_THROW(s.time_step(1e6));
+
+  // Correct request for the SIL.
+  EXPECT_NO_THROW(s.safety_integrity_levels(true));
+  EXPECT_NO_THROW(s.safety_integrity_levels(false));
 }
 
 TEST(SettingsTest, SetupForPrimeImplicants) {

@@ -6,12 +6,12 @@
   <output-path>temp_results.xml</output-path>
   <options>
     <algorithm name="bdd"/>
-    <analysis probability="true" importance="true" uncertainty="true" ccf="true"/>
+    <analysis probability="true" importance="true" uncertainty="true" ccf="true" sil="true"/>
     <approximation name="rare-event"/>
     <limits>
       <product-order>11</product-order>
       <mission-time>48</mission-time>
-      <time-step>0</time-step>
+      <time-step>1</time-step>
       <cut-off>0.009</cut-off>
       <number-of-trials>777</number-of-trials>
       <number-of-quantiles>13</number-of-quantiles>

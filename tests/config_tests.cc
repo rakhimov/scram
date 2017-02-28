@@ -39,7 +39,7 @@ TEST(ConfigTest, ValidationError) {
 }
 
 // Test with XML content numerical issues.
-TEST(ConfigTest, NumericalErros) {
+TEST(ConfigTest, NumericalErrors) {
   std::string config_file = "./share/scram/input/fta/int_overflow_config.xml";
   ASSERT_THROW(Config config(config_file), ValidationError);
 }
@@ -59,13 +59,15 @@ TEST(ConfigTest, FullSettings) {
   const core::Settings& settings = config->settings();
   EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
   EXPECT_FALSE(settings.prime_implicants());
-  EXPECT_EQ(true, settings.probability_analysis());
-  EXPECT_EQ(true, settings.importance_analysis());
-  EXPECT_EQ(true, settings.uncertainty_analysis());
-  EXPECT_EQ(true, settings.ccf_analysis());
+  EXPECT_TRUE(settings.probability_analysis());
+  EXPECT_TRUE(settings.importance_analysis());
+  EXPECT_TRUE(settings.uncertainty_analysis());
+  EXPECT_TRUE(settings.ccf_analysis());
+  EXPECT_TRUE(settings.safety_integrity_levels());
   EXPECT_EQ(core::Approximation::kRareEvent, settings.approximation());
   EXPECT_EQ(11, settings.limit_order());
   EXPECT_EQ(48, settings.mission_time());
+  EXPECT_EQ(1, settings.time_step());
   EXPECT_EQ(0.009, settings.cut_off());
   EXPECT_EQ(777, settings.num_trials());
   EXPECT_EQ(13, settings.num_quantiles());

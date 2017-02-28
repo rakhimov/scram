@@ -53,6 +53,9 @@ Perform uncertainty analysis
 \fB\-\-ccf\fR arg
 Perform common\-cause failure analysis
 .TP
+\fB\-\-sil\fR arg
+Compute the Safety Integrity Level metrics (requires time-step)
+.TP
 \fB\-\-rare\-event\fR
 Use the rare event approximation for probability
 calculations
@@ -71,7 +74,8 @@ Cut\-off probability for products
 Set the system mission time in hours for probability calculations
 .TP
 \fB\-\-time\-step\fR arg
-Set the time step in hours for probability calculations
+Set the time step in hours for probability calculations.
+0 value (default) disables the probability analysis over a time period.
 .TP
 \fB\-\-num\-trials\fR arg
 Set the number of trials for Monte Carlo simulations

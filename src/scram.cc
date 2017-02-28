@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ po::options_description ConstructOptions() {
       ("importance", po::value<bool>(), "Perform importance analysis")
       ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
       ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
+      ("sil", po::value<bool>(), "Compute the Safety Integrity Level metrics")
       ("rare-event", "Use the rare event approximation")
       ("mcub", "Use the MCUB approximation")
       ("limit-order,l", po::value<int>(), "Upper limit for the product order")
@@ -177,6 +178,8 @@ void ConstructSettings(const po::variables_map& vm,
   } else if (vm.count("mcub")) {
     settings->approximation("mcub");
   }
+  SET("time-step", double, time_step);
+  SET("sil", bool, safety_integrity_levels);
 
   SET("probability", bool, probability_analysis);
   SET("importance", bool, importance_analysis);
@@ -186,7 +189,6 @@ void ConstructSettings(const po::variables_map& vm,
   SET("limit-order", int, limit_order);
   SET("cut-off", double, cut_off);
   SET("mission-time", double, mission_time);
-  SET("time-step", double, time_step);
   SET("num-trials", int, num_trials);
   SET("num-quantiles", int, num_quantiles);
   SET("num-bins", int, num_bins);

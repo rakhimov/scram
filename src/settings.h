@@ -212,7 +212,9 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The time value is negative.
+  /// @throws InvalidArgument  The time value is negative.
+  /// @throws InvalidArgument  The time step is being disabled (value 0)
+  ///                          while the SIL metrics are requested.
   Settings& time_step(double time);
 
   /// @returns true if probability analysis is requested.
@@ -227,10 +229,25 @@ class Settings {
   ///
   /// @returns Reference to this object.
   Settings& probability_analysis(bool flag) {
-    if (!importance_analysis_ && !uncertainty_analysis_)
+    if (!importance_analysis_ && !uncertainty_analysis_ &&
+        !safety_integrity_levels_) {
       probability_analysis_ = flag;
+    }
     return *this;
   }
+
+  /// @returns true if the SIL metrics are requested.
+  bool safety_integrity_levels() const { return safety_integrity_levels_; }
+
+  /// Sets the flag for calculation of the SIL metrics.
+  /// This requires that time-step is set.
+  ///
+  /// @param[in] flag  True or false for turning on or off the analysis.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument  The flag is True, but no time-step is set.
+  Settings& safety_integrity_levels(bool flag);
 
   /// @returns true if importance analysis is requested.
   bool importance_analysis() const { return importance_analysis_; }
@@ -287,6 +304,7 @@ class Settings {
 
  private:
   bool probability_analysis_ = false;  ///< A flag for probability analysis.
+  bool safety_integrity_levels_ = false;  ///< Calculation of the SIL metrics.
   bool importance_analysis_ = false;  ///< A flag for importance analysis.
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
