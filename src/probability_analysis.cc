@@ -41,11 +41,12 @@ void ProbabilityAnalysis::Analyze() noexcept {
   LOG(DEBUG3) << "Calculating probabilities...";
   // Get the total probability.
   p_total_ = this->CalculateTotalProbability();
-  assert(p_total_ >= 0 && "The total probability is negative.");
-  if (p_total_ > 1) {
-    Analysis::AddWarning("Probability value exceeded 1 and was adjusted to 1.");
-    p_total_ = 1;
+  assert(p_total_ >= 0 && p_total_ <= 1&& "The total probability is invalid.");
+  if (p_total_ == 1 &&
+      Analysis::settings().approximation() != Approximation::kNone) {
+    Analysis::AddWarning("Probability may have been adjusted to 1.");
   }
+
   p_time_ = this->CalculateProbabilityOverTime();
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   Analysis::AddAnalysisTime(DUR(p_time));
