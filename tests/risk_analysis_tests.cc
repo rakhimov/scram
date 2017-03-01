@@ -358,6 +358,28 @@ TEST_P(RiskAnalysisTest, AnalyzeProbabilityOverTime) {
   ASSERT_TRUE(time);
 }
 
+TEST_P(RiskAnalysisTest, AnalyzeSil) {
+  std::string tree_input = "./share/scram/input/core/single_exponential.xml";
+  settings.time_step(24).safety_integrity_levels(true);
+  double sil_fractions[] = {1.142e-4, 1.0275e-3, 1.02796e-2,
+                            0.1033,   0.88527,   0};
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  ASSERT_FALSE(analysis->probability_analyses().empty());
+  EXPECT_NEAR(0.04255,
+              analysis->probability_analyses().begin()->second->pfd_avg(),
+              0.00001);
+  auto it = std::begin(sil_fractions);
+  for (const std::pair<const double, double>& sil_bucket :
+       analysis->probability_analyses().begin()->second->sil_fractions()) {
+    ASSERT_NE(std::end(sil_fractions), it);
+    EXPECT_NEAR(*it, sil_bucket.second, *it * 0.001) << "The bucket for "
+                                                     << sil_bucket.first;
+    ++it;
+  }
+  ASSERT_EQ(std::end(sil_fractions), it);
+}
+
 // Test Reporting capabilities
 // Tests the output against the schema. However the contents of the
 // output are not verified or validated.
@@ -386,6 +408,12 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
 TEST_F(RiskAnalysisTest, ReportProbabilityCurve) {
   std::string tree_input = "./share/scram/input/core/single_exponential.xml";
   settings.probability_analysis(true).time_step(24).mission_time(720);
+  CheckReport(tree_input);
+}
+
+TEST_F(RiskAnalysisTest, ReportSil) {
+  std::string tree_input = "./share/scram/input/core/single_exponential.xml";
+  settings.time_step(24).safety_integrity_levels(true).mission_time(720);
   CheckReport(tree_input);
 }
 

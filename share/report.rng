@@ -189,6 +189,7 @@
         <choice>
           <ref name="sum-of-products"/>
           <ref name="importance"/>
+          <ref name="safety-integrity-levels"/>
           <ref name="statistical-measure"/>
           <ref name="curve"/>
         </choice>
@@ -501,6 +502,21 @@
     <optional>
       <attribute name="RAW"> <data type="double"/> </attribute>
     </optional>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.5. Safety Integrity Levels -->
+  <!-- ============================================================= -->
+
+  <define name="safety-integrity-levels">
+    <element name="safety-integrity-levels">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <attribute name="PFD-avg"> <ref name="probability-data"/> </attribute>
+      <ref name="histogram"/>
+    </element>
   </define>
 
 </grammar>

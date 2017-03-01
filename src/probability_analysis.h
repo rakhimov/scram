@@ -66,10 +66,30 @@ class ProbabilityAnalysis : public Analysis {
   double p_total() const { return p_total_; }
 
   /// @returns The probability values over the mission time in time steps.
+  ///          The empty container implies no calculation has been done.
   ///
   /// @pre The analysis is done.
   const std::vector<std::pair<double, double>>& p_time() const {
     return p_time_;
+  }
+
+  /// @returns The SIL PFD averaged over time.
+  ///
+  /// @pre The analysis is done with a request for the SIL.
+  double pfd_avg() const {
+    assert(Analysis::settings().safety_integrity_levels());
+    return pfd_avg_;
+  }
+
+  /// @returns The SIL PFD fractions histogram in reverse order, i.e., 4 to 1.
+  ///          The starting boundary is implicitly 0.
+  ///          The last boundary is explicit 1.
+  ///          The range is half open: (lower-bound, upper-bound].
+  ///
+  /// @pre The analysis is done with a request for the SIL.
+  const std::array<std::pair<const double, double>, 6>& sil_fractions() const {
+    assert(Analysis::settings().safety_integrity_levels());
+    return sil_fractions_;
   }
 
  protected:
@@ -88,9 +108,15 @@ class ProbabilityAnalysis : public Analysis {
   virtual std::vector<std::pair<double, double>>
   CalculateProbabilityOverTime() noexcept = 0;
 
+  /// Computes probability metrics related to the SIL.
+  void ComputeSil() noexcept;
+
   double p_total_;  ///< Total probability of the top event.
+  double pfd_avg_;  ///< The SIL PFD average over the mission time.
   mef::MissionTime* mission_time_;  ///< The mission time expression.
   std::vector<std::pair<double, double>> p_time_;  ///< {probability, time}.
+  /// The Safety Integrity Level fractions for PFD.
+  std::array<std::pair<const double, double>, 6> sil_fractions_;
 };
 
 /// Quantitative calculator of a probability value of a single cut set.

@@ -21,6 +21,8 @@
 
 #include "probability_analysis.h"
 
+#include <boost/range/algorithm/find_if.hpp>
+
 #include "event.h"
 #include "logger.h"
 #include "parameter.h"
@@ -34,7 +36,10 @@ ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta,
                                          mef::MissionTime* mission_time)
     : Analysis(fta->settings()),
       p_total_(0),
-      mission_time_(mission_time) {}
+      pfd_avg_(0),
+      mission_time_(mission_time),
+      sil_fractions_{
+          {{1e-5, 0}, {1e-4, 0}, {1e-3, 0}, {1e-2, 0}, {1e-1, 0}, {1, 0}}} {}
 
 void ProbabilityAnalysis::Analyze() noexcept {
   CLOCK(p_time);
@@ -48,8 +53,69 @@ void ProbabilityAnalysis::Analyze() noexcept {
   }
 
   p_time_ = this->CalculateProbabilityOverTime();
+  if (Analysis::settings().safety_integrity_levels())
+    ComputeSil();
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   Analysis::AddAnalysisTime(DUR(p_time));
+}
+
+void ProbabilityAnalysis::ComputeSil() noexcept {
+  assert(!p_time_.empty() && "The probability over time must be available.");
+  if (p_time_.size() == 1) {
+    pfd_avg_ = p_time_.front().first;
+    auto it = boost::find_if(
+        sil_fractions_,
+        [this](const std::pair<const double, double>& level) {
+          return pfd_avg_ <= level.first;
+        });
+    assert(it != sil_fractions_.end());
+    it->second = 1;
+  } else {
+    double trapezoid_area = 0;  ///< @todo Use Boost math integration instead.
+    for (int i = 1; i < p_time_.size(); ++i) {  // This should get vectorized.
+      trapezoid_area += (p_time_[i].first + p_time_[i - 1].first) *
+                        (p_time_[i].second - p_time_[i - 1].second);
+    }
+    trapezoid_area /= 2;  // The division is hoisted out of the loop.
+    pfd_avg_ =
+        trapezoid_area / (p_time_.back().second - p_time_.front().second);
+
+    for (int i = 1; i < p_time_.size(); ++i) {
+      double p_0 = p_time_[i - 1].first;
+      double p_1 = p_time_[i].first;
+      double t_0 = p_time_[i - 1].second;
+      double t_1 = p_time_[i].second;
+      assert(t_1 > t_0);
+      double k = (p_1 - p_0) / (t_1 - t_0);
+      if (k < 0) {
+        k = -k;
+        std::swap(p_1, p_0);
+      }
+      auto fraction = [&k, &p_1, &p_0, &t_1, &t_0](double b_0, double b_1) {
+        if (p_0 <= b_0 && b_1 <= p_1)  // Sub-range.
+          return (b_1 - b_0) / k;
+        if (b_0 <= p_0 && p_1 <= b_1)  // Super-range.
+          return t_1 - t_0;            // Covers the case when k == 0.
+        // The cases of partially overlapping intervals.
+        if (p_0 <= b_0 && b_0 <= p_1)  // b_1 is outside (>) of the range.
+          return (p_1 - b_0) / k;
+        if (p_0 <= b_1 && b_1 <= p_1)  // b_0 is outside (<) of the range.
+          return (b_1 - p_0) / k;
+        return 0.0;  // Ranges do not overlap.
+      };
+      double b_0 = 0;  // The lower bound of the SIL bucket.
+      for (std::pair<const double, double>& sil_bucket : sil_fractions_) {
+        double b_1 = sil_bucket.first;
+        sil_bucket.second += fraction(b_0, b_1);
+        b_0 = b_1;
+      }
+    }
+    // Normalize the fractions.
+    double total_time = p_time_.back().second - p_time_.front().second;
+    assert(total_time > 0);
+    for (std::pair<const double, double>& sil_bucket : sil_fractions_)
+      sil_bucket.second /= total_time;
+  }
 }
 
 double CutSetProbabilityCalculator::Calculate(
