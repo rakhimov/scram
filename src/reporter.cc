@@ -344,13 +344,13 @@ void Reporter::ReportResults(const std::string& ft_name,
   if (prob_analysis.settings().safety_integrity_levels()) {
     XmlStreamElement sil = results->AddChild("safety-integrity-levels");
     sil.SetAttribute("name", ft_name)
-        .SetAttribute("PFD-avg", prob_analysis.pfd_avg());
+        .SetAttribute("PFD-avg", prob_analysis.sil().pfd_avg);
     XmlStreamElement hist = sil.AddChild("histogram");
-    hist.SetAttribute("number", prob_analysis.sil_fractions().size());
+    hist.SetAttribute("number", prob_analysis.sil().pfd_fractions.size());
     double b_0 = 0;
     int bin_number = 1;
     for (const std::pair<const double, double>& sil_bucket :
-         prob_analysis.sil_fractions()) {
+         prob_analysis.sil().pfd_fractions) {
       double b_1 = sil_bucket.first;
       hist.AddChild("bin")
           .SetAttribute("number", bin_number++)

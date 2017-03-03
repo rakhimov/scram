@@ -37,6 +37,22 @@ class MissionTime;
 
 namespace core {
 
+/// Safety Integrity Level metrics.
+///
+/// @note Averages and histograms are with respect to time.
+struct Sil {
+  double pfd_avg = 0;  ///< The average probability of failure on demand (PFD).
+
+  /// The SIL PFD and PFD fractions histogram in reverse order, i.e., 4 to 1.
+  /// The starting boundary is implicitly 0.
+  /// The last boundary is explicit 1.
+  /// The range is half open: (lower-bound, upper-bound].
+  /// @{
+  std::array<std::pair<const double, double>, 6> pfd_fractions{
+      {{1e-5, 0}, {1e-4, 0}, {1e-3, 0}, {1e-2, 0}, {1e-1, 0}, {1, 0}}};
+  /// @}
+};
+
 /// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
@@ -73,23 +89,12 @@ class ProbabilityAnalysis : public Analysis {
     return p_time_;
   }
 
-  /// @returns The SIL PFD averaged over time.
+  /// @returns The Safety Integrity Level calculation results.
   ///
   /// @pre The analysis is done with a request for the SIL.
-  double pfd_avg() const {
-    assert(Analysis::settings().safety_integrity_levels());
-    return pfd_avg_;
-  }
-
-  /// @returns The SIL PFD fractions histogram in reverse order, i.e., 4 to 1.
-  ///          The starting boundary is implicitly 0.
-  ///          The last boundary is explicit 1.
-  ///          The range is half open: (lower-bound, upper-bound].
-  ///
-  /// @pre The analysis is done with a request for the SIL.
-  const std::array<std::pair<const double, double>, 6>& sil_fractions() const {
-    assert(Analysis::settings().safety_integrity_levels());
-    return sil_fractions_;
+  const Sil& sil() const {
+    assert(sil_ && "The SIL is not done!");
+    return *sil_;
   }
 
  protected:
@@ -112,11 +117,9 @@ class ProbabilityAnalysis : public Analysis {
   void ComputeSil() noexcept;
 
   double p_total_;  ///< Total probability of the top event.
-  double pfd_avg_;  ///< The SIL PFD average over the mission time.
   mef::MissionTime* mission_time_;  ///< The mission time expression.
   std::vector<std::pair<double, double>> p_time_;  ///< {probability, time}.
-  /// The Safety Integrity Level fractions for PFD.
-  std::array<std::pair<const double, double>, 6> sil_fractions_;
+  std::unique_ptr<Sil> sil_;  ///< The Safety Integrity Level results.
 };
 
 /// Quantitative calculator of a probability value of a single cut set.

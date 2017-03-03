@@ -366,12 +366,11 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   ASSERT_FALSE(analysis->probability_analyses().empty());
-  EXPECT_NEAR(0.04255,
-              analysis->probability_analyses().begin()->second->pfd_avg(),
-              0.00001);
+  const auto& prob_an = *analysis->probability_analyses().begin()->second;
+  EXPECT_NEAR(0.04255, prob_an.sil().pfd_avg, 0.00001);
   auto it = std::begin(sil_fractions);
   for (const std::pair<const double, double>& sil_bucket :
-       analysis->probability_analyses().begin()->second->sil_fractions()) {
+       prob_an.sil().pfd_fractions) {
     ASSERT_NE(std::end(sil_fractions), it);
     EXPECT_NEAR(*it, sil_bucket.second, *it * 0.001) << "The bucket for "
                                                      << sil_bucket.first;
