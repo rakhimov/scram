@@ -278,7 +278,7 @@ TEST(ExpressionTest, PeriodicTest11) {
   OpenExpressionPtr theta(new OpenExpression(4740, 4740));
   OpenExpressionPtr gamma(new OpenExpression(0.01, 0.01));
   OpenExpressionPtr test_duration(new OpenExpression(20, 20));
-  OpenExpressionPtr available_at_test(new OpenExpression(1, 1));
+  OpenExpressionPtr available_at_test(new OpenExpression(true, true));
   OpenExpressionPtr sigma(new OpenExpression(0.9, 0.9));
   OpenExpressionPtr omega(new OpenExpression(0.01, 0.01));
   OpenExpressionPtr time(new OpenExpression(8760, 8760));
@@ -294,8 +294,13 @@ TEST(ExpressionTest, PeriodicTest11) {
   TestProbability(dev, sigma);
   TestProbability(dev, omega);
 
-  /* tau->mean = 120; */
   EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
+  available_at_test->mean = false;
+  EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
+  time->mean = 8710;
+  EXPECT_EQ(1, dev->Mean());
+  time->mean = 8760;
+  available_at_test->mean = true;
 
   lambda_test->mean = mu->mean = lambda->mean;
   EXPECT_NEAR(0.543401, dev->Mean(), 1e-5);
@@ -304,10 +309,6 @@ TEST(ExpressionTest, PeriodicTest11) {
 
   test_duration->mean = 120;
   EXPECT_NEAR(0.6469, dev->Mean(), 1e-5);
-
-  tau->mean = 4020;
-  test_duration->mean = 4020;
-  EXPECT_NEAR(0.996785, dev->Mean(), 1e-5);
 
   tau->mean = 4020;
   test_duration->mean = 0;
