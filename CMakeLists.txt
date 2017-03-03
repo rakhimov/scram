@@ -86,10 +86,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("17.0.1")
   # TODO: CMAKE_CXX_STANDARD has no effect on icc.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  # TODO: Failure to deduce lambda return type with Boost on Ubuntu 14.04.
+  # TODO: Failure to deduce lambda return type with Boost 1.56.
   add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE=1")
-  # TODO: Bug in Intel compiler with multi-initialization with auto.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373")
+  # TODO: Bug in Intel compiler with multi-initialization with auto and final-is-not-override.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373,1125")
 endif()
 
 if(WIN32)
