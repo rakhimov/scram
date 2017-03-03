@@ -154,18 +154,11 @@ void WeibullExpression::Validate() const {
   THROW_NON_POSITIVE_EXPR(beta_, "shape parameter for Weibull distribution");
   THROW_NEGATIVE_EXPR(t0_, "time shift");
   THROW_NEGATIVE_EXPR(time_, "mission time");
-
-  if (time_.Mean() < t0_.Mean()) {
-    throw InvalidArgument("The mission time must be longer than time shift.");
-  } else if (time_.Min() < t0_.Max()) {
-    throw InvalidArgument("The sampled mission time must be"
-                          " longer than time shift.");
-  }
 }
 
 double WeibullExpression::Compute(double alpha, double beta,
                                   double t0, double time) noexcept {
-  return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+  return time <= t0 ? 0 : 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
 
 double WeibullExpression::Mean() noexcept {

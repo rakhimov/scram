@@ -70,6 +70,7 @@ class MissionTime : public Expression {
   /// @throws LogicError  The time value is negative.
   void value(double time);
 
+  double Min() noexcept override { return 0; }
   double Mean() noexcept override { return value_; }
   bool IsDeviate() noexcept override { return false; }
 

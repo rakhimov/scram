@@ -198,19 +198,14 @@ TEST(ExpressionTest, Weibull) {
   TestNonPositive(dev, alpha);
   TestNonPositive(dev, beta);
   TestNegative(dev, t0);
-  t0->mean = t0->sample = 0;
   TestNegative(dev, time);
-  t0->mean = t0->sample = 10;
 
   t0->mean = 1000;  // More than the mission time.
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_NO_THROW(dev->Validate());
   t0->mean = 10;
   ASSERT_NO_THROW(dev->Validate());
-
   t0->sample = 1000;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
-  t0->sample = 10;
-  ASSERT_NO_THROW(dev->Validate());
+  EXPECT_NO_THROW(dev->Validate());
 
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsDeviate());
