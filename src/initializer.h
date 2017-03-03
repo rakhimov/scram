@@ -421,7 +421,7 @@ class Initializer : private boost::noncopyable {
   } tbd_;  ///< Elements are assumed to be unique.
 
   /// Container for defined expressions for later validation.
-  std::vector<Expression*> expressions_;
+  std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
 };
 
 }  // namespace mef

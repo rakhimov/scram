@@ -754,7 +754,8 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   try {
     ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
         expr_element->find("./*"), base_path, this);
-    expressions_.push_back(expression.get());  // For late validation.
+    // Register for late validation after ensuring no cycles.
+    expressions_.emplace_back(expression.get(), expr_element);
     return expression;
   } catch (InvalidArgument& err) {
     std::stringstream msg;
@@ -984,11 +985,18 @@ void Initializer::ValidateExpressions() {
     param->mark(NodeMark::kClear);
 
   // Validate expressions.
+  const xmlpp::Element* expr_element = nullptr;  // To report the position.
   try {
-    for (Expression* expression : expressions_)
-      expression->Validate();
+    for (const std::pair<Expression*, const xmlpp::Element*>& expression :
+         expressions_) {
+      expr_element = expression.second;
+      expression.first->Validate();
+    }
   } catch (InvalidArgument& err) {
-    throw ValidationError(err.msg());
+    const xmlpp::Node* root = expr_element->find("/opsa-mef")[0];
+    throw ValidationError("In file '" + doc_to_file_.at(root) + "', Line " +
+                          std::to_string(expr_element->get_line()) + ":\n" +
+                          err.msg());
   }
 
   // Check distribution values for CCF groups.
