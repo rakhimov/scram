@@ -301,13 +301,15 @@ double PeriodicTest::Complete::Compute(double lambda, double lambda_test,
   };
 
   auto p_test = [&](double p_lambda_test, double p_mu, double p_lambda,
-                    double t) {
+                    double t, bool available = true) {
     double p_fail_transient =
         p_fail + p_available * (gamma + (1 - gamma) * p_lambda_test);
     p_fail = p_repair * p_mu_lambda(p_mu, p_lambda, t) +
              (1 - sigma) * p_fail_transient;
     p_repair = (1 - p_mu) * p_repair + sigma * p_fail_transient;
-    p_available = 1 - p_fail - p_repair;
+    p_available =
+        1 - p_fail - p_repair -
+        (available ? 0 : p_available * (1 - gamma) * (1 - p_lambda_test));
     assert(p_repair >= 0 && p_repair <= 1);
     assert(p_fail >= 0 && p_fail <= 1);
     assert(p_available >= 0);
@@ -326,10 +328,6 @@ double PeriodicTest::Complete::Compute(double lambda, double lambda_test,
   double delta = time - theta;
   int num_periods = delta / tau;
   double delta_period = tau - test_duration;
-  double time_after_test = delta - num_periods * tau;
-
-  if (!available_at_test && time_after_test <= test_duration)
-    return 1;
 
   double p_lambda_test = p_exp(lambda_test, test_duration);
   double p_lambda_at_test = p_exp(lambda, test_duration);
@@ -343,9 +341,11 @@ double PeriodicTest::Complete::Compute(double lambda, double lambda_test,
     p_period(p_lambda, p_mu, delta_period);
   }
 
+  double time_after_test = delta - num_periods * tau;
   if (time_after_test <= test_duration) {
     p_test(p_exp(lambda_test, time_after_test), p_exp(mu, time_after_test),
-           p_exp(lambda, time_after_test), time_after_test);
+           p_exp(lambda, time_after_test), time_after_test, available_at_test);
+
   } else {
     p_test(p_lambda_test, p_mu_at_test, p_lambda_at_test, test_duration);
     double leftover_time = time_after_test - test_duration;

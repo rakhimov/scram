@@ -292,8 +292,12 @@ TEST(ExpressionTest, PeriodicTest11) {
   EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
   available_at_test->mean = false;
   EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
-  time->mean = 8710;
+  time->mean = 4750;
   EXPECT_EQ(1, dev->Mean());
+  time->mean = 4870;
+  EXPECT_NEAR(0.996715, dev->Mean(), 1e-5);
+  time->mean = 8710;
+  EXPECT_NEAR(0.997478, dev->Mean(), 1e-5);
   time->mean = 8760;
   available_at_test->mean = true;
 
