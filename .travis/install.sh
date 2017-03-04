@@ -30,7 +30,7 @@ PROJECT_DIR=$PWD
 cd /tmp
 
 # Boost
-wget https://sourceforge.net/projects/iscram/files/deps/boost-scram.tar.gz
+wget http://s3.amazonaws.com/scram-travis/boost-scram.tar.gz
 tar -xf ./boost-scram.tar.gz
 sudo mv ./boost-scram/lib/* /usr/lib/
 sudo mv ./boost-scram/include/* /usr/include/
@@ -47,7 +47,7 @@ cd $PROJECT_DIR
 
 # Install newer doxygen due to bugs in 1.8.6 with C++11 code.
 DOXYGEN='doxygen-1.8.12.linux.bin.tar.gz'
-wget https://sourceforge.net/projects/iscram/files/deps/${DOXYGEN}
+wget http://s3.amazonaws.com/scram-travis/${DOXYGEN}
 tar -xf ${DOXYGEN}
 sudo cp doxygen-1.8.12/bin/* /usr/bin/
 
