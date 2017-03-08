@@ -13,13 +13,11 @@ configure_file(
 
 set(LIB_LINK_FLAGS "")
 if(WITH_COVERAGE)
-  add_definitions("--coverage")
-  set(LIB_LINK_FLAGS "--coverage")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LIB_LINK_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 endif()
 
 if(WITH_PROFILE)
-  add_definitions("-pg")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
 set(SCRAM_CORE_SRC
@@ -64,7 +62,6 @@ if(INSTALL_LIBS)
     PROPERTIES
     INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    LINK_FLAGS "${LIB_LINK_FLAGS}"
     )
   if(WIN32)
     install(
