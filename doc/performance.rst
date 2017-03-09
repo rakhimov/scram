@@ -190,7 +190,7 @@ Release build:
 
 - # of ZBDD vertices created: 42580
 - # of Nodes in ZBDD: 10621
-- Product indices to pointers time: 0.20
+- Product indices to pointers time: 0.085
 
 - Memory:    210 | 260
 
@@ -210,7 +210,7 @@ Release build:
 
 - # of ZBDD vertices created: 213970
 - # of Nodes in ZBDD: 20426
-- Product indices to pointers time: 0.95  |  1.2
+- Product indices to pointers time: 0.40
 
 - Memory:   350
 
