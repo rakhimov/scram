@@ -132,7 +132,7 @@ class ProductContainer {
         graph_(graph) {
     for (const std::vector<int>& result_set : products_) {
       for (int i : result_set)
-        product_events_.insert(graph_.basic_events()[i]);
+        product_events_.insert(graph_.basic_events()[std::abs(i)]);
     }
   }
 
