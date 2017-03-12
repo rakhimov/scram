@@ -10,17 +10,14 @@ else()
   set(Tcmalloc_NAMES tcmalloc_minimal tcmalloc)
 endif()
 
-find_library(Tcmalloc_LIBRARY NO_DEFAULT_PATH
-  NAMES ${Tcmalloc_NAMES}
-  PATHS ${HT_DEPENDENCY_LIB_DIR} /lib /usr/lib /usr/local/lib /opt/local/lib
-)
+find_library(Tcmalloc_LIBRARY NAMES ${Tcmalloc_NAMES})
 
 if(Tcmalloc_LIBRARY)
   set(Tcmalloc_FOUND TRUE)
-  set(Tcmalloc_LIBRARIES ${Tcmalloc_LIBRARY} )
+  set(Tcmalloc_LIBRARIES ${Tcmalloc_LIBRARY})
 else()
   set(Tcmalloc_FOUND FALSE)
-  set(Tcmalloc_LIBRARIES )
+  set(Tcmalloc_LIBRARIES)
 endif()
 
 if(Tcmalloc_FOUND)
