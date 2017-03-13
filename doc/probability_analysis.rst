@@ -128,3 +128,12 @@ Time fractions spent in every SIL bucket
 for PFD and PFH is reported with a histogram,
 as suggested by [DRS08]_.
 Note that these computations require probability analysis over a period of time.
+
+.. warning::
+    The current implementation for the PFH calculation is simplistic,
+    resulting in potentially less accurate values
+    than the more rigorous approaches suggested in the above papers.
+    The PFH results may become more inaccurate
+    with testable, repairable, and/or non-continuously-operated components.
+    At best, the approximate value is expected to be of the same magnitude as the real value,
+    which puts the approximation into the same Safety Integrity Level.

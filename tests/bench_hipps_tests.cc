@@ -24,6 +24,7 @@ namespace core {
 namespace test {
 
 // Benchmark Tests for HIPPS fault tree from XFTA.
+// @todo Test Safety Integrity Level analysis.
 TEST_P(RiskAnalysisTest, HIPPS) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/HIPPS/HIPPS.xml");
