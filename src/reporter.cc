@@ -341,24 +341,29 @@ void Reporter::ReportResults(const std::string& ft_name,
           .SetAttribute("Y", p_vs_time.first);
     }
   }
+
   if (prob_analysis.settings().safety_integrity_levels()) {
     XmlStreamElement sil = results->AddChild("safety-integrity-levels");
     sil.SetAttribute("name", ft_name)
-        .SetAttribute("PFD-avg", prob_analysis.sil().pfd_avg);
-    XmlStreamElement hist = sil.AddChild("histogram");
-    hist.SetAttribute("number", prob_analysis.sil().pfd_fractions.size());
-    double b_0 = 0;
-    int bin_number = 1;
-    for (const std::pair<const double, double>& sil_bucket :
-         prob_analysis.sil().pfd_fractions) {
-      double b_1 = sil_bucket.first;
-      hist.AddChild("bin")
-          .SetAttribute("number", bin_number++)
-          .SetAttribute("value", sil_bucket.second)
-          .SetAttribute("lower-bound", b_0)
-          .SetAttribute("upper-bound", b_1);
-      b_0 = b_1;
-    }
+        .SetAttribute("PFD-avg", prob_analysis.sil().pfd_avg)
+        .SetAttribute("PFH-avg", prob_analysis.sil().pfh_avg);
+    auto report_sil_fractions = [&sil](const auto& sil_fractions) {
+      XmlStreamElement hist = sil.AddChild("histogram");
+      hist.SetAttribute("number", sil_fractions.size());
+      double b_0 = 0;
+      int bin_number = 1;
+      for (const std::pair<const double, double>& sil_bucket : sil_fractions) {
+        double b_1 = sil_bucket.first;
+        hist.AddChild("bin")
+            .SetAttribute("number", bin_number++)
+            .SetAttribute("value", sil_bucket.second)
+            .SetAttribute("lower-bound", b_0)
+            .SetAttribute("upper-bound", b_1);
+        b_0 = b_1;
+      }
+    };
+    report_sil_fractions(prob_analysis.sil().pfd_fractions);
+    report_sil_fractions(prob_analysis.sil().pfh_fractions);
   }
 }
 

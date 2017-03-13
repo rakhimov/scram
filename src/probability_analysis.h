@@ -42,6 +42,7 @@ namespace core {
 /// @note Averages and histograms are with respect to time.
 struct Sil {
   double pfd_avg = 0;  ///< The average probability of failure on demand (PFD).
+  double pfh_avg = 0;  ///< The average probability of failure hourly (PFH).
 
   /// The SIL PFD and PFD fractions histogram in reverse order, i.e., 4 to 1.
   /// The starting boundary is implicitly 0.
@@ -50,6 +51,8 @@ struct Sil {
   /// @{
   std::array<std::pair<const double, double>, 6> pfd_fractions{
       {{1e-5, 0}, {1e-4, 0}, {1e-3, 0}, {1e-2, 0}, {1e-1, 0}, {1, 0}}};
+  std::array<std::pair<const double, double>, 6> pfh_fractions{
+      {{1e-9, 0}, {1e-8, 0}, {1e-7, 0}, {1e-6, 0}, {1e-5, 0}, {1, 0}}};
   /// @}
 };
 

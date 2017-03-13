@@ -457,7 +457,9 @@
         <attribute name="description"> <text/> </attribute>
       </optional>
       <attribute name="PFD-avg"> <ref name="probability-data"/> </attribute>
-      <ref name="histogram"/>
+      <attribute name="PFH-avg"> <ref name="probability-data"/> </attribute>
+      <ref name="histogram"/>  <!-- Implicit PFD histogram -->
+      <ref name="histogram"/>  <!-- Implicit PFH histogram -->
     </element>
   </define>
 
