@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ const char* core();
 const char* boost();
 
 /// @returns The version of XML libraries.
-const char* xml2();
+const char* xml();
 
 }  // namespace version
 }  // namespace scram

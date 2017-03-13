@@ -39,7 +39,6 @@ Monte Carlo (MC) Simulations
 #. Sample probability distributions and calculate the total probability.
 #. Statistical analysis of the resulting distributions.
 #. Sensitivity analysis. *Not Supported Yet*
-#. Bayesian statistics. *Not Supported Yet*
 #. Report the results of analysis:
    mean, sigma, quantiles, probability density histogram.
 

@@ -121,11 +121,11 @@ class Settings {
 
   /// Sets the limit order for products.
   ///
-  /// @param[in] order  A natural number for the limit order.
+  /// @param[in] order  A non-negative number for the limit order.
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 0 or too large.
+  /// @throws InvalidArgument  The number is less than 0.
   Settings& limit_order(int order);
 
   /// @returns The minimum required probability for products.
@@ -201,6 +201,22 @@ class Settings {
   /// @throws InvalidArgument  The time value is negative.
   Settings& mission_time(double time);
 
+  /// @returns The time step in hours for probability analyses.
+  ///          0 if the time step doesn't apply.
+  double time_step() const { return time_step_; }
+
+  /// Sets the time step for probability analyses.
+  /// 0 value signifies that the time step doesn't apply.
+  ///
+  /// @param[in] time  The time in hours to partition the mission time.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument  The time value is negative.
+  /// @throws InvalidArgument  The time step is being disabled (value 0)
+  ///                          while the SIL metrics are requested.
+  Settings& time_step(double time);
+
   /// @returns true if probability analysis is requested.
   bool probability_analysis() const { return probability_analysis_; }
 
@@ -213,10 +229,25 @@ class Settings {
   ///
   /// @returns Reference to this object.
   Settings& probability_analysis(bool flag) {
-    if (!importance_analysis_ && !uncertainty_analysis_)
+    if (!importance_analysis_ && !uncertainty_analysis_ &&
+        !safety_integrity_levels_) {
       probability_analysis_ = flag;
+    }
     return *this;
   }
+
+  /// @returns true if the SIL metrics are requested.
+  bool safety_integrity_levels() const { return safety_integrity_levels_; }
+
+  /// Sets the flag for calculation of the SIL metrics.
+  /// This requires that time-step is set.
+  ///
+  /// @param[in] flag  True or false for turning on or off the analysis.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument  The flag is True, but no time-step is set.
+  Settings& safety_integrity_levels(bool flag);
 
   /// @returns true if importance analysis is requested.
   bool importance_analysis() const { return importance_analysis_; }
@@ -273,6 +304,7 @@ class Settings {
 
  private:
   bool probability_analysis_ = false;  ///< A flag for probability analysis.
+  bool safety_integrity_levels_ = false;  ///< Calculation of the SIL metrics.
   bool importance_analysis_ = false;  ///< A flag for importance analysis.
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
@@ -287,6 +319,7 @@ class Settings {
   int num_quantiles_ = 20;  ///< The number of quantiles for distributions.
   int num_bins_ = 20;  ///< The number of bins for histograms.
   double mission_time_ = 8760;  ///< System mission time.
+  double time_step_ = 0;  ///< The time step for probability analyses.
   double cut_off_ = 1e-8;  ///< The cut-off probability for products.
 };
 

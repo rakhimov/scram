@@ -31,6 +31,7 @@
 #define SCRAM_SRC_PDAG_H_
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <algorithm>
 #include <iosfwd>

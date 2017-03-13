@@ -89,7 +89,8 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 template <class Algorithm, class Calculator>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                FaultTreeAnalyzer<Algorithm>* fta) noexcept {
-  auto pa = std::make_unique<ProbabilityAnalyzer<Calculator>>(fta);
+  auto pa = std::make_unique<ProbabilityAnalyzer<Calculator>>(
+      fta, model_->mission_time().get());
   pa->Analyze();
   if (Analysis::settings().importance_analysis()) {
     auto ia = std::make_unique<ImportanceAnalyzer<Calculator>>(pa.get());

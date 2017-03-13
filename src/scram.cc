@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,8 +45,6 @@ po::options_description ConstructOptions() {
   desc.add_options()
       ("help", "Display this help message")
       ("version", "Display version information")
-      ("input-files", po::value<std::vector<std::string>>(),
-       "XML input files with analysis constructs")
       ("config-file", po::value<std::string>(),
        "XML file with analysis configurations")
       ("validate", "Validate input files without analysis")
@@ -58,11 +56,14 @@ po::options_description ConstructOptions() {
       ("importance", po::value<bool>(), "Perform importance analysis")
       ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
       ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
+      ("sil", po::value<bool>(), "Compute the Safety Integrity Level metrics")
       ("rare-event", "Use the rare event approximation")
       ("mcub", "Use the MCUB approximation")
       ("limit-order,l", po::value<int>(), "Upper limit for the product order")
       ("cut-off", po::value<double>(), "Cut-off probability for products")
       ("mission-time", po::value<double>(), "System mission time in hours")
+      ("time-step", po::value<double>(),
+       "Time step in hours for probability analysis")
       ("num-trials", po::value<int>(),
        "Number of trials for Monte Carlo simulations")
       ("num-quantiles", po::value<int>(),
@@ -73,10 +74,12 @@ po::options_description ConstructOptions() {
       ("output-path,o", po::value<std::string>(), "Output path for reports")
       ("verbosity", po::value<int>(), "Set log verbosity");
 #ifndef NDEBUG
-  desc.add_options()
+  po::options_description debug("Debug Options");
+  debug.add_options()
       ("preprocessor", "Stop analysis after the preprocessing step")
       ("print", "Print analysis results in a terminal friendly way")
       ("no-report", "Don't generate analysis report");
+  desc.add(debug);
 #endif
   return desc;
 }
@@ -91,7 +94,7 @@ po::options_description ConstructOptions() {
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
 int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
-  std::string usage = "Usage:    scram [input-files] [options]";
+  const char* usage = "Usage:    scram [options] input-files...";
   po::options_description desc = ConstructOptions();
   try {
     po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -100,11 +103,14 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << desc << std::endl;
     return 1;
   }
-  po::notify(*vm);
+  po::options_description options("All options with positional input files.");
+  options.add(desc).add_options()("input-files",
+                                  po::value<std::vector<std::string>>(),
+                                  "XML input files with analysis constructs");
   po::positional_options_description p;
-  p.add("input-files", -1);
+  p.add("input-files", -1);  // All input files are implicit.
   po::store(
-      po::command_line_parser(argc, argv).options(desc).positional(p).run(),
+      po::command_line_parser(argc, argv).options(options).positional(p).run(),
       *vm);
   po::notify(*vm);
 
@@ -117,8 +123,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     std::cout << "SCRAM " << scram::version::core()
               << " (" << scram::version::describe() << ")"
               << "\n\nDependencies:\n"
-              << "   Boost    " << scram::version::boost() << "\n"
-              << "   xml2     " << scram::version::xml2() << std::endl;
+              << "   Boost       " << scram::version::boost() << "\n"
+              << "   LibXML++    " << scram::version::xml() << std::endl;
     return -1;
   }
   if (!vm->count("input-files") && !vm->count("config-file")) {
@@ -172,6 +178,8 @@ void ConstructSettings(const po::variables_map& vm,
   } else if (vm.count("mcub")) {
     settings->approximation("mcub");
   }
+  SET("time-step", double, time_step);
+  SET("sil", bool, safety_integrity_levels);
 
   SET("probability", bool, probability_analysis);
   SET("importance", bool, importance_analysis);

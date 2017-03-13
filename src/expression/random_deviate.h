@@ -22,6 +22,7 @@
 #ifndef SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 #define SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
 
+#include <memory>
 #include <vector>
 
 #include <boost/range/iterator_range.hpp>
@@ -53,8 +54,8 @@ class UniformDeviate : public RandomDeviate {
   void Validate() const override;
 
   double Mean() noexcept override { return (min_.Mean() + max_.Mean()) / 2; }
-  double Max() noexcept override { return max_.Max(); }
-  double Min() noexcept override { return min_.Min(); }
+  double Max() noexcept override { return max_.Mean(); }
+  double Min() noexcept override { return min_.Mean(); }
 
  private:
   double DoSample() noexcept override;
@@ -78,14 +79,10 @@ class NormalDeviate : public RandomDeviate {
   double Mean() noexcept override { return mean_.Mean(); }
 
   /// @returns ~99.9% percentile value.
-  ///
-  /// @warning This is only an approximation of the maximum value.
-  double Max() noexcept override { return mean_.Max() + 6 * sigma_.Max(); }
+  double Max() noexcept override { return mean_.Mean() + 6 * sigma_.Mean(); }
 
   /// @returns Less than 0.1% percentile value.
-  ///
-  /// @warning This is only an approximation.
-  double Min() noexcept override { return mean_.Min() - 6 * sigma_.Max(); }
+  double Min() noexcept override { return mean_.Mean() - 6 * sigma_.Mean(); }
 
  private:
   double DoSample() noexcept override;
@@ -94,11 +91,11 @@ class NormalDeviate : public RandomDeviate {
   Expression& sigma_;  ///< Standard deviation of normal distribution.
 };
 
-/// Log-normal distribution defined by
-/// its expected value and error factor of certain confidence level.
+/// Log-normal distribution.
 class LogNormalDeviate : public RandomDeviate {
  public:
-  /// Setup for log-normal distribution.
+  /// The log-normal deviate parametrization with
+  /// its expected value and error factor of certain confidence level.
   ///
   /// @param[in] mean  The mean of the log-normal distribution
   ///                  not the mean of underlying normal distribution,
@@ -112,38 +109,73 @@ class LogNormalDeviate : public RandomDeviate {
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level);
 
-  /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
-  void Validate() const override;
+  /// The parametrization with underlying normal distribution parameters.
+  ///
+  /// @param[in] mu  The mean of the normal distribution.
+  /// @param[in] sigma  The standard deviation of the normal distribution.
+  LogNormalDeviate(const ExpressionPtr& mu, const ExpressionPtr& sigma);
 
-  double Mean() noexcept override { return mean_.Mean(); }
+  void Validate() const override { flavor_->Validate(); };
+  double Mean() noexcept override { return flavor_->mean(); }
 
   /// 99.9 percentile estimate.
   double Max() noexcept override;
-
   double Min() noexcept override { return 0; }
 
  private:
   double DoSample() noexcept override;
 
-  /// Computes the scale parameter of the distribution.
-  ///
-  /// @param[in] level  The confidence level.
-  /// @param[in] ef  The error factor of the log-normal distribution.
-  ///
-  /// @returns Scale parameter (sigma) value.
-  double ComputeScale(double level, double ef) noexcept;
+  /// Support for parametrization differences.
+  struct Flavor {
+    virtual ~Flavor() = default;
+    /// @returns Scale parameter (sigma) value.
+    virtual double scale() noexcept = 0;
+    /// @returns Value of location parameter (mu) value.
+    virtual double location() noexcept = 0;
+    /// @returns The mean value of the distribution.
+    virtual double mean() noexcept = 0;
+    /// @copydoc Expression::Validate
+    virtual void Validate() const = 0;
+  };
 
-  /// Computes the location parameter of the distribution.
-  ///
-  /// @param[in] mean  The mean of the log-normal distribution.
-  /// @param[in] sigma  The scale parameter of the distribution.
-  ///
-  /// @returns Value of location parameter (mu) value.
-  double ComputeLocation(double mean, double sigma) noexcept;
+  /// Computation with the log-normal mean and error factor.
+  class Logarithmic final : public Flavor {
+   public:
+    /// @copydoc LogNormalDeviate::LogNormalDeviate
+    Logarithmic(const ExpressionPtr& mean, const ExpressionPtr& ef,
+                const ExpressionPtr& level)
+        : mean_(*mean), ef_(*ef), level_(*level) {}
+    double scale() noexcept override;
+    double location() noexcept override;
+    double mean() noexcept override { return mean_.Mean(); }
+    /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level.
+    void Validate() const override;
 
-  Expression& mean_;  ///< Mean value of the log-normal distribution.
-  Expression& ef_;  ///< Error factor of the log-normal distribution.
-  Expression& level_;  ///< Confidence level of the log-normal distribution.
+   private:
+    Expression& mean_;  ///< Mean value of the log-normal distribution.
+    Expression& ef_;  ///< Error factor of the log-normal distribution.
+    Expression& level_;  ///< Confidence level of the log-normal distribution.
+  };
+
+  /// Computation with normal mean and standard distribution.
+  class Normal final : public Flavor {
+   public:
+    /// @param[in] mu  The mean of the normal distribution.
+    /// @param[in] sigma  The standard deviation of the normal distribution.
+    Normal(const ExpressionPtr& mu, const ExpressionPtr& sigma)
+        : mu_(*mu), sigma_(*sigma) {}
+    double scale() noexcept override { return sigma_.Mean(); }
+    double location() noexcept override { return mu_.Mean(); }
+    double mean() noexcept override;
+    /// @throws InvalidArgument  (sigma <= 0).
+    void Validate() const override;
+
+   private:
+    Expression& mu_;  ///< The mean value of the normal distribution.
+    Expression& sigma_;  ///< The standard deviation of the normal distribution.
+  };
+
+  std::unique_ptr<Flavor> flavor_;  ///< The parametrization flavor.
 };
 
 /// Gamma distribution.
@@ -219,10 +251,7 @@ class Histogram : public RandomDeviate {
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
-  void Validate() const override {
-    CheckBoundaries();
-    CheckWeights();
-  }
+  void Validate() const override;
 
   double Mean() noexcept override;
   double Max() noexcept override {
@@ -236,16 +265,6 @@ class Histogram : public RandomDeviate {
       boost::iterator_range<std::vector<ExpressionPtr>::const_iterator>;
 
   double DoSample() noexcept override;
-
-  /// Checks if values of boundary expressions are strictly increasing.
-  ///
-  /// @throws InvalidArgument  The mean values are not strictly increasing.
-  void CheckBoundaries() const;
-
-  /// Checks if values of weights are non-negative.
-  ///
-  /// @throws InvalidArgument  The mean values are negative.
-  void CheckWeights() const;
 
   IteratorRange boundaries_;  ///< Boundaries of the intervals.
   IteratorRange weights_;  ///< Weights of the intervals.

@@ -28,9 +28,7 @@ Installation with homebrew_:
 
 .. code-block:: bash
 
-    brew tap rakhimov/scram
-
-    brew install scram
+    brew install homebrew/science/scram
 
 .. _homebrew: http://brew.sh/
 
@@ -40,7 +38,7 @@ Windows
 
 Download and run the installer_.
 
-.. _installer: https://sourceforge.net/projects/iscram/files/SCRAM-0.11.6-win64.exe/download
+.. _installer: https://sourceforge.net/projects/iscram/files/latest/download
 
 
 Other Platforms

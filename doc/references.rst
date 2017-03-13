@@ -23,6 +23,15 @@ Papers
           "Efficient algorithms to assess component and gate importance in fault tree analysis,"
           IEEE Trans. Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.
 
+.. [DR05] Y. Dutuit and A. Rauzy,
+          "Approximate estimation of system reliability via fault trees",
+          IEEE Trans. Reliab. Eng. Syst. Saf., vol. 87, no. 2, pp. 163–172, 2005.
+
+.. [DRS08] Y. Dutuit, A. Rauzy, and J.-P. Signoret,
+           "A snapshot of methods and tools to assess safety integrity levels of high integrity protection systems",
+           Proceedings of the Institution of Mechanical Engineers,
+           Part O, Journal of risk and reliability, vol. 222, no. 3, pp. 371-379, 2008.
+
 .. [Jun09] W. Jung,
            "ZBDD algorithm features for an efficient probabilistic safety assessment,"
            Nuc. Eng. Des., vol. 239, pp. 2085-2092, 2009.
@@ -95,6 +104,9 @@ Web Resources
 .. [SA] `Sensitivity Analysis Wiki Page <https://en.wikipedia.org/wiki/Sensitivity_analysis>`_
 .. [UA] `Uncertainty Quantification Wiki Page <https://en.wikipedia.org/wiki/Uncertainty_quantification>`_
 .. [CCF] `Common Cause Wiki Page <https://en.wikipedia.org/wiki/Common_cause_and_special_cause_(statistics)>`_
+
+.. [IEC_61508] `IEC 65108 Wiki Page <https://en.wikipedia.org/wiki/IEC_61508>`_
+.. [SIL] `Safety Integrity Level Wiki Page <https://en.wikipedia.org/wiki/Safety_integrity_level>`_
 
 .. [PDAG] `Propositional DAG Wiki Page <https://en.wikipedia.org/wiki/Propositional_directed_acyclic_graph>`_
 .. [BDD] `BDD Wiki Page <https://en.wikipedia.org/wiki/Binary_decision_diagram>`_

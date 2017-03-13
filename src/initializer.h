@@ -69,9 +69,8 @@ class Initializer : private boost::noncopyable {
 
  private:
   /// Convenience alias for expression extractor function types.
-  using ExtractorFunction = std::function<ExpressionPtr(const xmlpp::NodeSet&,
-                                                        const std::string&,
-                                                        Initializer*)>;
+  using ExtractorFunction = ExpressionPtr (*)(const xmlpp::NodeSet&,
+                                              const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
 
@@ -85,6 +84,19 @@ class Initializer : private boost::noncopyable {
   /// and constructs the requested expression T.
   template <class T, int N>
   struct Extractor;
+
+  /// Calls Extractor with an appropriate N to construct the expression.
+  ///
+  /// @tparam T  Type of an expression.
+  ///
+  /// @param[in] args  A vector of XML elements containing the arguments.
+  /// @param[in] base_path  Series of ancestor containers in the path with dots.
+  /// @param[in,out] init  The host Initializer.
+  ///
+  /// @returns A shared pointer to the extracted expression.
+  template <class T>
+  static ExpressionPtr Extract(const xmlpp::NodeSet& args,
+                               const std::string& base_path, Initializer* init);
 
   /// Checks if all input files exist on the system.
   ///
@@ -388,7 +400,6 @@ class Initializer : private boost::noncopyable {
 
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
-  std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
@@ -410,7 +421,7 @@ class Initializer : private boost::noncopyable {
   } tbd_;  ///< Elements are assumed to be unique.
 
   /// Container for defined expressions for later validation.
-  std::vector<Expression*> expressions_;
+  std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
 };
 
 }  // namespace mef

@@ -21,6 +21,7 @@
 #include "initializer.h"
 
 #include <sstream>
+#include <type_traits>
 
 #include <boost/filesystem.hpp>
 #include <boost/range/algorithm.hpp>
@@ -64,8 +65,7 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 
 Initializer::Initializer(const std::vector<std::string>& xml_files,
                          core::Settings settings)
-    : settings_(std::move(settings)),
-      mission_time_(std::make_shared<MissionTime>(settings_.mission_time())) {
+    : settings_(std::move(settings)) {
   try {
     ProcessInputFiles(xml_files);
   } catch (const CycleError&) {
@@ -162,6 +162,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!model_) {  // Create only one model for multiple files.
     const xmlpp::Element* root_element = XmlElement(root);
     model_ = std::make_shared<Model>(GetAttributeValue(root_element, "name"));
+    model_->mission_time()->value(settings_.mission_time());
     AttachLabelAndAttributes(root_element, model_.get());
   }
 
@@ -626,51 +627,117 @@ struct Initializer::Extractor<T, -1> {
   }
 };
 
-/// Full specialization for Extractor of Histogram expressions.
+namespace {  // Expression extraction helper functions.
+
+/// @returns The number of constructor arguments for Expression types.
+/// @{
+template <class T, class... As>
+constexpr int count_args(std::true_type) {
+  return sizeof...(As);
+}
+
+template <class T, class... As>
+constexpr int count_args();
+
+template <class T, class A, class... As>
+constexpr int count_args(std::false_type) {
+  return count_args<T, A, A, As...>();
+}
+
+template <class T, class... As>
+constexpr int count_args() {
+  return count_args<T, As...>(std::is_constructible<T, As...>());
+}
+
+template <class T>
+constexpr int num_args(std::false_type) {
+  return count_args<T, ExpressionPtr>();
+}
+
+template <class T>
+constexpr int num_args(std::true_type) { return -1; }
+
+template <class T>
+constexpr std::enable_if_t<std::is_base_of<Expression, T>::value, int>
+num_args() {
+  static_assert(!std::is_default_constructible<T>::value, "No zero args.");
+  return num_args<T>(std::is_constructible<T, std::vector<ExpressionPtr>>());
+}
+/// @}
+
+}  // namespace
+
+template <class T>
+ExpressionPtr Initializer::Extract(const xmlpp::NodeSet& args,
+                                   const std::string& base_path,
+                                   Initializer* init) {
+  return Extractor<T, num_args<T>()>()(args, base_path, init);
+}
+
+/// Specialization for Extractor of Histogram expressions.
 template <>
-struct Initializer::Extractor<Histogram, -1> {
-  /// Constructs Histogram deviate expression
-  /// expression arguments in XML elements.
-  ///
-  /// @param[in] args  A vector of XML elements containing the arguments.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in,out] init  The host Initializer.
-  ///
-  /// @returns A shared pointer to the constructed Histogram expression.
-  std::shared_ptr<Histogram> operator()(const xmlpp::NodeSet& args,
-                                        const std::string& base_path,
-                                        Initializer* init) {
-    assert(args.size() > 1 && "At least one bin must be present.");
-    std::vector<ExpressionPtr> boundaries = {
-        init->GetExpression(XmlElement(args.front()), base_path)};
-    std::vector<ExpressionPtr> weights;
-    for (auto it = std::next(args.begin()); it != args.end(); ++it) {
-      const xmlpp::Element* el = XmlElement(*it);
-      xmlpp::NodeSet bin = el->find("./*");
-      assert(bin.size() == 2);
-      boundaries.push_back(init->GetExpression(XmlElement(bin[0]), base_path));
-      weights.push_back(init->GetExpression(XmlElement(bin[1]), base_path));
-    }
-    return std::make_shared<Histogram>(std::move(boundaries),
-                                       std::move(weights));
+ExpressionPtr Initializer::Extract<Histogram>(const xmlpp::NodeSet& args,
+                                              const std::string& base_path,
+                                              Initializer* init) {
+  assert(args.size() > 1 && "At least one bin must be present.");
+  std::vector<ExpressionPtr> boundaries = {
+      init->GetExpression(XmlElement(args.front()), base_path)};
+  std::vector<ExpressionPtr> weights;
+  for (auto it = std::next(args.begin()); it != args.end(); ++it) {
+    const xmlpp::Element* el = XmlElement(*it);
+    xmlpp::NodeSet bin = el->find("./*");
+    assert(bin.size() == 2);
+    boundaries.push_back(init->GetExpression(XmlElement(bin[0]), base_path));
+    weights.push_back(init->GetExpression(XmlElement(bin[1]), base_path));
   }
-};
+  return std::make_shared<Histogram>(std::move(boundaries), std::move(weights));
+}
+
+/// Specialization due to overloaded constructors.
+template <>
+ExpressionPtr Initializer::Extract<LogNormalDeviate>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  if (args.size() == 3)
+    return Extractor<LogNormalDeviate, 3>()(args, base_path, init);
+  return Extractor<LogNormalDeviate, 2>()(args, base_path, init);
+}
+
+/// Specialization due to overloaded constructors and un-fixed number of args.
+template <>
+ExpressionPtr Initializer::Extract<PeriodicTest>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  switch (args.size()) {
+    case 4:
+      return Extractor<PeriodicTest, 4>()(args, base_path, init);
+    case 5:
+      return Extractor<PeriodicTest, 5>()(args, base_path, init);
+    case 11:
+      return Extractor<PeriodicTest, 11>()(args, base_path, init);
+    default:
+      throw InvalidArgument("Invalid number of arguments for Periodic Test.");
+  }
+}
 
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
-    {"exponential", Extractor<ExponentialExpression, 2>()},
-    {"GLM", Extractor<GlmExpression, 4>()},
-    {"Weibull", Extractor<WeibullExpression, 4>()},
-    {"uniform-deviate", Extractor<UniformDeviate, 2>()},
-    {"normal-deviate", Extractor<NormalDeviate, 2>()},
-    {"lognormal-deviate", Extractor<LogNormalDeviate, 3>()},
-    {"gamma-deviate", Extractor<GammaDeviate, 2>()},
-    {"beta-deviate", Extractor<BetaDeviate, 2>()},
-    {"histogram", Extractor<Histogram, -1>()},
-    {"neg", Extractor<Neg, 1>()},
-    {"add", Extractor<Add, -1>()},
-    {"sub", Extractor<Sub, -1>()},
-    {"mul", Extractor<Mul, -1>()},
-    {"div", Extractor<Div, -1>()}};
+    {"exponential", &Extract<ExponentialExpression>},
+    {"GLM", &Extract<GlmExpression>},
+    {"Weibull", &Extract<WeibullExpression>},
+    {"periodic-test", &Extract<PeriodicTest>},
+    {"uniform-deviate", &Extract<UniformDeviate>},
+    {"normal-deviate", &Extract<NormalDeviate>},
+    {"lognormal-deviate", &Extract<LogNormalDeviate>},
+    {"gamma-deviate", &Extract<GammaDeviate>},
+    {"beta-deviate", &Extract<BetaDeviate>},
+    {"histogram", &Extract<Histogram>},
+    {"neg", &Extract<Neg>},
+    {"add", &Extract<Add>},
+    {"sub", &Extract<Sub>},
+    {"mul", &Extract<Mul>},
+    {"div", &Extract<Div>}};
 
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
@@ -687,7 +754,8 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   try {
     ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
         expr_element->find("./*"), base_path, this);
-    expressions_.push_back(expression.get());  // For late validation.
+    // Register for late validation after ensuring no cycles.
+    expressions_.emplace_back(expression.get(), expr_element);
     return expression;
   } catch (InvalidArgument& err) {
     std::stringstream msg;
@@ -737,8 +805,8 @@ ExpressionPtr Initializer::GetParameterExpression(
     }
   } else {
     assert(expr_name == "system-mission-time");
-    param_unit = kUnitsToString[mission_time_->unit()];
-    expression = mission_time_;
+    param_unit = kUnitsToString[model_->mission_time()->unit()];
+    expression = model_->mission_time();
   }
   // Check units.
   std::string unit = GetAttributeValue(expr_element, "unit");
@@ -917,11 +985,18 @@ void Initializer::ValidateExpressions() {
     param->mark(NodeMark::kClear);
 
   // Validate expressions.
+  const xmlpp::Element* expr_element = nullptr;  // To report the position.
   try {
-    for (Expression* expression : expressions_)
-      expression->Validate();
+    for (const std::pair<Expression*, const xmlpp::Element*>& expression :
+         expressions_) {
+      expr_element = expression.second;
+      expression.first->Validate();
+    }
   } catch (InvalidArgument& err) {
-    throw ValidationError(err.msg());
+    const xmlpp::Node* root = expr_element->find("/opsa-mef")[0];
+    throw ValidationError("In file '" + doc_to_file_.at(root) + "', Line " +
+                          std::to_string(expr_element->get_line()) + ":\n" +
+                          err.msg());
   }
 
   // Check distribution values for CCF groups.

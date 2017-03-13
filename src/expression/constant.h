@@ -57,25 +57,6 @@ class ConstantExpression : public Expression {
   const double value_;  ///< The universal value to represent int, bool, double.
 };
 
-/// The system mission time.
-class MissionTime : public ConstantExpression {
- public:
-  /// Sets the mission time.
-  /// This function is expected to be used only once.
-  ///
-  /// @param[in] time  The mission time.
-  /// @param[in] unit  The unit of the given ``time`` argument.
-  ///
-  /// @throws LogicError  The time value is negative.
-  explicit MissionTime(double time, Units unit = kHours);
-
-  /// @returns The unit of the system mission time.
-  Units unit() const { return unit_; }
-
- private:
-  Units unit_;  ///< Units of this parameter.
-};
-
 }  // namespace mef
 }  // namespace scram
 

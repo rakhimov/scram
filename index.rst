@@ -29,7 +29,7 @@ Implemented Features
 - Static fault tree analysis (MOCUS, BDD, ZBDD)
 - Analysis of non-coherent fault trees (Minimal Cut Sets, Prime Implicants)
 - Analysis with common-cause failure models
-- Probability calculations with importance analysis
+- Probability analysis (Importance factors, IEC 61508 Safety Integrity Levels)
 - Uncertainty analysis with Monte Carlo simulations
 - Fault tree generator
 

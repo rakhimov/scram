@@ -35,7 +35,7 @@ The BDD-based algorithm can use
 various types of the Binary Decision Diagram ([BDD]_, [ZBDD]_)
 for Boolean operations [Bry86]_ [Min93]_ [Rau93]_.
 This is a bottom-up approach that is mature and well tuned for PRA
-and other applications like electronics.
+and other logic applications.
 This method consists of many complex algorithms of the BDD to find MCS [Rau01]_.
 The BDD algorithms tend to be faster than MOCUS and other algorithms;
 however, this algorithm is subject to combinatorial explosion

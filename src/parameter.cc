@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,19 @@
 
 namespace scram {
 namespace mef {
+
+MissionTime::MissionTime(double time, Units unit)
+    : Expression({}),
+      unit_(unit),
+      value_(time) {
+  value(time);
+}
+
+void MissionTime::value(double time) {
+  if (time < 0)
+    throw LogicError("Mission time cannot be negative.");
+  value_ = time;
+}
 
 Parameter::Parameter(std::string name, std::string base_path,
                      RoleSpecifier role)

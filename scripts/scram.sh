@@ -61,16 +61,16 @@ _scram() {
   _init_completion -n = || return
 
   case "${prev}" in
-    -o|--output-path|--input-files|--config-file)
+    -o|--output-path|--config-file)
       _filedir
       return
       ;;
     -l|--limit-order|-s|--cut-off|--mission-time|--num-trials| \
-    --seed|--num-quantiles|--num-bins)
+    --seed|--num-quantiles|--num-bins|--time-step)
       # An argument is required.
       return
       ;;
-    --probability|--importance|--ccf|--uncertainty)
+    --probability|--importance|--ccf|--uncertainty|--sil)
       COMPREPLY=($(compgen -W "on off yes no true false 1 0" -- "${cur}"))
       return
       ;;

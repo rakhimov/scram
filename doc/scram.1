@@ -1,9 +1,9 @@
-.TH SCRAM "1" "February 2017" "SCRAM 0.11.6" "SCRAM Manual"
+.TH SCRAM "1" "March 2017" "SCRAM 0.12.0" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
 .B scram
-[\fIinput-files\fR] [\fIoptions\fR]
+[\fIoptions\fR] input-files...
 .SH DESCRIPTION
 .PP
 \fBSCRAM\fP is a probabilistic risk analysis (PRA) tool.
@@ -22,9 +22,6 @@ Prints version information of SCRAM and its dependencies
 .TP
 \fB\-\-help\fR
 Prints the help message with a list of commands
-.TP
-\fB\-\-input\-files\fR arg
-Run with analysis constructs from XML input files
 .TP
 \fB\-\-config\-file\fR arg
 Run analysis with configurations from XML configuration file
@@ -56,6 +53,9 @@ Perform uncertainty analysis
 \fB\-\-ccf\fR arg
 Perform common\-cause failure analysis
 .TP
+\fB\-\-sil\fR arg
+Compute the Safety Integrity Level metrics (requires time-step)
+.TP
 \fB\-\-rare\-event\fR
 Use the rare event approximation for probability
 calculations
@@ -72,6 +72,10 @@ Cut\-off probability for products
 .TP
 \fB\-\-mission\-time\fR arg
 Set the system mission time in hours for probability calculations
+.TP
+\fB\-\-time\-step\fR arg
+Set the time step in hours for probability calculations.
+0 value (default) disables the probability analysis over a time period.
 .TP
 \fB\-\-num\-trials\fR arg
 Set the number of trials for Monte Carlo simulations

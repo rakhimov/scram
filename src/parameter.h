@@ -30,6 +30,57 @@
 namespace scram {
 namespace mef {
 
+/// Provides units for parameters.
+enum Units : std::uint8_t {
+  kUnitless = 0,
+  kBool,
+  kInt,
+  kFloat,
+  kHours,
+  kInverseHours,
+  kYears,
+  kInverseYears,
+  kFit,
+  kDemands
+};
+
+const int kNumUnits = 10;  ///< The number of elements in the Units enum.
+
+/// String representations of the Units in the same order as the enum.
+const char* const kUnitsToString[] = {"unitless", "bool",    "int",   "float",
+                                      "hours",    "hours-1", "years", "years-1",
+                                      "fit",      "demands"};
+
+/// The special parameter for system mission time.
+class MissionTime : public Expression {
+ public:
+  /// @param[in] time  The mission time.
+  /// @param[in] unit  The unit of the given ``time`` argument.
+  ///
+  /// @throws LogicError  The time value is negative.
+  explicit MissionTime(double time = 0, Units unit = kHours);
+
+  /// @returns The unit of the system mission time.
+  Units unit() const { return unit_; }
+
+  /// Changes the mission time value.
+  ///
+  /// @param[in] time  The mission time in hours.
+  ///
+  /// @throws LogicError  The time value is negative.
+  void value(double time);
+
+  double Min() noexcept override { return 0; }
+  double Mean() noexcept override { return value_; }
+  bool IsDeviate() noexcept override { return false; }
+
+ private:
+  double DoSample() noexcept override { return value_; }
+
+  Units unit_;  ///< Units of this parameter.
+  double value_;  ///< The universal value to represent int, bool, double.
+};
+
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.

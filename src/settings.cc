@@ -79,9 +79,9 @@ Settings& Settings::prime_implicants(bool flag) {
 }
 
 Settings& Settings::limit_order(int order) {
-  if (order < 0 || order > 32)
+  if (order < 0)
     throw InvalidArgument("The limit on the order of products "
-                          "cannot be less than 0 or more than 32.");
+                          "cannot be less than 0.");
   limit_order_ = order;
   return *this;
 }
@@ -131,6 +131,26 @@ Settings& Settings::mission_time(double time) {
     throw InvalidArgument("The mission time cannot be negative.");
 
   mission_time_ = time;
+  return *this;
+}
+
+Settings& Settings::time_step(double time) {
+  if (time < 0)
+    throw InvalidArgument("The time step cannot be negative.");
+  if (!time && safety_integrity_levels_)
+    throw InvalidArgument("The time step cannot be disabled for the SIL");
+
+  time_step_ = time;
+  return *this;
+}
+
+Settings& Settings::safety_integrity_levels(bool flag) {
+  if (flag && !time_step_)
+    throw InvalidArgument("The time step is not set for the SIL calculations.");
+
+  safety_integrity_levels_ = flag;
+  if (safety_integrity_levels_)
+    probability_analysis_ = true;
   return *this;
 }
 

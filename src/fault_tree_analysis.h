@@ -21,7 +21,7 @@
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
-#include <cmath>
+#include <cstdlib>
 
 #include <memory>
 #include <unordered_set>
@@ -130,9 +130,15 @@ class ProductContainer {
   ProductContainer(const Zbdd& products, const Pdag& graph) noexcept
       : products_(products),
         graph_(graph) {
+    Pdag::IndexMap<bool> filter(graph_.basic_events().size());
     for (const std::vector<int>& result_set : products_) {
-      for (int i : result_set)
+      for (int i : result_set) {
+        i = std::abs(i);
+        if (filter[i])
+          continue;
+        filter[i] = true;
         product_events_.insert(graph_.basic_events()[i]);
+      }
     }
   }
 

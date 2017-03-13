@@ -25,7 +25,9 @@
 namespace scram {
 namespace mef {
 
-Model::Model(std::string name) : Element(std::move(name), /*optional=*/true) {}
+Model::Model(std::string name)
+    : Element(std::move(name), /*optional=*/true),
+      mission_time_(std::make_shared<MissionTime>()) {}
 
 void Model::AddFaultTree(FaultTreePtr fault_tree) {
   if (fault_trees_.count(fault_tree->name())) {

@@ -81,16 +81,6 @@ class SetNode : public NonTerminal<SetNode> {
   ///       this general-purpose field saves space and time.
   void count(std::int64_t number) { count_ = number; }
 
-  /// Recovers a shared pointer to SetNode from a pointer to Vertex.
-  ///
-  /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
-  ///
-  /// @return Casted pointer to SetNode.
-  static IntrusivePtr<SetNode> Ptr(
-      const IntrusivePtr<Vertex<SetNode>>& vertex) {
-    return boost::static_pointer_cast<SetNode>(vertex);
-  }
-
  private:
   bool minimal_ = false;  ///< A flag for minimized collection of sets.
   int max_set_order_ = 0;  ///< The order of the largest set in the ZBDD.
@@ -223,24 +213,24 @@ class Zbdd : private boost::noncopyable {
       ///       the product and stack containers are updated accordingly.
       bool GenerateProduct(const VertexPtr& vertex) noexcept {
         if (vertex->terminal())
-          return static_cast<const Terminal<SetNode>&>(*vertex).value();
+          return Terminal<SetNode>::Ref(vertex).value();
         if (it_.product_.size() >= it_.zbdd_.settings().limit_order())
           return false;
-        const SetNode* node = static_cast<SetNode*>(vertex.get());
-        if (node->module()) {
+        const SetNode& node = SetNode::Ref(vertex);
+        if (node.module()) {
           module_stack_.emplace_back(
-              node, *zbdd_.modules_.find(node->index())->second, &it_);
+              &node, *zbdd_.modules_.find(node.index())->second, &it_);
           for (; module_stack_.back(); ++module_stack_.back()) {
-            if (GenerateProduct(node->high()))
+            if (GenerateProduct(node.high()))
               return true;
           }
           assert(it_.product_.size() == module_stack_.back().start_pos_);
           module_stack_.pop_back();
-          return GenerateProduct(node->low());
+          return GenerateProduct(node.low());
 
         } else {
-          Push(node);
-          return GenerateProduct(node->high()) || GenerateProduct(Pop()->low());
+          Push(&node);
+          return GenerateProduct(node.high()) || GenerateProduct(Pop()->low());
         }
       }
 
@@ -534,8 +524,11 @@ class Zbdd : private boost::noncopyable {
     prune_results_.clear();
   }
 
+  /// Freezes the graph.
   /// Releases all possible memory from memoization and unique tables.
-  void ReleaseTables() noexcept {
+  ///
+  /// @pre No more graph modifications after the freeze.
+  void Freeze() noexcept {
     unique_table_.Release();
     Zbdd::ClearTables();
     and_table_.reserve(0);
@@ -554,7 +547,7 @@ class Zbdd : private boost::noncopyable {
   void JoinModule(int index, std::unique_ptr<Zbdd> container) noexcept {
     assert(!modules_.count(index));
     assert(container->root()->terminal() ||
-           SetNode::Ptr(container->root())->minimal());
+           SetNode::Ref(container->root()).minimal());
     modules_.emplace(index, std::move(container));
   }
 
@@ -788,8 +781,8 @@ class Zbdd : private boost::noncopyable {
   /// @param[in] node  A node to be tested.
   ///
   /// @returns true for modules by default.
-  virtual bool IsGate(const SetNodePtr& node) noexcept {
-    return node->module();
+  virtual bool IsGate(const SetNode& node) noexcept {
+    return node.module();
   }
 
   /// Checks if a node have a possibility to represent Unity.
@@ -797,7 +790,7 @@ class Zbdd : private boost::noncopyable {
   /// @param[in] node  SetNode to test for possibility of Unity.
   ///
   /// @returns false if the passed node can never be Unity.
-  bool MayBeUnity(const SetNodePtr& node) noexcept;
+  bool MayBeUnity(const SetNode& node) noexcept;
 
   /// Counts the number of SetNodes
   /// excluding the nodes in the modules.
@@ -917,8 +910,8 @@ class CutSetContainer : public Zbdd {
   int GetNextGate() noexcept {
     if (Zbdd::root()->terminal())
       return 0;
-    SetNodePtr node = SetNode::Ptr(Zbdd::root());
-    return CutSetContainer::IsGate(node) && !node->module() ? node->index() : 0;
+    SetNode& node = SetNode::Ref(Zbdd::root());
+    return CutSetContainer::IsGate(node) && !node.module() ? node.index() : 0;
   }
 
   /// Extracts (removes!) intermediate cut sets
@@ -999,8 +992,8 @@ class CutSetContainer : public Zbdd {
   ///
   /// @pre There are no complements of gates.
   /// @pre Gate indices have a lower bound.
-  bool IsGate(const SetNodePtr& node) noexcept override {
-    return node->index() > gate_index_bound_;
+  bool IsGate(const SetNode& node) noexcept override {
+    return node.index() > gate_index_bound_;
   }
 
   int gate_index_bound_;  ///< The exclusive lower bound for the gate indices.
