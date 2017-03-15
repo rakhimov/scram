@@ -58,6 +58,19 @@ The latest stable release is packaged for `quick installation`_ on various platf
 Building and Installing
 ***********************
 
+Git Submodules
+==============
+
+Some dependencies are provided with git submodules (e.g., Google Test).
+In order to initialize all the submodules,
+this repository must be cloned recursively with ``git clone --recursive``,
+or the following commands must be executed after a normal clone.
+
+.. code-block:: bash
+
+    git submodule update --init --recursive
+
+
 Dependencies
 ============
 
@@ -93,19 +106,6 @@ GCC/G++                4.9
 Clang/LLVM             3.6
 Intel                  17.0.1
 ====================   ==================
-
-
-Google Test
------------
-
-The testing framework is provided as a git submodule.
-In order to initialize the submodule,
-this repository must be cloned recursively with ``git clone --recursive``,
-or the following commands must be executed after a normal clone.
-
-.. code-block:: bash
-
-    git submodule update --init --recursive
 
 
 Installing Dependencies
