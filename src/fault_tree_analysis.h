@@ -31,7 +31,6 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "analysis.h"
-#include "logger.h"
 #include "pdag.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -238,7 +237,7 @@ class FaultTreeAnalysis : public Analysis {
   /// @warning If the fault tree structure has changed
   ///          since the construction of the analysis,
   ///          the analysis will be invalid or fail.
-  virtual void Analyze() noexcept = 0;
+  void Analyze() noexcept;
 
   /// @returns A collection of Boolean products as the analysis results.
   ///
@@ -249,14 +248,36 @@ class FaultTreeAnalysis : public Analysis {
   }
 
  protected:
+  /// @returns Pointer to the PDAG representing the fault tree.
+  const Pdag* graph() const { return graph_.get(); }
+
+ private:
+  /// Preprocesses a PDAG for future analysis with a specific algorithm.
+  ///
+  /// @param[in,out] graph  A valid PDAG for analysis.
+  ///
+  /// @post The graph transformation is semantically equivalent/isomorphic.
+  virtual void Preprocess(Pdag* graph) noexcept = 0;
+
+  /// Generates a sum of products from a preprocessed PDAG.
+  ///
+  /// @param[in] graph  The analysis PDAG.
+  ///
+  /// @returns The set of products.
+  ///
+  /// @pre The graph is specifically preprocessed for the algorithm.
+  ///
+  /// @post The result ZBDD lives as long as the host analysis.
+  virtual const Zbdd& GenerateProducts(const Pdag* graph) noexcept = 0;
+
   /// Stores resultant sets of products for future reporting.
   ///
   /// @param[in] products  Sets with indices of events from calculations.
   /// @param[in] graph  PDAG with basic event indices and pointers.
   void Store(const Zbdd& products, const Pdag& graph) noexcept;
 
- private:
   const mef::Gate& top_event_;  ///< The root of the graph under analysis.
+  std::unique_ptr<Pdag> graph_;  ///< PDAG of the fault tree.
   std::unique_ptr<const ProductContainer> products_;  ///< Container of results.
 };
 
@@ -268,54 +289,27 @@ template <class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
   using FaultTreeAnalysis::FaultTreeAnalysis;
+  using FaultTreeAnalysis::graph;  // Provide access to other analyses.
 
-  /// Runs fault tree analysis with the given algorithm.
-  void Analyze() noexcept override;
-
-  /// @returns Pointer to the analysis algorithm.
+  /// @returns The analysis algorithm for use by other analyses.
+  /// @{
   const Algorithm* algorithm() const { return algorithm_.get(); }
-
-  /// @returns Pointer to the analysis algorithm
-  ///          for use by other analyses.
   Algorithm* algorithm() { return algorithm_.get(); }
-
-  /// @returns Pointer to the PDAG representing the fault tree.
-  const Pdag* graph() const { return graph_.get(); }
+  /// @}
 
  private:
+  void Preprocess(Pdag* graph) noexcept override {
+    CustomPreprocessor<Algorithm>{graph}();
+  }
+
+  const Zbdd& GenerateProducts(const Pdag* graph) noexcept override {
+    algorithm_ = std::make_unique<Algorithm>(graph, Analysis::settings());
+    algorithm_->Analyze();
+    return algorithm_->products();
+  }
+
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
-  std::unique_ptr<Pdag> graph_;  ///< PDAG of the fault tree.
 };
-
-template <class Algorithm>
-void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
-  CLOCK(analysis_time);
-
-  CLOCK(graph_creation);
-  graph_ = std::make_unique<Pdag>(FaultTreeAnalysis::top_event(),
-                                  Analysis::settings().ccf_analysis());
-  LOG(DEBUG2) << "PDAG is created in " << DUR(graph_creation);
-
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-  CustomPreprocessor<Algorithm>(graph_.get())();
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-#ifndef NDEBUG
-  if (Analysis::settings().preprocessor)
-    return;  // Preprocessor only option.
-#endif
-  CLOCK(algo_time);
-  LOG(DEBUG2) << "Launching the algorithm...";
-  algorithm_ = std::make_unique<Algorithm>(graph_.get(), Analysis::settings());
-  algorithm_->Analyze();
-  LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
-  LOG(DEBUG2) << "# of products: " << algorithm_->products().size();
-
-  Analysis::AddAnalysisTime(DUR(analysis_time));
-  CLOCK(store_time);
-  FaultTreeAnalysis::Store(algorithm_->products(), *graph_);
-  LOG(DEBUG2) << "Stored the result for reporting in " << DUR(store_time);
-}
 
 }  // namespace core
 }  // namespace scram

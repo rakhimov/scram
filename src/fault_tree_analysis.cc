@@ -27,6 +27,7 @@
 #include <boost/range/algorithm.hpp>
 
 #include "event.h"
+#include "logger.h"
 
 namespace scram {
 namespace core {
@@ -84,6 +85,34 @@ FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
                                      const Settings& settings)
     : Analysis(settings),
       top_event_(root) {}
+
+void FaultTreeAnalysis::Analyze() noexcept {
+  CLOCK(analysis_time);
+
+  CLOCK(graph_creation);
+  graph_ = std::make_unique<Pdag>(top_event_,
+                                  Analysis::settings().ccf_analysis());
+  LOG(DEBUG2) << "PDAG is created in " << DUR(graph_creation);
+
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  this->Preprocess(graph_.get());
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+#ifndef NDEBUG
+  if (Analysis::settings().preprocessor)
+    return;  // Preprocessor only option.
+#endif
+  CLOCK(algo_time);
+  LOG(DEBUG2) << "Launching the algorithm...";
+  const Zbdd& products = this->GenerateProducts(graph_.get());
+  LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
+  LOG(DEBUG2) << "# of products: " << products.size();
+
+  Analysis::AddAnalysisTime(DUR(analysis_time));
+  CLOCK(store_time);
+  Store(products, *graph_);
+  LOG(DEBUG2) << "Stored the result for reporting in " << DUR(store_time);
+}
 
 void FaultTreeAnalysis::Store(const Zbdd& products,
                               const Pdag& graph) noexcept {
