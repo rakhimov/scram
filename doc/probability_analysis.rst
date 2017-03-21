@@ -1,4 +1,4 @@
-.. _prob_calc:
+.. _probability_analysis:
 
 ####################
 Probability Analysis

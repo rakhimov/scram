@@ -3,10 +3,9 @@ Input Files
 ###########
 
 SCRAM uses XML input files to describe analysis.
+One model per run is assumed.
 See :ref:`xml_tools` for more convenient writing and reading of XML input files.
 
-Currently, only fault trees are accepted for analysis,
-and one model per run is assumed.
 The input file format follows
 the Open-PSA Model Exchange Format ([MEF]_) version 2.0d or later.
 The extensive description is given in the above format documentation by Open-PSA,
@@ -33,14 +32,14 @@ Encodings
 Steps in XML Input Validation
 =============================
 
-#. Several input files are accepted that describe one model.
+#. Several input files to describe one model.
 
     - The first file must define the name, label, and attributes of the model.
-      Other files with this kind of information are ignored without a warning.
-      This feature allows reuse of files from other models
-      without the need for the Open-PSA MEF ``include`` directives.
+      This information about models in the other input files is ignored without a warning,
+      which allows reuse of files with analysis constructs from other models
+      without a need for the Open-PSA MEF ``include`` directives.
 
-#. An XML input file is validated against the `RELAX NG`_ :ref:`schema`.
+#. XML input file validation against the `RELAX NG`_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
     - Event names and references are case-sensitive.
@@ -52,7 +51,7 @@ Steps in XML Input Validation
       described in the Open-PSA MEF section
       *IV.3.2. Solving Name Conflicts: Public versus Private Elements*.
 
-#. Additional validation of fault trees and values of parameters is performed:
+#. Additional validation of fault trees and values of parameters:
 
     - Each gate or formula must have the correct number of arguments.
     - A duplicate argument in Boolean formulas or gates is an error.
