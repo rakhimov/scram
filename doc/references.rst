@@ -105,7 +105,7 @@ Web Resources
 .. [UA] `Uncertainty Quantification Wiki Page <https://en.wikipedia.org/wiki/Uncertainty_quantification>`_
 .. [CCF] `Common Cause Wiki Page <https://en.wikipedia.org/wiki/Common_cause_and_special_cause_(statistics)>`_
 
-.. [IEC_61508] `IEC 65108 Wiki Page <https://en.wikipedia.org/wiki/IEC_61508>`_
+.. [IEC_61508] `IEC 61508 Wiki Page <https://en.wikipedia.org/wiki/IEC_61508>`_
 .. [SIL] `Safety Integrity Level Wiki Page <https://en.wikipedia.org/wiki/Safety_integrity_level>`_
 
 .. [PDAG] `Propositional DAG Wiki Page <https://en.wikipedia.org/wiki/Propositional_directed_acyclic_graph>`_

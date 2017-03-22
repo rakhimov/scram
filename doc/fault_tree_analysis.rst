@@ -1,12 +1,37 @@
+.. _fault_tree_analysis:
+
 ###################
 Fault Tree Analysis
 ###################
 
-Fault trees have various types of gates and events
-to represent Boolean formulas and systems for analysis [FTA]_.
-However, extra information for visual or informative purposes for the analyst
-may be irrelevant for the core analysis.
-Support for more advanced types and event descriptions will be introduced as needed in SCRAM.
+Fault tree analysis [FTA]_ is one of the core analyses.
+Other analyses may require or depend on the fault tree results or constructs.
+Fault trees employ various types of gates (Boolean connectives) and events
+to represent Boolean formulas and to model systems for analysis.
+SCRAM automatically discovers top-events (graph roots)
+and runs all requested analysis kinds with those events.
+The following is a description of some analysis goals
+and their respective control parameters (knobs).
+
+#. Find minimal cut sets or prime implicants. *Probability input is optional*
+
+   - Cut-off probability for products. *Unused*
+   - Maximum order for products for faster calculations.
+
+#. Find the total probability of the top event
+   and importance values for basic events. *Only if probability input is provided*
+
+   - Cut-off probability for products. *Unused*
+   - The rare event or MCUB approximation. *Optional*
+   - Mission time that is used to calculate probabilities.
+
+
+Analysis Algorithms
+===================
+
+- :ref:`preprocessing`
+- :ref:`fta_algorithms`
+- :ref:`_probability_analysis`
 
 
 Currently Supported Gate Types
@@ -23,13 +48,6 @@ Currently Supported Gate Types
 - VOTE
 
 
-Currently Supported Symbols
-===========================
-
-- TransferIn
-- TransferOut
-
-
 Currently Supported Event Types
 ===============================
 
@@ -41,6 +59,12 @@ Currently Supported Event Types
 - Conditional
 
 .. note:: Top and intermediate events are gates of an acyclic "fault-tree" graph ([PDAG]_).
+
+.. note::
+    Transfer-in and Transfer-out symbols,
+    mostly employed by graphical front-ends,
+    are unnecessary with an input format based on the Open-PSA MEF
+    since the "fault-tree" is properly treated as a graph/container.
 
 
 Representation of INHIBIT, Undeveloped, and Conditional
@@ -74,11 +98,3 @@ Conditional
 
 Add this XML line to basic event description:
 :literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
-
-
-Analysis Algorithms
-===================
-
-- :ref:`preprocessing`
-- :ref:`fta_algorithms`
-- :ref:`prob_calc`

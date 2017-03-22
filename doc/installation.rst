@@ -2,13 +2,31 @@
 Installation Instructions
 #########################
 
-.. note:: Some SCRAM tools and tests may be absent in distribution packages.
+.. note::
+    Some SCRAM tools and tests may be absent in distribution packages.
+    Also, the package version may be older than the latest release.
 
 
-Ubuntu 14.04 or later
-=====================
+Debian
+======
 
-Run the following commands to get SCRAM from its PPA_.
+SCRAM is available in Debian’s *unstable* and *testing* repositories.
+
+.. code-block:: bash
+
+    apt-get install scram
+
+
+Ubuntu
+======
+
+SCRAM is available in Ubuntu's *universe* repository since Ubuntu 17.04.
+
+.. code-block:: bash
+
+    sudo apt-get install scram
+
+Alternatively, run the following commands to get SCRAM from its PPA_.
 
 .. code-block:: bash
 

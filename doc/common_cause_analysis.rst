@@ -1,3 +1,5 @@
+.. _common_cause_failure:
+
 ####################
 Common Cause Failure
 ####################

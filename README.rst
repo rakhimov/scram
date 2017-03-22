@@ -42,7 +42,7 @@ LaTeX
 doxygen            1.8.12
 Graphviz Dot       2.26.3
 Lizard             1.12
-cppdep             0.0.7
+cppdep             0.2.2
 ================   =================
 
 .. warning::
