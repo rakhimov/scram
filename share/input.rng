@@ -22,6 +22,7 @@
       </optional>
       <zeroOrMore>
         <choice>
+          <ref name="event-tree-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
         </choice>
@@ -106,10 +107,132 @@
   <!-- II.2. Event Trees -->
   <!-- ============================================================= -->
 
+  <define name="event-tree-definition">
+    <element name="define-event-tree">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="functional-event-definition"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="sequence-definition"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="branch-definition"/>
+      </zeroOrMore>
+      <ref name="initial-state"/>
+    </element>
+  </define>
+
+  <define name="functional-event-definition">
+    <element name="define-functional-event">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="sequence-definition">
+    <element name="define-sequence">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="instruction"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="branch-definition">
+    <element name="define-branch">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="initial-state">
+    <element name="initial-state">
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="branch">
+    <zeroOrMore>
+      <ref name="instruction"/>
+    </zeroOrMore>
+    <choice>
+      <ref name="fork"/>
+      <ref name="end-state"/>
+    </choice>
+  </define>
+
+  <define name="fork">
+    <element name="fork">
+      <attribute name="functional-event"> <ref name="Identifier"/> </attribute>
+      <oneOrMore>
+        <ref name="path"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="path">
+    <element name="path">
+      <attribute name="state"> <ref name="Identifier"/> </attribute>
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="end-state">
+    <choice>
+      <element name="sequence">
+        <ref name="name"/>
+      </element>
+      <element name="branch">
+        <ref name="name"/>
+      </element>
+    </choice>
+  </define>
 
   <!-- ============================================================= -->
   <!-- II.3. Instructions, Rules -->
   <!-- ============================================================= -->
+
+  <define name="instruction">
+    <choice>
+      <ref name="collect"/>
+    </choice>
+  </define>
+
+  <define name="collect">
+    <choice>
+      <ref name="collect-expression"/>
+    </choice>
+  </define>
+
+  <define name="collect-expression">
+    <element name="collect-expression">
+      <ref name="expression"/>
+    </element>
+  </define>
 
 
 <!-- ############################################################### -->
