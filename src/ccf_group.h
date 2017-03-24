@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,20 +40,9 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for all common cause failure models.
-class CcfGroup : public Element,
-                 public Role,
-                 public Id,
-                 private boost::noncopyable {
+class CcfGroup : public Id, private boost::noncopyable {
  public:
-  /// Constructor to be used by derived classes.
-  ///
-  /// @param[in] name  The name of a CCF group.
-  /// @param[in] base_path  The series of containers to get this group.
-  /// @param[in] role  The role of the CCF group within the model or container.
-  ///
-  /// @throws LogicError  The name is empty.
-  explicit CcfGroup(std::string name, std::string base_path = "",
-                    RoleSpecifier role = RoleSpecifier::kPublic);
+  using Id::Id;
 
   virtual ~CcfGroup() = default;
 

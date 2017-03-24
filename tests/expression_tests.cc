@@ -35,8 +35,7 @@ class OpenExpression : public Expression {
  public:
   explicit OpenExpression(double m = 1, double s = 1, double mn = 0,
                           double mx = 0)
-      : Expression({}),
-        mean(m),
+      : mean(m),
         sample(s),
         min(mn),
         max(mx) {}

@@ -37,21 +37,9 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Element,
-              public Role,
-              public Id,
-              private boost::noncopyable {
+class Event : public Id, private boost::noncopyable {
  public:
-  /// Constructs a fault tree event with a specific id.
-  ///
-  /// @param[in] name  The original name.
-  /// @param[in] base_path  The series of containers to get this event.
-  /// @param[in] role  The role of the event within the model or container.
-  ///
-  /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name or reference paths are malformed.
-  explicit Event(std::string name, std::string base_path = "",
-                 RoleSpecifier role = RoleSpecifier::kPublic);
+  using Id::Id;
 
   virtual ~Event() = 0;  ///< Abstract class.
 
@@ -64,7 +52,7 @@ class Event : public Element,
   void orphan(bool state) { orphan_ = state; }
 
  private:
-  bool orphan_;  ///< Indication of an orphan node.
+  bool orphan_ = true;  ///< Indication of an orphan node.
 };
 
 /// This is an abstract base class for events

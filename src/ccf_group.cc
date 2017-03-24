@@ -31,11 +31,6 @@
 namespace scram {
 namespace mef {
 
-CcfGroup::CcfGroup(std::string name, std::string base_path, RoleSpecifier role)
-    : Element(std::move(name)),
-      Role(role, std::move(base_path)),
-      Id(*this, *this) {}
-
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +

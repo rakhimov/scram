@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,6 @@
 
 namespace scram {
 namespace mef {
-
-Event::Event(std::string name, std::string base_path, RoleSpecifier role)
-    : Element(std::move(name)),
-      Role(role, std::move(base_path)),
-      Id(*this, *this),
-      orphan_(true) {}
 
 Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;

@@ -26,8 +26,7 @@ namespace scram {
 namespace mef {
 
 MissionTime::MissionTime(double time, Units unit)
-    : Expression({}),
-      unit_(unit),
+    : unit_(unit),
       value_(time) {
   value(time);
 }
@@ -37,16 +36,6 @@ void MissionTime::value(double time) {
     throw LogicError("Mission time cannot be negative.");
   value_ = time;
 }
-
-Parameter::Parameter(std::string name, std::string base_path,
-                     RoleSpecifier role)
-    : Expression({}),
-      Element(std::move(name)),
-      Role(role, std::move(base_path)),
-      Id(*this, *this),
-      unit_(kUnitless),
-      unused_(true),
-      expression_(nullptr) {}
 
 void Parameter::expression(const ExpressionPtr& expression) {
   if (expression_)
