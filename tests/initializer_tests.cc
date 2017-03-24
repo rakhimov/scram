@@ -84,6 +84,24 @@ TEST(InitializerTest, EmptyAttributeElementText) {
   }
 }
 
+TEST(InitializerTest, CorrectEtaInputs) {
+  std::string dir = "./share/scram/input/eta/";
+  const char* correct_inputs[] = { "simplest_correct.xml" };
+  for (const auto& input : correct_inputs) {
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+        << " Filename: " << input;
+  }
+}
+
+TEST(InitializerTest, IncorrectEtaInputs) {
+  std::string dir = "./share/scram/input/eta/";
+  const char* correct_inputs[] = { "doubly_defined_event_tree.xml" };
+  for (const auto& input : correct_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+        << " Filename: " << input;
+  }
+}
+
 // Test correct inputs without probability information.
 TEST(InitializerTest, CorrectFtaInputs) {
   std::string dir = "./share/scram/input/fta/";

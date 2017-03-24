@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,6 +166,10 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     AttachLabelAndAttributes(root_element, model_.get());
   }
 
+  for (const xmlpp::Node* node : root->find("./define-event-tree")) {
+    DefineEventTree(XmlElement(node));
+  }
+
   for (const xmlpp::Node* node : root->find("./define-fault-tree")) {
     DefineFaultTree(XmlElement(node));
   }
@@ -239,6 +243,20 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
   } catch(ValidationError& err) {
     err.msg("Line " + std::to_string(attribute->get_line()) + ":\n" +
             err.msg());
+    throw;
+  }
+}
+
+void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
+  std::string name = GetAttributeValue(et_node, "name");
+  EventTreePtr event_tree(new EventTree(name));
+  AttachLabelAndAttributes(et_node, event_tree.get());
+  try {
+    model_->AddEventTree(std::move(event_tree));
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << et_node->get_line() << ":\n";
+    err.msg(msg.str() + err.msg());
     throw;
   }
 }

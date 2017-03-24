@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "event_tree.h"
 #include "fault_tree.h"
 #include "parameter.h"
 
@@ -52,6 +53,7 @@ class Model : public Element, private boost::noncopyable {
 
   /// @returns Defined constructs in the model.
   /// @{
+  const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
@@ -68,6 +70,14 @@ class Model : public Element, private boost::noncopyable {
   const IdTable<GatePtr>& gates() const { return gates_.entities_by_id; }
   const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
+
+  /// Adds an event tree into the model container.
+  /// Event trees are uniquely owned by this model.
+  ///
+  /// @param[in] event_tree  A event tree defined in this model.
+  ///
+  /// @throws RedefinitionError  The model has an event tree with the same name.
+  void AddEventTree(EventTreePtr event_tree);
 
   /// Adds a fault tree into the model container.
   /// Fault trees are uniquely owned by this model.
@@ -200,6 +210,7 @@ class Model : public Element, private boost::noncopyable {
 
   /// A collection of defined constructs in the model.
   /// @{
+  ElementTable<EventTreePtr> event_trees_;
   ElementTable<FaultTreePtr> fault_trees_;
   LookupTable<Gate> gates_;
   LookupTable<HouseEvent> house_events_;

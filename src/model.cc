@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,13 @@ namespace mef {
 Model::Model(std::string name)
     : Element(std::move(name), /*optional=*/true),
       mission_time_(std::make_shared<MissionTime>()) {}
+
+void Model::AddEventTree(EventTreePtr event_tree) {
+  if (event_trees_.count(event_tree->name())) {
+    throw RedefinitionError("Redefinition of event tree " + event_tree->name());
+  }
+  event_trees_.insert(std::move(event_tree));
+}
 
 void Model::AddFaultTree(FaultTreePtr fault_tree) {
   if (fault_trees_.count(fault_tree->name())) {

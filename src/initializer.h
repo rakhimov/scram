@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "event_tree.h"
 #include "expression.h"
 #include "expression/constant.h"
 #include "fault_tree.h"
@@ -154,6 +155,14 @@ class Initializer : private boost::noncopyable {
   /// @param[out] element  The object that needs attributes and label.
   void AttachLabelAndAttributes(const xmlpp::Element* element_node,
                                 Element* element);
+
+  /// Defines an event tree for the analysis.
+  ///
+  /// @param[in] et_node  XML element defining the event tree.
+  ///
+  /// @throws ValidationError  There are issues with registering and defining
+  ///                          the event tree and its data.
+  void DefineEventTree(const xmlpp::Element* et_node);
 
   /// Defines a fault tree for the analysis.
   ///
