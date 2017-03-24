@@ -27,20 +27,14 @@ namespace test {
 
 namespace {
 
-class TestElement : public Element {
- public:
-  TestElement() : Element("", /*optional=*/true) {}
-};
-
 class NamedElement : public Element {
  public:
-  explicit NamedElement(std::string name) : Element(std::move(name)) {}
+  using Element::Element;
 };
 
 }  // namespace
 
 TEST(ElementTest, Name) {
-  EXPECT_NO_THROW(TestElement());
   EXPECT_THROW(NamedElement(""), LogicError);
 
   EXPECT_THROW(NamedElement(".name"), InvalidArgument);
@@ -60,7 +54,7 @@ TEST(ElementTest, Name) {
 }
 
 TEST(ElementTest, Label) {
-  TestElement el;
+  NamedElement el("name");
   EXPECT_EQ("", el.label());
   EXPECT_THROW(el.label(""), LogicError);
   ASSERT_NO_THROW(el.label("label"));
@@ -68,7 +62,7 @@ TEST(ElementTest, Label) {
 }
 
 TEST(ElementTest, Attribute) {
-  TestElement el;
+  NamedElement el("name");
   Attribute attr;
   attr.name = "impact";
   attr.value = "0.1";

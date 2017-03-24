@@ -44,6 +44,12 @@ namespace mef {
 /// This class represents a risk analysis model.
 class Model : public Element, private boost::noncopyable {
  public:
+  /// @todo Only Model is allowed to have an optional name,
+  ///       while all other Elements require names.
+  ///       An empty name is an error for Element class invariants as well.
+  ///       This leads to a nasty magic string based optional name for a model.
+  static const char kDefaultName[];
+
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.

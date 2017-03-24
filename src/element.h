@@ -52,11 +52,10 @@ class Element {
   /// described in the MEF documentation and additions.
   ///
   /// @param[in] name  The local identifier name.
-  /// @param[in] optional_name  Allow empty names.
   ///
   /// @throws LogicError  The name is required and empty.
   /// @throws InvalidArgument  The name is malformed.
-  explicit Element(std::string name, bool optional_name = false);
+  explicit Element(std::string name);
 
   /// @returns The original name.
   const std::string& name() const { return kName_; }

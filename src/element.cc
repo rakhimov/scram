@@ -28,11 +28,11 @@
 namespace scram {
 namespace mef {
 
-Element::Element(std::string name, bool optional_name)
-    : kName_(std::move(name)) {
-  if (!optional_name && kName_.empty())
+Element::Element(std::string name) : kName_(std::move(name)) {
+  if (kName_.empty())
     throw LogicError("The element name can't be empty");
-  if (!kName_.empty() && kName_.find('.') != std::string::npos)
+
+  if (kName_.find('.') != std::string::npos)
     throw InvalidArgument("The element name is malformed.");
 }
 

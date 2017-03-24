@@ -25,8 +25,10 @@
 namespace scram {
 namespace mef {
 
+const char Model::kDefaultName[] = "unnamed-model";
+
 Model::Model(std::string name)
-    : Element(std::move(name), /*optional=*/true),
+    : Element(name.empty() ? kDefaultName : std::move(name)),
       mission_time_(std::make_shared<MissionTime>()) {}
 
 void Model::AddEventTree(EventTreePtr event_tree) {
