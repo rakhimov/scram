@@ -270,13 +270,6 @@ class Initializer : private boost::noncopyable {
   ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
                               const std::string& base_path);
 
-  /// Processes Constant Expression definitions in input file.
-  ///
-  /// @param[in] expr_element  XML expression element containing the definition.
-  ///
-  /// @returns Expression described in XML input expression node.
-  ExpressionPtr GetConstantExpression(const xmlpp::Element* expr_element);
-
   /// Processes Parameter Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.

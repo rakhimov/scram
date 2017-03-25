@@ -791,14 +791,23 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
   std::string expr_name = expr_element->get_name();
-  if (expr_name == "int" || expr_name == "float" || expr_name == "bool")
-    return GetConstantExpression(expr_element);
+  if (expr_name == "int") {
+    int val = CastAttributeValue<int>(expr_element, "value");
+    return std::make_shared<ConstantExpression>(val);
+  }
+  if (expr_name == "float") {
+    double val = CastAttributeValue<double>(expr_element, "value");
+    return std::make_shared<ConstantExpression>(val);
+  }
+  if (expr_name == "bool") {
+    std::string val = GetAttributeValue(expr_element, "value");
+    return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
+  }
+  if (expr_name == "pi")
+    return ConstantExpression::kPi;
 
   if (expr_name == "parameter" || expr_name == "system-mission-time")
     return GetParameterExpression(expr_element, base_path);
-
-  if (expr_name == "pi")
-    return ConstantExpression::kPi;
 
   try {
     ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
@@ -810,25 +819,6 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
     std::stringstream msg;
     msg << "Line " << expr_element->get_line() << ":\n";
     throw ValidationError(msg.str() + err.msg());
-  }
-}
-
-ExpressionPtr Initializer::GetConstantExpression(
-    const xmlpp::Element* expr_element) {
-  assert(expr_element);
-  std::string expr_name = expr_element->get_name();
-  if (expr_name == "int") {
-    int val = CastAttributeValue<int>(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val);
-
-  } else if (expr_name == "float") {
-    double val = CastAttributeValue<double>(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val);
-
-  } else {
-    assert(expr_name == "bool");
-    std::string val = GetAttributeValue(expr_element, "value");
-    return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
   }
 }
 
