@@ -293,35 +293,35 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   AttachLabelAndAttributes(ft_node, component);
 
   for (const xmlpp::Node* node : ft_node->find("./define-house-event")) {
-    component->AddHouseEvent(
+    component->Add(
         DefineHouseEvent(XmlElement(node), base_path, component->role()));
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
-    component->AddBasicEvent(
+    component->Add(
         RegisterBasicEvent(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-parameter")) {
-    component->AddParameter(
+    component->Add(
         RegisterParameter(XmlElement(node), base_path, component->role()));
   }
 
   CLOCK(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-gate")) {
-    component->AddGate(
+    component->Add(
         RegisterGate(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-CCF-group")) {
-    component->AddCcfGroup(
+    component->Add(
         RegisterCcfGroup(XmlElement(node), base_path, component->role()));
   }
   for (const xmlpp::Node* node : ft_node->find("./define-component")) {
     ComponentPtr sub =
         DefineComponent(XmlElement(node), base_path, component->role());
     try {
-      component->AddComponent(std::move(sub));
+      component->Add(std::move(sub));
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << node->get_line() << ":\n";

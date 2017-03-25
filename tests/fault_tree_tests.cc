@@ -28,51 +28,51 @@ namespace test {
 TEST(FaultTreeTest, AddGate) {
   FaultTree ft("never_fail");
   GatePtr gate(new Gate("Golden"));
-  EXPECT_NO_THROW(ft.AddGate(gate));
-  EXPECT_THROW(ft.AddGate(gate), ValidationError);  // Trying to re-add.
+  EXPECT_NO_THROW(ft.Add(gate));
+  EXPECT_THROW(ft.Add(gate), ValidationError);  // Trying to re-add.
 
   GatePtr gate_two(new Gate("Iron"));
-  EXPECT_NO_THROW(ft.AddGate(gate_two));  // No parent.
+  EXPECT_NO_THROW(ft.Add(gate_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddBasicEvent) {
   FaultTree ft("never_fail");
   BasicEventPtr event(new BasicEvent("Golden"));
-  EXPECT_NO_THROW(ft.AddBasicEvent(event));
-  EXPECT_THROW(ft.AddBasicEvent(event), ValidationError);  // Trying to re-add.
+  EXPECT_NO_THROW(ft.Add(event));
+  EXPECT_THROW(ft.Add(event), ValidationError);  // Trying to re-add.
 
   BasicEventPtr event_two(new BasicEvent("Iron"));
-  EXPECT_NO_THROW(ft.AddBasicEvent(event_two));  // No parent.
+  EXPECT_NO_THROW(ft.Add(event_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddHouseEvent) {
   FaultTree ft("never_fail");
   HouseEventPtr event(new HouseEvent("Golden"));
-  EXPECT_NO_THROW(ft.AddHouseEvent(event));
-  EXPECT_THROW(ft.AddHouseEvent(event), ValidationError);  // Trying to re-add.
+  EXPECT_NO_THROW(ft.Add(event));
+  EXPECT_THROW(ft.Add(event), ValidationError);  // Trying to re-add.
 
   HouseEventPtr event_two(new HouseEvent("Iron"));
-  EXPECT_NO_THROW(ft.AddHouseEvent(event_two));  // No parent.
+  EXPECT_NO_THROW(ft.Add(event_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddCcfGroup) {
   FaultTree ft("never_fail");
   CcfGroupPtr group(new BetaFactorModel("Golden"));
-  EXPECT_NO_THROW(ft.AddCcfGroup(group));
-  EXPECT_THROW(ft.AddCcfGroup(group), ValidationError);  // Trying to re-add.
+  EXPECT_NO_THROW(ft.Add(group));
+  EXPECT_THROW(ft.Add(group), ValidationError);  // Trying to re-add.
 
   CcfGroupPtr group_two(new BetaFactorModel("Iron"));
-  EXPECT_NO_THROW(ft.AddCcfGroup(group_two));
+  EXPECT_NO_THROW(ft.Add(group_two));
 }
 
 TEST(FaultTreeTest, AddParameter) {
   FaultTree ft("never_fail");
   ParameterPtr parameter(new Parameter("Golden"));
-  EXPECT_NO_THROW(ft.AddParameter(parameter));
-  EXPECT_THROW(ft.AddParameter(parameter), ValidationError);
+  EXPECT_NO_THROW(ft.Add(parameter));
+  EXPECT_THROW(ft.Add(parameter), ValidationError);
 
   ParameterPtr parameter_two(new Parameter("Iron"));
-  EXPECT_NO_THROW(ft.AddParameter(parameter_two));
+  EXPECT_NO_THROW(ft.Add(parameter_two));
 }
 
 }  // namespace test
