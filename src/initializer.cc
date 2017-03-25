@@ -219,6 +219,78 @@ void Initializer::Register(T&& element, const xmlpp::Element* xml_element) {
   }
 }
 
+/// Specializations for element registrations.
+/// @{
+template <>
+GatePtr Initializer::Register(const xmlpp::Element* gate_node,
+                              const std::string& base_path,
+                              RoleSpecifier container_role) {
+  GatePtr gate = ConstructElement<Gate>(gate_node, base_path, container_role);
+  Register(gate, gate_node);
+  tbd_.gates.emplace_back(gate.get(), gate_node);
+  return gate;
+}
+
+template <>
+BasicEventPtr Initializer::Register(const xmlpp::Element* event_node,
+                                    const std::string& base_path,
+                                    RoleSpecifier container_role) {
+  BasicEventPtr basic_event =
+      ConstructElement<BasicEvent>(event_node, base_path, container_role);
+  Register(basic_event, event_node);
+  tbd_.basic_events.emplace_back(basic_event.get(), event_node);
+  return basic_event;
+}
+
+template <>
+ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
+                                   const std::string& base_path,
+                                   RoleSpecifier container_role) {
+  ParameterPtr parameter =
+      ConstructElement<Parameter>(param_node, base_path, container_role);
+  Register(parameter, param_node);
+  tbd_.parameters.emplace_back(parameter.get(), param_node);
+
+  // Attach units.
+  std::string unit = GetAttributeValue(param_node, "unit");
+  if (!unit.empty()) {
+    int pos = boost::find(kUnitsToString, unit) - std::begin(kUnitsToString);
+    assert(pos < kNumUnits && "Unexpected unit kind.");
+    parameter->unit(static_cast<Units>(pos));
+  }
+  return parameter;
+}
+
+template <>
+CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
+                                  const std::string& base_path,
+                                  RoleSpecifier container_role) {
+  auto ccf_group = [&]() -> CcfGroupPtr {
+    std::string model = GetAttributeValue(ccf_node, "model");
+    if (model == "beta-factor")
+      return ConstructElement<BetaFactorModel>(ccf_node, base_path,
+                                               container_role);
+    if (model == "MGL")
+      return ConstructElement<MglModel>(ccf_node, base_path, container_role);
+    if (model == "alpha-factor")
+      return ConstructElement<AlphaFactorModel>(ccf_node, base_path,
+                                                container_role);
+    assert(model == "phi-factor" && "Unrecognized CCF model.");
+    return ConstructElement<PhiFactorModel>(ccf_node, base_path,
+                                            container_role);
+  }();
+
+  Register(ccf_group, ccf_node);
+
+  xmlpp::NodeSet members = ccf_node->find("./members");
+  assert(members.size() == 1);
+  ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
+
+  tbd_.ccf_groups.emplace_back(ccf_group.get(), ccf_node);
+  return ccf_group;
+}
+/// @}
+
 void Initializer::ProcessInputFile(const std::string& xml_file) {
   static xmlpp::RelaxNGValidator validator(Env::input_schema());
 
@@ -248,7 +320,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   }
 
   for (const xmlpp::Node* node : root->find("./define-CCF-group")) {
-    RegisterCcfGroup(XmlElement(node), "", RoleSpecifier::kPublic);
+    Register<CcfGroup>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 
   for (const xmlpp::Node* node : root->find("./model-data")) {
@@ -380,23 +452,23 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   CLOCK(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
     component->Add(
-        RegisterBasicEvent(XmlElement(node), base_path, component->role()));
+        Register<BasicEvent>(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-parameter")) {
     component->Add(
-        RegisterParameter(XmlElement(node), base_path, component->role()));
+        Register<Parameter>(XmlElement(node), base_path, component->role()));
   }
 
   CLOCK(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-gate")) {
     component->Add(
-        RegisterGate(XmlElement(node), base_path, component->role()));
+        Register<Gate>(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (const xmlpp::Node* node : ft_node->find("./define-CCF-group")) {
     component->Add(
-        RegisterCcfGroup(XmlElement(node), base_path, component->role()));
+        Register<CcfGroup>(XmlElement(node), base_path, component->role()));
   }
   for (const xmlpp::Node* node : ft_node->find("./define-component")) {
     ComponentPtr sub =
@@ -418,21 +490,12 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-basic-event")) {
-    RegisterBasicEvent(XmlElement(node), "", RoleSpecifier::kPublic);
+    Register<BasicEvent>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-parameter")) {
-    RegisterParameter(XmlElement(node), "", RoleSpecifier::kPublic);
+    Register<Parameter>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
-}
-
-GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
-                                  const std::string& base_path,
-                                  RoleSpecifier container_role) {
-  GatePtr gate = ConstructElement<Gate>(gate_node, base_path, container_role);
-  Register(gate, gate_node);
-  tbd_.gates.emplace_back(gate.get(), gate_node);
-  return gate;
 }
 
 FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
@@ -521,16 +584,6 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
   }
 }
 
-BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
-                                              const std::string& base_path,
-                                              RoleSpecifier container_role) {
-  BasicEventPtr basic_event =
-      ConstructElement<BasicEvent>(event_node, base_path, container_role);
-  Register(basic_event, event_node);
-  tbd_.basic_events.emplace_back(basic_event.get(), event_node);
-  return basic_event;
-}
-
 HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
                                             const std::string& base_path,
                                             RoleSpecifier container_role) {
@@ -550,24 +603,6 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
     house_event->state(state);
   }
   return house_event;
-}
-
-ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
-                                            const std::string& base_path,
-                                            RoleSpecifier container_role) {
-  ParameterPtr parameter =
-      ConstructElement<Parameter>(param_node, base_path, container_role);
-  Register(parameter, param_node);
-  tbd_.parameters.emplace_back(parameter.get(), param_node);
-
-  // Attach units.
-  std::string unit = GetAttributeValue(param_node, "unit");
-  if (!unit.empty()) {
-    int pos = boost::find(kUnitsToString, unit) - std::begin(kUnitsToString);
-    assert(pos < kNumUnits && "Unexpected unit kind.");
-    parameter->unit(static_cast<Units>(pos));
-  }
-  return parameter;
 }
 
 template <class T, int N>
@@ -831,34 +866,6 @@ ExpressionPtr Initializer::GetParameterExpression(
     throw ValidationError(msg.str());
   }
   return expression;
-}
-
-CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
-                                          const std::string& base_path,
-                                          RoleSpecifier container_role) {
-  auto ccf_group = [&]() -> CcfGroupPtr {
-    std::string model = GetAttributeValue(ccf_node, "model");
-    if (model == "beta-factor")
-      return ConstructElement<BetaFactorModel>(ccf_node, base_path,
-                                               container_role);
-    if (model == "MGL")
-      return ConstructElement<MglModel>(ccf_node, base_path, container_role);
-    if (model == "alpha-factor")
-      return ConstructElement<AlphaFactorModel>(ccf_node, base_path,
-                                                container_role);
-    assert(model == "phi-factor" && "Unrecognized CCF model.");
-    return ConstructElement<PhiFactorModel>(ccf_node, base_path,
-                                            container_role);
-  }();
-
-  Register(ccf_group, ccf_node);
-
-  xmlpp::NodeSet members = ccf_node->find("./members");
-  assert(members.size() == 1);
-  ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
-
-  tbd_.ccf_groups.emplace_back(ccf_group.get(), ccf_node);
-  return ccf_group;
 }
 
 void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
