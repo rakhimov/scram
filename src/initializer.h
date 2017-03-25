@@ -146,15 +146,16 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  The elements contain undefined dependencies.
   void ProcessTbdElements();
 
-  /// Attaches attributes and a label to the elements of the analysis.
-  /// These attributes are not XML attributes
-  /// but the Open-PSA format defined arbitrary attributes
-  /// and a label that can be attached to many analysis elements.
+  /// Registers an element into the model.
   ///
-  /// @param[in] element_node  XML element.
-  /// @param[out] element  The object that needs attributes and label.
-  void AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                Element* element);
+  /// @tparam T  A pointer type to the element.
+  ///
+  /// @param[in] element  The initialized element ready to be added into models.
+  /// @param[in] xml_element  The related XML element for error messages.
+  ///
+  /// @throws ValidationError  Issues with adding the element into the model.
+  template <class T>
+  void Register(T&& element, const xmlpp::Element* xml_element);
 
   /// Defines an event tree for the analysis.
   ///
