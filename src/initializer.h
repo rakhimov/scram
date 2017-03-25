@@ -259,19 +259,6 @@ class Initializer : private boost::noncopyable {
                       const std::string& base_path,
                       Formula* formula);
 
-  /// Defines and adds a house event for this analysis.
-  ///
-  /// @param[in] event_node  XML element defining the event.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
-  ///
-  /// @returns Pointer to the registered house event.
-  ///
-  /// @throws ValidationError  An event with the same name is already defined.
-  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
-                                 const std::string& base_path,
-                                 RoleSpecifier container_role);
-
   /// Processes Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.

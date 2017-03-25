@@ -243,6 +243,28 @@ BasicEventPtr Initializer::Register(const xmlpp::Element* event_node,
 }
 
 template <>
+HouseEventPtr Initializer::Register(const xmlpp::Element* event_node,
+                                    const std::string& base_path,
+                                    RoleSpecifier container_role) {
+  HouseEventPtr house_event =
+      ConstructElement<HouseEvent>(event_node, base_path, container_role);
+  Register(house_event, event_node);
+
+  // Only Boolean constant.
+  xmlpp::NodeSet expression = event_node->find("./constant");
+  if (!expression.empty()) {
+    assert(expression.size() == 1);
+    const xmlpp::Element* constant = XmlElement(expression.front());
+
+    std::string val = GetAttributeValue(constant, "value");
+    assert(val == "true" || val == "false");
+    bool state = val == "true";
+    house_event->state(state);
+  }
+  return house_event;
+}
+
+template <>
 ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
                                    const std::string& base_path,
                                    RoleSpecifier container_role) {
@@ -447,7 +469,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
                                         Component* component) {
   for (const xmlpp::Node* node : ft_node->find("./define-house-event")) {
     component->Add(
-        DefineHouseEvent(XmlElement(node), base_path, component->role()));
+        Register<HouseEvent>(XmlElement(node), base_path, component->role()));
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
@@ -486,7 +508,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   for (const xmlpp::Node* node : model_data->find("./define-house-event")) {
-    DefineHouseEvent(XmlElement(node), "", RoleSpecifier::kPublic);
+    Register<HouseEvent>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   CLOCK(basic_time);
   for (const xmlpp::Node* node : model_data->find("./define-basic-event")) {
@@ -582,27 +604,6 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     const xmlpp::Element* nested_formula = XmlElement(node);
     formula->AddArgument(GetFormula(nested_formula, base_path));
   }
-}
-
-HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
-                                            const std::string& base_path,
-                                            RoleSpecifier container_role) {
-  HouseEventPtr house_event =
-      ConstructElement<HouseEvent>(event_node, base_path, container_role);
-  Register(house_event, event_node);
-
-  // Only Boolean constant.
-  xmlpp::NodeSet expression = event_node->find("./constant");
-  if (!expression.empty()) {
-    assert(expression.size() == 1);
-    const xmlpp::Element* constant = XmlElement(expression.front());
-
-    std::string val = GetAttributeValue(constant, "value");
-    assert(val == "true" || val == "false");
-    bool state = val == "true";
-    house_event->state(state);
-  }
-  return house_event;
 }
 
 template <class T, int N>
