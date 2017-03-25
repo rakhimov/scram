@@ -260,26 +260,19 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 void Initializer::ProcessTbdElements() {
   // This element helps report errors.
   const xmlpp::Element* el_def;  // XML element with the definition.
+
+  auto process = [this, &el_def](const auto& tbd_elements) {
+    for (const auto& tbd_element : tbd_elements) {
+      el_def = tbd_element.second;
+      Define(el_def, tbd_element.first);
+    }
+  };
+
   try {
-    for (const std::pair<Parameter*, const xmlpp::Element*>& param :
-         tbd_.parameters) {
-      el_def = param.second;
-      DefineParameter(el_def, param.first);
-    }
-    for (const std::pair<BasicEvent*, const xmlpp::Element*>& event :
-         tbd_.basic_events) {
-      el_def = event.second;
-      DefineBasicEvent(el_def, event.first);
-    }
-    for (const std::pair<Gate*, const xmlpp::Element*>& gate : tbd_.gates) {
-      el_def = gate.second;
-      DefineGate(el_def, gate.first);
-    }
-    for (const std::pair<CcfGroup*, const xmlpp::Element*>& group :
-         tbd_.ccf_groups) {
-      el_def = group.second;
-      DefineCcfGroup(el_def, group.first);
-    }
+    process(tbd_.parameters);
+    process(tbd_.basic_events);
+    process(tbd_.gates);
+    process(tbd_.ccf_groups);
   } catch (ValidationError& err) {
     const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
     err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
@@ -373,7 +366,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   return gate;
 }
 
-void Initializer::DefineGate(const xmlpp::Element* gate_node, Gate* gate) {
+void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
   xmlpp::NodeSet formulas =
       gate_node->find("./*[name() != 'attributes' and name() != 'label']");
   // Assumes that there are no attributes and labels.
@@ -485,8 +478,8 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   return basic_event;
 }
 
-void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
-                                   BasicEvent* basic_event) {
+void Initializer::Define(const xmlpp::Element* event_node,
+                         BasicEvent* basic_event) {
   xmlpp::NodeSet expressions =
      event_node->find("./*[name() != 'attributes' and name() != 'label']");
 
@@ -537,8 +530,8 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   return parameter;
 }
 
-void Initializer::DefineParameter(const xmlpp::Element* param_node,
-                                  Parameter* parameter) {
+void Initializer::Define(const xmlpp::Element* param_node,
+                         Parameter* parameter) {
   // Assuming that expression is the last child of the parameter definition.
   xmlpp::NodeSet expressions =
       param_node->find("./*[name() != 'attributes' and name() != 'label']");
@@ -839,8 +832,7 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
   return ccf_group;
 }
 
-void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
-                                 CcfGroup* ccf_group) {
+void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
   for (const xmlpp::Node* node : ccf_node->find("./*")) {
     const xmlpp::Element* element = XmlElement(node);
     std::string name = element->get_name();

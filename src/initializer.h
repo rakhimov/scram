@@ -225,7 +225,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] gate_node  XML element defining the gate.
   /// @param[in,out] gate  Registered gate ready to be defined.
-  void DefineGate(const xmlpp::Element* gate_node, Gate* gate);
+  void Define(const xmlpp::Element* gate_node, Gate* gate);
 
   /// Creates a Boolean formula from the XML elements
   /// describing the formula with events and other nested formulas.
@@ -267,8 +267,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] event_node  XML element defining the event.
   /// @param[in,out] basic_event  Registered basic event ready to be defined.
-  void DefineBasicEvent(const xmlpp::Element* event_node,
-                        BasicEvent* basic_event);
+  void Define(const xmlpp::Element* event_node, BasicEvent* basic_event);
 
   /// Defines and adds a house event for this analysis.
   ///
@@ -300,7 +299,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] param_node  XML element defining the parameter.
   /// @param[in,out] parameter  Registered parameter to be defined.
-  void DefineParameter(const xmlpp::Element* param_node, Parameter* parameter);
+  void Define(const xmlpp::Element* param_node, Parameter* parameter);
 
   /// Processes Expression definitions in input file.
   ///
@@ -350,7 +349,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] ccf_node  XML element defining CCF group.
   /// @param[in,out] ccf_group  Registered CCF group to be defined.
-  void DefineCcfGroup(const xmlpp::Element* ccf_node, CcfGroup* ccf_group);
+  void Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group);
 
   /// Processes common cause failure group members as defined basic events.
   ///
