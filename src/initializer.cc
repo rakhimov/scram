@@ -257,6 +257,75 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   parsers_.emplace_back(std::move(parser));
 }
 
+/// Specializations for elements defined after registration.
+/// @{
+template <>
+void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
+  xmlpp::NodeSet formulas =
+      gate_node->find("./*[name() != 'attributes' and name() != 'label']");
+  // Assumes that there are no attributes and labels.
+  assert(formulas.size() == 1);
+  const xmlpp::Element* formula_node = XmlElement(formulas.front());
+  gate->formula(GetFormula(formula_node, gate->base_path()));
+  try {
+    gate->Validate();
+  } catch (ValidationError& err) {
+    err.msg("Line " + std::to_string(gate_node->get_line()) + ":\n" +
+            err.msg());
+    throw;
+  }
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* event_node,
+                         BasicEvent* basic_event) {
+  xmlpp::NodeSet expressions =
+     event_node->find("./*[name() != 'attributes' and name() != 'label']");
+
+  if (!expressions.empty()) {
+    const xmlpp::Element* expr_node = XmlElement(expressions.back());
+    ExpressionPtr expression =
+        GetExpression(expr_node, basic_event->base_path());
+    basic_event->expression(expression);
+  }
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* param_node,
+                         Parameter* parameter) {
+  // Assuming that expression is the last child of the parameter definition.
+  xmlpp::NodeSet expressions =
+      param_node->find("./*[name() != 'attributes' and name() != 'label']");
+  assert(expressions.size() == 1);
+  const xmlpp::Element* expr_node = XmlElement(expressions.back());
+  ExpressionPtr expression = GetExpression(expr_node, parameter->base_path());
+  parameter->expression(expression);
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
+  for (const xmlpp::Node* node : ccf_node->find("./*")) {
+    const xmlpp::Element* element = XmlElement(node);
+    std::string name = element->get_name();
+    if (name == "distribution") {
+      assert(element->find("./*").size() == 1);
+      const xmlpp::Element* expr_node = XmlElement(element->find("./*")[0]);
+      ExpressionPtr expression =
+          GetExpression(expr_node, ccf_group->base_path());
+      ccf_group->AddDistribution(expression);
+
+    } else if (name == "factor") {
+      DefineCcfFactor(element, ccf_group);
+
+    } else if (name == "factors") {
+      for (const xmlpp::Node* factor_node : element->find("./*")) {
+        DefineCcfFactor(XmlElement(factor_node), ccf_group);
+      }
+    }
+  }
+}
+/// @}
+
 void Initializer::ProcessTbdElements() {
   // This element helps report errors.
   const xmlpp::Element* el_def;  // XML element with the definition.
@@ -366,22 +435,6 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   return gate;
 }
 
-void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
-  xmlpp::NodeSet formulas =
-      gate_node->find("./*[name() != 'attributes' and name() != 'label']");
-  // Assumes that there are no attributes and labels.
-  assert(formulas.size() == 1);
-  const xmlpp::Element* formula_node = XmlElement(formulas.front());
-  gate->formula(GetFormula(formula_node, gate->base_path()));
-  try {
-    gate->Validate();
-  } catch (ValidationError& err) {
-    err.msg("Line " + std::to_string(gate_node->get_line()) + ":\n" +
-            err.msg());
-    throw;
-  }
-}
-
 FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
                                    const std::string& base_path) {
   std::string type = formula_node->get_name();
@@ -478,19 +531,6 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   return basic_event;
 }
 
-void Initializer::Define(const xmlpp::Element* event_node,
-                         BasicEvent* basic_event) {
-  xmlpp::NodeSet expressions =
-     event_node->find("./*[name() != 'attributes' and name() != 'label']");
-
-  if (!expressions.empty()) {
-    const xmlpp::Element* expr_node = XmlElement(expressions.back());
-    ExpressionPtr expression =
-        GetExpression(expr_node, basic_event->base_path());
-    basic_event->expression(expression);
-  }
-}
-
 HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
                                             const std::string& base_path,
                                             RoleSpecifier container_role) {
@@ -528,17 +568,6 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
     parameter->unit(static_cast<Units>(pos));
   }
   return parameter;
-}
-
-void Initializer::Define(const xmlpp::Element* param_node,
-                         Parameter* parameter) {
-  // Assuming that expression is the last child of the parameter definition.
-  xmlpp::NodeSet expressions =
-      param_node->find("./*[name() != 'attributes' and name() != 'label']");
-  assert(expressions.size() == 1);
-  const xmlpp::Element* expr_node = XmlElement(expressions.back());
-  ExpressionPtr expression = GetExpression(expr_node, parameter->base_path());
-  parameter->expression(expression);
 }
 
 template <class T, int N>
@@ -830,28 +859,6 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
 
   tbd_.ccf_groups.emplace_back(ccf_group.get(), ccf_node);
   return ccf_group;
-}
-
-void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
-  for (const xmlpp::Node* node : ccf_node->find("./*")) {
-    const xmlpp::Element* element = XmlElement(node);
-    std::string name = element->get_name();
-    if (name == "distribution") {
-      assert(element->find("./*").size() == 1);
-      const xmlpp::Element* expr_node = XmlElement(element->find("./*")[0]);
-      ExpressionPtr expression =
-          GetExpression(expr_node, ccf_group->base_path());
-      ccf_group->AddDistribution(expression);
-
-    } else if (name == "factor") {
-      DefineCcfFactor(element, ccf_group);
-
-    } else if (name == "factors") {
-      for (const xmlpp::Node* factor_node : element->find("./*")) {
-        DefineCcfFactor(XmlElement(factor_node), ccf_group);
-      }
-    }
-  }
 }
 
 void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,

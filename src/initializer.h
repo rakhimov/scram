@@ -157,6 +157,18 @@ class Initializer : private boost::noncopyable {
   template <class T>
   void Register(T&& element, const xmlpp::Element* xml_element);
 
+  /// Adds additional data to element definition
+  /// after processing all the input files.
+  ///
+  /// @tparam T  The Element type to be specialized for.
+  ///
+  /// @param[in] xml_node  XML element defining the element.
+  /// @param[in,out] element  Registered element ready to be defined.
+  ///
+  /// @throws ValidationError  Issues with the additional data.
+  template <class T>
+  void Define(const xmlpp::Element* xml_node, T* element);
+
   /// Defines an event tree for the analysis.
   ///
   /// @param[in] et_node  XML element defining the event tree.
@@ -221,12 +233,6 @@ class Initializer : private boost::noncopyable {
                        const std::string& base_path,
                        RoleSpecifier container_role);
 
-  /// Defines a gate for this analysis.
-  ///
-  /// @param[in] gate_node  XML element defining the gate.
-  /// @param[in,out] gate  Registered gate ready to be defined.
-  void Define(const xmlpp::Element* gate_node, Gate* gate);
-
   /// Creates a Boolean formula from the XML elements
   /// describing the formula with events and other nested formulas.
   ///
@@ -263,12 +269,6 @@ class Initializer : private boost::noncopyable {
                                    const std::string& base_path,
                                    RoleSpecifier container_role);
 
-  /// Defines a basic event for this analysis.
-  ///
-  /// @param[in] event_node  XML element defining the event.
-  /// @param[in,out] basic_event  Registered basic event ready to be defined.
-  void Define(const xmlpp::Element* event_node, BasicEvent* basic_event);
-
   /// Defines and adds a house event for this analysis.
   ///
   /// @param[in] event_node  XML element defining the event.
@@ -294,12 +294,6 @@ class Initializer : private boost::noncopyable {
   ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
                                  const std::string& base_path,
                                  RoleSpecifier container_role);
-
-  /// Defines a variable or parameter.
-  ///
-  /// @param[in] param_node  XML element defining the parameter.
-  /// @param[in,out] parameter  Registered parameter to be defined.
-  void Define(const xmlpp::Element* param_node, Parameter* parameter);
 
   /// Processes Expression definitions in input file.
   ///
@@ -344,12 +338,6 @@ class Initializer : private boost::noncopyable {
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
                                const std::string& base_path,
                                RoleSpecifier container_role);
-
-  /// Defines a common cause failure group for the analysis.
-  ///
-  /// @param[in] ccf_node  XML element defining CCF group.
-  /// @param[in,out] ccf_group  Registered CCF group to be defined.
-  void Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group);
 
   /// Processes common cause failure group members as defined basic events.
   ///
