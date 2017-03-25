@@ -27,9 +27,27 @@
 #include <boost/noncopyable.hpp>
 
 #include "element.h"
+#include "expression.h"
 
 namespace scram {
 namespace mef {
+
+/// Instructions and rules for event tree paths.
+class Instruction : private boost::noncopyable {
+ public:
+  virtual ~Instruction() = 0;
+};
+
+/// The operation of collecting expressions for event tree sequences.
+class CollectExpression : public Instruction {
+ public:
+  /// @param[in] expression  The expression to multiply
+  ///                        the current sequence probability.
+  explicit CollectExpression(const ExpressionPtr& expression);
+
+ private:
+  ExpressionPtr expression_;  ///< The probability expression to multiply.
+};
 
 /// Event Tree representation with MEF constructs.
 class EventTree : public Element, private boost::noncopyable {

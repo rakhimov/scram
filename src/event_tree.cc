@@ -23,6 +23,11 @@
 namespace scram {
 namespace mef {
 
+Instruction::~Instruction() = default;
+
+CollectExpression::CollectExpression(const ExpressionPtr& expression)
+    : expression_(expression) {}
+
 EventTree::EventTree(std::string name) : Element(std::move(name)) {}
 
 }  // namespace mef
