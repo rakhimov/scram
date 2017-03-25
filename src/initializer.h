@@ -272,14 +272,17 @@ class Initializer : private boost::noncopyable {
 
   /// Processes Parameter Expression definitions in input file.
   ///
+  /// @param[in] expr_type  The expression type name.
   /// @param[in] expr_element  XML expression element containing the definition.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   ///
   /// @returns Parameter expression described in XML input expression node.
+  /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
-  ExpressionPtr GetParameterExpression(const xmlpp::Element* expr_element,
-                                       const std::string& base_path);
+  ExpressionPtr GetParameter(const std::string& expr_type,
+                             const xmlpp::Element* expr_element,
+                             const std::string& base_path);
 
   /// Processes common cause failure group members as defined basic events.
   ///

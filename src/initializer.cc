@@ -790,27 +790,27 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
 
 ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
                                          const std::string& base_path) {
-  std::string expr_name = expr_element->get_name();
-  if (expr_name == "int") {
+  std::string expr_type = expr_element->get_name();
+  if (expr_type == "int") {
     int val = CastAttributeValue<int>(expr_element, "value");
     return std::make_shared<ConstantExpression>(val);
   }
-  if (expr_name == "float") {
+  if (expr_type == "float") {
     double val = CastAttributeValue<double>(expr_element, "value");
     return std::make_shared<ConstantExpression>(val);
   }
-  if (expr_name == "bool") {
+  if (expr_type == "bool") {
     std::string val = GetAttributeValue(expr_element, "value");
     return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
   }
-  if (expr_name == "pi")
+  if (expr_type == "pi")
     return ConstantExpression::kPi;
 
-  if (expr_name == "parameter" || expr_name == "system-mission-time")
-    return GetParameterExpression(expr_element, base_path);
+  if (auto expression = GetParameter(expr_type, expr_element, base_path))
+    return expression;
 
   try {
-    ExpressionPtr expression = kExpressionExtractors_.at(expr_name)(
+    ExpressionPtr expression = kExpressionExtractors_.at(expr_type)(
         expr_element->find("./*"), base_path, this);
     // Register for late validation after ensuring no cycles.
     expressions_.emplace_back(expression.get(), expr_element);
@@ -822,41 +822,39 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
   }
 }
 
-ExpressionPtr Initializer::GetParameterExpression(
-    const xmlpp::Element* expr_element,
-    const std::string& base_path) {
-  assert(expr_element);
-  std::string expr_name = expr_element->get_name();
-  std::string param_unit;  // The expected unit.
-  ExpressionPtr expression;
-  if (expr_name == "parameter") {
+ExpressionPtr Initializer::GetParameter(const std::string& expr_type,
+                                        const xmlpp::Element* expr_element,
+                                        const std::string& base_path) {
+  auto check_units = [&expr_element](const auto& parameter) {
+    std::string unit = GetAttributeValue(expr_element, "unit");
+    const char* param_unit = scram::mef::kUnitsToString[parameter.unit()];
+    if (!unit.empty() && unit != param_unit) {
+      std::stringstream msg;
+      msg << "Line " << expr_element->get_line() << ":\n";
+      msg << "Parameter unit mismatch.\nExpected: " << param_unit
+          << "\nGiven: " << unit;
+      throw scram::ValidationError(msg.str());
+    }
+  };
+
+  if (expr_type == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
     try {
       ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
-      param_unit = kUnitsToString[param->unit()];
-      expression = param;
+      check_units(*param);
+      return param;
     } catch (std::out_of_range&) {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n"
           << "Undefined parameter " << name << " with base path " << base_path;
       throw ValidationError(msg.str());
     }
-  } else {
-    assert(expr_name == "system-mission-time");
-    param_unit = kUnitsToString[model_->mission_time()->unit()];
-    expression = model_->mission_time();
+  } else if (expr_type == "system-mission-time") {
+    check_units(*model_->mission_time());
+    return model_->mission_time();
   }
-  // Check units.
-  std::string unit = GetAttributeValue(expr_element, "unit");
-  if (!unit.empty() && unit != param_unit) {
-    std::stringstream msg;
-    msg << "Line " << expr_element->get_line() << ":\n";
-    msg << "Parameter unit mismatch.\nExpected: " << param_unit
-        << "\nGiven: " << unit;
-    throw ValidationError(msg.str());
-  }
-  return expression;
+  return nullptr;  // The expression is not a parameter.
 }
 
 void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
