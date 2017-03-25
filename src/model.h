@@ -77,56 +77,21 @@ class Model : public Element, private boost::noncopyable {
   const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
 
-  /// Adds an event tree into the model container.
-  /// Event trees are uniquely owned by this model.
+  /// Adds MEF constructs into the model container.
   ///
-  /// @param[in] event_tree  A event tree defined in this model.
+  /// @param[in] element  An element defined in this model.
   ///
-  /// @throws RedefinitionError  The model has an event tree with the same name.
-  void AddEventTree(EventTreePtr event_tree);
-
-  /// Adds a fault tree into the model container.
-  /// Fault trees are uniquely owned by this model.
+  /// @throws RedefinitionError  The element is already defined in the model.
   ///
-  /// @param[in] fault_tree  A fault tree defined in this model.
-  ///
-  /// @throws RedefinitionError  The model has a container with the same name.
-  void AddFaultTree(FaultTreePtr fault_tree);
-
-  /// Adds a parameter that is used in this model's expressions.
-  ///
-  /// @param[in] parameter  A parameter defined in this model.
-  ///
-  /// @throws RedefinitionError  The model has a parameter with the same name.
-  void AddParameter(const ParameterPtr& parameter);
-
-  /// Adds a house event that is used in this model.
-  ///
-  /// @param[in] house_event  A house event defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddHouseEvent(const HouseEventPtr& house_event);
-
-  /// Adds a basic event that is used in this model.
-  ///
-  /// @param[in] basic_event  A basic event defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddBasicEvent(const BasicEventPtr& basic_event);
-
-  /// Adds a gate that is used in this model's fault trees or components.
-  ///
-  /// @param[in] gate  A gate defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddGate(const GatePtr& gate);
-
-  /// Adds a CCF group that is used in this model's fault trees.
-  ///
-  /// @param[in] ccf_group  A CCF group defined in this model.
-  ///
-  /// @throws RedefinitionError  The model has a CCF group with the same name.
-  void AddCcfGroup(const CcfGroupPtr& ccf_group);
+  /// @{
+  void Add(EventTreePtr element);
+  void Add(FaultTreePtr element);
+  void Add(const ParameterPtr& element);
+  void Add(const HouseEventPtr& element);
+  void Add(const BasicEventPtr& element);
+  void Add(const GatePtr& element);
+  void Add(const CcfGroupPtr& element);
+  /// @}
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
   /// The reference is case sensitive

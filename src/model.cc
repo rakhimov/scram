@@ -20,6 +20,7 @@
 
 #include "model.h"
 
+#include "error.h"
 #include "ext/find_iterator.h"
 
 namespace scram {
@@ -31,27 +32,27 @@ Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),
       mission_time_(std::make_shared<MissionTime>()) {}
 
-void Model::AddEventTree(EventTreePtr event_tree) {
+void Model::Add(EventTreePtr event_tree) {
   if (event_trees_.count(event_tree->name())) {
     throw RedefinitionError("Redefinition of event tree " + event_tree->name());
   }
   event_trees_.insert(std::move(event_tree));
 }
 
-void Model::AddFaultTree(FaultTreePtr fault_tree) {
+void Model::Add(FaultTreePtr fault_tree) {
   if (fault_trees_.count(fault_tree->name())) {
     throw RedefinitionError("Redefinition of fault tree " + fault_tree->name());
   }
   fault_trees_.insert(std::move(fault_tree));
 }
 
-void Model::AddParameter(const ParameterPtr& parameter) {
+void Model::Add(const ParameterPtr& parameter) {
   if (!parameters_.Add(parameter)) {
     throw RedefinitionError("Redefinition of parameter " + parameter->name());
   }
 }
 
-void Model::AddHouseEvent(const HouseEventPtr& house_event) {
+void Model::Add(const HouseEventPtr& house_event) {
   bool original = events_.insert(house_event.get()).second;
   if (!original) {
     throw RedefinitionError("Redefinition of event " + house_event->name());
@@ -59,7 +60,7 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.Add(house_event);
 }
 
-void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
+void Model::Add(const BasicEventPtr& basic_event) {
   bool original = events_.insert(basic_event.get()).second;
   if (!original) {
     throw RedefinitionError("Redefinition of event " + basic_event->name());
@@ -67,7 +68,7 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.Add(basic_event);
 }
 
-void Model::AddGate(const GatePtr& gate) {
+void Model::Add(const GatePtr& gate) {
   bool original = events_.insert(gate.get()).second;
   if (!original) {
     throw RedefinitionError("Redefinition of event " + gate->name());
@@ -75,7 +76,7 @@ void Model::AddGate(const GatePtr& gate) {
   gates_.Add(gate);
 }
 
-void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
+void Model::Add(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.insert(ccf_group).second == false) {
     throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
   }

@@ -252,7 +252,7 @@ void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
   EventTreePtr event_tree(new EventTree(name));
   AttachLabelAndAttributes(et_node, event_tree.get());
   try {
-    model_->AddEventTree(std::move(event_tree));
+    model_->Add(std::move(event_tree));
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << et_node->get_line() << ":\n";
@@ -266,7 +266,7 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   FaultTreePtr fault_tree(new FaultTree(name));
   RegisterFaultTreeData(ft_node, name, fault_tree.get());
   try {
-    model_->AddFaultTree(std::move(fault_tree));
+    model_->Add(std::move(fault_tree));
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
@@ -353,7 +353,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   auto gate = std::make_shared<Gate>(name, base_path,
                                      GetRole(role, container_role));
   try {
-    model_->AddGate(gate);
+    model_->Add(gate);
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
@@ -477,7 +477,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
       base_path,
       GetRole(role, container_role));
   try {
-    model_->AddBasicEvent(basic_event);
+    model_->Add(basic_event);
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
@@ -512,7 +512,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
       base_path,
       GetRole(role, container_role));
   try {
-    model_->AddHouseEvent(house_event);
+    model_->Add(house_event);
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
@@ -543,7 +543,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   auto parameter = std::make_shared<Parameter>(name, base_path,
                                                GetRole(role, container_role));
   try {
-    model_->AddParameter(parameter);
+    model_->Add(parameter);
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << param_node->get_line() << ":\n";
@@ -864,7 +864,7 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
   }
 
   try {
-    model_->AddCcfGroup(ccf_group);
+    model_->Add(ccf_group);
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ccf_node->get_line() << ":\n";
@@ -917,7 +917,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
                                                     ccf_group->role());
     try {
       ccf_group->AddMember(basic_event);
-      model_->AddBasicEvent(basic_event);
+      model_->Add(basic_event);
     } catch (DuplicateArgumentError& err) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
