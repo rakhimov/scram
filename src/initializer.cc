@@ -896,20 +896,16 @@ void Initializer::ValidateInitialization() {
   for (const GatePtr& gate : model_->gates())
     gate->mark(NodeMark::kClear);
 
-  // Check if all primary events have expressions for probability analysis.
+  // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
     for (const BasicEventPtr& event : model_->basic_events()) {
       if (!event->has_expression())
         msg += event->name() + "\n";
     }
-    for (const HouseEventPtr& event : model_->house_events()) {
-      if (!event->has_expression())
-        msg += event->name() + "\n";
-    }
 
     if (!msg.empty())
-      throw ValidationError("These primary events do not have expressions:\n" +
+      throw ValidationError("These basic events do not have expressions:\n" +
                             msg);
   }
 

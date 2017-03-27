@@ -88,10 +88,6 @@ to identify the supported and unsupported features.
 Deviations from the Open-PSA MEF
 ================================
 
-- House events must be defined explicitly
-  for analysis with probability information.
-- Orphan primary events are reported as warning.
-- Unused parameters are reported as warning.
 - Redefinition of containers, events, and parameters is an error.
 - Common cause model levels for factors are required
   and must be strictly sequential in ascending order.

@@ -78,6 +78,8 @@ class PrimaryEvent : public Event {
 };
 
 /// Representation of a house event in a fault tree.
+///
+/// @note House Events with unset/uninitialized expressions default to False.
 class HouseEvent : public PrimaryEvent {
  public:
   using PrimaryEvent::PrimaryEvent;

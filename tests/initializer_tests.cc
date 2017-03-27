@@ -135,6 +135,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
 TEST(InitializerTest, CorrectProbabilityInputs) {
   std::string dir = "./share/scram/input/fta/";
   std::vector<std::string> correct_inputs = {
+      "missing_bool_constant.xml",  // House event is implicitly false.
       "correct_tree_input_with_probs.xml",
       "trailing_spaces.xml",
       "correct_expressions.xml",
@@ -208,8 +209,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
 // Test failures triggered only in with probability analysis.
 TEST(InitializerTest, IncorrectProbabilityInputs) {
   std::string dir = "./share/scram/input/fta/";
-  std::vector<std::string> incorrect_inputs = {"missing_bool_constant.xml",
-                                               "missing_expression.xml"};
+  std::vector<std::string> incorrect_inputs = {"missing_expression.xml"};
 
   core::Settings settings;
   settings.probability_analysis(true);
