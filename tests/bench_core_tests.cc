@@ -390,8 +390,8 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
   std::string v1 = "[ValveOne]";
   std::string v2 = "[ValveTwo]";
   std::string v3 = "[ValveThree]";
-  std::string pumps = "[PumpOne PumpThree PumpTwo]";
-  std::string valves = "[ValveOne ValveThree ValveTwo]";
+  std::string pumps = "[PumpOne PumpTwo PumpThree]";
+  std::string valves = "[ValveOne ValveTwo ValveThree]";
 
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));

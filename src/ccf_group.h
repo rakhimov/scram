@@ -92,7 +92,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   virtual ~CcfGroup() = default;
 
   /// @returns Members of the CCF group with original names as keys.
-  const ElementTable<BasicEventPtr>& members() const { return members_; }
+  const std::vector<BasicEventPtr>& members() const { return members_; }
 
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
@@ -187,13 +187,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   ///           for each level of groupings for CCF events.
   virtual ExpressionMap CalculateProbabilities() = 0;
 
-  /// Stabilizes the order of CCF group members.
-  ///
-  /// @returns Ordered members.
-  std::vector<BasicEvent*> StabilizeMembers();
-
   /// Members of CCF groups.
-  ElementTable<BasicEventPtr> members_;
+  std::vector<BasicEventPtr> members_;
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
 };

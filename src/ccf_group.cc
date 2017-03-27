@@ -22,10 +22,9 @@
 
 #include <cmath>
 
-#include <boost/range/algorithm.hpp>
-
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
+#include "ext/algorithm.h"
 #include "ext/combination_iterator.h"
 
 namespace scram {
@@ -41,10 +40,13 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (members_.insert(basic_event).second == false) {
+  if (ext::any_of(members_, [&basic_event](const BasicEventPtr& member) {
+        return member->name() == basic_event->name();
+      })) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + Element::name() + " CCF group.");
   }
+  members_.push_back(basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
@@ -114,21 +116,10 @@ std::string JoinNames(const std::vector<Gate*>& combination) {
 
 }  // namespace
 
-std::vector<BasicEvent*> CcfGroup::StabilizeMembers() {
-  std::vector<BasicEvent*> stable_members;
-  stable_members.reserve(members_.size());
-  for (const BasicEventPtr& member : members_)
-    stable_members.push_back(member.get());
-
-  boost::sort(stable_members,
-              [](auto* lhs, auto* rhs) { return lhs->name() < rhs->name(); });
-  return stable_members;
-}
-
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<Gate*> proxy_gates;
-  for (BasicEvent* member : StabilizeMembers()) {
+  for (const BasicEventPtr& member : members_) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
