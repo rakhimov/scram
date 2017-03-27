@@ -23,24 +23,23 @@
       <members>
         <basic-event name="PumpOne"/>
         <basic-event name="PumpTwo"/>
+        <basic-event name="ValveOne"/>
+        <basic-event name="ValveTwo"/>
       </members>
       <distribution>
         <float value="0.1"/>
       </distribution>
-      <factors>
-        <factor level="2">
-          <float value="0.2"/>
+      <factors> <!-- The order of factors is flexible. -->
+        <factor level="3">
+          <float value="0.1"/>
         </factor>
-        <factor level="2">  <!-- Level Redefinition -->
-          <float value="0.2"/>
+        <factor level="1">
+          <float value="0.7"/>
+        </factor>
+        <factor level="2">
+          <float value="0.1"/>
         </factor>
       </factors>
     </define-CCF-group>
-    <define-basic-event name="ValveOne">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
   </define-fault-tree>
 </opsa-mef>

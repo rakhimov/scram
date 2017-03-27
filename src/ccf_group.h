@@ -118,10 +118,6 @@ class CcfGroup : public Id, private boost::noncopyable {
   void AddDistribution(const ExpressionPtr& distr);
 
   /// Adds a CCF factor for the specified model.
-  /// The addition of factors must be in ascending level order
-  /// and no gaps are allowed between levels.
-  /// The default case is to start from 1.
-  ///
   /// All basic events should be added as members
   /// before defining the CCF factors.
   /// No more basic events can be added after this function.
@@ -129,7 +125,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError  Level is not what is expected.
+  /// @throws ValidationError  The level is invalid.
+  /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
   void AddFactor(const ExpressionPtr& factor, int level);
@@ -148,6 +145,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// Processes the given factors and members
   /// to create common cause failure probabilities and new events
   /// that can replace the members in a fault tree.
+  ///
+  /// @pre The CCF is validated.
   void ApplyModel();
 
  protected:

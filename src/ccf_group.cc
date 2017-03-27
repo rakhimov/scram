@@ -65,15 +65,30 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
   if (level <= 0 || members_.empty())
     throw LogicError("Invalid CCF group factor setup.");
-  int expected_level = factors_.size() + this->MinLevel();
-  if (members_.size() < expected_level)
-    throw ValidationError(Element::name() +
-                          " CCF group is given more factors than expected.");
-  if (level != expected_level)
-    throw ValidationError(Element::name() + " CCF group level expected " +
-                          std::to_string(expected_level) +
-                          ". Instead was given " + std::to_string(level));
-  factors_.emplace_back(level, factor);
+  int min_level = this->MinLevel();
+  if (level < min_level) {
+    throw ValidationError("The CCF factor level (" + std::to_string(level) +
+                          ") is less than the minimum level (" +
+                          std::to_string(min_level) + ") required by " +
+                          Element::name() + " CCF group.");
+  }
+  if (members_.size() < level) {
+    throw ValidationError("The CCF factor level " + std::to_string(level) +
+                          " is more than the number of members (" +
+                          std::to_string(members_.size()) + ") in " +
+                          Element::name() + " CCF group.");
+  }
+
+  int index = level - min_level;
+  if (index < factors_.size() && factors_[index].second != nullptr) {
+    throw RedefinitionError("Redefinition of CCF factor for level " +
+                            std::to_string(level) + " in " + Element::name() +
+                            " CCF group.");
+  }
+  if (index >= factors_.size())
+    factors_.resize(index + 1);
+
+  factors_[index] = {level, factor};
 }
 
 void CcfGroup::Validate() const {
@@ -86,6 +101,10 @@ void CcfGroup::Validate() const {
   }
 
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
+    if (!f.second) {
+      throw ValidationError("Missing some CCF factors for " + Element::name() +
+                            " CCF group.");
+    }
     if (f.second->Max() > 1 || f.second->Min() < 0) {
       throw ValidationError("Factors for " + Element::name() +
                             " CCF group have illegal values.");

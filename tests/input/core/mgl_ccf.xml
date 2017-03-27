@@ -41,11 +41,11 @@ CCF is represented with MGL factors.
       <float value="0.1"/>
     </distribution>
     <factors>
-      <factor level="2">
-        <float value="0.2"/>
-      </factor>
       <factor level="3">
         <float value="0.1"/>
+      </factor>
+      <factor level="2">
+        <float value="0.2"/>
       </factor>
     </factors>
   </define-CCF-group>
