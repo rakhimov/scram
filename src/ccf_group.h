@@ -100,8 +100,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @param[in] basic_event  A member basic event.
   ///
   /// @throws DuplicateArgumentError  The basic event is already in the group.
-  /// @throws IllegalOperation  The probability distribution
-  ///                           for this CCF group is already defined.
+  /// @throws IllegalOperation  The probability distribution or factors
+  ///                           for this CCF group are already defined.
   ///                           No more members are accepted.
   void AddMember(const BasicEventPtr& basic_event);
 
@@ -121,15 +121,17 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// and no gaps are allowed between levels.
   /// The default case is to start from 1.
   ///
+  /// All basic events should be added as members
+  /// before defining the CCF factors.
+  /// No more basic events can be added after this function.
+  ///
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
-  /// @throws LogicError  The level is not positive.
-  void AddFactor(const ExpressionPtr& factor, int level) {
-    this->CheckLevel(level);
-    factors_.emplace_back(level, factor);
-  }
+  /// @throws LogicError  The level is not positive,
+  ///                     or the CCF group members are undefined.
+  void AddFactor(const ExpressionPtr& factor, int level);
 
   /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.
@@ -158,17 +160,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   const ExpressionMap& factors() const { return factors_; }
 
  private:
-  /// Checks the level of factors
-  /// before the addition of factors.
-  /// By default,
-  /// the addition of factors must be in ascending level order
-  /// and no gaps are allowed between levels.
-  ///
-  /// @param[in] level  The level of the passed factor.
-  ///
-  /// @throws ValidationError  Level is not what is expected.
-  /// @throws LogicError  The level is not positive.
-  virtual void CheckLevel(int level);
+  /// @returns The minimum level for CCF factors for the specific model.
+  virtual int MinLevel() const { return 1; }
 
   /// Runs any additional validation specific to the CCF models.
   /// All the general validation is done in the base class Validate function.
@@ -203,14 +196,7 @@ class BetaFactorModel : public CcfGroup {
   using CcfGroup::CcfGroup;
 
  private:
-  /// Checks a CCF factor level for the beta model.
-  /// Only one factor is expected.
-  ///
-  /// @param[in] level  The level of the passed factor.
-  ///
-  /// @throws ValidationError  Level is not what is expected.
-  /// @throws LogicError  The level is not positive.
-  void CheckLevel(int level) override;
+  int MinLevel() const override { return CcfGroup::members().size(); }
 
   ExpressionMap CalculateProbabilities() override;
 };
@@ -225,14 +211,7 @@ class MglModel : public CcfGroup {
   using CcfGroup::CcfGroup;
 
  private:
-  /// Checks a CCF factor level for the MGL model.
-  /// The factor level must start from 2.
-  ///
-  /// @param[in] level  The level of the passed factor.
-  ///
-  /// @throws ValidationError  Level is not what is expected.
-  /// @throws LogicError  The level is not positive.
-  void CheckLevel(int level) override;
+  int MinLevel() const override { return 2; }
 
   ExpressionMap CalculateProbabilities() override;
 };
@@ -261,8 +240,6 @@ class PhiFactorModel : public CcfGroup {
   /// checks if the given factors' sum is 1.
   ///
   /// @throws ValidationError  There is an issue with the setup.
-  ///
-  /// @todo Problem with sampling the factors and not getting exactly 1.
   void DoValidate() const override;
 
   ExpressionMap CalculateProbabilities() override;

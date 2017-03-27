@@ -35,7 +35,7 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
       ccf_group_(*ccf_group) {}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
-  if (distribution_) {
+  if (distribution_ || factors_.empty() == false) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            Element::name() +
                            " CCF group has already been defined.");
@@ -58,14 +58,18 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
     member->expression(distribution_);
 }
 
-void CcfGroup::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (level != factors_.size() + 1) {
+void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
+  if (level <= 0 || members_.empty())
+    throw LogicError("Invalid CCF group factor setup.");
+  int expected_level = factors_.size() + this->MinLevel();
+  if (members_.size() < expected_level)
+    throw ValidationError(Element::name() +
+                          " CCF group is given more factors than expected.");
+  if (level != expected_level)
     throw ValidationError(Element::name() + " CCF group level expected " +
-                          std::to_string(factors_.size() + 1) +
+                          std::to_string(expected_level) +
                           ". Instead was given " + std::to_string(level));
-  }
+  factors_.emplace_back(level, factor);
 }
 
 void CcfGroup::Validate() const {
@@ -147,20 +151,6 @@ void CcfGroup::ApplyModel() {
   }
 }
 
-void BetaFactorModel::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (!CcfGroup::factors().empty()) {
-    throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
-                          " CCF group must have exactly one factor.");
-  }
-  if (level != CcfGroup::members().size()) {
-    throw ValidationError(
-        "Beta-Factor Model " + CcfGroup::name() + " CCF group" +
-        " must have the level matching the number of its members.");
-  }
-}
-
 CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
   assert(CcfGroup::factors().size() == 1);
   assert(CcfGroup::members().size() == CcfGroup::factors().front().first);
@@ -177,17 +167,6 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
       CcfGroup::factors().front().first,
       ExpressionPtr(new Mul({beta, CcfGroup::distribution()})));
   return probabilities;
-}
-
-void MglModel::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (level != CcfGroup::factors().size() + 2) {
-    throw ValidationError(CcfGroup::name() +
-                          " MGL model CCF group level expected " +
-                          std::to_string(CcfGroup::factors().size() + 2) +
-                          ". Instead was given " + std::to_string(level));
-  }
 }
 
 namespace {
