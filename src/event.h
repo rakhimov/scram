@@ -182,51 +182,6 @@ class BasicEvent : public PrimaryEvent {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-class CcfGroup;
-
-/// A basic event that represents a multiple failure of
-/// a group of events due to a common cause.
-/// This event is generated out of a common cause group.
-/// This class is a helper to report correctly the CCF events.
-class CcfEvent : public BasicEvent {
- public:
-  /// Constructs CCF event with specific name
-  /// that is used for internal purposes.
-  /// This name is formatted by the CcfGroup.
-  /// The creator CCF group
-  /// and names of the member events of this specific CCF event
-  /// are saved for reporting.
-  ///
-  /// @param[in] name  The identifying name of this CCF event.
-  /// @param[in] ccf_group  The CCF group that created this event.
-  CcfEvent(std::string name, const CcfGroup* ccf_group);
-
-  /// @returns The CCF group that created this CCF event.
-  const CcfGroup& ccf_group() const { return ccf_group_; }
-
-  /// @returns Members of this CCF event.
-  ///          The members also own this CCF event through parentship.
-  const std::vector<Gate*>& members() const { return members_; }
-
-  /// Sets the member parents.
-  ///
-  /// @param[in] members  The members that this CCF event
-  ///                     represents as multiple failure.
-  ///
-  /// @note The reason for late setting of members
-  ///       instead of in the constructor is moveability.
-  ///       The container of member gates can only move
-  ///       after the creation of the event.
-  void members(std::vector<Gate*> members) {
-    assert(members_.empty() && "Resetting members.");
-    members_ = std::move(members);
-  }
-
- private:
-  const CcfGroup& ccf_group_;  ///< The originating CCF group.
-  std::vector<Gate*> members_;  ///< Member parent gates of this CCF event.
-};
-
 using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
 using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;  ///< Base shared ptr.
 using HouseEventPtr = std::shared_ptr<HouseEvent>;  ///< Shared house events.

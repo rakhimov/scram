@@ -22,17 +22,11 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "ccf_group.h"
-
 namespace scram {
 namespace mef {
 
 Event::~Event() = default;
 PrimaryEvent::~PrimaryEvent() = default;
-
-CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
-    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
-      ccf_group_(*ccf_group) {}
 
 void Gate::Validate() const {
   // Detect inhibit flavor.
