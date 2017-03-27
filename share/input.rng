@@ -283,7 +283,7 @@
   <define name="factor">
     <element name="factor">
       <optional>
-        <attribute name="level"> <data type="nonNegativeInteger"/> </attribute>
+        <attribute name="level"> <data type="positiveInteger"/> </attribute>
       </optional>
       <ref name="expression"/>
     </element>
