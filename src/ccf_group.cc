@@ -66,14 +66,15 @@ void CcfGroup::CheckLevel(int level) {
   }
 }
 
-void CcfGroup::ValidateDistribution() {
-  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + Element::name() + " CCF group" +
-                          " has illegal values.");
-  }
-}
-
 void CcfGroup::Validate() const {
+  if (!distribution_ || members_.empty() || factors_.empty())
+    throw LogicError("CCF group " + Element::name() + " is not initialized.");
+
+  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
+    throw ValidationError("Distribution for " + Element::name() +
+                          " CCF group has illegal values.");
+  }
+
   if (members_.size() < 2) {
     throw ValidationError(Element::name() +
                           " CCF group must have at least 2 members.");
@@ -83,12 +84,14 @@ void CcfGroup::Validate() const {
     throw ValidationError("The level of factors for " + Element::name() +
                           " CCF group cannot be more than # of members.");
   }
+
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
     if (f.second->Max() > 1 || f.second->Min() < 0) {
-      throw ValidationError("Factors for " + Element::name() + " CCF group" +
-                            " have illegal values.");
+      throw ValidationError("Factors for " + Element::name() +
+                            " CCF group have illegal values.");
     }
   }
+  this->DoValidate();
 }
 
 namespace {
@@ -269,8 +272,7 @@ CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
   return probabilities;
 }
 
-void PhiFactorModel::Validate() const {
-  CcfGroup::Validate();
+void PhiFactorModel::DoValidate() const {
   double sum = 0;
   double sum_min = 0;
   double sum_max = 0;

@@ -131,20 +131,16 @@ class CcfGroup : public Id, private boost::noncopyable {
     factors_.emplace_back(level, factor);
   }
 
+  /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.
+  ///
   /// This check must be performed before validating basic events
   /// that are members of this CCF group
   /// to give more precise error messages.
   ///
-  /// @throws ValidationError  There is an issue with the distribution.
-  void ValidateDistribution();
-
-  /// Validates the setup for the CCF model and group.
-  /// The passed expressions must be checked for circular logic
-  /// before initiating the CCF validation.
-  ///
   /// @throws ValidationError  There is an issue with the setup.
-  virtual void Validate() const;
+  /// @throws LogicError  The primary distribution, event, factors are not set.
+  void Validate() const;
 
   /// Processes the given factors and members
   /// to create common cause failure probabilities and new events
@@ -173,6 +169,13 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws ValidationError  Level is not what is expected.
   /// @throws LogicError  The level is not positive.
   virtual void CheckLevel(int level);
+
+  /// Runs any additional validation specific to the CCF models.
+  /// All the general validation is done in the base class Validate function.
+  /// The derived classes should only provided additional logic if any.
+  ///
+  /// @throws ValidationError  The model is invalid.
+  virtual void DoValidate() const {}
 
   /// Calculates probabilities for new basic events
   /// representing failures due to common cause.
@@ -258,15 +261,15 @@ class PhiFactorModel : public CcfGroup {
  public:
   using CcfGroup::CcfGroup;
 
+ private:
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.
   ///
   /// @throws ValidationError  There is an issue with the setup.
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
-  void Validate() const override;
+  void DoValidate() const override;
 
- private:
   ExpressionMap CalculateProbabilities() override;
 };
 

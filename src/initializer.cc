@@ -910,9 +910,6 @@ void Initializer::ValidateInitialization() {
   }
 
   ValidateExpressions();
-
-  for (const CcfGroupPtr& group : model_->ccf_groups())
-    group->Validate();
 }
 
 void Initializer::ValidateExpressions() {
@@ -943,11 +940,11 @@ void Initializer::ValidateExpressions() {
                           GetLine(expr_element) + err.msg());
   }
 
-  // Check distribution values for CCF groups.
+  // Validate CCF groups.
   std::stringstream msg;
   for (const CcfGroupPtr& group : model_->ccf_groups()) {
     try {
-      group->ValidateDistribution();
+      group->Validate();
     } catch (ValidationError& err) {
       msg << group->name() << " : " << err.msg() << "\n";
     }
