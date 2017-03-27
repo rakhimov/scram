@@ -89,7 +89,6 @@ Deviations from the Open-PSA MEF
 ================================
 
 - Redefinition of containers, events, and parameters is an error.
-- Common cause model levels for factors are required.
 - Attributes are not inherited.
 - An empty text in XML attributes or elements is considered an error.
 

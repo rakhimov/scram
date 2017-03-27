@@ -62,33 +62,39 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
     member->expression(distribution_);
 }
 
-void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
-  if (level <= 0 || members_.empty())
-    throw LogicError("Invalid CCF group factor setup.");
+void CcfGroup::AddFactor(const ExpressionPtr& factor,
+                         boost::optional<int> level) {
   int min_level = this->MinLevel();
-  if (level < min_level) {
-    throw ValidationError("The CCF factor level (" + std::to_string(level) +
+  if (!level)
+    level = prev_level_ ? (prev_level_ + 1) : min_level;
+
+  if (*level <= 0 || members_.empty())
+    throw LogicError("Invalid CCF group factor setup.");
+
+  if (*level < min_level) {
+    throw ValidationError("The CCF factor level (" + std::to_string(*level) +
                           ") is less than the minimum level (" +
                           std::to_string(min_level) + ") required by " +
                           Element::name() + " CCF group.");
   }
-  if (members_.size() < level) {
-    throw ValidationError("The CCF factor level " + std::to_string(level) +
+  if (members_.size() < *level) {
+    throw ValidationError("The CCF factor level " + std::to_string(*level) +
                           " is more than the number of members (" +
                           std::to_string(members_.size()) + ") in " +
                           Element::name() + " CCF group.");
   }
 
-  int index = level - min_level;
+  int index = *level - min_level;
   if (index < factors_.size() && factors_[index].second != nullptr) {
     throw RedefinitionError("Redefinition of CCF factor for level " +
-                            std::to_string(level) + " in " + Element::name() +
+                            std::to_string(*level) + " in " + Element::name() +
                             " CCF group.");
   }
   if (index >= factors_.size())
     factors_.resize(index + 1);
 
-  factors_[index] = {level, factor};
+  factors_[index] = {*level, factor};
+  prev_level_ = *level;
 }
 
 void CcfGroup::Validate() const {

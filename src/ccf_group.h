@@ -31,6 +31,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -129,7 +130,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, boost::optional<int> level = {});
 
   /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.
@@ -180,8 +181,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   ///           for each level of groupings for CCF events.
   virtual ExpressionMap CalculateProbabilities() = 0;
 
-  /// Members of CCF groups.
-  std::vector<BasicEventPtr> members_;
+  int prev_level_ = 0;  ///< To deduce optional levels from the previous level.
+  std::vector<BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
 };

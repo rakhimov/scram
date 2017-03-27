@@ -62,7 +62,7 @@ CCF is represented with MGL factors.
       <factor level="2">
         <float value="0.2"/>
       </factor>
-      <factor level="3">
+      <factor>
         <float value="0.1"/>
       </factor>
     </factors>

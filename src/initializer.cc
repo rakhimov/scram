@@ -864,18 +864,17 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
 
 void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
                                   CcfGroup* ccf_group) {
-  // Checking the level for one factor input.
-  std::string level = GetAttributeValue(factor_node, "level");
-  if (level.empty()) {
-    throw ValidationError(GetLine(factor_node) +
-                          "CCF group factor level number is not provided.");
-  }
-  int level_num = CastAttributeValue<int>(factor_node, "level");
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node = XmlElement(factor_node->find("./*")[0]);
   ExpressionPtr expression = GetExpression(expr_node, ccf_group->base_path());
+
   try {
-    ccf_group->AddFactor(expression, level_num);
+    if (GetAttributeValue(factor_node, "level").empty()) {
+      ccf_group->AddFactor(expression);
+    } else {
+      ccf_group->AddFactor(expression,
+                           CastAttributeValue<int>(factor_node, "level"));
+    }
   } catch (ValidationError& err) {
     err.msg(GetLine(factor_node) + err.msg());
     throw;
