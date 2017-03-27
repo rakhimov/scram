@@ -113,6 +113,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   ///
   /// @param[in] distr  The probability distribution of this group.
   ///
+  /// @throws ValidationError  Not enough members.
   /// @throws LogicError  The distribution has already been defined.
   void AddDistribution(const ExpressionPtr& distr);
 

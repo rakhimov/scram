@@ -52,6 +52,10 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   if (distribution_)
     throw LogicError("CCF distribution is already defined.");
+  if (members_.size() < 2) {
+    throw ValidationError(Element::name() +
+                          " CCF group must have at least 2 members.");
+  }
   distribution_ = distr;
   // Define probabilities of all basic events.
   for (const BasicEventPtr& member : members_)
@@ -79,16 +83,6 @@ void CcfGroup::Validate() const {
   if (distribution_->Min() < 0 || distribution_->Max() > 1) {
     throw ValidationError("Distribution for " + Element::name() +
                           " CCF group has illegal values.");
-  }
-
-  if (members_.size() < 2) {
-    throw ValidationError(Element::name() +
-                          " CCF group must have at least 2 members.");
-  }
-
-  if (factors_.back().first > members_.size()) {
-    throw ValidationError("The level of factors for " + Element::name() +
-                          " CCF group cannot be more than # of members.");
   }
 
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
