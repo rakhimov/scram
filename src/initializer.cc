@@ -95,8 +95,7 @@ void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
       element->AddAttribute(std::move(attribute_struct));
     }
   } catch(ValidationError& err) {
-    err.msg("Line " + std::to_string(attribute->get_line()) + ":\n" +
-            err.msg());
+    err.msg(GetLine(attribute) + err.msg());
     throw;
   }
 }
@@ -212,9 +211,7 @@ void Initializer::Register(T&& element, const xmlpp::Element* xml_element) {
   try {
     model_->Add(std::forward<T>(element));
   } catch (ValidationError& err) {
-    std::stringstream msg;
-    msg << "Line " << xml_element->get_line() << ":\n";
-    err.msg(msg.str() + err.msg());
+    err.msg(GetLine(xml_element) + err.msg());
     throw;
   }
 }
@@ -364,8 +361,7 @@ void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
   try {
     gate->Validate();
   } catch (ValidationError& err) {
-    err.msg("Line " + std::to_string(gate_node->get_line()) + ":\n" +
-            err.msg());
+    err.msg(GetLine(gate_node) + err.msg());
     throw;
   }
 }
@@ -498,9 +494,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
     try {
       component->Add(std::move(sub));
     } catch (ValidationError& err) {
-      std::stringstream msg;
-      msg << "Line " << node->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
+      err.msg(GetLine(node) + err.msg());
       throw;
     }
   }
@@ -546,9 +540,7 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
   try {
     formula->Validate();
   } catch (ValidationError& err) {
-    std::stringstream msg;
-    msg << "Line " << formula_node->get_line() << ":\n";
-    err.msg(msg.str() + err.msg());
+    err.msg(GetLine(formula_node) + err.msg());
     throw;
   }
   return formula;
@@ -588,11 +580,8 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
         formula->AddArgument(model_->GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
-      std::stringstream msg;
-      msg << "Line " << event->get_line() << ":\n"
-          << "Undefined " << element_type << " " << name << " with base path "
-          << base_path;
-      throw ValidationError(msg.str());
+      throw ValidationError(GetLine(event) + "Undefined " + element_type + " " +
+                            name + " with base path " + base_path);
     }
   }
 
@@ -816,9 +805,7 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
     expressions_.emplace_back(expression.get(), expr_element);
     return expression;
   } catch (InvalidArgument& err) {
-    std::stringstream msg;
-    msg << "Line " << expr_element->get_line() << ":\n";
-    throw ValidationError(msg.str() + err.msg());
+    throw ValidationError(GetLine(expr_element) + err.msg());
   }
 }
 
@@ -830,8 +817,8 @@ ExpressionPtr Initializer::GetParameter(const std::string& expr_type,
     const char* param_unit = scram::mef::kUnitsToString[parameter.unit()];
     if (!unit.empty() && unit != param_unit) {
       std::stringstream msg;
-      msg << "Line " << expr_element->get_line() << ":\n";
-      msg << "Parameter unit mismatch.\nExpected: " << param_unit
+      msg << GetLine(expr_element)
+          << "Parameter unit mismatch.\nExpected: " << param_unit
           << "\nGiven: " << unit;
       throw scram::ValidationError(msg.str());
     }
@@ -845,10 +832,8 @@ ExpressionPtr Initializer::GetParameter(const std::string& expr_type,
       check_units(*param);
       return param;
     } catch (std::out_of_range&) {
-      std::stringstream msg;
-      msg << "Line " << expr_element->get_line() << ":\n"
-          << "Undefined parameter " << name << " with base path " << base_path;
-      throw ValidationError(msg.str());
+      throw ValidationError(GetLine(expr_element) + "Undefined parameter " +
+                            name + " with base path " + base_path);
     }
   } else if (expr_type == "system-mission-time") {
     check_units(*model_->mission_time());
@@ -870,9 +855,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     try {
       ccf_group->AddMember(basic_event);
     } catch (DuplicateArgumentError& err) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      err.msg(msg.str() + err.msg());
+      err.msg(GetLine(event_node) + err.msg());
       throw;
     }
     Register(basic_event, event_node);
@@ -884,10 +867,8 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   // Checking the level for one factor input.
   std::string level = GetAttributeValue(factor_node, "level");
   if (level.empty()) {
-    std::stringstream msg;
-    msg << "Line " << factor_node->get_line() << ":\n";
-    msg << "CCF group factor level number is not provided.";
-    throw ValidationError(msg.str());
+    throw ValidationError(GetLine(factor_node) +
+                          "CCF group factor level number is not provided.");
   }
   int level_num = CastAttributeValue<int>(factor_node, "level");
   assert(factor_node->find("./*").size() == 1);
@@ -896,9 +877,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   try {
     ccf_group->AddFactor(expression, level_num);
   } catch (ValidationError& err) {
-    std::stringstream msg;
-    msg << "Line " << factor_node->get_line() << ":\n";
-    err.msg(msg.str() + err.msg());
+    err.msg(GetLine(factor_node) + err.msg());
     throw;
   }
 }
@@ -964,9 +943,8 @@ void Initializer::ValidateExpressions() {
     }
   } catch (InvalidArgument& err) {
     const xmlpp::Node* root = expr_element->find("/opsa-mef")[0];
-    throw ValidationError("In file '" + doc_to_file_.at(root) + "', Line " +
-                          std::to_string(expr_element->get_line()) + ":\n" +
-                          err.msg());
+    throw ValidationError("In file '" + doc_to_file_.at(root) + "', " +
+                          GetLine(expr_element) + err.msg());
   }
 
   // Check distribution values for CCF groups.
@@ -979,8 +957,8 @@ void Initializer::ValidateExpressions() {
     }
   }
   if (!msg.str().empty()) {
-    std::string head = "Invalid distributions for CCF groups detected:\n";
-    throw ValidationError(head + msg.str());
+    throw ValidationError("Invalid distributions for CCF groups detected:\n" +
+                          msg.str());
   }
 
   // Check probability values for primary events.
@@ -994,8 +972,8 @@ void Initializer::ValidateExpressions() {
     }
   }
   if (!msg.str().empty()) {
-    std::string head = "Invalid basic event probabilities detected:\n";
-    throw ValidationError(head + msg.str());
+    throw ValidationError("Invalid basic event probabilities detected:\n" +
+                          msg.str());
   }
 }
 

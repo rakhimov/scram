@@ -77,17 +77,14 @@ void Config::GatherOptions(const xmlpp::Node* root) {
     return;
   assert(options.size() == 1);
   const xmlpp::Element* element = XmlElement(options.front());
-  xmlpp::NodeSet all_options = element->find("./*");
-  assert(!all_options.empty());
-  int line_number = 0;  // For error reporting.
+  const xmlpp::Element* option_group = nullptr;  // For error reporting.
   try {
     const xmlpp::Element* analysis_group = nullptr;  // Needs to be set last.
     // The loop is used instead of query
     // because the order of options matters,
     // yet this function should not know what the order is.
-    for (const xmlpp::Node* node : all_options) {
-      line_number = node->get_line();
-      const xmlpp::Element* option_group = XmlElement(node);
+    for (const xmlpp::Node* node : element->find("./*")) {
+      option_group = XmlElement(node);
       std::string name = option_group->get_name();
       if (name == "algorithm") {
         SetAlgorithm(option_group);
@@ -105,10 +102,12 @@ void Config::GatherOptions(const xmlpp::Node* root) {
         SetLimits(option_group);
       }
     }
-    if (analysis_group)
+    if (analysis_group) {
+      option_group = analysis_group;
       SetAnalysis(analysis_group);
+    }
   } catch (InvalidArgument& err) {
-    err.msg("Line " + std::to_string(line_number) + ":\n" + err.msg());
+    err.msg(GetLine(option_group) + err.msg());
     throw;
   }
 }

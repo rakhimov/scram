@@ -69,6 +69,11 @@ inline std::string GetAttributeValue(const xmlpp::Element* element,
   return value;
 }
 
+/// Returns XML line number message.
+inline std::string GetLine(const xmlpp::Node* xml_node) {
+  return "Line " + std::to_string(xml_node->get_line()) + ":\n";
+}
+
 /// Gets a number from an XML attribute.
 ///
 /// @tparam T  Numerical type.
@@ -87,9 +92,8 @@ CastAttributeValue(const xmlpp::Element* element,
   try {
     return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
   } catch (boost::bad_lexical_cast&) {
-    throw ValidationError("Line " + std::to_string(element->get_line()) +
-                          ":\nFailed to interpret attribute '" + attribute +
-                          "' to a number.");
+    throw ValidationError(GetLine(element) + "Failed to interpret attribute '" +
+                          attribute + "' to a number.");
   }
 }
 
@@ -117,9 +121,8 @@ CastChildText(const xmlpp::Element* element) {
   try {
     return boost::lexical_cast<T>(content);
   } catch (boost::bad_lexical_cast&) {
-    throw ValidationError("Line " + std::to_string(element->get_line()) +
-                          ":\nFailed to interpret text '" + content +
-                          "' to a number.");
+    throw ValidationError(GetLine(element) + "Failed to interpret text '" +
+                          content + "' to a number.");
   }
 }
 
