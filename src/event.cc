@@ -26,7 +26,6 @@ namespace scram {
 namespace mef {
 
 Event::~Event() = default;
-PrimaryEvent::~PrimaryEvent() = default;
 
 void Gate::Validate() const {
   // Detect inhibit flavor.

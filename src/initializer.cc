@@ -900,7 +900,7 @@ void Initializer::ValidateInitialization() {
   if (settings_.probability_analysis()) {
     std::string msg;
     for (const BasicEventPtr& event : model_->basic_events()) {
-      if (!event->has_expression())
+      if (event->HasExpression() == false)
         msg += event->name() + "\n";
     }
 
@@ -959,7 +959,7 @@ void Initializer::ValidateExpressions() {
 
   // Check probability values for primary events.
   for (const BasicEventPtr& event : model_->basic_events()) {
-    if (event->has_expression() == false)
+    if (event->HasExpression() == false)
       continue;
     try {
       event->Validate();
