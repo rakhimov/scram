@@ -61,61 +61,7 @@
         </oneOrMore>
       </element>
       <oneOrMore>
-        <element name="calculated-quantity">
-          <attribute name="name"> <text/> </attribute>
-          <optional>
-            <attribute name="definition"> <text/> </attribute>
-          </optional>
-          <zeroOrMore>
-            <attribute name="approximation"> <text/> </attribute>
-          </zeroOrMore>
-        </element>
-        <optional>
-          <element name="calculation-method">
-            <attribute name="name"> <text/> </attribute>
-            <optional>
-              <element name="limits">
-                <optional>
-                  <element name="product-order">
-                    <data type="nonNegativeInteger"/>
-                  </element>
-                </optional>
-                <optional>
-                  <element name="mission-time"> <data type="double"/> </element>
-                </optional>
-                <optional>
-                  <element name="time-step"> <data type="double"/> </element>
-                </optional>
-                <optional>
-                  <element name="cut-off"> <ref name="probability-data"/> </element>
-                </optional>
-                <optional>
-                  <element name="number-of-sums">
-                    <data type="nonNegativeInteger"/>
-                  </element>
-                </optional>
-                <optional>
-                  <element name="number-of-trials">
-                    <data type="nonNegativeInteger"/>
-                  </element>
-                </optional>
-                <optional>
-                  <element name="seed">
-                    <data type="nonNegativeInteger"/>
-                  </element>
-                </optional>
-              </element>
-            </optional>
-            <optional>
-              <element name="calculation-time">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="warning"> <text/> </element>
-            </optional>
-          </element>
-        </optional>
+        <ref name="calculated-quantity"/>
       </oneOrMore>
       <element name="model-features">
         <optional>
@@ -167,6 +113,68 @@
       </zeroOrMore>
       <optional>
         <element name="feedback"> <text/> </element>
+      </optional>
+    </element>
+  </define>
+
+  <define name="calculated-quantity">
+    <element name="calculated-quantity">
+      <attribute name="name"> <text/> </attribute>
+      <optional>
+        <attribute name="definition"> <text/> </attribute>
+      </optional>
+      <zeroOrMore>
+        <attribute name="approximation"> <text/> </attribute>
+      </zeroOrMore>
+      <optional>
+        <ref name="calculation-method"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="calculation-method">
+    <element name="calculation-method">
+      <attribute name="name"> <text/> </attribute>
+      <optional>
+        <element name="limits">
+          <optional>
+            <element name="product-order">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="mission-time"> <data type="double"/> </element>
+          </optional>
+          <optional>
+            <element name="time-step"> <data type="double"/> </element>
+          </optional>
+          <optional>
+            <element name="cut-off"> <ref name="probability-data"/> </element>
+          </optional>
+          <optional>
+            <element name="number-of-sums">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="number-of-trials">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="seed">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="calculation-time">
+          <data type="double"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
       </optional>
     </element>
   </define>
