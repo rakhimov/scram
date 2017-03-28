@@ -25,9 +25,9 @@ namespace test {
 
 // Benchmark Tests for Chinese fault tree from XFTA.
 TEST_P(RiskAnalysisTest, ChineseTree) {
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Chinese/chinese.xml");
-  input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
+  std::vector<std::string> input_files = {
+      "./share/scram/input/Chinese/chinese.xml",
+      "./share/scram/input/Chinese/chinese-basic-events.xml"};
   settings.probability_analysis(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());

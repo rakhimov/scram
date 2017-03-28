@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,11 +98,7 @@ TEST(MEFGateTest, Cycle) {
   std::vector<std::string> cycle;
   bool ret = cycle::DetectCycle(top, &cycle);
   EXPECT_TRUE(ret);
-  std::vector<std::string> print_cycle;
-  print_cycle.push_back("Top");
-  print_cycle.push_back("Bottom");
-  print_cycle.push_back("Middle");
-  print_cycle.push_back("Top");
+  std::vector<std::string> print_cycle = {"Top", "Bottom", "Middle", "Top"};
   EXPECT_EQ(print_cycle, cycle);
   EXPECT_EQ("Top->Middle->Bottom->Top", cycle::PrintCycle(cycle));
 }

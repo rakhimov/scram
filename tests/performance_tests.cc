@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
 
 TEST_F(PerformanceTest, DISABLED_ChineseTree) {
   double mcs_time = 0.1;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Chinese/chinese.xml");
-  input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/Chinese/chinese.xml",
+      "./share/scram/input/Chinese/chinese-basic-events.xml"};
   settings.probability_analysis(false);
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_LT(ProductGenerationTime(), mcs_time);
@@ -97,9 +97,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1L7) {
 #ifdef NDEBUG
   mcs_time = 0.35;
 #endif
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
-  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/Baobab/baobab1.xml",
+      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
   settings.limit_order(7);
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(17432, NumOfProducts());
@@ -111,9 +111,9 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
 #ifdef NDEBUG
   mcs_time = 2.0;
 #endif
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/CEA9601/CEA9601.xml",
+      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(4).algorithm("bdd");
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(54436, NumOfProducts());
@@ -123,9 +123,9 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
 #ifdef NDEBUG
 TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
   double mcs_time = 3.8;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/CEA9601/CEA9601.xml",
+      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(5).algorithm("bdd");
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(1615876, NumOfProducts());
@@ -134,9 +134,9 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L3_ZBDD) {
   double mcs_time = 1.5;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/CEA9601/CEA9601.xml",
+      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(3).algorithm("zbdd");
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(1144, NumOfProducts());
@@ -146,9 +146,9 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L3_ZBDD) {
 
 TEST_F(PerformanceTest, DISABLED_Baobab2) {
   double mcs_time = 0.1;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Baobab/baobab2.xml");
-  input_files.push_back("./share/scram/input/Baobab/baobab2-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/Baobab/baobab2.xml",
+      "./share/scram/input/Baobab/baobab2-basic-events.xml"};
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(4805, NumOfProducts());
   EXPECT_LT(ProductGenerationTime(), mcs_time);
@@ -159,9 +159,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1) {
 #ifdef NDEBUG
   mcs_time = 0.30;
 #endif
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
-  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/Baobab/baobab1.xml",
+      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(46188, NumOfProducts());
   EXPECT_NEAR(mcs_time, ProductGenerationTime(), mcs_time * delta);
@@ -172,9 +172,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_ZBDD) {
 #ifdef NDEBUG
   mcs_time = 0.15;
 #endif
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
-  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
+  std::vector<std::string> input_files{
+      "./share/scram/input/Baobab/baobab1.xml",
+      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
   settings.algorithm("zbdd");
   ASSERT_NO_THROW(Analyze(input_files));
   EXPECT_EQ(46188, NumOfProducts());

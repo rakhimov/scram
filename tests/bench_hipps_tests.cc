@@ -26,8 +26,7 @@ namespace test {
 // Benchmark Tests for HIPPS fault tree from XFTA.
 // @todo Test Safety Integrity Level analysis.
 TEST_P(RiskAnalysisTest, HIPPS) {
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/HIPPS/HIPPS.xml");
+  std::vector<std::string> input_files{"./share/scram/input/HIPPS/HIPPS.xml"};
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
