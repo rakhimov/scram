@@ -549,17 +549,18 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
 void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                                  const std::string& base_path,
                                  Formula* formula) {
-  xmlpp::NodeSet events = formula_node->find("./*[name() = 'event' or "
-                                             "name() = 'gate' or "
-                                             "name() = 'basic-event' or "
-                                             "name() = 'house-event']");
-  for (const xmlpp::Node* node : events) {
-    const xmlpp::Element* event = XmlElement(node);
-    std::string name = GetAttributeValue(event, "name");
+  for (const xmlpp::Node* node : formula_node->find("./*")) {
+    const xmlpp::Element* element = XmlElement(node);
+    std::string name = GetAttributeValue(element, "name");
 
-    std::string element_type = event->get_name();
+    if (name.empty()) {
+      formula->AddArgument(GetFormula(element, base_path));
+      continue;
+    }
+
+    std::string element_type = element->get_name();
     // This is for the case "<event name="id" type="type"/>".
-    std::string type = GetAttributeValue(event, "type");
+    std::string type = GetAttributeValue(element, "type");
     if (!type.empty()) {
       assert(type == "gate" || type == "basic-event" || type == "house-event");
       element_type = type;  // Event type is defined.
@@ -580,18 +581,9 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
         formula->AddArgument(model_->GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
-      throw ValidationError(GetLine(event) + "Undefined " + element_type + " " +
+      throw ValidationError(GetLine(node) + "Undefined " + element_type + " " +
                             name + " with base path " + base_path);
     }
-  }
-
-  xmlpp::NodeSet formulas = formula_node->find("./*[name() != 'event' and "
-                                               "name() != 'gate' and "
-                                               "name() != 'basic-event' and "
-                                               "name() != 'house-event']");
-  for (const xmlpp::Node* node : formulas) {
-    const xmlpp::Element* nested_formula = XmlElement(node);
-    formula->AddArgument(GetFormula(nested_formula, base_path));
   }
 }
 
