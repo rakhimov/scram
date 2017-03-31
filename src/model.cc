@@ -39,6 +39,13 @@ void Model::Add(EventTreePtr event_tree) {
   event_trees_.insert(std::move(event_tree));
 }
 
+void Model::Add(const SequencePtr& sequence) {
+  if (sequences_.count(sequence->name())) {
+    throw RedefinitionError("Redefinition of sequence " + sequence->name());
+  }
+  sequences_.insert(std::move(sequence));
+}
+
 void Model::Add(FaultTreePtr fault_tree) {
   if (fault_trees_.count(fault_tree->name())) {
     throw RedefinitionError("Redefinition of fault tree " + fault_tree->name());

@@ -264,12 +264,21 @@ class Initializer : private boost::noncopyable {
                       const std::string& base_path,
                       Formula* formula);
 
+  /// Processes Instruction definitions.
+  ///
+  /// @param[in] xml_element  The XML element with instruction definitions.
+  ///
+  /// @returns The newly defined instruction.
+  ///
+  /// @throws ValidationError  Errors in instruction definitions.
+  InstructionPtr GetInstruction(const xmlpp::Element* xml_element);
+
   /// Processes Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   ///
-  /// @returns Pointer to the newly defined or registered expression.
+  /// @returns The newly defined or registered expression.
   ///
   /// @throws ValidationError  There are problems with getting the expression.
   ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
@@ -363,7 +372,7 @@ class Initializer : private boost::noncopyable {
   /// CCF groups rely on both parameter and basic event registrations.
   ///
   /// Elements are assumed to be unique.
-  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup> tbd_;
+  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence> tbd_;
 
   /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;

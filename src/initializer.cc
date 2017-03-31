@@ -308,6 +308,16 @@ CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
   tbd_.emplace_back(ccf_group.get(), ccf_node);
   return ccf_group;
 }
+
+template <>
+SequencePtr Initializer::Register(const xmlpp::Element* xml_node,
+                                  const std::string& /*base_path*/,
+                                  RoleSpecifier /*container_role*/) {
+  SequencePtr sequence = ConstructElement<Sequence>(xml_node);
+  Register(sequence, xml_node);
+  tbd_.emplace_back(sequence.get(), xml_node);
+  return sequence;
+}
 /// @}
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
@@ -414,6 +424,17 @@ void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
     }
   }
 }
+
+template <>
+void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
+  xmlpp::NodeSet xml_instructions =
+      xml_node->find("./*[name() != 'attributes' and name() != 'label']");
+  InstructionContainer instructions;
+  for (const xmlpp::Node* xml_instruction : xml_instructions) {
+    instructions.emplace_back(GetInstruction(XmlElement(xml_instruction)));
+  }
+  sequence->instructions(std::move(instructions));
+}
 /// @}
 
 void Initializer::ProcessTbdElements() {
@@ -436,6 +457,10 @@ void Initializer::ProcessTbdElements() {
 
 void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
   EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
+  for (const xmlpp::Node* node : et_node->find("./define-sequence")) {
+    event_tree->Add(Register<Sequence>(XmlElement(node), event_tree->name(),
+                                       RoleSpecifier::kPublic));
+  }
   Register(std::move(event_tree), et_node);
 }
 
@@ -576,6 +601,13 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                             name + " with base path " + base_path);
     }
   }
+}
+
+InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
+  assert(xml_element->get_name() == "collect-expression");
+  const xmlpp::Element* arg_element =
+      XmlElement(xml_element->find("./*").front());
+  return std::make_unique<CollectExpression>(GetExpression(arg_element, ""));
 }
 
 template <class T, int N>

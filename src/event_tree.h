@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <boost/noncopyable.hpp>
 
@@ -38,6 +39,12 @@ class Instruction : private boost::noncopyable {
   virtual ~Instruction() = 0;
 };
 
+/// Instructions are assumed not to be shared.
+using InstructionPtr = std::unique_ptr<Instruction>;
+
+/// A collection of instructions.
+using InstructionContainer = std::vector<InstructionPtr>;
+
 /// The operation of collecting expressions for event tree sequences.
 class CollectExpression : public Instruction {
  public:
@@ -49,13 +56,37 @@ class CollectExpression : public Instruction {
   ExpressionPtr expression_;  ///< The probability expression to multiply.
 };
 
+/// Representation of sequences in event trees.
+class Sequence : public Element {
+ public:
+  using Element::Element;
+
+  /// @param[in] instructions  One or more instructions for the sequence.
+  ///
+  /// @throws LogicError  The instructions are empty.
+  void instructions(InstructionContainer instructions);
+
+ private:
+  /// Instructions to execute with the sequence.
+  InstructionContainer instructions_;
+};
+
+/// Sequences are defined in event trees but referenced in other constructs.
+using SequencePtr = std::shared_ptr<Sequence>;
+
 /// Event Tree representation with MEF constructs.
 class EventTree : public Element, private boost::noncopyable {
  public:
-  /// @param[in] name  A unique name for the event tree within the model.
+  using Element::Element;
+
+  /// @param[in] sequence  A unique sequence defined in this event tree.
   ///
-  /// @throws InvalidArgument  The name is malformed.
-  explicit EventTree(std::string name);
+  /// @throws ValidationError  The sequence is already defined.
+  void Add(SequencePtr sequence);
+
+ private:
+  /// Unique sequences defined in this event tree.
+  ElementTable<SequencePtr> sequences_;
 };
 
 using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in models.

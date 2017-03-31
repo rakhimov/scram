@@ -20,6 +20,8 @@
 
 #include "event_tree.h"
 
+#include "error.h"
+
 namespace scram {
 namespace mef {
 
@@ -28,7 +30,21 @@ Instruction::~Instruction() = default;
 CollectExpression::CollectExpression(const ExpressionPtr& expression)
     : expression_(expression) {}
 
-EventTree::EventTree(std::string name) : Element(std::move(name)) {}
+void Sequence::instructions(InstructionContainer instructions) {
+  if (instructions.empty()) {
+    throw LogicError("Sequence " + Element::name() +
+                     " requires at least one instruction");
+  }
+  instructions_ = std::move(instructions);
+}
+
+void EventTree::Add(SequencePtr sequence) {
+  if (sequences_.count(sequence->name())) {
+    throw ValidationError("Duplicate sequence " + sequence->name() +
+                          " in event tree " + Element::name());
+  }
+  sequences_.insert(std::move(sequence));
+}
 
 }  // namespace mef
 }  // namespace scram
