@@ -516,25 +516,21 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
 
 FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
                                    const std::string& base_path) {
-  std::string type = formula_node->get_name();
-  if (type == "event" || type == "basic-event" || type == "gate" ||
-      type == "house-event") {
-    type = "null";
-  }
-
-  int pos =
-      boost::find(kOperatorToString, type) - std::begin(kOperatorToString);
-  assert(pos < kNumOperators && "Unexpected operator type.");
-
-  FormulaPtr formula(new Formula(static_cast<Operator>(pos)));
-  if (type == "atleast") {
-    int vote_number = CastAttributeValue<int>(formula_node, "min");
-    formula->vote_number(vote_number);
-  }
-  // Process arguments of this formula.
-  if (type == "null") {  // Special case of pass-through.
+  Operator type = [&formula_node]() {
+    if (formula_node->get_attribute("name"))
+      return kNull;
+    int pos = boost::find(kOperatorToString, formula_node->get_name()) -
+              std::begin(kOperatorToString);
+    assert(pos < kNumOperators && "Unexpected operator type.");
+    return static_cast<Operator>(pos);
+  }();
+  FormulaPtr formula(new Formula(type));
+  if (type == kVote) {
+    formula->vote_number(CastAttributeValue<int>(formula_node, "min"));
+  } else if (type == kNull) {  // Special case of pass-through.
     formula_node = formula_node->get_parent();
   }
+  // Process arguments of this formula.
   ProcessFormula(formula_node, base_path, formula.get());
 
   try {
