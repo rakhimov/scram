@@ -224,7 +224,7 @@ GatePtr Initializer::Register(const xmlpp::Element* gate_node,
                               RoleSpecifier container_role) {
   GatePtr gate = ConstructElement<Gate>(gate_node, base_path, container_role);
   Register(gate, gate_node);
-  tbd_.gates.emplace_back(gate.get(), gate_node);
+  tbd_.emplace_back(gate.get(), gate_node);
   return gate;
 }
 
@@ -235,7 +235,7 @@ BasicEventPtr Initializer::Register(const xmlpp::Element* event_node,
   BasicEventPtr basic_event =
       ConstructElement<BasicEvent>(event_node, base_path, container_role);
   Register(basic_event, event_node);
-  tbd_.basic_events.emplace_back(basic_event.get(), event_node);
+  tbd_.emplace_back(basic_event.get(), event_node);
   return basic_event;
 }
 
@@ -268,7 +268,7 @@ ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
   ParameterPtr parameter =
       ConstructElement<Parameter>(param_node, base_path, container_role);
   Register(parameter, param_node);
-  tbd_.parameters.emplace_back(parameter.get(), param_node);
+  tbd_.emplace_back(parameter.get(), param_node);
 
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
@@ -305,7 +305,7 @@ CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
   assert(members.size() == 1);
   ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
 
-  tbd_.ccf_groups.emplace_back(ccf_group.get(), ccf_node);
+  tbd_.emplace_back(ccf_group.get(), ccf_node);
   return ccf_group;
 }
 /// @}
@@ -417,21 +417,16 @@ void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
-  // This element helps report errors.
-  const xmlpp::Element* el_def;  // XML element with the definition.
-
-  auto process = [this, &el_def](const auto& tbd_elements) {
-    for (const auto& tbd_element : tbd_elements) {
-      el_def = tbd_element.second;
-      Define(el_def, tbd_element.first);
-    }
-  };
-
+  const xmlpp::Element* el_def;  // XML element with the definition for reports.
   try {
-    process(tbd_.parameters);
-    process(tbd_.basic_events);
-    process(tbd_.gates);
-    process(tbd_.ccf_groups);
+    for (const auto& tbd_element : tbd_) {
+      el_def = tbd_element.second;
+      boost::apply_visitor(
+          [this, &el_def](auto* tbd_construct) {
+            this->Define(el_def, tbd_construct);
+          },
+          tbd_element.first);
+    }
   } catch (ValidationError& err) {
     const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
     err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());

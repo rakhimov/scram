@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/variant.hpp>
 #include <libxml++/libxml++.h>
 
 #include "ccf_group.h"
@@ -74,6 +75,10 @@ class Initializer : private boost::noncopyable {
                                               const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
+  /// Container for late defined constructs.
+  template <class... Ts>
+  using TbdContainer =
+      std::vector<std::pair<boost::variant<Ts*...>, const xmlpp::Element*>>;
 
   /// Expressions mapped to their extraction functions.
   static const ExtractorMap kExpressionExtractors_;
@@ -346,23 +351,21 @@ class Initializer : private boost::noncopyable {
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
 
-  /// Map roots of documents to files. This is for error reporting.
+  /// Map roots of documents to files for error reporting.
   std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
-  struct {
-    /// Parameters rely on parameter registration.
-    std::vector<std::pair<Parameter*, const xmlpp::Element*>> parameters;
-    /// Basic events rely on parameter registration.
-    std::vector<std::pair<BasicEvent*, const xmlpp::Element*>> basic_events;
-    /// Gates rely on gate, basic event, and house event registrations.
-    std::vector<std::pair<Gate*, const xmlpp::Element*>> gates;
-    /// CCF groups rely on both parameter and basic event registration.
-    std::vector<std::pair<CcfGroup*, const xmlpp::Element*>> ccf_groups;
-  } tbd_;  ///< Elements are assumed to be unique.
+  ///
+  /// Parameters and Expressions rely on parameter registrations.
+  /// Basic events rely on parameter registrations.
+  /// Gates rely on gate, basic event, and house event registrations.
+  /// CCF groups rely on both parameter and basic event registrations.
+  ///
+  /// Elements are assumed to be unique.
+  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup> tbd_;
 
-  /// Container for defined expressions for later validation.
+  /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
 };
 
