@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!-- Incorrect input:
+Missing an event definition.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>  <!-- Here -->
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

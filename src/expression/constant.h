@@ -33,20 +33,11 @@ class ConstantExpression : public Expression {
   static const ExpressionPtr kZero;  ///< Constant 0 or False.
   static const ExpressionPtr kPi;  ///< Constant PI value.
 
-  /// Constructor for numerical values.
+  /// Constructor for constant integer, float, and bool values.
+  /// In other words, this constructor is implicitly generic.
   ///
-  /// @param[in] value  Float numerical value.
-  explicit ConstantExpression(double value);
-
-  /// Constructor for numerical values.
-  ///
-  /// @param[in] value  Integer numerical value.
-  explicit ConstantExpression(int value);
-
-  /// Constructor for boolean values.
-  ///
-  /// @param[in] value  true for 1 and false for 0 value of this constant.
-  explicit ConstantExpression(bool value);
+  /// @param[in] value  Numerical value.
+  explicit ConstantExpression(double value) : value_(value) {}
 
   double Mean() noexcept override { return value_; }
   bool IsDeviate() noexcept override { return false; }

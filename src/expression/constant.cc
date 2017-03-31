@@ -30,15 +30,5 @@ const ExpressionPtr ConstantExpression::kZero(new ConstantExpression(0));
 const ExpressionPtr ConstantExpression::kPi(
     new ConstantExpression(boost::math::constants::pi<double>()));
 
-ConstantExpression::ConstantExpression(double value)
-    : Expression({}),
-      value_(value) {}
-
-ConstantExpression::ConstantExpression(int value)
-    : ConstantExpression(static_cast<double>(value)) {}
-
-ConstantExpression::ConstantExpression(bool value)
-    : ConstantExpression(static_cast<double>(value)) {}
-
 }  // namespace mef
 }  // namespace scram

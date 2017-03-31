@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,10 @@ class Element {
   /// described in the MEF documentation and additions.
   ///
   /// @param[in] name  The local identifier name.
-  /// @param[in] optional_name  Allow empty names.
   ///
   /// @throws LogicError  The name is required and empty.
   /// @throws InvalidArgument  The name is malformed.
-  explicit Element(std::string name, bool optional_name = false);
+  explicit Element(std::string name);
 
   /// @returns The original name.
   const std::string& name() const { return kName_; }
@@ -170,17 +169,16 @@ std::string GetFullPath(const T& element) {
 }
 
 /// Mixin class for assigning unique identifiers to elements.
-class Id {
+class Id : public Element, public Role {
  public:
-  /// Mangles the element name to be unique.
+  /// @copydoc Element::Element
+  /// @copydoc Role::Role
+  ///
+  /// Mangles the element name into a unique id.
   /// Private elements get their full path as their ids,
   /// while public elements retain their name as ids.
-  ///
-  /// @param[in] el  The owner of the id.
-  /// @param[in] role  The role of the element.
-  ///
-  /// @throws LogicError  The name mangling strings are empty.
-  Id(const Element& el, const Role& role);
+  explicit Id(std::string name, std::string base_path = "",
+              RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// @returns The unique id that is set upon the construction of this element.
   const std::string& id() const { return kId_; }

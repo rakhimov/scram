@@ -87,9 +87,7 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
     } else {
       quant.SetAttribute("name", "Minimal Cut Sets");
     }
-  }
-  {
-    XmlStreamElement methods = information->AddChild("calculation-method");
+    XmlStreamElement methods = quant.AddChild("calculation-method");
     switch (settings.algorithm()) {
       case core::Algorithm::kBdd:
         methods.SetAttribute("name", "Binary Decision Diagram");
@@ -117,15 +115,16 @@ template <>
 void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
-  information->AddChild("calculated-quantity")
-      .SetAttribute("name", "Probability Analysis")
+  XmlStreamElement quant = information->AddChild("calculated-quantity");
+  quant.SetAttribute("name", "Probability Analysis")
       .SetAttribute("definition",
-                    "Quantitative analysis of failure probability")
+                    "Quantitative analysis of"
+                    " failure probability or unavailability")
       .SetAttribute("approximation",
                     core::kApproximationToString[static_cast<int>(
                         settings.approximation())]);
 
-  XmlStreamElement methods = information->AddChild("calculation-method");
+  XmlStreamElement methods = quant.AddChild("calculation-method");
   switch (settings.approximation()) {
     case core::Approximation::kNone:
       methods.SetAttribute("name", "Binary Decision Diagram");
@@ -159,12 +158,12 @@ template <>
 void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
     const core::Settings& settings,
     XmlStreamElement* information) {
-  information->AddChild("calculated-quantity")
-      .SetAttribute("name", "Uncertainty Analysis")
+  XmlStreamElement quant = information->AddChild("calculated-quantity");
+  quant.SetAttribute("name", "Uncertainty Analysis")
       .SetAttribute("definition",
                     "Calculation of uncertainties with the Monte Carlo method");
 
-  XmlStreamElement methods = information->AddChild("calculation-method");
+  XmlStreamElement methods = quant.AddChild("calculation-method");
   methods.SetAttribute("name", "Monte Carlo");
   XmlStreamElement limits = methods.AddChild("limits");
   limits.AddChild("number-of-trials").AddText(settings.num_trials());
@@ -219,7 +218,7 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
 void Reporter::ReportModelFeatures(const mef::Model& model,
                                    XmlStreamElement* information) {
   XmlStreamElement model_features = information->AddChild("model-features");
-  if (!model.name().empty())
+  if (model.name() != mef::Model::kDefaultName)
     model_features.SetAttribute("name", model.name());
   auto feature = [&model_features](const char* name, const auto& container) {
     if (!container.empty())
@@ -230,6 +229,7 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("house-events", model.house_events());
   feature("ccf-groups", model.ccf_groups());
   feature("fault-trees", model.fault_trees());
+  feature("event-trees", model.event_trees());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,

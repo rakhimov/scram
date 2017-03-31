@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<scram>
+  <input-files>
+    <file>correct_tree_input.xml</file>
+  </input-files>
+  <options>
+    <limits>
+      <number-of-trials>10000000000</number-of-trials>  <!-- 1e10 -->
+    </limits>
+  </options>
+</scram>

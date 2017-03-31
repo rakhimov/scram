@@ -1,0 +1,474 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+  datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+<!-- ############################################################### -->
+<!-- Report Layer -->
+<!-- ############################################################### -->
+
+  <start>
+    <element name="report">
+      <ref name="information-layer"/>
+      <ref name="results-layer"/>
+    </element>
+  </start>
+
+  <define name="probability-data">  <!-- [0.0, 1.0] values for probability -->
+    <data type="double">
+      <param name="minInclusive">0</param>
+      <param name="maxInclusive">1</param>
+    </data>
+  </define>
+
+<!-- ############################################################### -->
+<!-- I. Information Layer -->
+<!-- ############################################################### -->
+
+  <define name="information-layer">
+    <element name="information">
+      <element name="software">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <attribute name="version"> <data type="string"/> </attribute>
+        <optional>
+          <attribute name="contacts"> <text/> </attribute>
+        </optional>
+      </element>
+      <element name="time"> <data type="string"/> </element>
+      <element name="performance">
+        <oneOrMore>
+          <element name="calculation-time">
+            <attribute name="name"> <data type="NCName"/> </attribute>
+            <optional>
+              <element name="products">
+                <data type="double"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="probability">
+                <data type="double"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="importance">
+                <data type="double"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="uncertainty">
+                <data type="double"/>
+              </element>
+            </optional>
+          </element>
+        </oneOrMore>
+      </element>
+      <oneOrMore>
+        <ref name="calculated-quantity"/>
+      </oneOrMore>
+      <element name="model-features">
+        <optional>
+          <attribute name="name"> <text/> </attribute>
+        </optional>
+        <optional>
+          <element name="gates">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="basic-events">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="house-events">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="ccf-groups">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="fault-trees">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="event-trees">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="functional-events">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="initiating-events">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+      </element>
+      <zeroOrMore>
+        <element name="warning"> <text/> </element>
+      </zeroOrMore>
+      <optional>
+        <element name="feedback"> <text/> </element>
+      </optional>
+    </element>
+  </define>
+
+  <define name="calculated-quantity">
+    <element name="calculated-quantity">
+      <attribute name="name"> <text/> </attribute>
+      <optional>
+        <attribute name="definition"> <text/> </attribute>
+      </optional>
+      <zeroOrMore>
+        <attribute name="approximation"> <text/> </attribute>
+      </zeroOrMore>
+      <optional>
+        <ref name="calculation-method"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="calculation-method">
+    <element name="calculation-method">
+      <attribute name="name"> <text/> </attribute>
+      <optional>
+        <element name="limits">
+          <optional>
+            <element name="product-order">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="mission-time"> <data type="double"/> </element>
+          </optional>
+          <optional>
+            <element name="time-step"> <data type="double"/> </element>
+          </optional>
+          <optional>
+            <element name="cut-off"> <ref name="probability-data"/> </element>
+          </optional>
+          <optional>
+            <element name="number-of-sums">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="number-of-trials">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="seed">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="calculation-time">
+          <data type="double"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
+    </element>
+  </define>
+
+<!-- ############################################################### -->
+<!-- II. Results Layer -->
+<!-- ############################################################### -->
+
+  <define name="results-layer">
+    <element name="results">
+      <oneOrMore>
+        <choice>
+          <ref name="sum-of-products"/>
+          <ref name="importance"/>
+          <ref name="safety-integrity-levels"/>
+          <ref name="statistical-measure"/>
+          <ref name="curve"/>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.1. Sum of Products -->
+  <!-- ============================================================= -->
+
+  <define name="sum-of-products">
+    <element name="sum-of-products">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <attribute name="basic-events">
+        <data type="nonNegativeInteger"/>
+      </attribute>
+      <attribute name="products">
+        <data type="nonNegativeInteger"/>
+      </attribute>
+      <optional>
+        <attribute name="probability"> <ref name="probability-data"/> </attribute>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
+      <zeroOrMore>
+        <ref name="product"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="product">
+    <element name="product">
+      <attribute name="order">
+        <data type="nonNegativeInteger"/>
+      </attribute>
+      <optional>
+        <attribute name="probability"> <ref name="probability-data"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="contribution"> <ref name="probability-data"/> </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="literal"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="literal">
+    <choice>
+      <ref name="literal-event"/>
+      <element name="not">
+        <ref name="literal-event"/>
+      </element>
+    </choice>
+  </define>
+
+  <define name="literal-event">
+    <choice>
+      <element name="basic-event">
+        <attribute name="name"> <data type="NCName"/> </attribute>
+      </element>
+      <element name="ccf-event">
+        <attribute name="ccf-group"> <data type="NCName"/> </attribute>
+        <attribute name="order"> <data type="nonNegativeInteger"/> </attribute>
+        <attribute name="group-size">
+          <data type="nonNegativeInteger"/>
+        </attribute>
+        <oneOrMore>
+          <element name="basic-event">
+            <attribute name="name"> <data type="NCName"/> </attribute>
+          </element>
+        </oneOrMore>
+      </element>
+    </choice>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.2. Statistical Measures -->
+  <!-- ============================================================= -->
+
+  <define name="statistical-measure">
+    <element name="measure">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
+      <element name="mean">
+        <attribute name="value"> <ref name="probability-data"/> </attribute>
+      </element>
+      <element name="standard-deviation">
+        <attribute name="value"> <ref name="probability-data"/> </attribute>
+      </element>
+      <element name="confidence-range">
+        <attribute name="percentage">
+          <data type="double">
+            <param name="minExclusive">0</param>
+            <param name="maxExclusive">100</param>
+          </data>
+        </attribute>
+        <attribute name="lower-bound"> <ref name="probability-data"/> </attribute>
+        <attribute name="upper-bound"> <ref name="probability-data"/> </attribute>
+      </element>
+      <element name="error-factor">
+        <attribute name="percentage">
+          <data type="double">
+            <param name="minExclusive">0</param>
+            <param name="maxExclusive">100</param>
+          </data>
+        </attribute>
+        <attribute name="value">
+          <data type="double">
+            <param name="minExclusive">0</param>
+          </data>
+        </attribute>
+      </element>
+      <ref name="quantiles"/>
+      <ref name="histogram"/>
+    </element>
+  </define>
+
+  <define name="quantiles">
+    <element name="quantiles">
+      <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
+      <oneOrMore>
+        <ref name="quantile"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="quantile">
+    <element name="quantile">
+      <ref name="bin-data"/>
+    </element>
+  </define>
+
+  <define name="histogram">
+    <element name="histogram">
+      <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
+      <oneOrMore>
+        <ref name="bin"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="bin">
+    <element name="bin">
+      <ref name="bin-data"/>
+    </element>
+  </define>
+
+  <define name="bin-data">
+    <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
+    <attribute name="value"> <data type="double"/> </attribute>
+    <attribute name="lower-bound"> <data type="double"/> </attribute>
+    <attribute name="upper-bound"> <data type="double"/> </attribute>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.3. Curves -->
+  <!-- ============================================================= -->
+
+  <define name="curve">
+    <element name="curve">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <attribute name="X-title"> <data type="string"/> </attribute>
+      <attribute name="Y-title"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="Z-title"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="X-unit"> <ref name="unit"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="Y-unit"> <ref name="unit"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="Z-unit"> <ref name="unit"/> </attribute>
+      </optional>
+      <zeroOrMore>
+        <element name="point">
+          <attribute name="X"> <data type="double"/> </attribute>
+          <attribute name="Y"> <data type="double"/> </attribute>
+          <optional>
+            <attribute name="Z"> <data type="double"/> </attribute>
+          </optional>
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="unit">
+    <choice>
+      <value>seconds</value>
+      <value>hours</value>
+      <value>seconds-1</value>
+      <value>hours-1</value>
+      <value>years</value>
+      <value>years-1</value>
+    </choice>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.4. Importance -->
+  <!-- ============================================================= -->
+
+  <define name="importance">
+    <element name="importance">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <attribute name="basic-events">
+        <data type="nonNegativeInteger"/>
+      </attribute>
+      <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <element name="basic-event">
+            <attribute name="name"> <data type="NCName"/> </attribute>
+            <ref name="importance-factors"/>
+          </element>
+          <element name="ccf-event">
+            <attribute name="ccf-group"> <data type="NCName"/> </attribute>
+            <attribute name="order">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+            <attribute name="group-size">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+            <ref name="importance-factors"/>
+            <oneOrMore>
+              <element name="basic-event">
+                <attribute name="name"> <data type="NCName"/> </attribute>
+              </element>
+            </oneOrMore>
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="importance-factors">
+    <attribute name="occurrence"> <data type="nonNegativeInteger"/> </attribute>
+    <attribute name="probability"> <data type="double"/> </attribute>
+    <attribute name="DIF"> <data type="double"/> </attribute>
+    <attribute name="MIF"> <data type="double"/> </attribute>
+    <attribute name="CIF"> <data type="double"/> </attribute>
+    <attribute name="RRW"> <data type="double"/> </attribute>
+    <attribute name="RAW"> <data type="double"/> </attribute>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.5. Safety Integrity Levels -->
+  <!-- ============================================================= -->
+
+  <define name="safety-integrity-levels">
+    <element name="safety-integrity-levels">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <attribute name="PFD-avg"> <ref name="probability-data"/> </attribute>
+      <attribute name="PFH-avg"> <ref name="probability-data"/> </attribute>
+      <ref name="histogram"/>  <!-- Implicit PFD histogram -->
+      <ref name="histogram"/>  <!-- Implicit PFH histogram -->
+    </element>
+  </define>
+
+</grammar>

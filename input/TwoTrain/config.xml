@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<scram>
+  <input-files>
+    <file>two_train.xml</file>
+  </input-files>
+  <options>
+    <analysis importance="true" uncertainty="false" ccf="false"/>
+    <limits>
+      <product-order>10</product-order>
+      <mission-time>8760</mission-time>
+      <cut-off>0.001</cut-off>
+    </limits>
+  </options>
+</scram>

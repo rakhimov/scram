@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+This is an event tree example taken from the Open-PSA MEF description.
+-->
+<opsa-mef>
+  <define-event-tree name="my-first-event-tree">
+    <define-functional-event name="F"/>
+    <define-functional-event name="G"/>
+    <define-functional-event name="H"/>
+    <define-sequence name="S1"/>
+    <define-sequence name="S2"/>
+    <define-sequence name="S5"/>
+    <define-sequence name="S6"/>
+    <define-branch name="sub-tree7">
+      <fork functional-event="H">
+        <path state="success">
+          <sequence name="S1"/>
+        </path>
+        <path state="failure">
+          <sequence name="S2"/>
+        </path>
+      </fork>
+    </define-branch>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="success">
+          <collect-formula> <not> <gate name="F"/> </not> </collect-formula>
+          <branch name="sub-tree7"/>
+        </path>
+        <path state="failure">
+          <collect-formula> <gate name="F"/> </collect-formula>
+          <fork functional-event="G">
+            <path state="success">
+              <collect-formula> <not> <gate name="G"/> </not> </collect-formula>
+              <branch name="sub-tree7"/>
+            </path>
+            <path state="failure">
+              <collect-formula> <gate name="G"/> </collect-formula>
+              <fork functional-event="H">
+                <path state="bypass"> <!-- here nothing is collected -->
+                  <sequence name="S5"/>
+                </path>
+                <path state="failure">
+                  <collect-formula> <gate name="H"/> </collect-formula>
+                  <sequence name="S6"/>
+                </path>
+              </fork>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

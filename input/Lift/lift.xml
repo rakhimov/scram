@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+
+<!--
+This is an input file for a lift door fault tree.
+The example is taken from OpenFTA for benchmarking.
+-->
+
+<opsa-mef>
+  <define-fault-tree name="Lift">
+    <define-gate name="LiftDoor">
+      <label>Lift door fails</label>
+      <or>
+        <gate name="LiftStartDoorOpen"/>
+        <gate name="DoorOpensInMotion"/>
+        <gate name="DoorRefuses"/>
+        <gate name="OR_1"/>
+      </or>
+    </define-gate>
+    <define-gate name="LiftStartDoorOpen">
+      <or>
+        <event name="LMD_1"/>
+        <event name="DPD_1"/>
+        <gate name="AND_1"/>
+        <gate name="DoorMotorSlow"/>
+      </or>
+    </define-gate>
+    <define-gate name="AND_1">
+      <and>
+        <event name="DM_1"/>
+        <event name="DPD_1"/>
+      </and>
+    </define-gate>
+    <define-gate name="DoorMotorSlow">
+      <label>Door motor is too slow</label>
+      <or>
+        <event name="PS_1"/>
+        <gate name="DoorHindered"/>
+      </or>
+    </define-gate>
+    <define-gate name="DoorHindered">
+      <or>
+        <event name="DOD_1"/>
+        <event name="D_1"/>
+      </or>
+    </define-gate>
+    <define-gate name="DoorOpensInMotion">
+      <label>Lift door opens when in motion</label>
+      <or>
+        <event name="DMS_2"/>
+        <gate name="AND_2"/>
+        <gate name="AND_3"/>
+      </or>
+    </define-gate>
+    <define-gate name="AND_2">
+      <and>
+        <gate name="UncommandedDoorOpen"/>
+        <gate name="MotionDetector"/>
+      </and>
+    </define-gate>
+    <define-gate name="UncommandedDoorOpen">
+      <or>
+        <event name="W_1"/>
+        <event name="CP_1"/>
+        <event name="DMS_2"/>
+      </or>
+    </define-gate>
+    <define-gate name="MotionDetector">
+      <label>Lift motion detector fails</label>
+      <and>
+        <event name="LMD_1"/>
+        <event name="LMD_1_1"/>
+      </and>
+    </define-gate>
+    <define-gate name="AND_3">
+      <and>
+        <event name="CP_1"/>
+        <gate name="MotionDetector"/>
+      </and>
+    </define-gate>
+    <define-gate name="DoorRefuses">
+      <label>Door refuses to open when lift stopped</label>
+      <or>
+        <event name="CP_1"/>
+        <event name="LMD_2"/>
+        <event name="LPD_1"/>
+        <gate name="DoorMotor"/>
+      </or>
+    </define-gate>
+    <define-gate name="DoorMotor">
+      <or>
+        <event name="DM_1"/>
+        <event name="PS_1"/>
+      </or>
+    </define-gate>
+    <define-gate name="OR_1">
+      <or>
+        <event name="DOD_1"/>
+        <event name="DOD_2"/>
+        <event name="DMS_1"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="LMD_1_1">
+      <label>Lift motion detector 2 fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="LMD_1">
+      <label>Lift motion detector fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DPD_1">
+      <label>Door position detector fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DM_1">
+      <label>Door motor fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="PS_1">
+      <label>Power supply fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DOD_1">
+      <label>Obsticle detector fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DOD_2">
+      <label>Incorrect obsticle detector fitted</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DMS_1">
+      <label>Door motor stop fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="CP_1">
+      <label>Control panel fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="DMS_2">
+      <label>Door motor stop fails</label>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="LMD_2">
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="LPD_1">
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="D_1">
+      <label>Door failure</label>
+      <attributes><attribute name="flavor" value="undeveloped"></attribute></attributes>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+    <define-basic-event name="W_1">
+      <label>Wiring short out</label>
+      <attributes><attribute name="flavor" value="undeveloped"></attribute></attributes>
+      <float value="1.000000e-06"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

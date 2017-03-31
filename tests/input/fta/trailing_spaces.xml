@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!-- Correct Input:
+The name of an event contains trailing spaces.
+Values contain trailing spaces.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne" type="   gate    "/>
+        <event name="      TrainTwo     "/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <event name="PumpOne      "/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name=" ValveOne ">  <!-- Here: Spaces -->
+      <float value=" 0.4 "/>  <!-- Here: Spaces -->
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOne">
+      <float value="0.6"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

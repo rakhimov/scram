@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<scram>
+  <input-files>
+    <file>input/fta/correct_tree_input_with_probs.xml</file>
+  </input-files>
+  <output-path>temp_results.xml</output-path>
+  <options>
+    <algorithm name="bdd"/>
+    <prime-implicants/>
+  </options>
+</scram>

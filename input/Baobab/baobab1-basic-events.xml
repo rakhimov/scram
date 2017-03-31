@@ -1,0 +1,188 @@
+<?xml version="1.0" ?>
+<opsa-mef>
+  <model-data>
+    <define-basic-event name="e1">
+      <float value="0.000072"/>
+    </define-basic-event>
+    <define-basic-event name="e10">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e11">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e12">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e13">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e14">
+      <float value="0.000008"/>
+    </define-basic-event>
+    <define-basic-event name="e15">
+      <float value="0.00052"/>
+    </define-basic-event>
+    <define-basic-event name="e16">
+      <float value="0.00052"/>
+    </define-basic-event>
+    <define-basic-event name="e17">
+      <float value="0.0117"/>
+    </define-basic-event>
+    <define-basic-event name="e18">
+      <float value="0.0117"/>
+    </define-basic-event>
+    <define-basic-event name="e19">
+      <float value="0.0038"/>
+    </define-basic-event>
+    <define-basic-event name="e2">
+      <float value="0.018"/>
+    </define-basic-event>
+    <define-basic-event name="e20">
+      <float value="0.0038"/>
+    </define-basic-event>
+    <define-basic-event name="e21">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e22">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e23">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e24">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e25">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e26">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e27">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e28">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e29">
+      <float value="0.0137"/>
+    </define-basic-event>
+    <define-basic-event name="e3">
+      <float value="0.018"/>
+    </define-basic-event>
+    <define-basic-event name="e30">
+      <float value="0.0137"/>
+    </define-basic-event>
+    <define-basic-event name="e31">
+      <float value="0.0137"/>
+    </define-basic-event>
+    <define-basic-event name="e32">
+      <float value="0.0137"/>
+    </define-basic-event>
+    <define-basic-event name="e33">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e34">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e35">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e36">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e37">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e38">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e39">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e4">
+      <float value="0.018"/>
+    </define-basic-event>
+    <define-basic-event name="e40">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e41">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e42">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e43">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e44">
+      <float value="0.015"/>
+    </define-basic-event>
+    <define-basic-event name="e45">
+      <float value="0.0218"/>
+    </define-basic-event>
+    <define-basic-event name="e46">
+      <float value="0.0218"/>
+    </define-basic-event>
+    <define-basic-event name="e47">
+      <float value="0.0218"/>
+    </define-basic-event>
+    <define-basic-event name="e48">
+      <float value="0.0218"/>
+    </define-basic-event>
+    <define-basic-event name="e49">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e5">
+      <float value="0.018"/>
+    </define-basic-event>
+    <define-basic-event name="e50">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e51">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e52">
+      <float value="0.016"/>
+    </define-basic-event>
+    <define-basic-event name="e53">
+      <float value="0.01"/>
+    </define-basic-event>
+    <define-basic-event name="e54">
+      <float value="0.112"/>
+    </define-basic-event>
+    <define-basic-event name="e55">
+      <float value="0.112"/>
+    </define-basic-event>
+    <define-basic-event name="e56">
+      <float value="0.112"/>
+    </define-basic-event>
+    <define-basic-event name="e57">
+      <float value="0.112"/>
+    </define-basic-event>
+    <define-basic-event name="e58">
+      <float value="0.051"/>
+    </define-basic-event>
+    <define-basic-event name="e59">
+      <float value="0.051"/>
+    </define-basic-event>
+    <define-basic-event name="e6">
+      <float value="0.0188"/>
+    </define-basic-event>
+    <define-basic-event name="e60">
+      <float value="0.051"/>
+    </define-basic-event>
+    <define-basic-event name="e61">
+      <float value="0.051"/>
+    </define-basic-event>
+    <define-basic-event name="e7">
+      <float value="0.0188"/>
+    </define-basic-event>
+    <define-basic-event name="e8">
+      <float value="0.0188"/>
+    </define-basic-event>
+    <define-basic-event name="e9">
+      <float value="0.0188"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

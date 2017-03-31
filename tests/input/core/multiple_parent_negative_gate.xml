@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+The expansion of a multiple parent negative gate.
+-->
+<opsa-mef>
+  <define-fault-tree name="r">
+    <define-gate name="r">
+      <or>
+        <gate name="g1"/>
+        <gate name="g2"/>
+      </or>
+    </define-gate>
+    <define-gate name="g1">
+      <not>
+        <event name="A"/>
+      </not>
+    </define-gate>
+    <define-gate name="g2">
+      <and>
+        <gate name="g1"/>
+        <event name="B"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.1"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

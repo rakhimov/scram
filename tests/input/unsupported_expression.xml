@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!--
+This input uses unsupported but valid expression.
+-->
+<opsa-mef>
+  <model-data>
+    <define-parameter name="Unsupported">
+      <test-initiating-event name="Init"/>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!--
+This input contains groupings for common cause analysis.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-CCF-group name="Pumps" model="beta-factor">
+    <members>
+      <basic-event name="PumpOne"/>
+      <basic-event name="PumpTwo"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factor level="2">
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
+  <define-CCF-group name="Valves" model="beta-factor">
+    <members>
+      <basic-event name="ValveOne"/>
+      <basic-event name="ValveTwo"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factor level="2">
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
+</opsa-mef>

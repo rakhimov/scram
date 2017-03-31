@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="r1">
+    <define-gate name="r1">
+      <and>
+        <event name="g1"/>
+        <event name="g2"/>
+      </and>
+    </define-gate>
+    <define-gate name="g1">
+      <or>
+        <event name="e1"/>
+        <event name="e2"/>
+        <event name="e3"/>
+        <event name="g3"/>
+      </or>
+    </define-gate>
+    <define-gate name="g2">
+      <and>
+        <event name="g4"/>
+        <event name="g5"/>
+      </and>
+    </define-gate>
+    <define-gate name="g3">
+      <and>
+        <event name="g6"/>
+        <event name="g7"/>
+      </and>
+    </define-gate>
+    <define-gate name="g4">
+      <or>
+        <event name="e4"/>
+        <event name="e5"/>
+        <event name="e6"/>
+        <event name="e7"/>
+        <event name="g8"/>
+      </or>
+    </define-gate>
+    <define-gate name="g5">
+      <or>
+        <event name="e8"/>
+        <event name="g9"/>
+      </or>
+    </define-gate>
+    <define-gate name="g6">
+      <or>
+        <event name="e9"/>
+        <event name="e10"/>
+        <event name="e11"/>
+        <event name="g10"/>
+      </or>
+    </define-gate>
+    <define-gate name="g7">
+      <or>
+        <event name="e12"/>
+        <event name="e13"/>
+      </or>
+    </define-gate>
+    <define-gate name="g8">
+      <and>
+        <event name="g11"/>
+        <event name="g12"/>
+      </and>
+    </define-gate>
+    <define-gate name="g9">
+      <and>
+        <event name="g13"/>
+        <event name="g14"/>
+      </and>
+    </define-gate>
+    <define-gate name="g10">
+      <and>
+        <event name="g15"/>
+        <event name="g16"/>
+      </and>
+    </define-gate>
+    <define-gate name="g11">
+      <or>
+        <event name="e14"/>
+        <event name="e15"/>
+        <event name="e16"/>
+        <event name="g17"/>
+      </or>
+    </define-gate>
+    <define-gate name="g12">
+      <and>
+        <event name="g18"/>
+        <event name="g19"/>
+      </and>
+    </define-gate>
+    <define-gate name="g13">
+      <or>
+        <event name="e1"/>
+        <event name="e2"/>
+        <event name="e3"/>
+        <event name="g20"/>
+      </or>
+    </define-gate>
+    <define-gate name="g14">
+      <or>
+        <event name="e4"/>
+        <event name="e5"/>
+        <event name="e6"/>
+        <event name="e7"/>
+        <event name="g21"/>
+      </or>
+    </define-gate>
+    <define-gate name="g15">
+      <or>
+        <event name="e17"/>
+        <event name="e18"/>
+      </or>
+    </define-gate>
+    <define-gate name="g16">
+      <or>
+        <event name="e19"/>
+        <event name="e20"/>
+        <event name="e21"/>
+      </or>
+    </define-gate>
+    <define-gate name="g17">
+      <and>
+        <event name="g22"/>
+        <event name="g23"/>
+      </and>
+    </define-gate>
+    <define-gate name="g18">
+      <or>
+        <event name="e22"/>
+        <event name="e23"/>
+      </or>
+    </define-gate>
+    <define-gate name="g19">
+      <or>
+        <event name="e24"/>
+        <event name="e25"/>
+      </or>
+    </define-gate>
+    <define-gate name="g20">
+      <and>
+        <event name="g24"/>
+        <event name="g25"/>
+      </and>
+    </define-gate>
+    <define-gate name="g21">
+      <and>
+        <event name="g26"/>
+        <event name="g27"/>
+      </and>
+    </define-gate>
+    <define-gate name="g22">
+      <or>
+        <event name="e17"/>
+        <event name="e18"/>
+        <event name="e21"/>
+      </or>
+    </define-gate>
+    <define-gate name="g23">
+      <or>
+        <event name="e19"/>
+        <event name="e20"/>
+      </or>
+    </define-gate>
+    <define-gate name="g24">
+      <or>
+        <event name="e14"/>
+        <event name="e15"/>
+        <event name="e16"/>
+        <event name="g28"/>
+      </or>
+    </define-gate>
+    <define-gate name="g25">
+      <and>
+        <event name="g29"/>
+        <event name="g30"/>
+      </and>
+    </define-gate>
+    <define-gate name="g26">
+      <or>
+        <event name="e9"/>
+        <event name="e10"/>
+        <event name="e11"/>
+        <event name="g31"/>
+      </or>
+    </define-gate>
+    <define-gate name="g27">
+      <or>
+        <event name="e12"/>
+        <event name="e13"/>
+      </or>
+    </define-gate>
+    <define-gate name="g28">
+      <and>
+        <event name="g32"/>
+        <event name="g33"/>
+      </and>
+    </define-gate>
+    <define-gate name="g29">
+      <or>
+        <event name="e22"/>
+        <event name="e23"/>
+      </or>
+    </define-gate>
+    <define-gate name="g30">
+      <or>
+        <event name="e24"/>
+        <event name="e25"/>
+      </or>
+    </define-gate>
+    <define-gate name="g31">
+      <and>
+        <event name="g34"/>
+        <event name="g35"/>
+      </and>
+    </define-gate>
+    <define-gate name="g32">
+      <or>
+        <event name="e17"/>
+        <event name="e18"/>
+        <event name="e21"/>
+      </or>
+    </define-gate>
+    <define-gate name="g33">
+      <or>
+        <event name="e19"/>
+        <event name="e20"/>
+      </or>
+    </define-gate>
+    <define-gate name="g34">
+      <or>
+        <event name="e19"/>
+        <event name="e20"/>
+        <event name="e21"/>
+      </or>
+    </define-gate>
+    <define-gate name="g35">
+      <or>
+        <event name="e17"/>
+        <event name="e18"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>

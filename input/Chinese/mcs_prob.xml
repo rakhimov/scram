@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <model-data>
+    <define-basic-event name="e1">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e10">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e11">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e12">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e13">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e14">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e15">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e16">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e17">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e18">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e19">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e2">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e20">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e21">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e22">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e23">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e24">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e25">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e3">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e4">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e5">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e6">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e7">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e8">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="e9">
+      <normal-deviate>
+        <float value="0.1"/>
+        <float value="0.01"/>
+      </normal-deviate>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

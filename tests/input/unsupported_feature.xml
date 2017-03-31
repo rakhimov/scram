@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+This input contains unsupported feature by SCRAM.
+However, this feature is valid in the Open-PSA MEF.
+-->
+<opsa-mef>
+  <define-substitution name="Backup">
+    <hypothesis>
+      <and>
+        <gate name="TrainOne"/>
+        <gate name="TrainTwo"/>
+      </and>
+    </hypothesis>
+    <target>
+      <basic-event name="ValveOne"/>
+    </target>
+  </define-substitution>
+</opsa-mef>

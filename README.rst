@@ -15,17 +15,8 @@ This branch contains source files
 for building SCRAM's website and API documentation.
 This **gh-source** branch is synchronized with the **develop** branch
 to get the current documentation files and source code of SCRAM.
-No other files are needed,
-for example, tests, input files, and shared files must be removed.
 After building the website and API documentation,
 they are uploaded to the **gh-pages** branch.
-
-Example merging steps with the **develop** branch:
-
-    #. Run 'git merge develop'. Conflicts are expected.
-    #. Delete with ``git rm`` any new file that is not in ``doc/``, ``src/``
-    #. Solve the other merge conflicts. (``README.rst``, for example)
-    #. Finish merging.
 
 
 Building

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!-- Incorrect input:
+Gate defines id of a basic event.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-basic-event name="ValveOne"/>
+    <define-gate name="ValveOne">
+      <and>
+        <gate name="TrainOne"/>
+        <gate name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TraineOne">
+      <or>
+        <event name="PumpOne"/>
+        <basic-event name="ValveOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

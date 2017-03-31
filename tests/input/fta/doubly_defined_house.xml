@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!-- Incorrect input:
+A house event is doubly defined.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-house-event name="ValveOne">
+      <constant value="true"/>
+    </define-house-event>
+    <define-house-event name="ValveOne">  <!-- Here -->
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOne">
+      <float value="0.6"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

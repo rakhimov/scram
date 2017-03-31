@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
   <information>
-    <software name="SCRAM" version="0.11.6"/>
-    <time>2017-03-13T08:16:34</time>
+    <software name="SCRAM" version="0.12.0"/>
+    <time>2017-03-28T00:08:20</time>
     <performance>
       <calculation-time name="TopEvent">
-        <products>0.000238115</products>
-        <probability>5.293e-06</probability>
-        <importance>6.849e-06</importance>
+        <products>0.000557289</products>
+        <probability>3.797e-06</probability>
+        <importance>1.4425e-05</importance>
       </calculation-time>
     </performance>
-    <calculated-quantity name="Minimal Cut Sets"/>
-    <calculation-method name="Binary Decision Diagram">
-      <limits>
-        <product-order>10</product-order>
-      </limits>
-    </calculation-method>
-    <calculated-quantity name="Probability Analysis" definition="Quantitative analysis of failure probability" approximation="none"/>
-    <calculation-method name="Binary Decision Diagram">
-      <limits>
-        <mission-time>8760</mission-time>
-      </limits>
-    </calculation-method>
+    <calculated-quantity name="Minimal Cut Sets">
+      <calculation-method name="Binary Decision Diagram">
+        <limits>
+          <product-order>10</product-order>
+        </limits>
+      </calculation-method>
+    </calculated-quantity>
+    <calculated-quantity name="Probability Analysis" definition="Quantitative analysis of failure probability or unavailability" approximation="none">
+      <calculation-method name="Binary Decision Diagram">
+        <limits>
+          <mission-time>8760</mission-time>
+        </limits>
+      </calculation-method>
+    </calculated-quantity>
     <calculated-quantity name="Importance Analysis" definition="Quantitative analysis of contributions and importance factors of events."/>
     <model-features>
       <gates>3</gates>

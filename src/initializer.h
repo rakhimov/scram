@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,13 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/variant.hpp>
 #include <libxml++/libxml++.h>
 
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "event_tree.h"
 #include "expression.h"
 #include "expression/constant.h"
 #include "fault_tree.h"
@@ -73,6 +75,10 @@ class Initializer : private boost::noncopyable {
                                               const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
+  /// Container for late defined constructs.
+  template <class... Ts>
+  using TbdContainer =
+      std::vector<std::pair<boost::variant<Ts*...>, const xmlpp::Element*>>;
 
   /// Expressions mapped to their extraction functions.
   static const ExtractorMap kExpressionExtractors_;
@@ -145,15 +151,52 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  The elements contain undefined dependencies.
   void ProcessTbdElements();
 
-  /// Attaches attributes and a label to the elements of the analysis.
-  /// These attributes are not XML attributes
-  /// but the Open-PSA format defined arbitrary attributes
-  /// and a label that can be attached to many analysis elements.
+  /// Registers an element into the model.
   ///
-  /// @param[in] element_node  XML element.
-  /// @param[out] element  The object that needs attributes and label.
-  void AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                Element* element);
+  /// @tparam T  A pointer type to the element.
+  ///
+  /// @param[in] element  The initialized element ready to be added into models.
+  /// @param[in] xml_element  The related XML element for error messages.
+  ///
+  /// @throws ValidationError  Issues with adding the element into the model.
+  template <class T>
+  void Register(T&& element, const xmlpp::Element* xml_element);
+
+  /// Constructs and registers an element in the model.
+  ///
+  /// @tparam T  The Element type to be specialized for.
+  ///
+  /// @param[in] xml_node  XML node defining the element.
+  /// @param[in] base_path  Series of ancestor containers in the path with dots.
+  /// @param[in] base_role  The parent container's role.
+  ///
+  /// @returns Pointer to the registered element.
+  ///
+  /// @throws ValidationError  Issues with the new element or registration.
+  template <class T>
+  std::shared_ptr<T> Register(const xmlpp::Element* xml_node,
+                              const std::string& base_path,
+                              RoleSpecifier base_role);
+
+  /// Adds additional data to element definition
+  /// after processing all the input files.
+  ///
+  /// @tparam T  The Element type to be specialized for.
+  ///
+  /// @param[in] xml_node  XML element defining the element.
+  /// @param[in,out] element  Registered element ready to be defined.
+  ///
+  /// @throws ValidationError  Issues with the additional data.
+  template <class T>
+  void Define(const xmlpp::Element* xml_node, T* element);
+
+  /// Defines an event tree for the analysis.
+  ///
+  /// @param[in] et_node  XML element defining the event tree.
+  ///
+  /// @throws ValidationError  There are issues with registering and defining
+  ///                          the event tree and its data.
+  void DefineEventTree(const xmlpp::Element* et_node);
 
   /// Defines a fault tree for the analysis.
   ///
@@ -198,25 +241,6 @@ class Initializer : private boost::noncopyable {
   /// @param[in] model_data  XML node with model data description.
   void ProcessModelData(const xmlpp::Element* model_data);
 
-  /// Registers a gate for later definition.
-  ///
-  /// @param[in] gate_node  XML element defining the gate.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
-  ///
-  /// @returns Pointer to the registered gate.
-  ///
-  /// @throws ValidationError  An event with the same name is already defined.
-  GatePtr RegisterGate(const xmlpp::Element* gate_node,
-                       const std::string& base_path,
-                       RoleSpecifier container_role);
-
-  /// Defines a gate for this analysis.
-  ///
-  /// @param[in] gate_node  XML element defining the gate.
-  /// @param[in,out] gate  Registered gate ready to be defined.
-  void DefineGate(const xmlpp::Element* gate_node, Gate* gate);
-
   /// Creates a Boolean formula from the XML elements
   /// describing the formula with events and other nested formulas.
   ///
@@ -240,107 +264,39 @@ class Initializer : private boost::noncopyable {
                       const std::string& base_path,
                       Formula* formula);
 
-  /// Registers a basic event for later definition.
+  /// Processes Instruction definitions.
   ///
-  /// @param[in] event_node  XML element defining the event.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
+  /// @param[in] xml_element  The XML element with instruction definitions.
   ///
-  /// @returns Pointer to the registered basic event.
+  /// @returns The newly defined instruction.
   ///
-  /// @throws ValidationError  An event with the same name is already defined.
-  BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
-                                   const std::string& base_path,
-                                   RoleSpecifier container_role);
-
-  /// Defines a basic event for this analysis.
-  ///
-  /// @param[in] event_node  XML element defining the event.
-  /// @param[in,out] basic_event  Registered basic event ready to be defined.
-  void DefineBasicEvent(const xmlpp::Element* event_node,
-                        BasicEvent* basic_event);
-
-  /// Defines and adds a house event for this analysis.
-  ///
-  /// @param[in] event_node  XML element defining the event.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
-  ///
-  /// @returns Pointer to the registered house event.
-  ///
-  /// @throws ValidationError  An event with the same name is already defined.
-  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
-                                 const std::string& base_path,
-                                 RoleSpecifier container_role);
-
-  /// Registers a variable or parameter.
-  ///
-  /// @param[in] param_node  XML element defining the parameter.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
-  ///
-  /// @returns Pointer to the registered parameter.
-  ///
-  /// @throws ValidationError  The parameter is already registered.
-  ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
-                                 const std::string& base_path,
-                                 RoleSpecifier container_role);
-
-  /// Defines a variable or parameter.
-  ///
-  /// @param[in] param_node  XML element defining the parameter.
-  /// @param[in,out] parameter  Registered parameter to be defined.
-  void DefineParameter(const xmlpp::Element* param_node, Parameter* parameter);
+  /// @throws ValidationError  Errors in instruction definitions.
+  InstructionPtr GetInstruction(const xmlpp::Element* xml_element);
 
   /// Processes Expression definitions in input file.
   ///
   /// @param[in] expr_element  XML expression element containing the definition.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   ///
-  /// @returns Pointer to the newly defined or registered expression.
+  /// @returns The newly defined or registered expression.
   ///
   /// @throws ValidationError  There are problems with getting the expression.
   ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
                               const std::string& base_path);
 
-  /// Processes Constant Expression definitions in input file.
-  ///
-  /// @param[in] expr_element  XML expression element containing the definition.
-  ///
-  /// @returns Expression described in XML input expression node.
-  ExpressionPtr GetConstantExpression(const xmlpp::Element* expr_element);
-
   /// Processes Parameter Expression definitions in input file.
   ///
+  /// @param[in] expr_type  The expression type name.
   /// @param[in] expr_element  XML expression element containing the definition.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   ///
   /// @returns Parameter expression described in XML input expression node.
+  /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
-  ExpressionPtr GetParameterExpression(const xmlpp::Element* expr_element,
-                                       const std::string& base_path);
-
-  /// Registers a common cause failure group for later definition.
-  ///
-  /// @param[in] ccf_node  XML element defining CCF group.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in] container_role  The parent container's role.
-  ///
-  /// @returns Pointer to the registered CCF group.
-  ///
-  /// @throws ValidationError  There are problems with registering
-  ///                          the group and its members,
-  ///                          for example, duplications or missing information.
-  CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
-                               const std::string& base_path,
-                               RoleSpecifier container_role);
-
-  /// Defines a common cause failure group for the analysis.
-  ///
-  /// @param[in] ccf_node  XML element defining CCF group.
-  /// @param[in,out] ccf_group  Registered CCF group to be defined.
-  void DefineCcfGroup(const xmlpp::Element* ccf_node, CcfGroup* ccf_group);
+  ExpressionPtr GetParameter(const std::string& expr_type,
+                             const xmlpp::Element* expr_element,
+                             const std::string& base_path);
 
   /// Processes common cause failure group members as defined basic events.
   ///
@@ -404,23 +360,21 @@ class Initializer : private boost::noncopyable {
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
 
-  /// Map roots of documents to files. This is for error reporting.
+  /// Map roots of documents to files for error reporting.
   std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
-  struct {
-    /// Parameters rely on parameter registration.
-    std::vector<std::pair<Parameter*, const xmlpp::Element*>> parameters;
-    /// Basic events rely on parameter registration.
-    std::vector<std::pair<BasicEvent*, const xmlpp::Element*>> basic_events;
-    /// Gates rely on gate, basic event, and house event registrations.
-    std::vector<std::pair<Gate*, const xmlpp::Element*>> gates;
-    /// CCF groups rely on both parameter and basic event registration.
-    std::vector<std::pair<CcfGroup*, const xmlpp::Element*>> ccf_groups;
-  } tbd_;  ///< Elements are assumed to be unique.
+  ///
+  /// Parameters and Expressions rely on parameter registrations.
+  /// Basic events rely on parameter registrations.
+  /// Gates rely on gate, basic event, and house event registrations.
+  /// CCF groups rely on both parameter and basic event registrations.
+  ///
+  /// Elements are assumed to be unique.
+  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence> tbd_;
 
-  /// Container for defined expressions for later validation.
+  /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
 };
 

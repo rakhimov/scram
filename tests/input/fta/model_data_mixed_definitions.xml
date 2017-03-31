@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<!-- Correct input
+Mixed re-use and definition of events:
+
+*********************
+Total Possible Cases:
+*********************
+{event, gate, basic-event, house-event,
+ define-gate, define-basic-event, define-house-event}
+
+7 x 7 = 49
+
+********************
+Correct Cases (22) :
+********************
+
+event :: event
+event :: gate
+event :: basic-event
+event :: house-event
+
+event :: define-gate
+event :: define-basic-event
+event :: define-house-event
+
+gate :: define-gate
+basic-event :: define-basic-event
+house-event :: define-house-event
+
+gate :: event
+basic-event :: event
+house-event :: event
+
+gate :: gate
+basic-event :: basic-event
+house-event :: house-event
+
+define-gate :: event
+define-basic-event :: event
+define-house-event :: event
+
+define-gate :: gate
+define-basic-event :: basic-event
+define-house-event :: house-event
+
+**********************
+Incorrect Cases (24) :
+**********************
+
+gate :: basic-event
+gate :: house-event
+
+basic-event :: gate
+basic-event :: house-event
+
+house-event :: gate
+house-event :: basic-event
+
+gate :: define-basic-event
+gate :: define-house-event
+
+basic-event :: define-gate
+basic-event :: define-house-event
+
+house-event :: define-gate
+house-event :: define-basic-event
+
+define-gate :: basic-event
+define-gate :: house-event
+
+define-basic-event :: gate
+define-basic-event :: house-event
+
+define-house-event :: gate
+define-house-event :: basic-event
+
+define-gate :: define-basic-event
+define-gate :: define-house-event
+
+define-basic-event :: define-gate
+define-basic-event :: define-house-event
+
+define-house-event :: define-gate
+define-house-event :: define-basic-event
+
+*******************
+Redifinitions (3) :
+*******************
+
+define-gate :: define-gate
+define-basic-event :: define-basic-event
+define-house-event :: define-house-event
+
+-->
+
+<opsa-mef>
+  <define-fault-tree name="MixedDefinitions">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="eventANDevent"/>
+        <event name="eventANDgate"/>
+        <event name="eventANDbasic-event"/>
+        <event name="eventANDhouse-event"/>
+        <event name="eventANDdefine-gate"/>
+        <event name="eventANDdefine-basic-event"/>
+        <event name="eventANDdefine-house-event"/>
+      </and>
+    </define-gate>
+    <define-gate name="eventANDdefine-gate">
+      <or>
+        <event name="eventANDevent"/>
+        <gate name="eventANDgate"/>
+        <basic-event name="eventANDbasic-event"/>
+        <house-event name="eventANDhouse-event"/>
+        <gate name="gateANDdefine-gate"/>
+        <basic-event name="basic-eventANDdefine-basic-event"/>
+        <house-event name="house-eventANDdefine-house-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDdefine-gate">
+      <or>
+        <gate name="gateANDevent"/>
+        <basic-event name="basic-eventANDevent"/>
+        <house-event name="house-eventANDevent"/>
+        <gate name="gateANDgate"/>
+        <basic-event name="basic-eventANDbasic-event"/>
+        <house-event name="house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="eventANDgate">
+      <or>
+        <event name="define-basic-eventANDevent"/>
+        <event name="define-house-eventANDevent"/>
+        <event name="gateANDevent"/>
+        <event name="basic-eventANDevent"/>
+        <event name="house-eventANDevent"/>
+        <gate name="gateANDgate"/>
+        <basic-event name="basic-eventANDbasic-event"/>
+        <house-event name="house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDevent">
+      <or>
+        <basic-event name="define-basic-eventANDbasic-event"/>
+        <house-event name="define-house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDgate">
+      <or>
+        <basic-event name="define-basic-eventANDbasic-event"/>
+        <house-event name="define-house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="define-basic-eventANDevent"/>
+    <define-house-event name="define-house-eventANDevent"/>
+    <define-basic-event name="define-basic-eventANDbasic-event"/>
+    <define-house-event name="define-house-eventANDhouse-event"/>
+    <define-basic-event name="eventANDevent"/>
+    <define-basic-event name="eventANDdefine-basic-event"/>
+    <define-house-event name="eventANDdefine-house-event"/>
+    <define-basic-event name="basic-eventANDdefine-basic-event"/>
+    <define-house-event name="house-eventANDdefine-house-event"/>
+    <define-basic-event name="basic-eventANDevent"/>
+    <define-house-event name="house-eventANDevent"/>
+    <define-basic-event name="basic-eventANDbasic-event"/>
+    <define-house-event name="house-eventANDhouse-event"/>
+    <define-basic-event name="eventANDbasic-event"/>
+    <define-house-event name="eventANDhouse-event"/>
+    <define-basic-event name="extra-basic"/>
+    <define-house-event name="extra-house"/>
+  </model-data>
+</opsa-mef>

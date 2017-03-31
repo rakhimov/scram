@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="BSCU">
+    <define-gate name="LossOfBrakingCommands">
+      <or>
+        <basic-event name="ValidityMonitorFailure"/>
+        <gate name="Systems1And2DoNotOperate"/>
+        <gate name="SwitchFailure"/>
+      </or>
+    </define-gate>
+    <define-gate name="Systems1And2DoNotOperate">
+      <and>
+        <gate name="LossOfSystem1"/>
+        <gate name="LossOfSystem2"/>
+      </and>
+    </define-gate>
+    <define-gate name="LossOfSystem1">
+      <or>
+        <basic-event name="System1ElectronicFailure"/>
+        <basic-event name="LossOfSystem1PowerSupply"/>
+      </or>
+    </define-gate>
+    <define-gate name="LossOfSystem2">
+      <or>
+        <basic-event name="System2ElectronicFailure"/>
+        <basic-event name="LossOfSystem2PowerSupply"/>
+      </or>
+    </define-gate>
+    <define-gate name="SwitchFailure">
+      <or>
+        <gate name="SwitchFailsInPosition1AndSystem1Fails"/>
+        <basic-event name="SwitchStuckInIntermediatePosition"/>
+        <gate name="SwitchFailsInPosition2AndSystem2Fails"/>
+      </or>
+    </define-gate>
+    <define-gate name="SwitchFailsInPosition1AndSystem1Fails">
+      <and>
+        <gate name="LossOfSystem1"/>
+        <basic-event name="SwitchStuckInPosition1"/>
+      </and>
+    </define-gate>
+    <define-gate name="SwitchFailsInPosition2AndSystem2Fails">
+      <and>
+        <gate name="LossOfSystem2"/>
+        <basic-event name="SwitchStuckInPosition2"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="ValidityMonitorFailure">
+      <exponential>
+        <parameter name="FailureRateValidityMonitor"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="System1ElectronicFailure">
+      <exponential>
+        <parameter name="FailureRateSystemElectronic"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="LossOfSystem1PowerSupply">
+      <exponential>
+        <parameter name="FailureRateSystemPowerSupply"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="System2ElectronicFailure">
+      <exponential>
+        <parameter name="FailureRateSystemElectronic"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="LossOfSystem2PowerSupply">
+      <exponential>
+        <parameter name="FailureRateSystemPowerSupply"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="SwitchStuckInPosition1">
+      <exponential>
+        <parameter name="FailureRateSwitchStuck"/>
+        <mul>
+          <int value="20"/>
+          <system-mission-time/>
+        </mul>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="SwitchStuckInIntermediatePosition">
+      <exponential>
+        <parameter name="FailureRateSwitchStuck"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="SwitchStuckInPosition2">
+      <exponential>
+        <parameter name="FailureRateSwitchStuck"/>
+        <mul>
+          <int value="20"/>
+          <system-mission-time/>
+        </mul>
+      </exponential>
+    </define-basic-event>
+    <define-parameter name="FailureRateValidityMonitor">
+      <lognormal-deviate>
+        <float value="1.6e-7"/>
+        <float value="10"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+   </define-parameter>
+    <define-parameter name="FailureRateSystemElectronic">
+      <lognormal-deviate>
+        <float value="3.0e-5"/>
+        <float value="10"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+    </define-parameter>
+    <define-parameter name="FailureRateSystemPowerSupply">
+      <lognormal-deviate>
+        <float value="1.35e-5"/>
+        <float value="10"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+    </define-parameter>
+    <define-parameter name="FailureRateSwitchStuck">
+      <lognormal-deviate>
+        <float value="1.30e-7"/>
+        <float value="10"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+    </define-parameter>
+  </define-fault-tree>
+</opsa-mef>

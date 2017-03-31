@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- Incorrect Atleast gate
+Not enough children
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <atleast min="2">
+        <basic-event name="ValveOne"/>
+        <basic-event name="PumpOne"/>
+      </atleast>
+    </define-gate>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="PumpOne"/>
+  </define-fault-tree>
+</opsa-mef>

@@ -37,21 +37,9 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Element,
-              public Role,
-              public Id,
-              private boost::noncopyable {
+class Event : public Id, private boost::noncopyable {
  public:
-  /// Constructs a fault tree event with a specific id.
-  ///
-  /// @param[in] name  The original name.
-  /// @param[in] base_path  The series of containers to get this event.
-  /// @param[in] role  The role of the event within the model or container.
-  ///
-  /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name or reference paths are malformed.
-  explicit Event(std::string name, std::string base_path = "",
-                 RoleSpecifier role = RoleSpecifier::kPublic);
+  using Id::Id;
 
   virtual ~Event() = 0;  ///< Abstract class.
 
@@ -64,41 +52,20 @@ class Event : public Element,
   void orphan(bool state) { orphan_ = state; }
 
  private:
-  bool orphan_;  ///< Indication of an orphan node.
-};
-
-/// This is an abstract base class for events
-/// that can cause failures.
-/// This class represents Base, House, Undeveloped, and other events.
-class PrimaryEvent : public Event {
- public:
-  using Event::Event;
-  virtual ~PrimaryEvent() = 0;  ///< Abstract class.
-
-  /// @returns A flag indicating if the event's expression is set.
-  bool has_expression() const { return has_expression_; }
-
- protected:
-  /// Sets indication for existence of an expression.
-  ///
-  /// @param[in] flag  true if the expression is defined.
-  void has_expression(bool flag) { has_expression_ = flag; }
-
- private:
-  /// Flag to notify that expression for the event is defined.
-  bool has_expression_ = false;
+  bool orphan_ = true;  ///< Indication of an orphan node.
 };
 
 /// Representation of a house event in a fault tree.
-class HouseEvent : public PrimaryEvent {
+///
+/// @note House Events with unset/uninitialized expressions default to False.
+class HouseEvent : public Event {
  public:
-  using PrimaryEvent::PrimaryEvent;
+  using Event::Event;
 
   /// Sets the state for House event.
   ///
   /// @param[in] constant  False or True for the state of this house event.
   void state(bool constant) {
-    PrimaryEvent::has_expression(true);
     state_ = constant;
   }
 
@@ -115,18 +82,20 @@ class Gate;
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
 /// Representation of a basic event in a fault tree.
-class BasicEvent : public PrimaryEvent {
+class BasicEvent : public Event {
  public:
-  using PrimaryEvent::PrimaryEvent;
+  using Event::Event;
 
   virtual ~BasicEvent() = default;
+
+  /// @returns true if the probability expression is set.
+  bool HasExpression() const { return expression_ != nullptr; }
 
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression  The expression to describe this event.
   void expression(const ExpressionPtr& expression) {
     assert(!expression_ && "The basic event's expression is already set.");
-    PrimaryEvent::has_expression(true);
     expression_ = expression;
   }
 
@@ -151,8 +120,11 @@ class BasicEvent : public PrimaryEvent {
 
   /// Validates the probability expressions for the primary event.
   ///
+  /// @pre The probability expression is set.
+  ///
   /// @throws ValidationError  The expression for the basic event is invalid.
   void Validate() const {
+    assert(expression_ && "The basic event's expression is not set.");
     if (expression_->Min() < 0 || expression_->Max() > 1) {
       throw ValidationError("Expression value is invalid.");
     }
@@ -192,53 +164,7 @@ class BasicEvent : public PrimaryEvent {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-class CcfGroup;
-
-/// A basic event that represents a multiple failure of
-/// a group of events due to a common cause.
-/// This event is generated out of a common cause group.
-/// This class is a helper to report correctly the CCF events.
-class CcfEvent : public BasicEvent {
- public:
-  /// Constructs CCF event with specific name
-  /// that is used for internal purposes.
-  /// This name is formatted by the CcfGroup.
-  /// The creator CCF group
-  /// and names of the member events of this specific CCF event
-  /// are saved for reporting.
-  ///
-  /// @param[in] name  The identifying name of this CCF event.
-  /// @param[in] ccf_group  The CCF group that created this event.
-  CcfEvent(std::string name, const CcfGroup* ccf_group);
-
-  /// @returns The CCF group that created this CCF event.
-  const CcfGroup& ccf_group() const { return ccf_group_; }
-
-  /// @returns Members of this CCF event.
-  ///          The members also own this CCF event through parentship.
-  const std::vector<Gate*>& members() const { return members_; }
-
-  /// Sets the member parents.
-  ///
-  /// @param[in] members  The members that this CCF event
-  ///                     represents as multiple failure.
-  ///
-  /// @note The reason for late setting of members
-  ///       instead of in the constructor is moveability.
-  ///       The container of member gates can only move
-  ///       after the creation of the event.
-  void members(std::vector<Gate*> members) {
-    assert(members_.empty() && "Resetting members.");
-    members_ = std::move(members);
-  }
-
- private:
-  const CcfGroup& ccf_group_;  ///< The originating CCF group.
-  std::vector<Gate*> members_;  ///< Member parent gates of this CCF event.
-};
-
 using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
-using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;  ///< Base shared ptr.
 using HouseEventPtr = std::shared_ptr<HouseEvent>;  ///< Shared house events.
 using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
 

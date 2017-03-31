@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<opsa-mef name="TestFormulasInInput">
+  <define-fault-tree name="AllFormulas">
+    <define-gate name="AND">
+      <and>
+        <gate name="OR"/>
+        <gate name="ATLEAST"/>
+      </and>
+    </define-gate>
+    <define-gate name="OR">
+      <or>
+        <gate name="NOT"/>
+        <gate name="NULL"/>
+      </or>
+    </define-gate>
+    <define-gate name="ATLEAST">
+      <atleast min="2">
+        <gate name="XOR"/>
+        <gate name="NOR"/>
+        <gate name="NAND"/>
+      </atleast>
+    </define-gate>
+    <define-gate name="NOT">
+      <not>
+        <gate name="NOR"/>
+      </not>
+    </define-gate>
+    <define-gate name="NULL">
+      <gate name="NAND"/>
+    </define-gate>
+    <define-gate name="XOR">
+      <xor>
+        <gate name="NOR"/>
+        <gate name="NAND"/>
+      </xor>
+    </define-gate>
+    <define-gate name="NOR">
+      <nor>
+        <gate name="INHIBIT"/>
+        <event name="B"/>
+      </nor>
+    </define-gate>
+    <define-gate name="NAND">
+      <nand>
+        <event name="A"/>
+        <event name="B"/>
+        <event name="H"/>
+      </nand>
+    </define-gate>
+    <define-gate name="INHIBIT">
+      <attributes>
+        <attribute name="flavor" value="inhibit"/>
+      </attributes>
+      <and>
+        <event name="Conditional"/>
+        <event name="B"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="A"/>
+    <define-basic-event name="B"/>
+    <define-basic-event name="Conditional">
+      <attributes>
+        <attribute name="flavor" value="conditional"/>
+      </attributes>
+    </define-basic-event>
+    <define-house-event name="H"/>
+  </define-fault-tree>
+</opsa-mef>

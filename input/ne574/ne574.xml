@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!--
+# This input is from NE 574 lecture 8.
+# This input is used to test minimal cut set generation.
+-->
+<opsa-mef>
+  <define-fault-tree name="ne574">
+    <define-gate name="System">
+      <and>
+        <gate name="TrainOne"/>
+        <gate name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <gate name="A"/>
+        <event name="B"/>
+        <event name="C"/>
+      </or>
+    </define-gate>
+    <define-gate name="A">
+      <or>
+        <event name="F"/>
+        <event name="G"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="C"/>
+        <event name="D"/>
+        <gate name="E"/>
+      </or>
+    </define-gate>
+    <define-gate name="E">
+      <and>
+        <event name="H"/>
+        <event name="I"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="B">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.3"/>
+    </define-basic-event>
+    <define-basic-event name="D">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="F">
+      <float value="0.7"/>
+    </define-basic-event>
+    <define-basic-event name="G">
+      <float value="0.2"/>
+    </define-basic-event>
+    <define-basic-event name="H">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="I">
+      <float value="0.8"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

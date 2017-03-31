@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+This input describes Inhibit gate, Undeveloped and Conditional events as
+flavored types of AND gate and basic event respectively with the specific
+attribute.
+-->
+<opsa-mef>
+  <define-fault-tree name="FlavoredTree">
+    <define-gate name="Inhibit">
+      <attributes>
+        <attribute name="flavor" value="inhibit"/>
+      </attributes>
+      <and>
+        <event name="Conditional"/>
+        <event name="InhibitSub"/>
+      </and>
+    </define-gate>
+    <define-gate name="InhibitSub">
+      <attributes>
+        <attribute name="flavor" value="inhibit"/>
+      </attributes>
+      <and>
+        <event name="Conditional"/>
+        <event name="Undeveloped"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="Conditional">
+      <attributes>
+        <attribute name="flavor" value="conditional"/>
+      </attributes>
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="Undeveloped">
+      <attributes>
+        <attribute name="flavor" value="undeveloped"/>
+      </attributes>
+      <float value="0.5"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

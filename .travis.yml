@@ -19,7 +19,7 @@ addons:
 
 install:
     - pip install sphinx sphinx_rtd_theme lizard cppdep
-    - wget -q -O - https://sourceforge.net/projects/iscram/files/deps/doxygen-1.8.12.linux.bin.tar.gz | tar xz
+    - wget -q -O - http://s3.amazonaws.com/scram-travis/doxygen-1.8.12.linux.bin.tar.gz | tar xz
     - sudo cp doxygen-1.8.12/bin/* /usr/bin/
 
 before_script:

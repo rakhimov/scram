@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+This input demonstrates how a module is handled when complemented.
+The demonstration will expose a bug
+if modules are treated as basic events by analysis algorithms;
+that is, complement module will be eliminated from cut sets,
+assuming minimal cut sets are calculated (not prime implicants).
+
+The right solution of this fault tree is {e1, e2, e3} cut set.
+The wrong solution is {e1} cut set.
+
+Note that preprocessing techniques may detect this scenario
+and correctly handle the module complementation.
+In this case, the analysis algorithms
+actually will not have a chance to demonstrate
+how complement modules are treated.
+-->
+<opsa-mef>
+  <define-fault-tree name="r">
+    <define-gate name="r">
+      <and>
+        <event name="e1"/>
+        <not>
+          <gate name="g1"/> <!-- Complemented module -->
+        </not>
+      </and>
+    </define-gate>
+    <define-gate name="g1">
+      <or>
+        <not><event name="e2"/></not>
+        <not><event name="e3"/></not>
+      </or>
+    </define-gate>
+    <define-basic-event name="e1"/>
+    <define-basic-event name="e2"/>
+    <define-basic-event name="e3"/>
+  </define-fault-tree>
+</opsa-mef>

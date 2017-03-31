@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@
 namespace scram {
 namespace mef {
 
-Element::Element(std::string name, bool optional_name)
-    : kName_(std::move(name)) {
-  if (!optional_name && kName_.empty())
+Element::Element(std::string name) : kName_(std::move(name)) {
+  if (kName_.empty())
     throw LogicError("The element name can't be empty");
-  if (!kName_.empty() && kName_.find('.') != std::string::npos)
+
+  if (kName_.find('.') != std::string::npos)
     throw InvalidArgument("The element name is malformed.");
 }
 
@@ -79,13 +79,15 @@ Role::Role(RoleSpecifier role, std::string base_path)
   }
 }
 
-Id::Id(const Element& el, const Role& role)
-    : kId_(role.role() == RoleSpecifier::kPublic
-               ? el.name()
-               : role.base_path() + "." + el.name()) {
-  if (el.name().empty())
+Id::Id(std::string name, std::string base_path, RoleSpecifier role)
+    : Element(std::move(name)),
+      Role(role, std::move(base_path)),
+      kId_(Role::role() == RoleSpecifier::kPublic
+               ? Element::name()
+               : Role::base_path() + "." + Element::name()) {
+  if (Element::name().empty())
     throw LogicError("The name for an Id is empty!");
-  if (role.role() == RoleSpecifier::kPrivate && role.base_path().empty())
+  if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
     throw LogicError("The base path for a private element is empty.");
 }
 

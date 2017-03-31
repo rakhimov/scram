@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <nor>
+        <basic-event name="ValveOne"/>
+        <basic-event name="PumpOne"/>
+      </nor>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <nand>
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpTwo"/>
+      </nand>
+    </define-gate>
+    <define-basic-event name="ValveOne">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOne">
+      <float value="0.6"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

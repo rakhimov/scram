@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+Examples of all forms of possible references.
+-->
+<opsa-mef name="RefernceExamples">
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="Trains.Sub.TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-component name="Trains">
+      <define-gate name="TrainOne">
+        <or>
+          <basic-event name="ValveOne"/>
+          <basic-event name="TwoTrains.PumpOne"/>
+        </or>
+      </define-gate>
+      <define-component name="Sub">
+        <define-gate name="TrainTwo">
+          <or>
+            <basic-event name="ValveTwo"/>
+            <basic-event name="TwoTrains.PumpTwo"/>
+          </or>
+        </define-gate>
+        <define-parameter name="ParamValve">
+          <float value="0.5"/>
+        </define-parameter>
+        <define-CCF-group name="Commons" model="beta-factor">
+          <members>
+            <basic-event name="CommonOne"/>
+            <basic-event name="CommonTwo"/>
+            <basic-event name="CommonThree"/>
+          </members>
+          <distribution>
+            <float value="0.1"/>
+          </distribution>
+          <factor level="3">
+            <float value="0.2"/>
+          </factor>
+        </define-CCF-group>
+      </define-component>
+      <define-basic-event name="ValveOne"/>
+      <define-basic-event name="ValveTwo"/>
+    </define-component>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+    <define-parameter name="ParamPump">
+      <parameter name="Trains.Sub.ParamValve"/>
+    </define-parameter>
+  </define-fault-tree>
+</opsa-mef>

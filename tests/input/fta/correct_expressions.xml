@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<!--
+This input uses expression in valid ways.
+The input tries to utilize all the functionality including optional cases.
+-->
+
+<opsa-mef>
+  <define-fault-tree name="ExpressionsTree">
+    <define-gate name="TopEvent">
+      <or>
+        <house-event name="BooleanConstant"/>
+        <basic-event name="ConstantExpressionFloat"/>
+        <basic-event name="ConstantExpressionInt"/>
+        <basic-event name="ConstantExpressionBool"/>
+      </or>
+    </define-gate>
+    <define-house-event name="BooleanConstant">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="ConstantExpressionFloat">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="ConstantExpressionInt">
+      <int value="1"/>
+    </define-basic-event>
+    <define-basic-event name="ConstantExpressionBool">
+      <bool value="false"/>
+    </define-basic-event>
+    <define-parameter name="PreDefinedParameter" unit="int">
+      <int value="0"/>
+    </define-parameter>
+    <define-basic-event name="UsePreDefinedParameter">
+      <parameter name="PreDefinedParameter"/>
+    </define-basic-event>
+    <define-basic-event name="UsePostDefinedParameter">
+      <parameter name="PostDefinedParameter"/>
+    </define-basic-event>
+    <define-basic-event name="ReUsePostDefinedParameter">
+      <parameter name="PostDefinedParameter"/>
+    </define-basic-event>
+    <define-parameter name="PostDefinedParameter">
+      <float value="0.5"/>
+    </define-parameter>
+  </define-fault-tree>
+  <model-data>
+    <define-parameter name="UnusedParameter">
+      <int value="1000"/>
+    </define-parameter>
+    <define-parameter name="MissionTimeParameter">
+      <system-mission-time/>
+    </define-parameter>
+    <define-basic-event name="Exponential">
+      <exponential>
+        <float value="1"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+    <define-basic-event name="FourArgumentExponential">
+      <GLM>
+        <float value="0.3"/>
+        <float value="10"/>
+        <float value="100"/>
+        <system-mission-time/>
+      </GLM>
+    </define-basic-event>
+    <define-basic-event name="Weibull">
+      <Weibull>
+        <float value="0.3"/>
+        <float value="10"/>
+        <float value="100"/>
+        <system-mission-time/>
+      </Weibull>
+    </define-basic-event>
+    <define-basic-event name="PeriodicTest4">
+      <periodic-test>
+        <float value="0.3"/>
+        <float value="100"/>
+        <float value="200"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="PeriodicTest5">
+      <periodic-test>
+        <float value="0.3"/>
+        <float value="0.5"/>
+        <float value="100"/>
+        <float value="200"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="PeriodicTest11">
+      <periodic-test>
+        <float value="0.3"/>
+        <float value="0.4"/>
+        <float value="0.5"/>
+        <float value="100"/>
+        <float value="200"/>
+        <float value="0.1"/>
+        <float value="10"/>
+        <bool value="true"/>
+        <float value="0.9"/>
+        <float value="0.1"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="UniformDeviate">
+      <uniform-deviate>
+        <float value="0"/>
+        <float value="1"/>
+      </uniform-deviate>
+    </define-basic-event>
+    <define-basic-event name="NormalDeviate">
+      <normal-deviate>
+        <float value="0.5"/>
+        <float value="0.02"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="LogNormalDeviate3">
+      <lognormal-deviate>
+        <float value="2e-3"/>
+        <float value="2"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+    </define-basic-event>
+    <define-basic-event name="LogNormalDeviate2">
+      <lognormal-deviate>
+        <float value="-10"/>
+        <float value="2"/>
+      </lognormal-deviate>
+    </define-basic-event>
+    <define-basic-event name="GammaDeviate">
+      <gamma-deviate>
+        <float value="0.2"/>
+        <float value="0.3"/>
+      </gamma-deviate>
+    </define-basic-event>
+    <define-basic-event name="BetaDeviate">
+      <beta-deviate>
+        <float value="3"/>
+        <float value="400"/>
+      </beta-deviate>
+    </define-basic-event>
+    <define-basic-event name="Histogram">
+      <histogram>
+        <float value="0"/>
+        <bin>
+          <float value="0.1"/>
+          <float value="2"/>
+        </bin>
+        <bin>
+          <float value="0.3"/>
+          <float value="4"/>
+        </bin>
+        <bin>
+          <float value="0.5"/>
+          <float value="1"/>
+        </bin>
+      </histogram>
+    </define-basic-event>
+    <define-basic-event name="Negative">
+      <neg><neg><float value="0.5"/></neg></neg>
+    </define-basic-event>
+    <define-basic-event name="Add">
+      <add>
+        <float value="0.1"/>
+        <float value="0.2"/>
+      </add>
+    </define-basic-event>
+    <define-basic-event name="Sub">
+      <sub>
+        <float value="0.2"/>
+        <float value="0.1"/>
+      </sub>
+    </define-basic-event>
+    <define-basic-event name="Mul">
+      <mul>
+        <float value="0.1"/>
+        <float value="0.2"/>
+      </mul>
+    </define-basic-event>
+    <define-basic-event name="Div">
+      <div>
+        <float value="0.5"/>
+        <int value="5"/>
+      </div>
+    </define-basic-event>
+    <define-parameter name="Pi">
+      <pi/>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+Missing component in referencing an element.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="PumpOne"/>
+        <event name="TwoTrains.NonExistent.PumpTwo"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

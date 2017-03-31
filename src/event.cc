@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +22,10 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "ccf_group.h"
-
 namespace scram {
 namespace mef {
 
-Event::Event(std::string name, std::string base_path, RoleSpecifier role)
-    : Element(std::move(name)),
-      Role(role, std::move(base_path)),
-      Id(*this, *this),
-      orphan_(true) {}
-
 Event::~Event() = default;
-PrimaryEvent::~PrimaryEvent() = default;
-
-CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
-    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
-      ccf_group_(*ccf_group) {}
 
 void Gate::Validate() const {
   // Detect inhibit flavor.

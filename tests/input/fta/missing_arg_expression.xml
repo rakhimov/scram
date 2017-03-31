@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+This input describes an expression that doesn't have
+enough argument expressions.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-basic-event name="Add">
+      <add>
+        <float value="0.1"/>
+      </add>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

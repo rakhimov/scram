@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+This input contains two trees with the same names.
+This input should fail due to redefinition attempt.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEventA">
+      <basic-event name="ValveOne"/>
+    </define-gate>
+    <define-basic-event name="ValveOne"/>
+  </define-fault-tree>
+  <define-fault-tree name="TwoTrains">  <!-- Trying to redefine -->
+    <define-gate name="TopEventB">
+      <basic-event name="ValveTwo"/>
+    </define-gate>
+    <define-basic-event name="ValveTwo"/>
+  </define-fault-tree>
+</opsa-mef>

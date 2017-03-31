@@ -1,0 +1,24 @@
+
+                               MODEL Name: RAKHI
+                           Summary for Top Event SYS
+
+                            15:17:13  29 MAR 2014
+                                    Page 1
+
+
+Top Summary.........................................................................................................................
+TOP EVENT: SYS
+
+System(s):
+
+States:  S Success
+         F Failure
+Common Cause: PUMPS  Common Cause Added
+              VALVES  Common Cause Added
+Split Fractions: SYS1 Default Split Fraction
+                 NOEP1
+                 NOEP
+Alignments: NORMAL default
+            PUMP1 24/8760
+            PUMP2 24/8760
+Local Variables:

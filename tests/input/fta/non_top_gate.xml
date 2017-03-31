@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+The first gate is not the top event of the tree.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TrainOne">
+      <or>
+        <basic-event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-house-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

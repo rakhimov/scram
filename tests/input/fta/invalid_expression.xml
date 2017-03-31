@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+This input uses invalid value of expression.
+-->
+<opsa-mef>
+  <model-data>
+    <define-parameter name="Invalid">
+      <uniform-deviate>
+        <float value="0.5"/>
+        <float value="-10"/>
+      </uniform-deviate>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

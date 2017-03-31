@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!-- A single event with non-deviate exponential expression -->
+
+<opsa-mef>
+  <define-fault-tree name="fault-tree">
+    <define-gate name="top">
+      <basic-event name="b1"/>
+    </define-gate>
+    <define-basic-event name="b1">
+      <exponential>
+        <float value="1e-5"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

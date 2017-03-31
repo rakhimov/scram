@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+This input contains two trees with the same events.
+This input should pass with no problems and produce the same results.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrainsA">
+    <define-gate name="TopEventA">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <basic-event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="TwoTrainsB">
+    <define-gate name="TopEventB">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="ValveOne">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="PumpOne">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

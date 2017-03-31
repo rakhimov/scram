@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+The gate formula is not supported.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+
+      <imply>  <!-- Here -->
+        <gate name="TrainOne"/>
+        <gate name="TrainTwo"/>
+      </imply>
+
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <basic-event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>

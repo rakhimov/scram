@@ -31,7 +31,7 @@ Analysis Algorithms
 
 - :ref:`preprocessing`
 - :ref:`fta_algorithms`
-- :ref:`_probability_analysis`
+- :ref:`probability_analysis`
 
 
 Currently Supported Gate Types

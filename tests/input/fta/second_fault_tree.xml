@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+This fault tree uses the top event and an event from the correct two
+train fault tree.
+-->
+<opsa-mef>
+  <define-fault-tree name="SecondTree">
+    <define-gate name="root">
+      <and>
+        <gate name="TopEvent"/>
+        <event name="ValveOne"/>
+      </and>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>

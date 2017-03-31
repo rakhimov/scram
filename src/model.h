@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "event_tree.h"
 #include "fault_tree.h"
 #include "parameter.h"
 
@@ -43,6 +44,12 @@ namespace mef {
 /// This class represents a risk analysis model.
 class Model : public Element, private boost::noncopyable {
  public:
+  /// @todo Only Model is allowed to have an optional name,
+  ///       while all other Elements require names.
+  ///       An empty name is an error for Element class invariants as well.
+  ///       This leads to a nasty magic string based optional name for a model.
+  static const char kDefaultName[];
+
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.
@@ -52,6 +59,8 @@ class Model : public Element, private boost::noncopyable {
 
   /// @returns Defined constructs in the model.
   /// @{
+  const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
+  const ElementTable<SequencePtr>& sequences() const { return sequences_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
@@ -69,48 +78,22 @@ class Model : public Element, private boost::noncopyable {
   const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
   /// @}
 
-  /// Adds a fault tree into the model container.
-  /// Fault trees are uniquely owned by this model.
+  /// Adds MEF constructs into the model container.
   ///
-  /// @param[in] fault_tree  A fault tree defined in this model.
+  /// @param[in] element  An element defined in this model.
   ///
-  /// @throws RedefinitionError  The model has a container with the same name.
-  void AddFaultTree(FaultTreePtr fault_tree);
-
-  /// Adds a parameter that is used in this model's expressions.
+  /// @throws RedefinitionError  The element is already defined in the model.
   ///
-  /// @param[in] parameter  A parameter defined in this model.
-  ///
-  /// @throws RedefinitionError  The model has a parameter with the same name.
-  void AddParameter(const ParameterPtr& parameter);
-
-  /// Adds a house event that is used in this model.
-  ///
-  /// @param[in] house_event  A house event defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddHouseEvent(const HouseEventPtr& house_event);
-
-  /// Adds a basic event that is used in this model.
-  ///
-  /// @param[in] basic_event  A basic event defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddBasicEvent(const BasicEventPtr& basic_event);
-
-  /// Adds a gate that is used in this model's fault trees or components.
-  ///
-  /// @param[in] gate  A gate defined in this model.
-  ///
-  /// @throws RedefinitionError  An event with the same name already exists.
-  void AddGate(const GatePtr& gate);
-
-  /// Adds a CCF group that is used in this model's fault trees.
-  ///
-  /// @param[in] ccf_group  A CCF group defined in this model.
-  ///
-  /// @throws RedefinitionError  The model has a CCF group with the same name.
-  void AddCcfGroup(const CcfGroupPtr& ccf_group);
+  /// @{
+  void Add(EventTreePtr element);
+  void Add(const SequencePtr& element);
+  void Add(FaultTreePtr element);
+  void Add(const ParameterPtr& element);
+  void Add(const HouseEventPtr& element);
+  void Add(const BasicEventPtr& element);
+  void Add(const GatePtr& element);
+  void Add(const CcfGroupPtr& element);
+  /// @}
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
   /// The reference is case sensitive
@@ -200,6 +183,8 @@ class Model : public Element, private boost::noncopyable {
 
   /// A collection of defined constructs in the model.
   /// @{
+  ElementTable<EventTreePtr> event_trees_;
+  ElementTable<SequencePtr> sequences_;
   ElementTable<FaultTreePtr> fault_trees_;
   LookupTable<Gate> gates_;
   LookupTable<HouseEvent> house_events_;

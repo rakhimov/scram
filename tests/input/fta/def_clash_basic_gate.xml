@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!-- Incorrect input:
+Basic event tries to define gate.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">  <!-- Here -->
+      <or>
+        <event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="TrainOne"/>  <!-- Here is the problem -->
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

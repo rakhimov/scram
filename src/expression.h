@@ -71,7 +71,7 @@ class Expression : private boost::noncopyable {
   /// to register their arguments.
   ///
   /// @param[in] args  Arguments of this expression.
-  explicit Expression(std::vector<ExpressionPtr> args);
+  explicit Expression(std::vector<ExpressionPtr> args = {});
 
   virtual ~Expression() = default;
 

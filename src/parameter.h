@@ -84,22 +84,9 @@ class MissionTime : public Expression {
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
-class Parameter : public Expression,
-                  public Element,
-                  public Role,
-                  public Id,
-                  public NodeMark {
+class Parameter : public Expression, public Id, public NodeMark {
  public:
-  /// Creates a parameter as a variable for future references.
-  ///
-  /// @param[in] name  The name of this variable (Case sensitive).
-  /// @param[in] base_path  The series of containers to get this parameter.
-  /// @param[in] role  The role of the parameter within the model or container.
-  ///
-  /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name or reference paths are malformed.
-  explicit Parameter(std::string name, std::string base_path = "",
-                     RoleSpecifier role = RoleSpecifier::kPublic);
+  using Id::Id;
 
   /// Sets the expression of this parameter.
   ///
@@ -131,9 +118,9 @@ class Parameter : public Expression,
  private:
   double DoSample() noexcept override { return expression_->Sample(); }
 
-  Units unit_;  ///< Units of this parameter.
-  bool unused_;  ///< Usage state.
-  Expression* expression_;  ///< Expression for this parameter.
+  Units unit_ = kUnitless;  ///< Units of this parameter.
+  bool unused_ = true;  ///< Usage state.
+  Expression* expression_ = nullptr;  ///< Expression for this parameter.
 };
 
 using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.

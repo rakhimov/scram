@@ -1,0 +1,101 @@
+Minimal Cut Sets
+================
+
+Tree   : top.fta
+Time   : Mon Apr 07 23:48:16 2014
+
+Method : Algebraic
+
+No. of primary events = 2
+Minimal cut set order = 1 to 2
+
+Order 1:
+    1)  a
+    2)  b
+
+Order 2:
+
+
+Qualitative Importance Analysis:
+
+Order        Number
+-----        ------
+   1           2
+   2           0
+  ALL          2
+
+
+Probabilities Analysis
+======================
+
+Tree   : top.fta
+Time   : Mon Apr 07 23:48:49 2014
+
+Number of primary events   = 2
+Number of minimal cut sets = 2
+Order of minimal cut sets  = 2
+
+Unit time span         = 1.000000
+
+Minimal cut set probabilities :
+
+  1    a                               1.000000E-001
+  2    b                               2.000000E-001
+
+
+Probability of top level event (minimal cut sets up to order 2 used):
+
+ 1 term    +3.000000E-001   = 3.000000E-001 (upper bound)
+ 2 terms   -2.000000E-002   = 2.800000E-001 (lower bound)
+
+Exact value : 2.800000E-001
+
+
+Primary Event Analysis:
+
+ Event          Failure contrib.    Importance
+
+ a              1.000000E-001            35.71%
+ b              2.000000E-001            71.43%
+
+
+Monte Carlo Simulation
+======================
+
+Tree   : top.fta
+Time   : Mon Apr 07 23:51:19 2014
+
+Note: Only runs with at least one component failure are simulated
+
+Number of primary events  = 2
+Number of tests           = 10000
+Unit Time span used       = 1.000000
+
+Number of system failures = 10000
+
+Probability of at least   = 2.800000E-001  ( exact )
+one component failure
+
+Probability of top event  = 2.800000E-001  ( +/- 2.800000E-003 )
+
+Rank   Failure mode         Failures  Estimated Probability         Importance
+
+  1    b                    6453      1.806840E-001 ( +/- 2.249256E-003 )  64.53%
+  2    a                    2873      8.044400E-002 ( +/- 1.500810E-003 )  28.73%
+  3    a b                  674       1.887200E-002 ( +/- 7.269223E-004 )   6.74%
+
+
+Compressed:
+
+Rank   Failure mode         Failures  Estimated Probability    Importance
+
+  1    a                    3547      9.931600E-002 ( +/- 1.667588E-003 )  35.47%
+  2    b                    7127      1.995560E-001 ( +/- 2.363804E-003 )  71.27%
+
+
+Primary Event Analysis:
+
+ Event          Failure contrib.    Importance
+
+ a              9.931600E-002            35.47%
+ b              1.995560E-001            71.27%

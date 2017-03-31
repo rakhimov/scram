@@ -22,74 +22,101 @@
 
 #include <cmath>
 
-#include <boost/range/algorithm.hpp>
-
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
+#include "ext/algorithm.h"
 #include "ext/combination_iterator.h"
 
 namespace scram {
 namespace mef {
 
-CcfGroup::CcfGroup(std::string name, std::string base_path, RoleSpecifier role)
-    : Element(std::move(name)),
-      Role(role, std::move(base_path)),
-      Id(*this, *this) {}
+CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
+    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
+      ccf_group_(*ccf_group) {}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
-  if (distribution_) {
+  if (distribution_ || factors_.empty() == false) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (members_.insert(basic_event).second == false) {
+  if (ext::any_of(members_, [&basic_event](const BasicEventPtr& member) {
+        return member->name() == basic_event->name();
+      })) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + Element::name() + " CCF group.");
   }
+  members_.push_back(basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   if (distribution_)
     throw LogicError("CCF distribution is already defined.");
+  if (members_.size() < 2) {
+    throw ValidationError(Element::name() +
+                          " CCF group must have at least 2 members.");
+  }
   distribution_ = distr;
   // Define probabilities of all basic events.
   for (const BasicEventPtr& member : members_)
     member->expression(distribution_);
 }
 
-void CcfGroup::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (level != factors_.size() + 1) {
-    throw ValidationError(Element::name() + " CCF group level expected " +
-                          std::to_string(factors_.size() + 1) +
-                          ". Instead was given " + std::to_string(level));
-  }
-}
+void CcfGroup::AddFactor(const ExpressionPtr& factor,
+                         boost::optional<int> level) {
+  int min_level = this->MinLevel();
+  if (!level)
+    level = prev_level_ ? (prev_level_ + 1) : min_level;
 
-void CcfGroup::ValidateDistribution() {
-  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + Element::name() + " CCF group" +
-                          " has illegal values.");
+  if (*level <= 0 || members_.empty())
+    throw LogicError("Invalid CCF group factor setup.");
+
+  if (*level < min_level) {
+    throw ValidationError("The CCF factor level (" + std::to_string(*level) +
+                          ") is less than the minimum level (" +
+                          std::to_string(min_level) + ") required by " +
+                          Element::name() + " CCF group.");
   }
+  if (members_.size() < *level) {
+    throw ValidationError("The CCF factor level " + std::to_string(*level) +
+                          " is more than the number of members (" +
+                          std::to_string(members_.size()) + ") in " +
+                          Element::name() + " CCF group.");
+  }
+
+  int index = *level - min_level;
+  if (index < factors_.size() && factors_[index].second != nullptr) {
+    throw RedefinitionError("Redefinition of CCF factor for level " +
+                            std::to_string(*level) + " in " + Element::name() +
+                            " CCF group.");
+  }
+  if (index >= factors_.size())
+    factors_.resize(index + 1);
+
+  factors_[index] = {*level, factor};
+  prev_level_ = *level;
 }
 
 void CcfGroup::Validate() const {
-  if (members_.size() < 2) {
-    throw ValidationError(Element::name() +
-                          " CCF group must have at least 2 members.");
+  if (!distribution_ || members_.empty() || factors_.empty())
+    throw LogicError("CCF group " + Element::name() + " is not initialized.");
+
+  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
+    throw ValidationError("Distribution for " + Element::name() +
+                          " CCF group has illegal values.");
   }
 
-  if (factors_.back().first > members_.size()) {
-    throw ValidationError("The level of factors for " + Element::name() +
-                          " CCF group cannot be more than # of members.");
-  }
   for (const std::pair<int, ExpressionPtr>& f : factors_) {
+    if (!f.second) {
+      throw ValidationError("Missing some CCF factors for " + Element::name() +
+                            " CCF group.");
+    }
     if (f.second->Max() > 1 || f.second->Min() < 0) {
-      throw ValidationError("Factors for " + Element::name() + " CCF group" +
-                            " have illegal values.");
+      throw ValidationError("Factors for " + Element::name() +
+                            " CCF group have illegal values.");
     }
   }
+  this->DoValidate();
 }
 
 namespace {
@@ -112,21 +139,10 @@ std::string JoinNames(const std::vector<Gate*>& combination) {
 
 }  // namespace
 
-std::vector<BasicEvent*> CcfGroup::StabilizeMembers() {
-  std::vector<BasicEvent*> stable_members;
-  stable_members.reserve(members_.size());
-  for (const BasicEventPtr& member : members_)
-    stable_members.push_back(member.get());
-
-  boost::sort(stable_members,
-              [](auto* lhs, auto* rhs) { return lhs->name() < rhs->name(); });
-  return stable_members;
-}
-
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<Gate*> proxy_gates;
-  for (BasicEvent* member : StabilizeMembers()) {
+  for (const BasicEventPtr& member : members_) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
@@ -154,20 +170,6 @@ void CcfGroup::ApplyModel() {
   }
 }
 
-void BetaFactorModel::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (!CcfGroup::factors().empty()) {
-    throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
-                          " CCF group must have exactly one factor.");
-  }
-  if (level != CcfGroup::members().size()) {
-    throw ValidationError(
-        "Beta-Factor Model " + CcfGroup::name() + " CCF group" +
-        " must have the level matching the number of its members.");
-  }
-}
-
 CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
   assert(CcfGroup::factors().size() == 1);
   assert(CcfGroup::members().size() == CcfGroup::factors().front().first);
@@ -184,17 +186,6 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
       CcfGroup::factors().front().first,
       ExpressionPtr(new Mul({beta, CcfGroup::distribution()})));
   return probabilities;
-}
-
-void MglModel::CheckLevel(int level) {
-  if (level <= 0)
-    throw LogicError("CCF group level is not positive.");
-  if (level != CcfGroup::factors().size() + 2) {
-    throw ValidationError(CcfGroup::name() +
-                          " MGL model CCF group level expected " +
-                          std::to_string(CcfGroup::factors().size() + 2) +
-                          ". Instead was given " + std::to_string(level));
-  }
 }
 
 namespace {
@@ -270,8 +261,7 @@ CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
   return probabilities;
 }
 
-void PhiFactorModel::Validate() const {
-  CcfGroup::Validate();
+void PhiFactorModel::DoValidate() const {
   double sum = 0;
   double sum_min = 0;
   double sum_max = 0;

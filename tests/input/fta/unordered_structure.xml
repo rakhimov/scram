@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+The structure of the tree is not ordered top to down.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainThree">  <!-- This gate is defined before use -->
+      <or>
+        <basic-event name="ValveOne"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="TrainThree"/>
+        <basic-event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-house-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>
