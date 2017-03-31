@@ -85,8 +85,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("17.0.1")
   # TODO: CMAKE_CXX_STANDARD has no effect on icc.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  # TODO: Failure to deduce lambda return type with Boost 1.56.
-  add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE=1")
   # TODO: Bug in Intel compiler with multi-initialization with auto and final-is-not-override.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373,1125")
 endif()
@@ -181,7 +179,7 @@ message(STATUS ${LIBS})
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
-set(BOOST_MIN_VERSION "1.56.0")
+set(BOOST_MIN_VERSION "1.58.0")
 set(Boost_USE_STATIC_LIBS ${WITH_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${WITH_STATIC_LIBS})
 

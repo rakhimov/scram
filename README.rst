@@ -78,7 +78,7 @@ Dependencies
 Package                Minimum Version
 ====================   ==================
 CMake                  2.8.12
-boost                  1.56
+boost                  1.58
 libxml++               2.38.1
 Python                 2.7.3 or 3.3
 Qt                     5.2.1

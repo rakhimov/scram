@@ -36,6 +36,8 @@ matrix:
         - os: linux
           compiler: icc
           env: INTEL_COMPILER=true
+    allow_failures:
+        - compiler: icc  # TODO: Boost problems on Travis-CI Trusty
 
 addons:
     apt:
@@ -49,6 +51,7 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty
+            - sourceline: "ppa:kzemek/boost"
 
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
