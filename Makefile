@@ -60,6 +60,8 @@ build/complexity_report.txt:
 
 doxygen: build/complexity_report.txt
 	@echo "Generating Doxygen docs..."
+	cp src/env.cc.in src/env.cc
+	cp src/version.cc.in src/version.cc
 	doxygen doxygen.conf
 	@echo
 	@echo "Generated Doxygen docs from the C++ source."
