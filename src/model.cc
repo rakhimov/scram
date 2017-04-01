@@ -89,40 +89,40 @@ void Model::Add(const CcfGroupPtr& ccf_group) {
   }
 }
 
-ParameterPtr Model::GetParameter(const std::string& entity_reference,
-                                 const std::string& base_path) {
+Parameter* Model::GetParameter(const std::string& entity_reference,
+                               const std::string& base_path) {
   return GetEntity(entity_reference, base_path, parameters_);
 }
 
-HouseEventPtr Model::GetHouseEvent(const std::string& entity_reference,
-                                   const std::string& base_path) {
+HouseEvent* Model::GetHouseEvent(const std::string& entity_reference,
+                                 const std::string& base_path) {
   return GetEntity(entity_reference, base_path, house_events_);
 }
 
-BasicEventPtr Model::GetBasicEvent(const std::string& entity_reference,
-                                   const std::string& base_path) {
+BasicEvent* Model::GetBasicEvent(const std::string& entity_reference,
+                                 const std::string& base_path) {
   return GetEntity(entity_reference, base_path, basic_events_);
 }
 
-GatePtr Model::GetGate(const std::string& entity_reference,
+Gate* Model::GetGate(const std::string& entity_reference,
                        const std::string& base_path) {
   return GetEntity(entity_reference, base_path, gates_);
 }
 
 template <class T>
-std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
-                                    const std::string& base_path,
-                                    const LookupTable<T>& container) {
+T* Model::GetEntity(const std::string& entity_reference,
+                    const std::string& base_path,
+                    const LookupTable<T>& container) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     if (auto it = ext::find(container.entities_by_path,
                             base_path + "." + entity_reference))
-      return *it;
+      return it->get();
   }
 
   auto at = [&entity_reference](const auto& reference_container) {
     if (auto it = ext::find(reference_container, entity_reference))
-      return *it;
+      return it->get();
     throw std::out_of_range("The event cannot be found.");
   };
 
@@ -133,15 +133,17 @@ std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
 }
 
 /// Helper macro for Model::GetEvent event discovery.
-#define GET_EVENT(access, path_reference)                        \
-  if (auto it = ext::find(gates_.access, path_reference))        \
-    return *it;                                                  \
-  if (auto it = ext::find(basic_events_.access, path_reference)) \
-    return *it;                                                  \
-  if (auto it = ext::find(house_events_.access, path_reference)) \
-    return *it
+#define GET_EVENT(access, path_reference)                          \
+  do {                                                             \
+    if (auto it = ext::find(gates_.access, path_reference))        \
+      return it->get();                                            \
+    if (auto it = ext::find(basic_events_.access, path_reference)) \
+      return it->get();                                            \
+    if (auto it = ext::find(house_events_.access, path_reference)) \
+      return it->get();                                            \
+  } while (false)
 
-boost::variant<HouseEventPtr, BasicEventPtr, GatePtr>
+boost::variant<HouseEvent*, BasicEvent*, Gate*>
 Model::GetEvent(
     const std::string& entity_reference, const std::string& base_path) {
   assert(!entity_reference.empty());

@@ -39,7 +39,7 @@ void Gate::Validate() const {
   }
   int num_conditional = boost::count_if(
       formula_->basic_event_args(),
-      [](const BasicEventPtr& event) {
+      [](BasicEvent* event) {
         return event->HasAttribute("flavor") &&
                event->GetAttribute("flavor").value == "conditional";
       });

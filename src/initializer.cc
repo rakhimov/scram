@@ -820,7 +820,7 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
   if (expr_type == "pi")
     return &ConstantExpression::kPi;
 
-  if (auto expression = GetParameter(expr_type, expr_element, base_path))
+  if (auto* expression = GetParameter(expr_type, expr_element, base_path))
     return expression;
 
   try {
@@ -852,10 +852,10 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
   if (expr_type == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
     try {
-      ParameterPtr param = model_->GetParameter(name, base_path);
+      Parameter* param = model_->GetParameter(name, base_path);
       param->unused(false);
       check_units(*param);
-      return param.get();
+      return param;
     } catch (std::out_of_range&) {
       throw ValidationError(GetLine(expr_element) + "Undefined parameter " +
                             name + " with base path " + base_path);

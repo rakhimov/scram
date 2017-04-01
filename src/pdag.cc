@@ -478,12 +478,12 @@ constexpr bool CheckOperatorEnums() {
 
 void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
                            ProcessedNodes* nodes) noexcept {
-  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
+  for (const mef::BasicEvent* basic_event : formula.basic_event_args()) {
     GatherVariables(*basic_event, ccf, nodes);
   }
 
-  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
-    if (nodes->gates.emplace(mef_gate.get(), nullptr).second) {
+  for (const mef::Gate* mef_gate : formula.gate_args()) {
+    if (nodes->gates.emplace(mef_gate, nullptr).second) {
       GatherVariables(mef_gate->formula(), ccf, nodes);
     }
   }
@@ -536,15 +536,15 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
+  for (const mef::BasicEvent* basic_event : formula.basic_event_args()) {
     AddArg(parent, *basic_event, ccf, nodes);
   }
 
-  for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
+  for (const mef::HouseEvent* house_event : formula.house_event_args()) {
     AddArg(parent, *house_event);
   }
 
-  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
+  for (const mef::Gate* mef_gate : formula.gate_args()) {
     AddArg(parent, *mef_gate, ccf, nodes);
   }
 

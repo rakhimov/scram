@@ -267,13 +267,13 @@ class Formula : private boost::noncopyable {
   /// @returns The arguments of this formula of specific type.
   /// @{
   const IdTable<Event*>& event_args() const { return event_args_; }
-  const std::vector<HouseEventPtr>& house_event_args() const {
+  const std::vector<HouseEvent*>& house_event_args() const {
     return house_event_args_;
   }
-  const std::vector<BasicEventPtr>& basic_event_args() const {
+  const std::vector<BasicEvent*>& basic_event_args() const {
     return basic_event_args_;
   }
-  const std::vector<GatePtr>& gate_args() const { return gate_args_; }
+  const std::vector<Gate*>& gate_args() const { return gate_args_; }
   const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
   /// @}
 
@@ -287,13 +287,13 @@ class Formula : private boost::noncopyable {
   /// @throws DuplicateArgumentError  The argument event is duplicate.
   ///
   /// @{
-  void AddArgument(const HouseEventPtr& event) {
+  void AddArgument(HouseEvent* event) {
     AddArgument(event, &house_event_args_);
   }
-  void AddArgument(const BasicEventPtr& event) {
+  void AddArgument(BasicEvent* event) {
     AddArgument(event, &basic_event_args_);
   }
-  void AddArgument(const GatePtr& event) {
+  void AddArgument(Gate* event) {
     AddArgument(event, &gate_args_);
   }
   /// @}
@@ -314,15 +314,15 @@ class Formula : private boost::noncopyable {
  private:
   /// Handles addition of an event to the formula.
   ///
-  /// @tparam Ptr  Shared pointer type to the event.
+  /// @tparam T  The type of the argument event.
   ///
   /// @param[in] event  Pointer to the event.
   /// @param[in,out] container  The final destination to save the event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  template <class Ptr>
-  void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
-    if (event_args_.insert(event.get()).second == false)
+  template <class T>
+  void AddArgument(T* event, std::vector<T*>* container) {
+    if (event_args_.insert(event).second == false)
       throw DuplicateArgumentError("Duplicate argument " + event->name());
     container->emplace_back(event);
     if (event->orphan())
@@ -332,9 +332,9 @@ class Formula : private boost::noncopyable {
   Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
   IdTable<Event*> event_args_;  ///< All event arguments.
-  std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
-  std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.
-  std::vector<GatePtr> gate_args_;  ///< Arguments that are gates.
+  std::vector<HouseEvent*> house_event_args_;  ///< House event arguments.
+  std::vector<BasicEvent*> basic_event_args_;  ///< Basic event arguments.
+  std::vector<Gate*> gate_args_;  ///< Arguments that are gates.
   /// Arguments that are formulas
   /// if this formula is nested.
   std::vector<FormulaPtr> formula_args_;

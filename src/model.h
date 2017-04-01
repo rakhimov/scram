@@ -110,15 +110,15 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws std::out_of_range  The entity cannot be found.
   /// @{
-  ParameterPtr GetParameter(const std::string& entity_reference,
-                            const std::string& base_path);
-  HouseEventPtr GetHouseEvent(const std::string& entity_reference,
+  Parameter* GetParameter(const std::string& entity_reference,
+                          const std::string& base_path);
+  HouseEvent* GetHouseEvent(const std::string& entity_reference,
                               const std::string& base_path);
-  BasicEventPtr GetBasicEvent(const std::string& entity_reference,
+  BasicEvent* GetBasicEvent(const std::string& entity_reference,
                               const std::string& base_path);
-  GatePtr GetGate(const std::string& entity_reference,
-                  const std::string& base_path);
-  boost::variant<HouseEventPtr, BasicEventPtr, GatePtr>
+  Gate* GetGate(const std::string& entity_reference,
+                const std::string& base_path);
+  boost::variant<HouseEvent*, BasicEvent*, Gate*>
   GetEvent(const std::string& entity_reference, const std::string& base_path);
   /// @}
 
@@ -171,9 +171,8 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws std::out_of_range  The entity cannot be found.
   template <class T>
-  std::shared_ptr<T> GetEntity(const std::string& entity_reference,
-                               const std::string& base_path,
-                               const LookupTable<T>& container);
+  T* GetEntity(const std::string& entity_reference,
+               const std::string& base_path, const LookupTable<T>& container);
 
   /// A collection of defined constructs in the model.
   /// @{

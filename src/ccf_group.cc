@@ -160,11 +160,12 @@ void CcfGroup::ApplyModel() {
     for (auto combination :
          ext::make_combination_generator(level, proxy_gates.begin(),
                                          proxy_gates.end())) {
-      auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
+      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)
-        gate->formula().AddArgument(ccf_event);
+        gate->formula().AddArgument(ccf_event.get());
       ccf_event->members(std::move(combination));  // Move, at last.
+      ccf_events_.emplace_back(std::move(ccf_event));
     }
   }
 }

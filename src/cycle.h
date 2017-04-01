@@ -44,6 +44,9 @@ namespace cycle {
 inline const Formula* GetConnector(const GatePtr& node) {
   return &node->formula();
 }
+inline const Formula* GetConnector(Gate* node) {
+  return &node->formula();
+}
 inline Expression* GetConnector(Parameter* node) { return node; }
 /// @}
 
@@ -54,10 +57,10 @@ inline Expression* GetConnector(Parameter* node) { return node; }
 /// @returns  The iterable collection of nodes on the other end of connection.
 ///
 /// @{
-inline const std::vector<GatePtr>& GetNodes(const FormulaPtr& connector) {
+inline const std::vector<Gate*>& GetNodes(const FormulaPtr& connector) {
   return connector->gate_args();
 }
-inline const std::vector<GatePtr>& GetNodes(const Formula* connector) {
+inline const std::vector<Gate*>& GetNodes(const Formula* connector) {
   return connector->gate_args();
 }
 inline auto GetNodes(Expression* connector) {

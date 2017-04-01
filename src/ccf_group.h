@@ -202,6 +202,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
   /// Collection of expressions created specifically for this group.
   std::vector<std::unique_ptr<Expression>> expressions_;
+  /// CCF events created by the group.
+  std::vector<std::unique_ptr<CcfEvent>> ccf_events_;
 };
 
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
