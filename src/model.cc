@@ -132,32 +132,33 @@ std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
   return at(container.entities_by_path);  // Direct access.
 }
 
-/// Helper macro for Model::BindEvent event discovery.
-#define BIND_EVENT(access, path_reference)                       \
+/// Helper macro for Model::GetEvent event discovery.
+#define GET_EVENT(access, path_reference)                        \
   if (auto it = ext::find(gates_.access, path_reference))        \
-    return formula->AddArgument(*it);                            \
+    return *it;                                                  \
   if (auto it = ext::find(basic_events_.access, path_reference)) \
-    return formula->AddArgument(*it);                            \
+    return *it;                                                  \
   if (auto it = ext::find(house_events_.access, path_reference)) \
-    return formula->AddArgument(*it)
+    return *it
 
-void Model::BindEvent(const std::string& entity_reference,
-                      const std::string& base_path, Formula* formula) {
+boost::variant<HouseEventPtr, BasicEventPtr, GatePtr>
+Model::GetEvent(
+    const std::string& entity_reference, const std::string& base_path) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     std::string full_path = base_path + "." + entity_reference;
-    BIND_EVENT(entities_by_path, full_path);
+    GET_EVENT(entities_by_path, full_path);
   }
 
   if (entity_reference.find('.') == std::string::npos) {  // Public entity.
-    BIND_EVENT(entities_by_id, entity_reference);
+    GET_EVENT(entities_by_id, entity_reference);
   } else {  // Direct access.
-    BIND_EVENT(entities_by_path, entity_reference);
+    GET_EVENT(entities_by_path, entity_reference);
   }
   throw std::out_of_range("The event cannot be bound.");
 }
 
-#undef BIND_EVENT
+#undef GET_EVENT
 
 }  // namespace mef
 }  // namespace scram

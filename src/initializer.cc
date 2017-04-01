@@ -588,7 +588,10 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        model_->BindEvent(name, base_path, formula);
+        auto event_arg = model_->GetEvent(name, base_path);
+        boost::apply_visitor(
+            [&formula](const auto& arg) { formula->AddArgument(arg); },
+            event_arg);
 
       } else if (element_type == "gate") {
         formula->AddArgument(model_->GetGate(name, base_path));
