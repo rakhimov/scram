@@ -37,7 +37,7 @@ class ExponentialExpression : public Expression {
   ///
   /// @param[in] lambda  Hourly rate of failure.
   /// @param[in] t  Mission time in hours.
-  ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t);
+  ExponentialExpression(Expression* lambda, Expression* t);
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
@@ -62,8 +62,8 @@ class GlmExpression : public Expression {
   /// @param[in] lambda  Hourly rate of failure.
   /// @param[in] mu  Hourly repair rate.
   /// @param[in] t  Mission time in hours.
-  GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
-                const ExpressionPtr& mu, const ExpressionPtr& t);
+  GlmExpression(Expression* gamma, Expression* lambda, Expression* mu,
+                Expression* t);
 
   void Validate() const override;
   double Mean() noexcept override;
@@ -91,8 +91,8 @@ class WeibullExpression : public Expression {
   /// @param[in] beta  Shape parameter.
   /// @param[in] t0  Time shift.
   /// @param[in] time  Mission time.
-  WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
-                    const ExpressionPtr& t0, const ExpressionPtr& time);
+  WeibullExpression(Expression* alpha, Expression* beta,
+                    Expression* t0, Expression* time);
 
   void Validate() const override;
   double Mean() noexcept override;
@@ -120,22 +120,20 @@ class PeriodicTest : public Expression {
   /// @param[in] tau  The time between tests in hours.
   /// @param[in] theta  The time before the first test in hours.
   /// @param[in] time  The current mission time in hours.
-  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& tau,
-               const ExpressionPtr& theta, const ExpressionPtr& time);
+  PeriodicTest(Expression* lambda, Expression* tau,
+               Expression* theta, Expression* time);
 
   /// Periodic tests with tests instantaneous and always successful.
-  /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
-  ///                           const ExpressionPtr&, const ExpressionPtr&)
+  /// @copydetails PeriodicTest(Expression*, Expression*,
+  ///                           Expression*, Expression*)
   ///
   /// @param[in] mu  The repair rate (hourly).
-  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
-               const ExpressionPtr& tau, const ExpressionPtr& theta,
-               const ExpressionPtr& time);
+  PeriodicTest(Expression* lambda, Expression* mu, Expression* tau,
+               Expression* theta, Expression* time);
 
   /// Fully parametrized periodic-test description.
-  /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
-  ///                           const ExpressionPtr&, const ExpressionPtr&,
-  ///                           const ExpressionPtr&)
+  /// @copydetails PeriodicTest(Expression*, Expression*,
+  ///                           Expression*, Expression*, Expression*)
   ///
   /// @param[in] lambda_test  The component failure rate while under test.
   /// @param[in] gamma  The failure probability due to or at test start.
@@ -143,13 +141,13 @@ class PeriodicTest : public Expression {
   /// @param[in] available_at_test  Indicator of component availability at test.
   /// @param[in] sigma  The probability of failure detection upon test.
   /// @param[in] omega  The probability of failure at restart after repair/test.
-  PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
-               const ExpressionPtr& mu, const ExpressionPtr& tau,
-               const ExpressionPtr& theta, const ExpressionPtr& gamma,
-               const ExpressionPtr& test_duration,
-               const ExpressionPtr& available_at_test,
-               const ExpressionPtr& sigma, const ExpressionPtr& omega,
-               const ExpressionPtr& time);
+  PeriodicTest(Expression* lambda, Expression* lambda_test,
+               Expression* mu, Expression* tau,
+               Expression* theta, Expression* gamma,
+               Expression* test_duration,
+               Expression* available_at_test,
+               Expression* sigma, Expression* omega,
+               Expression* time);
 
   void Validate() const override { flavor_->Validate(); }
   double Mean() noexcept override { return flavor_->Mean(); }
@@ -174,8 +172,8 @@ class PeriodicTest : public Expression {
   class InstantRepair : public Flavor {
    public:
     /// The same semantics as for 4 argument periodic-test.
-    InstantRepair(const ExpressionPtr& lambda, const ExpressionPtr& tau,
-                  const ExpressionPtr& theta, const ExpressionPtr& time)
+    InstantRepair(Expression* lambda, Expression* tau,
+                  Expression* theta, Expression* time)
         : lambda_(*lambda), tau_(*tau), theta_(*theta), time_(*time) {}
 
     void Validate() const override;
@@ -199,9 +197,9 @@ class PeriodicTest : public Expression {
   class InstantTest : public InstantRepair {
    public:
     /// The same semantics as for 5 argument periodic-test.
-    InstantTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
-                const ExpressionPtr& tau, const ExpressionPtr& theta,
-                const ExpressionPtr& time)
+    InstantTest(Expression* lambda, Expression* mu,
+                Expression* tau, Expression* theta,
+                Expression* time)
         : InstantRepair(lambda, tau, theta, time), mu_(*mu) {}
 
     void Validate() const override;
@@ -221,12 +219,12 @@ class PeriodicTest : public Expression {
   class Complete : public InstantTest {
    public:
     /// The parameters have the same semantics as 11 argument periodic-test.
-    Complete(const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
-             const ExpressionPtr& mu, const ExpressionPtr& tau,
-             const ExpressionPtr& theta, const ExpressionPtr& gamma,
-             const ExpressionPtr& test_duration,
-             const ExpressionPtr& available_at_test, const ExpressionPtr& sigma,
-             const ExpressionPtr& omega, const ExpressionPtr& time)
+    Complete(Expression* lambda, Expression* lambda_test,
+             Expression* mu, Expression* tau,
+             Expression* theta, Expression* gamma,
+             Expression* test_duration,
+             Expression* available_at_test, Expression* sigma,
+             Expression* omega, Expression* time)
         : InstantTest(lambda, mu, tau, theta, time),
           lambda_test_(*lambda_test),
           gamma_(*gamma),
@@ -240,13 +238,7 @@ class PeriodicTest : public Expression {
     double Sample() noexcept override;
 
    private:
-    /// @returns The expression value.
-    /// @copydetails PeriodicTest(const ExpressionPtr&, const ExpressionPtr&,
-    ///                           const ExpressionPtr&, const ExpressionPtr&,
-    ///                           const ExpressionPtr&, const ExpressionPtr&,
-    ///                           const ExpressionPtr&,
-    ///                           const ExpressionPtr&, const ExpressionPtr&,
-    ///                           const ExpressionPtr&, const ExpressionPtr&)
+    /// Computes the expression value.
     double Compute(double lambda, double lambda_test, double mu, double tau,
                    double theta, double gamma, double test_duration,
                    bool available_at_test, double sigma, double omega,

@@ -25,10 +25,10 @@
 namespace scram {
 namespace mef {
 
-const ExpressionPtr ConstantExpression::kOne(new ConstantExpression(1));
-const ExpressionPtr ConstantExpression::kZero(new ConstantExpression(0));
-const ExpressionPtr ConstantExpression::kPi(
-    new ConstantExpression(boost::math::constants::pi<double>()));
+ConstantExpression ConstantExpression::kOne(1);
+ConstantExpression ConstantExpression::kZero(0);
+ConstantExpression ConstantExpression::kPi(
+    boost::math::constants::pi<double>());
 
 }  // namespace mef
 }  // namespace scram

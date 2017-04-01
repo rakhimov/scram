@@ -24,7 +24,6 @@
 
 #include <cstdint>
 
-#include <memory>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -33,9 +32,6 @@
 
 namespace scram {
 namespace mef {
-
-class Expression;
-using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
 
 class Initializer;  // Needs to handle cycles.
 
@@ -71,12 +67,12 @@ class Expression : private boost::noncopyable {
   /// to register their arguments.
   ///
   /// @param[in] args  Arguments of this expression.
-  explicit Expression(std::vector<ExpressionPtr> args = {});
+  explicit Expression(std::vector<Expression*> args = {});
 
   virtual ~Expression() = default;
 
   /// @returns A set of arguments of the expression.
-  const std::vector<ExpressionPtr>& args() const { return args_; }
+  const std::vector<Expression*>& args() const { return args_; }
 
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
@@ -119,7 +115,7 @@ class Expression : private boost::noncopyable {
   /// Registers an additional argument expression.
   ///
   /// @param[in] arg  An argument expression used by this expression.
-  void AddArg(const ExpressionPtr& arg) { args_.push_back(arg); }
+  void AddArg(Expression* arg) { args_.push_back(arg); }
 
  private:
   /// Runs sampling of the expression.
@@ -128,7 +124,7 @@ class Expression : private boost::noncopyable {
   /// @returns A sampled value of this expression.
   virtual double DoSample() noexcept = 0;
 
-  std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
+  std::vector<Expression*> args_;  ///< Expression's arguments.
   double sampled_value_;  ///< The sampled value.
   bool sampled_;  ///< Indication if the expression is already sampled.
 };

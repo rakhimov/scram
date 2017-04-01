@@ -37,10 +37,10 @@ void MissionTime::value(double time) {
   value_ = time;
 }
 
-void Parameter::expression(const ExpressionPtr& expression) {
+void Parameter::expression(Expression* expression) {
   if (expression_)
     throw LogicError("Parameter expression is already set.");
-  expression_ = expression.get();
+  expression_ = expression;
   Expression::AddArg(expression);
 }
 

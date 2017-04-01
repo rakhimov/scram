@@ -27,7 +27,7 @@ namespace mef {
 
 Instruction::~Instruction() = default;
 
-CollectExpression::CollectExpression(const ExpressionPtr& expression)
+CollectExpression::CollectExpression(Expression* expression)
     : expression_(expression) {}
 
 void Sequence::instructions(InstructionContainer instructions) {

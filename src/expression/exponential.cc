@@ -88,8 +88,7 @@ double p_exp(double p_mu, double p_lambda, double mu, double lambda,
 
 }  // namespace
 
-ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
-                                             const ExpressionPtr& t)
+ExponentialExpression::ExponentialExpression(Expression* lambda, Expression* t)
     : Expression({lambda, t}),
       lambda_(*lambda),
       time_(*t) {}
@@ -107,10 +106,8 @@ double ExponentialExpression::DoSample() noexcept {
   return p_exp(lambda_.Sample(), time_.Sample());
 }
 
-GlmExpression::GlmExpression(const ExpressionPtr& gamma,
-                             const ExpressionPtr& lambda,
-                             const ExpressionPtr& mu,
-                             const ExpressionPtr& t)
+GlmExpression::GlmExpression(Expression* gamma, Expression* lambda,
+                             Expression* mu, Expression* t)
     : Expression({gamma, lambda, mu, t}),
       gamma_(*gamma),
       lambda_(*lambda),
@@ -139,10 +136,8 @@ double GlmExpression::Compute(double gamma, double lambda, double mu,
   return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
 }
 
-WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
-                                     const ExpressionPtr& beta,
-                                     const ExpressionPtr& t0,
-                                     const ExpressionPtr& time)
+WeibullExpression::WeibullExpression(Expression* alpha, Expression* beta,
+                                     Expression* t0, Expression* time)
     : Expression({alpha, beta, t0, time}),
       alpha_(*alpha),
       beta_(*beta),
@@ -169,25 +164,22 @@ double WeibullExpression::DoSample() noexcept {
   return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(), time_.Sample());
 }
 
-PeriodicTest::PeriodicTest(const ExpressionPtr& lambda,
-                           const ExpressionPtr& tau, const ExpressionPtr& theta,
-                           const ExpressionPtr& time)
+PeriodicTest::PeriodicTest(Expression* lambda, Expression* tau,
+                           Expression* theta, Expression* time)
     : Expression({lambda, tau, theta, time}),
       flavor_(new PeriodicTest::InstantRepair(lambda, tau, theta, time)) {}
 
-PeriodicTest::PeriodicTest(const ExpressionPtr& lambda, const ExpressionPtr& mu,
-                           const ExpressionPtr& tau, const ExpressionPtr& theta,
-                           const ExpressionPtr& time)
+PeriodicTest::PeriodicTest(Expression* lambda, Expression* mu,
+                           Expression* tau, Expression* theta,
+                           Expression* time)
     : Expression({lambda, mu, tau, theta, time}),
       flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
 
-PeriodicTest::PeriodicTest(
-    const ExpressionPtr& lambda, const ExpressionPtr& lambda_test,
-    const ExpressionPtr& mu, const ExpressionPtr& tau,
-    const ExpressionPtr& theta, const ExpressionPtr& gamma,
-    const ExpressionPtr& test_duration, const ExpressionPtr& available_at_test,
-    const ExpressionPtr& sigma, const ExpressionPtr& omega,
-    const ExpressionPtr& time)
+PeriodicTest::PeriodicTest(Expression* lambda, Expression* lambda_test,
+                           Expression* mu, Expression* tau, Expression* theta,
+                           Expression* gamma, Expression* test_duration,
+                           Expression* available_at_test, Expression* sigma,
+                           Expression* omega, Expression* time)
     : Expression({lambda, lambda_test, mu, tau, theta, gamma, test_duration,
                   available_at_test, sigma, omega, time}),
       flavor_(new PeriodicTest::Complete(

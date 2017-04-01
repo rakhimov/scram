@@ -61,9 +61,8 @@ inline const std::vector<GatePtr>& GetNodes(const Formula* connector) {
   return connector->gate_args();
 }
 inline auto GetNodes(Expression* connector) {
-  return connector->args() |
-         boost::adaptors::transformed([](const ExpressionPtr& arg) {
-           return dynamic_cast<Parameter*>(arg.get());
+  return connector->args() | boost::adaptors::transformed([](Expression* arg) {
+           return dynamic_cast<Parameter*>(arg);
          }) |
          boost::adaptors::filtered([](auto* ptr) { return ptr != nullptr; });
 }
@@ -84,12 +83,9 @@ inline const std::vector<FormulaPtr>& GetConnectors(const Formula* connector) {
   return connector->formula_args();
 }
 inline auto GetConnectors(Expression* connector) {
-  return connector->args() |
-         boost::adaptors::filtered([](const ExpressionPtr& arg) {
-           return dynamic_cast<Parameter*>(arg.get()) == nullptr;
-         }) |
-         boost::adaptors::transformed(
-             [](const ExpressionPtr& arg) { return arg.get(); });
+  return connector->args() | boost::adaptors::filtered([](Expression* arg) {
+           return dynamic_cast<Parameter*>(arg) == nullptr;
+         });
 }
 /// @}
 

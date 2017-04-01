@@ -48,7 +48,7 @@ class UniformDeviate : public RandomDeviate {
   ///
   /// @param[in] min  Minimum value of the distribution.
   /// @param[in] max  Maximum value of the distribution.
-  UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max);
+  UniformDeviate(Expression* min, Expression* max);
 
   /// @throws InvalidArgument  The min value is more or equal to max value.
   void Validate() const override;
@@ -71,7 +71,7 @@ class NormalDeviate : public RandomDeviate {
   ///
   /// @param[in] mean  The mean of the distribution.
   /// @param[in] sigma  The standard deviation of the distribution.
-  NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma);
+  NormalDeviate(Expression* mean, Expression* sigma);
 
   /// @throws InvalidArgument  The sigma is negative or zero.
   void Validate() const override;
@@ -106,14 +106,13 @@ class LogNormalDeviate : public RandomDeviate {
   /// @param[in] ef  The error factor of the log-normal distribution.
   ///                EF = exp(z_alpha * sigma)
   /// @param[in] level  The confidence level.
-  LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
-                   const ExpressionPtr& level);
+  LogNormalDeviate(Expression* mean, Expression* ef, Expression* level);
 
   /// The parametrization with underlying normal distribution parameters.
   ///
   /// @param[in] mu  The mean of the normal distribution.
   /// @param[in] sigma  The standard deviation of the normal distribution.
-  LogNormalDeviate(const ExpressionPtr& mu, const ExpressionPtr& sigma);
+  LogNormalDeviate(Expression* mu, Expression* sigma);
 
   void Validate() const override { flavor_->Validate(); };
   double Mean() noexcept override { return flavor_->mean(); }
@@ -142,8 +141,7 @@ class LogNormalDeviate : public RandomDeviate {
   class Logarithmic final : public Flavor {
    public:
     /// @copydoc LogNormalDeviate::LogNormalDeviate
-    Logarithmic(const ExpressionPtr& mean, const ExpressionPtr& ef,
-                const ExpressionPtr& level)
+    Logarithmic(Expression* mean, Expression* ef, Expression* level)
         : mean_(*mean), ef_(*ef), level_(*level) {}
     double scale() noexcept override;
     double location() noexcept override;
@@ -162,8 +160,7 @@ class LogNormalDeviate : public RandomDeviate {
    public:
     /// @param[in] mu  The mean of the normal distribution.
     /// @param[in] sigma  The standard deviation of the normal distribution.
-    Normal(const ExpressionPtr& mu, const ExpressionPtr& sigma)
-        : mu_(*mu), sigma_(*sigma) {}
+    Normal(Expression* mu, Expression* sigma) : mu_(*mu), sigma_(*sigma) {}
     double scale() noexcept override { return sigma_.Mean(); }
     double location() noexcept override { return mu_.Mean(); }
     double mean() noexcept override;
@@ -185,7 +182,7 @@ class GammaDeviate : public RandomDeviate {
   ///
   /// @param[in] k  Shape parameter of Gamma distribution.
   /// @param[in] theta  Scale parameter of Gamma distribution.
-  GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta);
+  GammaDeviate(Expression* k, Expression* theta);
 
   /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
   void Validate() const override;
@@ -211,7 +208,7 @@ class BetaDeviate : public RandomDeviate {
   ///
   /// @param[in] alpha  Alpha shape parameter of Gamma distribution.
   /// @param[in] beta  Beta shape parameter of Gamma distribution.
-  BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta);
+  BetaDeviate(Expression* alpha, Expression* beta);
 
   /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
   void Validate() const override;
@@ -246,8 +243,8 @@ class Histogram : public RandomDeviate {
   ///
   /// @throws InvalidArgument  The boundaries container size is not equal to
   ///                          weights container size + 1.
-  Histogram(std::vector<ExpressionPtr> boundaries,
-            std::vector<ExpressionPtr> weights);
+  Histogram(std::vector<Expression*> boundaries,
+            std::vector<Expression*> weights);
 
   /// @throws InvalidArgument  The boundaries are not strictly increasing,
   ///                          or weights are negative.
@@ -262,7 +259,7 @@ class Histogram : public RandomDeviate {
  private:
   /// Access to args.
   using IteratorRange =
-      boost::iterator_range<std::vector<ExpressionPtr>::const_iterator>;
+      boost::iterator_range<std::vector<Expression*>::const_iterator>;
 
   double DoSample() noexcept override;
 

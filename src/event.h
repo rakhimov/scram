@@ -94,7 +94,7 @@ class BasicEvent : public Event {
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression  The expression to describe this event.
-  void expression(const ExpressionPtr& expression) {
+  void expression(Expression* expression) {
     assert(!expression_ && "The basic event's expression is already set.");
     expression_ = expression;
   }
@@ -156,7 +156,7 @@ class BasicEvent : public Event {
  private:
   /// Expression that describes this basic event
   /// and provides numerical values for probability calculations.
-  ExpressionPtr expression_;
+  Expression* expression_ = nullptr;
 
   /// If this basic event is in a common cause group,
   /// CCF gate can serve as a replacement for the basic event

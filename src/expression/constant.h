@@ -29,9 +29,9 @@ namespace mef {
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
-  static const ExpressionPtr kOne;  ///< Constant 1 or True.
-  static const ExpressionPtr kZero;  ///< Constant 0 or False.
-  static const ExpressionPtr kPi;  ///< Constant PI value.
+  static ConstantExpression kOne;  ///< Constant 1 or True.
+  static ConstantExpression kZero;  ///< Constant 0 or False.
+  static ConstantExpression kPi;  ///< Constant PI value.
 
   /// Constructor for constant integer, float, and bool values.
   /// In other words, this constructor is implicitly generic.

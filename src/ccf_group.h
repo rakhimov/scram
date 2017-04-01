@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -116,7 +117,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   ///
   /// @throws ValidationError  Not enough members.
   /// @throws LogicError  The distribution has already been defined.
-  void AddDistribution(const ExpressionPtr& distr);
+  void AddDistribution(Expression* distr);
 
   /// Adds a CCF factor for the specified model.
   /// All basic events should be added as members
@@ -130,7 +131,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
-  void AddFactor(const ExpressionPtr& factor, boost::optional<int> level = {});
+  void AddFactor(Expression* factor, boost::optional<int> level = {});
 
   /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.
@@ -152,13 +153,27 @@ class CcfGroup : public Id, private boost::noncopyable {
 
  protected:
   /// Mapping expressions and their application levels.
-  using ExpressionMap = std::vector<std::pair<int, ExpressionPtr>>;
+  using ExpressionMap = std::vector<std::pair<int, Expression*>>;
 
   /// @returns The probability distribution of the events.
-  const ExpressionPtr& distribution() const { return distribution_; }
+  Expression* distribution() const { return distribution_; }
 
   /// @returns CCF factors of the model.
   const ExpressionMap& factors() const { return factors_; }
+
+  /// Registers a new expression for ownership by the group.
+  /// @{
+  template <class T, typename... Ts>
+  Expression* Register(Ts&&... args) {
+    expressions_.emplace_back(std::make_unique<T>(std::forward<Ts>(args)...));
+    return expressions_.back().get();
+  }
+  template <class T>
+  Expression* Register(std::initializer_list<Expression*> args) {
+    expressions_.emplace_back(std::make_unique<T>(args));
+    return expressions_.back().get();
+  }
+  /// @}
 
  private:
   /// @returns The minimum level for CCF factors for the specific model.
@@ -182,9 +197,11 @@ class CcfGroup : public Id, private boost::noncopyable {
   virtual ExpressionMap CalculateProbabilities() = 0;
 
   int prev_level_ = 0;  ///< To deduce optional levels from the previous level.
+  Expression* distribution_ = nullptr;  ///< The group probability distribution.
   std::vector<BasicEventPtr> members_;  ///< Members of CCF groups.
-  ExpressionPtr distribution_;  ///< The probability distribution of the group.
   ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
+  /// Collection of expressions created specifically for this group.
+  std::vector<std::unique_ptr<Expression>> expressions_;
 };
 
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.

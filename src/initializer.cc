@@ -391,9 +391,7 @@ void Initializer::Define(const xmlpp::Element* event_node,
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node = XmlElement(expressions.back());
-    ExpressionPtr expression =
-        GetExpression(expr_node, basic_event->base_path());
-    basic_event->expression(expression);
+    basic_event->expression(GetExpression(expr_node, basic_event->base_path()));
   }
 }
 
@@ -403,8 +401,7 @@ void Initializer::Define(const xmlpp::Element* param_node,
   xmlpp::NodeSet expressions = GetNonAttributeElements(param_node);
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_node = XmlElement(expressions.back());
-  ExpressionPtr expression = GetExpression(expr_node, parameter->base_path());
-  parameter->expression(expression);
+  parameter->expression(GetExpression(expr_node, parameter->base_path()));
 }
 
 template <>
@@ -415,9 +412,8 @@ void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
     if (name == "distribution") {
       assert(element->find("./*").size() == 1);
       const xmlpp::Element* expr_node = XmlElement(element->find("./*")[0]);
-      ExpressionPtr expression =
-          GetExpression(expr_node, ccf_group->base_path());
-      ccf_group->AddDistribution(expression);
+      ccf_group->AddDistribution(
+          GetExpression(expr_node, ccf_group->base_path()));
 
     } else if (name == "factor") {
       DefineCcfFactor(element, ccf_group);
@@ -633,7 +629,7 @@ struct Initializer::Extractor {
   ///
   /// @throws std::out_of_range  Not enough arguments in the args container.
   template <class... Ts>
-  std::shared_ptr<T> operator()(const xmlpp::NodeSet& args,
+  std::unique_ptr<T> operator()(const xmlpp::NodeSet& args,
                                 const std::string& base_path,
                                 Initializer* init,
                                 Ts&&... expressions) {
@@ -657,12 +653,12 @@ struct Initializer::Extractor<T, 0> {
   ///
   /// @returns A shared pointer to the constructed expression.
   template <class... Ts>
-  std::shared_ptr<T> operator()(const xmlpp::NodeSet& /*args*/,
+  std::unique_ptr<T> operator()(const xmlpp::NodeSet& /*args*/,
                                 const std::string& /*base_path*/,
                                 Initializer* /*init*/,
                                 Ts&&... expressions) {
     static_assert(sizeof...(Ts), "Unintended use case.");
-    return std::make_shared<T>(std::forward<Ts>(expressions)...);
+    return std::make_unique<T>(std::forward<Ts>(expressions)...);
   }
 };
 
@@ -676,14 +672,14 @@ struct Initializer::Extractor<T, -1> {
   /// @param[in,out] init  The host Initializer.
   ///
   /// @returns A shared pointer to the constructed expression.
-  std::shared_ptr<T> operator()(const xmlpp::NodeSet& args,
+  std::unique_ptr<T> operator()(const xmlpp::NodeSet& args,
                                 const std::string& base_path,
                                 Initializer* init) {
-    std::vector<ExpressionPtr> expr_args;
+    std::vector<Expression*> expr_args;
     for (const xmlpp::Node* node : args) {
       expr_args.push_back(init->GetExpression(XmlElement(node), base_path));
     }
-    return std::make_shared<T>(std::move(expr_args));
+    return std::make_unique<T>(std::move(expr_args));
   }
 };
 
@@ -711,7 +707,7 @@ constexpr int count_args() {
 
 template <class T>
 constexpr int num_args(std::false_type) {
-  return count_args<T, ExpressionPtr>();
+  return count_args<T, Expression*>();
 }
 
 template <class T>
@@ -721,28 +717,29 @@ template <class T>
 constexpr std::enable_if_t<std::is_base_of<Expression, T>::value, int>
 num_args() {
   static_assert(!std::is_default_constructible<T>::value, "No zero args.");
-  return num_args<T>(std::is_constructible<T, std::vector<ExpressionPtr>>());
+  return num_args<T>(std::is_constructible<T, std::vector<Expression*>>());
 }
 /// @}
 
 }  // namespace
 
 template <class T>
-ExpressionPtr Initializer::Extract(const xmlpp::NodeSet& args,
-                                   const std::string& base_path,
-                                   Initializer* init) {
+std::unique_ptr<Expression> Initializer::Extract(const xmlpp::NodeSet& args,
+                                                 const std::string& base_path,
+                                                 Initializer* init) {
   return Extractor<T, num_args<T>()>()(args, base_path, init);
 }
 
 /// Specialization for Extractor of Histogram expressions.
 template <>
-ExpressionPtr Initializer::Extract<Histogram>(const xmlpp::NodeSet& args,
-                                              const std::string& base_path,
-                                              Initializer* init) {
+std::unique_ptr<Expression> Initializer::Extract<Histogram>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
   assert(args.size() > 1 && "At least one bin must be present.");
-  std::vector<ExpressionPtr> boundaries = {
+  std::vector<Expression*> boundaries = {
       init->GetExpression(XmlElement(args.front()), base_path)};
-  std::vector<ExpressionPtr> weights;
+  std::vector<Expression*> weights;
   for (auto it = std::next(args.begin()); it != args.end(); ++it) {
     const xmlpp::Element* el = XmlElement(*it);
     xmlpp::NodeSet bin = el->find("./*");
@@ -750,12 +747,12 @@ ExpressionPtr Initializer::Extract<Histogram>(const xmlpp::NodeSet& args,
     boundaries.push_back(init->GetExpression(XmlElement(bin[0]), base_path));
     weights.push_back(init->GetExpression(XmlElement(bin[1]), base_path));
   }
-  return std::make_shared<Histogram>(std::move(boundaries), std::move(weights));
+  return std::make_unique<Histogram>(std::move(boundaries), std::move(weights));
 }
 
 /// Specialization due to overloaded constructors.
 template <>
-ExpressionPtr Initializer::Extract<LogNormalDeviate>(
+std::unique_ptr<Expression> Initializer::Extract<LogNormalDeviate>(
     const xmlpp::NodeSet& args,
     const std::string& base_path,
     Initializer* init) {
@@ -766,7 +763,7 @@ ExpressionPtr Initializer::Extract<LogNormalDeviate>(
 
 /// Specialization due to overloaded constructors and un-fixed number of args.
 template <>
-ExpressionPtr Initializer::Extract<PeriodicTest>(
+std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
     const xmlpp::NodeSet& args,
     const std::string& base_path,
     Initializer* init) {
@@ -799,42 +796,47 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"mul", &Extract<Mul>},
     {"div", &Extract<Div>}};
 
-ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
-                                         const std::string& base_path) {
+Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
+                                       const std::string& base_path) {
   std::string expr_type = expr_element->get_name();
+  auto register_expression = [this](std::unique_ptr<Expression> expression) {
+    auto* ret_ptr = expression.get();
+    model_->Add(std::move(expression));
+    return ret_ptr;
+  };
   if (expr_type == "int") {
     int val = CastAttributeValue<int>(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val);
+    return register_expression(std::make_unique<ConstantExpression>(val));
   }
   if (expr_type == "float") {
     double val = CastAttributeValue<double>(expr_element, "value");
-    return std::make_shared<ConstantExpression>(val);
+    return register_expression(std::make_unique<ConstantExpression>(val));
   }
   if (expr_type == "bool") {
     std::string val = GetAttributeValue(expr_element, "value");
-    return val == "true" ? ConstantExpression::kOne : ConstantExpression::kZero;
+    return val == "true" ? &ConstantExpression::kOne
+                         : &ConstantExpression::kZero;
   }
   if (expr_type == "pi")
-    return ConstantExpression::kPi;
+    return &ConstantExpression::kPi;
 
   if (auto expression = GetParameter(expr_type, expr_element, base_path))
     return expression;
 
   try {
-    ExpressionPtr expression = kExpressionExtractors_.at(expr_type)(
-        expr_element->find("./*"), base_path, this);
+    Expression* expression = register_expression(kExpressionExtractors_.at(
+        expr_type)(expr_element->find("./*"), base_path, this));
     // Register for late validation after ensuring no cycles.
-    expressions_.emplace_back(expression.get(), expr_element);
-    model_->Add(expression);
+    expressions_.emplace_back(expression, expr_element);
     return expression;
   } catch (InvalidArgument& err) {
     throw ValidationError(GetLine(expr_element) + err.msg());
   }
 }
 
-ExpressionPtr Initializer::GetParameter(const std::string& expr_type,
-                                        const xmlpp::Element* expr_element,
-                                        const std::string& base_path) {
+Expression* Initializer::GetParameter(const std::string& expr_type,
+                                      const xmlpp::Element* expr_element,
+                                      const std::string& base_path) {
   auto check_units = [&expr_element](const auto& parameter) {
     std::string unit = GetAttributeValue(expr_element, "unit");
     const char* param_unit = scram::mef::kUnitsToString[parameter.unit()];
@@ -853,14 +855,14 @@ ExpressionPtr Initializer::GetParameter(const std::string& expr_type,
       ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
       check_units(*param);
-      return param;
+      return param.get();
     } catch (std::out_of_range&) {
       throw ValidationError(GetLine(expr_element) + "Undefined parameter " +
                             name + " with base path " + base_path);
     }
   } else if (expr_type == "system-mission-time") {
     check_units(*model_->mission_time());
-    return model_->mission_time();
+    return model_->mission_time().get();
   }
   return nullptr;  // The expression is not a parameter.
 }
@@ -889,7 +891,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
                                   CcfGroup* ccf_group) {
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node = XmlElement(factor_node->find("./*")[0]);
-  ExpressionPtr expression = GetExpression(expr_node, ccf_group->base_path());
+  Expression* expression = GetExpression(expr_node, ccf_group->base_path());
 
   try {
     if (GetAttributeValue(factor_node, "level").empty()) {

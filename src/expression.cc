@@ -25,7 +25,7 @@
 namespace scram {
 namespace mef {
 
-Expression::Expression(std::vector<ExpressionPtr> args)
+Expression::Expression(std::vector<Expression*> args)
     : args_(std::move(args)),
       sampled_value_(0),
       sampled_(false) {}
@@ -42,13 +42,12 @@ void Expression::Reset() noexcept {
   if (!sampled_)
     return;
   sampled_ = false;
-  for (const ExpressionPtr& arg : args_)
+  for (Expression* arg : args_)
     arg->Reset();
 }
 
 bool Expression::IsDeviate() noexcept {
-  return ext::any_of(
-      args_, [](const ExpressionPtr& arg) { return arg->IsDeviate(); });
+  return ext::any_of(args_, [](Expression* arg) { return arg->IsDeviate(); });
 }
 
 }  // namespace mef

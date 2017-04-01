@@ -93,7 +93,7 @@ class Parameter : public Expression, public Id, public NodeMark {
   /// @param[in] expression  The expression to describe this parameter.
   ///
   /// @throws LogicError  The parameter expression is already set.
-  void expression(const ExpressionPtr& expression);
+  void expression(Expression* expression);
 
   /// @returns The unit of this parameter.
   Units unit() const { return unit_; }

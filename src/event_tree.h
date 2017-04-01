@@ -50,10 +50,13 @@ class CollectExpression : public Instruction {
  public:
   /// @param[in] expression  The expression to multiply
   ///                        the current sequence probability.
-  explicit CollectExpression(const ExpressionPtr& expression);
+  explicit CollectExpression(Expression* expression);
+
+  /// @returns The collected expression for value extraction.
+  Expression& expression() const { return *expression_; }
 
  private:
-  ExpressionPtr expression_;  ///< The probability expression to multiply.
+  Expression* expression_;  ///< The probability expression to multiply.
 };
 
 /// Representation of sequences in event trees.

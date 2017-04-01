@@ -94,7 +94,7 @@ class Model : public Element, private boost::noncopyable {
   void Add(const BasicEventPtr& element);
   void Add(const GatePtr& element);
   void Add(const CcfGroupPtr& element);
-  void Add(std::shared_ptr<Expression> element) {
+  void Add(std::unique_ptr<Expression> element) {
     expressions_.emplace_back(std::move(element));
   }
   /// @}
@@ -186,7 +186,7 @@ class Model : public Element, private boost::noncopyable {
   LookupTable<Parameter> parameters_;
   std::shared_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
-  std::vector<std::shared_ptr<Expression>> expressions_;  /// @todo unique_ptr
+  std::vector<std::unique_ptr<Expression>> expressions_;
   /// @}
   IdTable<Event*> events_;  ///< All events by ids.
 };
