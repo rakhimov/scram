@@ -336,16 +336,6 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  There are problems detected with expressions.
   void ValidateExpressions();
 
-  /// Breaks all possible cycles in graph structures.
-  /// This function handles cycles
-  /// conservatively and indiscriminately.
-  ///
-  /// It may not be the most optimal approach,
-  /// but this error condition is considered uncommon.
-  ///
-  /// @post The model is unusable (freed).
-  void BreakCycles();
-
   /// Applies the input information to set up for future analysis.
   /// This step is crucial to get
   /// correct fault tree structures

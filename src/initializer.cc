@@ -137,12 +137,7 @@ xmlpp::NodeSet GetNonAttributeElements(const xmlpp::Element* xml_element) {
 Initializer::Initializer(const std::vector<std::string>& xml_files,
                          core::Settings settings)
     : settings_(std::move(settings)) {
-  try {
-    ProcessInputFiles(xml_files);
-  } catch (const CycleError&) {
-    BreakCycles();
-    throw;
-  }
+  ProcessInputFiles(xml_files);
 }
 
 void Initializer::CheckFileExistence(
@@ -991,20 +986,6 @@ void Initializer::ValidateExpressions() {
   if (!msg.str().empty()) {
     throw ValidationError("Invalid basic event probabilities detected:\n" +
                           msg.str());
-  }
-}
-
-void Initializer::BreakCycles() {
-  std::vector<std::weak_ptr<Gate>> cyclic_gates;
-  for (const GatePtr& gate : model_->gates())
-    cyclic_gates.emplace_back(gate);
-
-  model_.reset();
-
-  for (const auto& gate : cyclic_gates) {
-    if (gate.expired())
-      continue;
-    Gate::Cycle::BreakConnections(gate.lock().get());
   }
 }
 
