@@ -910,7 +910,7 @@ void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.
   for (const GatePtr& gate : model_->gates()) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle(gate, &cycle)) {
+    if (cycle::DetectCycle(gate.get(), &cycle)) {
       throw CycleError("Detected a cycle in " + gate->name() +
                        " gate:\n" + cycle::PrintCycle(cycle));
     }

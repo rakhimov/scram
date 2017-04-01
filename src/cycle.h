@@ -41,12 +41,7 @@ namespace cycle {
 /// @returns The connector belonging to the node.
 ///
 /// @{
-inline const Formula* GetConnector(const GatePtr& node) {
-  return &node->formula();
-}
-inline const Formula* GetConnector(Gate* node) {
-  return &node->formula();
-}
+inline const Formula* GetConnector(Gate* node) { return &node->formula(); }
 inline Expression* GetConnector(Parameter* node) { return node; }
 /// @}
 
@@ -57,9 +52,6 @@ inline Expression* GetConnector(Parameter* node) { return node; }
 /// @returns  The iterable collection of nodes on the other end of connection.
 ///
 /// @{
-inline const std::vector<Gate*>& GetNodes(const FormulaPtr& connector) {
-  return connector->gate_args();
-}
 inline const std::vector<Gate*>& GetNodes(const Formula* connector) {
   return connector->gate_args();
 }
@@ -78,12 +70,10 @@ inline auto GetNodes(Expression* connector) {
 /// @returns  The iterable collection of connectors.
 ///
 /// @{
-inline
-const std::vector<FormulaPtr>& GetConnectors(const FormulaPtr& connector) {
-  return connector->formula_args();
-}
-inline const std::vector<FormulaPtr>& GetConnectors(const Formula* connector) {
-  return connector->formula_args();
+inline auto GetConnectors(const Formula* connector) {
+  return connector->formula_args() |
+         boost::adaptors::transformed(
+             [](const FormulaPtr& ptr) { return ptr.get(); });
 }
 inline auto GetConnectors(Expression* connector) {
   return connector->args() | boost::adaptors::filtered([](Expression* arg) {
@@ -92,8 +82,8 @@ inline auto GetConnectors(Expression* connector) {
 }
 /// @}
 
-template <class Ptr>
-bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle);
+template <class T>
+bool ContinueConnector(T* connector, std::vector<std::string>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
 /// Interrupts the detection at first cycle.
@@ -102,19 +92,18 @@ bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle);
 /// The connector of the node is retrieved via unqualified call to
 /// GetConnector(node).
 ///
-/// @tparam Ptr  The pointer type managing nodes in the graph.
+/// @tparam T  The type of nodes in the graph.
 ///
 /// @param[in,out] node  The node to start with.
 /// @param[out] cycle  If a cycle is detected,
 ///                    it is given in reverse,
 ///                    ending with the input node's original name.
-///                    This is for printing errors and efficiency.
 ///
 /// @returns True if a cycle is found.
 ///
 /// @post All traversed nodes are marked with non-clear marks.
-template <class Ptr>
-bool DetectCycle(const Ptr& node, std::vector<std::string>* cycle) {
+template <class T>
+bool DetectCycle(T* node, std::vector<std::string>* cycle) {
   if (!node->mark()) {
     node->mark(NodeMark::kTemporary);
     if (ContinueConnector(GetConnector(node), cycle)) {
@@ -136,19 +125,19 @@ bool DetectCycle(const Ptr& node, std::vector<std::string>* cycle) {
 /// Connectors and nodes of the connector are retrieved via unqualified calls:
 /// GetConnectors(connector) and GetNodes(connector).
 ///
-/// @tparam Ptr  The pointer type managing the connectors (nodes, edges).
+/// @tparam T  The type managing the connectors (nodes, edges).
 ///
 /// @param[in,out] connector  Connector to nodes.
 /// @param[out] cycle  The cycle path if detected.
 ///
 /// @returns True if a cycle is detected.
-template <class Ptr>
-bool ContinueConnector(const Ptr& connector, std::vector<std::string>* cycle) {
-  for (const auto& node : GetNodes(connector)) {
+template <class T>
+bool ContinueConnector(T* connector, std::vector<std::string>* cycle) {
+  for (auto* node : GetNodes(connector)) {
     if (DetectCycle(node, cycle))
       return true;
   }
-  for (const auto& link : GetConnectors(connector)) {
+  for (auto* link : GetConnectors(connector)) {
     if (ContinueConnector(link, cycle))
       return true;
   }
