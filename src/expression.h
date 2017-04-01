@@ -33,8 +33,6 @@
 namespace scram {
 namespace mef {
 
-class Initializer;  // Needs to handle cycles.
-
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
 /// and may create cycles.
@@ -44,25 +42,6 @@ class Initializer;  // Needs to handle cycles.
 /// after validation phases.
 class Expression : private boost::noncopyable {
  public:
-  /// Provides access to cycle-destructive functions.
-  class Cycle {
-    friend class Initializer;  // Only Initializer needs the functionality.
-    /// Breaks connections with expression arguments.
-    ///
-    /// @param[in,out] parameter  A parameter node in possible cycles.
-    ///                           The type is not declared ``Parameter``
-    ///                           because the inheritance is not
-    ///                           forward-declarable.
-    ///
-    /// @post The parameter is in inconsistent, unusable state.
-    ///       Only destruction is guaranteed to succeed.
-    ///
-    /// @todo Consider moving into Parameter class.
-    static void BreakConnections(Expression* parameter) {
-      parameter->args_.clear();
-    }
-  };
-
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///

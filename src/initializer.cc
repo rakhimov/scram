@@ -999,22 +999,12 @@ void Initializer::BreakCycles() {
   for (const GatePtr& gate : model_->gates())
     cyclic_gates.emplace_back(gate);
 
-  std::vector<std::weak_ptr<Parameter>> cyclic_parameters;
-  for (const ParameterPtr& parameter : model_->parameters())
-    cyclic_parameters.emplace_back(parameter);
-
   model_.reset();
 
   for (const auto& gate : cyclic_gates) {
     if (gate.expired())
       continue;
     Gate::Cycle::BreakConnections(gate.lock().get());
-  }
-
-  for (const auto& parameter : cyclic_parameters) {
-    if (parameter.expired())
-      continue;
-    Parameter::Cycle::BreakConnections(parameter.lock().get());
   }
 }
 
