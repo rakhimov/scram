@@ -68,10 +68,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic")
   endif()
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6)
-    # TODO: Boost sign bit shift fails to compile on GCC 6.1
-    add_definitions("-fpermissive")
-  endif()
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   CHECK_COMPILER_VERSION("3.6")
