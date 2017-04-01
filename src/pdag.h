@@ -1021,33 +1021,18 @@ class Pdag : private boost::noncopyable {
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
 
-  /// Processes a Boolean formula's basic events
-  /// into variable arguments of an indexed gate in the PDAG.
+  /// Processes a Boolean formula's argument events
+  /// into arguments of an indexed gate in the PDAG.
   /// Basic events are saved for reference in analysis.
   ///
-  /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] basic_event  The basic event argument of the formula.
-  /// @param[in] ccf  A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes  The mapping of processed nodes.
-  void AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-              bool ccf, ProcessedNodes* nodes) noexcept;
-
-  /// Processes a Boolean formula's house events
-  /// into constant arguments of an indexed gate of the PDAG.
+  /// @tparam T  The type of MEF event.
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] house_event  The house event argument of the formula.
-  void AddArg(const GatePtr& parent,
-              const mef::HouseEvent& house_event) noexcept;
-
-  /// Processes a Boolean formula's gates
-  /// into gate arguments of an indexed gate of the PDAG.
-  ///
-  /// @param[in,out] parent  The parent gate to own the arguments.
-  /// @param[in] gate  The gate argument of the formula.
+  /// @param[in] event  The event argument of the formula.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  void AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+  template <typename T>
+  void AddArg(const GatePtr& parent, const T& event, bool ccf,
               ProcessedNodes* nodes) noexcept;
 
   /// Propagate NULL type gates bottom-up.

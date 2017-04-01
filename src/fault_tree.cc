@@ -118,10 +118,12 @@ void FaultTree::MarkNonTopGates(Gate* gate,
 
 void FaultTree::MarkNonTopGates(const Formula& formula,
                                 const std::unordered_set<Gate*>& gates) {
-  for (Gate* gate : formula.gate_args()) {
-    if (gates.count(gate)) {
-      MarkNonTopGates(gate, gates);
-      gate->mark(NodeMark::kPermanent);  // Any non clear mark can be assigned.
+  for (const Formula::EventArg& event_arg : formula.event_args()) {
+    if (auto* gate = boost::get<Gate*>(&event_arg)) {
+      if (gates.count(*gate)) {
+        MarkNonTopGates(*gate, gates);
+        (*gate)->mark(NodeMark::kPermanent);  // Any non clear mark can be used.
+      }
     }
   }
   for (const FormulaPtr& arg : formula.formula_args()) {

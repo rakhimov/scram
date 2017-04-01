@@ -55,7 +55,6 @@ TEST(FormulaTest, VoteNumber) {
 
 TEST(FormulaTest, EventArguments) {
   FormulaPtr top(new Formula(kAnd));
-  IdTable<Event*> children;
   BasicEvent first_child("first");
   BasicEvent second_child("second");
   EXPECT_EQ(0, top->num_args());
@@ -64,12 +63,11 @@ TEST(FormulaTest, EventArguments) {
   // Re-adding a child must cause an error.
   EXPECT_THROW(top->AddArgument(&first_child), ValidationError);
   // Check the contents of the children container.
-  children.insert(&first_child);
-  EXPECT_EQ(children, top->event_args());
+  EXPECT_EQ(&first_child, boost::get<BasicEvent*>(top->event_args().front()));
   // Adding another child.
   EXPECT_NO_THROW(top->AddArgument(&second_child));
-  children.insert(&second_child);
-  EXPECT_EQ(children, top->event_args());
+  EXPECT_EQ(2, top->event_args().size());
+  EXPECT_EQ(&second_child, boost::get<BasicEvent*>(top->event_args().back()));
 }
 
 TEST(FormulaTest, FormulaArguments) {

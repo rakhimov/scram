@@ -30,7 +30,6 @@
 #include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "ccf_group.h"
 #include "element.h"
@@ -118,7 +117,7 @@ class Model : public Element, private boost::noncopyable {
                               const std::string& base_path);
   Gate* GetGate(const std::string& entity_reference,
                 const std::string& base_path);
-  boost::variant<HouseEvent*, BasicEvent*, Gate*>
+  Formula::EventArg
   GetEvent(const std::string& entity_reference, const std::string& base_path);
   /// @}
 

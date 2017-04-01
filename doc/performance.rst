@@ -244,7 +244,7 @@ Release build:
 
 - Initialization and Validation    16
 
-- Memory:   1100
+- Memory:   1000
 
 
 Fault Tree Generator Script

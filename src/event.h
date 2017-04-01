@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/variant.hpp>
 
 #include "element.h"
 #include "error.h"
@@ -224,6 +225,9 @@ const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
 /// Formulas are not expected to be shared.
 class Formula : private boost::noncopyable {
  public:
+  /// Event arguments of a formula.
+  using EventArg = boost::variant<Gate*, BasicEvent*, HouseEvent*>;
+
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
@@ -250,14 +254,7 @@ class Formula : private boost::noncopyable {
 
   /// @returns The arguments of this formula of specific type.
   /// @{
-  const IdTable<Event*>& event_args() const { return event_args_; }
-  const std::vector<HouseEvent*>& house_event_args() const {
-    return house_event_args_;
-  }
-  const std::vector<BasicEvent*>& basic_event_args() const {
-    return basic_event_args_;
-  }
-  const std::vector<Gate*>& gate_args() const { return gate_args_; }
+  const std::vector<EventArg>& event_args() const { return event_args_; }
   const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
   /// @}
 
@@ -266,21 +263,10 @@ class Formula : private boost::noncopyable {
 
   /// Adds an event into the arguments list.
   ///
-  /// @param[in] event  A pointer to an argument event.
+  /// @param[in] event_arg  An argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  ///
-  /// @{
-  void AddArgument(HouseEvent* event) {
-    AddArgument(event, &house_event_args_);
-  }
-  void AddArgument(BasicEvent* event) {
-    AddArgument(event, &basic_event_args_);
-  }
-  void AddArgument(Gate* event) {
-    AddArgument(event, &gate_args_);
-  }
-  /// @}
+  void AddArgument(EventArg event_arg);
 
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
@@ -296,32 +282,10 @@ class Formula : private boost::noncopyable {
   void Validate() const;
 
  private:
-  /// Handles addition of an event to the formula.
-  ///
-  /// @tparam T  The type of the argument event.
-  ///
-  /// @param[in] event  Pointer to the event.
-  /// @param[in,out] container  The final destination to save the event.
-  ///
-  /// @throws DuplicateArgumentError  The argument event is duplicate.
-  template <class T>
-  void AddArgument(T* event, std::vector<T*>* container) {
-    if (event_args_.insert(event).second == false)
-      throw DuplicateArgumentError("Duplicate argument " + event->name());
-    container->emplace_back(event);
-    if (event->orphan())
-      event->orphan(false);
-  }
-
   Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
-  IdTable<Event*> event_args_;  ///< All event arguments.
-  std::vector<HouseEvent*> house_event_args_;  ///< House event arguments.
-  std::vector<BasicEvent*> basic_event_args_;  ///< Basic event arguments.
-  std::vector<Gate*> gate_args_;  ///< Arguments that are gates.
-  /// Arguments that are formulas
-  /// if this formula is nested.
-  std::vector<FormulaPtr> formula_args_;
+  std::vector<EventArg> event_args_;  ///< All event arguments.
+  std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };
 
 }  // namespace mef

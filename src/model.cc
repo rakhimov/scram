@@ -143,9 +143,8 @@ T* Model::GetEntity(const std::string& entity_reference,
       return it->get();                                            \
   } while (false)
 
-boost::variant<HouseEvent*, BasicEvent*, Gate*>
-Model::GetEvent(
-    const std::string& entity_reference, const std::string& base_path) {
+Formula::EventArg Model::GetEvent(const std::string& entity_reference,
+                                  const std::string& base_path) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     std::string full_path = base_path + "." + entity_reference;

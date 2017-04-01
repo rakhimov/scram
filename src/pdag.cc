@@ -478,14 +478,24 @@ constexpr bool CheckOperatorEnums() {
 
 void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
                            ProcessedNodes* nodes) noexcept {
-  for (const mef::BasicEvent* basic_event : formula.basic_event_args()) {
-    GatherVariables(*basic_event, ccf, nodes);
-  }
-
-  for (const mef::Gate* mef_gate : formula.gate_args()) {
-    if (nodes->gates.emplace(mef_gate, nullptr).second) {
-      GatherVariables(mef_gate->formula(), ccf, nodes);
+  struct {
+    void operator()(const mef::BasicEvent* arg) {
+      graph->GatherVariables(*arg, ccf, nodes);
     }
+    void operator()(const mef::Gate* mef_gate) {
+      if (nodes->gates.emplace(mef_gate, nullptr).second) {
+        graph->GatherVariables(mef_gate->formula(), ccf, nodes);
+      }
+    }
+    void operator()(const mef::HouseEvent*) {}
+
+    Pdag* graph;
+    bool ccf;
+    ProcessedNodes* nodes;
+  } formula_visitor{this, ccf, nodes};
+
+  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
+    boost::apply_visitor(formula_visitor, event_arg);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
@@ -505,6 +515,41 @@ void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
       var = std::make_shared<Variable>(this);  // Sequential indices.
       assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
     }
+  }
+}
+
+/// Specialization for HouseEvent arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::HouseEvent& house_event,
+                  bool /*ccf*/, ProcessedNodes* /*nodes*/) noexcept {
+  // Create unique pass-through gates to hold the construction invariant.
+  auto null_gate = std::make_shared<Gate>(kNull, this);
+  null_gate->AddArg(constant_, !house_event.state());
+  parent->AddArg(null_gate);
+  null_gates_.push_back(null_gate);
+}
+
+/// Specialization for Gate arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+                  ProcessedNodes* nodes) noexcept {
+  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
+  if (!pdag_gate) {
+    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
+  }
+  parent->AddArg(pdag_gate);
+}
+
+/// Specialization for BasicEvent arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+                  bool ccf, ProcessedNodes* nodes) noexcept {
+  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
+    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
+  } else {
+    VariablePtr& var = nodes->variables.find(&basic_event)->second;
+    assert(var && "Uninitialized variable.");
+    parent->AddArg(var);
   }
 }
 
@@ -536,16 +581,10 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  for (const mef::BasicEvent* basic_event : formula.basic_event_args()) {
-    AddArg(parent, *basic_event, ccf, nodes);
-  }
-
-  for (const mef::HouseEvent* house_event : formula.house_event_args()) {
-    AddArg(parent, *house_event);
-  }
-
-  for (const mef::Gate* mef_gate : formula.gate_args()) {
-    AddArg(parent, *mef_gate, ccf, nodes);
+  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
+    boost::apply_visitor(
+        [&](const auto* event) { this->AddArg(parent, *event, ccf, nodes); },
+        event_arg);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
@@ -553,35 +592,6 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     parent->AddArg(new_gate);
   }
   return parent;
-}
-
-void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-                  bool ccf, ProcessedNodes* nodes) noexcept {
-  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
-  } else {
-    VariablePtr& var = nodes->variables.find(&basic_event)->second;
-    assert(var && "Uninitialized variable.");
-    parent->AddArg(var);
-  }
-}
-
-void Pdag::AddArg(const GatePtr& parent,
-                  const mef::HouseEvent& house_event) noexcept {
-  // Create unique pass-through gates to hold the construction invariant.
-  auto null_gate = std::make_shared<Gate>(kNull, this);
-  null_gate->AddArg(constant_, !house_event.state());
-  parent->AddArg(null_gate);
-  null_gates_.push_back(null_gate);
-}
-
-void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                  ProcessedNodes* nodes) noexcept {
-  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
-  if (!pdag_gate) {
-    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
-  }
-  parent->AddArg(pdag_gate);
 }
 
 bool Pdag::IsTrivial() noexcept {

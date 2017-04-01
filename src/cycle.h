@@ -52,8 +52,15 @@ inline Expression* GetConnector(Parameter* node) { return node; }
 /// @returns  The iterable collection of nodes on the other end of connection.
 ///
 /// @{
-inline const std::vector<Gate*>& GetNodes(const Formula* connector) {
-  return connector->gate_args();
+inline auto GetNodes(const Formula* connector) {
+  return connector->event_args() |
+         boost::adaptors::transformed(
+             [](const Formula::EventArg& event_args) -> Gate* {
+               if (auto* arg = boost::get<Gate*>(&event_args))
+                 return *arg;
+               return nullptr;
+             }) |
+         boost::adaptors::filtered([](auto* ptr) { return ptr != nullptr; });
 }
 inline auto GetNodes(Expression* connector) {
   return connector->args() | boost::adaptors::transformed([](Expression* arg) {
