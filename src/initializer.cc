@@ -825,6 +825,7 @@ ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
         expr_element->find("./*"), base_path, this);
     // Register for late validation after ensuring no cycles.
     expressions_.emplace_back(expression.get(), expr_element);
+    model_->Add(expression);
     return expression;
   } catch (InvalidArgument& err) {
     throw ValidationError(GetLine(expr_element) + err.msg());
