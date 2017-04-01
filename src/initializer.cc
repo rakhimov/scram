@@ -123,6 +123,15 @@ ConstructElement(const xmlpp::Element* xml_element,
   return element;
 }
 
+/// Filters the data for MEF Element definitions.
+///
+/// @param[in] xml_element  The XML element with the construct definition.
+///
+/// @returns A set of XML child elements of MEF Element constructs.
+xmlpp::NodeSet GetNonAttributeElements(const xmlpp::Element* xml_element) {
+  return xml_element->find("./*[name() != 'attributes' and name() != 'label']");
+}
+
 }  // namespace
 
 Initializer::Initializer(const std::vector<std::string>& xml_files,
@@ -362,8 +371,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 /// @{
 template <>
 void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
-  xmlpp::NodeSet formulas =
-      gate_node->find("./*[name() != 'attributes' and name() != 'label']");
+  xmlpp::NodeSet formulas = GetNonAttributeElements(gate_node);
   // Assumes that there are no attributes and labels.
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node = XmlElement(formulas.front());
@@ -379,8 +387,7 @@ void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
 template <>
 void Initializer::Define(const xmlpp::Element* event_node,
                          BasicEvent* basic_event) {
-  xmlpp::NodeSet expressions =
-     event_node->find("./*[name() != 'attributes' and name() != 'label']");
+  xmlpp::NodeSet expressions = GetNonAttributeElements(event_node);
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node = XmlElement(expressions.back());
@@ -393,9 +400,7 @@ void Initializer::Define(const xmlpp::Element* event_node,
 template <>
 void Initializer::Define(const xmlpp::Element* param_node,
                          Parameter* parameter) {
-  // Assuming that expression is the last child of the parameter definition.
-  xmlpp::NodeSet expressions =
-      param_node->find("./*[name() != 'attributes' and name() != 'label']");
+  xmlpp::NodeSet expressions = GetNonAttributeElements(param_node);
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_node = XmlElement(expressions.back());
   ExpressionPtr expression = GetExpression(expr_node, parameter->base_path());
@@ -427,8 +432,7 @@ void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
 
 template <>
 void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
-  xmlpp::NodeSet xml_instructions =
-      xml_node->find("./*[name() != 'attributes' and name() != 'label']");
+  xmlpp::NodeSet xml_instructions = GetNonAttributeElements(xml_node);
   InstructionContainer instructions;
   for (const xmlpp::Node* xml_instruction : xml_instructions) {
     instructions.emplace_back(GetInstruction(XmlElement(xml_instruction)));
