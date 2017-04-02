@@ -566,13 +566,11 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
       continue;
     }
 
-    std::string element_type = element->get_name();
-    // This is for the case "<event name="id" type="type"/>".
-    std::string type = GetAttributeValue(element, "type");
-    if (!type.empty()) {
-      assert(type == "gate" || type == "basic-event" || type == "house-event");
-      element_type = type;  // Event type is defined.
-    }
+    std::string element_type = [&element]() {
+      // This is for the case "<event name="id" type="type"/>".
+      std::string type = GetAttributeValue(element, "type");
+      return type.empty() ? std::string(element->get_name()) : type;
+    }();
 
     try {
       if (element_type == "event") {  // Undefined type yet.
