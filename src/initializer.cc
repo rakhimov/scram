@@ -183,14 +183,13 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   LOG(DEBUG1) << "Processing input files";
   CheckFileExistence(xml_files);
   CheckDuplicateFiles(xml_files);
-  std::vector<std::string>::const_iterator it;
-  try {
-    for (it = xml_files.begin(); it != xml_files.end(); ++it) {
-      ProcessInputFile(*it);
+  for (const auto& xml_file : xml_files) {
+    try {
+      ProcessInputFile(xml_file);
+    } catch (ValidationError& err) {
+      err.msg("In file '" + xml_file + "', " + err.msg());
+      throw;
     }
-  } catch (ValidationError& err) {
-    err.msg("In file '" + *it + "', " + err.msg());
-    throw;
   }
   CLOCK(def_time);
   ProcessTbdElements();
@@ -433,20 +432,18 @@ void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
-  const xmlpp::Element* el_def;  // XML element with the definition for reports.
-  try {
-    for (const auto& tbd_element : tbd_) {
-      el_def = tbd_element.second;
-      boost::apply_visitor(
-          [this, &el_def](auto* tbd_construct) {
-            this->Define(el_def, tbd_construct);
-          },
-          tbd_element.first);
+  for (const auto& tbd_element : tbd_) {
+    try {
+        boost::apply_visitor(
+            [this, &tbd_element](auto* tbd_construct) {
+              this->Define(tbd_element.second, tbd_construct);
+            },
+            tbd_element.first);
+    } catch (ValidationError& err) {
+      const xmlpp::Node* root = tbd_element.second->find("/opsa-mef")[0];
+      err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
+      throw;
     }
-  } catch (ValidationError& err) {
-    const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
-    err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
-    throw;
   }
 }
 
@@ -943,17 +940,15 @@ void Initializer::ValidateExpressions() {
     param->mark(NodeMark::kClear);
 
   // Validate expressions.
-  const xmlpp::Element* expr_element = nullptr;  // To report the position.
-  try {
-    for (const std::pair<Expression*, const xmlpp::Element*>& expression :
-         expressions_) {
-      expr_element = expression.second;
+  for (const std::pair<Expression*, const xmlpp::Element*>& expression :
+       expressions_) {
+    try {
       expression.first->Validate();
+    } catch (InvalidArgument& err) {
+      const xmlpp::Node* root = expression.second->find("/opsa-mef")[0];
+      throw ValidationError("In file '" + doc_to_file_.at(root) + "', " +
+                            GetLine(expression.second) + err.msg());
     }
-  } catch (InvalidArgument& err) {
-    const xmlpp::Node* root = expr_element->find("/opsa-mef")[0];
-    throw ValidationError("In file '" + doc_to_file_.at(root) + "', " +
-                          GetLine(expr_element) + err.msg());
   }
 
   // Validate CCF groups.
