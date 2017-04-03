@@ -43,5 +43,11 @@ void EventTree::Add(SequencePtr sequence) {
                                    "Duplicate sequence: ");
 }
 
+void EventTree::Add(FunctionalEventPtr functional_event) {
+  mef::AddElement<ValidationError>(std::move(functional_event),
+                                   &functional_events_,
+                                   "Duplicate functional event: ");
+}
+
 }  // namespace mef
 }  // namespace scram

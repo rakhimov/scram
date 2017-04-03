@@ -313,6 +313,16 @@ CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
 }
 
 template <>
+FunctionalEventPtr Initializer::Register(const xmlpp::Element* xml_node,
+                                         const std::string& /*base_path*/,
+                                         RoleSpecifier /*container_role*/) {
+  FunctionalEventPtr functional_event =
+      ConstructElement<FunctionalEvent>(xml_node);
+  Register(functional_event, xml_node);
+  return functional_event;
+}
+
+template <>
 SequencePtr Initializer::Register(const xmlpp::Element* xml_node,
                                   const std::string& /*base_path*/,
                                   RoleSpecifier /*container_role*/) {
@@ -449,6 +459,10 @@ void Initializer::ProcessTbdElements() {
 
 void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
   EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
+  for (const xmlpp::Node* node : et_node->find("./define-functional-event")) {
+    event_tree->Add(Register<FunctionalEvent>(
+        XmlElement(node), event_tree->name(), RoleSpecifier::kPublic));
+  }
   for (const xmlpp::Node* node : et_node->find("./define-sequence")) {
     event_tree->Add(Register<Sequence>(XmlElement(node), event_tree->name(),
                                        RoleSpecifier::kPublic));

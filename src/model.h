@@ -60,6 +60,9 @@ class Model : public Element, private boost::noncopyable {
   /// @returns Defined constructs in the model.
   /// @{
   const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
+  const ElementTable<FunctionalEventPtr>& functional_events() const {
+    return functional_events_;
+  }
   const ElementTable<SequencePtr>& sequences() const { return sequences_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const {
@@ -86,6 +89,7 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @{
   void Add(EventTreePtr element);
+  void Add(const FunctionalEventPtr& element);
   void Add(const SequencePtr& element);
   void Add(FaultTreePtr element);
   void Add(const ParameterPtr& element);
@@ -175,6 +179,7 @@ class Model : public Element, private boost::noncopyable {
   /// A collection of defined constructs in the model.
   /// @{
   ElementTable<EventTreePtr> event_trees_;
+  ElementTable<FunctionalEventPtr> functional_events_;
   ElementTable<SequencePtr> sequences_;
   ElementTable<FaultTreePtr> fault_trees_;
   LookupTable<Gate> gates_;
