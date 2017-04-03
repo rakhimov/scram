@@ -34,7 +34,7 @@
       </element>
       <element name="time"> <data type="string"/> </element>
       <element name="performance">
-        <oneOrMore>
+        <zeroOrMore>
           <element name="calculation-time">
             <attribute name="name"> <data type="NCName"/> </attribute>
             <optional>
@@ -58,7 +58,7 @@
               </element>
             </optional>
           </element>
-        </oneOrMore>
+        </zeroOrMore>
       </element>
       <oneOrMore>
         <ref name="calculated-quantity"/>
