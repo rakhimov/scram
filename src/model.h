@@ -143,13 +143,12 @@ class Model : public Element, private boost::noncopyable {
     ///
     /// @param[in] entity  The candidate entity.
     ///
-    /// @returns false if the entity is duplicate and hasn't been added.
-    bool Add(const std::shared_ptr<T>& entity) {
-      if (entities_by_id.insert(entity).second == false)
-        return false;
-
-      entities_by_path.insert(entity);
-      return true;
+    /// @returns The result of insert call to IdTable.
+    auto insert(const std::shared_ptr<T>& entity) {
+      auto it = entities_by_id.insert(entity);
+      if (it.second)
+        entities_by_path.insert(entity);
+      return it;
     }
 
     IdTable<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.

@@ -33,60 +33,46 @@ Model::Model(std::string name)
       mission_time_(std::make_shared<MissionTime>()) {}
 
 void Model::Add(EventTreePtr event_tree) {
-  if (event_trees_.count(event_tree->name())) {
-    throw RedefinitionError("Redefinition of event tree " + event_tree->name());
-  }
-  event_trees_.insert(std::move(event_tree));
+  mef::AddElement<RedefinitionError>(std::move(event_tree), &event_trees_,
+                                     "Redefinition of event tree: ");
 }
 
 void Model::Add(const SequencePtr& sequence) {
-  if (sequences_.count(sequence->name())) {
-    throw RedefinitionError("Redefinition of sequence " + sequence->name());
-  }
-  sequences_.insert(std::move(sequence));
+  mef::AddElement<RedefinitionError>(sequence, &sequences_,
+                                     "Redefinition of sequence: ");
 }
 
 void Model::Add(FaultTreePtr fault_tree) {
-  if (fault_trees_.count(fault_tree->name())) {
-    throw RedefinitionError("Redefinition of fault tree " + fault_tree->name());
-  }
-  fault_trees_.insert(std::move(fault_tree));
+  mef::AddElement<RedefinitionError>(std::move(fault_tree), &fault_trees_,
+                                     "Redefinition of fault tree: ");
 }
 
 void Model::Add(const ParameterPtr& parameter) {
-  if (!parameters_.Add(parameter)) {
-    throw RedefinitionError("Redefinition of parameter " + parameter->name());
-  }
+  mef::AddElement<RedefinitionError>(parameter, &parameters_,
+                                     "Redefinition of parameter: ");
 }
 
 void Model::Add(const HouseEventPtr& house_event) {
-  bool original = events_.insert(house_event.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + house_event->name());
-  }
-  house_events_.Add(house_event);
+  mef::AddElement<RedefinitionError>(house_event.get(), &events_,
+                                     "Redefinition of event: ");
+  house_events_.insert(house_event);
 }
 
 void Model::Add(const BasicEventPtr& basic_event) {
-  bool original = events_.insert(basic_event.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + basic_event->name());
-  }
-  basic_events_.Add(basic_event);
+  mef::AddElement<RedefinitionError>(basic_event.get(), &events_,
+                                     "Redefinition of event: ");
+  basic_events_.insert(basic_event);
 }
 
 void Model::Add(const GatePtr& gate) {
-  bool original = events_.insert(gate.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + gate->name());
-  }
-  gates_.Add(gate);
+  mef::AddElement<RedefinitionError>(gate.get(), &events_,
+                                     "Redefinition of event: ");
+  gates_.insert(gate);
 }
 
 void Model::Add(const CcfGroupPtr& ccf_group) {
-  if (ccf_groups_.insert(ccf_group).second == false) {
-    throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
-  }
+  mef::AddElement<RedefinitionError>(ccf_group, &ccf_groups_,
+                                     "Redefinition of CCF group: ");
 }
 
 Parameter* Model::GetParameter(const std::string& entity_reference,

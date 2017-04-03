@@ -43,9 +43,8 @@ void Component::Add(const HouseEventPtr& house_event) {
 }
 
 void Component::Add(const ParameterPtr& parameter) {
-  if (parameters_.insert(parameter).second == false) {
-    throw ValidationError("Duplicate parameter " + parameter->name());
-  }
+  mef::AddElement<ValidationError>(parameter, &parameters_,
+                                   "Duplicate parameter: ");
 }
 
 void Component::Add(const CcfGroupPtr& ccf_group) {
