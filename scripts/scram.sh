@@ -57,27 +57,31 @@ _scram_parse_help() {
 #   Completion suggestions
 ########################################
 _scram() {
-  local cur prev
+  local cur prev type
   _init_completion -n = || return
 
   case "${prev}" in
-    -o|--output-path|--config-file)
-      _filedir
-      return
-      ;;
-    -l|--limit-order|-s|--cut-off|--mission-time|--num-trials| \
-    --seed|--num-quantiles|--num-bins|--time-step)
-      # An argument is required.
-      return
-      ;;
-    --probability|--importance|--ccf|--uncertainty|--sil)
-      COMPREPLY=($(compgen -W "on off yes no true false 1 0" -- "${cur}"))
-      return
-      ;;
     --verbosity)
       COMPREPLY=($(compgen -W "0 1 2 3 4 5 6 7" -- "${cur}"))
       return
       ;;
+    -*)
+      type=$(scram --help | \
+        grep -Poi "^\s*(${prev}|\-\w \[ ${prev} \]|${prev} \[ --\S+ \])\s\K\w+")
+      case "${type}" in
+        path)
+          _filedir
+          return
+          ;;
+        bool)
+          COMPREPLY=($(compgen -W "on off yes no true false 1 0" -- "${cur}"))
+          return
+          ;;
+        double|int)
+          # An argument is required.
+          return
+          ;;
+      esac
   esac
 
   # Start parsing the help for option suggestions.
