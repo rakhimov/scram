@@ -80,11 +80,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   CHECK_COMPILER_VERSION("6.1")
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  CHECK_COMPILER_VERSION("17.0.1")
+  CHECK_COMPILER_VERSION("17.0.2")
   # TODO: CMAKE_CXX_STANDARD has no effect on icc.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  # TODO: Bug in Intel compiler with multi-initialization with auto and final-is-not-override.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=3373,1125")
+  # TODO: Warning with overload of private override.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1125")
 endif()
 
 if(WIN32)
