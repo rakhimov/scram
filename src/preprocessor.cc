@@ -127,6 +127,45 @@ void TopologicalOrder(Pdag* graph) noexcept {
   topological_order(topological_order, graph->root().get(), 0);
 }
 
+void MarkCoherence(Pdag* graph) noexcept {
+  auto mark_coherence = [](auto& self, const GatePtr& gate) {
+    if (gate->mark())
+      return;
+    gate->mark(true);
+    bool coherent = true;  // Optimistic initialization.
+    switch (gate->type()) {
+      case kXor:
+      case kNor:
+      case kNot:
+      case kNand:
+        coherent = false;
+        break;
+      default:
+        assert(coherent);
+    }
+    for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
+      self(self, arg.second);
+      if (coherent && (arg.first < 0 || !arg.second->coherent()))
+        coherent = false;  // Must continue with all gates.
+    }
+    if (coherent) {
+      for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
+        if (arg.first < 0) {
+          coherent = false;
+          break;
+        }
+      }
+    }
+    assert(!gate->constant());
+    gate->coherent(coherent);
+  };
+
+  graph->Clear<Pdag::kGateMark>();
+  mark_coherence(mark_coherence, graph->root());
+  assert(!(graph->coherent() && !graph->root()->coherent()));
+  graph->coherent(!graph->complement() && graph->root()->coherent());
+}
+
 }  // namespace pdag
 
 Preprocessor::Preprocessor(Pdag* graph) noexcept : graph_(graph) {}
@@ -2303,45 +2342,6 @@ void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
   }
 }
 
-void Preprocessor::MarkCoherence() noexcept {
-  graph_->Clear<Pdag::kGateMark>();
-  MarkCoherence(graph_->root());
-  assert(!(graph_->coherent() && !graph_->root()->coherent()));
-  graph_->coherent(!graph_->complement() && graph_->root()->coherent());
-}
-
-void Preprocessor::MarkCoherence(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-  bool coherent = true;  // Optimistic initialization.
-  switch (gate->type()) {
-    case kXor:
-    case kNor:
-    case kNot:
-    case kNand:
-      coherent = false;
-      break;
-    default:
-      assert(coherent);
-  }
-  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    MarkCoherence(arg.second);
-    if (coherent && (arg.first < 0 || !arg.second->coherent()))
-      coherent = false;  // Must continue with all gates.
-  }
-  if (coherent) {
-    for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
-      if (arg.first < 0) {
-        coherent = false;
-        break;
-      }
-    }
-  }
-  assert(!gate->constant());
-  gate->coherent(coherent);
-}
-
 void Preprocessor::ReplaceGate(const GatePtr& gate,
                                const GatePtr& replacement) noexcept {
   assert(!gate->parents().empty());
@@ -2383,10 +2383,7 @@ void Preprocessor::GatherNodes(const GatePtr& gate,
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
   Preprocessor::Run();
-  pdag::Transform(graph_, [this](Pdag*) {
-    MarkCoherence();
-    pdag::TopologicalOrder(graph_);
-  });
+  pdag::Transform(graph_, &pdag::MarkCoherence, &pdag::TopologicalOrder);
 }
 
 void CustomPreprocessor<Zbdd>::Run() noexcept {
@@ -2397,10 +2394,8 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
                       RunPhaseFour();
                   },
                   [this](Pdag*) { RunPhaseFive(); },
-                  [this](Pdag*) {
-                    MarkCoherence();
-                    pdag::TopologicalOrder(graph_);
-                  });
+                  &pdag::MarkCoherence,
+                  &pdag::TopologicalOrder);
 }
 
 void CustomPreprocessor<Mocus>::Run() noexcept {

@@ -75,6 +75,13 @@ std::vector<T*> OrderArguments(Gate* gate) noexcept;
 /// @post The root and descendant node order marks contain the ordering.
 void TopologicalOrder(Pdag* graph) noexcept;
 
+/// Marks coherence of the whole graph.
+///
+/// @param[in,out] graph  The graph to be processed.
+///
+/// @post Gate traversal marks are dirty.
+void MarkCoherence(Pdag* graph) noexcept;
+
 }  // namespace pdag
 
 /// The class provides main preprocessing operations
@@ -949,18 +956,6 @@ class Preprocessor : private boost::noncopyable {
     NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
   };
-
-  /// Marks coherence of the whole graph.
-  ///
-  /// @warning Gate marks are used.
-  void MarkCoherence() noexcept;
-
-  /// Marks gates with coherence flags.
-  ///
-  /// @param[in] gate  The root gate for processing.
-  ///
-  /// @warning Gate marks are used.
-  void MarkCoherence(const GatePtr& gate) noexcept;
 
   /// Replaces one gate in the graph with another.
   ///
