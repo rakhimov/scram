@@ -36,6 +36,26 @@
 namespace scram {
 namespace core {
 
+namespace pdag {
+
+/// The terminal case for graph transformations.
+inline void Transform(Pdag* /*graph*/) {}
+
+/// Applies graph transformations consecutively.
+///
+/// @param[in,out] graph  The graph to be transformed.
+/// @param[in] unary_op  The first operation to be applied.
+/// @param[in] unary_ops  The rest of transformations to apply.
+template <typename T, typename... Ts>
+void Transform(Pdag* graph, T&& unary_op, Ts&&... unary_ops) noexcept {
+  if (graph->IsTrivial())
+    return;
+  unary_op(graph);
+  Transform(graph, std::forward<Ts>(unary_ops)...);
+}
+
+}  // namespace pdag
+
 /// The class provides main preprocessing operations
 /// over a PDAG
 /// to simplify the fault tree

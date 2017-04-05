@@ -100,19 +100,12 @@ void Preprocessor::operator()() noexcept {
 }
 
 void Preprocessor::Run() noexcept {
-  RunPhaseOne();
-  if (graph_->IsTrivial())
-    return;
-
-  RunPhaseTwo();
-  if (graph_->IsTrivial())
-    return;
-
-  if (!graph_->normal()) {
-    RunPhaseThree();
-    if (graph_->IsTrivial())
-      return;
-  }
+  pdag::Transform(graph_, [this](Pdag*) { RunPhaseOne(); },
+                  [this](Pdag*) { RunPhaseTwo(); },
+                  [this](Pdag*) {
+                    if (!graph_->normal())
+                      RunPhaseThree();
+                  });
 }
 
 /// Container of unique gates.
@@ -239,7 +232,6 @@ class TestGateStructure {
 
 }  // namespace
 
-/// @def SANITY_ASSERT
 /// A collection of sanity checks between preprocessing phases.
 #define SANITY_ASSERT                                                      \
   assert(graph_->root() && "Corrupted pointer to the root gate.");         \
@@ -269,52 +261,27 @@ void Preprocessor::RunPhaseTwo() noexcept {
   TIMER(DEBUG2, "Preprocessing Phase II");
   SANITY_ASSERT;
   graph_->Log();
-  while (ProcessMultipleDefinitions())
-    continue;
-
-  if (graph_->IsTrivial())
-    return;
-
-  DetectModules();
-
-  while (CoalesceGates(/*common=*/false))
-    continue;
-
-  if (graph_->IsTrivial())
-    return;
-
-  MergeCommonArgs();
-
-  if (graph_->IsTrivial())
-    return;
-
-  DetectDistributivity();
-
-  if (graph_->IsTrivial())
-    return;
-
-  DetectModules();
-
-  BooleanOptimization();
-
-  if (graph_->IsTrivial())
-    return;
-
-  DecomposeCommonNodes();
-
-  if (graph_->IsTrivial())
-    return;
-
-  DetectModules();
-
-  while (CoalesceGates(/*common=*/false))
-    continue;
-
-  if (graph_->IsTrivial())
-    return;
-
-  DetectModules();
-
+  pdag::Transform(graph_,
+                  [this](Pdag*) {
+                    while (ProcessMultipleDefinitions())
+                      continue;
+                  },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) {
+                    while (CoalesceGates(/*common=*/false))
+                      continue;
+                  },
+                  [this](Pdag*) { MergeCommonArgs(); },
+                  [this](Pdag*) { DetectDistributivity(); },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) { BooleanOptimization(); },
+                  [this](Pdag*) { DecomposeCommonNodes(); },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) {
+                    while (CoalesceGates(/*common=*/false))
+                      continue;
+                  },
+                  [this](Pdag*) { DetectModules(); });
   graph_->Log();
 }
 
@@ -2411,34 +2378,29 @@ void Preprocessor::GatherNodes(const GatePtr& gate,
 }
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
-  Preprocessor::Run();
-  if (graph_->IsTrivial())
-    return;
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
+  pdag::Transform(graph_, [this](Pdag*) { Preprocessor::Run(); },
+                  [this](Pdag*) {
+                    Preprocessor::MarkCoherence();
+                    Preprocessor::AssignOrder();
+                  });
 }
 
 void CustomPreprocessor<Zbdd>::Run() noexcept {
-  Preprocessor::Run();
-  if (graph_->IsTrivial())
-    return;
-  if (!graph_->coherent()) {
-    Preprocessor::RunPhaseFour();
-    if (graph_->IsTrivial())
-      return;
-  }
-  Preprocessor::RunPhaseFive();
-  if (graph_->IsTrivial())
-    return;
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
+  pdag::Transform(graph_, [this](Pdag*) { Preprocessor::Run(); },
+                  [this](Pdag*) {
+                    if (!graph_->coherent())
+                      Preprocessor::RunPhaseFour();
+                  },
+                  [this](Pdag*) { Preprocessor::RunPhaseFive(); },
+                  [this](Pdag*) {
+                    Preprocessor::MarkCoherence();
+                    Preprocessor::AssignOrder();
+                  });
 }
 
 void CustomPreprocessor<Mocus>::Run() noexcept {
-  CustomPreprocessor<Zbdd>::Run();
-  if (graph_->IsTrivial())
-    return;
-  InvertOrder();
+  pdag::Transform(graph_, [this](Pdag*) { CustomPreprocessor<Zbdd>::Run(); },
+                  [this](Pdag*) { InvertOrder(); });
 }
 
 void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
