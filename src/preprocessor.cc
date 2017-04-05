@@ -2382,29 +2382,30 @@ void Preprocessor::GatherNodes(const GatePtr& gate,
 }
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
-  pdag::Transform(graph_, [this](Pdag*) { Preprocessor::Run(); },
-                  [this](Pdag*) {
-                    Preprocessor::MarkCoherence();
-                    pdag::TopologicalOrder(graph_);
-                  });
+  Preprocessor::Run();
+  pdag::Transform(graph_, [this](Pdag*) {
+    MarkCoherence();
+    pdag::TopologicalOrder(graph_);
+  });
 }
 
 void CustomPreprocessor<Zbdd>::Run() noexcept {
-  pdag::Transform(graph_, [this](Pdag*) { Preprocessor::Run(); },
+  Preprocessor::Run();
+  pdag::Transform(graph_,
                   [this](Pdag*) {
                     if (!graph_->coherent())
-                      Preprocessor::RunPhaseFour();
+                      RunPhaseFour();
                   },
-                  [this](Pdag*) { Preprocessor::RunPhaseFive(); },
+                  [this](Pdag*) { RunPhaseFive(); },
                   [this](Pdag*) {
-                    Preprocessor::MarkCoherence();
+                    MarkCoherence();
                     pdag::TopologicalOrder(graph_);
                   });
 }
 
 void CustomPreprocessor<Mocus>::Run() noexcept {
-  pdag::Transform(graph_, [this](Pdag*) { CustomPreprocessor<Zbdd>::Run(); },
-                  [this](Pdag*) { InvertOrder(); });
+  CustomPreprocessor<Zbdd>::Run();
+  pdag::Transform(graph_, [this](Pdag*) { InvertOrder(); });
 }
 
 void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
