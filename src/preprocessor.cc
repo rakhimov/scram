@@ -92,6 +92,43 @@
 namespace scram {
 namespace core {
 
+namespace pdag {
+
+template <class T>
+std::vector<T*> OrderArguments(Gate* gate) noexcept {
+  std::vector<T*> args;
+  for (const Gate::Arg<T>& arg : gate->args<T>()) {
+    args.push_back(arg.second.get());
+  }
+  boost::sort(args, [](T* lhs, T* rhs) {
+    return lhs->parents().size() > rhs->parents().size();
+  });
+  return args;
+}
+
+void TopologicalOrder(Pdag* graph) noexcept {
+  // Assigns the order starting from the given gate arguments.
+  auto topological_order = [](auto& self, Gate* root, int order) {
+    if (root->order())
+      return order;
+    for (Gate* arg : OrderArguments<Gate>(root)) {
+      order = self(self, arg, order);
+    }
+    for (Variable* arg : OrderArguments<Variable>(root)) {
+      if (!arg->order())
+        arg->order(++order);
+    }
+    assert(!root->constant());
+    root->order(++order);
+    return order;
+  };
+
+  graph->Clear<Pdag::kOrder>();
+  topological_order(topological_order, graph->root().get(), 0);
+}
+
+}  // namespace pdag
+
 Preprocessor::Preprocessor(Pdag* graph) noexcept : graph_(graph) {}
 
 void Preprocessor::operator()() noexcept {
@@ -405,10 +442,9 @@ bool IsSubgraphWithinGraph(const GatePtr& root, int enter_time,
 void Preprocessor::NormalizeGates(bool full) noexcept {
   TIMER(DEBUG3, (full ? "Full normalization" : "Partial normalization"));
   assert(!graph_->HasNullGates());
-  if (full) {
-    graph_->Clear<Pdag::kOrder>();
-    AssignOrder();  // K/N gates need order.
-  }
+  if (full)
+    pdag::TopologicalOrder(graph_);  // K/N gates need order.
+
   const GatePtr& root_gate = graph_->root();
   Operator type = root_gate->type();
   switch (type) {  // Handle special case for the root gate.
@@ -2321,38 +2357,6 @@ bool Preprocessor::RegisterToClear(const GatePtr& gate) noexcept {
   return gate->constant() || gate->type() == kNull;  // automatic register.
 }
 
-void Preprocessor::AssignOrder() noexcept {
-  graph_->Clear<Pdag::kOrder>();
-  TopologicalOrder(graph_->root().get(), 0);
-}
-
-int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
-  if (root->order())
-    return order;
-  for (Gate* arg : OrderArguments<Gate>(root)) {
-    order = TopologicalOrder(arg, order);
-  }
-  for (Variable* arg : OrderArguments<Variable>(root)) {
-    if (!arg->order())
-      arg->order(++order);
-  }
-  assert(!root->constant());
-  root->order(++order);
-  return order;
-}
-
-template <class T>
-std::vector<T*> Preprocessor::OrderArguments(Gate* gate) noexcept {
-  std::vector<T*> args;
-  for (const Gate::Arg<T>& arg : gate->args<T>()) {
-    args.push_back(arg.second.get());
-  }
-  boost::sort(args, [](T* lhs, T* rhs) {
-    return lhs->parents().size() > rhs->parents().size();
-  });
-  return args;
-}
-
 void Preprocessor::GatherNodes(std::vector<GatePtr>* gates,
                                std::vector<VariablePtr>* variables) noexcept {
   graph_->Clear<Pdag::kVisit>();
@@ -2381,7 +2385,7 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   pdag::Transform(graph_, [this](Pdag*) { Preprocessor::Run(); },
                   [this](Pdag*) {
                     Preprocessor::MarkCoherence();
-                    Preprocessor::AssignOrder();
+                    pdag::TopologicalOrder(graph_);
                   });
 }
 
@@ -2394,7 +2398,7 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
                   [this](Pdag*) { Preprocessor::RunPhaseFive(); },
                   [this](Pdag*) {
                     Preprocessor::MarkCoherence();
-                    Preprocessor::AssignOrder();
+                    pdag::TopologicalOrder(graph_);
                   });
 }
 
