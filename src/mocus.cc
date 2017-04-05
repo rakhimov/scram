@@ -39,18 +39,16 @@ Mocus::Mocus(const Pdag* graph, const Settings& settings)
 }
 
 void Mocus::Analyze() {
-  CLOCK(mcs_time);
   if (graph_->IsTrivial()) {
     LOG(DEBUG2) << "The PDAG is trivial!";
     zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
-  } else {
-    LOG(DEBUG2) << "Start minimal cut set generation.";
-    zbdd_ = AnalyzeModule(graph_->root(), kSettings_);
+    return;
   }
 
+  TIMER(DEBUG2, "Minimal cut set generation");
+  zbdd_ = AnalyzeModule(graph_->root(), kSettings_);
   LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
   zbdd_->Analyze();
-  LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
 std::unique_ptr<zbdd::CutSetContainer>

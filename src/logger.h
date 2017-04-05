@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include <sstream>
 
 #include <boost/noncopyable.hpp>
+#include <boost/preprocessor/cat.hpp>
 
 namespace scram {
 
@@ -50,6 +51,10 @@ namespace scram {
 ///
 /// @param[in] var  The variable initialized by the CLOCK macro (in the past!).
 #define DUR(var) (TIME_STAMP() - var) * 1e-9
+
+/// Creates an automatic unique logging timer for a scope.
+#define TIMER(level, ...) \
+  Timer<level> BOOST_PP_CAT(timer_, __LINE__)(__VA_ARGS__)
 
 /// Logging with a level.
 #define LOG(level) \
@@ -127,6 +132,26 @@ class Logger : private boost::noncopyable {
   static LogLevel report_level_;  ///< Cut-off log level for reporting.
 
   std::ostringstream os_;  ///< Main stringstream to gather the logs.
+};
+
+/// Automatic (scoped) timer to log process duration.
+template <LogLevel Level>
+class Timer {
+ public:
+  /// @param[in] process_name  The process being logged.
+  explicit Timer(const char* process_name)
+      : process_name_(process_name), process_time_(TIME_STAMP()) {
+    LOG(Level) << process_name_ << "...";
+  }
+
+  /// Puts the accumulated time into the logs.
+  ~Timer() {
+    LOG(Level) << "Finished " << process_name_ << " in " << DUR(process_time_);
+  }
+
+ private:
+  const char* process_name_;  ///< The process name to be logged.
+  std::uint64_t process_time_;  ///< The process start time.
 };
 
 }  // namespace scram

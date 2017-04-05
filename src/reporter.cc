@@ -40,8 +40,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
-  CLOCK(report_time);
-  LOG(DEBUG1) << "Reporting analysis results...";
+  TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     const std::string& id = fta.first;
@@ -63,7 +62,6 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
       ReportResults(id, *risk_an.uncertainty_analyses().at(id), &results);
     }
   }
-  LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
 }
 
 void Reporter::Report(const core::RiskAnalysis& risk_an,

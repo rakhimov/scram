@@ -453,6 +453,7 @@ Pdag::Pdag() noexcept
       constant_(new Constant(this)) {}
 
 Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
+  TIMER(DEBUG2, "PDAG Construction");
   ProcessedNodes nodes;
   GatherVariables(root.formula(), ccf, &nodes);
   root_ = ConstructGate(root.formula(), ccf, &nodes);

@@ -88,16 +88,9 @@ FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
 
 void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);
-
-  CLOCK(graph_creation);
   graph_ = std::make_unique<Pdag>(top_event_,
                                   Analysis::settings().ccf_analysis());
-  LOG(DEBUG2) << "PDAG is created in " << DUR(graph_creation);
-
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
   this->Preprocess(graph_.get());
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
   if (Analysis::settings().preprocessor)
     return;  // Preprocessor only option.

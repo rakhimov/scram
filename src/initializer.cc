@@ -994,19 +994,18 @@ void Initializer::ValidateExpressions() {
 }
 
 void Initializer::SetupForAnalysis() {
-  CLOCK(top_time);
-  LOG(DEBUG2) << "Collecting top events of fault trees...";
-  for (const FaultTreePtr& ft : model_->fault_trees()) {
-    ft->CollectTopEvents();
+  {
+    TIMER(DEBUG2, "Collecting top events of fault trees");
+    for (const FaultTreePtr& ft : model_->fault_trees())
+      ft->CollectTopEvents();
   }
-  LOG(DEBUG2) << "Top event collection is finished in " << DUR(top_time);
 
-  CLOCK(ccf_time);
-  LOG(DEBUG2) << "Applying CCF models...";
-  // CCF groups must apply models to basic event members.
-  for (const CcfGroupPtr& group : model_->ccf_groups())
-    group->ApplyModel();
-  LOG(DEBUG2) << "Application of CCF models finished in " << DUR(ccf_time);
+  {
+    TIMER(DEBUG2, "Applying CCF models");
+    // CCF groups must apply models to basic event members.
+    for (const CcfGroupPtr& group : model_->ccf_groups())
+      group->ApplyModel();
+  }
 }
 
 }  // namespace mef

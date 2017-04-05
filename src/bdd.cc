@@ -44,8 +44,7 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       coherent_(graph->coherent()),
       kOne_(new Terminal<Ite>(true)),
       function_id_(2) {
-  CLOCK(init_time);
-  LOG(DEBUG3) << "Converting PDAG into BDD...";
+  TIMER(DEBUG3, "Converting PDAG into BDD");
   if (graph->IsTrivial()) {
     const Gate& top_gate = graph->root();
     assert(top_gate.args().size() == 1);
@@ -72,7 +71,6 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << CountIteNodes(root_.vertex);
-  LOG(DEBUG3) << "Finished PDAG conversion in " << DUR(init_time);
   ClearMarks(false);
   if (coherent_) {  // Clear tables if no more calculations are expected.
     Freeze();

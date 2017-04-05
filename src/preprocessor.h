@@ -60,7 +60,7 @@ class Preprocessor : private boost::noncopyable {
   virtual ~Preprocessor() = default;
 
   /// Runs the graph preprocessing.
-  void operator()() noexcept { this->Run(); }
+  void operator()() noexcept;
 
  protected:
   class GateSet;  ///< Container of unique gates by semantics.

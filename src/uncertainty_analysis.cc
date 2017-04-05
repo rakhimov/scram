@@ -51,11 +51,10 @@ void UncertaintyAnalysis::Analyze() noexcept {
   std::vector<double> samples = this->Sample();
   LOG(DEBUG3) << "Finished sampling probabilities in " << DUR(sample_time);
 
-  CLOCK(stat_time);
-  LOG(DEBUG3) << "Calculating statistics...";
-  // Perform statistical analysis.
-  CalculateStatistics(samples);
-  LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
+  {
+    TIMER(DEBUG3, "Calculating statistics");
+    CalculateStatistics(samples);  // Perform statistical analysis.
+  }
 
   Analysis::AddAnalysisTime(DUR(analysis_time));
 }
