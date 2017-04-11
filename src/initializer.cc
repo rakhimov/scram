@@ -542,7 +542,7 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
 
 FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
                                    const std::string& base_path) {
-  Operator type = [&formula_node]() {
+  Operator formula_type = [&formula_node]() {
     if (formula_node->get_attribute("name"))
       return kNull;
     int pos = boost::find(kOperatorToString, formula_node->get_name()) -
@@ -550,34 +550,16 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
     assert(pos < kNumOperators && "Unexpected operator type.");
     return static_cast<Operator>(pos);
   }();
-  FormulaPtr formula(new Formula(type));
-  if (type == kVote) {
-    formula->vote_number(CastAttributeValue<int>(formula_node, "min"));
-  } else if (type == kNull) {  // Special case of pass-through.
-    formula_node = formula_node->get_parent();
-  }
-  // Process arguments of this formula.
-  ProcessFormula(formula_node, base_path, formula.get());
 
-  try {
-    formula->Validate();
-  } catch (ValidationError& err) {
-    err.msg(GetLine(formula_node) + err.msg());
-    throw;
-  }
-  return formula;
-}
+  FormulaPtr formula(new Formula(formula_type));
 
-void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
-                                 const std::string& base_path,
-                                 Formula* formula) {
-  for (const xmlpp::Node* node : formula_node->find("./*")) {
+  auto add_arg = [this, &formula, &base_path](const xmlpp::Node* node) {
     const xmlpp::Element* element = XmlElement(node);
     std::string name = GetAttributeValue(element, "name");
 
     if (name.empty()) {
       formula->AddArgument(GetFormula(element, base_path));
-      continue;
+      return;
     }
 
     std::string element_type = [&element]() {
@@ -604,7 +586,26 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
       throw ValidationError(GetLine(node) + "Undefined " + element_type + " " +
                             name + " with base path " + base_path);
     }
+  };
+
+  if (formula_type == kVote) {
+    formula->vote_number(CastAttributeValue<int>(formula_node, "min"));
   }
+  // Process arguments of this formula.
+  if (formula_type == kNull) {  // Special case of pass-through.
+    add_arg(formula_node);
+  } else {
+    for (const xmlpp::Node* node : formula_node->find("./*"))
+      add_arg(node);
+  }
+
+  try {
+    formula->Validate();
+  } catch (ValidationError& err) {
+    err.msg(GetLine(formula_node) + err.msg());
+    throw;
+  }
+  return formula;
 }
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {

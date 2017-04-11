@@ -254,17 +254,6 @@ class Initializer : private boost::noncopyable {
   FormulaPtr GetFormula(const xmlpp::Element* formula_node,
                         const std::string& base_path);
 
-  /// Processes the arguments of a formula with nodes and formulas.
-  ///
-  /// @param[in] formula_node  The XML element with children as arguments.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in,out] formula  The formula to be defined by the arguments.
-  ///
-  /// @throws ValidationError  Repeated arguments are identified.
-  void ProcessFormula(const xmlpp::Element* formula_node,
-                      const std::string& base_path,
-                      Formula* formula);
-
   /// Processes Instruction definitions.
   ///
   /// @param[in] xml_element  The XML element with instruction definitions.

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="my_FT">
+    <define-gate name="Top">
+      <label>Some description</label>
+      <basic-event name="E1"/>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="E1">
+      <label>Some label for E1</label>
+      <float value="1e-4"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

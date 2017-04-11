@@ -127,6 +127,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "non_top_gate.xml",
       "unused_parameter.xml",
       "nested_formula.xml",
+      "null_gate_with_label.xml",
       "case_sensitivity.xml"};
 
   for (const auto& input : correct_inputs) {
