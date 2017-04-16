@@ -81,9 +81,15 @@ TEST(FormulaTest, FormulaArguments) {
 }
 
 TEST(MEFGateTest, Cycle) {
+  Gate root("root");  // Should not appear in the cycle.
   Gate top("Top");
   Gate middle("Middle");
   Gate bottom("Bottom");
+
+  FormulaPtr formula_root(new Formula(kNot));
+  formula_root->AddArgument(&top);
+  root.formula(std::move(formula_root));
+
   FormulaPtr formula_one(new Formula(kNot));
   formula_one->AddArgument(&middle);
   FormulaPtr formula_two(new Formula(kNot));
@@ -93,8 +99,9 @@ TEST(MEFGateTest, Cycle) {
   top.formula(std::move(formula_one));
   middle.formula(std::move(formula_two));
   bottom.formula(std::move(formula_three));
+
   std::vector<Gate*> cycle;
-  bool ret = cycle::DetectCycle(&top, &cycle);
+  bool ret = cycle::DetectCycle(&root, &cycle);
   EXPECT_TRUE(ret);
   std::vector<Gate*> print_cycle = {&top, &bottom, &middle, &top};
   EXPECT_EQ(print_cycle, cycle);

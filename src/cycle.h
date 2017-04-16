@@ -21,7 +21,6 @@
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -105,7 +104,7 @@ bool ContinueConnector(T* connector, std::vector<N*>* cycle);
 /// @param[in,out] node  The node to start with.
 /// @param[out] cycle  If a cycle is detected,
 ///                    it is given in reverse,
-///                    ending with the input node.
+///                    ending with the cycle node.
 ///
 /// @returns True if a cycle is found.
 ///
@@ -115,11 +114,13 @@ bool DetectCycle(T* node, std::vector<T*>* cycle) {
   if (!node->mark()) {
     node->mark(NodeMark::kTemporary);
     if (ContinueConnector(GetConnector(node), cycle)) {
-      cycle->push_back(node);
+      if (cycle->size() == 1 || cycle->back() != cycle->front())
+        cycle->push_back(node);
       return true;
     }
     node->mark(NodeMark::kPermanent);
   } else if (node->mark() == NodeMark::kTemporary) {
+    assert(cycle->empty() && "The report container must be provided empty.");
     cycle->push_back(node);
     return true;
   }
@@ -164,9 +165,7 @@ bool ContinueConnector(T* connector, std::vector<N*>* cycle) {
 template <class T>
 std::string PrintCycle(const std::vector<T*>& cycle) {
   assert(cycle.size() > 1);
-  auto it = std::find(cycle.rbegin(), cycle.rend(), cycle.front());
-  assert(it != std::prev(cycle.rend()) && "No cycle is provided.");
-
+  assert(cycle.front() == cycle.back() && "No cycle is provided.");
   std::string result = (*it)->id();
   for (++it; it != cycle.rend(); ++it)
     result += "->" + (*it)->id();
