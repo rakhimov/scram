@@ -83,14 +83,15 @@ const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
 std::vector<int> RiskAnalysisTest::ProductDistribution() {
   assert(!analysis->fault_tree_analyses().empty());
   assert(analysis->fault_tree_analyses().size() == 1);
-  std::vector<int> distr(settings.limit_order(), 0);
+  std::vector<int> distr;
   const FaultTreeAnalysis* fta =
       analysis->fault_tree_analyses().begin()->second.get();
   for (const Product& product : fta->products()) {
-    distr[product.order() - 1]++;
+    int index = product.order() - 1;
+    if (distr.size() <= index)
+      distr.resize(index + 1);
+    distr[index]++;
   }
-  while (!distr.empty() && !distr.back())
-    distr.pop_back();
   return distr;
 }
 
