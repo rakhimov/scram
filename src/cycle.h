@@ -24,7 +24,9 @@
 #include <string>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "event.h"
@@ -166,10 +168,11 @@ template <class T>
 std::string PrintCycle(const std::vector<T*>& cycle) {
   assert(cycle.size() > 1);
   assert(cycle.front() == cycle.back() && "No cycle is provided.");
-  std::string result = (*it)->id();
-  for (++it; it != cycle.rend(); ++it)
-    result += "->" + (*it)->id();
-  return result;
+  return boost::join(
+      boost::adaptors::reverse(cycle) |
+          boost::adaptors::transformed(
+              [](T* node) -> const std::string& { return node->id(); }),
+      "->");
 }
 
 }  // namespace cycle
