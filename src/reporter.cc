@@ -207,7 +207,9 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
   information->AddChild("software")
       .SetAttribute("name", "SCRAM")
-      .SetAttribute("version", version::core());
+      .SetAttribute("version", *version::describe() != '\0'
+                                   ? version::describe()
+                                   : version::core());
   namespace pt = boost::posix_time;
   information->AddChild("time").AddText(
       pt::to_iso_extended_string(pt::second_clock::universal_time()));

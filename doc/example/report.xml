@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
   <information>
-    <software name="SCRAM" version="0.12.0"/>
-    <time>2017-03-28T00:08:20</time>
+    <software name="SCRAM" version="0.12.0-64-g2769ebd"/>
+    <time>2017-04-16T12:43:44</time>
     <performance>
       <calculation-time name="TopEvent">
-        <products>0.000557289</products>
-        <probability>3.797e-06</probability>
-        <importance>1.4425e-05</importance>
+        <products>0.000574666</products>
+        <probability>3.061e-06</probability>
+        <importance>1.339e-05</importance>
       </calculation-time>
     </performance>
     <calculated-quantity name="Minimal Cut Sets">
