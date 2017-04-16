@@ -3,13 +3,19 @@
 Thank you for your interest in contributing to SCRAM.
 Contributions are accepted through [GitHub](https://help.github.com)
 Pull Requests and Issue Tracker.
-Best practices are encouraged:
 
-* [Git SCM](http://git-scm.com/)
-* [Branching Model](http://nvie.com/posts/a-successful-git-branching-model/)
-* [Writing Good Commit Messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages)
-* [On Commit Messages](http://who-t.blogspot.com/2009/12/on-commit-messages.html)
-* [Atomic Commit](https://en.wikipedia.org/wiki/Atomic_commit#Atomic_commit_convention)
+
+## Reporting Bugs, Suggesting Enhancements, Opening GitHub Issues
+
+Please check for duplicates in the [Issue Tracker] and project [todo list].
+If you are uncertain or have questions,
+consider posting on [user mailing list].
+In bug reports, please supply as much information as feasible,
+such as the platform, version number, logs, and (sufficient) input.
+
+[Issue Tracker]: https://github.com/rakhimov/scram/issues?utf8=%E2%9C%93&q=
+[todo list]: https://scram-pra.org/doc/todo.html
+[user mailing list]: https://groups.google.com/forum/#!forum/scram-users
 
 
 ## Developer Workflow
@@ -24,7 +30,7 @@ Best practices are encouraged:
    Rebasing is highly recommended for streamlining the history.
    However, **DO NOT** rebase any commits
    that have been pulled/pushed anywhere else other than your own fork.
-6. Use the [developer mailing list] and Issue Tracker
+6. Use the [developer mailing list] and [Issue Tracker]
    to stay in touch with the project development.
 7. Submit your [pull request] from **your topic** branch to the **upstream develop** branch.
 8. Your pull request will be reviewed by another developer before merging.
