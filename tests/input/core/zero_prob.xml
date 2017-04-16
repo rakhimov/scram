@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opsa-mef name="Zero">
+  <define-fault-tree name="NullTree">
+    <define-gate name="NullGate">
+      <event name="A"/>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

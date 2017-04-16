@@ -289,6 +289,22 @@ TEST_P(RiskAnalysisTest, ImportanceSingleEvent) {
   TestImportance({{"OnlyChild", {1, 1, 1, 1, 2, 0}}});
 }
 
+TEST_P(RiskAnalysisTest, ImportanceZeroProbability) {
+  std::string tree_input = "./share/scram/input/core/zero_prob.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"A", {1, 1, 0, 0, 0, 0}}});
+}
+
+TEST_P(RiskAnalysisTest, ImportanceOneProbability) {
+  std::string tree_input = "./share/scram/input/core/one_prob.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"A", {1, 1, 1, 1, 1, 0}}});
+}
+
 // Apply the rare event approximation.
 TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";

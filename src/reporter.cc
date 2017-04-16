@@ -329,7 +329,8 @@ void Reporter::ReportResults(const std::string& ft_name,
     if (prob_analysis) {
       double prob = product_set.p();
       product.SetAttribute("probability", prob);
-      product.SetAttribute("contribution", prob / sum);
+      if (sum != 0)
+        product.SetAttribute("contribution", prob / sum);
     }
     for (const core::Literal& literal : product_set) {
       ReportLiteral(literal, &product);
