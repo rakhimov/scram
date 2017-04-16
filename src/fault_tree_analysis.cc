@@ -42,6 +42,11 @@ void Print(const ProductContainer& products) {
     std::cerr << "Single Unity product." << std::endl;
     return;
   }
+  std::cerr << " " << products.size() << " : {";
+  for (int i : products.Distribution())
+    std::cerr << " " << i;
+  std::cerr << " }\n\n";
+
   using ProductSet = boost::container::flat_set<std::string>;
   std::vector<ProductSet> to_print;
   for (const Product& product : products) {
@@ -57,13 +62,6 @@ void Print(const ProductContainer& products) {
     return lhs.size() < rhs.size();
   });
   assert(!to_print.front().empty() && "Failure of the analysis with Unity!");
-  std::vector<int> distribution(to_print.back().size());
-  for (const auto& product : to_print)
-    distribution[product.size() - 1]++;
-  std::cerr << " " << to_print.size() << " : {";
-  for (int i : distribution)
-    std::cerr << " " << i;
-  std::cerr << " }\n\n";
 
   for (const auto& product : to_print) {
     for (const auto& id : product)
@@ -79,6 +77,17 @@ double Product::p() const {
     p *= literal.complement ? 1 - literal.event.p() : literal.event.p();
   }
   return p;
+}
+
+std::vector<int> ProductContainer::Distribution() const {
+  std::vector<int> distribution;
+  for (const std::vector<int>& product : products_) {
+    int index = product.empty() ? 0 : product.size() - 1;
+    if (distribution.size() <= index)
+      distribution.resize(index + 1);
+    distribution[index]++;
+  }
+  return distribution;
 }
 
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
