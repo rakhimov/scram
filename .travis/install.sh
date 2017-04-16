@@ -43,10 +43,10 @@ cd $PROJECT_DIR
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
 
 # Install newer doxygen due to bugs in 1.8.6 with C++11 code.
-DOXYGEN='doxygen-1.8.12.linux.bin.tar.gz'
-wget http://s3.amazonaws.com/scram-travis/${DOXYGEN}
+DOXYGEN='doxygen-1.8.11.linux.bin.tar.gz'
+wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.11/${DOXYGEN}
 tar -xf ${DOXYGEN}
-sudo cp doxygen-1.8.12/bin/* /usr/bin/
+sudo cp doxygen-1.8.11/bin/* /usr/bin/
 
 sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
