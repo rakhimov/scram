@@ -852,21 +852,22 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  for (const auto& node : gate->args<Gate>()) {
-    if (node.first < 0)
+  auto print_arg = [&os, &formula, &sig, &num_args](int index,
+                                                    const std::string& name) {
+    if (index < 0)
       formula += "~";  // Negation.
-    formula += GetName(*node.second);
+    formula += name;
     if (--num_args)
       formula += sig.op;
+  };
+
+  for (const auto& node : gate->args<Gate>()) {
+    print_arg(node.first, GetName(*node.second));
     os << node.second;
   }
 
   for (const auto& basic : gate->args<Variable>()) {
-    if (basic.first < 0)
-      formula += "~";  // Negation.
-    formula += "B" + std::to_string(basic.second->index());
-    if (--num_args)
-      formula += sig.op;
+    print_arg(basic.first, "B" + std::to_string(basic.second->index()));
     if (!basic.second->Visited()) {
       basic.second->Visit(1);
       os << *basic.second;
@@ -876,9 +877,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   if (gate->constant()) {
     assert(gate->type() == kNull);
     int index = *gate->args().begin();
-    if (index < 0)
-      formula += "~";  // Negation.
-    formula += "H" + std::to_string(std::abs(index));
+    print_arg(index, "H" + std::to_string(std::abs(index)));
   }
   os << GetName(*gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;
