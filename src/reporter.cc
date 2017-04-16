@@ -25,7 +25,9 @@
 #include <utility>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/date_time.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "ccf_group.h"
 #include "error.h"
@@ -290,6 +292,8 @@ void Reporter::ReportResults(const std::string& ft_name,
                              const core::FaultTreeAnalysis& fta,
                              const core::ProbabilityAnalysis* prob_analysis,
                              XmlStreamElement* results) {
+  CLOCK(cs_time);
+  LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
   sum_of_products.SetAttribute("name", ft_name)
       .SetAttribute("basic-events", fta.products().product_events().size())
@@ -300,12 +304,20 @@ void Reporter::ReportResults(const std::string& ft_name,
     sum_of_products.SetAttribute("probability", prob_analysis->p_total());
     warning += prob_analysis->warnings();
   }
+
+  if (fta.products().empty() == false) {
+    sum_of_products.SetAttribute(
+        "distribution",
+        boost::join(fta.products().Distribution() |
+                        boost::adaptors::transformed(
+                            [](int number) { return std::to_string(number); }),
+                    " "));
+  }
+
   if (!warning.empty()) {
     sum_of_products.AddChild("warning").AddText(warning);
   }
 
-  CLOCK(cs_time);
-  LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
     for (const core::Product& product_set : fta.products())

@@ -217,6 +217,15 @@
         <attribute name="probability"> <ref name="probability-data"/> </attribute>
       </optional>
       <optional>
+        <attribute name="distribution">
+          <list>
+            <oneOrMore>
+              <data type="nonNegativeInteger"/>
+            </oneOrMore>
+          </list>
+        </attribute>
+      </optional>
+      <optional>
         <element name="warning"> <text/> </element>
       </optional>
       <zeroOrMore>
