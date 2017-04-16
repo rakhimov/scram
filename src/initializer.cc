@@ -911,7 +911,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.
   for (const GatePtr& gate : model_->gates()) {
-    std::vector<std::string> cycle;
+    std::vector<Gate*> cycle;
     if (cycle::DetectCycle(gate.get(), &cycle)) {
       throw CycleError("Detected a cycle in " + gate->name() +
                        " gate:\n" + cycle::PrintCycle(cycle));
@@ -942,7 +942,7 @@ void Initializer::ValidateExpressions() {
   // Check for cycles in parameters.
   // This must be done before expressions.
   for (const ParameterPtr& param : model_->parameters()) {
-    std::vector<std::string> cycle;
+    std::vector<Parameter*> cycle;
     if (cycle::DetectCycle(param.get(), &cycle)) {
       throw CycleError("Detected a cycle in " + param->name() +
                        " parameter:\n" + cycle::PrintCycle(cycle));

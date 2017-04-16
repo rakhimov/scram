@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -89,8 +90,8 @@ inline auto GetConnectors(Expression* connector) {
 }
 /// @}
 
-template <class T>
-bool ContinueConnector(T* connector, std::vector<std::string>* cycle);
+template <class T, class N>
+bool ContinueConnector(T* connector, std::vector<N*>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
 /// Interrupts the detection at first cycle.
@@ -104,22 +105,22 @@ bool ContinueConnector(T* connector, std::vector<std::string>* cycle);
 /// @param[in,out] node  The node to start with.
 /// @param[out] cycle  If a cycle is detected,
 ///                    it is given in reverse,
-///                    ending with the input node's original name.
+///                    ending with the input node.
 ///
 /// @returns True if a cycle is found.
 ///
 /// @post All traversed nodes are marked with non-clear marks.
 template <class T>
-bool DetectCycle(T* node, std::vector<std::string>* cycle) {
+bool DetectCycle(T* node, std::vector<T*>* cycle) {
   if (!node->mark()) {
     node->mark(NodeMark::kTemporary);
     if (ContinueConnector(GetConnector(node), cycle)) {
-      cycle->push_back(node->name());
+      cycle->push_back(node);
       return true;
     }
     node->mark(NodeMark::kPermanent);
   } else if (node->mark() == NodeMark::kTemporary) {
-    cycle->push_back(node->name());
+    cycle->push_back(node);
     return true;
   }
   assert(node->mark() == NodeMark::kPermanent);
@@ -133,14 +134,15 @@ bool DetectCycle(T* node, std::vector<std::string>* cycle) {
 /// GetConnectors(connector) and GetNodes(connector).
 ///
 /// @tparam T  The type managing the connectors (nodes, edges).
+/// @tparam N  The node type.
 ///
 /// @param[in,out] connector  Connector to nodes.
 /// @param[out] cycle  The cycle path if detected.
 ///
 /// @returns True if a cycle is detected.
-template <class T>
-bool ContinueConnector(T* connector, std::vector<std::string>* cycle) {
-  for (auto* node : GetNodes(connector)) {
+template <class T, class N>
+bool ContinueConnector(T* connector, std::vector<N*>* cycle) {
+  for (N* node : GetNodes(connector)) {
     if (DetectCycle(node, cycle))
       return true;
   }
@@ -154,10 +156,22 @@ bool ContinueConnector(T* connector, std::vector<std::string>* cycle) {
 /// Prints the detected cycle from the output
 /// produced by cycle detection functions.
 ///
-/// @param[in] cycle  Cycle containing names in reverse order.
+/// @tparam T  The node type with member function id()->std::string.
+///
+/// @param[in] cycle  Cycle containing nodes in reverse order.
 ///
 /// @returns String representation of the cycle.
-std::string PrintCycle(const std::vector<std::string>& cycle);
+template <class T>
+std::string PrintCycle(const std::vector<T*>& cycle) {
+  assert(cycle.size() > 1);
+  auto it = std::find(cycle.rbegin(), cycle.rend(), cycle.front());
+  assert(it != std::prev(cycle.rend()) && "No cycle is provided.");
+
+  std::string result = (*it)->id();
+  for (++it; it != cycle.rend(); ++it)
+    result += "->" + (*it)->id();
+  return result;
+}
 
 }  // namespace cycle
 }  // namespace mef

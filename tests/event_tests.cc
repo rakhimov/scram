@@ -93,10 +93,10 @@ TEST(MEFGateTest, Cycle) {
   top.formula(std::move(formula_one));
   middle.formula(std::move(formula_two));
   bottom.formula(std::move(formula_three));
-  std::vector<std::string> cycle;
+  std::vector<Gate*> cycle;
   bool ret = cycle::DetectCycle(&top, &cycle);
   EXPECT_TRUE(ret);
-  std::vector<std::string> print_cycle = {"Top", "Bottom", "Middle", "Top"};
+  std::vector<Gate*> print_cycle = {&top, &bottom, &middle, &top};
   EXPECT_EQ(print_cycle, cycle);
   EXPECT_EQ("Top->Middle->Bottom->Top", cycle::PrintCycle(cycle));
 }
