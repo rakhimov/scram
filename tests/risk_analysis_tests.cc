@@ -281,6 +281,14 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
                   {"ValveTwo", {2, 0.0558, 0.06257, 0.1094, 2.189, 1.067}}});
 }
 
+TEST_P(RiskAnalysisTest, ImportanceSingleEvent) {
+  std::string tree_input = "./share/scram/input/core/null_a.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"OnlyChild", {1, 1, 1, 1, 2, 0}}});
+}
+
 // Apply the rare event approximation.
 TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";

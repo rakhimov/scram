@@ -4,6 +4,8 @@
     <define-gate name="NullGate">
       <event name="OnlyChild"/>
     </define-gate>
-    <define-basic-event name="OnlyChild"/>
+    <define-basic-event name="OnlyChild">
+      <float value="0.5"/>
+    </define-basic-event>
   </define-fault-tree>
 </opsa-mef>

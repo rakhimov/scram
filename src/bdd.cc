@@ -57,6 +57,7 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
       const Variable& var = top_gate.args<Variable>().begin()->second;
       root_ = {child < 0,
                FindOrAddVertex(var.index(), kOne_, kOne_, true, var.order())};
+      index_to_order_.emplace(var.index(), var.order());
     }
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
