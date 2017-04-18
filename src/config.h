@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/filesystem/path.hpp>
 #include <libxml++/libxml++.h>
 
 #include "settings.h"
@@ -39,27 +40,33 @@ class Config {
   /// A constructor with configurations for analysis.
   /// Reads and validates the configurations.
   ///
-  /// @param[in] config_file  XML file with configurations.
+  /// All relative paths in the configuration are resolved
+  /// with respect to the location of the original configuration file.
+  ///
+  /// @param[in] config_file  The path to an XML file with configurations.
   ///
   /// @throws ValidationError  The configurations have problems.
   /// @throws InvalidArgument  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
   explicit Config(const std::string& config_file);
 
-  /// @returns input files for analysis.
+  /// @returns normalized, absolute paths to input files for analysis.
   const std::vector<std::string>& input_files() const { return input_files_; }
 
   /// @returns the settings for analysis.
   const core::Settings& settings() const { return settings_; }
 
-  /// @returns the output destination if any.
+  /// @returns the output destination path (absolute, normalized).
+  /// @returns empty string if no path has been set.
   const std::string& output_path() const { return output_path_; }
 
  private:
   /// Gathers input files with analysis constructs.
   ///
   /// @param[in] root  The root XML element.
-  void GatherInputFiles(const xmlpp::Node* root);
+  /// @param[in] base_path  The base path for relative path resolution.
+  void GatherInputFiles(const xmlpp::Node* root,
+                        const boost::filesystem::path& base_path);
 
   /// Gathers options for analysis.
   ///
@@ -69,7 +76,9 @@ class Config {
   /// Gets the output path for reports.
   ///
   /// @param[in] root  The root XML element.
-  void GetOutputPath(const xmlpp::Node* root);
+  /// @param[in] base_path  The base path for relative path resolution.
+  void GetOutputPath(const xmlpp::Node* root,
+                     const boost::filesystem::path& base_path);
 
   /// Extracts Qualitative analysis algorithm.
   ///

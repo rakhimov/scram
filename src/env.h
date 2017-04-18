@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,9 @@ class Env {
 
   /// @returns The location of the RELAX NG schema for output report files.
   static std::string report_schema();
+
+  /// @returns The path to the installation directory.
+  static const std::string& install_dir() { return kInstallDir_; }
 
  private:
   static const std::string kInstallDir_;  ///< Installation directory.
