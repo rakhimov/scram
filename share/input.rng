@@ -22,22 +22,12 @@
       </optional>
       <zeroOrMore>
         <choice>
+          <ref name="model-data"/>
           <ref name="event-tree-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
         </choice>
       </zeroOrMore>
-      <optional>
-        <element name="model-data">
-          <zeroOrMore>
-            <choice>
-              <ref name="house-event-definition"/>
-              <ref name="basic-event-definition"/>
-              <ref name="parameter-definition"/>
-            </choice>
-          </zeroOrMore>
-        </element>
-      </optional>
     </element>
   </start>
 
@@ -367,6 +357,18 @@
         <value>public</value>
       </choice>
     </attribute>
+  </define>
+
+  <define name="model-data">
+    <element name="model-data">
+      <zeroOrMore>
+        <choice>
+          <ref name="house-event-definition"/>
+          <ref name="basic-event-definition"/>
+          <ref name="parameter-definition"/>
+        </choice>
+      </zeroOrMore>
+    </element>
   </define>
 
   <define name="event-definition">
