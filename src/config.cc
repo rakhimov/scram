@@ -25,6 +25,8 @@
 #include <memory>
 
 #include <boost/filesystem.hpp>
+#include <boost/predef.h>
+#include <boost/range/algorithm.hpp>
 
 #include "env.h"
 #include "error.h"
@@ -37,7 +39,14 @@ namespace scram {
 namespace {  // Path normalization helpers.
 
 std::string normalize(const std::string& file_path, const fs::path& base_path) {
-  return fs::absolute(file_path, base_path).generic_string();
+  fs::path abs_path = fs::absolute(file_path, base_path).generic_string();
+#if BOOST_OS_WINDOWS
+  return abs_path.generic_string();
+#else
+  std::string abnormal_path = abs_path.string();
+  boost::replace(abnormal_path, '\\', '/');
+  return abnormal_path;
+#endif
 }
 
 }  // namespace

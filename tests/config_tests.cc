@@ -96,5 +96,15 @@ TEST(ConfigTest, PrimeImplicantsSettings) {
   EXPECT_TRUE(settings.prime_implicants());
 }
 
+TEST(ConfigTest, CanonicalPath) {
+  std::string config_file = "share/scram/input/win_path_in_config.xml";
+  Config config(config_file);
+  // Check the input files.
+  ASSERT_EQ(config.input_files().size(), 1);
+  ASSERT_EQ(Env::install_dir() +
+                "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+            config.input_files().back());
+}
+
 }  // namespace test
 }  // namespace scram
