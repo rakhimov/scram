@@ -39,6 +39,16 @@ Alternatively, run the following commands to get SCRAM from its PPA_.
 .. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
 
 
+Fedora
+======
+
+Install from the official Fedora repositories:
+
+.. code-block:: bash
+
+    sudo dnf install scram
+
+
 macOS
 =====
 
@@ -59,9 +69,15 @@ Download and run the installer_.
 .. _installer: https://sourceforge.net/projects/iscram/files/latest/download
 
 
+Docker Containers
+=================
+
+Available from Docker Hub: https://hub.docker.com/r/rakhimov/scram/
+
+
 Other Platforms
 ===============
 
 Please follow the building and installing instructions_ on GitHub.
 
-.. _instructions: https://github.com/rakhimov/scram/tree/master
+.. _instructions: https://github.com/rakhimov/scram/tree/master#building-and-installing
