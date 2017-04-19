@@ -8,52 +8,10 @@ The Open-PSA MEF
 
 The results of calculations are reported in the XML format
 suggested by the Open-PSA Model Exchange Format ([MEF]_).
+SCRAM-specific extra report XML elements and attributes are added
+on top of the MEF report format in a compatible way.
 It is expected that the standardized report format be used by other tools
 to further analyze and operate on the results of PSA tools.
-The report contains two constructs:
-
-    - Information about the software, algorithms, and options.
-
-        * Software
-
-            + Version
-            + Contact organization (editor, vendor...)
-
-        * Calculated quantities
-
-            + Name
-            + Mathematic definitions
-            + Approximations used
-
-        * Calculations methods
-
-            + Name
-            + Limits (e.g. number of basic events, sequences, cut sets)
-            + Preprocessing techniques (modularization, rewritings, ...)
-            + Handling of success terms
-            + Cutoffs, if any (absolute, relative, dynamic, ...)
-            + Are recovery rules or exchange events applied?
-            + Extra-logical methods used
-            + Secondary software necessary
-            + Warning and caveats
-            + Calculation time
-
-        * Features of the model
-
-            + Name
-            + Number of gates, basic events, house events, fault trees, event
-              trees, functional events, initiating events
-
-        * Feedback
-
-            + Success or failure reports
-
-    - Results
-
-        * Minimal cut sets (and prime implicants)
-        * Statistical measures (with moments)
-        * Curves
-        * Probability/frequency, importance factors, sensitivity analyses, ...
 
 
 Encodings
@@ -84,14 +42,15 @@ Post-processing
 
 It is expected that the results of analysis
 are processed by other tools than the SCRAM core.
-The GUI front-end, Python scripts, and XML query tools are better suited
+The GUI front-end, Python or R scripts, and XML query tools are better suited
 to filter, group, sort, and do other data manipulations and visualization.
 
 Suggested tools:
 
     - SCRAM GUI front-end
-    - `BaseX <http://basex.org>`_
+    - R with `FaultTree.SCRAM <https://rdrr.io/rforge/FaultTree.SCRAM/>`_
     - Python with `lxml <http://lxml.de/>`_
+    - `BaseX <http://basex.org>`_
 
 
 Report File Example
