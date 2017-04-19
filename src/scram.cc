@@ -39,40 +39,43 @@ namespace po = boost::program_options;
 
 namespace {
 
+/// Provides an options value type.
+#define OPT_VALUE(type) po::value<type>()->value_name(#type)
+
 /// @returns Command-line option descriptions.
 po::options_description ConstructOptions() {
+  using path = std::string;  // To print argument type as path.
+
   po::options_description desc("Options");
   desc.add_options()
       ("help", "Display this help message")
       ("version", "Display version information")
-      ("config-file", po::value<std::string>(),
-       "XML file with analysis configurations")
+      ("config-file", OPT_VALUE(path), "XML file with analysis configurations")
       ("validate", "Validate input files without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
       ("zbdd", "Perform qualitative analysis with ZBDD")
       ("mocus", "Perform qualitative analysis with MOCUS")
       ("prime-implicants", "Calculate prime implicants")
-      ("probability", po::value<bool>(), "Perform probability analysis")
-      ("importance", po::value<bool>(), "Perform importance analysis")
-      ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
-      ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
-      ("sil", po::value<bool>(), "Compute the Safety Integrity Level metrics")
+      ("probability", OPT_VALUE(bool), "Perform probability analysis")
+      ("importance", OPT_VALUE(bool), "Perform importance analysis")
+      ("uncertainty", OPT_VALUE(bool), "Perform uncertainty analysis")
+      ("ccf", OPT_VALUE(bool), "Perform common-cause failure analysis")
+      ("sil", OPT_VALUE(bool), "Compute the Safety Integrity Level metrics")
       ("rare-event", "Use the rare event approximation")
       ("mcub", "Use the MCUB approximation")
-      ("limit-order,l", po::value<int>(), "Upper limit for the product order")
-      ("cut-off", po::value<double>(), "Cut-off probability for products")
-      ("mission-time", po::value<double>(), "System mission time in hours")
-      ("time-step", po::value<double>(),
+      ("limit-order,l", OPT_VALUE(int), "Upper limit for the product order")
+      ("cut-off", OPT_VALUE(double), "Cut-off probability for products")
+      ("mission-time", OPT_VALUE(double), "System mission time in hours")
+      ("time-step", OPT_VALUE(double),
        "Time step in hours for probability analysis")
-      ("num-trials", po::value<int>(),
+      ("num-trials", OPT_VALUE(int),
        "Number of trials for Monte Carlo simulations")
-      ("num-quantiles", po::value<int>(),
+      ("num-quantiles", OPT_VALUE(int),
        "Number of quantiles for distributions")
-      ("num-bins", po::value<int>(), "Number of bins for histograms")
-      ("seed", po::value<int>(),
-       "Seed for the pseudo-random number generator")
-      ("output-path,o", po::value<std::string>(), "Output path for reports")
-      ("verbosity", po::value<int>(), "Set log verbosity");
+      ("num-bins", OPT_VALUE(int), "Number of bins for histograms")
+      ("seed", OPT_VALUE(int), "Seed for the pseudo-random number generator")
+      ("output-path,o", OPT_VALUE(path), "Output path for reports")
+      ("verbosity", OPT_VALUE(int), "Set log verbosity");
 #ifndef NDEBUG
   po::options_description debug("Debug Options");
   debug.add_options()
@@ -83,6 +86,7 @@ po::options_description ConstructOptions() {
 #endif
   return desc;
 }
+#undef OPT_VALUE
 
 /// Parses the command-line arguments.
 ///

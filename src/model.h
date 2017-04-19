@@ -60,6 +60,9 @@ class Model : public Element, private boost::noncopyable {
   /// @returns Defined constructs in the model.
   /// @{
   const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
+  const ElementTable<FunctionalEventPtr>& functional_events() const {
+    return functional_events_;
+  }
   const ElementTable<SequencePtr>& sequences() const { return sequences_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const {
@@ -86,6 +89,7 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @{
   void Add(EventTreePtr element);
+  void Add(const FunctionalEventPtr& element);
   void Add(const SequencePtr& element);
   void Add(FaultTreePtr element);
   void Add(const ParameterPtr& element);
@@ -93,6 +97,9 @@ class Model : public Element, private boost::noncopyable {
   void Add(const BasicEventPtr& element);
   void Add(const GatePtr& element);
   void Add(const CcfGroupPtr& element);
+  void Add(std::unique_ptr<Expression> element) {
+    expressions_.emplace_back(std::move(element));
+  }
   /// @}
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
@@ -106,27 +113,17 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws std::out_of_range  The entity cannot be found.
   /// @{
-  ParameterPtr GetParameter(const std::string& entity_reference,
-                            const std::string& base_path);
-  HouseEventPtr GetHouseEvent(const std::string& entity_reference,
+  Parameter* GetParameter(const std::string& entity_reference,
+                          const std::string& base_path);
+  HouseEvent* GetHouseEvent(const std::string& entity_reference,
                               const std::string& base_path);
-  BasicEventPtr GetBasicEvent(const std::string& entity_reference,
+  BasicEvent* GetBasicEvent(const std::string& entity_reference,
                               const std::string& base_path);
-  GatePtr GetGate(const std::string& entity_reference,
-                  const std::string& base_path);
+  Gate* GetGate(const std::string& entity_reference,
+                const std::string& base_path);
+  Formula::EventArg
+  GetEvent(const std::string& entity_reference, const std::string& base_path);
   /// @}
-
-  /// Binds a formula with its argument event.
-  /// This is a special handling for undefined event types
-  /// with mixed roles.
-  ///
-  /// @param[in] entity_reference  Reference string to the entity.
-  /// @param[in] base_path  The series of containers indicating the scope.
-  /// @param[out] formula  The host formula for the event.
-  ///
-  /// @throws std::out_of_range  The entity cannot be found.
-  void BindEvent(const std::string& entity_reference,
-                 const std::string& base_path, Formula* formula);
 
  private:
   /// Lookup containers for model entities with roles.
@@ -150,13 +147,12 @@ class Model : public Element, private boost::noncopyable {
     ///
     /// @param[in] entity  The candidate entity.
     ///
-    /// @returns false if the entity is duplicate and hasn't been added.
-    bool Add(const std::shared_ptr<T>& entity) {
-      if (entities_by_id.insert(entity).second == false)
-        return false;
-
-      entities_by_path.insert(entity);
-      return true;
+    /// @returns The result of insert call to IdTable.
+    auto insert(const std::shared_ptr<T>& entity) {
+      auto it = entities_by_id.insert(entity);
+      if (it.second)
+        entities_by_path.insert(entity);
+      return it;
     }
 
     IdTable<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.
@@ -177,13 +173,13 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws std::out_of_range  The entity cannot be found.
   template <class T>
-  std::shared_ptr<T> GetEntity(const std::string& entity_reference,
-                               const std::string& base_path,
-                               const LookupTable<T>& container);
+  T* GetEntity(const std::string& entity_reference,
+               const std::string& base_path, const LookupTable<T>& container);
 
   /// A collection of defined constructs in the model.
   /// @{
   ElementTable<EventTreePtr> event_trees_;
+  ElementTable<FunctionalEventPtr> functional_events_;
   ElementTable<SequencePtr> sequences_;
   ElementTable<FaultTreePtr> fault_trees_;
   LookupTable<Gate> gates_;
@@ -192,6 +188,7 @@ class Model : public Element, private boost::noncopyable {
   LookupTable<Parameter> parameters_;
   std::shared_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
+  std::vector<std::unique_ptr<Expression>> expressions_;
   /// @}
   IdTable<Event*> events_;  ///< All events by ids.
 };

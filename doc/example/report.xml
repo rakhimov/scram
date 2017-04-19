@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
   <information>
-    <software name="SCRAM" version="0.12.0"/>
-    <time>2017-03-28T00:08:20</time>
+    <software name="SCRAM" version="0.12.0-73-gec10dde"/>
+    <time>2017-04-16T22:44:18</time>
     <performance>
       <calculation-time name="TopEvent">
-        <products>0.000557289</products>
-        <probability>3.797e-06</probability>
-        <importance>1.4425e-05</importance>
+        <products>0.000586056</products>
+        <probability>3.324e-06</probability>
+        <importance>1.4344e-05</importance>
       </calculation-time>
     </performance>
     <calculated-quantity name="Minimal Cut Sets">
@@ -32,7 +32,7 @@
     </model-features>
   </information>
   <results>
-    <sum-of-products name="TopEvent" basic-events="4" products="4" probability="0.7225">
+    <sum-of-products name="TopEvent" basic-events="4" products="4" probability="0.7225" distribution="0 4">
       <product order="2" probability="0.25" contribution="0.173611">
         <basic-event name="ValveOne"/>
         <basic-event name="ValveTwo"/>

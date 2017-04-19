@@ -94,7 +94,9 @@ TEST(InitializerTest, CorrectEtaInputs) {
 TEST(InitializerTest, IncorrectEtaInputs) {
   std::string dir = "./share/scram/input/eta/";
   const char* incorrect_inputs[] = {
-      "doubly_defined_event_tree.xml", "doubly_defined_sequence.xml",
+      "doubly_defined_event_tree.xml",
+      "doubly_defined_sequence.xml",
+      "doubly_defined_functional_event.xml"
   };
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
@@ -108,6 +110,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
   const char* correct_inputs[] = {
       "correct_tree_input.xml",
       "correct_formulas.xml",
+      "constant_in_formulas.xml",
       "component_definition.xml",
       "mixed_definitions.xml",
       "mixed_references.xml",
@@ -125,6 +128,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "non_top_gate.xml",
       "unused_parameter.xml",
       "nested_formula.xml",
+      "null_gate_with_label.xml",
       "case_sensitivity.xml"};
 
   for (const auto& input : correct_inputs) {

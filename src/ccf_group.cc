@@ -49,7 +49,7 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   members_.push_back(basic_event);
 }
 
-void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
+void CcfGroup::AddDistribution(Expression* distr) {
   if (distribution_)
     throw LogicError("CCF distribution is already defined.");
   if (members_.size() < 2) {
@@ -62,8 +62,7 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
     member->expression(distribution_);
 }
 
-void CcfGroup::AddFactor(const ExpressionPtr& factor,
-                         boost::optional<int> level) {
+void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
   int min_level = this->MinLevel();
   if (!level)
     level = prev_level_ ? (prev_level_ + 1) : min_level;
@@ -106,7 +105,7 @@ void CcfGroup::Validate() const {
                           " CCF group has illegal values.");
   }
 
-  for (const std::pair<int, ExpressionPtr>& f : factors_) {
+  for (const std::pair<int, Expression*>& f : factors_) {
     if (!f.second) {
       throw ValidationError("Missing some CCF factors for " + Element::name() +
                             " CCF group.");
@@ -157,15 +156,16 @@ void CcfGroup::ApplyModel() {
 
   for (auto& entry : probabilities) {
     int level = entry.first;
-    ExpressionPtr prob = entry.second;
+    Expression* prob = entry.second;
     for (auto combination :
          ext::make_combination_generator(level, proxy_gates.begin(),
                                          proxy_gates.end())) {
-      auto ccf_event = std::make_shared<CcfEvent>(JoinNames(combination), this);
+      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)
-        gate->formula().AddArgument(ccf_event);
+        gate->formula().AddArgument(ccf_event.get());
       ccf_event->members(std::move(combination));  // Move, at last.
+      ccf_events_.emplace_back(std::move(ccf_event));
     }
   }
 }
@@ -176,15 +176,15 @@ CcfGroup::ExpressionMap BetaFactorModel::CalculateProbabilities() {
 
   ExpressionMap probabilities;
 
-  ExpressionPtr beta = CcfGroup::factors().begin()->second;
-  ExpressionPtr indep_factor(new Sub({ConstantExpression::kOne, beta}));
+  Expression* beta = CcfGroup::factors().begin()->second;
   probabilities.emplace_back(  // (1 - beta) * Q
-      1,
-      ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution()})));
+      1, CcfGroup::Register<Mul>(
+             {CcfGroup::Register<Sub>({&ConstantExpression::kOne, beta}),
+              CcfGroup::distribution()}));
 
   probabilities.emplace_back(  // beta * Q
       CcfGroup::factors().front().first,
-      ExpressionPtr(new Mul({beta, CcfGroup::distribution()})));
+      CcfGroup::Register<Mul>({beta, CcfGroup::distribution()}));
   return probabilities;
 }
 
@@ -220,17 +220,17 @@ CcfGroup::ExpressionMap MglModel::CalculateProbabilities() {
   int num_members = CcfGroup::members().size();
   for (int i = 0; i < max_level; ++i) {
     double mult = CalculateCombinationReciprocal(num_members - 1, i);
-    std::vector<ExpressionPtr> args;
-    args.emplace_back(new ConstantExpression(mult));
+    std::vector<Expression*> args;
+    args.push_back(CcfGroup::Register<ConstantExpression>(mult));
     for (int j = 0; j < i; ++j) {
       args.push_back(CcfGroup::factors()[j].second);
     }
     if (i < max_level - 1) {
-      args.emplace_back(
-          new Sub({ConstantExpression::kOne, CcfGroup::factors()[i].second}));
+      args.push_back(CcfGroup::Register<Sub>(
+          {&ConstantExpression::kOne, CcfGroup::factors()[i].second}));
     }
     args.push_back(CcfGroup::distribution());
-    probabilities.emplace_back(i + 1, ExpressionPtr(new Mul(args)));
+    probabilities.emplace_back(i + 1, CcfGroup::Register<Mul>(std::move(args)));
   }
   assert(probabilities.size() == max_level);
   return probabilities;
@@ -240,21 +240,22 @@ CcfGroup::ExpressionMap AlphaFactorModel::CalculateProbabilities() {
   ExpressionMap probabilities;
   int max_level = CcfGroup::factors().back().first;
   assert(CcfGroup::factors().size() == max_level);
-  std::vector<ExpressionPtr> sum_args;
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
-    sum_args.emplace_back(new Mul(
-        {ExpressionPtr(new ConstantExpression(factor.first)), factor.second}));
+  std::vector<Expression*> sum_args;
+  for (const std::pair<int, Expression*>& factor : CcfGroup::factors()) {
+    sum_args.emplace_back(CcfGroup::Register<Mul>(
+        {CcfGroup::Register<ConstantExpression>(factor.first), factor.second}));
   }
-  ExpressionPtr sum(new Add(std::move(sum_args)));
+  Expression* sum = CcfGroup::Register<Add>(std::move(sum_args));
   int num_members = CcfGroup::members().size();
 
   for (int i = 0; i < max_level; ++i) {
     double mult = CalculateCombinationReciprocal(num_members - 1, i);
-    ExpressionPtr level(new ConstantExpression(i + 1));
-    ExpressionPtr fraction(new Div({CcfGroup::factors()[i].second, sum}));
-    ExpressionPtr prob(
-        new Mul({level, ExpressionPtr(new ConstantExpression(mult)), fraction,
-                 CcfGroup::distribution()}));
+    Expression* level = CcfGroup::Register<ConstantExpression>(i + 1);
+    Expression* fraction =
+        CcfGroup::Register<Div>({CcfGroup::factors()[i].second, sum});
+    Expression* prob = CcfGroup::Register<Mul>(
+        {level, CcfGroup::Register<ConstantExpression>(mult), fraction,
+         CcfGroup::distribution()});
     probabilities.emplace_back(i + 1, prob);
   }
   assert(probabilities.size() == max_level);
@@ -265,7 +266,7 @@ void PhiFactorModel::DoValidate() const {
   double sum = 0;
   double sum_min = 0;
   double sum_max = 0;
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
+  for (const std::pair<int, Expression*>& factor : CcfGroup::factors()) {
     sum += factor.second->Mean();
     sum_min += factor.second->Min();
     sum_max += factor.second->Max();
@@ -284,8 +285,9 @@ void PhiFactorModel::DoValidate() const {
 CcfGroup::ExpressionMap PhiFactorModel::CalculateProbabilities() {
   ExpressionMap probabilities;
   int max_level = CcfGroup::factors().back().first;
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
-    ExpressionPtr prob(new Mul({factor.second, CcfGroup::distribution()}));
+  for (const std::pair<int, Expression*>& factor : CcfGroup::factors()) {
+    Expression* prob =
+        CcfGroup::Register<Mul>({factor.second, CcfGroup::distribution()});
     probabilities.emplace_back(factor.first, prob);
   }
   assert(probabilities.size() == max_level);

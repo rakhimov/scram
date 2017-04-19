@@ -37,8 +37,7 @@
 namespace scram {
 namespace mef {
 
-UniformDeviate::UniformDeviate(const ExpressionPtr& min,
-                               const ExpressionPtr& max)
+UniformDeviate::UniformDeviate(Expression* min, Expression* max)
     : RandomDeviate({min, max}),
       min_(*min),
       max_(*max) {}
@@ -54,8 +53,7 @@ double UniformDeviate::DoSample() noexcept {
   return Random::UniformRealGenerator(min_.Mean(), max_.Mean());
 }
 
-NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
-                             const ExpressionPtr& sigma)
+NormalDeviate::NormalDeviate(Expression* mean, Expression* sigma)
     : RandomDeviate({mean, sigma}),
       mean_(*mean),
       sigma_(*sigma) {}
@@ -70,14 +68,12 @@ double NormalDeviate::DoSample() noexcept {
   return Random::NormalGenerator(mean_.Mean(), sigma_.Mean());
 }
 
-LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
-                                   const ExpressionPtr& ef,
-                                   const ExpressionPtr& level)
+LogNormalDeviate::LogNormalDeviate(Expression* mean, Expression* ef,
+                                   Expression* level)
     : RandomDeviate({mean, ef, level}),
       flavor_(new LogNormalDeviate::Logarithmic(mean, ef, level)) {}
 
-LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mu,
-                                   const ExpressionPtr& sigma)
+LogNormalDeviate::LogNormalDeviate(Expression* mu, Expression* sigma)
     : RandomDeviate({mu, sigma}),
       flavor_(new LogNormalDeviate::Normal(mu, sigma)) {}
 
@@ -119,7 +115,7 @@ double LogNormalDeviate::Normal::mean() noexcept {
   return std::exp(location() + std::pow(scale(), 2) / 2);
 }
 
-GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
+GammaDeviate::GammaDeviate(Expression* k, Expression* theta)
     : RandomDeviate({k, theta}),
       k_(*k),
       theta_(*theta) {}
@@ -144,7 +140,7 @@ double GammaDeviate::DoSample() noexcept {
   return Random::GammaGenerator(k_.Mean(), theta_.Mean());
 }
 
-BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
+BetaDeviate::BetaDeviate(Expression* alpha, Expression* beta)
     : RandomDeviate({alpha, beta}),
       alpha_(*alpha),
       beta_(*beta) {}
@@ -167,8 +163,8 @@ double BetaDeviate::DoSample() noexcept {
   return Random::BetaGenerator(alpha_.Mean(), beta_.Mean());
 }
 
-Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
-                     std::vector<ExpressionPtr> weights)
+Histogram::Histogram(std::vector<Expression*> boundaries,
+                     std::vector<Expression*> weights)
     : RandomDeviate(std::move(boundaries)) {  // Partial registration!
   int num_intervals = Expression::args().size() - 1;
   if (weights.size() != num_intervals) {
@@ -177,7 +173,7 @@ Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
   }
 
   // Complete the argument registration.
-  for (const ExpressionPtr& arg : weights)
+  for (Expression* arg : weights)
     Expression::AddArg(arg);
 
   auto midpoint = std::next(Expression::args().begin(), num_intervals + 1);

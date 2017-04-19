@@ -36,6 +36,54 @@
 namespace scram {
 namespace core {
 
+namespace pdag {
+
+/// The terminal case for graph transformations.
+inline void Transform(Pdag* /*graph*/) {}
+
+/// Applies graph transformations consecutively.
+///
+/// @param[in,out] graph  The graph to be transformed.
+/// @param[in] unary_op  The first operation to be applied.
+/// @param[in] unary_ops  The rest of transformations to apply.
+template <typename T, typename... Ts>
+void Transform(Pdag* graph, T&& unary_op, Ts&&... unary_ops) noexcept {
+  if (graph->IsTrivial())
+    return;
+  unary_op(graph);
+  Transform(graph, std::forward<Ts>(unary_ops)...);
+}
+
+/// Determines the order of traversal for gate arguments.
+/// This function does not assign the order of nodes.
+///
+/// @tparam T  Type of the arguments.
+///
+/// @param[in] gate  The host gate parent.
+///
+/// @returns An ordered, stable list of arguments.
+template <class T>
+std::vector<T*> OrderArguments(Gate* gate) noexcept;
+
+/// Assigns topological ordering to nodes of the PDAG.
+/// The ordering is assigned to the node order marks.
+/// The nodes are sorted in descending optimization value.
+/// The highest order value belongs to the root.
+///
+/// @param[in,out] graph  The graph to be processed.
+///
+/// @post The root and descendant node order marks contain the ordering.
+void TopologicalOrder(Pdag* graph) noexcept;
+
+/// Marks coherence of the whole graph.
+///
+/// @param[in,out] graph  The graph to be processed.
+///
+/// @post Gate traversal marks are dirty.
+void MarkCoherence(Pdag* graph) noexcept;
+
+}  // namespace pdag
+
 /// The class provides main preprocessing operations
 /// over a PDAG
 /// to simplify the fault tree
@@ -60,7 +108,7 @@ class Preprocessor : private boost::noncopyable {
   virtual ~Preprocessor() = default;
 
   /// Runs the graph preprocessing.
-  void operator()() noexcept { this->Run(); }
+  void operator()() noexcept;
 
  protected:
   class GateSet;  ///< Container of unique gates by semantics.
@@ -909,18 +957,6 @@ class Preprocessor : private boost::noncopyable {
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
   };
 
-  /// Marks coherence of the whole graph.
-  ///
-  /// @warning Gate marks are used.
-  void MarkCoherence() noexcept;
-
-  /// Marks gates with coherence flags.
-  ///
-  /// @param[in] gate  The root gate for processing.
-  ///
-  /// @warning Gate marks are used.
-  void MarkCoherence(const GatePtr& gate) noexcept;
-
   /// Replaces one gate in the graph with another.
   ///
   /// @param[in,out] gate  An existing gate to be replaced.
@@ -941,37 +977,6 @@ class Preprocessor : private boost::noncopyable {
   ///
   /// @pre The caller will later call the appropriate cleanup functions.
   bool RegisterToClear(const GatePtr& gate) noexcept;
-
-  /// Assigns order for PDAG variables.
-  ///
-  /// @pre Old node order marks are allowed to get cleaned.
-  ///
-  /// @post Node order marks contain the ordering.
-  void AssignOrder() noexcept;
-
-  /// Assigns topological ordering to nodes of the PDAG.
-  /// The ordering is assigned to the node order marks.
-  /// The nodes are sorted in descending optimization value.
-  /// The highest order value belongs to the root.
-  ///
-  /// @param[in,out] root  The root or current parent gate of the graph.
-  /// @param[in] order  The current order value.
-  ///
-  /// @returns The final order value.
-  ///
-  /// @post The root and descendant node order marks contain the ordering.
-  int TopologicalOrder(Gate* root, int order) noexcept;
-
-  /// Determines the order of traversal for gate arguments.
-  /// This function does assign the order of nodes.
-  ///
-  /// @tparam T  Type of the arguments.
-  ///
-  /// @param[in] gate  The host gate parent.
-  ///
-  /// @returns An ordered, stable list of arguments.
-  template <class T>
-  std::vector<T*> OrderArguments(Gate* gate) noexcept;
 
   /// Gathers all nodes in the PDAG.
   ///

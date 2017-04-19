@@ -92,31 +92,96 @@
 namespace scram {
 namespace core {
 
+namespace pdag {
+
+template <class T>
+std::vector<T*> OrderArguments(Gate* gate) noexcept {
+  std::vector<T*> args;
+  for (const Gate::Arg<T>& arg : gate->args<T>()) {
+    args.push_back(arg.second.get());
+  }
+  boost::sort(args, [](T* lhs, T* rhs) {
+    return lhs->parents().size() > rhs->parents().size();
+  });
+  return args;
+}
+
+void TopologicalOrder(Pdag* graph) noexcept {
+  // Assigns the order starting from the given gate arguments.
+  auto topological_order = [](auto& self, Gate* root, int order) {
+    if (root->order())
+      return order;
+    for (Gate* arg : OrderArguments<Gate>(root)) {
+      order = self(self, arg, order);
+    }
+    for (Variable* arg : OrderArguments<Variable>(root)) {
+      if (!arg->order())
+        arg->order(++order);
+    }
+    assert(!root->constant());
+    root->order(++order);
+    return order;
+  };
+
+  graph->Clear<Pdag::kOrder>();
+  topological_order(topological_order, graph->root().get(), 0);
+}
+
+void MarkCoherence(Pdag* graph) noexcept {
+  auto mark_coherence = [](auto& self, const GatePtr& gate) {
+    if (gate->mark())
+      return;
+    gate->mark(true);
+    bool coherent = true;  // Optimistic initialization.
+    switch (gate->type()) {
+      case kXor:
+      case kNor:
+      case kNot:
+      case kNand:
+        coherent = false;
+        break;
+      default:
+        assert(coherent);
+    }
+    for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
+      self(self, arg.second);
+      if (coherent && (arg.first < 0 || !arg.second->coherent()))
+        coherent = false;  // Must continue with all gates.
+    }
+    if (coherent) {
+      for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
+        if (arg.first < 0) {
+          coherent = false;
+          break;
+        }
+      }
+    }
+    assert(!gate->constant());
+    gate->coherent(coherent);
+  };
+
+  graph->Clear<Pdag::kGateMark>();
+  mark_coherence(mark_coherence, graph->root());
+  assert(!(graph->coherent() && !graph->root()->coherent()));
+  graph->coherent(!graph->complement() && graph->root()->coherent());
+}
+
+}  // namespace pdag
+
 Preprocessor::Preprocessor(Pdag* graph) noexcept : graph_(graph) {}
 
+void Preprocessor::operator()() noexcept {
+  TIMER(DEBUG2, "Preprocessing");
+  this->Run();
+}
+
 void Preprocessor::Run() noexcept {
-  CLOCK(time_1);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  RunPhaseOne();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (graph_->IsTrivial())
-    return;
-
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  RunPhaseTwo();
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (graph_->IsTrivial())
-    return;
-
-  if (!graph_->normal()) {
-    CLOCK(time_3);
-    LOG(DEBUG2) << "Preprocessing Phase III...";
-    RunPhaseThree();
-    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (graph_->IsTrivial())
-      return;
-  }
+  pdag::Transform(graph_, [this](Pdag*) { RunPhaseOne(); },
+                  [this](Pdag*) { RunPhaseTwo(); },
+                  [this](Pdag*) {
+                    if (!graph_->normal())
+                      RunPhaseThree();
+                  });
 }
 
 /// Container of unique gates.
@@ -243,7 +308,6 @@ class TestGateStructure {
 
 }  // namespace
 
-/// @def SANITY_ASSERT
 /// A collection of sanity checks between preprocessing phases.
 #define SANITY_ASSERT                                                      \
   assert(graph_->root() && "Corrupted pointer to the root gate.");         \
@@ -255,115 +319,64 @@ class TestGateStructure {
   assert(TestGateMarks()(*graph_->root(), graph_->root()->mark()))
 
 void Preprocessor::RunPhaseOne() noexcept {
+  TIMER(DEBUG2, "Preprocessing Phase I");
   graph_->Log();
   if (graph_->HasNullGates()) {
-    LOG(DEBUG3) << "Removing NULL gates...";
+    TIMER(DEBUG3, "Removing NULL gates");
     graph_->RemoveNullGates();
-    LOG(DEBUG3) << "Finished cleaning NULL gates!";
     if (graph_->IsTrivial())
       return;
   }
   SANITY_ASSERT;
   if (!graph_->coherent()) {
-    LOG(DEBUG3) << "Partial normalization of gates...";
     NormalizeGates(/*full=*/false);
-    LOG(DEBUG3) << "Finished the partial normalization of gates!";
   }
 }
 
 void Preprocessor::RunPhaseTwo() noexcept {
+  TIMER(DEBUG2, "Preprocessing Phase II");
   SANITY_ASSERT;
   graph_->Log();
-  CLOCK(mult_time);
-  LOG(DEBUG3) << "Detecting multiple definitions...";
-  while (ProcessMultipleDefinitions())
-    continue;
-  LOG(DEBUG3) << "Finished multi-definition detection in " << DUR(mult_time);
-
-  if (graph_->IsTrivial())
-    return;
-
-  LOG(DEBUG3) << "Detecting modules...";
-  DetectModules();
-  LOG(DEBUG3) << "Finished module detection!";
-
-  LOG(DEBUG3) << "Coalescing gates...";
-  while (CoalesceGates(/*common=*/false))
-    continue;
-  LOG(DEBUG3) << "Gate coalescence is done!";
-
-  if (graph_->IsTrivial())
-    return;
-
-  CLOCK(merge_time);
-  LOG(DEBUG3) << "Merging common arguments...";
-  MergeCommonArgs();
-  LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
-
-  if (graph_->IsTrivial())
-    return;
-
-  LOG(DEBUG3) << "Processing Distributivity...";
-  DetectDistributivity();
-  LOG(DEBUG3) << "Distributivity detection is done!";
-
-  if (graph_->IsTrivial())
-    return;
-
-  LOG(DEBUG3) << "Detecting modules...";
-  DetectModules();
-  LOG(DEBUG3) << "Finished module detection!";
-
-  CLOCK(optim_time);
-  LOG(DEBUG3) << "Boolean optimization...";
-  BooleanOptimization();
-  LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
-
-  if (graph_->IsTrivial())
-    return;
-
-  CLOCK(decom_time);
-  LOG(DEBUG3) << "Decomposition of common nodes...";
-  DecomposeCommonNodes();
-  LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
-
-  if (graph_->IsTrivial())
-    return;
-
-  LOG(DEBUG3) << "Detecting modules...";
-  DetectModules();
-  LOG(DEBUG3) << "Finished module detection!";
-
-  LOG(DEBUG3) << "Coalescing gates...";
-  while (CoalesceGates(/*common=*/false))
-    continue;
-  LOG(DEBUG3) << "Gate coalescence is done!";
-
-  if (graph_->IsTrivial())
-    return;
-
-  LOG(DEBUG3) << "Detecting modules...";
-  DetectModules();
-  LOG(DEBUG3) << "Finished module detection!";
-
+  pdag::Transform(graph_,
+                  [this](Pdag*) {
+                    while (ProcessMultipleDefinitions())
+                      continue;
+                  },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) {
+                    while (CoalesceGates(/*common=*/false))
+                      continue;
+                  },
+                  [this](Pdag*) { MergeCommonArgs(); },
+                  [this](Pdag*) { DetectDistributivity(); },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) { BooleanOptimization(); },
+                  [this](Pdag*) { DecomposeCommonNodes(); },
+                  [this](Pdag*) { DetectModules(); },
+                  [this](Pdag*) {
+                    while (CoalesceGates(/*common=*/false))
+                      continue;
+                  },
+                  [this](Pdag*) { DetectModules(); });
   graph_->Log();
 }
 
 void Preprocessor::RunPhaseThree() noexcept {
+  TIMER(DEBUG2, "Preprocessing Phase III");
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->normal());
-  LOG(DEBUG3) << "Full normalization of gates...";
   NormalizeGates(/*full=*/true);
   graph_->normal(true);
-  LOG(DEBUG3) << "Finished the full normalization of gates!";
 
   if (graph_->IsTrivial())
     return;
+  LOG(DEBUG2) << "Continue with Phase II within Phase III";
   RunPhaseTwo();
 }
 
 void Preprocessor::RunPhaseFour() noexcept {
+  TIMER(DEBUG2, "Preprocessing Phase IV");
   SANITY_ASSERT;
   graph_->Log();
   assert(!graph_->coherent());
@@ -385,27 +398,26 @@ void Preprocessor::RunPhaseFour() noexcept {
 
   if (graph_->IsTrivial())
     return;
+  LOG(DEBUG2) << "Continue with Phase II within Phase IV";
   RunPhaseTwo();
 }
 
 void Preprocessor::RunPhaseFive() noexcept {
+  TIMER(DEBUG2, "Preprocessing Phase V");
   SANITY_ASSERT;
   graph_->Log();
-  LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
   while (CoalesceGates(/*common=*/true))
     continue;
-  LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (graph_->IsTrivial())
     return;
+  LOG(DEBUG2) << "Continue with Phase II within Phase V";
   RunPhaseTwo();
   if (graph_->IsTrivial())
     return;
 
-  LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
   while (CoalesceGates(/*common=*/true))
     continue;
-  LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (graph_->IsTrivial())
     return;
@@ -467,11 +479,11 @@ bool IsSubgraphWithinGraph(const GatePtr& root, int enter_time,
 }  // namespace
 
 void Preprocessor::NormalizeGates(bool full) noexcept {
+  TIMER(DEBUG3, (full ? "Full normalization" : "Partial normalization"));
   assert(!graph_->HasNullGates());
-  if (full) {
-    graph_->Clear<Pdag::kOrder>();
-    AssignOrder();  // K/N gates need order.
-  }
+  if (full)
+    pdag::TopologicalOrder(graph_);  // K/N gates need order.
+
   const GatePtr& root_gate = graph_->root();
   Operator type = root_gate->type();
   switch (type) {  // Handle special case for the root gate.
@@ -671,6 +683,7 @@ void Preprocessor::PropagateComplements(
 }
 
 bool Preprocessor::CoalesceGates(bool common) noexcept {
+  TIMER(DEBUG3, "Coalescing gates");
   assert(!graph_->HasNullGates());
   if (graph_->root()->constant())
     return false;
@@ -737,6 +750,8 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   if (graph_->root()->constant())
     return false;
 
+  TIMER(DEBUG3, "Detecting multiple definitions");
+
   graph_->Clear<Pdag::kGateMark>();
   // The original gate and its multiple definitions.
   std::unordered_map<GatePtr, std::vector<GateWeakPtr>> multi_def;
@@ -786,6 +801,7 @@ void Preprocessor::DetectMultipleDefinitions(
 }
 
 void Preprocessor::DetectModules() noexcept {
+  TIMER(DEBUG3, "Module detection");
   assert(!graph_->HasNullGates());
   const GatePtr& root_gate = graph_->root();  // No change in this algorithm.
   // First stage, traverse the graph depth-first for gates
@@ -1082,6 +1098,7 @@ std::vector<GateWeakPtr> Preprocessor::GatherModules() noexcept {
 }
 
 bool Preprocessor::MergeCommonArgs() noexcept {
+  TIMER(DEBUG3, "Merging common arguments");
   assert(!graph_->HasNullGates());
   bool changed = false;
 
@@ -1501,6 +1518,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
 }
 
 bool Preprocessor::DetectDistributivity() noexcept {
+  TIMER(DEBUG3, "Processing Distributivity");
   assert(!graph_->HasNullGates());
   graph_->Clear<Pdag::kGateMark>();
   bool changed = DetectDistributivity(graph_->root());
@@ -1765,6 +1783,7 @@ void Preprocessor::TransformDistributiveArgs(
 }
 
 void Preprocessor::BooleanOptimization() noexcept {
+  TIMER(DEBUG3, "Boolean optimization");
   assert(!graph_->HasNullGates());
   graph_->Clear<Pdag::kGateMark>();
   graph_->Clear<Pdag::kOptiValue>();
@@ -2088,6 +2107,7 @@ void Preprocessor::ClearStateMarks(const GatePtr& gate) noexcept {
 }
 
 bool Preprocessor::DecomposeCommonNodes() noexcept {
+  TIMER(DEBUG3, "Decomposition of common nodes");
   assert(!graph_->HasNullGates());
 
   std::vector<GateWeakPtr> common_gates;
@@ -2322,45 +2342,6 @@ void Preprocessor::DecompositionProcessor::ClearAncestorMarks(
   }
 }
 
-void Preprocessor::MarkCoherence() noexcept {
-  graph_->Clear<Pdag::kGateMark>();
-  MarkCoherence(graph_->root());
-  assert(!(graph_->coherent() && !graph_->root()->coherent()));
-  graph_->coherent(!graph_->complement() && graph_->root()->coherent());
-}
-
-void Preprocessor::MarkCoherence(const GatePtr& gate) noexcept {
-  if (gate->mark())
-    return;
-  gate->mark(true);
-  bool coherent = true;  // Optimistic initialization.
-  switch (gate->type()) {
-    case kXor:
-    case kNor:
-    case kNot:
-    case kNand:
-      coherent = false;
-      break;
-    default:
-      assert(coherent);
-  }
-  for (const Gate::Arg<Gate>& arg : gate->args<Gate>()) {
-    MarkCoherence(arg.second);
-    if (coherent && (arg.first < 0 || !arg.second->coherent()))
-      coherent = false;  // Must continue with all gates.
-  }
-  if (coherent) {
-    for (const Gate::Arg<Variable>& arg : gate->args<Variable>()) {
-      if (arg.first < 0) {
-        coherent = false;
-        break;
-      }
-    }
-  }
-  assert(!gate->constant());
-  gate->coherent(coherent);
-}
-
 void Preprocessor::ReplaceGate(const GatePtr& gate,
                                const GatePtr& replacement) noexcept {
   assert(!gate->parents().empty());
@@ -2374,38 +2355,6 @@ void Preprocessor::ReplaceGate(const GatePtr& gate,
 
 bool Preprocessor::RegisterToClear(const GatePtr& gate) noexcept {
   return gate->constant() || gate->type() == kNull;  // automatic register.
-}
-
-void Preprocessor::AssignOrder() noexcept {
-  graph_->Clear<Pdag::kOrder>();
-  TopologicalOrder(graph_->root().get(), 0);
-}
-
-int Preprocessor::TopologicalOrder(Gate* root, int order) noexcept {
-  if (root->order())
-    return order;
-  for (Gate* arg : OrderArguments<Gate>(root)) {
-    order = TopologicalOrder(arg, order);
-  }
-  for (Variable* arg : OrderArguments<Variable>(root)) {
-    if (!arg->order())
-      arg->order(++order);
-  }
-  assert(!root->constant());
-  root->order(++order);
-  return order;
-}
-
-template <class T>
-std::vector<T*> Preprocessor::OrderArguments(Gate* gate) noexcept {
-  std::vector<T*> args;
-  for (const Gate::Arg<T>& arg : gate->args<T>()) {
-    args.push_back(arg.second.get());
-  }
-  boost::sort(args, [](T* lhs, T* rhs) {
-    return lhs->parents().size() > rhs->parents().size();
-  });
-  return args;
 }
 
 void Preprocessor::GatherNodes(std::vector<GatePtr>* gates,
@@ -2434,39 +2383,24 @@ void Preprocessor::GatherNodes(const GatePtr& gate,
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
   Preprocessor::Run();
-  if (graph_->IsTrivial())
-    return;
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
+  pdag::Transform(graph_, &pdag::MarkCoherence, &pdag::TopologicalOrder);
 }
 
 void CustomPreprocessor<Zbdd>::Run() noexcept {
   Preprocessor::Run();
-  if (graph_->IsTrivial())
-    return;
-  if (!graph_->coherent()) {
-    CLOCK(time_4);
-    LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::RunPhaseFour();
-    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (graph_->IsTrivial())
-      return;
-  }
-  CLOCK(time_5);
-  LOG(DEBUG2) << "Preprocessing Phase V...";
-  Preprocessor::RunPhaseFive();
-  LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-  if (graph_->IsTrivial())
-    return;
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
+  pdag::Transform(graph_,
+                  [this](Pdag*) {
+                    if (!graph_->coherent())
+                      RunPhaseFour();
+                  },
+                  [this](Pdag*) { RunPhaseFive(); },
+                  &pdag::MarkCoherence,
+                  &pdag::TopologicalOrder);
 }
 
 void CustomPreprocessor<Mocus>::Run() noexcept {
   CustomPreprocessor<Zbdd>::Run();
-  if (graph_->IsTrivial())
-    return;
-  InvertOrder();
+  pdag::Transform(graph_, [this](Pdag*) { InvertOrder(); });
 }
 
 void CustomPreprocessor<Mocus>::InvertOrder() noexcept {

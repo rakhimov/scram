@@ -464,6 +464,18 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
   EXPECT_EQ(distr, ProductDistribution());
 }
 
+TEST_P(RiskAnalysisTest, ZeroProbability) {
+  std::string tree_input = "./share/scram/input/core/zero_prob.xml";
+  settings.probability_analysis(true).importance_analysis(true);
+  CheckReport(tree_input);
+}
+
+TEST_P(RiskAnalysisTest, OneProbability) {
+  std::string tree_input = "./share/scram/input/core/one_prob.xml";
+  settings.probability_analysis(true).importance_analysis(true);
+  CheckReport(tree_input);
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

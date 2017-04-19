@@ -50,10 +50,13 @@ class CollectExpression : public Instruction {
  public:
   /// @param[in] expression  The expression to multiply
   ///                        the current sequence probability.
-  explicit CollectExpression(const ExpressionPtr& expression);
+  explicit CollectExpression(Expression* expression);
+
+  /// @returns The collected expression for value extraction.
+  Expression& expression() const { return *expression_; }
 
  private:
-  ExpressionPtr expression_;  ///< The probability expression to multiply.
+  Expression* expression_;  ///< The probability expression to multiply.
 };
 
 /// Representation of sequences in event trees.
@@ -74,19 +77,37 @@ class Sequence : public Element {
 /// Sequences are defined in event trees but referenced in other constructs.
 using SequencePtr = std::shared_ptr<Sequence>;
 
+/// Representation of functional events in event trees.
+class FunctionalEvent : public Element {
+ public:
+  using Element::Element;
+};
+
+/// Functional events are defined in event trees but referenced in the model.
+using FunctionalEventPtr = std::shared_ptr<FunctionalEvent>;
+
 /// Event Tree representation with MEF constructs.
 class EventTree : public Element, private boost::noncopyable {
  public:
   using Element::Element;
 
-  /// @param[in] sequence  A unique sequence defined in this event tree.
+  /// Adds event tree constructs into the container.
   ///
-  /// @throws ValidationError  The sequence is already defined.
-  void Add(SequencePtr sequence);
+  /// @param[in] element  A unique element defined in this event tree.
+  ///
+  /// @throws ValidationError  The element is already in this container.
+  ///
+  /// @{
+  void Add(SequencePtr element);
+  void Add(FunctionalEventPtr element);
+  /// @}
 
  private:
-  /// Unique sequences defined in this event tree.
+  /// Containers for unique event tree constructs defined in this event tree.
+  /// @{
   ElementTable<SequencePtr> sequences_;
+  ElementTable<FunctionalEventPtr> functional_events_;
+  /// @}
 };
 
 using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in models.

@@ -17,10 +17,9 @@
 
 #include "config.h"
 
-#include <memory>
-
 #include <gtest/gtest.h>
 
+#include "env.h"
 #include "error.h"
 
 namespace scram {
@@ -46,17 +45,20 @@ TEST(ConfigTest, NumericalErrors) {
 
 // Tests all settings with one file.
 TEST(ConfigTest, FullSettings) {
-  std::string config_file = "./share/scram/input/fta/full_configuration.xml";
-  auto config = std::make_unique<Config>(config_file);
+  std::string config_file = "share/scram/input/fta/full_configuration.xml";
+  Config config(config_file);
   // Check the input files.
-  EXPECT_EQ(config->input_files().size(), 1);
-  if (!config->input_files().empty())
-    EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
-              config->input_files().back());
+  EXPECT_EQ(config.input_files().size(), 1);
+  if (!config.input_files().empty()) {
+    EXPECT_EQ(Env::install_dir() +
+                  "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+              config.input_files().back());
+  }
   // Check the output destination.
-  EXPECT_EQ("temp_results.xml", config->output_path());
+  EXPECT_EQ(Env::install_dir() + "/share/scram/input/fta/./temp_results.xml",
+            config.output_path());
 
-  const core::Settings& settings = config->settings();
+  const core::Settings& settings = config.settings();
   EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
   EXPECT_FALSE(settings.prime_implicants());
   EXPECT_TRUE(settings.probability_analysis());
@@ -76,19 +78,32 @@ TEST(ConfigTest, FullSettings) {
 }
 
 TEST(ConfigTest, PrimeImplicantsSettings) {
-  std::string config_file = "./share/scram/input/fta/pi_configuration.xml";
-  auto config = std::make_unique<Config>(config_file);
+  std::string config_file = "share/scram/input/fta/pi_configuration.xml";
+  Config config(config_file);
   // Check the input files.
-  EXPECT_EQ(config->input_files().size(), 1);
-  if (!config->input_files().empty())
-    EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
-              config->input_files().back());
+  EXPECT_EQ(config.input_files().size(), 1);
+  if (!config.input_files().empty()) {
+    EXPECT_EQ(Env::install_dir() +
+                  "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+              config.input_files().back());
+  }
   // Check the output destination.
-  EXPECT_EQ("temp_results.xml", config->output_path());
+  EXPECT_EQ(Env::install_dir() + "/share/scram/input/fta/temp_results.xml",
+            config.output_path());
 
-  const core::Settings& settings = config->settings();
+  const core::Settings& settings = config.settings();
   EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
   EXPECT_TRUE(settings.prime_implicants());
+}
+
+TEST(ConfigTest, CanonicalPath) {
+  std::string config_file = "share/scram/input/win_path_in_config.xml";
+  Config config(config_file);
+  // Check the input files.
+  ASSERT_EQ(config.input_files().size(), 1);
+  ASSERT_EQ(Env::install_dir() +
+                "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+            config.input_files().back());
 }
 
 }  // namespace test

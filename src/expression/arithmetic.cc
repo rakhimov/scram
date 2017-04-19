@@ -27,11 +27,11 @@
 namespace scram {
 namespace mef {
 
-Neg::Neg(const ExpressionPtr& expression)
+Neg::Neg(Expression* expression)
     : Expression({expression}),
       expression_(*expression) {}
 
-BinaryExpression::BinaryExpression(std::vector<ExpressionPtr> args)
+BinaryExpression::BinaryExpression(std::vector<Expression*> args)
     : Expression(std::move(args)) {
   if (Expression::args().size() < 2)
     throw InvalidArgument("Expression requires 2 or more arguments.");
@@ -39,14 +39,14 @@ BinaryExpression::BinaryExpression(std::vector<ExpressionPtr> args)
 
 double Mul::Mean() noexcept {
   double mean = 1;
-  for (const ExpressionPtr& arg : Expression::args())
+  for (Expression* arg : Expression::args())
     mean *= arg->Mean();
   return mean;
 }
 
 double Mul::DoSample() noexcept {
   double result = 1;
-  for (const ExpressionPtr& arg : Expression::args())
+  for (Expression* arg : Expression::args())
     result *= arg->Sample();
   return result;
 }
@@ -54,7 +54,7 @@ double Mul::DoSample() noexcept {
 double Mul::GetExtremum(bool maximum) noexcept {
   double max_val = 1;  // Maximum possible product.
   double min_val = 1;  // Minimum possible product.
-  for (const ExpressionPtr& arg : Expression::args()) {
+  for (Expression* arg : Expression::args()) {
     double mult_max = arg->Max();
     double mult_min = arg->Min();
     double max_max = max_val * mult_max;

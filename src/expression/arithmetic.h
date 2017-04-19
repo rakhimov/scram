@@ -35,7 +35,7 @@ class Neg : public Expression {
   /// that negates a given argument expression.
   ///
   /// @param[in] expression  The expression to be negated.
-  explicit Neg(const ExpressionPtr& expression);
+  explicit Neg(Expression* expression);
 
   double Mean() noexcept override { return -expression_.Mean(); }
   double Max() noexcept override { return -expression_.Min(); }
@@ -55,7 +55,7 @@ class BinaryExpression : public Expression {
   /// @param[in] args  Arguments of this expression.
   ///
   /// @throws InvalidArgument  The number of arguments is fewer than 2.
-  explicit BinaryExpression(std::vector<ExpressionPtr> args);
+  explicit BinaryExpression(std::vector<Expression*> args);
 };
 
 /// This expression adds all the given expressions' values.
@@ -77,7 +77,7 @@ class Add : public BinaryExpression {
   /// @returns The sum of the expression values.
   double Compute(double (Expression::*value)()) {
     double result = 0;
-    for (const ExpressionPtr& arg : Expression::args())
+    for (Expression* arg : Expression::args())
       result += ((*arg).*value)();
     return result;
   }

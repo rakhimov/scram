@@ -24,7 +24,6 @@
 
 #include <cstdint>
 
-#include <memory>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -33,11 +32,6 @@
 
 namespace scram {
 namespace mef {
-
-class Expression;
-using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
-
-class Initializer;  // Needs to handle cycles.
 
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
@@ -48,35 +42,16 @@ class Initializer;  // Needs to handle cycles.
 /// after validation phases.
 class Expression : private boost::noncopyable {
  public:
-  /// Provides access to cycle-destructive functions.
-  class Cycle {
-    friend class Initializer;  // Only Initializer needs the functionality.
-    /// Breaks connections with expression arguments.
-    ///
-    /// @param[in,out] parameter  A parameter node in possible cycles.
-    ///                           The type is not declared ``Parameter``
-    ///                           because the inheritance is not
-    ///                           forward-declarable.
-    ///
-    /// @post The parameter is in inconsistent, unusable state.
-    ///       Only destruction is guaranteed to succeed.
-    ///
-    /// @todo Consider moving into Parameter class.
-    static void BreakConnections(Expression* parameter) {
-      parameter->args_.clear();
-    }
-  };
-
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///
   /// @param[in] args  Arguments of this expression.
-  explicit Expression(std::vector<ExpressionPtr> args = {});
+  explicit Expression(std::vector<Expression*> args = {});
 
   virtual ~Expression() = default;
 
   /// @returns A set of arguments of the expression.
-  const std::vector<ExpressionPtr>& args() const { return args_; }
+  const std::vector<Expression*>& args() const { return args_; }
 
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
@@ -119,7 +94,7 @@ class Expression : private boost::noncopyable {
   /// Registers an additional argument expression.
   ///
   /// @param[in] arg  An argument expression used by this expression.
-  void AddArg(const ExpressionPtr& arg) { args_.push_back(arg); }
+  void AddArg(Expression* arg) { args_.push_back(arg); }
 
  private:
   /// Runs sampling of the expression.
@@ -128,7 +103,7 @@ class Expression : private boost::noncopyable {
   /// @returns A sampled value of this expression.
   virtual double DoSample() noexcept = 0;
 
-  std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
+  std::vector<Expression*> args_;  ///< Expression's arguments.
   double sampled_value_;  ///< The sampled value.
   bool sampled_;  ///< Indication if the expression is already sampled.
 };

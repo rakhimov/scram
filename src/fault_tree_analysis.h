@@ -164,6 +164,9 @@ class ProductContainer {
   /// @returns The number of products in the container.
   int size() const { return products_.size(); }
 
+  /// @returns The product distribution by order.
+  std::vector<int> Distribution() const;
+
  private:
   const Zbdd& products_;  ///< Container of analysis results.
   const Pdag& graph_;  ///< The analysis graph.

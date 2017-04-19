@@ -26,103 +26,94 @@
 namespace scram {
 namespace mef {
 
-const char Model::kDefaultName[] = "unnamed-model";
+const char Model::kDefaultName[] = "__unnamed-model__";
 
 Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),
       mission_time_(std::make_shared<MissionTime>()) {}
 
 void Model::Add(EventTreePtr event_tree) {
-  if (event_trees_.count(event_tree->name())) {
-    throw RedefinitionError("Redefinition of event tree " + event_tree->name());
-  }
-  event_trees_.insert(std::move(event_tree));
+  mef::AddElement<RedefinitionError>(std::move(event_tree), &event_trees_,
+                                     "Redefinition of event tree: ");
+}
+
+void Model::Add(const FunctionalEventPtr& functional_event) {
+  mef::AddElement<RedefinitionError>(functional_event, &functional_events_,
+                                     "Redefinition of functional event: ");
 }
 
 void Model::Add(const SequencePtr& sequence) {
-  if (sequences_.count(sequence->name())) {
-    throw RedefinitionError("Redefinition of sequence " + sequence->name());
-  }
-  sequences_.insert(std::move(sequence));
+  mef::AddElement<RedefinitionError>(sequence, &sequences_,
+                                     "Redefinition of sequence: ");
 }
 
 void Model::Add(FaultTreePtr fault_tree) {
-  if (fault_trees_.count(fault_tree->name())) {
-    throw RedefinitionError("Redefinition of fault tree " + fault_tree->name());
-  }
-  fault_trees_.insert(std::move(fault_tree));
+  mef::AddElement<RedefinitionError>(std::move(fault_tree), &fault_trees_,
+                                     "Redefinition of fault tree: ");
 }
 
 void Model::Add(const ParameterPtr& parameter) {
-  if (!parameters_.Add(parameter)) {
-    throw RedefinitionError("Redefinition of parameter " + parameter->name());
-  }
+  mef::AddElement<RedefinitionError>(parameter, &parameters_,
+                                     "Redefinition of parameter: ");
 }
 
 void Model::Add(const HouseEventPtr& house_event) {
-  bool original = events_.insert(house_event.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + house_event->name());
-  }
-  house_events_.Add(house_event);
+  mef::AddElement<RedefinitionError>(house_event.get(), &events_,
+                                     "Redefinition of event: ");
+  house_events_.insert(house_event);
 }
 
 void Model::Add(const BasicEventPtr& basic_event) {
-  bool original = events_.insert(basic_event.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + basic_event->name());
-  }
-  basic_events_.Add(basic_event);
+  mef::AddElement<RedefinitionError>(basic_event.get(), &events_,
+                                     "Redefinition of event: ");
+  basic_events_.insert(basic_event);
 }
 
 void Model::Add(const GatePtr& gate) {
-  bool original = events_.insert(gate.get()).second;
-  if (!original) {
-    throw RedefinitionError("Redefinition of event " + gate->name());
-  }
-  gates_.Add(gate);
+  mef::AddElement<RedefinitionError>(gate.get(), &events_,
+                                     "Redefinition of event: ");
+  gates_.insert(gate);
 }
 
 void Model::Add(const CcfGroupPtr& ccf_group) {
-  if (ccf_groups_.insert(ccf_group).second == false) {
-    throw RedefinitionError("Redefinition of CCF group " + ccf_group->name());
-  }
+  mef::AddElement<RedefinitionError>(ccf_group, &ccf_groups_,
+                                     "Redefinition of CCF group: ");
 }
 
-ParameterPtr Model::GetParameter(const std::string& entity_reference,
-                                 const std::string& base_path) {
+Parameter* Model::GetParameter(const std::string& entity_reference,
+                               const std::string& base_path) {
   return GetEntity(entity_reference, base_path, parameters_);
 }
 
-HouseEventPtr Model::GetHouseEvent(const std::string& entity_reference,
-                                   const std::string& base_path) {
+HouseEvent* Model::GetHouseEvent(const std::string& entity_reference,
+                                 const std::string& base_path) {
   return GetEntity(entity_reference, base_path, house_events_);
 }
 
-BasicEventPtr Model::GetBasicEvent(const std::string& entity_reference,
-                                   const std::string& base_path) {
+BasicEvent* Model::GetBasicEvent(const std::string& entity_reference,
+                                 const std::string& base_path) {
   return GetEntity(entity_reference, base_path, basic_events_);
 }
 
-GatePtr Model::GetGate(const std::string& entity_reference,
+Gate* Model::GetGate(const std::string& entity_reference,
                        const std::string& base_path) {
   return GetEntity(entity_reference, base_path, gates_);
 }
 
 template <class T>
-std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
-                                    const std::string& base_path,
-                                    const LookupTable<T>& container) {
+T* Model::GetEntity(const std::string& entity_reference,
+                    const std::string& base_path,
+                    const LookupTable<T>& container) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     if (auto it = ext::find(container.entities_by_path,
                             base_path + "." + entity_reference))
-      return *it;
+      return it->get();
   }
 
   auto at = [&entity_reference](const auto& reference_container) {
     if (auto it = ext::find(reference_container, entity_reference))
-      return *it;
+      return it->get();
     throw std::out_of_range("The event cannot be found.");
   };
 
@@ -132,32 +123,34 @@ std::shared_ptr<T> Model::GetEntity(const std::string& entity_reference,
   return at(container.entities_by_path);  // Direct access.
 }
 
-/// Helper macro for Model::BindEvent event discovery.
-#define BIND_EVENT(access, path_reference)                       \
-  if (auto it = ext::find(gates_.access, path_reference))        \
-    return formula->AddArgument(*it);                            \
-  if (auto it = ext::find(basic_events_.access, path_reference)) \
-    return formula->AddArgument(*it);                            \
-  if (auto it = ext::find(house_events_.access, path_reference)) \
-    return formula->AddArgument(*it)
+/// Helper macro for Model::GetEvent event discovery.
+#define GET_EVENT(access, path_reference)                          \
+  do {                                                             \
+    if (auto it = ext::find(gates_.access, path_reference))        \
+      return it->get();                                            \
+    if (auto it = ext::find(basic_events_.access, path_reference)) \
+      return it->get();                                            \
+    if (auto it = ext::find(house_events_.access, path_reference)) \
+      return it->get();                                            \
+  } while (false)
 
-void Model::BindEvent(const std::string& entity_reference,
-                      const std::string& base_path, Formula* formula) {
+Formula::EventArg Model::GetEvent(const std::string& entity_reference,
+                                  const std::string& base_path) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     std::string full_path = base_path + "." + entity_reference;
-    BIND_EVENT(entities_by_path, full_path);
+    GET_EVENT(entities_by_path, full_path);
   }
 
   if (entity_reference.find('.') == std::string::npos) {  // Public entity.
-    BIND_EVENT(entities_by_id, entity_reference);
+    GET_EVENT(entities_by_id, entity_reference);
   } else {  // Direct access.
-    BIND_EVENT(entities_by_path, entity_reference);
+    GET_EVENT(entities_by_path, entity_reference);
   }
   throw std::out_of_range("The event cannot be bound.");
 }
 
-#undef BIND_EVENT
+#undef GET_EVENT
 
 }  // namespace mef
 }  // namespace scram

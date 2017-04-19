@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,9 +43,8 @@ void Component::Add(const HouseEventPtr& house_event) {
 }
 
 void Component::Add(const ParameterPtr& parameter) {
-  if (parameters_.insert(parameter).second == false) {
-    throw ValidationError("Duplicate parameter " + parameter->name());
-  }
+  mef::AddElement<ValidationError>(parameter, &parameters_,
+                                   "Duplicate parameter: ");
 }
 
 void Component::Add(const CcfGroupPtr& ccf_group) {
@@ -118,10 +117,12 @@ void FaultTree::MarkNonTopGates(Gate* gate,
 
 void FaultTree::MarkNonTopGates(const Formula& formula,
                                 const std::unordered_set<Gate*>& gates) {
-  for (const GatePtr& gate : formula.gate_args()) {
-    if (gates.count(gate.get())) {
-      MarkNonTopGates(gate.get(), gates);
-      gate->mark(NodeMark::kPermanent);  // Any non clear mark can be assigned.
+  for (const Formula::EventArg& event_arg : formula.event_args()) {
+    if (auto* gate = boost::get<Gate*>(&event_arg)) {
+      if (gates.count(*gate)) {
+        MarkNonTopGates(*gate, gates);
+        (*gate)->mark(NodeMark::kPermanent);  // Any non clear mark can be used.
+      }
     }
   }
   for (const FormulaPtr& arg : formula.formula_args()) {

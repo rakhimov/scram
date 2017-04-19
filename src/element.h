@@ -199,6 +199,26 @@ using IdTable = boost::multi_index_container<
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
         boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
 
+/// Adds a unique element into a table,
+/// ensuring no duplicated entries.
+///
+/// @tparam ErrorType  The error type to indicate the insertion of a duplicate.
+/// @tparam T  A pointer type of the element supporting Element API.
+/// @tparam Table  A set container supporting standard insert API.
+///
+/// @param[in] element  The pointer to the unique element.
+/// @param[in,out] table  The destination set container.
+/// @param[in] header  The error message header appearing before duplicate name.
+///
+/// @throws ErrorType  The element is already in the table.
+template <class ErrorType, class T, class Table>
+void AddElement(T&& element, Table* table, const char* header) {
+  const std::string& name = element->name();  // The element pointer may move!
+  if (table->insert(std::forward<T>(element)).second == false) {
+    throw ErrorType(header + name);
+  }
+}
+
 /// Mixin class for providing marks for graph nodes.
 class NodeMark {
  public:

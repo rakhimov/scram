@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/variant.hpp>
 
 #include "element.h"
 #include "error.h"
@@ -60,7 +61,12 @@ class Event : public Id, private boost::noncopyable {
 /// @note House Events with unset/uninitialized expressions default to False.
 class HouseEvent : public Event {
  public:
+  static HouseEvent kTrue;  ///< Literal True event.
+  static HouseEvent kFalse;  ///< Literal False event.
+
   using Event::Event;
+
+  HouseEvent(HouseEvent&&);  ///< For the (N)RVO only (undefined!).
 
   /// Sets the state for House event.
   ///
@@ -94,7 +100,7 @@ class BasicEvent : public Event {
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression  The expression to describe this event.
-  void expression(const ExpressionPtr& expression) {
+  void expression(Expression* expression) {
     assert(!expression_ && "The basic event's expression is already set.");
     expression_ = expression;
   }
@@ -156,7 +162,7 @@ class BasicEvent : public Event {
  private:
   /// Expression that describes this basic event
   /// and provides numerical values for probability calculations.
-  ExpressionPtr expression_;
+  Expression* expression_ = nullptr;
 
   /// If this basic event is in a common cause group,
   /// CCF gate can serve as a replacement for the basic event
@@ -171,25 +177,9 @@ using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
-class Initializer;  // Needs to handle cycles with gates.
-
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
  public:
-  /// Provides access to cycle-destructive functions.
-  class Cycle {
-    friend class Initializer;  // Only Initializer needs the functionality.
-    /// Breaks connections in a fault tree.
-    ///
-    /// @param[in,out] gate  A gate in a cycle or potentially in a cycle.
-    ///
-    /// @post The fault tree is unusable for analysis.
-    ///       Only destruction is guaranteed to succeed.
-    static void BreakConnections(Gate* gate) {
-      gate->formula_.reset();
-    }
-  };
-
   using Event::Event;
 
   /// @returns The formula of this gate.
@@ -240,6 +230,9 @@ const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
 /// Formulas are not expected to be shared.
 class Formula : private boost::noncopyable {
  public:
+  /// Event arguments of a formula.
+  using EventArg = boost::variant<Gate*, BasicEvent*, HouseEvent*>;
+
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.
@@ -266,14 +259,7 @@ class Formula : private boost::noncopyable {
 
   /// @returns The arguments of this formula of specific type.
   /// @{
-  const IdTable<Event*>& event_args() const { return event_args_; }
-  const std::vector<HouseEventPtr>& house_event_args() const {
-    return house_event_args_;
-  }
-  const std::vector<BasicEventPtr>& basic_event_args() const {
-    return basic_event_args_;
-  }
-  const std::vector<GatePtr>& gate_args() const { return gate_args_; }
+  const std::vector<EventArg>& event_args() const { return event_args_; }
   const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
   /// @}
 
@@ -282,21 +268,10 @@ class Formula : private boost::noncopyable {
 
   /// Adds an event into the arguments list.
   ///
-  /// @param[in] event  A pointer to an argument event.
+  /// @param[in] event_arg  An argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  ///
-  /// @{
-  void AddArgument(const HouseEventPtr& event) {
-    AddArgument(event, &house_event_args_);
-  }
-  void AddArgument(const BasicEventPtr& event) {
-    AddArgument(event, &basic_event_args_);
-  }
-  void AddArgument(const GatePtr& event) {
-    AddArgument(event, &gate_args_);
-  }
-  /// @}
+  void AddArgument(EventArg event_arg);
 
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
@@ -312,32 +287,10 @@ class Formula : private boost::noncopyable {
   void Validate() const;
 
  private:
-  /// Handles addition of an event to the formula.
-  ///
-  /// @tparam Ptr  Shared pointer type to the event.
-  ///
-  /// @param[in] event  Pointer to the event.
-  /// @param[in,out] container  The final destination to save the event.
-  ///
-  /// @throws DuplicateArgumentError  The argument event is duplicate.
-  template <class Ptr>
-  void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
-    if (event_args_.insert(event.get()).second == false)
-      throw DuplicateArgumentError("Duplicate argument " + event->name());
-    container->emplace_back(event);
-    if (event->orphan())
-      event->orphan(false);
-  }
-
   Operator type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for "atleast" operator.
-  IdTable<Event*> event_args_;  ///< All event arguments.
-  std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
-  std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.
-  std::vector<GatePtr> gate_args_;  ///< Arguments that are gates.
-  /// Arguments that are formulas
-  /// if this formula is nested.
-  std::vector<FormulaPtr> formula_args_;
+  std::vector<EventArg> event_args_;  ///< All event arguments.
+  std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };
 
 }  // namespace mef

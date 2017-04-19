@@ -39,17 +39,21 @@ void ImportanceAnalysis::Analyze() noexcept {
   double p_total = this->p_total();
   const std::vector<const mef::BasicEvent*>& basic_events =
       this->basic_events();
+
   std::vector<int> occurrences = this->occurrences();
   for (int i = 0; i < basic_events.size() && occurrences[i]; ++i) {
     const mef::BasicEvent& event = *basic_events[i];
     double p_var = event.p();
-    ImportanceFactors imp;
+    ImportanceFactors imp{};
     imp.occurrence = occurrences[i];
     imp.mif = this->CalculateMif(i);
-    imp.cif = p_var * imp.mif / p_total;
-    imp.raw = 1 + (1 - p_var) * imp.mif / p_total;
-    imp.dif = p_var * imp.raw;
-    imp.rrw = p_total / (p_total - p_var * imp.mif);
+    if (p_total != 0) {
+      imp.cif = p_var * imp.mif / p_total;
+      imp.raw = 1 + (1 - p_var) * imp.mif / p_total;
+      imp.dif = p_var * imp.raw;
+      if (p_total != p_var * imp.mif)
+        imp.rrw = p_total / (p_total - p_var * imp.mif);
+    }
     importance_.push_back({event, imp});
   }
   LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);

@@ -83,15 +83,9 @@ const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
 std::vector<int> RiskAnalysisTest::ProductDistribution() {
   assert(!analysis->fault_tree_analyses().empty());
   assert(analysis->fault_tree_analyses().size() == 1);
-  std::vector<int> distr(settings.limit_order(), 0);
   const FaultTreeAnalysis* fta =
       analysis->fault_tree_analyses().begin()->second.get();
-  for (const Product& product : fta->products()) {
-    distr[product.order() - 1]++;
-  }
-  while (!distr.empty() && !distr.back())
-    distr.pop_back();
-  return distr;
+  return fta->products().Distribution();
 }
 
 void RiskAnalysisTest::PrintProducts() {
@@ -285,6 +279,30 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
                   {"PumpTwo", {2, 0.057, 0.08948, 0.1532, 2.189, 1.098}},
                   {"ValveOne", {3, 0.94, 0.8432, 0.8495, 21.237, 6.379}},
                   {"ValveTwo", {2, 0.0558, 0.06257, 0.1094, 2.189, 1.067}}});
+}
+
+TEST_P(RiskAnalysisTest, ImportanceSingleEvent) {
+  std::string tree_input = "./share/scram/input/core/null_a.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"OnlyChild", {1, 1, 1, 1, 2, 0}}});
+}
+
+TEST_P(RiskAnalysisTest, ImportanceZeroProbability) {
+  std::string tree_input = "./share/scram/input/core/zero_prob.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"A", {1, 1, 0, 0, 0, 0}}});
+}
+
+TEST_P(RiskAnalysisTest, ImportanceOneProbability) {
+  std::string tree_input = "./share/scram/input/core/one_prob.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  TestImportance({{"A", {1, 1, 1, 1, 1, 0}}});
 }
 
 // Apply the rare event approximation.

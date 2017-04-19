@@ -42,8 +42,7 @@ TEST(CcfGroupTest, AddMemberAfterDistribution) {
   BasicEventPtr member_two(new BasicEvent("two"));
   EXPECT_NO_THROW(ccf_group.AddMember(member_two));
 
-  ExpressionPtr distr(new ConstantExpression(1));
-  ASSERT_NO_THROW(ccf_group.AddDistribution(distr));
+  ASSERT_NO_THROW(ccf_group.AddDistribution(&ConstantExpression::kOne));
 
   BasicEventPtr member_three(new BasicEvent("three"));
   EXPECT_THROW(ccf_group.AddMember(member_three), IllegalOperation);

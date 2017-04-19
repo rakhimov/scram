@@ -25,17 +25,36 @@
 #include <memory>
 
 #include <boost/filesystem.hpp>
+#include <boost/predef.h>
+#include <boost/range/algorithm.hpp>
 
 #include "env.h"
 #include "error.h"
 #include "xml.h"
 
+namespace fs = boost::filesystem;
+
 namespace scram {
+
+namespace {  // Path normalization helpers.
+
+std::string normalize(const std::string& file_path, const fs::path& base_path) {
+  fs::path abs_path = fs::absolute(file_path, base_path).generic_string();
+#if BOOST_OS_WINDOWS
+  return abs_path.generic_string();
+#else
+  std::string abnormal_path = abs_path.string();
+  boost::replace(abnormal_path, '\\', '/');
+  return abnormal_path;
+#endif
+}
+
+}  // namespace
 
 Config::Config(const std::string& config_file) {
   static xmlpp::RelaxNGValidator validator(Env::config_schema());
 
-  if (boost::filesystem::exists(config_file) == false)
+  if (fs::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
 
   std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(config_file);
@@ -46,8 +65,9 @@ Config::Config(const std::string& config_file) {
   }
   const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "scram");
-  GatherInputFiles(root);
-  GetOutputPath(root);
+  fs::path base_path = fs::path(config_file).parent_path();
+  GatherInputFiles(root, base_path);
+  GetOutputPath(root, base_path);
   try {
     GatherOptions(root);
   } catch (Error& err) {
@@ -56,7 +76,8 @@ Config::Config(const std::string& config_file) {
   }
 }
 
-void Config::GatherInputFiles(const xmlpp::Node* root) {
+void Config::GatherInputFiles(const xmlpp::Node* root,
+                              const fs::path& base_path) {
   xmlpp::NodeSet input_files = root->find("./input-files");
   if (input_files.empty())
     return;
@@ -67,7 +88,8 @@ void Config::GatherInputFiles(const xmlpp::Node* root) {
   for (const xmlpp::Node* node : all_files) {
     const xmlpp::Element* file = XmlElement(node);
     assert(file->get_name() == "file");
-    input_files_.push_back(GetContent(file->get_child_text()));
+    input_files_.push_back(
+        normalize(GetContent(file->get_child_text()), base_path));
   }
 }
 
@@ -112,13 +134,13 @@ void Config::GatherOptions(const xmlpp::Node* root) {
   }
 }
 
-void Config::GetOutputPath(const xmlpp::Node* root) {
+void Config::GetOutputPath(const xmlpp::Node* root, const fs::path& base_path) {
   xmlpp::NodeSet out = root->find("./output-path");
   if (out.empty())
     return;
   assert(out.size() == 1);
   const xmlpp::Element* element = XmlElement(out.front());
-  output_path_ = GetContent(element->get_child_text());
+  output_path_ = normalize(GetContent(element->get_child_text()), base_path);
 }
 
 void Config::SetAlgorithm(const xmlpp::Element* analysis) {

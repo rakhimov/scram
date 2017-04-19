@@ -25,7 +25,9 @@
 #include <utility>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/date_time.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "ccf_group.h"
 #include "error.h"
@@ -40,8 +42,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
-  CLOCK(report_time);
-  LOG(DEBUG1) << "Reporting analysis results...";
+  TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
     const std::string& id = fta.first;
@@ -63,7 +64,6 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
       ReportResults(id, *risk_an.uncertainty_analyses().at(id), &results);
     }
   }
-  LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
 }
 
 void Reporter::Report(const core::RiskAnalysis& risk_an,
@@ -209,7 +209,9 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
   information->AddChild("software")
       .SetAttribute("name", "SCRAM")
-      .SetAttribute("version", version::core());
+      .SetAttribute("version", *version::describe() != '\0'
+                                   ? version::describe()
+                                   : version::core());
   namespace pt = boost::posix_time;
   information->AddChild("time").AddText(
       pt::to_iso_extended_string(pt::second_clock::universal_time()));
@@ -230,6 +232,7 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("ccf-groups", model.ccf_groups());
   feature("fault-trees", model.fault_trees());
   feature("event-trees", model.event_trees());
+  feature("functional-events", model.functional_events());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
@@ -289,6 +292,8 @@ void Reporter::ReportResults(const std::string& ft_name,
                              const core::FaultTreeAnalysis& fta,
                              const core::ProbabilityAnalysis* prob_analysis,
                              XmlStreamElement* results) {
+  CLOCK(cs_time);
+  LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
   sum_of_products.SetAttribute("name", ft_name)
       .SetAttribute("basic-events", fta.products().product_events().size())
@@ -299,12 +304,20 @@ void Reporter::ReportResults(const std::string& ft_name,
     sum_of_products.SetAttribute("probability", prob_analysis->p_total());
     warning += prob_analysis->warnings();
   }
+
+  if (fta.products().empty() == false) {
+    sum_of_products.SetAttribute(
+        "distribution",
+        boost::join(fta.products().Distribution() |
+                        boost::adaptors::transformed(
+                            [](int number) { return std::to_string(number); }),
+                    " "));
+  }
+
   if (!warning.empty()) {
     sum_of_products.AddChild("warning").AddText(warning);
   }
 
-  CLOCK(cs_time);
-  LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   double sum = 0;  // Sum of probabilities for contribution calculations.
   if (prob_analysis) {
     for (const core::Product& product_set : fta.products())
@@ -316,7 +329,8 @@ void Reporter::ReportResults(const std::string& ft_name,
     if (prob_analysis) {
       double prob = product_set.p();
       product.SetAttribute("probability", prob);
-      product.SetAttribute("contribution", prob / sum);
+      if (sum != 0)
+        product.SetAttribute("contribution", prob / sum);
     }
     for (const core::Literal& literal : product_set) {
       ReportLiteral(literal, &product);

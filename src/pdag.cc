@@ -453,6 +453,7 @@ Pdag::Pdag() noexcept
       constant_(new Constant(this)) {}
 
 Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
+  TIMER(DEBUG2, "PDAG Construction");
   ProcessedNodes nodes;
   GatherVariables(root.formula(), ccf, &nodes);
   root_ = ConstructGate(root.formula(), ccf, &nodes);
@@ -478,14 +479,24 @@ constexpr bool CheckOperatorEnums() {
 
 void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
                            ProcessedNodes* nodes) noexcept {
-  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    GatherVariables(*basic_event, ccf, nodes);
-  }
-
-  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
-    if (nodes->gates.emplace(mef_gate.get(), nullptr).second) {
-      GatherVariables(mef_gate->formula(), ccf, nodes);
+  struct {
+    void operator()(const mef::BasicEvent* arg) {
+      graph->GatherVariables(*arg, ccf, nodes);
     }
+    void operator()(const mef::Gate* mef_gate) {
+      if (nodes->gates.emplace(mef_gate, nullptr).second) {
+        graph->GatherVariables(mef_gate->formula(), ccf, nodes);
+      }
+    }
+    void operator()(const mef::HouseEvent*) {}
+
+    Pdag* graph;
+    bool ccf;
+    ProcessedNodes* nodes;
+  } formula_visitor{this, ccf, nodes};
+
+  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
+    boost::apply_visitor(formula_visitor, event_arg);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
@@ -505,6 +516,41 @@ void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
       var = std::make_shared<Variable>(this);  // Sequential indices.
       assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
     }
+  }
+}
+
+/// Specialization for HouseEvent arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::HouseEvent& house_event,
+                  bool /*ccf*/, ProcessedNodes* /*nodes*/) noexcept {
+  // Create unique pass-through gates to hold the construction invariant.
+  auto null_gate = std::make_shared<Gate>(kNull, this);
+  null_gate->AddArg(constant_, !house_event.state());
+  parent->AddArg(null_gate);
+  null_gates_.push_back(null_gate);
+}
+
+/// Specialization for Gate arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
+                  ProcessedNodes* nodes) noexcept {
+  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
+  if (!pdag_gate) {
+    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
+  }
+  parent->AddArg(pdag_gate);
+}
+
+/// Specialization for BasicEvent arguments.
+template <>
+void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+                  bool ccf, ProcessedNodes* nodes) noexcept {
+  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
+    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
+  } else {
+    VariablePtr& var = nodes->variables.find(&basic_event)->second;
+    assert(var && "Uninitialized variable.");
+    parent->AddArg(var);
   }
 }
 
@@ -536,16 +582,10 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  for (const mef::BasicEventPtr& basic_event : formula.basic_event_args()) {
-    AddArg(parent, *basic_event, ccf, nodes);
-  }
-
-  for (const mef::HouseEventPtr& house_event : formula.house_event_args()) {
-    AddArg(parent, *house_event);
-  }
-
-  for (const mef::GatePtr& mef_gate : formula.gate_args()) {
-    AddArg(parent, *mef_gate, ccf, nodes);
+  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
+    boost::apply_visitor(
+        [&](const auto* event) { this->AddArg(parent, *event, ccf, nodes); },
+        event_arg);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
@@ -553,35 +593,6 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     parent->AddArg(new_gate);
   }
   return parent;
-}
-
-void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-                  bool ccf, ProcessedNodes* nodes) noexcept {
-  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
-  } else {
-    VariablePtr& var = nodes->variables.find(&basic_event)->second;
-    assert(var && "Uninitialized variable.");
-    parent->AddArg(var);
-  }
-}
-
-void Pdag::AddArg(const GatePtr& parent,
-                  const mef::HouseEvent& house_event) noexcept {
-  // Create unique pass-through gates to hold the construction invariant.
-  auto null_gate = std::make_shared<Gate>(kNull, this);
-  null_gate->AddArg(constant_, !house_event.state());
-  parent->AddArg(null_gate);
-  null_gates_.push_back(null_gate);
-}
-
-void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                  ProcessedNodes* nodes) noexcept {
-  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
-  if (!pdag_gate) {
-    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
-  }
-  parent->AddArg(pdag_gate);
 }
 
 bool Pdag::IsTrivial() noexcept {
@@ -841,21 +852,22 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  for (const auto& node : gate->args<Gate>()) {
-    if (node.first < 0)
+  auto print_arg = [&os, &formula, &sig, &num_args](int index,
+                                                    const std::string& name) {
+    if (index < 0)
       formula += "~";  // Negation.
-    formula += GetName(*node.second);
+    formula += name;
     if (--num_args)
       formula += sig.op;
+  };
+
+  for (const auto& node : gate->args<Gate>()) {
+    print_arg(node.first, GetName(*node.second));
     os << node.second;
   }
 
   for (const auto& basic : gate->args<Variable>()) {
-    if (basic.first < 0)
-      formula += "~";  // Negation.
-    formula += "B" + std::to_string(basic.second->index());
-    if (--num_args)
-      formula += sig.op;
+    print_arg(basic.first, "B" + std::to_string(basic.second->index()));
     if (!basic.second->Visited()) {
       basic.second->Visit(1);
       os << *basic.second;
@@ -865,9 +877,7 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   if (gate->constant()) {
     assert(gate->type() == kNull);
     int index = *gate->args().begin();
-    if (index < 0)
-      formula += "~";  // Negation.
-    formula += "H" + std::to_string(std::abs(index));
+    print_arg(index, "H" + std::to_string(std::abs(index)));
   }
   os << GetName(*gate) << " := " << sig.begin << formula << sig.end << "\n";
   return os;

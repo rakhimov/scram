@@ -71,8 +71,8 @@ class Initializer : private boost::noncopyable {
 
  private:
   /// Convenience alias for expression extractor function types.
-  using ExtractorFunction = ExpressionPtr (*)(const xmlpp::NodeSet&,
-                                              const std::string&, Initializer*);
+  using ExtractorFunction = std::unique_ptr<Expression> (*)(
+      const xmlpp::NodeSet&, const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
   /// Container for late defined constructs.
@@ -99,10 +99,11 @@ class Initializer : private boost::noncopyable {
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   /// @param[in,out] init  The host Initializer.
   ///
-  /// @returns A shared pointer to the extracted expression.
+  /// @returns The new extracted expression.
   template <class T>
-  static ExpressionPtr Extract(const xmlpp::NodeSet& args,
-                               const std::string& base_path, Initializer* init);
+  static std::unique_ptr<Expression> Extract(const xmlpp::NodeSet& args,
+                                             const std::string& base_path,
+                                             Initializer* init);
 
   /// Checks if all input files exist on the system.
   ///
@@ -253,17 +254,6 @@ class Initializer : private boost::noncopyable {
   FormulaPtr GetFormula(const xmlpp::Element* formula_node,
                         const std::string& base_path);
 
-  /// Processes the arguments of a formula with nodes and formulas.
-  ///
-  /// @param[in] formula_node  The XML element with children as arguments.
-  /// @param[in] base_path  Series of ancestor containers in the path with dots.
-  /// @param[in,out] formula  The formula to be defined by the arguments.
-  ///
-  /// @throws ValidationError  Repeated arguments are identified.
-  void ProcessFormula(const xmlpp::Element* formula_node,
-                      const std::string& base_path,
-                      Formula* formula);
-
   /// Processes Instruction definitions.
   ///
   /// @param[in] xml_element  The XML element with instruction definitions.
@@ -281,8 +271,8 @@ class Initializer : private boost::noncopyable {
   /// @returns The newly defined or registered expression.
   ///
   /// @throws ValidationError  There are problems with getting the expression.
-  ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
-                              const std::string& base_path);
+  Expression* GetExpression(const xmlpp::Element* expr_element,
+                            const std::string& base_path);
 
   /// Processes Parameter Expression definitions in input file.
   ///
@@ -294,9 +284,9 @@ class Initializer : private boost::noncopyable {
   /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
-  ExpressionPtr GetParameter(const std::string& expr_type,
-                             const xmlpp::Element* expr_element,
-                             const std::string& base_path);
+  Expression* GetParameter(const std::string& expr_type,
+                           const xmlpp::Element* expr_element,
+                           const std::string& base_path);
 
   /// Processes common cause failure group members as defined basic events.
   ///
@@ -334,16 +324,6 @@ class Initializer : private boost::noncopyable {
   /// @throws CycleError  Cyclic parameters are detected.
   /// @throws ValidationError  There are problems detected with expressions.
   void ValidateExpressions();
-
-  /// Breaks all possible cycles in graph structures.
-  /// This function handles cycles
-  /// conservatively and indiscriminately.
-  ///
-  /// It may not be the most optimal approach,
-  /// but this error condition is considered uncommon.
-  ///
-  /// @post The model is unusable (freed).
-  void BreakCycles();
 
   /// Applies the input information to set up for future analysis.
   /// This step is crucial to get
