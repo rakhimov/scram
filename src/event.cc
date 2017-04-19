@@ -29,6 +29,13 @@ namespace mef {
 
 Event::~Event() = default;
 
+HouseEvent HouseEvent::kTrue = []() {
+  HouseEvent house_event("__true__");
+  house_event.state(true);
+  return house_event;
+}();
+HouseEvent HouseEvent::kFalse("__false__");
+
 void Gate::Validate() const {
   // Detect inhibit flavor.
   if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||

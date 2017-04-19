@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<opsa-mef name="TestConstantInFormulas">
+  <define-fault-tree name="FormulasWithContants">
+    <define-gate name="NULL">
+      <constant value="false"/>
+    </define-gate>
+    <define-gate name="AND">
+      <and>
+        <constant value="true"/>
+        <event name="A"/>
+      </and>
+    </define-gate>
+    <define-gate name="OR">
+      <or>
+        <constant value="true"/>
+        <constant value="false"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="A"/>
+  </define-fault-tree>
+</opsa-mef>

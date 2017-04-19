@@ -543,7 +543,8 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
 FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
                                    const std::string& base_path) {
   Operator formula_type = [&formula_node]() {
-    if (formula_node->get_attribute("name"))
+    if (formula_node->get_attribute("name") ||
+        formula_node->get_name() == "constant")
       return kNull;
     int pos = boost::find(kOperatorToString, formula_node->get_name()) -
               std::begin(kOperatorToString);
@@ -555,8 +556,14 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
 
   auto add_arg = [this, &formula, &base_path](const xmlpp::Node* node) {
     const xmlpp::Element* element = XmlElement(node);
-    std::string name = GetAttributeValue(element, "name");
+    if (element->get_name() == "constant") {
+      formula->AddArgument(GetAttributeValue(element, "value") == "true"
+                               ? &HouseEvent::kTrue
+                               : &HouseEvent::kFalse);
+      return;
+    }
 
+    std::string name = GetAttributeValue(element, "name");
     if (name.empty()) {
       formula->AddArgument(GetFormula(element, base_path));
       return;

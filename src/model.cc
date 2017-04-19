@@ -26,7 +26,7 @@
 namespace scram {
 namespace mef {
 
-const char Model::kDefaultName[] = "unnamed-model";
+const char Model::kDefaultName[] = "__unnamed-model__";
 
 Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),

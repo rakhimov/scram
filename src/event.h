@@ -61,7 +61,12 @@ class Event : public Id, private boost::noncopyable {
 /// @note House Events with unset/uninitialized expressions default to False.
 class HouseEvent : public Event {
  public:
+  static HouseEvent kTrue;  ///< Literal True event.
+  static HouseEvent kFalse;  ///< Literal False event.
+
   using Event::Event;
+
+  HouseEvent(HouseEvent&&);  ///< For the (N)RVO only (undefined!).
 
   /// Sets the state for House event.
   ///

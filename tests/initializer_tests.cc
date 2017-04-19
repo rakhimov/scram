@@ -110,6 +110,7 @@ TEST(InitializerTest, CorrectFtaInputs) {
   const char* correct_inputs[] = {
       "correct_tree_input.xml",
       "correct_formulas.xml",
+      "constant_in_formulas.xml",
       "component_definition.xml",
       "mixed_definitions.xml",
       "mixed_references.xml",
