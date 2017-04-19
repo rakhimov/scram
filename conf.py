@@ -93,7 +93,7 @@ copyright = u'2015-%(release_year)s, Olzhas Rakhimov, CC BY-SA 4.0' % locals()
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['**README.rst', 'doc/performance.rst']
+exclude_patterns = ['**README.rst', 'doc/performance.rst', 'doc/release']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

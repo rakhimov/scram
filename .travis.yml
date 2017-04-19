@@ -1,32 +1,28 @@
+sudo: required
+
+services:
+    - docker
+
 language: python
-python:
-    - 2.7
-    - 3.4
 
 git:
     depth: 200
 
 env:
-    - PYTHONOPTIMIZE=1
+    global:
+        - secure: "UJW5Xm0VuDsEVcHWBv5njV4wadSKdsQ+gJkDINprKkAeOE1F7qxbzeQ7y9gou6SV59fcYbKLbVoXPPp1CFSZo36XNhIYOyEZXRbqWwl97JiDc47ymuNkhRMpnRqphpFVcTWDOhL9jIcixsF5Yus/YAgpv74RC9lPkFMpNXpJQoA="
 
-addons:
-    apt:
-        packages:
-            - texlive
-            - texlive-fonts-recommended
-            - texlive-latex-extra
-            - graphviz
-
-install:
-    - pip install sphinx sphinx_rtd_theme lizard cppdep
-    - wget -q -O - http://s3.amazonaws.com/scram-travis/doxygen-1.8.12.linux.bin.tar.gz | tar xz
-    - sudo cp doxygen-1.8.12/bin/* /usr/bin/
-
-before_script:
-    - mkdir build
+before_install:
+    - docker build -t scram/gh-pages .
 
 script:
-    - cp .travis_cppdep.xml cppdep.xml
-    - make build/dep_report.txt scram_core.dot 2> /dev/null
-    - make doxygen html linkcheck 2> _warnings.txt
-    - cat _warnings.txt && [[ ! -s _warnings.txt ]]
+    - docker run scram/gh-pages
+    - docker cp $(docker ps -alq):scram/build ./
+
+deploy:
+    local_dir: build/html
+    provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    on:
+        branch: gh-source

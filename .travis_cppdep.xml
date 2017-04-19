@@ -1,8 +1,0 @@
-<cppdep>
-  <package-group name="scram" path=".">
-    <include-path/>
-    <package name="core">
-      <src-path>src</src-path>
-    </package>
-  </package-group>
-</cppdep>
