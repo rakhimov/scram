@@ -57,22 +57,11 @@ to identify the supported and unsupported features.
 
     * Components
     * Basic events
-    * House events
-
-        + Boolean constant
-
-    * Gates
-
-        + Nested formulae
+    * House events (Boolean constant)
+    * Gates (Nested formulae)
 
 - Model Data
-- Common Cause Failure Groups
-
-    * beta-factor
-    * MGL
-    * alpha-factor
-    * phi-factor
-
+- Common Cause Failure Groups (beta-factor, MGL, alpha-factor, phi-factor)
 - Parameters
 - Expressions
 
@@ -88,7 +77,7 @@ to identify the supported and unsupported features.
 Deviations from the Open-PSA MEF
 ================================
 
-- Redefinition of containers, events, and parameters is an error.
+- Redefinition of constructs (e.g., containers, events, parameters) is an error.
 - Attributes are not inherited.
 - An empty text in XML attributes or elements is considered an error.
 
