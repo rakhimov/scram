@@ -4,7 +4,7 @@
 This input contains the first part of fault tree with transfer symbols.
 -->
 
-<opsa-mef>
+<opsa-mef xmlns:xi="http://www.w3.org/2001/XInclude">
   <define-fault-tree name="TransOne">
     <define-gate name="TransOne">
       <and>
@@ -13,4 +13,6 @@ This input contains the first part of fault tree with transfer symbols.
       </and>
     </define-gate>
   </define-fault-tree>
+  <xi:include href="trans_two.xml" xpointer="xpointer(/opsa-mef/*)"/>
+  <xi:include href="trans_model_data.xml" xpointer="xpointer(/opsa-mef/*)"/>
 </opsa-mef>

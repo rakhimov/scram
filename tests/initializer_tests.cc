@@ -137,6 +137,25 @@ TEST(InitializerTest, CorrectFtaInputs) {
   }
 }
 
+
+TEST(InitializerTest, CorrectInclude) {
+  std::string dir = "./share/scram/input/";
+  const char* correct_inputs[] = {"xinclude.xml", "xinclude_transitive.xml"};
+  for (const auto& input : correct_inputs) {
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+        << " Filename: " << input;
+  }
+}
+
+TEST(InitializerTest, IncorrectInclude) {
+  std::string dir = "./share/scram/input/";
+  const char* correct_inputs[] = {"xinclude_no_file.xml", "xinclude_cycle.xml"};
+  for (const auto& input : correct_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+        << " Filename: " << input;
+  }
+}
+
 // Test correct inputs with probability information.
 TEST(InitializerTest, CorrectProbabilityInputs) {
   std::string dir = "./share/scram/input/fta/";

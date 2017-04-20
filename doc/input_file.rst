@@ -36,8 +36,7 @@ Steps in XML Input Validation
 
     - The first file must define the name, label, and attributes of the model.
       This information about models in the other input files is ignored without a warning,
-      which allows reuse of files with analysis constructs from other models
-      without a need for the Open-PSA MEF ``include`` directives.
+      which allows reuse of files with analysis constructs from other models.
 
 #. XML input file validation against the `RELAX NG`_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:

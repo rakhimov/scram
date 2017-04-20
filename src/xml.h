@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ namespace scram {
 /// Initializes a DOM parser
 /// and converts library exceptions into local errors.
 ///
+/// All XInclude directives are processed into the final document.
+///
 /// @param[in] file_path  Path to the xml file.
 ///
 /// @returns A parser with a well-formed, initialized document.
@@ -44,8 +46,14 @@ namespace scram {
 inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
     const std::string& file_path) {
   try {
-    return std::make_unique<xmlpp::DomParser>(file_path);
-  } catch (const xmlpp::parse_error& ex) {
+    auto dom_parser = std::make_unique<xmlpp::DomParser>(file_path);
+    dom_parser->get_document()->process_xinclude();
+    for (xmlpp::Node* node :
+         dom_parser->get_document()->get_root_node()->find("//*[@xml:base]")) {
+      static_cast<xmlpp::Element*>(node)->remove_attribute("base", "xml");
+    }
+    return dom_parser;
+  } catch (const xmlpp::exception& ex) {
     throw ValidationError("XML file is invalid: " + std::string(ex.what()));
   }
 }
