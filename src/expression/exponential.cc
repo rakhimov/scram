@@ -69,8 +69,8 @@ void ExponentialExpression::Validate() const {
   EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
-double ExponentialExpression::Mean() noexcept {
-  return p_exp(lambda_.Mean(), time_.Mean());
+double ExponentialExpression::value() noexcept {
+  return p_exp(lambda_.value(), time_.value());
 }
 
 double ExponentialExpression::DoSample() noexcept {
@@ -92,8 +92,8 @@ void GlmExpression::Validate() const {
   EnsureProbability<InvalidArgument>(&gamma_, "failure on demand");
 }
 
-double GlmExpression::Mean() noexcept {
-  return Compute(gamma_.Mean(), lambda_.Mean(), mu_.Mean(), time_.Mean());
+double GlmExpression::value() noexcept {
+  return Compute(gamma_.value(), lambda_.value(), mu_.value(), time_.value());
 }
 
 double GlmExpression::DoSample() noexcept {
@@ -129,8 +129,8 @@ double WeibullExpression::Compute(double alpha, double beta,
   return time <= t0 ? 0 : 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
 
-double WeibullExpression::Mean() noexcept {
-  return Compute(alpha_.Mean(), beta_.Mean(), t0_.Mean(), time_.Mean());
+double WeibullExpression::value() noexcept {
+  return Compute(alpha_.value(), beta_.value(), t0_.value(), time_.value());
 }
 
 double WeibullExpression::DoSample() noexcept {
@@ -181,7 +181,7 @@ void PeriodicTest::Complete::Validate() const {
   EnsureProbability<InvalidArgument>(&sigma_, "failure detection upon test");
   EnsureProbability<InvalidArgument>(&omega_, "failure at restart");
 
-  if (test_duration_.Mean() > tau_.Mean())
+  if (test_duration_.value() > tau_.value())
     throw InvalidArgument(
         "The test duration must be less than the time between tests.");
   if (test_duration_.interval().upper() > tau_.interval().lower())
@@ -199,8 +199,8 @@ double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
   return p_exp(lambda, time_after_test ? time_after_test : tau);
 }
 
-double PeriodicTest::InstantRepair::Mean() noexcept {
-  return Compute(lambda_.Mean(), tau_.Mean(), theta_.Mean(), time_.Mean());
+double PeriodicTest::InstantRepair::value() noexcept {
+  return Compute(lambda_.value(), tau_.value(), theta_.value(), time_.value());
 }
 
 double PeriodicTest::InstantRepair::Sample() noexcept {
@@ -236,9 +236,9 @@ double PeriodicTest::InstantTest::Compute(double lambda, double mu, double tau,
                   time_after_test);
 }
 
-double PeriodicTest::InstantTest::Mean() noexcept {
-  return Compute(lambda_.Mean(), mu_.Mean(), tau_.Mean(), theta_.Mean(),
-                 time_.Mean());
+double PeriodicTest::InstantTest::value() noexcept {
+  return Compute(lambda_.value(), mu_.value(), tau_.value(), theta_.value(),
+                 time_.value());
 }
 
 double PeriodicTest::InstantTest::Sample() noexcept {
@@ -319,11 +319,11 @@ double PeriodicTest::Complete::Compute(double lambda, double lambda_test,
   return 1 - p_available;
 }
 
-double PeriodicTest::Complete::Mean() noexcept {
-  return Compute(lambda_.Mean(), lambda_test_.Mean(), mu_.Mean(), tau_.Mean(),
-                 theta_.Mean(), gamma_.Mean(), test_duration_.Mean(),
-                 available_at_test_.Mean(), sigma_.Mean(), omega_.Mean(),
-                 time_.Mean());
+double PeriodicTest::Complete::value() noexcept {
+  return Compute(lambda_.value(), lambda_test_.value(), mu_.value(),
+                 tau_.value(), theta_.value(), gamma_.value(),
+                 test_duration_.value(), available_at_test_.value(),
+                 sigma_.value(), omega_.value(), time_.value());
 }
 
 double PeriodicTest::Complete::Sample() noexcept {

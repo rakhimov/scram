@@ -37,7 +37,7 @@ class Neg : public Expression {
   /// @param[in] expression  The expression to be negated.
   explicit Neg(Expression* expression);
 
-  double Mean() noexcept override { return -expression_.Mean(); }
+  double value() noexcept override { return -expression_.value(); }
   Interval interval() noexcept override {
     Interval arg_interval = expression_.interval();
     return {-arg_interval.upper(), -arg_interval.lower(),
@@ -66,7 +66,7 @@ class Add : public BinaryExpression {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double Mean() noexcept override { return Compute(&Expression::Mean); }
+  double value() noexcept override { return Compute(&Expression::value); }
   Interval interval() noexcept override;
 
  private:
@@ -74,13 +74,13 @@ class Add : public BinaryExpression {
 
   /// Adds all argument expression values.
   ///
-  /// @param[in] value  The getter function for the arg expression value.
+  /// @param[in] get_value  The getter function for the arg expression value.
   ///
   /// @returns The sum of the expression values.
-  double Compute(double (Expression::*value)()) {
+  double Compute(double (Expression::*get_value)()) {
     double result = 0;
     for (Expression* arg : Expression::args())
-      result += ((*arg).*value)();
+      result += ((*arg).*get_value)();
     return result;
   }
 };
@@ -91,7 +91,7 @@ class Sub : public BinaryExpression {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double Mean() noexcept override { return Compute(&Expression::Mean); }
+  double value() noexcept override { return Compute(&Expression::value); }
   Interval interval() noexcept override;
 
  private:
@@ -99,14 +99,14 @@ class Sub : public BinaryExpression {
 
   /// Performs the subtraction of all argument expression values.
   ///
-  /// @param[in] value  The getter function for the arg expression value.
+  /// @param[in] get_value  The getter function for the arg expression value.
   ///
   /// @returns first_value - sum(rest_value).
-  double Compute(double (Expression::*value)()) {
+  double Compute(double (Expression::*get_value)()) {
     auto it = Expression::args().begin();
-    double result = ((**it).*value)();
+    double result = ((**it).*get_value)();
     for (++it; it != Expression::args().end(); ++it) {
-      result -= ((**it).*value)();
+      result -= ((**it).*get_value)();
     }
     return result;
   }
@@ -117,7 +117,7 @@ class Mul : public BinaryExpression {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double Mean() noexcept override;
+  double value() noexcept override;
   Interval interval() noexcept override;
 
  private:
@@ -134,7 +134,7 @@ class Div : public BinaryExpression {
   /// @throws InvalidArgument  Division by 0.
   void Validate() const override;
 
-  double Mean() noexcept override;
+  double value() noexcept override;
   Interval interval() noexcept override;
 
  private:

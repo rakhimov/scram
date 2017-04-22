@@ -264,7 +264,7 @@ void PhiFactorModel::DoValidate() const {
   double sum_min = 0;
   double sum_max = 0;
   for (const std::pair<int, Expression*>& factor : CcfGroup::factors()) {
-    sum += factor.second->Mean();
+    sum += factor.second->value();
     Interval interval = factor.second->interval();
     sum_min += interval.lower();
     sum_max += interval.upper();

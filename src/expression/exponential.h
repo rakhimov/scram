@@ -41,7 +41,7 @@ class ExponentialExpression : public Expression {
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
-  double Mean() noexcept override;
+  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
@@ -65,7 +65,7 @@ class GlmExpression : public Expression {
                 Expression* t);
 
   void Validate() const override;
-  double Mean() noexcept override;
+  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
@@ -93,7 +93,7 @@ class WeibullExpression : public Expression {
                     Expression* t0, Expression* time);
 
   void Validate() const override;
-  double Mean() noexcept override;
+  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
@@ -147,7 +147,7 @@ class PeriodicTest : public Expression {
                Expression* time);
 
   void Validate() const override { flavor_->Validate(); }
-  double Mean() noexcept override { return flavor_->Mean(); }
+  double value() noexcept override { return flavor_->value(); }
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
@@ -158,8 +158,8 @@ class PeriodicTest : public Expression {
     virtual ~Flavor() = default;
     /// @copydoc Expression::Validate
     virtual void Validate() const = 0;
-    /// @copydoc Expression::Mean
-    virtual double Mean() noexcept = 0;
+    /// @copydoc Expression::value
+    virtual double value() noexcept = 0;
     /// @copydoc Expression::Sample
     virtual double Sample() noexcept = 0;
   };
@@ -173,7 +173,7 @@ class PeriodicTest : public Expression {
         : lambda_(*lambda), tau_(*tau), theta_(*theta), time_(*time) {}
 
     void Validate() const override;
-    double Mean() noexcept override;
+    double value() noexcept override;
     double Sample() noexcept override;
 
    protected:
@@ -199,7 +199,7 @@ class PeriodicTest : public Expression {
         : InstantRepair(lambda, tau, theta, time), mu_(*mu) {}
 
     void Validate() const override;
-    double Mean() noexcept override;
+    double value() noexcept override;
     double Sample() noexcept override;
 
    protected:
@@ -230,7 +230,7 @@ class PeriodicTest : public Expression {
           omega_(*omega) {}
 
     void Validate() const override;
-    double Mean() noexcept override;
+    double value() noexcept override;
     double Sample() noexcept override;
 
    private:

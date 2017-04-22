@@ -64,10 +64,10 @@ Interval Sub::interval() noexcept {
   return Interval::closed(min_value, max_value);
 }
 
-double Mul::Mean() noexcept {
+double Mul::value() noexcept {
   double mean = 1;
   for (Expression* arg : Expression::args())
-    mean *= arg->Mean();
+    mean *= arg->value();
   return mean;
 }
 
@@ -102,17 +102,17 @@ void Div::Validate() const {
     const auto& expr = *it;
     Interval arg_interval = expr->interval();
     /// @todo Rethink the division by zero validations.
-    if (expr->Mean() == 0 || arg_interval.lower() == 0 ||
+    if (expr->value() == 0 || arg_interval.lower() == 0 ||
         arg_interval.upper() == 0)
       throw InvalidArgument("Division by 0.");
   }
 }
 
-double Div::Mean() noexcept {
+double Div::value() noexcept {
   auto it = Expression::args().begin();
-  double mean = (*it)->Mean();
+  double mean = (*it)->value();
   for (++it; it != Expression::args().end(); ++it) {
-    mean /= (*it)->Mean();
+    mean /= (*it)->value();
   }
   return mean;
 }

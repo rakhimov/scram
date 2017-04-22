@@ -43,7 +43,7 @@ class OpenExpression : public Expression {
   double sample;
   double min;  // This value is used only if explicitly set non-zero.
   double max;  // This value is used only if explicitly set non-zero.
-  double Mean() noexcept override { return mean; }
+  double value() noexcept override { return mean; }
   double DoSample() noexcept override { return sample; }
   Interval interval() noexcept override {
     return Interval::closed(min ? min : sample, max ? max : sample);
@@ -154,7 +154,7 @@ TEST(ExpressionTest, Exponential) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(
       dev = std::make_unique<ExponentialExpression>(&lambda, &time));
-  EXPECT_DOUBLE_EQ(1 - std::exp(-50), dev->Mean());
+  EXPECT_DOUBLE_EQ(1 - std::exp(-50), dev->value());
 
   TestNegative(dev.get(), &lambda);
   TestNegative(dev.get(), &time);
@@ -174,7 +174,7 @@ TEST(ExpressionTest, GLM) {
   ASSERT_NO_THROW(
       dev = std::make_unique<GlmExpression>(&gamma, &lambda, &mu, &time));
   EXPECT_DOUBLE_EQ((10 - (10 - 0.10 * 110) * std::exp(-110 * 5)) / 110,
-                   dev->Mean());
+                   dev->value());
 
   TestProbability(dev.get(), &gamma);
   TestNonPositive(dev.get(), &lambda);
@@ -196,7 +196,7 @@ TEST(ExpressionTest, Weibull) {
   ASSERT_NO_THROW(
       dev = std::make_unique<WeibullExpression>(&alpha, &beta, &t0, &time));
   EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)),
-                   dev->Mean());
+                   dev->value());
 
   TestNonPositive(dev.get(), &alpha);
   TestNonPositive(dev.get(), &beta);
@@ -224,7 +224,7 @@ TEST(ExpressionTest, PeriodicTest4) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(
       dev = std::make_unique<PeriodicTest>(&lambda, &tau, &theta, &time));
-  EXPECT_DOUBLE_EQ(1 - std::exp(-0.10), dev->Mean());
+  EXPECT_DOUBLE_EQ(1 - std::exp(-0.10), dev->value());
 
   TestNonPositive(dev.get(), &lambda);
   TestNonPositive(dev.get(), &tau);
@@ -249,23 +249,23 @@ TEST(ExpressionTest, PeriodicTest5) {
   EXPECT_FALSE(dev->IsDeviate());
   TestNegative(dev.get(), &mu);
 
-  EXPECT_EQ(dev->Mean(), dev->Sample());
-  EXPECT_NEAR(0.817508, dev->Mean(), 1e-5);
+  EXPECT_EQ(dev->value(), dev->Sample());
+  EXPECT_NEAR(0.817508, dev->value(), 1e-5);
 
   tau.mean = 2010;
-  EXPECT_NEAR(0.736611, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.736611, dev->value(), 1e-5);
 
   tau.mean = 120;
-  EXPECT_NEAR(0.645377, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.645377, dev->value(), 1e-5);
 
   TestNegative(dev.get(), &theta);
   mu.mean = lambda.mean;  // Special case when divisor cannot be 0.
-  EXPECT_NEAR(0.511579, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.511579, dev->value(), 1e-5);
   mu.mean = 1e300;  // The same value is expected as for 4 arg periodic-test.
-  EXPECT_NEAR(PeriodicTest(&lambda, &tau, &theta, &time).Mean(), dev->Mean(),
+  EXPECT_NEAR(PeriodicTest(&lambda, &tau, &theta, &time).value(), dev->value(),
               1e-5);
   mu.mean = 0;  // No repair is performed.
-  EXPECT_NEAR(0.997828, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.997828, dev->value(), 1e-5);
 }
 
 TEST(ExpressionTest, PeriodicTest11) {
@@ -292,35 +292,35 @@ TEST(ExpressionTest, PeriodicTest11) {
   TestProbability(dev.get(), &sigma);
   TestProbability(dev.get(), &omega);
 
-  EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.668316, dev->value(), 1e-5);
   available_at_test.mean = false;
-  EXPECT_NEAR(0.668316, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.668316, dev->value(), 1e-5);
   time.mean = 4750;
-  EXPECT_EQ(1, dev->Mean());
+  EXPECT_EQ(1, dev->value());
   time.mean = 4870;
-  EXPECT_NEAR(0.996715, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.996715, dev->value(), 1e-5);
   time.mean = 8710;
-  EXPECT_NEAR(0.997478, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.997478, dev->value(), 1e-5);
   time.mean = 8760;
   available_at_test.mean = true;
 
   lambda_test.mean = mu.mean = lambda.mean;
-  EXPECT_NEAR(0.543401, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.543401, dev->value(), 1e-5);
   mu.mean = 4e-4;
   lambda_test.mean = 6e-4;
 
   test_duration.mean = 120;
-  EXPECT_NEAR(0.6469, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.6469, dev->value(), 1e-5);
 
   tau.mean = 4020;
   test_duration.mean = 0;
   omega.mean = 0;
   sigma.mean = 1;
   gamma.mean = 0;
-  EXPECT_NEAR(0.817508, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.817508, dev->value(), 1e-5);
 
   tau.mean = 120;
-  EXPECT_NEAR(0.645377, dev->Mean(), 1e-5);
+  EXPECT_NEAR(0.645377, dev->value(), 1e-5);
 }
 
 // Uniform deviate test for invalid minimum and maximum values.
@@ -329,7 +329,7 @@ TEST(ExpressionTest, UniformDeviate) {
   OpenExpression max(5, 4);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<UniformDeviate>(&min, &max));
-  EXPECT_DOUBLE_EQ(3, dev->Mean());
+  EXPECT_DOUBLE_EQ(3, dev->value());
 
   min.mean = 10;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
@@ -383,7 +383,7 @@ TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mean, &ef, &level));
 
-  EXPECT_EQ(mean.Mean(), dev->Mean());
+  EXPECT_EQ(mean.value(), dev->value());
   EXPECT_EQ(0, dev->interval().lower());
   EXPECT_EQ(IntervalBounds::left_open(), dev->interval().bounds());
 
@@ -425,7 +425,7 @@ TEST(ExpressionTest, LogNormalDeviateNormal) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mu, &sigma));
 
-  EXPECT_NEAR(5.9105e9, dev->Mean(), 1e6);
+  EXPECT_NEAR(5.9105e9, dev->value(), 1e6);
   EXPECT_EQ(0, dev->interval().lower());
   EXPECT_EQ(IntervalBounds::left_open(), dev->interval().bounds());
 
@@ -454,7 +454,7 @@ TEST(ExpressionTest, GammaDeviate) {
   OpenExpression theta(7, 1);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<GammaDeviate>(&k, &theta));
-  EXPECT_DOUBLE_EQ(21, dev->Mean());
+  EXPECT_DOUBLE_EQ(21, dev->value());
 
   TestNonPositive(dev.get(), &k, /*sample=*/false);
   TestNonPositive(dev.get(), &theta, /*sample=*/false);
@@ -488,7 +488,7 @@ TEST(ExpressionTest, BetaDeviate) {
   OpenExpression beta(2, 1);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<BetaDeviate>(&alpha, &beta));
-  EXPECT_DOUBLE_EQ(0.8, dev->Mean());
+  EXPECT_DOUBLE_EQ(0.8, dev->value());
 
   TestNonPositive(dev.get(), &alpha, /*sample=*/false);
   TestNonPositive(dev.get(), &beta, /*sample=*/false);
@@ -543,7 +543,7 @@ TEST(ExpressionTest, Histogram) {
   b0.mean = 0.5;
   EXPECT_NO_THROW(dev->Validate());
   b0.mean = 0;
-  EXPECT_DOUBLE_EQ(1.5, dev->Mean());
+  EXPECT_DOUBLE_EQ(1.5, dev->value());
 
   b1.mean = -1;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
@@ -591,7 +591,7 @@ TEST(ExpressionTest, Neg) {
   OpenExpression expression(10, 8);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = std::make_unique<Neg>(&expression));
-  EXPECT_DOUBLE_EQ(-10, dev->Mean());
+  EXPECT_DOUBLE_EQ(-10, dev->value());
   EXPECT_DOUBLE_EQ(-8, dev->Sample());
   expression.max = 100;
   expression.min = 1;
@@ -620,7 +620,7 @@ TEST(ExpressionTest, Add) {
   OpenExpression arg_three(50, 60);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = MakeUnique<Add>({&arg_one, &arg_two, &arg_three}));
-  EXPECT_DOUBLE_EQ(90, dev->Mean());
+  EXPECT_DOUBLE_EQ(90, dev->value());
   EXPECT_DOUBLE_EQ(120, dev->Sample());
   EXPECT_TRUE(Interval::closed(120, 120) == dev->interval()) << dev->interval();
 }
@@ -632,7 +632,7 @@ TEST(ExpressionTest, Sub) {
   OpenExpression arg_three(50, 60);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = MakeUnique<Sub>({&arg_one, &arg_two, &arg_three}));
-  EXPECT_DOUBLE_EQ(-70, dev->Mean());
+  EXPECT_DOUBLE_EQ(-70, dev->value());
   EXPECT_DOUBLE_EQ(-80, dev->Sample());
   EXPECT_TRUE(Interval::closed(-80, -80) == dev->interval()) << dev->interval();
 }
@@ -644,7 +644,7 @@ TEST(ExpressionTest, Mul) {
   OpenExpression arg_three(5, 6, 2, 6);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = MakeUnique<Mul>({&arg_one, &arg_two, &arg_three}));
-  EXPECT_DOUBLE_EQ(15, dev->Mean());
+  EXPECT_DOUBLE_EQ(15, dev->value());
   EXPECT_DOUBLE_EQ(48, dev->Sample());
   EXPECT_TRUE(Interval::closed(0.2, 300) == dev->interval()) << dev->interval();
 }
@@ -658,7 +658,7 @@ TEST(ExpressionTest, MultiplicationMaxAndMin) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(
       dev = MakeUnique<Mul>({&arg_one, &arg_two, &arg_three, &arg_four}));
-  EXPECT_DOUBLE_EQ(60, dev->Mean());
+  EXPECT_DOUBLE_EQ(60, dev->value());
   EXPECT_DOUBLE_EQ(144, dev->Sample());
   EXPECT_TRUE(Interval::closed(-280, 140) == dev->interval())
       << dev->interval();
@@ -671,7 +671,7 @@ TEST(ExpressionTest, Div) {
   OpenExpression arg_three(5, 6, 2, 6);
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(dev = MakeUnique<Div>({&arg_one, &arg_two, &arg_three}));
-  EXPECT_DOUBLE_EQ(1.0 / 3 / 5, dev->Mean());
+  EXPECT_DOUBLE_EQ(1.0 / 3 / 5, dev->value());
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6, dev->Sample());
   EXPECT_TRUE(Interval::closed(0.1 / 5 / 6, 10.0 / 1 / 2) == dev->interval())
       << dev->interval();
@@ -689,7 +689,7 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
   std::unique_ptr<Expression> dev;
   ASSERT_NO_THROW(
       dev = MakeUnique<Div>({&arg_one, &arg_two, &arg_three, &arg_four}));
-  EXPECT_DOUBLE_EQ(1.0 / 3 / 5 / 4, dev->Mean());
+  EXPECT_DOUBLE_EQ(1.0 / 3 / 5 / 4, dev->value());
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6 / 3, dev->Sample());
   EXPECT_TRUE(Interval::closed(-1.0 / -4 / 1 / -2, 2.0 / -4 / 1 / -2) ==
               dev->interval()) << dev->interval();

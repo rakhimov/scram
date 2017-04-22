@@ -204,8 +204,8 @@ ProbabilityAnalyzerBase::CalculateProbabilityOverTime() noexcept {
     return p_time;
 
   assert(Analysis::settings().mission_time() ==
-         ProbabilityAnalysis::mission_time().Mean());
-  double total_time = ProbabilityAnalysis::mission_time().Mean();
+         ProbabilityAnalysis::mission_time().value());
+  double total_time = ProbabilityAnalysis::mission_time().value();
 
   auto update = [this, &p_time] (double time) {
     mission_time().value(time);

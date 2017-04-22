@@ -120,7 +120,7 @@ class BasicEvent : public Event {
   /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
     assert(expression_ && "The basic event's expression is not set.");
-    return expression_->Mean();
+    return expression_->value();
   }
 
   /// Validates the probability expressions for the primary event.

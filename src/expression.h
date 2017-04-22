@@ -99,16 +99,13 @@ class Expression : private boost::noncopyable {
   virtual void Validate() const {}
 
   /// @returns The mean value of this expression.
-  virtual double Mean() noexcept = 0;
+  virtual double value() noexcept = 0;
 
-  /// @returns A sampled value of this expression.
-  double Sample() noexcept;
-
-  /// This routine resets the sampling to get new values.
-  /// All the arguments are called to reset themselves.
-  /// If this expression was not sampled,
-  /// its arguments are not going to get any calls.
-  virtual void Reset() noexcept;
+  /// @returns The domain interval for validation purposes only.
+  virtual Interval interval() noexcept {
+    double value = this->value();
+    return Interval::closed(value, value);
+  }
 
   /// Determines if the value of the expression contains deviate expressions.
   /// The default logic is to check arguments with uncertainties for sampling.
@@ -123,11 +120,14 @@ class Expression : private boost::noncopyable {
   ///          may yield silent failure.
   virtual bool IsDeviate() noexcept;
 
-  /// @returns The domain interval for validation purposes only.
-  virtual Interval interval() noexcept {
-    double value = this->Mean();
-    return Interval::closed(value, value);
-  }
+  /// @returns A sampled value of this expression.
+  double Sample() noexcept;
+
+  /// This routine resets the sampling to get new values.
+  /// All the arguments are called to reset themselves.
+  /// If this expression was not sampled,
+  /// its arguments are not going to get any calls.
+  virtual void Reset() noexcept;
 
  protected:
   /// Registers an additional argument expression.
@@ -159,7 +159,7 @@ class Expression : private boost::noncopyable {
 template <typename T>
 void EnsureProbability(Expression* expression, const std::string& description,
                        const char* type = "probability") {
-  double value = expression->Mean();
+  double value = expression->value();
   if (value < 0 || value > 1)
     throw T("Invalid " + std::string(type) + " value for " + description);
   if (IsProbability(expression->interval()))
@@ -177,7 +177,7 @@ void EnsureProbability(Expression* expression, const std::string& description,
 /// @throws T  The expression is not suited for positive values.
 template <typename T>
 void EnsurePositive(Expression* expression, const std::string& description) {
-  if (expression->Mean() <= 0)
+  if (expression->value() <= 0)
     throw T(description + " value must be positive.");
   if (IsPositive(expression->interval()) == false)
     throw T(description + " sample domain must be positive.");
@@ -193,7 +193,7 @@ void EnsurePositive(Expression* expression, const std::string& description) {
 /// @throws T  The expression is not suited for non-negative values.
 template <typename T>
 void EnsureNonNegative(Expression* expression, const std::string& description) {
-  if (expression->Mean() < 0)
+  if (expression->value() < 0)
     throw T(description + " value cannot be negative.");
   if (IsNonNegative(expression->interval()) == false)
     throw T(description + " sample domain cannot have negative values.");
