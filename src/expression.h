@@ -52,7 +52,7 @@ inline IntervalBounds ReverseBounds(const Interval& interval) {
 
 /// Checks if a given interval is within the probability domain.
 inline bool IsProbability(const Interval& interval) {
-  return !boost::icl::within(interval, Interval::closed(0, 1));
+  return boost::icl::within(interval, Interval::closed(0, 1));
 }
 
 /// Checks if all values in a given interval are positive.
@@ -184,7 +184,7 @@ void EnsureProbability(Expression* expression, const std::string& description,
   double value = expression->value();
   if (value < 0 || value > 1)
     throw T("Invalid " + std::string(type) + " value for " + description);
-  if (IsProbability(expression->interval()))
+  if (IsProbability(expression->interval()) == false)
     throw T("Invalid " + std::string(type) + " sample domain for " +
             description);
 }
