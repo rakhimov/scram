@@ -42,8 +42,7 @@ class ExponentialExpression : public Expression {
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
   double Mean() noexcept override;
-  double Max() noexcept override { return 1; }
-  double Min() noexcept override { return 0; }
+  Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
   double DoSample() noexcept override;
@@ -67,8 +66,7 @@ class GlmExpression : public Expression {
 
   void Validate() const override;
   double Mean() noexcept override;
-  double Max() noexcept override { return 1; }
-  double Min() noexcept override { return 0; }
+  Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
   double DoSample() noexcept override;
@@ -96,8 +94,7 @@ class WeibullExpression : public Expression {
 
   void Validate() const override;
   double Mean() noexcept override;
-  double Max() noexcept override { return 1; }
-  double Min() noexcept override { return 0; }
+  Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
   double DoSample() noexcept override;
@@ -151,8 +148,7 @@ class PeriodicTest : public Expression {
 
   void Validate() const override { flavor_->Validate(); }
   double Mean() noexcept override { return flavor_->Mean(); }
-  double Max() noexcept override { return 1; }
-  double Min() noexcept override { return 0; }
+  Interval interval() noexcept override { return Interval::closed(0, 1); }
 
  private:
   double DoSample() noexcept override { return flavor_->Sample(); }

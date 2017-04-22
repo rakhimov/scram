@@ -129,7 +129,9 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "unused_parameter.xml",
       "nested_formula.xml",
       "null_gate_with_label.xml",
-      "case_sensitivity.xml"};
+      "case_sensitivity.xml",
+      "weibull_lnorm_deviate_2p.xml",
+      "weibull_lnorm_deviate_3p.xml"};
 
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))

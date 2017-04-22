@@ -38,8 +38,11 @@ class Neg : public Expression {
   explicit Neg(Expression* expression);
 
   double Mean() noexcept override { return -expression_.Mean(); }
-  double Max() noexcept override { return -expression_.Min(); }
-  double Min() noexcept override { return -expression_.Max(); }
+  Interval interval() noexcept override {
+    Interval arg_interval = expression_.interval();
+    return {-arg_interval.upper(), -arg_interval.lower(),
+            ReverseBounds(arg_interval)};
+  }
 
  private:
   double DoSample() noexcept override { return -expression_.Sample(); }
@@ -64,8 +67,7 @@ class Add : public BinaryExpression {
   using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override { return Compute(&Expression::Mean); }
-  double Max() noexcept override { return Compute(&Expression::Max); }
-  double Min() noexcept override { return Compute(&Expression::Min); }
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override { return Compute(&Expression::Sample); }
@@ -90,32 +92,21 @@ class Sub : public BinaryExpression {
   using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override { return Compute(&Expression::Mean); }
-  double Max() noexcept override {
-    return Compute(&Expression::Max, &Expression::Min);
-  }
-  double Min() noexcept override {
-    return Compute(&Expression::Min, &Expression::Max);
-  }
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override { return Compute(&Expression::Sample); }
 
   /// Performs the subtraction of all argument expression values.
   ///
-  /// @param[in] first_value  The getter function for the first arg expression.
-  /// @param[in] rest_value  The getter function for the rest arg expressions.
-  ///                        If not given, it is equal to first_value.
+  /// @param[in] value  The getter function for the arg expression value.
   ///
-  /// @returns first_value() - sum(rest_value()).
-  double Compute(double (Expression::*first_value)(),
-                 double (Expression::*rest_value)() = nullptr) {
-    if (!rest_value)
-      rest_value = first_value;
-
+  /// @returns first_value - sum(rest_value).
+  double Compute(double (Expression::*value)()) {
     auto it = Expression::args().begin();
-    double result = ((**it).*first_value)();
+    double result = ((**it).*value)();
     for (++it; it != Expression::args().end(); ++it) {
-      result -= ((**it).*rest_value)();
+      result -= ((**it).*value)();
     }
     return result;
   }
@@ -127,28 +118,10 @@ class Mul : public BinaryExpression {
   using BinaryExpression::BinaryExpression;
 
   double Mean() noexcept override;
-
-  /// Finds maximum product
-  /// from the given arguments' minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
-  ///
-  /// @returns Maximum possible value of the product.
-  double Max() noexcept override { return GetExtremum(/*max=*/true); }
-
-  /// Finds minimum product
-  /// from the given arguments' minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
-  ///
-  /// @returns Minimum possible value of the product.
-  double Min() noexcept override { return GetExtremum(/*max=*/false); }
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override;
-
-  /// @param[in] maximum  Flag to return maximum value.
-  ///
-  /// @returns One of extremums.
-  double GetExtremum(bool maximum) noexcept;
 };
 
 /// This expression performs division operation.
@@ -162,28 +135,10 @@ class Div : public BinaryExpression {
   void Validate() const override;
 
   double Mean() noexcept override;
-
-  /// Finds maximum results of division
-  /// of the given arguments' minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
-  ///
-  /// @returns Maximum value for division of arguments.
-  double Max() noexcept override { return GetExtremum(/*max=*/true); }
-
-  /// Finds minimum results of division
-  /// of the given arguments' minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
-  ///
-  /// @returns Minimum value for division of arguments.
-  double Min() noexcept override { return GetExtremum(/*max=*/false); }
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override;
-
-  /// @param[in] maximum  Flag to return maximum value.
-  ///
-  /// @returns One of extremums.
-  double GetExtremum(bool maximum) noexcept;
 };
 
 }  // namespace mef

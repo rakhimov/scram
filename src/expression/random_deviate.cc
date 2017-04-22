@@ -93,8 +93,9 @@ double LogNormalDeviate::DoSample() noexcept {
   return Random::LogNormalGenerator(flavor_->location(), flavor_->scale());
 }
 
-double LogNormalDeviate::Max() noexcept {
-  return std::exp(3 * flavor_->scale() + flavor_->location());
+Interval LogNormalDeviate::interval() noexcept {
+  double high_estimate = std::exp(3 * flavor_->scale() + flavor_->location());
+  return Interval::left_open(0, high_estimate);
 }
 
 double LogNormalDeviate::Logarithmic::scale() noexcept {
@@ -130,10 +131,12 @@ void GammaDeviate::Validate() const {
   }
 }
 
-double GammaDeviate::Max() noexcept {
+Interval GammaDeviate::interval() noexcept {
   using boost::math::gamma_q;
   double k_max = k_.Mean();
-  return theta_.Mean() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
+  double high_estimate =
+      theta_.Mean() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
+  return Interval::left_open(0, high_estimate);
 }
 
 double GammaDeviate::DoSample() noexcept {
@@ -155,8 +158,10 @@ void BetaDeviate::Validate() const {
   }
 }
 
-double BetaDeviate::Max() noexcept {
-  return std::pow(boost::math::ibeta(alpha_.Mean(), beta_.Mean(), 0.99), -1);
+Interval BetaDeviate::interval() noexcept {
+  double high_estimate =
+      std::pow(boost::math::ibeta(alpha_.Mean(), beta_.Mean(), 0.99), -1);
+  return Interval::closed(0, high_estimate);
 }
 
 double BetaDeviate::DoSample() noexcept {

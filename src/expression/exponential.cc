@@ -27,35 +27,6 @@
 namespace scram {
 namespace mef {
 
-/// Checks and throws if an expression is negative.
-#define THROW_NEGATIVE_EXPR(expr, description)                          \
-  do {                                                                  \
-    if (expr.Mean() < 0)                                                \
-      throw InvalidArgument("The " description " cannot be negative."); \
-    if (expr.Min() < 0)                                                 \
-      throw InvalidArgument("The sampled " description                  \
-                            " cannot be negative.");                    \
-  } while (false)
-
-/// Checks and throws if an expression is negative or 0.
-#define THROW_NON_POSITIVE_EXPR(expr, description)                            \
-  do {                                                                        \
-    if (expr.Mean() <= 0)                                                     \
-      throw InvalidArgument("The " description " must be positive.");         \
-    if (expr.Min() <= 0)                                                      \
-      throw InvalidArgument("The sampled " description " must be positive."); \
-  } while (false)
-
-/// Checks and throws if probability expression values are invalid.
-#define THROW_INVALID_PROBABILITY(expr, description)                       \
-  do {                                                                     \
-    if (expr.Mean() < 0 || expr.Mean() > 1)                                \
-      throw InvalidArgument("Invalid probability value for " description); \
-    if (expr.Min() < 0 || expr.Max() > 1)                                  \
-      throw InvalidArgument(                                               \
-          "Invalid probability sampled value for " description);           \
-  } while (false)
-
 namespace {  // Poisson process probability evaluators.
 
 /// Negative exponential law probability for Poisson process.
@@ -94,8 +65,8 @@ ExponentialExpression::ExponentialExpression(Expression* lambda, Expression* t)
       time_(*t) {}
 
 void ExponentialExpression::Validate() const {
-  THROW_NEGATIVE_EXPR(lambda_, "rate of failure");
-  THROW_NEGATIVE_EXPR(time_, "mission time");
+  EnsureNonNegative<InvalidArgument>(&lambda_, "rate of failure");
+  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
 double ExponentialExpression::Mean() noexcept {
@@ -115,10 +86,10 @@ GlmExpression::GlmExpression(Expression* gamma, Expression* lambda,
       time_(*t) {}
 
 void GlmExpression::Validate() const {
-  THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
-  THROW_NEGATIVE_EXPR(mu_, "rate of repair");
-  THROW_NEGATIVE_EXPR(time_, "mission time");
-  THROW_INVALID_PROBABILITY(gamma_, "failure on demand");
+  EnsurePositive<InvalidArgument>(&lambda_, "rate of failure");
+  EnsureNonNegative<InvalidArgument>(&mu_, "rate of repair");
+  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
+  EnsureProbability<InvalidArgument>(&gamma_, "failure on demand");
 }
 
 double GlmExpression::Mean() noexcept {
@@ -145,10 +116,12 @@ WeibullExpression::WeibullExpression(Expression* alpha, Expression* beta,
       time_(*time) {}
 
 void WeibullExpression::Validate() const {
-  THROW_NON_POSITIVE_EXPR(alpha_, "scale parameter for Weibull distribution");
-  THROW_NON_POSITIVE_EXPR(beta_, "shape parameter for Weibull distribution");
-  THROW_NEGATIVE_EXPR(t0_, "time shift");
-  THROW_NEGATIVE_EXPR(time_, "mission time");
+  EnsurePositive<InvalidArgument>(&alpha_,
+                                  "scale parameter for Weibull distribution");
+  EnsurePositive<InvalidArgument>(&beta_,
+                                  "shape parameter for Weibull distribution");
+  EnsureNonNegative<InvalidArgument>(&t0_, "time shift");
+  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
 double WeibullExpression::Compute(double alpha, double beta,
@@ -187,36 +160,34 @@ PeriodicTest::PeriodicTest(Expression* lambda, Expression* lambda_test,
           available_at_test, sigma, omega, time)) {}
 
 void PeriodicTest::InstantRepair::Validate() const {
-  THROW_NON_POSITIVE_EXPR(lambda_, "rate of failure");
-  THROW_NON_POSITIVE_EXPR(tau_, "time between tests");
-  THROW_NEGATIVE_EXPR(theta_, "time before tests");
-  THROW_NEGATIVE_EXPR(time_, "mission time");
+  EnsurePositive<InvalidArgument>(&lambda_, "rate of failure");
+  EnsurePositive<InvalidArgument>(&tau_, "time between tests");
+  EnsureNonNegative<InvalidArgument>(&theta_, "time before tests");
+  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
 void PeriodicTest::InstantTest::Validate() const {
   InstantRepair::Validate();
-  THROW_NEGATIVE_EXPR(mu_, "rate of repair");
+  EnsureNonNegative<InvalidArgument>(&mu_, "rate of repair");
 }
 
 void PeriodicTest::Complete::Validate() const {
   InstantTest::Validate();
-  THROW_NEGATIVE_EXPR(lambda_test_, "rate of failure while under test");
-  THROW_NON_POSITIVE_EXPR(test_duration_, "duration of the test phase");
-  THROW_INVALID_PROBABILITY(gamma_, "failure at test start");
-  THROW_INVALID_PROBABILITY(sigma_, "failure detection upon test");
-  THROW_INVALID_PROBABILITY(omega_, "failure at restart");
+  EnsureNonNegative<InvalidArgument>(&lambda_test_,
+                                     "rate of failure while under test");
+  EnsurePositive<InvalidArgument>(&test_duration_,
+                                  "duration of the test phase");
+  EnsureProbability<InvalidArgument>(&gamma_, "failure at test start");
+  EnsureProbability<InvalidArgument>(&sigma_, "failure detection upon test");
+  EnsureProbability<InvalidArgument>(&omega_, "failure at restart");
 
   if (test_duration_.Mean() > tau_.Mean())
     throw InvalidArgument(
         "The test duration must be less than the time between tests.");
-  if (test_duration_.Max() > tau_.Min())
+  if (test_duration_.interval().upper() > tau_.interval().lower())
     throw InvalidArgument(
         "The sampled test duration must be less than the time between tests.");
 }
-
-#undef THROW_NEGATIVE_EXPR
-#undef THROW_NON_POSITIVE_EXPR
-#undef THROW_INVALID_PROBABILITY
 
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,
                                             double theta,

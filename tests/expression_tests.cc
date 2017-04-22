@@ -45,8 +45,9 @@ class OpenExpression : public Expression {
   double max;  // This value is used only if explicitly set non-zero.
   double Mean() noexcept override { return mean; }
   double DoSample() noexcept override { return sample; }
-  double Max() noexcept override { return max ? max : sample; }
-  double Min() noexcept override { return min ? min : sample; }
+  Interval interval() noexcept override {
+    return Interval::closed(min ? min : sample, max ? max : sample);
+  }
   bool IsDeviate() noexcept override { return false; }
 };
 
@@ -383,7 +384,8 @@ TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
   ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mean, &ef, &level));
 
   EXPECT_EQ(mean.Mean(), dev->Mean());
-  EXPECT_EQ(0, dev->Min());
+  EXPECT_EQ(0, dev->interval().lower());
+  EXPECT_EQ(IntervalBounds::left_open(), dev->interval().bounds());
 
   level.mean = 0;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
@@ -424,7 +426,8 @@ TEST(ExpressionTest, LogNormalDeviateNormal) {
   ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mu, &sigma));
 
   EXPECT_NEAR(5.9105e9, dev->Mean(), 1e6);
-  EXPECT_EQ(0, dev->Min());
+  EXPECT_EQ(0, dev->interval().lower());
+  EXPECT_EQ(IntervalBounds::left_open(), dev->interval().bounds());
 
   ASSERT_NO_THROW(dev->Validate());
   mu.mean = 2;
@@ -592,8 +595,7 @@ TEST(ExpressionTest, Neg) {
   EXPECT_DOUBLE_EQ(-8, dev->Sample());
   expression.max = 100;
   expression.min = 1;
-  EXPECT_DOUBLE_EQ(-1, dev->Max());
-  EXPECT_DOUBLE_EQ(-100, dev->Min());
+  EXPECT_TRUE(Interval::closed(-100, -1) == dev->interval()) << dev->interval();
 }
 
 // Test expression initialization with 2 or more arguments.
@@ -620,8 +622,7 @@ TEST(ExpressionTest, Add) {
   ASSERT_NO_THROW(dev = MakeUnique<Add>({&arg_one, &arg_two, &arg_three}));
   EXPECT_DOUBLE_EQ(90, dev->Mean());
   EXPECT_DOUBLE_EQ(120, dev->Sample());
-  EXPECT_DOUBLE_EQ(120, dev->Max());
-  EXPECT_DOUBLE_EQ(120, dev->Min());
+  EXPECT_TRUE(Interval::closed(120, 120) == dev->interval()) << dev->interval();
 }
 
 // Test for subtraction of expressions.
@@ -633,8 +634,7 @@ TEST(ExpressionTest, Sub) {
   ASSERT_NO_THROW(dev = MakeUnique<Sub>({&arg_one, &arg_two, &arg_three}));
   EXPECT_DOUBLE_EQ(-70, dev->Mean());
   EXPECT_DOUBLE_EQ(-80, dev->Sample());
-  EXPECT_DOUBLE_EQ(-80, dev->Max());
-  EXPECT_DOUBLE_EQ(-80, dev->Min());
+  EXPECT_TRUE(Interval::closed(-80, -80) == dev->interval()) << dev->interval();
 }
 
 // Test for multiplication of expressions.
@@ -646,8 +646,7 @@ TEST(ExpressionTest, Mul) {
   ASSERT_NO_THROW(dev = MakeUnique<Mul>({&arg_one, &arg_two, &arg_three}));
   EXPECT_DOUBLE_EQ(15, dev->Mean());
   EXPECT_DOUBLE_EQ(48, dev->Sample());
-  EXPECT_DOUBLE_EQ(0.2, dev->Min());
-  EXPECT_DOUBLE_EQ(300, dev->Max());
+  EXPECT_TRUE(Interval::closed(0.2, 300) == dev->interval()) << dev->interval();
 }
 
 // Test for the special case of finding maximum and minimum multiplication.
@@ -661,8 +660,8 @@ TEST(ExpressionTest, MultiplicationMaxAndMin) {
       dev = MakeUnique<Mul>({&arg_one, &arg_two, &arg_three, &arg_four}));
   EXPECT_DOUBLE_EQ(60, dev->Mean());
   EXPECT_DOUBLE_EQ(144, dev->Sample());
-  EXPECT_DOUBLE_EQ(2 * -7 * 5 * 4, dev->Min());
-  EXPECT_DOUBLE_EQ(2 * -7 * 5 * -2, dev->Max());  // Sign matters.
+  EXPECT_TRUE(Interval::closed(-280, 140) == dev->interval())
+      << dev->interval();
 }
 
 // Test for division of expressions.
@@ -674,8 +673,8 @@ TEST(ExpressionTest, Div) {
   ASSERT_NO_THROW(dev = MakeUnique<Div>({&arg_one, &arg_two, &arg_three}));
   EXPECT_DOUBLE_EQ(1.0 / 3 / 5, dev->Mean());
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6, dev->Sample());
-  EXPECT_DOUBLE_EQ(0.1 / 5 / 6, dev->Min());
-  EXPECT_DOUBLE_EQ(10.0 / 1 / 2, dev->Max());
+  EXPECT_TRUE(Interval::closed(0.1 / 5 / 6, 10.0 / 1 / 2) == dev->interval())
+      << dev->interval();
 
   arg_two.mean = 0;  // Division by 0.
   EXPECT_THROW(dev->Validate(), InvalidArgument);
@@ -692,8 +691,8 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
       dev = MakeUnique<Div>({&arg_one, &arg_two, &arg_three, &arg_four}));
   EXPECT_DOUBLE_EQ(1.0 / 3 / 5 / 4, dev->Mean());
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6 / 3, dev->Sample());
-  EXPECT_DOUBLE_EQ(-1.0 / -4 / 1 / -2, dev->Min());
-  EXPECT_DOUBLE_EQ(2.0 / -4 / 1 / -2, dev->Max());
+  EXPECT_TRUE(Interval::closed(-1.0 / -4 / 1 / -2, 2.0 / -4 / 1 / -2) ==
+              dev->interval()) << dev->interval();
 }
 
 }  // namespace test

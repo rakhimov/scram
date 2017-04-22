@@ -24,14 +24,53 @@
 
 #include <cstdint>
 
+#include <string>
 #include <vector>
 
+#include <boost/icl/continuous_interval.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "element.h"
 
 namespace scram {
 namespace mef {
+
+/// Validation domain interval for expression values.
+using Interval = boost::icl::continuous_interval<double>;
+/// left_open, open, right_open, closed bounds.
+using IntervalBounds = boost::icl::interval_bounds;
+
+/// Returns right and left interval bounds reversed.
+inline IntervalBounds ReverseBounds(const Interval& interval) {
+  IntervalBounds bound_type = interval.bounds();
+  if (bound_type == IntervalBounds::left_open())
+    return IntervalBounds::right_open();
+  if (bound_type == IntervalBounds::right_open())
+    return IntervalBounds::left_open();
+  return bound_type;  // Either fully open or closed.
+}
+
+/// Checks if a given interval is within the probability domain.
+inline bool IsProbability(const Interval& interval) {
+  return !boost::icl::within(interval, Interval::closed(0, 1));
+}
+
+/// Checks if all values in a given interval are positive.
+inline bool IsPositive(const Interval& interval) {
+  if (interval.lower() > 0)
+    return true;
+  if (interval.lower() == 0) {
+    IntervalBounds bound_type = interval.bounds();
+    return bound_type == IntervalBounds::left_open() ||
+           bound_type == IntervalBounds::open();
+  }
+  return false;
+}
+
+/// Checks if all values in a given interval are non-negative.
+inline bool IsNonNegative(const Interval& interval) {
+  return interval.lower() >= 0;
+}
 
 /// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes
@@ -84,11 +123,11 @@ class Expression : private boost::noncopyable {
   ///          may yield silent failure.
   virtual bool IsDeviate() noexcept;
 
-  /// @returns Maximum value of this expression.
-  virtual double Max() noexcept { return this->Mean(); }
-
-  /// @returns Minimum value of this expression.
-  virtual double Min() noexcept { return this->Mean(); }
+  /// @returns The domain interval for validation purposes only.
+  virtual Interval interval() noexcept {
+    double value = this->Mean();
+    return Interval::closed(value, value);
+  }
 
  protected:
   /// Registers an additional argument expression.
@@ -107,6 +146,58 @@ class Expression : private boost::noncopyable {
   double sampled_value_;  ///< The sampled value.
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
+
+/// Ensures that expression can be used for probability ([0, 1]).
+///
+/// @tparam T  The exception type to throw for invalid probability values.
+///
+/// @param[in] expression  The expression to be validated.
+/// @param[in] description  The addition information for error messages.
+/// @param[in] type  The type of probability or fraction for error messages.
+///
+/// @throws T  The expression is not suited for probability.
+template <typename T>
+void EnsureProbability(Expression* expression, const std::string& description,
+                       const char* type = "probability") {
+  double value = expression->Mean();
+  if (value < 0 || value > 1)
+    throw T("Invalid " + std::string(type) + " value for " + description);
+  if (IsProbability(expression->interval()))
+    throw T("Invalid " + std::string(type) + " sample domain for " +
+            description);
+}
+
+/// Ensures that expression yields positive (> 0) values.
+///
+/// @tparam T  The exception type to throw for invalid values.
+///
+/// @param[in] expression  The expression to be validated.
+/// @param[in] description  The addition information for error messages.
+///
+/// @throws T  The expression is not suited for positive values.
+template <typename T>
+void EnsurePositive(Expression* expression, const std::string& description) {
+  if (expression->Mean() <= 0)
+    throw T(description + " value must be positive.");
+  if (IsPositive(expression->interval()) == false)
+    throw T(description + " sample domain must be positive.");
+}
+
+/// Ensures that expression yields non-negative (>= 0) values.
+///
+/// @tparam T  The exception type to throw for invalid values.
+///
+/// @param[in] expression  The expression to be validated.
+/// @param[in] description  The addition information for error messages.
+///
+/// @throws T  The expression is not suited for non-negative values.
+template <typename T>
+void EnsureNonNegative(Expression* expression, const std::string& description) {
+  if (expression->Mean() < 0)
+    throw T(description + " value cannot be negative.");
+  if (IsNonNegative(expression->interval()) == false)
+    throw T(description + " sample domain cannot have negative values.");
+}
 
 }  // namespace mef
 }  // namespace scram

@@ -70,8 +70,8 @@ class MissionTime : public Expression {
   /// @throws LogicError  The time value is negative.
   void value(double time);
 
-  double Min() noexcept override { return 0; }
   double Mean() noexcept override { return value_; }
+  Interval interval() noexcept override { return Interval::closed(0, value_); }
   bool IsDeviate() noexcept override { return false; }
 
  private:
@@ -112,8 +112,7 @@ class Parameter : public Expression, public Id, public NodeMark {
   void unused(bool state) { unused_ = state; }
 
   double Mean() noexcept override { return expression_->Mean(); }
-  double Max() noexcept override { return expression_->Max(); }
-  double Min() noexcept override { return expression_->Min(); }
+  Interval interval() noexcept override { return expression_->interval(); }
 
  private:
   double DoSample() noexcept override { return expression_->Sample(); }
