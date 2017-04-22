@@ -23,6 +23,7 @@
 
 #include <vector>
 
+#include "src/error.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -51,94 +52,95 @@ class Neg : public Expression {
 };
 
 /// Base class for expressions that require 2 or more arguments.
-class BinaryExpression : public Expression {
+template <class T>
+class BinaryExpression : public ExpressionFormula<T> {
  public:
   /// Checks the number of provided arguments upon initialization.
   ///
   /// @param[in] args  Arguments of this expression.
   ///
   /// @throws InvalidArgument  The number of arguments is fewer than 2.
-  explicit BinaryExpression(std::vector<Expression*> args);
+  explicit BinaryExpression(std::vector<Expression*> args)
+      : ExpressionFormula<T>(std::move(args)) {
+    if (Expression::args().size() < 2)
+      throw InvalidArgument("Expression requires 2 or more arguments.");
+  }
 };
 
 /// This expression adds all the given expressions' values.
-class Add : public BinaryExpression {
+class Add : public BinaryExpression<Add> {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double value() noexcept override { return Compute(&Expression::value); }
   Interval interval() noexcept override;
 
- private:
-  double DoSample() noexcept override { return Compute(&Expression::Sample); }
-
-  /// Adds all argument expression values.
-  ///
-  /// @param[in] get_value  The getter function for the arg expression value.
-  ///
-  /// @returns The sum of the expression values.
-  double Compute(double (Expression::*get_value)()) {
+  /// Evaluates the sum of the expression values.
+  template <typename T>
+  double Compute(T&& eval) {
     double result = 0;
     for (Expression* arg : Expression::args())
-      result += ((*arg).*get_value)();
+      result += eval(arg);
     return result;
   }
 };
 
 /// This expression performs subtraction operation.
 /// First expression minus the rest of the given expressions' values.
-class Sub : public BinaryExpression {
+class Sub : public BinaryExpression<Sub> {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double value() noexcept override { return Compute(&Expression::value); }
   Interval interval() noexcept override;
 
- private:
-  double DoSample() noexcept override { return Compute(&Expression::Sample); }
-
   /// Performs the subtraction of all argument expression values.
-  ///
-  /// @param[in] get_value  The getter function for the arg expression value.
-  ///
-  /// @returns first_value - sum(rest_value).
-  double Compute(double (Expression::*get_value)()) {
+  template <typename T>
+  double Compute(T&& eval) {
     auto it = Expression::args().begin();
-    double result = ((**it).*get_value)();
-    for (++it; it != Expression::args().end(); ++it) {
-      result -= ((**it).*get_value)();
-    }
+    double result = eval(*it);
+    for (++it; it != Expression::args().end(); ++it)
+      result -= eval(*it);
     return result;
   }
 };
 
 /// This expression performs multiplication operation.
-class Mul : public BinaryExpression {
+class Mul : public BinaryExpression<Mul> {
  public:
   using BinaryExpression::BinaryExpression;
 
-  double value() noexcept override;
   Interval interval() noexcept override;
 
- private:
-  double DoSample() noexcept override;
+  /// Returns the products of argument values.
+  template <typename T>
+  double Compute(T&& eval) {
+    double result = 1;
+    for (Expression* arg : Expression::args())
+      result *= eval(arg);
+    return result;
+  }
 };
 
 /// This expression performs division operation.
 /// The expression divides the first given argument by
 /// the rest of argument expressions.
-class Div : public BinaryExpression {
+class Div : public BinaryExpression<Div> {
  public:
   using BinaryExpression::BinaryExpression;
 
   /// @throws InvalidArgument  Division by 0.
   void Validate() const override;
 
-  double value() noexcept override;
   Interval interval() noexcept override;
 
- private:
-  double DoSample() noexcept override;
+  /// Evaluates the division expression.
+  template <typename T>
+  double Compute(T&& eval) {
+    auto it = Expression::args().begin();
+    double result = eval(*it);
+    for (++it; it != Expression::args().end(); ++it)
+      result /= eval(*it);
+    return result;
+  }
 };
 
 }  // namespace mef

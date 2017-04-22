@@ -147,6 +147,28 @@ class Expression : private boost::noncopyable {
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
 
+/// CRTP for Expressions with a same formula to evaluate and sample.
+///
+/// @tparam T  The Expression type with Compute function.
+template <class T>
+class ExpressionFormula : public Expression {
+ public:
+  using Expression::Expression;
+
+  /// Computes the expression with argument expression default values.
+  double value() noexcept final {
+    return static_cast<T*>(this)->Compute(
+        [](Expression* arg) { return arg->value(); });
+  }
+
+ private:
+  /// Computes the expression with argument expression sampled values.
+  double DoSample() noexcept final {
+    return static_cast<T*>(this)->Compute(
+        [](Expression* arg) { return arg->Sample(); });
+  }
+};
+
 /// Ensures that expression can be used for probability ([0, 1]).
 ///
 /// @tparam T  The exception type to throw for invalid probability values.

@@ -23,20 +23,12 @@
 #include <algorithm>
 #include <utility>
 
-#include "src/error.h"
-
 namespace scram {
 namespace mef {
 
 Neg::Neg(Expression* expression)
     : Expression({expression}),
       expression_(*expression) {}
-
-BinaryExpression::BinaryExpression(std::vector<Expression*> args)
-    : Expression(std::move(args)) {
-  if (Expression::args().size() < 2)
-    throw InvalidArgument("Expression requires 2 or more arguments.");
-}
 
 Interval Add::interval() noexcept {
   double max_value = 0;
@@ -62,20 +54,6 @@ Interval Sub::interval() noexcept {
   }
   assert(min_value <= max_value);
   return Interval::closed(min_value, max_value);
-}
-
-double Mul::value() noexcept {
-  double mean = 1;
-  for (Expression* arg : Expression::args())
-    mean *= arg->value();
-  return mean;
-}
-
-double Mul::DoSample() noexcept {
-  double result = 1;
-  for (Expression* arg : Expression::args())
-    result *= arg->Sample();
-  return result;
 }
 
 Interval Mul::interval() noexcept {
@@ -106,23 +84,6 @@ void Div::Validate() const {
         arg_interval.upper() == 0)
       throw InvalidArgument("Division by 0.");
   }
-}
-
-double Div::value() noexcept {
-  auto it = Expression::args().begin();
-  double mean = (*it)->value();
-  for (++it; it != Expression::args().end(); ++it) {
-    mean /= (*it)->value();
-  }
-  return mean;
-}
-
-double Div::DoSample() noexcept {
-  auto it = Expression::args().begin();
-  double result = (*it)->Sample();
-  for (++it; it != Expression::args().end(); ++it)
-    result /= (*it)->Sample();
-  return result;
 }
 
 Interval Div::interval() noexcept {

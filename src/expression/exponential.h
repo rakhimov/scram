@@ -31,7 +31,7 @@ namespace mef {
 
 /// Negative exponential distribution
 /// with hourly failure rate and time.
-class ExponentialExpression : public Expression {
+class ExponentialExpression : public ExpressionFormula<ExponentialExpression> {
  public:
   /// Constructor for exponential expression with two arguments.
   ///
@@ -41,19 +41,25 @@ class ExponentialExpression : public Expression {
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
-  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
- private:
-  double DoSample() noexcept override;
+  /// Evaluates the expression.
+  /// @{
+  template <typename T>
+  double Compute(T&& eval) noexcept {
+    return Compute(eval(&lambda_), eval(&time_));
+  }
+  double Compute(double lambda, double time) noexcept;
+  /// @}
 
+ private:
   Expression& lambda_;  ///< Failure rate in hours.
   Expression& time_;  ///< Mission time in hours.
 };
 
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
-class GlmExpression : public Expression {
+class GlmExpression : public ExpressionFormula<GlmExpression> {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
   ///
@@ -65,15 +71,18 @@ class GlmExpression : public Expression {
                 Expression* t);
 
   void Validate() const override;
-  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
- private:
-  double DoSample() noexcept override;
-
   /// Computes the value for GLM expression.
+  /// @{
+  template <typename T>
+  double Compute(T&& eval) noexcept {
+    return Compute(eval(&gamma_), eval(&lambda_), eval(&mu_), eval(&time_));
+  }
   double Compute(double gamma, double lambda, double mu, double time) noexcept;
+  /// @}
 
+ private:
   Expression& gamma_;  ///< Probability of failure on demand.
   Expression& lambda_;  ///< Failure rate in hours.
   Expression& mu_;  ///< Repair rate in hours.
@@ -81,7 +90,7 @@ class GlmExpression : public Expression {
 };
 
 /// Weibull distribution with scale, shape, time shift, and time.
-class WeibullExpression : public Expression {
+class WeibullExpression : public ExpressionFormula<WeibullExpression> {
  public:
   /// Constructor for Weibull distribution.
   ///
@@ -93,15 +102,18 @@ class WeibullExpression : public Expression {
                     Expression* t0, Expression* time);
 
   void Validate() const override;
-  double value() noexcept override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 
- private:
-  double DoSample() noexcept override;
-
   /// Calculates Weibull expression.
+  /// @{
+  template <typename T>
+  double Compute(T&& eval) noexcept {
+    return Compute(eval(&alpha_), eval(&beta_), eval(&t0_), eval(&time_));
+  }
   double Compute(double alpha, double beta, double t0, double time) noexcept;
+  /// @}
 
+ private:
   Expression& alpha_;  ///< Scale parameter.
   Expression& beta_;  ///< Shape parameter.
   Expression& t0_;  ///< Time shift in hours.

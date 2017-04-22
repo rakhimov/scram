@@ -60,7 +60,7 @@ double p_exp(double p_mu, double p_lambda, double mu, double lambda,
 }  // namespace
 
 ExponentialExpression::ExponentialExpression(Expression* lambda, Expression* t)
-    : Expression({lambda, t}),
+    : ExpressionFormula({lambda, t}),
       lambda_(*lambda),
       time_(*t) {}
 
@@ -69,17 +69,13 @@ void ExponentialExpression::Validate() const {
   EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
-double ExponentialExpression::value() noexcept {
-  return p_exp(lambda_.value(), time_.value());
-}
-
-double ExponentialExpression::DoSample() noexcept {
-  return p_exp(lambda_.Sample(), time_.Sample());
+double ExponentialExpression::Compute(double lambda, double time) noexcept {
+  return p_exp(lambda, time);
 }
 
 GlmExpression::GlmExpression(Expression* gamma, Expression* lambda,
                              Expression* mu, Expression* t)
-    : Expression({gamma, lambda, mu, t}),
+    : ExpressionFormula({gamma, lambda, mu, t}),
       gamma_(*gamma),
       lambda_(*lambda),
       mu_(*mu),
@@ -92,15 +88,6 @@ void GlmExpression::Validate() const {
   EnsureProbability<InvalidArgument>(&gamma_, "failure on demand");
 }
 
-double GlmExpression::value() noexcept {
-  return Compute(gamma_.value(), lambda_.value(), mu_.value(), time_.value());
-}
-
-double GlmExpression::DoSample() noexcept {
-  return Compute(gamma_.Sample(), lambda_.Sample(), mu_.Sample(),
-                 time_.Sample());
-}
-
 double GlmExpression::Compute(double gamma, double lambda, double mu,
                               double time) noexcept {
   double r = lambda + mu;
@@ -109,7 +96,7 @@ double GlmExpression::Compute(double gamma, double lambda, double mu,
 
 WeibullExpression::WeibullExpression(Expression* alpha, Expression* beta,
                                      Expression* t0, Expression* time)
-    : Expression({alpha, beta, t0, time}),
+    : ExpressionFormula({alpha, beta, t0, time}),
       alpha_(*alpha),
       beta_(*beta),
       t0_(*t0),
@@ -127,14 +114,6 @@ void WeibullExpression::Validate() const {
 double WeibullExpression::Compute(double alpha, double beta,
                                   double t0, double time) noexcept {
   return time <= t0 ? 0 : 1 - std::exp(-std::pow((time - t0) / alpha, beta));
-}
-
-double WeibullExpression::value() noexcept {
-  return Compute(alpha_.value(), beta_.value(), t0_.value(), time_.value());
-}
-
-double WeibullExpression::DoSample() noexcept {
-  return Compute(alpha_.Sample(), beta_.Sample(), t0_.Sample(), time_.Sample());
 }
 
 PeriodicTest::PeriodicTest(Expression* lambda, Expression* tau,
