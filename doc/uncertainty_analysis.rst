@@ -35,7 +35,7 @@ Monte Carlo (MC) Simulations
 
 #. Initialize events with distributions.
 #. If uncertainty analysis is not requested,
-   perform the standard analysis with average probabilities.
+   perform the standard analysis with mean probabilities.
 #. Set the seed for the PRNG for entire analysis. (Can be set by the user)
 #. Determine the number of samples/trials. (Can be set by the user)
 #. Sample probability distributions and calculate the total probability.
@@ -49,20 +49,20 @@ Statistical Distributions
 -------------------------
 
 - Uniform
-- Triangular
-- Piecewise Linear
+- Triangular (only via API)
+- Piecewise Linear (only via API)
 - Histogram
-- Discrete
+- Discrete (only via API)
 - Normal
 - Log-Normal
-- Poisson
-- Binomial
+- Poisson (only via API)
+- Binomial (only via API)
 - Beta
 - Gamma
 - Weibull
-- Exponential
-- Log-Uniform
-- Log-Triangular
+- Exponential (only via API)
+- Log-Uniform (only via API)
+- Log-Triangular (only via API)
 
 
 Adjustment of Invalid Samples
@@ -73,21 +73,21 @@ the analysis is not required
 to check the validity of samples
 and to abort the analysis.
 If it happens
-that a sampled value is not sensible (probability > 1),
-the sample is adjusted to the nearest acceptable value (probability = 1).
+that a sampled value is not sensible (e.g., probability > 1),
+the sample is adjusted to the nearest acceptable value (e.g., probability = 1).
 No warnings are given in this case;
-however, if the problem is due to probability calculation approximations (rare-event),
-Probability Analysis report may contain the warning.
+however, if the problem is due to probability calculation approximations (the rare-event),
+Probability Analysis report may contain the warning message.
 
 In order to prevent invalid ranges for uncertainty analysis,
-the input validation assesses the ranges of provided distributions.
+the input validation assesses the ranges or sampling intervals of provided distributions.
 Uncertainty analysis is performed
-only if maximum and minimum values are within the acceptable range.
+only if the intervals are within acceptable ranges (e.g., [0, 1] probability interval).
 This approach should prevent most errors.
 
-However, for some distributions (normal),
-theoretical range may be (-inf, +inf),
-which rarely fits for probability analysis variables.
-In this case,
-the best estimate is made to find the most likely range
+However, for some distributions (e.g., normal),
+theoretical range may be unbounded (e.g., (-inf, +inf)),
+which rarely fits probability analysis variables.
+In this case of unbounded intervals,
+the best estimate is made to find the most likely range or real-valued bounds
 (5-6 sigma, 99.9% percentile, etc.).
