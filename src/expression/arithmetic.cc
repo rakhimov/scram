@@ -21,8 +21,7 @@
 #include "arithmetic.h"
 
 #include <algorithm>
-
-#include "src/error.h"
+#include <utility>
 
 namespace scram {
 namespace mef {
@@ -31,83 +30,80 @@ Neg::Neg(Expression* expression)
     : Expression({expression}),
       expression_(*expression) {}
 
-BinaryExpression::BinaryExpression(std::vector<Expression*> args)
-    : Expression(std::move(args)) {
-  if (Expression::args().size() < 2)
-    throw InvalidArgument("Expression requires 2 or more arguments.");
-}
-
-double Mul::Mean() noexcept {
-  double mean = 1;
-  for (Expression* arg : Expression::args())
-    mean *= arg->Mean();
-  return mean;
-}
-
-double Mul::DoSample() noexcept {
-  double result = 1;
-  for (Expression* arg : Expression::args())
-    result *= arg->Sample();
-  return result;
-}
-
-double Mul::GetExtremum(bool maximum) noexcept {
-  double max_val = 1;  // Maximum possible product.
-  double min_val = 1;  // Minimum possible product.
+Interval Add::interval() noexcept {
+  double max_value = 0;
+  double min_value = 0;
   for (Expression* arg : Expression::args()) {
-    double mult_max = arg->Max();
-    double mult_min = arg->Min();
-    double max_max = max_val * mult_max;
-    double max_min = max_val * mult_min;
-    double min_max = min_val * mult_max;
-    double min_min = min_val * mult_min;
-    max_val = std::max({max_max, max_min, min_max, min_min});
-    min_val = std::min({max_max, max_min, min_max, min_min});
+    Interval arg_interval = arg->interval();
+    max_value += arg_interval.upper();
+    min_value += arg_interval.lower();
   }
-  return maximum ? max_val : min_val;
+  assert(min_value <= max_value);
+  return Interval::closed(min_value, max_value);
+}
+
+Interval Sub::interval() noexcept {
+  auto it = Expression::args().begin();
+  Interval first_arg_interval = (*it)->interval();
+  double max_value = first_arg_interval.upper();
+  double min_value = first_arg_interval.lower();
+  for (++it; it != Expression::args().end(); ++it) {
+    Interval next_arg_interval = (*it)->interval();
+    max_value -= next_arg_interval.lower();
+    min_value -= next_arg_interval.upper();
+  }
+  assert(min_value <= max_value);
+  return Interval::closed(min_value, max_value);
+}
+
+Interval Mul::interval() noexcept {
+  double max_value = 1;
+  double min_value = 1;
+  for (Expression* arg : Expression::args()) {
+    Interval arg_interval = arg->interval();
+    double mult_max = arg_interval.upper();
+    double mult_min = arg_interval.lower();
+    double max_max = max_value * mult_max;
+    double max_min = max_value * mult_min;
+    double min_max = min_value * mult_max;
+    double min_min = min_value * mult_min;
+    std::tie(min_value, max_value) =
+        std::minmax({max_max, max_min, min_max, min_min});
+  }
+  assert(min_value <= max_value);
+  return Interval::closed(min_value, max_value);
 }
 
 void Div::Validate() const {
   auto it = Expression::args().begin();
   for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;
-    if (!expr->Mean() || !expr->Max() || !expr->Min())
+    Interval arg_interval = expr->interval();
+    /// @todo Rethink the division by zero validations.
+    if (expr->value() == 0 || arg_interval.lower() == 0 ||
+        arg_interval.upper() == 0)
       throw InvalidArgument("Division by 0.");
   }
 }
 
-double Div::Mean() noexcept {
+Interval Div::interval() noexcept {
   auto it = Expression::args().begin();
-  double mean = (*it)->Mean();
+  Interval first_arg_interval = (*it)->interval();
+  double max_value = first_arg_interval.upper();
+  double min_value = first_arg_interval.lower();
   for (++it; it != Expression::args().end(); ++it) {
-    mean /= (*it)->Mean();
-  }
-  return mean;
-}
-
-double Div::DoSample() noexcept {
-  auto it = Expression::args().begin();
-  double result = (*it)->Sample();
-  for (++it; it != Expression::args().end(); ++it)
-    result /= (*it)->Sample();
-  return result;
-}
-
-double Div::GetExtremum(bool maximum) noexcept {
-  auto it = Expression::args().begin();
-  double max_value = (*it)->Max();  // Maximum possible result.
-  double min_value = (*it)->Min();  // Minimum possible result.
-  for (++it; it != Expression::args().end(); ++it) {
-    double div_max = (*it)->Max();
-    double div_min = (*it)->Min();
+    Interval next_arg_interval = (*it)->interval();
+    double div_max = next_arg_interval.upper();
+    double div_min = next_arg_interval.lower();
     double max_max = max_value / div_max;
     double max_min = max_value / div_min;
     double min_max = min_value / div_max;
     double min_min = min_value / div_min;
-    max_value = std::max({max_max, max_min, min_max, min_min});
-    min_value = std::min({max_max, max_min, min_max, min_min});
+    std::tie(min_value, max_value) =
+        std::minmax({max_max, max_min, min_max, min_min});
   }
-  return maximum ? max_value : min_value;
+  assert(min_value <= max_value);
+  return Interval::closed(min_value, max_value);
 }
 
 }  // namespace mef

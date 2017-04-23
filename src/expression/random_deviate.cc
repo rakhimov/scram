@@ -43,14 +43,14 @@ UniformDeviate::UniformDeviate(Expression* min, Expression* max)
       max_(*max) {}
 
 void UniformDeviate::Validate() const {
-  if (min_.Mean() >= max_.Mean()) {
+  if (min_.value() >= max_.value()) {
     throw InvalidArgument("Min value is more than max for Uniform"
                           " distribution.");
   }
 }
 
 double UniformDeviate::DoSample() noexcept {
-  return Random::UniformRealGenerator(min_.Mean(), max_.Mean());
+  return Random::UniformRealGenerator(min_.value(), max_.value());
 }
 
 NormalDeviate::NormalDeviate(Expression* mean, Expression* sigma)
@@ -59,13 +59,13 @@ NormalDeviate::NormalDeviate(Expression* mean, Expression* sigma)
       sigma_(*sigma) {}
 
 void NormalDeviate::Validate() const {
-  if (sigma_.Mean() <= 0) {
+  if (sigma_.value() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
   }
 }
 
 double NormalDeviate::DoSample() noexcept {
-  return Random::NormalGenerator(mean_.Mean(), sigma_.Mean());
+  return Random::NormalGenerator(mean_.value(), sigma_.value());
 }
 
 LogNormalDeviate::LogNormalDeviate(Expression* mean, Expression* ef,
@@ -78,12 +78,12 @@ LogNormalDeviate::LogNormalDeviate(Expression* mu, Expression* sigma)
       flavor_(new LogNormalDeviate::Normal(mu, sigma)) {}
 
 void LogNormalDeviate::Logarithmic::Validate() const {
-  if (level_.Mean() <= 0 || level_.Mean() >= 1) {
+  if (level_.value() <= 0 || level_.value() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
-  } else if (ef_.Mean() <= 1) {
+  } else if (ef_.value() <= 1) {
     throw InvalidArgument("The Error Factor for Log-Normal distribution"
                           " cannot be less than 1.");
-  } else if (mean_.Mean() <= 0) {
+  } else if (mean_.value() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
   }
@@ -93,21 +93,22 @@ double LogNormalDeviate::DoSample() noexcept {
   return Random::LogNormalGenerator(flavor_->location(), flavor_->scale());
 }
 
-double LogNormalDeviate::Max() noexcept {
-  return std::exp(3 * flavor_->scale() + flavor_->location());
+Interval LogNormalDeviate::interval() noexcept {
+  double high_estimate = std::exp(3 * flavor_->scale() + flavor_->location());
+  return Interval::left_open(0, high_estimate);
 }
 
 double LogNormalDeviate::Logarithmic::scale() noexcept {
-  double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level_.Mean());
-  return std::log(ef_.Mean()) / z;
+  double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level_.value());
+  return std::log(ef_.value()) / z;
 }
 
 double LogNormalDeviate::Logarithmic::location() noexcept {
-  return std::log(mean_.Mean()) - std::pow(scale(), 2) / 2;
+  return std::log(mean_.value()) - std::pow(scale(), 2) / 2;
 }
 
 void LogNormalDeviate::Normal::Validate() const {
-  if (sigma_.Mean() <= 0)
+  if (sigma_.value() <= 0)
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
 }
 
@@ -121,23 +122,25 @@ GammaDeviate::GammaDeviate(Expression* k, Expression* theta)
       theta_(*theta) {}
 
 void GammaDeviate::Validate() const {
-  if (k_.Mean() <= 0) {
+  if (k_.value() <= 0) {
     throw InvalidArgument("The k shape parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (theta_.Mean() <= 0) {
+  } else if (theta_.value() <= 0) {
     throw InvalidArgument("The theta scale parameter for Gamma distribution"
                           " cannot be negative or zero.");
   }
 }
 
-double GammaDeviate::Max() noexcept {
+Interval GammaDeviate::interval() noexcept {
   using boost::math::gamma_q;
-  double k_max = k_.Mean();
-  return theta_.Mean() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
+  double k_max = k_.value();
+  double high_estimate =
+      theta_.value() * std::pow(gamma_q(k_max, gamma_q(k_max, 0) - 0.99), -1);
+  return Interval::left_open(0, high_estimate);
 }
 
 double GammaDeviate::DoSample() noexcept {
-  return Random::GammaGenerator(k_.Mean(), theta_.Mean());
+  return Random::GammaGenerator(k_.value(), theta_.value());
 }
 
 BetaDeviate::BetaDeviate(Expression* alpha, Expression* beta)
@@ -146,21 +149,23 @@ BetaDeviate::BetaDeviate(Expression* alpha, Expression* beta)
       beta_(*beta) {}
 
 void BetaDeviate::Validate() const {
-  if (alpha_.Mean() <= 0) {
+  if (alpha_.value() <= 0) {
     throw InvalidArgument("The alpha shape parameter for Beta distribution"
                           " cannot be negative or zero.");
-  } else if (beta_.Mean() <= 0) {
+  } else if (beta_.value() <= 0) {
     throw InvalidArgument("The beta shape parameter for Beta distribution"
                           " cannot be negative or zero.");
   }
 }
 
-double BetaDeviate::Max() noexcept {
-  return std::pow(boost::math::ibeta(alpha_.Mean(), beta_.Mean(), 0.99), -1);
+Interval BetaDeviate::interval() noexcept {
+  double high_estimate =
+      std::pow(boost::math::ibeta(alpha_.value(), beta_.value(), 0.99), -1);
+  return Interval::closed(0, high_estimate);
 }
 
 double BetaDeviate::DoSample() noexcept {
-  return Random::BetaGenerator(alpha_.Mean(), beta_.Mean());
+  return Random::BetaGenerator(alpha_.value(), beta_.value());
 }
 
 Histogram::Histogram(std::vector<Expression*> boundaries,
@@ -182,25 +187,25 @@ Histogram::Histogram(std::vector<Expression*> boundaries,
 }
 
 void Histogram::Validate() const {
-  if (ext::any_of(weights_, [](const auto& expr) { return expr->Mean() < 0; }))
+  if (ext::any_of(weights_, [](const auto& expr) { return expr->value() < 0; }))
     throw InvalidArgument("Histogram weights cannot be negative.");
 
   if (!boost::is_sorted(boundaries_, [](const auto& lhs, const auto& rhs) {
-        return lhs->Mean() <= rhs->Mean();
+        return lhs->value() <= rhs->value();
       })) {
     throw InvalidArgument("Histogram upper boundaries are not strictly"
                           " increasing.");
   }
 }
 
-double Histogram::Mean() noexcept {
+double Histogram::value() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
   auto it_b = boundaries_.begin();
-  double prev_bound = (*it_b)->Mean();
+  double prev_bound = (*it_b)->value();
   for (const auto& weight : weights_) {
-    double cur_weight = weight->Mean();
-    double cur_bound = (*++it_b)->Mean();
+    double cur_weight = weight->value();
+    double cur_bound = (*++it_b)->value();
     sum_product += (cur_bound + prev_bound) * cur_weight;
     sum_weights += cur_weight;
     prev_bound = cur_bound;
@@ -213,7 +218,7 @@ namespace {
 /// Provides a helper iterator adaptor for retrieving mean values.
 template <class Iterator>
 auto make_sampler(const Iterator& it) {
-  return boost::make_transform_iterator(it, std::mem_fn(&Expression::Mean));
+  return boost::make_transform_iterator(it, std::mem_fn(&Expression::value));
 }
 
 }  // namespace

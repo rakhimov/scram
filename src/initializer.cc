@@ -977,7 +977,7 @@ void Initializer::ValidateExpressions() {
     try {
       group->Validate();
     } catch (ValidationError& err) {
-      msg << group->name() << " : " << err.msg() << "\n";
+      msg << err.msg() << "\n";
     }
   }
   if (!msg.str().empty()) {
@@ -992,7 +992,7 @@ void Initializer::ValidateExpressions() {
     try {
       event->Validate();
     } catch (ValidationError& err) {
-      msg << event->name() << " : " << err.msg() << "\n";
+      msg << err.msg() << "\n";
     }
   }
   if (!msg.str().empty()) {

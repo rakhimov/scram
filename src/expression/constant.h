@@ -39,7 +39,7 @@ class ConstantExpression : public Expression {
   /// @param[in] value  Numerical value.
   explicit ConstantExpression(double value) : value_(value) {}
 
-  double Mean() noexcept override { return value_; }
+  double value() noexcept override { return value_; }
   bool IsDeviate() noexcept override { return false; }
 
  private:

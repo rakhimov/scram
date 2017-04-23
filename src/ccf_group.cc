@@ -22,6 +22,7 @@
 
 #include <cmath>
 
+#include "error.h"
 #include "expression/arithmetic.h"
 #include "expression/constant.h"
 #include "ext/algorithm.h"
@@ -63,7 +64,7 @@ void CcfGroup::AddDistribution(Expression* distr) {
 }
 
 void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
-  int min_level = this->MinLevel();
+  int min_level = this->min_level();
   if (!level)
     level = prev_level_ ? (prev_level_ + 1) : min_level;
 
@@ -100,20 +101,16 @@ void CcfGroup::Validate() const {
   if (!distribution_ || members_.empty() || factors_.empty())
     throw LogicError("CCF group " + Element::name() + " is not initialized.");
 
-  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + Element::name() +
-                          " CCF group has illegal values.");
-  }
+  EnsureProbability<ValidationError>(
+      distribution_, Element::name() + " CCF group distribution.");
 
   for (const std::pair<int, Expression*>& f : factors_) {
     if (!f.second) {
       throw ValidationError("Missing some CCF factors for " + Element::name() +
                             " CCF group.");
     }
-    if (f.second->Max() > 1 || f.second->Min() < 0) {
-      throw ValidationError("Factors for " + Element::name() +
-                            " CCF group have illegal values.");
-    }
+    EnsureProbability<ValidationError>(
+        f.second, Element::name() + " CCF group factors.", "fraction");
   }
   this->DoValidate();
 }
@@ -267,9 +264,10 @@ void PhiFactorModel::DoValidate() const {
   double sum_min = 0;
   double sum_max = 0;
   for (const std::pair<int, Expression*>& factor : CcfGroup::factors()) {
-    sum += factor.second->Mean();
-    sum_min += factor.second->Min();
-    sum_max += factor.second->Max();
+    sum += factor.second->value();
+    Interval interval = factor.second->interval();
+    sum_min += interval.lower();
+    sum_max += interval.upper();
   }
   /// @todo Problems with floating point number comparison.
   double epsilon = 1e-4;

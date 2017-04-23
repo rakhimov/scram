@@ -129,10 +129,31 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "unused_parameter.xml",
       "nested_formula.xml",
       "null_gate_with_label.xml",
-      "case_sensitivity.xml"};
+      "case_sensitivity.xml",
+      "weibull_lnorm_deviate_2p.xml",
+      "weibull_lnorm_deviate_3p.xml"};
 
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+        << " Filename: " << input;
+  }
+}
+
+
+TEST(InitializerTest, CorrectInclude) {
+  std::string dir = "./share/scram/input/";
+  const char* correct_inputs[] = {"xinclude.xml", "xinclude_transitive.xml"};
+  for (const auto& input : correct_inputs) {
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+        << " Filename: " << input;
+  }
+}
+
+TEST(InitializerTest, IncorrectInclude) {
+  std::string dir = "./share/scram/input/";
+  const char* correct_inputs[] = {"xinclude_no_file.xml", "xinclude_cycle.xml"};
+  for (const auto& input : correct_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename: " << input;
   }
 }

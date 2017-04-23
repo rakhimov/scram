@@ -1,0 +1,29 @@
+<opsa-mef>
+  <define-fault-tree name="test_weibull">
+    <define-gate name="top">
+      <and>
+        <house-event name="H_2"/>
+        <gate name="G_3"/>
+      </and>
+    </define-gate>
+    <define-gate name="G_3">
+      <basic-event name="e1"/>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="e1">
+      <Weibull>
+        <lognormal-deviate>
+          <float value="3.74572726693375"/>
+          <float value="0.005"/>
+        </lognormal-deviate>
+        <float value="2"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </Weibull>
+    </define-basic-event>
+    <define-house-event name="H_2">
+      <constant value="true"/>
+    </define-house-event>
+  </model-data>
+</opsa-mef>

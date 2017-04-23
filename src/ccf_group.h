@@ -177,7 +177,7 @@ class CcfGroup : public Id, private boost::noncopyable {
 
  private:
   /// @returns The minimum level for CCF factors for the specific model.
-  virtual int MinLevel() const { return 1; }
+  virtual int min_level() const { return 1; }
 
   /// Runs any additional validation specific to the CCF models.
   /// All the general validation is done in the base class Validate function.
@@ -216,7 +216,7 @@ class BetaFactorModel : public CcfGroup {
   using CcfGroup::CcfGroup;
 
  private:
-  int MinLevel() const override { return CcfGroup::members().size(); }
+  int min_level() const override { return CcfGroup::members().size(); }
 
   ExpressionMap CalculateProbabilities() override;
 };
@@ -231,7 +231,7 @@ class MglModel : public CcfGroup {
   using CcfGroup::CcfGroup;
 
  private:
-  int MinLevel() const override { return 2; }
+  int min_level() const override { return 2; }
 
   ExpressionMap CalculateProbabilities() override;
 };

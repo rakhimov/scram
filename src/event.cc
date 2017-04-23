@@ -22,6 +22,7 @@
 
 #include <boost/range/algorithm.hpp>
 
+#include "error.h"
 #include "ext/algorithm.h"
 
 namespace scram {
@@ -35,6 +36,11 @@ HouseEvent HouseEvent::kTrue = []() {
   return house_event;
 }();
 HouseEvent HouseEvent::kFalse("__false__");
+
+void BasicEvent::Validate() const {
+  assert(expression_ && "The basic event's expression is not set.");
+  EnsureProbability<ValidationError>(expression_, Event::name());
+}
 
 void Gate::Validate() const {
   // Detect inhibit flavor.

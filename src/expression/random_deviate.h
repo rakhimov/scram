@@ -53,9 +53,10 @@ class UniformDeviate : public RandomDeviate {
   /// @throws InvalidArgument  The min value is more or equal to max value.
   void Validate() const override;
 
-  double Mean() noexcept override { return (min_.Mean() + max_.Mean()) / 2; }
-  double Max() noexcept override { return max_.Mean(); }
-  double Min() noexcept override { return min_.Mean(); }
+  double value() noexcept override { return (min_.value() + max_.value()) / 2; }
+  Interval interval() noexcept override {
+    return Interval::closed(min_.value(), max_.value());
+  }
 
  private:
   double DoSample() noexcept override;
@@ -76,13 +77,13 @@ class NormalDeviate : public RandomDeviate {
   /// @throws InvalidArgument  The sigma is negative or zero.
   void Validate() const override;
 
-  double Mean() noexcept override { return mean_.Mean(); }
-
-  /// @returns ~99.9% percentile value.
-  double Max() noexcept override { return mean_.Mean() + 6 * sigma_.Mean(); }
-
-  /// @returns Less than 0.1% percentile value.
-  double Min() noexcept override { return mean_.Mean() - 6 * sigma_.Mean(); }
+  double value() noexcept override { return mean_.value(); }
+  /// @returns ~99.9% confidence interval.
+  Interval interval() noexcept override {
+    double mean = mean_.value();
+    double delta = 6 * sigma_.value();
+    return Interval::closed(mean - delta, mean + delta);
+  }
 
  private:
   double DoSample() noexcept override;
@@ -115,11 +116,9 @@ class LogNormalDeviate : public RandomDeviate {
   LogNormalDeviate(Expression* mu, Expression* sigma);
 
   void Validate() const override { flavor_->Validate(); };
-  double Mean() noexcept override { return flavor_->mean(); }
-
-  /// 99.9 percentile estimate.
-  double Max() noexcept override;
-  double Min() noexcept override { return 0; }
+  double value() noexcept override { return flavor_->mean(); }
+  /// The high is 99.9 percentile estimate.
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override;
@@ -145,7 +144,7 @@ class LogNormalDeviate : public RandomDeviate {
         : mean_(*mean), ef_(*ef), level_(*level) {}
     double scale() noexcept override;
     double location() noexcept override;
-    double mean() noexcept override { return mean_.Mean(); }
+    double mean() noexcept override { return mean_.value(); }
     /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level.
     void Validate() const override;
 
@@ -161,8 +160,8 @@ class LogNormalDeviate : public RandomDeviate {
     /// @param[in] mu  The mean of the normal distribution.
     /// @param[in] sigma  The standard deviation of the normal distribution.
     Normal(Expression* mu, Expression* sigma) : mu_(*mu), sigma_(*sigma) {}
-    double scale() noexcept override { return sigma_.Mean(); }
-    double location() noexcept override { return mu_.Mean(); }
+    double scale() noexcept override { return sigma_.value(); }
+    double location() noexcept override { return mu_.value(); }
     double mean() noexcept override;
     /// @throws InvalidArgument  (sigma <= 0).
     void Validate() const override;
@@ -187,12 +186,9 @@ class GammaDeviate : public RandomDeviate {
   /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
   void Validate() const override;
 
-  double Mean() noexcept override { return k_.Mean() * theta_.Mean(); }
-
-  /// @returns 99 percentile.
-  double Max() noexcept override;
-
-  double Min() noexcept override { return 0; }
+  double value() noexcept override { return k_.value() * theta_.value(); }
+  /// The high is 99 percentile.
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override;
@@ -213,15 +209,13 @@ class BetaDeviate : public RandomDeviate {
   /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
   void Validate() const override;
 
-  double Mean() noexcept override {
-    double alpha_mean = alpha_.Mean();
-    return alpha_mean / (alpha_mean + beta_.Mean());
+  double value() noexcept override {
+    double alpha_mean = alpha_.value();
+    return alpha_mean / (alpha_mean + beta_.value());
   }
 
   /// @returns 99 percentile.
-  double Max() noexcept override;
-
-  double Min() noexcept override { return 0; }
+  Interval interval() noexcept override;
 
  private:
   double DoSample() noexcept override;
@@ -250,11 +244,11 @@ class Histogram : public RandomDeviate {
   ///                          or weights are negative.
   void Validate() const override;
 
-  double Mean() noexcept override;
-  double Max() noexcept override {
-    return (*std::prev(boundaries_.end()))->Max();
+  double value() noexcept override;
+  Interval interval() noexcept override {
+    return Interval::closed((*boundaries_.begin())->value(),
+                            (*std::prev(boundaries_.end()))->value());
   }
-  double Min() noexcept override { return (*boundaries_.begin())->Min(); }
 
  private:
   /// Access to args.

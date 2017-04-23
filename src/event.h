@@ -31,7 +31,6 @@
 #include <boost/variant.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "expression.h"
 
 namespace scram {
@@ -121,7 +120,7 @@ class BasicEvent : public Event {
   /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
     assert(expression_ && "The basic event's expression is not set.");
-    return expression_->Mean();
+    return expression_->value();
   }
 
   /// Validates the probability expressions for the primary event.
@@ -129,12 +128,7 @@ class BasicEvent : public Event {
   /// @pre The probability expression is set.
   ///
   /// @throws ValidationError  The expression for the basic event is invalid.
-  void Validate() const {
-    assert(expression_ && "The basic event's expression is not set.");
-    if (expression_->Min() < 0 || expression_->Max() > 1) {
-      throw ValidationError("Expression value is invalid.");
-    }
-  }
+  void Validate() const;
 
   /// Indicates if this basic event has been set to be in a CCF group.
   ///
