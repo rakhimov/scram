@@ -21,9 +21,9 @@
 #ifndef SCRAM_SRC_EXPRESSION_ARITHMETIC_H_
 #define SCRAM_SRC_EXPRESSION_ARITHMETIC_H_
 
+#include <functional>
 #include <vector>
 
-#include "src/error.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -51,97 +51,14 @@ class Neg : public Expression {
   Expression& expression_;  ///< Expression that is used for negation.
 };
 
-/// Base class for expressions that require 2 or more arguments.
-template <class T>
-class BinaryExpression : public ExpressionFormula<T> {
- public:
-  /// Checks the number of provided arguments upon initialization.
-  ///
-  /// @param[in] args  Arguments of this expression.
-  ///
-  /// @throws InvalidArgument  The number of arguments is fewer than 2.
-  explicit BinaryExpression(std::vector<Expression*> args)
-      : ExpressionFormula<T>(std::move(args)) {
-    if (Expression::args().size() < 2)
-      throw InvalidArgument("Expression requires 2 or more arguments.");
-  }
-};
+/// Validation specialization to check division by 0.
+template <>
+void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args);
 
-/// This expression adds all the given expressions' values.
-class Add : public BinaryExpression<Add> {
- public:
-  using BinaryExpression::BinaryExpression;
-
-  Interval interval() noexcept override;
-
-  /// Evaluates the sum of the expression values.
-  template <typename T>
-  double Compute(T&& eval) {
-    double result = 0;
-    for (Expression* arg : Expression::args())
-      result += eval(arg);
-    return result;
-  }
-};
-
-/// This expression performs subtraction operation.
-/// First expression minus the rest of the given expressions' values.
-class Sub : public BinaryExpression<Sub> {
- public:
-  using BinaryExpression::BinaryExpression;
-
-  Interval interval() noexcept override;
-
-  /// Performs the subtraction of all argument expression values.
-  template <typename T>
-  double Compute(T&& eval) {
-    auto it = Expression::args().begin();
-    double result = eval(*it);
-    for (++it; it != Expression::args().end(); ++it)
-      result -= eval(*it);
-    return result;
-  }
-};
-
-/// This expression performs multiplication operation.
-class Mul : public BinaryExpression<Mul> {
- public:
-  using BinaryExpression::BinaryExpression;
-
-  Interval interval() noexcept override;
-
-  /// Returns the products of argument values.
-  template <typename T>
-  double Compute(T&& eval) {
-    double result = 1;
-    for (Expression* arg : Expression::args())
-      result *= eval(arg);
-    return result;
-  }
-};
-
-/// This expression performs division operation.
-/// The expression divides the first given argument by
-/// the rest of argument expressions.
-class Div : public BinaryExpression<Div> {
- public:
-  using BinaryExpression::BinaryExpression;
-
-  /// @throws InvalidArgument  Division by 0.
-  void Validate() const override;
-
-  Interval interval() noexcept override;
-
-  /// Evaluates the division expression.
-  template <typename T>
-  double Compute(T&& eval) {
-    auto it = Expression::args().begin();
-    double result = eval(*it);
-    for (++it; it != Expression::args().end(); ++it)
-      result /= eval(*it);
-    return result;
-  }
-};
+using Add = NaryExpression<std::plus<>, -1>;  ///< Sum operation.
+using Sub = NaryExpression<std::minus<>, -1>;  ///< Subtraction from the first.
+using Mul = NaryExpression<std::multiplies<>, -1>;  ///< Product.
+using Div = NaryExpression<std::divides<>, -1>;  ///< Division of the first.
 
 }  // namespace mef
 }  // namespace scram

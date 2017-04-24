@@ -22,15 +22,16 @@
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 
-#include <cstdint>
-
+#include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/icl/continuous_interval.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "element.h"
+#include "error.h"
 
 namespace scram {
 namespace mef {
@@ -164,6 +165,70 @@ class ExpressionFormula : public Expression {
   double DoSample() noexcept final {
     return static_cast<T*>(this)->Compute(
         [](Expression* arg) { return arg->Sample(); });
+  }
+};
+
+/// n-ary expressions.
+///
+/// @tparam T  The callable type of operation to apply.
+/// @tparam N  The arity of the expression (to be specified).
+template <typename T, int N>
+class NaryExpression;
+
+/// Validates expressions of specific type with its given arguments.
+template <typename T>
+void ValidateExpression(const std::vector<Expression*>& /*args*/) {}
+
+/// Multivariate expression.
+///
+/// @tparam T  The operation type to apply to the expression arguments.
+template <typename T>
+class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
+ public:
+  /// Checks the number of provided arguments upon initialization.
+  ///
+  /// @param[in] args  Arguments of this expression.
+  ///
+  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  explicit NaryExpression(std::vector<Expression*> args)
+      : ExpressionFormula<NaryExpression<T, -1>>(std::move(args)) {
+    if (Expression::args().size() < 2)
+      throw InvalidArgument("Expression requires 2 or more arguments.");
+  }
+
+  void Validate() const override {
+    return ValidateExpression<T>(Expression::args());
+  }
+
+  Interval interval() noexcept override {
+    auto it = Expression::args().begin();
+    Interval first_arg_interval = (*it)->interval();
+    double max_value = first_arg_interval.upper();
+    double min_value = first_arg_interval.lower();
+    for (++it; it != Expression::args().end(); ++it) {
+      Interval next_arg_interval = (*it)->interval();
+      double arg_max = next_arg_interval.upper();
+      double arg_min = next_arg_interval.lower();
+      double max_max = T()(max_value, arg_max);
+      double max_min = T()(max_value, arg_min);
+      double min_max = T()(min_value, arg_max);
+      double min_min = T()(min_value, arg_min);
+      std::tie(min_value, max_value) =
+          std::minmax({max_max, max_min, min_max, min_min});
+    }
+    assert(min_value <= max_value);
+    return Interval::closed(min_value, max_value);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    auto it = Expression::args().begin();
+    double result = eval(*it);
+    for (++it; it != Expression::args().end(); ++it) {
+      result = T()(result, eval(*it));
+    }
+    return result;
   }
 };
 
