@@ -50,26 +50,24 @@ inline IntervalBounds ReverseBounds(const Interval& interval) {
   return bound_type;  // Either fully open or closed.
 }
 
+/// Returns true if a given interval contains a given value.
+inline bool Contains(const Interval& interval, double value) {
+  return boost::icl::contains(interval, Interval::closed(value, value));
+}
+
 /// Checks if a given interval is within the probability domain.
 inline bool IsProbability(const Interval& interval) {
   return boost::icl::within(interval, Interval::closed(0, 1));
 }
 
-/// Checks if all values in a given interval are positive.
-inline bool IsPositive(const Interval& interval) {
-  if (interval.lower() > 0)
-    return true;
-  if (interval.lower() == 0) {
-    IntervalBounds bound_type = interval.bounds();
-    return bound_type == IntervalBounds::left_open() ||
-           bound_type == IntervalBounds::open();
-  }
-  return false;
-}
-
 /// Checks if all values in a given interval are non-negative.
 inline bool IsNonNegative(const Interval& interval) {
   return interval.lower() >= 0;
+}
+
+/// Checks if all values in a given interval are positive.
+inline bool IsPositive(const Interval& interval) {
+  return IsNonNegative(interval) && !Contains(interval, 0);
 }
 
 /// Abstract base class for all sorts of expressions to describe events.

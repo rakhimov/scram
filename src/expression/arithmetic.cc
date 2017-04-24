@@ -79,9 +79,7 @@ void Div::Validate() const {
   for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;
     Interval arg_interval = expr->interval();
-    /// @todo Rethink the division by zero validations.
-    if (expr->value() == 0 || arg_interval.lower() == 0 ||
-        arg_interval.upper() == 0)
+    if (expr->value() == 0 || Contains(arg_interval, 0))
       throw InvalidArgument("Division by 0.");
   }
 }
