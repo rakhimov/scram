@@ -23,10 +23,6 @@
 namespace scram {
 namespace mef {
 
-Neg::Neg(Expression* expression)
-    : Expression({expression}),
-      expression_(*expression) {}
-
 template <>
 void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args) {
   auto it = args.begin();

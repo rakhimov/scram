@@ -39,17 +39,8 @@ namespace mef {
 /// Validation domain interval for expression values.
 using Interval = boost::icl::continuous_interval<double>;
 /// left_open, open, right_open, closed bounds.
+/// @todo Interval bound propagation upon operations on boundary values.
 using IntervalBounds = boost::icl::interval_bounds;
-
-/// Returns right and left interval bounds reversed.
-inline IntervalBounds ReverseBounds(const Interval& interval) {
-  IntervalBounds bound_type = interval.bounds();
-  if (bound_type == IntervalBounds::left_open())
-    return IntervalBounds::right_open();
-  if (bound_type == IntervalBounds::right_open())
-    return IntervalBounds::left_open();
-  return bound_type;  // Either fully open or closed.
-}
 
 /// Returns true if a given interval contains a given value.
 inline bool Contains(const Interval& interval, double value) {
@@ -170,7 +161,7 @@ class ExpressionFormula : public Expression {
 
 /// n-ary expressions.
 ///
-/// @tparam T  The callable type of operation to apply.
+/// @tparam T  The callable type of operation to apply to the arguments.
 /// @tparam N  The arity of the expression (to be specified).
 template <typename T, int N>
 class NaryExpression;
@@ -179,9 +170,33 @@ class NaryExpression;
 template <typename T>
 void ValidateExpression(const std::vector<Expression*>& /*args*/) {}
 
+/// Unary expression.
+template <typename T>
+class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
+ public:
+  /// @param[in] expression  The single argument.
+  explicit NaryExpression(Expression* expression)
+      : ExpressionFormula<NaryExpression<T, 1>>({expression}),
+        expression_(*expression) {}
+
+  Interval interval() noexcept override {
+    Interval arg_interval = expression_.interval();
+    auto min_max =
+        std::minmax(T()(arg_interval.lower()), T()(arg_interval.upper()));
+    return Interval::closed(min_max.first, min_max.second);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    return T()(eval(&expression_));
+  }
+
+ private:
+  Expression& expression_;  ///< The argument expression.
+};
+
 /// Multivariate expression.
-///
-/// @tparam T  The operation type to apply to the expression arguments.
 template <typename T>
 class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
  public:

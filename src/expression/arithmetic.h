@@ -29,32 +29,11 @@
 namespace scram {
 namespace mef {
 
-/// This class for negation of numerical value or another expression.
-class Neg : public Expression {
- public:
-  /// Construct a new expression
-  /// that negates a given argument expression.
-  ///
-  /// @param[in] expression  The expression to be negated.
-  explicit Neg(Expression* expression);
-
-  double value() noexcept override { return -expression_.value(); }
-  Interval interval() noexcept override {
-    Interval arg_interval = expression_.interval();
-    return {-arg_interval.upper(), -arg_interval.lower(),
-            ReverseBounds(arg_interval)};
-  }
-
- private:
-  double DoSample() noexcept override { return -expression_.Sample(); }
-
-  Expression& expression_;  ///< Expression that is used for negation.
-};
-
 /// Validation specialization to check division by 0.
 template <>
 void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args);
 
+using Neg = NaryExpression<std::negate<>, 1>;  ///< Negation.
 using Add = NaryExpression<std::plus<>, -1>;  ///< Sum operation.
 using Sub = NaryExpression<std::minus<>, -1>;  ///< Subtraction from the first.
 using Mul = NaryExpression<std::multiplies<>, -1>;  ///< Product.
