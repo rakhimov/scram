@@ -20,6 +20,8 @@
 
 #include "numerical.h"
 
+#include "src/error.h"
+
 namespace scram {
 namespace mef {
 

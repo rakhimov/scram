@@ -187,5 +187,10 @@ The input tries to utilize all the functionality including optional cases.
     <define-parameter name="Pi">
       <pi/>
     </define-parameter>
+    <define-parameter name="Abs">
+      <abs>
+        <float value="-1"/>
+      </abs>
+    </define-parameter>
   </model-data>
 </opsa-mef>

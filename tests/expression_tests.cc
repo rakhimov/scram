@@ -48,7 +48,7 @@ class OpenExpression : public Expression {
   Interval interval() noexcept override {
     return Interval::closed(min ? min : sample, max ? max : sample);
   }
-  bool IsDeviate() noexcept override { return false; }
+  bool IsDeviate() noexcept override { return min || max; }
 };
 
 namespace {
@@ -693,6 +693,17 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6 / 3, dev->Sample());
   EXPECT_TRUE(Interval::closed(-1.0 / -4 / 1 / -2, 2.0 / -4 / 1 / -2) ==
               dev->interval()) << dev->interval();
+}
+
+TEST(ExpressionTest, Abs) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Abs>(&arg_one));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = -1;
+  EXPECT_DOUBLE_EQ(1, dev->value());
 }
 
 }  // namespace test

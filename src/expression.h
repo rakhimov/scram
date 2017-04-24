@@ -179,10 +179,15 @@ class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
       : ExpressionFormula<NaryExpression<T, 1>>({expression}),
         expression_(*expression) {}
 
+  void Validate() const override {
+    return ValidateExpression<T>(Expression::args());
+  }
+
   Interval interval() noexcept override {
     Interval arg_interval = expression_.interval();
-    auto min_max =
-        std::minmax(T()(arg_interval.lower()), T()(arg_interval.upper()));
+    double max_value = T()(arg_interval.upper());
+    double min_value = T()(arg_interval.lower());
+    auto min_max = std::minmax(max_value, min_value);
     return Interval::closed(min_max.first, min_max.second);
   }
 

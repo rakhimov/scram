@@ -712,6 +712,9 @@
         </oneOrMore>
       </element>
       <element name="pi"> <empty/> </element>
+      <element name="abs">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 
