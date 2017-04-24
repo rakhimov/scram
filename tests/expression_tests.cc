@@ -17,6 +17,7 @@
 
 #include "expression.h"
 #include "expression/exponential.h"
+#include "expression/constant.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "parameter.h"
@@ -704,6 +705,34 @@ TEST(ExpressionTest, Abs) {
   EXPECT_DOUBLE_EQ(0, dev->value());
   arg_one.mean = -1;
   EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
+TEST(ExpressionTest, Acos) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Acos>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0.5 * ConstantExpression::kPi.value(), dev->value());
+  arg_one.mean = -1;
+  EXPECT_DOUBLE_EQ(ConstantExpression::kPi.value(), dev->value());
+
+  arg_one.mean = -1.001;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 1.001;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 100;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 1;
+  EXPECT_NO_THROW(dev->Validate());
+
+  arg_one.max = 1.001;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.max = 1;
+  EXPECT_NO_THROW(dev->Validate());
+
+  EXPECT_TRUE(Interval::closed(0, ConstantExpression::kPi.value()) ==
+              dev->interval()) << dev->interval();
 }
 
 }  // namespace test

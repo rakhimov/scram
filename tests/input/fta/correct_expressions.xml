@@ -192,5 +192,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="-1"/>
       </abs>
     </define-parameter>
+    <define-parameter name="Acos">
+      <acos>
+        <float value="-1"/>
+      </acos>
+    </define-parameter>
   </model-data>
 </opsa-mef>

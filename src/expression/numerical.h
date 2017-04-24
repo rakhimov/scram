@@ -27,6 +27,7 @@
 #include <functional>
 #include <vector>
 
+#include "constant.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -47,6 +48,17 @@ using FunctorExpression = NaryExpression<Functor<F>, 1>;
 /// @{
 template <>
 void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Functor<&std::acos>>(
+    const std::vector<Expression*>& args);
+/// @}
+
+/// Interval specialization for math functions.
+/// @{
+template <>
+inline Interval GetInterval<Functor<&std::acos>>(Expression* /*arg*/) {
+  return Interval::closed(0, ConstantExpression::kPi.value());
+}
 /// @}
 
 using Neg = NaryExpression<std::negate<>, 1>;  ///< Negation.
@@ -55,6 +67,7 @@ using Sub = NaryExpression<std::minus<>, -1>;  ///< Subtraction from the first.
 using Mul = NaryExpression<std::multiplies<>, -1>;  ///< Product.
 using Div = NaryExpression<std::divides<>, -1>;  ///< Division of the first.
 using Abs = FunctorExpression<&std::abs>;  ///< The absolute value.
+using Acos = FunctorExpression<&std::acos>;  ///< Arc cosine.
 
 }  // namespace mef
 }  // namespace scram

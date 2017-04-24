@@ -170,6 +170,16 @@ class NaryExpression;
 template <typename T>
 void ValidateExpression(const std::vector<Expression*>& /*args*/) {}
 
+/// Get the validation interval for expression T with a given argument.
+template <typename T>
+Interval GetInterval(Expression* arg) {
+  Interval arg_interval = arg->interval();
+  double max_value = T()(arg_interval.upper());
+  double min_value = T()(arg_interval.lower());
+  auto min_max = std::minmax(max_value, min_value);
+  return Interval::closed(min_max.first, min_max.second);
+}
+
 /// Unary expression.
 template <typename T>
 class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
@@ -183,13 +193,7 @@ class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
     return ValidateExpression<T>(Expression::args());
   }
 
-  Interval interval() noexcept override {
-    Interval arg_interval = expression_.interval();
-    double max_value = T()(arg_interval.upper());
-    double min_value = T()(arg_interval.lower());
-    auto min_max = std::minmax(max_value, min_value);
-    return Interval::closed(min_max.first, min_max.second);
-  }
+  Interval interval() noexcept override { return GetInterval<T>(&expression_); }
 
   /// Computes the expression value with a given argument value extractor.
   template <typename F>
