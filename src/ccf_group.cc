@@ -23,8 +23,8 @@
 #include <cmath>
 
 #include "error.h"
-#include "expression/arithmetic.h"
 #include "expression/constant.h"
+#include "expression/numerical.h"
 #include "ext/algorithm.h"
 #include "ext/combination_iterator.h"
 

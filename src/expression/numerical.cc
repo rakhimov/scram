@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file arithmetic.cc
-/// Implementation of various arithmetic expressions.
+/// @file numerical.cc
+/// Implementation of various numerical expressions.
 
-#include "arithmetic.h"
+#include "numerical.h"
 
 namespace scram {
 namespace mef {

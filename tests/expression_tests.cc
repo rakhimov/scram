@@ -16,8 +16,8 @@
  */
 
 #include "expression.h"
-#include "expression/arithmetic.h"
 #include "expression/exponential.h"
+#include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "parameter.h"
 

@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file arithmetic.h
-/// A collection of arithmetic expressions.
+/// @file numerical.h
+/// A collection of numerical expressions.
+/// @note The PI value is located in constant expressions.
 
-#ifndef SCRAM_SRC_EXPRESSION_ARITHMETIC_H_
-#define SCRAM_SRC_EXPRESSION_ARITHMETIC_H_
+#ifndef SCRAM_SRC_EXPRESSION_NUMERICAL_H_
+#define SCRAM_SRC_EXPRESSION_NUMERICAL_H_
 
 #include <functional>
 #include <vector>
@@ -42,4 +43,4 @@ using Div = NaryExpression<std::divides<>, -1>;  ///< Division of the first.
 }  // namespace mef
 }  // namespace scram
 
-#endif  // SCRAM_SRC_EXPRESSION_ARITHMETIC_H_
+#endif  // SCRAM_SRC_EXPRESSION_NUMERICAL_H_
