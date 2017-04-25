@@ -353,5 +353,12 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="false"/>
       </geq>
     </define-parameter>
+    <define-parameter name="if-then-else">
+      <ite>
+        <bool value="true"/>
+        <int value="42"/>
+        <float value="-42"/>
+      </ite>
+    </define-parameter>
   </model-data>
 </opsa-mef>

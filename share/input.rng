@@ -632,6 +632,7 @@
     <choice>
       <ref name="numerical-operation"/>
       <ref name="Boolean-operation"/>
+      <ref name="conditional-operation"/>
     </choice>
   </define>
 
@@ -837,6 +838,19 @@
     <!-- V.2.5. Conditional Expressions -->
     <!-- *********************************************************** -->
 
+  <define name="conditional-operation">
+    <choice>
+      <ref name="if-then-else-operation"/>
+    </choice>
+  </define>
+
+  <define name="if-then-else-operation">
+    <element name="ite">
+      <ref name="expression"/>
+      <ref name="expression"/>
+      <ref name="expression"/>
+    </element>
+  </define>
 
     <!-- *********************************************************** -->
     <!-- V.2.6. Built-ins -->

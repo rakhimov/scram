@@ -30,6 +30,7 @@
 #include "env.h"
 #include "error.h"
 #include "expression/boolean.h"
+#include "expression/conditional.h"
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
@@ -834,7 +835,8 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"lt", &Extract<Lt>},
     {"gt", &Extract<Gt>},
     {"leq", &Extract<Leq>},
-    {"geq", &Extract<Geq>}};
+    {"geq", &Extract<Geq>},
+    {"ite", &Extract<Ite>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {

@@ -17,6 +17,7 @@
 
 #include "expression.h"
 #include "expression/boolean.h"
+#include "expression/conditional.h"
 #include "expression/exponential.h"
 #include "expression/constant.h"
 #include "expression/numerical.h"
@@ -1148,6 +1149,22 @@ TEST(ExpressionTest, Geq) {
   EXPECT_DOUBLE_EQ(1, dev->value());
   arg_one.mean = 9.999999;
   EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, Ite) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(42, 42, 32, 52);
+  OpenExpression arg_three(10, 10, 5, 15);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Ite>(&arg_one, &arg_two, &arg_three));
+  EXPECT_DOUBLE_EQ(42, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(10, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(42, dev->value());
+
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
+      << dev->interval();
 }
 
 }  // namespace test
