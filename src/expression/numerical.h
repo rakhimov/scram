@@ -158,7 +158,7 @@ void Pow::Validate() const;
 template <>
 inline void Sqrt::Validate() const {
   assert(args().size() == 1);
-  EnsureNonNegative<InvalidArgument>(args().front(), "Square root argument");
+  EnsureNonNegative<InvalidArgument>(args().front(), "Square root");
 }
 /// @}
 
