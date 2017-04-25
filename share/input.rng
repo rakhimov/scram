@@ -768,6 +768,11 @@
       <element name="floor">
         <ref name="expression"/>
       </element>
+      <element name="min">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 

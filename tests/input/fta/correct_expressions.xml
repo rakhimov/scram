@@ -279,5 +279,11 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0.25"/>
       </floor>
     </define-parameter>
+    <define-parameter name="Min">
+      <min>
+        <float value="0.25"/>
+        <int value="100"/>
+      </min>
+    </define-parameter>
   </model-data>
 </opsa-mef>
