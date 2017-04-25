@@ -97,6 +97,7 @@ using Tan = FunctorExpression<&std::tan>;  ///< Tangent.
 using Cosh = FunctorExpression<&std::cosh>;  ///< Hyperbolic cosine.
 using Sinh = FunctorExpression<&std::sinh>;  ///< Hyperbolic sine.
 using Tanh = FunctorExpression<&std::tanh>;  ///< Hyperbolic tangent.
+using Exp = FunctorExpression<&std::exp>;  ///< Exponential.
 
 }  // namespace mef
 }  // namespace scram

@@ -730,6 +730,9 @@
       <element name="cosh">
         <ref name="expression"/>
       </element>
+      <element name="exp">
+        <ref name="expression"/>
+      </element>
       <element name="sin">
         <ref name="expression"/>
       </element>
