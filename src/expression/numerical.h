@@ -44,6 +44,19 @@ struct Functor {
 template <double (*F)(double)>
 using FunctorExpression = NaryExpression<Functor<F>, 1>;
 
+/// Creates a functor for functions with two arguments.
+template <double (*F)(double, double)>
+struct Bifunctor {  // Nasty abuse of terminology :(. Haskellers will hate this.
+  /// Forwards the call to the wrapped function.
+  double operator()(double arg_one, double arg_two) {
+    return F(arg_one, arg_two);
+  }
+};
+
+/// Expression with a bifunctor wrapping a function.
+template <double (*F)(double, double)>
+using BifunctorExpression = NaryExpression<Bifunctor<F>, 2>;
+
 /// Validation specialization for math functions.
 /// @{
 template <>
@@ -62,6 +75,9 @@ void ValidateExpression<Functor<&std::log10>>(
     const std::vector<Expression*>& args);
 template <>
 void ValidateExpression<std::modulus<int>>(
+    const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Bifunctor<&std::pow>>(
     const std::vector<Expression*>& args);
 /// @}
 
@@ -110,6 +126,7 @@ using Exp = FunctorExpression<&std::exp>;  ///< Exponential.
 using Log = FunctorExpression<&std::log>;  ///< Natural logarithm.
 using Log10 = FunctorExpression<&std::log10>;  ///< Decimal logarithm.
 using Mod = NaryExpression<std::modulus<int>, 2>;  ///< Modulo (%) operation.
+using Pow = BifunctorExpression<&std::pow>;  ///< Base raised to a power.
 
 }  // namespace mef
 }  // namespace scram

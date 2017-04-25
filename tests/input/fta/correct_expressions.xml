@@ -258,5 +258,11 @@ The input tries to utilize all the functionality including optional cases.
         <int value="2"/>
       </mod>
     </define-parameter>
+    <define-parameter name="Pow">
+      <pow>
+        <int value="4"/>
+        <int value="2"/>
+      </pow>
+    </define-parameter>
   </model-data>
 </opsa-mef>

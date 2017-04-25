@@ -81,5 +81,18 @@ void ValidateExpression<std::modulus<int>>(
     throw InvalidArgument("Modulo second operand sample must not contain 0.");
 }
 
+template <>
+void ValidateExpression<Bifunctor<&std::pow>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 2);
+  auto* arg_one = args.front();
+  auto* arg_two = args.back();
+  if (arg_one->value() == 0 && arg_two->value() <= 0)
+    throw InvalidArgument("0 to power 0 or less is undefined.");
+  if (Contains(arg_one->interval(), 0) && !IsPositive(arg_two->interval()))
+    throw InvalidArgument("Power expression 'base' sample range contains 0;"
+                          "positive exponent is required.");
+}
+
 }  // namespace mef
 }  // namespace scram

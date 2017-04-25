@@ -743,6 +743,10 @@
         <ref name="expression"/>
         <ref name="expression"/>
       </element>
+      <element name="pow">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
       <element name="sin">
         <ref name="expression"/>
       </element>
