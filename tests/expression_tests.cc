@@ -1069,6 +1069,19 @@ TEST(ExpressionTest, And) {
   EXPECT_DOUBLE_EQ(1, dev->value());
 }
 
+TEST(ExpressionTest, Or) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(1);
+  OpenExpression arg_three(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = MakeUnique<Or>({&arg_one, &arg_two, &arg_three}));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_three.mean = 0;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_two.mean = arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

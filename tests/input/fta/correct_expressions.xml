@@ -310,5 +310,12 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="true"/>
       </and>
     </define-parameter>
+    <define-parameter name="Or">
+      <or>
+        <bool value="true"/>
+        <bool value="false"/>
+        <bool value="true"/>
+      </or>
+    </define-parameter>
   </model-data>
 </opsa-mef>

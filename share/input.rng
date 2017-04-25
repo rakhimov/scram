@@ -801,6 +801,11 @@
           <ref name="expression"/>
         </oneOrMore>
       </element>
+      <element name="or">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 
