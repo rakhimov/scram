@@ -1007,6 +1007,17 @@ TEST(ExpressionTest, Ceil) {
   EXPECT_DOUBLE_EQ(0, dev->value());
 }
 
+TEST(ExpressionTest, Floor) {
+  OpenExpression arg_one(0);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Floor>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0.25;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = -0.25;
+  EXPECT_DOUBLE_EQ(-1, dev->value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

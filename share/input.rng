@@ -765,6 +765,9 @@
       <element name="ceil">
         <ref name="expression"/>
       </element>
+      <element name="floor">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

@@ -274,5 +274,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0.25"/>
       </ceil>
     </define-parameter>
+    <define-parameter name="Floor">
+      <floor>
+        <float value="0.25"/>
+      </floor>
+    </define-parameter>
   </model-data>
 </opsa-mef>
