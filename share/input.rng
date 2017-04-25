@@ -814,6 +814,10 @@
         <ref name="expression"/>
         <ref name="expression"/>
       </element>
+      <element name="lt">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

@@ -830,7 +830,8 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"and", &Extract<And>},
     {"or", &Extract<Or>},
     {"eq", &Extract<Eq>},
-    {"df", &Extract<Df>}};
+    {"df", &Extract<Df>},
+    {"lt", &Extract<Lt>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {

@@ -329,5 +329,11 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="false"/>
       </df>
     </define-parameter>
+    <define-parameter name="Less-than">
+      <lt>
+        <float value="10"/>
+        <bool value="false"/>
+      </lt>
+    </define-parameter>
   </model-data>
 </opsa-mef>
