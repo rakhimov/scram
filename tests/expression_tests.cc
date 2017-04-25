@@ -1026,6 +1026,14 @@ TEST(ExpressionTest, Min) {
   EXPECT_DOUBLE_EQ(10, dev->value());
 }
 
+TEST(ExpressionTest, Max) {
+  OpenExpression arg_one(10);
+  OpenExpression arg_two(100);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = MakeUnique<Max>({&arg_one, &arg_two}));
+  EXPECT_DOUBLE_EQ(100, dev->value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

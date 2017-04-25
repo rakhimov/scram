@@ -134,6 +134,7 @@ using Sqrt = FunctorExpression<&std::sqrt>;  ///< Square root.
 using Ceil = FunctorExpression<&std::ceil>;  ///< Nearest (>=) integer.
 using Floor = FunctorExpression<&std::floor>;  ///< Nearest (<=) integer.
 using Min = NaryExpression<Bifunctor<&std::fmin>, -1>;  ///< Minimum value.
+using Max = NaryExpression<Bifunctor<&std::fmax>, -1>;  ///< Maximum value.
 
 }  // namespace mef
 }  // namespace scram

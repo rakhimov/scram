@@ -285,5 +285,11 @@ The input tries to utilize all the functionality including optional cases.
         <int value="100"/>
       </min>
     </define-parameter>
+    <define-parameter name="Max">
+      <max>
+        <float value="0.25"/>
+        <int value="100"/>
+      </max>
+    </define-parameter>
   </model-data>
 </opsa-mef>

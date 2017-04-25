@@ -773,6 +773,11 @@
           <ref name="expression"/>
         </oneOrMore>
       </element>
+      <element name="max">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 
