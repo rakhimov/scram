@@ -791,6 +791,17 @@ TEST(ExpressionTest, Cos) {
   EXPECT_TRUE(Interval::closed(-1, 1) == dev->interval()) << dev->interval();
 }
 
+TEST(ExpressionTest, Sin) {
+  OpenExpression arg_one(0);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Sin>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0.5 * ConstantExpression::kPi.value();
+  EXPECT_DOUBLE_EQ(1, dev->value());
+
+  EXPECT_TRUE(Interval::closed(-1, 1) == dev->interval()) << dev->interval();
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

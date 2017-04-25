@@ -76,6 +76,10 @@ template <>
 inline Interval GetInterval<Functor<&std::cos>>(Expression* /*arg*/) {
   return Interval::closed(-1, 1);
 }
+template <>
+inline Interval GetInterval<Functor<&std::sin>>(Expression* /*arg*/) {
+  return Interval::closed(-1, 1);
+}
 /// @}
 
 using Neg = NaryExpression<std::negate<>, 1>;  ///< Negation.
@@ -88,6 +92,7 @@ using Acos = FunctorExpression<&std::acos>;  ///< Arc cosine.
 using Asin = FunctorExpression<&std::asin>;  ///< Arc sine.
 using Atan = FunctorExpression<&std::atan>;  ///< Arc tangent.
 using Cos = FunctorExpression<&std::cos>;  ///< Cosine.
+using Sin = FunctorExpression<&std::sin>;  ///< Sine.
 
 }  // namespace mef
 }  // namespace scram

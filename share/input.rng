@@ -727,6 +727,9 @@
       <element name="cos">
         <ref name="expression"/>
       </element>
+      <element name="sin">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 
