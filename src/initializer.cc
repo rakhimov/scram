@@ -29,6 +29,7 @@
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
+#include "expression/boolean.h"
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
@@ -824,7 +825,8 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"floor", &Extract<Floor>},
     {"min", &Extract<Min>},
     {"max", &Extract<Max>},
-    {"mean", &Extract<Mean>}};
+    {"mean", &Extract<Mean>},
+    {"not", &Extract<Not>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {

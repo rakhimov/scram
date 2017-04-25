@@ -16,6 +16,7 @@
  */
 
 #include "expression.h"
+#include "expression/boolean.h"
 #include "expression/exponential.h"
 #include "expression/constant.h"
 #include "expression/numerical.h"
@@ -1042,6 +1043,17 @@ TEST(ExpressionTest, Mean) {
 
   EXPECT_TRUE(Interval::closed(31.25, 48.75) == dev->interval())
       << dev->interval();
+}
+
+TEST(ExpressionTest, Not) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Not>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(0, dev->value());
 }
 
 }  // namespace test

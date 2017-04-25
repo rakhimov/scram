@@ -631,6 +631,7 @@
   <define name="operation">
     <choice>
       <ref name="numerical-operation"/>
+      <ref name="Boolean-operation"/>
     </choice>
   </define>
 
@@ -790,6 +791,13 @@
     <!-- V.2.4. Boolean Expressions -->
     <!-- *********************************************************** -->
 
+  <define name="Boolean-operation">
+    <choice>
+      <element name="not">
+        <ref name="expression"/>
+      </element>
+    </choice>
+  </define>
 
     <!-- *********************************************************** -->
     <!-- V.2.5. Conditional Expressions -->
