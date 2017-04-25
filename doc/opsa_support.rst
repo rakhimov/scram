@@ -69,9 +69,9 @@ to identify the supported and unsupported features.
     * System mission time
     * Parameter
     * Numerical operations
+    * Boolean operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential with two parameters,
-      exponential with four parameters, Weibull, periodic-test)
+    * Built-in expressions (exponential, GLM, Weibull, periodic-test)
 
 
 Deviations from the Open-PSA MEF
