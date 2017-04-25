@@ -778,6 +778,11 @@
           <ref name="expression"/>
         </oneOrMore>
       </element>
+      <element name="mean">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 

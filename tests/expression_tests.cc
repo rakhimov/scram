@@ -1034,6 +1034,20 @@ TEST(ExpressionTest, Max) {
   EXPECT_DOUBLE_EQ(100, dev->value());
 }
 
+TEST(ExpressionTest, Mean) {
+  OpenExpression arg_one(10, 10, 5, 15);
+  OpenExpression arg_two(90, 90, 80, 100);
+  OpenExpression arg_three(20, 20, 10, 30);
+  OpenExpression arg_four(40, 40, 30, 50);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(
+      dev = MakeUnique<Mean>({&arg_one, &arg_two, &arg_three, &arg_four}));
+  EXPECT_DOUBLE_EQ(40, dev->value());
+
+  EXPECT_TRUE(Interval::closed(31.25, 48.75) == dev->interval())
+      << dev->interval();
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

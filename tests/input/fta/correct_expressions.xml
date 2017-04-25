@@ -291,5 +291,12 @@ The input tries to utilize all the functionality including optional cases.
         <int value="100"/>
       </max>
     </define-parameter>
+    <define-parameter name="Mean">
+      <mean>
+        <float value="0.25"/>
+        <int value="100"/>
+        <int value="-10"/>
+      </mean>
+    </define-parameter>
   </model-data>
 </opsa-mef>

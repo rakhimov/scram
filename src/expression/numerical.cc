@@ -101,5 +101,10 @@ void ValidateExpression<Functor<&std::sqrt>>(
   EnsureNonNegative<InvalidArgument>(args.front(), "Square root argument");
 }
 
+Mean::Mean(std::vector<Expression*> args) : ExpressionFormula(std::move(args)) {
+  if (Expression::args().size() < 2)
+    throw InvalidArgument("Expression requires 2 or more arguments.");
+}
+
 }  // namespace mef
 }  // namespace scram

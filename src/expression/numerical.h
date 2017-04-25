@@ -136,6 +136,39 @@ using Floor = FunctorExpression<&std::floor>;  ///< Nearest (<=) integer.
 using Min = NaryExpression<Bifunctor<&std::fmin>, -1>;  ///< Minimum value.
 using Max = NaryExpression<Bifunctor<&std::fmax>, -1>;  ///< Maximum value.
 
+/// The average of argument expression values.
+class Mean : public ExpressionFormula<Mean> {
+ public:
+  /// Checks the number of provided arguments upon initialization.
+  ///
+  /// @param[in] args  Arguments of this expression.
+  ///
+  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  explicit Mean(std::vector<Expression*> args);
+
+  Interval interval() noexcept override {
+    double min_value = 0;
+    double max_value = 0;
+    for (Expression* arg : Expression::args()) {
+      Interval arg_interval = arg->interval();
+      min_value += arg_interval.lower();
+      max_value += arg_interval.upper();
+    }
+    min_value /= Expression::args().size();
+    max_value /= Expression::args().size();
+    return Interval::closed(min_value, max_value);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    double sum = 0;
+    for (Expression* arg : Expression::args())
+      sum += eval(arg);
+    return sum / Expression::args().size();
+  }
+};
+
 }  // namespace mef
 }  // namespace scram
 
