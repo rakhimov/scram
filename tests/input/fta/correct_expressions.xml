@@ -317,5 +317,11 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="true"/>
       </or>
     </define-parameter>
+    <define-parameter name="Equal">
+      <eq>
+        <float value="10"/>
+        <bool value="false"/>
+      </eq>
+    </define-parameter>
   </model-data>
 </opsa-mef>
