@@ -739,6 +739,9 @@
       <element name="tan">
         <ref name="expression"/>
       </element>
+      <element name="tanh">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

@@ -232,5 +232,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0"/>
       </sinh>
     </define-parameter>
+    <define-parameter name="Tanh">
+      <tanh>
+        <float value="0"/>
+      </tanh>
+    </define-parameter>
   </model-data>
 </opsa-mef>
