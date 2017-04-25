@@ -360,5 +360,24 @@ The input tries to utilize all the functionality including optional cases.
         <float value="-42"/>
       </ite>
     </define-parameter>
+    <define-parameter name="switch">
+      <switch>
+        <case>
+          <eq>
+            <parameter name="if-then-else"/>
+            <int value="1"/>
+          </eq>
+          <float value="1.0e-4"/>
+        </case>
+        <case>
+          <eq>
+            <parameter name="Modulo"/>
+            <int value="2"/>
+          </eq>
+          <float value="2.5e-4"/>
+        </case>
+        <float value="1.0e-3"/>
+      </switch>
+    </define-parameter>
   </model-data>
 </opsa-mef>

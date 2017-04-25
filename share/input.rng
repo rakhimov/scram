@@ -841,12 +841,29 @@
   <define name="conditional-operation">
     <choice>
       <ref name="if-then-else-operation"/>
+      <ref name="switch-operation"/>
     </choice>
   </define>
 
   <define name="if-then-else-operation">
     <element name="ite">
       <ref name="expression"/>
+      <ref name="expression"/>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="switch-operation">
+    <element name="switch">
+      <zeroOrMore>
+        <ref name="case-operation"/>
+      </zeroOrMore>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="case-operation">
+    <element name="case">
       <ref name="expression"/>
       <ref name="expression"/>
     </element>

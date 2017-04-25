@@ -1167,6 +1167,26 @@ TEST(ExpressionTest, Ite) {
       << dev->interval();
 }
 
+TEST(ExpressionTest, Switch) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(42, 42, 32, 52);
+  OpenExpression arg_three(10, 10, 5, 15);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(
+      dev = std::make_unique<Switch>(
+          std::vector<Switch::Case>{{arg_one, arg_two}}, &arg_three));
+  EXPECT_DOUBLE_EQ(42, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(10, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(42, dev->value());
+
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
+      << dev->interval();
+
+  EXPECT_DOUBLE_EQ(10, Switch({}, &arg_three).value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

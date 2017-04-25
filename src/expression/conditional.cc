@@ -34,5 +34,27 @@ Interval Ite::interval() noexcept {
       std::max(then_interval.upper(), else_interval.upper()));
 }
 
+Switch::Switch(std::vector<Case> cases, Expression* default_value)
+    : ExpressionFormula({default_value}),
+      cases_(std::move(cases)),
+      default_value_(*default_value) {
+  for (auto& case_arm : cases_) {
+    Expression::AddArg(&case_arm.condition);
+    Expression::AddArg(&case_arm.value);
+  }
+}
+
+Interval Switch::interval() noexcept {
+  Interval default_interval = default_value_.interval();
+  double min_value = default_interval.lower();
+  double max_value = default_interval.upper();
+  for (auto& case_arm : cases_) {
+    Interval case_interval = case_arm.value.interval();
+    min_value = std::min(min_value, case_interval.lower());
+    max_value = std::max(max_value, case_interval.upper());
+  }
+  return Interval::closed(min_value, max_value);
+}
+
 }  // namespace mef
 }  // namespace scram

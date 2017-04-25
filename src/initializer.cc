@@ -790,6 +790,27 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
   }
 }
 
+/// Specialization for Switch-Case operation extraction.
+template <>
+std::unique_ptr<Expression> Initializer::Extract<Switch>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  assert(!args.empty());
+  Expression* default_value =
+      init->GetExpression(XmlElement(args.back()), base_path);
+  std::vector<Switch::Case> cases;
+  auto it_end = std::prev(args.end());
+  for (auto it = args.begin(); it != it_end; ++it) {
+    xmlpp::NodeSet nodes = (*it)->find("./*");
+    assert(nodes.size() == 2);
+    cases.push_back(
+        {*init->GetExpression(XmlElement(nodes.front()), base_path),
+         *init->GetExpression(XmlElement(nodes.back()), base_path)});
+  }
+  return std::make_unique<Switch>(std::move(cases), default_value);
+}
+
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"exponential", &Extract<Exponential>},
     {"GLM", &Extract<Glm>},
@@ -836,7 +857,8 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"gt", &Extract<Gt>},
     {"leq", &Extract<Leq>},
     {"geq", &Extract<Geq>},
-    {"ite", &Extract<Ite>}};
+    {"ite", &Extract<Ite>},
+    {"switch", &Extract<Switch>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {
