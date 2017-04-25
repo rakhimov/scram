@@ -780,6 +780,17 @@ TEST(ExpressionTest, Atan) {
       << dev->interval();
 }
 
+TEST(ExpressionTest, Cos) {
+  OpenExpression arg_one(0);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Cos>(&arg_one));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = ConstantExpression::kPi.value();
+  EXPECT_DOUBLE_EQ(-1, dev->value());
+
+  EXPECT_TRUE(Interval::closed(-1, 1) == dev->interval()) << dev->interval();
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

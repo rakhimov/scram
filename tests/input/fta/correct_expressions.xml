@@ -207,5 +207,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0"/>
       </atan>
     </define-parameter>
+    <define-parameter name="Cosine">
+      <cos>
+        <float value="0"/>
+      </cos>
+    </define-parameter>
   </model-data>
 </opsa-mef>

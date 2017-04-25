@@ -724,6 +724,9 @@
       <element name="atan">
         <ref name="expression"/>
       </element>
+      <element name="cos">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 
