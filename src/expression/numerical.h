@@ -60,6 +60,9 @@ void ValidateExpression<Functor<&std::log>>(
 template <>
 void ValidateExpression<Functor<&std::log10>>(
     const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<std::modulus<int>>(
+    const std::vector<Expression*>& args);
 /// @}
 
 /// Interval specialization for math functions.
@@ -106,6 +109,7 @@ using Tanh = FunctorExpression<&std::tanh>;  ///< Hyperbolic tangent.
 using Exp = FunctorExpression<&std::exp>;  ///< Exponential.
 using Log = FunctorExpression<&std::log>;  ///< Natural logarithm.
 using Log10 = FunctorExpression<&std::log10>;  ///< Decimal logarithm.
+using Mod = NaryExpression<std::modulus<int>, 2>;  ///< Modulo (%) operation.
 
 }  // namespace mef
 }  // namespace scram

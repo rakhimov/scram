@@ -883,6 +883,55 @@ TEST(ExpressionTest, Log10) {
   EXPECT_NO_THROW(dev->Validate());
 }
 
+TEST(ExpressionTest, Modulo) {
+  OpenExpression arg_one(4, 1, 1, 2);
+  OpenExpression arg_two(2, 1, 1, 2);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Mod>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 5;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 4.5;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = -5;
+  EXPECT_DOUBLE_EQ(-1, dev->value());
+  arg_two.mean = -2;
+  EXPECT_DOUBLE_EQ(-1, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+
+  arg_one.mean = 4;
+  arg_two.mean = 2;
+  EXPECT_NO_THROW(dev->Validate());
+  arg_two.mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.mean = 0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.mean = -0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.mean = 2;
+  EXPECT_NO_THROW(dev->Validate());
+
+  arg_two.sample = arg_two.min = 0;
+  arg_two.max = 10;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.min = 0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.min = -0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.min = 1;
+  EXPECT_NO_THROW(dev->Validate());
+  arg_two.min = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.min = -5;
+  arg_two.max = -1;
+  EXPECT_NO_THROW(dev->Validate());
+  arg_two.max = -0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_two.max = 0.9;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

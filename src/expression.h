@@ -171,7 +171,7 @@ class NaryExpression;
 template <typename T>
 void ValidateExpression(const std::vector<Expression*>& /*args*/) {}
 
-/// Get the validation interval for expression T with a given argument.
+/// Get the validation interval for unary expression T with a given argument.
 template <typename T>
 Interval GetInterval(Expression* arg) {
   Interval arg_interval = arg->interval();
@@ -179,6 +179,19 @@ Interval GetInterval(Expression* arg) {
   double min_value = T()(arg_interval.lower());
   auto min_max = std::minmax(max_value, min_value);
   return Interval::closed(min_max.first, min_max.second);
+}
+
+/// Get the validation interval for binary expression with given arguments.
+template <typename T>
+Interval GetInterval(Expression* arg_one, Expression* arg_two) {
+  Interval interval_one = arg_one->interval();
+  Interval interval_two = arg_two->interval();
+  double max_max = T()(interval_one.upper(), interval_two.upper());
+  double max_min = T()(interval_one.upper(), interval_two.lower());
+  double min_max = T()(interval_one.lower(), interval_two.upper());
+  double min_min = T()(interval_one.lower(), interval_two.lower());
+  auto interval_pair = std::minmax({max_max, max_min, min_max, min_min});
+  return Interval::closed(interval_pair.first, interval_pair.second);
 }
 
 /// Unary expression.
@@ -204,6 +217,31 @@ class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
 
  private:
   Expression& expression_;  ///< The argument expression.
+};
+
+/// Binary expression.
+template <typename T>
+class NaryExpression<T, 2> : public ExpressionFormula<NaryExpression<T, 2>> {
+ public:
+  /// Two expression argument constructor.
+  explicit NaryExpression(Expression* arg_one, Expression* arg_two)
+      : ExpressionFormula<NaryExpression<T, 2>>({arg_one, arg_two}) {}
+
+  void Validate() const override {
+    return ValidateExpression<T>(Expression::args());
+  }
+
+  Interval interval() noexcept override {
+    return GetInterval<T>(Expression::args().front(),
+                          Expression::args().back());
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    return T()(eval(Expression::args().front()),
+               eval(Expression::args().back()));
+  }
 };
 
 /// Multivariate expression.

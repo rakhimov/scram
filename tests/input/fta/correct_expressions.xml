@@ -252,5 +252,11 @@ The input tries to utilize all the functionality including optional cases.
         <float value="1"/>
       </log10>
     </define-parameter>
+    <define-parameter name="Modulo">
+      <mod>
+        <int value="4"/>
+        <int value="2"/>
+      </mod>
+    </define-parameter>
   </model-data>
 </opsa-mef>

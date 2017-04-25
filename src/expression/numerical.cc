@@ -66,5 +66,20 @@ void ValidateExpression<Functor<&std::log10>>(
   EnsurePositive<InvalidArgument>(args.front(), "Decimal Logarithm");
 }
 
+template <>
+void ValidateExpression<std::modulus<int>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 2);
+  auto* arg_two = args.back();
+  int arg_value = arg_two->value();
+  if (arg_value == 0)
+    throw InvalidArgument("Modulo second operand must not be 0.");
+  Interval interval = arg_two->interval();
+  int high = interval.upper();
+  int low = interval.lower();
+  if (high == 0 || low == 0 || (low < 0 && 0 < high))
+    throw InvalidArgument("Modulo second operand sample must not contain 0.");
+}
+
 }  // namespace mef
 }  // namespace scram
