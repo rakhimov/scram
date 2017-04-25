@@ -70,6 +70,7 @@ to identify the supported and unsupported features.
     * Parameter
     * Numerical operations
     * Boolean operations
+    * Conditional operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential, GLM, Weibull, periodic-test)
 
