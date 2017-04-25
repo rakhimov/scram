@@ -94,6 +94,7 @@ using Atan = FunctorExpression<&std::atan>;  ///< Arc tangent.
 using Cos = FunctorExpression<&std::cos>;  ///< Cosine.
 using Sin = FunctorExpression<&std::sin>;  ///< Sine.
 using Tan = FunctorExpression<&std::tan>;  ///< Tangent.
+using Cosh = FunctorExpression<&std::cosh>;  ///< Hyperbolic cosine.
 
 }  // namespace mef
 }  // namespace scram

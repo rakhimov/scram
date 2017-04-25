@@ -222,5 +222,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0"/>
       </tan>
     </define-parameter>
+    <define-parameter name="Cosh">
+      <cosh>
+        <float value="0"/>
+      </cosh>
+    </define-parameter>
   </model-data>
 </opsa-mef>
