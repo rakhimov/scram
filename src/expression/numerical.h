@@ -57,6 +57,9 @@ void ValidateExpression<Functor<&std::asin>>(
 template <>
 void ValidateExpression<Functor<&std::log>>(
     const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Functor<&std::log10>>(
+    const std::vector<Expression*>& args);
 /// @}
 
 /// Interval specialization for math functions.
@@ -102,6 +105,7 @@ using Sinh = FunctorExpression<&std::sinh>;  ///< Hyperbolic sine.
 using Tanh = FunctorExpression<&std::tanh>;  ///< Hyperbolic tangent.
 using Exp = FunctorExpression<&std::exp>;  ///< Exponential.
 using Log = FunctorExpression<&std::log>;  ///< Natural logarithm.
+using Log10 = FunctorExpression<&std::log10>;  ///< Decimal logarithm.
 
 }  // namespace mef
 }  // namespace scram

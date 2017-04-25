@@ -860,6 +860,29 @@ TEST(ExpressionTest, Log) {
   EXPECT_NO_THROW(dev->Validate());
 }
 
+TEST(ExpressionTest, Log10) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Log10>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 10;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+
+  arg_one.mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 1;
+  EXPECT_NO_THROW(dev->Validate());
+
+  arg_one.sample = arg_one.min = 0;
+  arg_one.max = 1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.min = 0.5;
+  arg_one.max = 1;
+  EXPECT_NO_THROW(dev->Validate());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

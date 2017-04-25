@@ -736,6 +736,9 @@
       <element name="log">
         <ref name="expression"/>
       </element>
+      <element name="log10">
+        <ref name="expression"/>
+      </element>
       <element name="sin">
         <ref name="expression"/>
       </element>

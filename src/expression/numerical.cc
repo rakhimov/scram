@@ -59,5 +59,12 @@ void ValidateExpression<Functor<&std::log>>(
   EnsurePositive<InvalidArgument>(args.front(), "Natural Logarithm");
 }
 
+template <>
+void ValidateExpression<Functor<&std::log10>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 1);
+  EnsurePositive<InvalidArgument>(args.front(), "Decimal Logarithm");
+}
+
 }  // namespace mef
 }  // namespace scram
