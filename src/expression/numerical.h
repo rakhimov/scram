@@ -54,6 +54,9 @@ void ValidateExpression<Functor<&std::acos>>(
 template <>
 void ValidateExpression<Functor<&std::asin>>(
     const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Functor<&std::log>>(
+    const std::vector<Expression*>& args);
 /// @}
 
 /// Interval specialization for math functions.
@@ -98,6 +101,7 @@ using Cosh = FunctorExpression<&std::cosh>;  ///< Hyperbolic cosine.
 using Sinh = FunctorExpression<&std::sinh>;  ///< Hyperbolic sine.
 using Tanh = FunctorExpression<&std::tanh>;  ///< Hyperbolic tangent.
 using Exp = FunctorExpression<&std::exp>;  ///< Exponential.
+using Log = FunctorExpression<&std::log>;  ///< Natural logarithm.
 
 }  // namespace mef
 }  // namespace scram

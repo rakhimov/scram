@@ -242,5 +242,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0"/>
       </exp>
     </define-parameter>
+    <define-parameter name="Log">
+      <log>
+        <float value="1"/>
+      </log>
+    </define-parameter>
   </model-data>
 </opsa-mef>

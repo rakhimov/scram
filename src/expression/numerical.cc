@@ -52,5 +52,12 @@ void ValidateExpression<Functor<&std::asin>>(
                                 "Arc sin");
 }
 
+template <>
+void ValidateExpression<Functor<&std::log>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 1);
+  EnsurePositive<InvalidArgument>(args.front(), "Natural Logarithm");
+}
+
 }  // namespace mef
 }  // namespace scram
