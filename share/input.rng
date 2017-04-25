@@ -718,6 +718,9 @@
       <element name="acos">
         <ref name="expression"/>
       </element>
+      <element name="asin">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

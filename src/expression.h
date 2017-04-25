@@ -23,6 +23,7 @@
 #define SCRAM_SRC_EXPRESSION_H_
 
 #include <algorithm>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -306,6 +307,34 @@ void EnsureNonNegative(Expression* expression, const std::string& description) {
     throw T(description + " value cannot be negative.");
   if (IsNonNegative(expression->interval()) == false)
     throw T(description + " sample domain cannot have negative values.");
+}
+
+/// Ensures that expression values are within the interval.
+///
+/// @tparam T  The exception type to throw for invalid values.
+///
+/// @param[in] expression  The expression to be validated.
+/// @param[in] interval  The allowed interval.
+/// @param[in] type  The type of expression for error messages.
+///
+/// @throws T  The expression is not suited for non-negative values.
+template <typename T>
+void EnsureWithin(Expression* expression, const Interval& interval,
+                  const char* type) {
+  double arg_value = expression->value();
+  if (!Contains(interval, arg_value)) {
+    std::stringstream ss;
+    ss << type << " argument value [" << arg_value << "] must be in "
+       << interval << ".";
+    throw T(ss.str());
+  }
+  Interval arg_interval = expression->interval();
+  if (!boost::icl::within(arg_interval, interval)) {
+    std::stringstream ss;
+    ss << type << " argument sample domain " << arg_interval << " must be in "
+       << interval << ".";
+    throw T(ss.str());
+  }
 }
 
 }  // namespace mef

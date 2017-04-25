@@ -51,6 +51,9 @@ void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args);
 template <>
 void ValidateExpression<Functor<&std::acos>>(
     const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Functor<&std::asin>>(
+    const std::vector<Expression*>& args);
 /// @}
 
 /// Interval specialization for math functions.
@@ -58,6 +61,11 @@ void ValidateExpression<Functor<&std::acos>>(
 template <>
 inline Interval GetInterval<Functor<&std::acos>>(Expression* /*arg*/) {
   return Interval::closed(0, ConstantExpression::kPi.value());
+}
+template <>
+inline Interval GetInterval<Functor<&std::asin>>(Expression* /*arg*/) {
+  double half_pi = ConstantExpression::kPi.value() / 2;
+  return Interval::closed(-half_pi, half_pi);
 }
 /// @}
 
@@ -68,6 +76,7 @@ using Mul = NaryExpression<std::multiplies<>, -1>;  ///< Product.
 using Div = NaryExpression<std::divides<>, -1>;  ///< Division of the first.
 using Abs = FunctorExpression<&std::abs>;  ///< The absolute value.
 using Acos = FunctorExpression<&std::acos>;  ///< Arc cosine.
+using Asin = FunctorExpression<&std::asin>;  ///< Arc sine.
 
 }  // namespace mef
 }  // namespace scram

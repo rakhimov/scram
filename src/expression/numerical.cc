@@ -40,12 +40,16 @@ template <>
 void ValidateExpression<Functor<&std::acos>>(
     const std::vector<Expression*>& args) {
   assert(args.size() == 1);
-  auto* arg_one = args.front();
-  double arg_value = arg_one->value();
-  if (arg_value > 1 || arg_value < -1)
-    throw InvalidArgument("Arc cos argument value must be in [-1, 1].");
-  if (!boost::icl::within(arg_one->interval(), Interval::closed(-1, 1)))
-    throw InvalidArgument("Arc cos argument sample domain must be in [-1, 1].");
+  EnsureWithin<InvalidArgument>(args.front(), Interval::closed(-1, 1),
+                                "Arc cos");
+}
+
+template <>
+void ValidateExpression<Functor<&std::asin>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 1);
+  EnsureWithin<InvalidArgument>(args.front(), Interval::closed(-1, 1),
+                                "Arc sin");
 }
 
 }  // namespace mef
