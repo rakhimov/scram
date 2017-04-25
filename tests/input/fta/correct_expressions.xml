@@ -217,5 +217,10 @@ The input tries to utilize all the functionality including optional cases.
         <float value="0"/>
       </sin>
     </define-parameter>
+    <define-parameter name="Tangent">
+      <tan>
+        <float value="0"/>
+      </tan>
+    </define-parameter>
   </model-data>
 </opsa-mef>

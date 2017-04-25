@@ -802,6 +802,15 @@ TEST(ExpressionTest, Sin) {
   EXPECT_TRUE(Interval::closed(-1, 1) == dev->interval()) << dev->interval();
 }
 
+TEST(ExpressionTest, Tan) {
+  OpenExpression arg_one(0);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Tan>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0.25 * ConstantExpression::kPi.value();
+  EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

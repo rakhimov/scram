@@ -93,6 +93,7 @@ using Asin = FunctorExpression<&std::asin>;  ///< Arc sine.
 using Atan = FunctorExpression<&std::atan>;  ///< Arc tangent.
 using Cos = FunctorExpression<&std::cos>;  ///< Cosine.
 using Sin = FunctorExpression<&std::sin>;  ///< Sine.
+using Tan = FunctorExpression<&std::tan>;  ///< Tangent.
 
 }  // namespace mef
 }  // namespace scram
