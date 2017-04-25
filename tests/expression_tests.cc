@@ -153,8 +153,7 @@ TEST(ExpressionTest, Exponential) {
   OpenExpression lambda(10, 8);
   OpenExpression time(5, 4);
   std::unique_ptr<Expression> dev;
-  ASSERT_NO_THROW(
-      dev = std::make_unique<ExponentialExpression>(&lambda, &time));
+  ASSERT_NO_THROW(dev = std::make_unique<Exponential>(&lambda, &time));
   EXPECT_DOUBLE_EQ(1 - std::exp(-50), dev->value());
 
   TestNegative(dev.get(), &lambda);
@@ -172,8 +171,7 @@ TEST(ExpressionTest, GLM) {
   OpenExpression mu(100, 80);
   OpenExpression time(5, 4);
   std::unique_ptr<Expression> dev;
-  ASSERT_NO_THROW(
-      dev = std::make_unique<GlmExpression>(&gamma, &lambda, &mu, &time));
+  ASSERT_NO_THROW(dev = std::make_unique<Glm>(&gamma, &lambda, &mu, &time));
   EXPECT_DOUBLE_EQ((10 - (10 - 0.10 * 110) * std::exp(-110 * 5)) / 110,
                    dev->value());
 
@@ -194,10 +192,8 @@ TEST(ExpressionTest, Weibull) {
   OpenExpression t0(10, 10);
   OpenExpression time(500, 500);
   std::unique_ptr<Expression> dev;
-  ASSERT_NO_THROW(
-      dev = std::make_unique<WeibullExpression>(&alpha, &beta, &t0, &time));
-  EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)),
-                   dev->value());
+  ASSERT_NO_THROW(dev = std::make_unique<Weibull>(&alpha, &beta, &t0, &time));
+  EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)), dev->value());
 
   TestNonPositive(dev.get(), &alpha);
   TestNonPositive(dev.get(), &beta);
@@ -377,12 +373,12 @@ TEST(ExpressionTest, NormalDeviate) {
 }
 
 // Log-Normal deviate test for invalid mean, error factor, and level.
-TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
+TEST(ExpressionTest, LognormalDeviateLogarithmic) {
   OpenExpression mean(10, 5);
   OpenExpression ef(5, 3);
   OpenExpression level(0.95, 0.95, 0.6, 0.9);
   std::unique_ptr<Expression> dev;
-  ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mean, &ef, &level));
+  ASSERT_NO_THROW(dev = std::make_unique<LognormalDeviate>(&mean, &ef, &level));
 
   EXPECT_EQ(mean.value(), dev->value());
   EXPECT_EQ(0, dev->interval().lower());
@@ -420,11 +416,11 @@ TEST(ExpressionTest, LogNormalDeviateLogarithmic) {
 }
 
 // Log-Normal deviate with invalid normal mean and standard deviation.
-TEST(ExpressionTest, LogNormalDeviateNormal) {
+TEST(ExpressionTest, LognormalDeviateNormal) {
   OpenExpression mu(10, 1);
   OpenExpression sigma(5, 4);
   std::unique_ptr<Expression> dev;
-  ASSERT_NO_THROW(dev = std::make_unique<LogNormalDeviate>(&mu, &sigma));
+  ASSERT_NO_THROW(dev = std::make_unique<LognormalDeviate>(&mu, &sigma));
 
   EXPECT_NEAR(5.9105e9, dev->value(), 1e6);
   EXPECT_EQ(0, dev->interval().lower());

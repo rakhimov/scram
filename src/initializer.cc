@@ -761,13 +761,13 @@ std::unique_ptr<Expression> Initializer::Extract<Histogram>(
 
 /// Specialization due to overloaded constructors.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<LogNormalDeviate>(
+std::unique_ptr<Expression> Initializer::Extract<LognormalDeviate>(
     const xmlpp::NodeSet& args,
     const std::string& base_path,
     Initializer* init) {
   if (args.size() == 3)
-    return Extractor<LogNormalDeviate, 3>()(args, base_path, init);
-  return Extractor<LogNormalDeviate, 2>()(args, base_path, init);
+    return Extractor<LognormalDeviate, 3>()(args, base_path, init);
+  return Extractor<LognormalDeviate, 2>()(args, base_path, init);
 }
 
 /// Specialization due to overloaded constructors and un-fixed number of args.
@@ -789,13 +789,13 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
 }
 
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
-    {"exponential", &Extract<ExponentialExpression>},
-    {"GLM", &Extract<GlmExpression>},
-    {"Weibull", &Extract<WeibullExpression>},
+    {"exponential", &Extract<Exponential>},
+    {"GLM", &Extract<Glm>},
+    {"Weibull", &Extract<Weibull>},
     {"periodic-test", &Extract<PeriodicTest>},
     {"uniform-deviate", &Extract<UniformDeviate>},
     {"normal-deviate", &Extract<NormalDeviate>},
-    {"lognormal-deviate", &Extract<LogNormalDeviate>},
+    {"lognormal-deviate", &Extract<LognormalDeviate>},
     {"gamma-deviate", &Extract<GammaDeviate>},
     {"beta-deviate", &Extract<BetaDeviate>},
     {"histogram", &Extract<Histogram>},

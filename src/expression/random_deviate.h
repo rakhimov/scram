@@ -93,7 +93,7 @@ class NormalDeviate : public RandomDeviate {
 };
 
 /// Log-normal distribution.
-class LogNormalDeviate : public RandomDeviate {
+class LognormalDeviate : public RandomDeviate {
  public:
   /// The log-normal deviate parametrization with
   /// its expected value and error factor of certain confidence level.
@@ -107,13 +107,13 @@ class LogNormalDeviate : public RandomDeviate {
   /// @param[in] ef  The error factor of the log-normal distribution.
   ///                EF = exp(z_alpha * sigma)
   /// @param[in] level  The confidence level.
-  LogNormalDeviate(Expression* mean, Expression* ef, Expression* level);
+  LognormalDeviate(Expression* mean, Expression* ef, Expression* level);
 
   /// The parametrization with underlying normal distribution parameters.
   ///
   /// @param[in] mu  The mean of the normal distribution.
   /// @param[in] sigma  The standard deviation of the normal distribution.
-  LogNormalDeviate(Expression* mu, Expression* sigma);
+  LognormalDeviate(Expression* mu, Expression* sigma);
 
   void Validate() const override { flavor_->Validate(); };
   double value() noexcept override { return flavor_->mean(); }
@@ -139,7 +139,7 @@ class LogNormalDeviate : public RandomDeviate {
   /// Computation with the log-normal mean and error factor.
   class Logarithmic final : public Flavor {
    public:
-    /// @copydoc LogNormalDeviate::LogNormalDeviate
+    /// @copydoc LognormalDeviate::LognormalDeviate
     Logarithmic(Expression* mean, Expression* ef, Expression* level)
         : mean_(*mean), ef_(*ef), level_(*level) {}
     double scale() noexcept override;
