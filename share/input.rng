@@ -826,6 +826,10 @@
         <ref name="expression"/>
         <ref name="expression"/>
       </element>
+      <element name="geq">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

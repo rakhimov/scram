@@ -36,6 +36,7 @@ using Df = NaryExpression<std::not_equal_to<>, 2>;  ///< Inequality test.
 using Lt = NaryExpression<std::less<>, 2>;  ///< (<) test.
 using Gt = NaryExpression<std::greater<>, 2>;  ///< (>) test.
 using Leq = NaryExpression<std::less_equal<>, 2>;  ///< (<=) test.
+using Geq = NaryExpression<std::greater_equal<>, 2>;  ///< (>=) test.
 
 }  // namespace mef
 }  // namespace scram

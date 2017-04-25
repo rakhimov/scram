@@ -347,5 +347,11 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="false"/>
       </leq>
     </define-parameter>
+    <define-parameter name="GEQ">
+      <geq>
+        <float value="10"/>
+        <bool value="false"/>
+      </geq>
+    </define-parameter>
   </model-data>
 </opsa-mef>
