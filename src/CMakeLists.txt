@@ -33,7 +33,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/expression.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/parameter.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/constant.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/arithmetic.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/expression/numerical.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/exponential.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/random_deviate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"

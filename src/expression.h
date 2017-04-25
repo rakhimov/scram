@@ -22,15 +22,17 @@
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 
-#include <cstdint>
-
+#include <algorithm>
+#include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/icl/continuous_interval.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "element.h"
+#include "error.h"
 
 namespace scram {
 namespace mef {
@@ -38,16 +40,12 @@ namespace mef {
 /// Validation domain interval for expression values.
 using Interval = boost::icl::continuous_interval<double>;
 /// left_open, open, right_open, closed bounds.
+/// @todo Interval bound propagation upon operations on boundary values.
 using IntervalBounds = boost::icl::interval_bounds;
 
-/// Returns right and left interval bounds reversed.
-inline IntervalBounds ReverseBounds(const Interval& interval) {
-  IntervalBounds bound_type = interval.bounds();
-  if (bound_type == IntervalBounds::left_open())
-    return IntervalBounds::right_open();
-  if (bound_type == IntervalBounds::right_open())
-    return IntervalBounds::left_open();
-  return bound_type;  // Either fully open or closed.
+/// Returns true if a given interval contains a given value.
+inline bool Contains(const Interval& interval, double value) {
+  return boost::icl::contains(interval, Interval::closed(value, value));
 }
 
 /// Checks if a given interval is within the probability domain.
@@ -55,21 +53,14 @@ inline bool IsProbability(const Interval& interval) {
   return boost::icl::within(interval, Interval::closed(0, 1));
 }
 
-/// Checks if all values in a given interval are positive.
-inline bool IsPositive(const Interval& interval) {
-  if (interval.lower() > 0)
-    return true;
-  if (interval.lower() == 0) {
-    IntervalBounds bound_type = interval.bounds();
-    return bound_type == IntervalBounds::left_open() ||
-           bound_type == IntervalBounds::open();
-  }
-  return false;
-}
-
 /// Checks if all values in a given interval are non-negative.
 inline bool IsNonNegative(const Interval& interval) {
   return interval.lower() >= 0;
+}
+
+/// Checks if all values in a given interval are positive.
+inline bool IsPositive(const Interval& interval) {
+  return IsNonNegative(interval) && !Contains(interval, 0);
 }
 
 /// Abstract base class for all sorts of expressions to describe events.
@@ -147,7 +138,7 @@ class Expression : private boost::noncopyable {
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
 
-/// CRTP for Expressions with a same formula to evaluate and sample.
+/// CRTP for Expressions with the same formula to evaluate and sample.
 ///
 /// @tparam T  The Expression type with Compute function.
 template <class T>
@@ -166,6 +157,120 @@ class ExpressionFormula : public Expression {
   double DoSample() noexcept final {
     return static_cast<T*>(this)->Compute(
         [](Expression* arg) { return arg->Sample(); });
+  }
+};
+
+/// n-ary expressions.
+///
+/// @tparam T  The callable type of operation to apply to the arguments.
+/// @tparam N  The arity of the expression (to be specified).
+template <typename T, int N>
+class NaryExpression;
+
+/// Unary expression.
+template <typename T>
+class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
+ public:
+  /// @param[in] expression  The single argument.
+  explicit NaryExpression(Expression* expression)
+      : ExpressionFormula<NaryExpression<T, 1>>({expression}),
+        expression_(*expression) {}
+
+  void Validate() const override {}
+
+  Interval interval() noexcept override {
+    Interval arg_interval = expression_.interval();
+    double max_value = T()(arg_interval.upper());
+    double min_value = T()(arg_interval.lower());
+    auto min_max = std::minmax(max_value, min_value);
+    return Interval::closed(min_max.first, min_max.second);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    return T()(eval(&expression_));
+  }
+
+ private:
+  Expression& expression_;  ///< The argument expression.
+};
+
+/// Binary expression.
+template <typename T>
+class NaryExpression<T, 2> : public ExpressionFormula<NaryExpression<T, 2>> {
+ public:
+  /// Two expression argument constructor.
+  explicit NaryExpression(Expression* arg_one, Expression* arg_two)
+      : ExpressionFormula<NaryExpression<T, 2>>({arg_one, arg_two}) {}
+
+  void Validate() const override {}
+
+  Interval interval() noexcept override {
+    Interval interval_one = Expression::args().front()->interval();
+    Interval interval_two = Expression::args().back()->interval();
+    double max_max = T()(interval_one.upper(), interval_two.upper());
+    double max_min = T()(interval_one.upper(), interval_two.lower());
+    double min_max = T()(interval_one.lower(), interval_two.upper());
+    double min_min = T()(interval_one.lower(), interval_two.lower());
+    auto interval_pair = std::minmax({max_max, max_min, min_max, min_min});
+    return Interval::closed(interval_pair.first, interval_pair.second);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    return T()(eval(Expression::args().front()),
+               eval(Expression::args().back()));
+  }
+};
+
+/// Multivariate expression.
+template <typename T>
+class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
+ public:
+  /// Checks the number of provided arguments upon initialization.
+  ///
+  /// @param[in] args  Arguments of this expression.
+  ///
+  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  explicit NaryExpression(std::vector<Expression*> args)
+      : ExpressionFormula<NaryExpression<T, -1>>(std::move(args)) {
+    if (Expression::args().size() < 2)
+      throw InvalidArgument("Expression requires 2 or more arguments.");
+  }
+
+  void Validate() const override {}
+
+  Interval interval() noexcept override {
+    auto it = Expression::args().begin();
+    Interval first_arg_interval = (*it)->interval();
+    double max_value = first_arg_interval.upper();
+    double min_value = first_arg_interval.lower();
+    for (++it; it != Expression::args().end(); ++it) {
+      Interval next_arg_interval = (*it)->interval();
+      double arg_max = next_arg_interval.upper();
+      double arg_min = next_arg_interval.lower();
+      double max_max = T()(max_value, arg_max);
+      double max_min = T()(max_value, arg_min);
+      double min_max = T()(min_value, arg_max);
+      double min_min = T()(min_value, arg_min);
+      std::tie(min_value, max_value) =
+          std::minmax({max_max, max_min, min_max, min_min});
+    }
+    assert(min_value <= max_value);
+    return Interval::closed(min_value, max_value);
+  }
+
+  /// Computes the expression value with a given argument value extractor.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    auto it = Expression::args().begin();
+    double result = eval(*it);
+    for (++it; it != Expression::args().end(); ++it) {
+      result = T()(result, eval(*it));
+    }
+    return result;
   }
 };
 
@@ -200,9 +305,9 @@ void EnsureProbability(Expression* expression, const std::string& description,
 template <typename T>
 void EnsurePositive(Expression* expression, const std::string& description) {
   if (expression->value() <= 0)
-    throw T(description + " value must be positive.");
+    throw T(description + " argument value must be positive.");
   if (IsPositive(expression->interval()) == false)
-    throw T(description + " sample domain must be positive.");
+    throw T(description + " argument sample domain must be positive.");
 }
 
 /// Ensures that expression yields non-negative (>= 0) values.
@@ -216,9 +321,37 @@ void EnsurePositive(Expression* expression, const std::string& description) {
 template <typename T>
 void EnsureNonNegative(Expression* expression, const std::string& description) {
   if (expression->value() < 0)
-    throw T(description + " value cannot be negative.");
+    throw T(description + " argument value cannot be negative.");
   if (IsNonNegative(expression->interval()) == false)
-    throw T(description + " sample domain cannot have negative values.");
+    throw T(description + " argument sample cannot have negative values.");
+}
+
+/// Ensures that expression values are within the interval.
+///
+/// @tparam T  The exception type to throw for invalid values.
+///
+/// @param[in] expression  The expression to be validated.
+/// @param[in] interval  The allowed interval.
+/// @param[in] type  The type of expression for error messages.
+///
+/// @throws T  The expression is not suited for non-negative values.
+template <typename T>
+void EnsureWithin(Expression* expression, const Interval& interval,
+                  const char* type) {
+  double arg_value = expression->value();
+  if (!Contains(interval, arg_value)) {
+    std::stringstream ss;
+    ss << type << " argument value [" << arg_value << "] must be in "
+       << interval << ".";
+    throw T(ss.str());
+  }
+  Interval arg_interval = expression->interval();
+  if (!boost::icl::within(arg_interval, interval)) {
+    std::stringstream ss;
+    ss << type << " argument sample domain " << arg_interval << " must be in "
+       << interval << ".";
+    throw T(ss.str());
+  }
 }
 
 }  // namespace mef

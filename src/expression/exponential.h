@@ -31,13 +31,13 @@ namespace mef {
 
 /// Negative exponential distribution
 /// with hourly failure rate and time.
-class ExponentialExpression : public ExpressionFormula<ExponentialExpression> {
+class Exponential : public ExpressionFormula<Exponential> {
  public:
   /// Constructor for exponential expression with two arguments.
   ///
   /// @param[in] lambda  Hourly rate of failure.
   /// @param[in] t  Mission time in hours.
-  ExponentialExpression(Expression* lambda, Expression* t);
+  Exponential(Expression* lambda, Expression* t);
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate() const override;
@@ -59,7 +59,7 @@ class ExponentialExpression : public ExpressionFormula<ExponentialExpression> {
 
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
-class GlmExpression : public ExpressionFormula<GlmExpression> {
+class Glm : public ExpressionFormula<Glm> {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
   ///
@@ -67,8 +67,7 @@ class GlmExpression : public ExpressionFormula<GlmExpression> {
   /// @param[in] lambda  Hourly rate of failure.
   /// @param[in] mu  Hourly repair rate.
   /// @param[in] t  Mission time in hours.
-  GlmExpression(Expression* gamma, Expression* lambda, Expression* mu,
-                Expression* t);
+  Glm(Expression* gamma, Expression* lambda, Expression* mu, Expression* t);
 
   void Validate() const override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
@@ -90,7 +89,7 @@ class GlmExpression : public ExpressionFormula<GlmExpression> {
 };
 
 /// Weibull distribution with scale, shape, time shift, and time.
-class WeibullExpression : public ExpressionFormula<WeibullExpression> {
+class Weibull : public ExpressionFormula<Weibull> {
  public:
   /// Constructor for Weibull distribution.
   ///
@@ -98,8 +97,8 @@ class WeibullExpression : public ExpressionFormula<WeibullExpression> {
   /// @param[in] beta  Shape parameter.
   /// @param[in] t0  Time shift.
   /// @param[in] time  Mission time.
-  WeibullExpression(Expression* alpha, Expression* beta,
-                    Expression* t0, Expression* time);
+  Weibull(Expression* alpha, Expression* beta, Expression* t0,
+          Expression* time);
 
   void Validate() const override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }

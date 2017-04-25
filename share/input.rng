@@ -712,6 +712,77 @@
         </oneOrMore>
       </element>
       <element name="pi"> <empty/> </element>
+      <element name="abs">
+        <ref name="expression"/>
+      </element>
+      <element name="acos">
+        <ref name="expression"/>
+      </element>
+      <element name="asin">
+        <ref name="expression"/>
+      </element>
+      <element name="atan">
+        <ref name="expression"/>
+      </element>
+      <element name="cos">
+        <ref name="expression"/>
+      </element>
+      <element name="cosh">
+        <ref name="expression"/>
+      </element>
+      <element name="exp">
+        <ref name="expression"/>
+      </element>
+      <element name="log">
+        <ref name="expression"/>
+      </element>
+      <element name="log10">
+        <ref name="expression"/>
+      </element>
+      <element name="mod">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="pow">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="sin">
+        <ref name="expression"/>
+      </element>
+      <element name="sinh">
+        <ref name="expression"/>
+      </element>
+      <element name="tan">
+        <ref name="expression"/>
+      </element>
+      <element name="tanh">
+        <ref name="expression"/>
+      </element>
+      <element name="sqrt">
+        <ref name="expression"/>
+      </element>
+      <element name="ceil">
+        <ref name="expression"/>
+      </element>
+      <element name="floor">
+        <ref name="expression"/>
+      </element>
+      <element name="min">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="max">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="mean">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 

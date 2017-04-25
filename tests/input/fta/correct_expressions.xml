@@ -187,5 +187,116 @@ The input tries to utilize all the functionality including optional cases.
     <define-parameter name="Pi">
       <pi/>
     </define-parameter>
+    <define-parameter name="Abs">
+      <abs>
+        <float value="-1"/>
+      </abs>
+    </define-parameter>
+    <define-parameter name="Acos">
+      <acos>
+        <float value="-1"/>
+      </acos>
+    </define-parameter>
+    <define-parameter name="Asin">
+      <asin>
+        <float value="-1"/>
+      </asin>
+    </define-parameter>
+    <define-parameter name="Atan">
+      <atan>
+        <float value="0"/>
+      </atan>
+    </define-parameter>
+    <define-parameter name="Cosine">
+      <cos>
+        <float value="0"/>
+      </cos>
+    </define-parameter>
+    <define-parameter name="Sine">
+      <sin>
+        <float value="0"/>
+      </sin>
+    </define-parameter>
+    <define-parameter name="Tangent">
+      <tan>
+        <float value="0"/>
+      </tan>
+    </define-parameter>
+    <define-parameter name="Cosh">
+      <cosh>
+        <float value="0"/>
+      </cosh>
+    </define-parameter>
+    <define-parameter name="Sinh">
+      <sinh>
+        <float value="0"/>
+      </sinh>
+    </define-parameter>
+    <define-parameter name="Tanh">
+      <tanh>
+        <float value="0"/>
+      </tanh>
+    </define-parameter>
+    <define-parameter name="Exp">
+      <exp>
+        <float value="0"/>
+      </exp>
+    </define-parameter>
+    <define-parameter name="Log">
+      <log>
+        <float value="1"/>
+      </log>
+    </define-parameter>
+    <define-parameter name="Log10">
+      <log10>
+        <float value="1"/>
+      </log10>
+    </define-parameter>
+    <define-parameter name="Modulo">
+      <mod>
+        <int value="4"/>
+        <int value="2"/>
+      </mod>
+    </define-parameter>
+    <define-parameter name="Pow">
+      <pow>
+        <int value="4"/>
+        <int value="2"/>
+      </pow>
+    </define-parameter>
+    <define-parameter name="Sqrt">
+      <sqrt>
+        <int value="4"/>
+      </sqrt>
+    </define-parameter>
+    <define-parameter name="Ceil">
+      <ceil>
+        <float value="0.25"/>
+      </ceil>
+    </define-parameter>
+    <define-parameter name="Floor">
+      <floor>
+        <float value="0.25"/>
+      </floor>
+    </define-parameter>
+    <define-parameter name="Min">
+      <min>
+        <float value="0.25"/>
+        <int value="100"/>
+      </min>
+    </define-parameter>
+    <define-parameter name="Max">
+      <max>
+        <float value="0.25"/>
+        <int value="100"/>
+      </max>
+    </define-parameter>
+    <define-parameter name="Mean">
+      <mean>
+        <float value="0.25"/>
+        <int value="100"/>
+        <int value="-10"/>
+      </mean>
+    </define-parameter>
   </model-data>
 </opsa-mef>

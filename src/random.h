@@ -159,7 +159,7 @@ class Random {
   /// @param[in] s  The s scale factor of the distribution.
   ///
   /// @returns A sampled value.
-  static double LogNormalGenerator(double m, double s) noexcept {
+  static double LognormalGenerator(double m, double s) noexcept {
     assert(s >= 0);
     return std::lognormal_distribution<>(m, s)(rng_);
   }

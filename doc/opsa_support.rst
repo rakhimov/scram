@@ -68,7 +68,7 @@ to identify the supported and unsupported features.
     * Constant expressions
     * System mission time
     * Parameter
-    * Arithmetic expressions
+    * Numerical operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential with two parameters,
       exponential with four parameters, Weibull, periodic-test)

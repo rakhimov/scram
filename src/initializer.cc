@@ -29,8 +29,8 @@
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
-#include "expression/arithmetic.h"
 #include "expression/exponential.h"
+#include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "logger.h"
 #include "xml.h"
@@ -761,13 +761,13 @@ std::unique_ptr<Expression> Initializer::Extract<Histogram>(
 
 /// Specialization due to overloaded constructors.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<LogNormalDeviate>(
+std::unique_ptr<Expression> Initializer::Extract<LognormalDeviate>(
     const xmlpp::NodeSet& args,
     const std::string& base_path,
     Initializer* init) {
   if (args.size() == 3)
-    return Extractor<LogNormalDeviate, 3>()(args, base_path, init);
-  return Extractor<LogNormalDeviate, 2>()(args, base_path, init);
+    return Extractor<LognormalDeviate, 3>()(args, base_path, init);
+  return Extractor<LognormalDeviate, 2>()(args, base_path, init);
 }
 
 /// Specialization due to overloaded constructors and un-fixed number of args.
@@ -789,13 +789,13 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
 }
 
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
-    {"exponential", &Extract<ExponentialExpression>},
-    {"GLM", &Extract<GlmExpression>},
-    {"Weibull", &Extract<WeibullExpression>},
+    {"exponential", &Extract<Exponential>},
+    {"GLM", &Extract<Glm>},
+    {"Weibull", &Extract<Weibull>},
     {"periodic-test", &Extract<PeriodicTest>},
     {"uniform-deviate", &Extract<UniformDeviate>},
     {"normal-deviate", &Extract<NormalDeviate>},
-    {"lognormal-deviate", &Extract<LogNormalDeviate>},
+    {"lognormal-deviate", &Extract<LognormalDeviate>},
     {"gamma-deviate", &Extract<GammaDeviate>},
     {"beta-deviate", &Extract<BetaDeviate>},
     {"histogram", &Extract<Histogram>},
@@ -803,7 +803,28 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"add", &Extract<Add>},
     {"sub", &Extract<Sub>},
     {"mul", &Extract<Mul>},
-    {"div", &Extract<Div>}};
+    {"div", &Extract<Div>},
+    {"abs", &Extract<Abs>},
+    {"acos", &Extract<Acos>},
+    {"asin", &Extract<Asin>},
+    {"atan", &Extract<Atan>},
+    {"cos", &Extract<Cos>},
+    {"sin", &Extract<Sin>},
+    {"tan", &Extract<Tan>},
+    {"cosh", &Extract<Cosh>},
+    {"sinh", &Extract<Sinh>},
+    {"tanh", &Extract<Tanh>},
+    {"exp", &Extract<Exp>},
+    {"log", &Extract<Log>},
+    {"log10", &Extract<Log10>},
+    {"mod", &Extract<Mod>},
+    {"pow", &Extract<Pow>},
+    {"sqrt", &Extract<Sqrt>},
+    {"ceil", &Extract<Ceil>},
+    {"floor", &Extract<Floor>},
+    {"min", &Extract<Min>},
+    {"max", &Extract<Max>},
+    {"mean", &Extract<Mean>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {

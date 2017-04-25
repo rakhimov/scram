@@ -21,6 +21,8 @@
 #ifndef SCRAM_SRC_PARAMETER_H_
 #define SCRAM_SRC_PARAMETER_H_
 
+#include <cstdint>
+
 #include <memory>
 #include <string>
 

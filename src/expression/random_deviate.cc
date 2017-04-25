@@ -68,16 +68,16 @@ double NormalDeviate::DoSample() noexcept {
   return Random::NormalGenerator(mean_.value(), sigma_.value());
 }
 
-LogNormalDeviate::LogNormalDeviate(Expression* mean, Expression* ef,
+LognormalDeviate::LognormalDeviate(Expression* mean, Expression* ef,
                                    Expression* level)
     : RandomDeviate({mean, ef, level}),
-      flavor_(new LogNormalDeviate::Logarithmic(mean, ef, level)) {}
+      flavor_(new LognormalDeviate::Logarithmic(mean, ef, level)) {}
 
-LogNormalDeviate::LogNormalDeviate(Expression* mu, Expression* sigma)
+LognormalDeviate::LognormalDeviate(Expression* mu, Expression* sigma)
     : RandomDeviate({mu, sigma}),
-      flavor_(new LogNormalDeviate::Normal(mu, sigma)) {}
+      flavor_(new LognormalDeviate::Normal(mu, sigma)) {}
 
-void LogNormalDeviate::Logarithmic::Validate() const {
+void LognormalDeviate::Logarithmic::Validate() const {
   if (level_.value() <= 0 || level_.value() >= 1) {
     throw InvalidArgument("The confidence level is not within (0, 1).");
   } else if (ef_.value() <= 1) {
@@ -89,30 +89,30 @@ void LogNormalDeviate::Logarithmic::Validate() const {
   }
 }
 
-double LogNormalDeviate::DoSample() noexcept {
-  return Random::LogNormalGenerator(flavor_->location(), flavor_->scale());
+double LognormalDeviate::DoSample() noexcept {
+  return Random::LognormalGenerator(flavor_->location(), flavor_->scale());
 }
 
-Interval LogNormalDeviate::interval() noexcept {
+Interval LognormalDeviate::interval() noexcept {
   double high_estimate = std::exp(3 * flavor_->scale() + flavor_->location());
   return Interval::left_open(0, high_estimate);
 }
 
-double LogNormalDeviate::Logarithmic::scale() noexcept {
+double LognormalDeviate::Logarithmic::scale() noexcept {
   double z = -std::sqrt(2) * boost::math::erfc_inv(2 * level_.value());
   return std::log(ef_.value()) / z;
 }
 
-double LogNormalDeviate::Logarithmic::location() noexcept {
+double LognormalDeviate::Logarithmic::location() noexcept {
   return std::log(mean_.value()) - std::pow(scale(), 2) / 2;
 }
 
-void LogNormalDeviate::Normal::Validate() const {
+void LognormalDeviate::Normal::Validate() const {
   if (sigma_.value() <= 0)
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
 }
 
-double LogNormalDeviate::Normal::mean() noexcept {
+double LognormalDeviate::Normal::mean() noexcept {
   return std::exp(location() + std::pow(scale(), 2) / 2);
 }
 

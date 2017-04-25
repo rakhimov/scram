@@ -59,50 +59,49 @@ double p_exp(double p_mu, double p_lambda, double mu, double lambda,
 
 }  // namespace
 
-ExponentialExpression::ExponentialExpression(Expression* lambda, Expression* t)
+Exponential::Exponential(Expression* lambda, Expression* t)
     : ExpressionFormula({lambda, t}),
       lambda_(*lambda),
       time_(*t) {}
 
-void ExponentialExpression::Validate() const {
+void Exponential::Validate() const {
   EnsureNonNegative<InvalidArgument>(&lambda_, "rate of failure");
   EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
-double ExponentialExpression::Compute(double lambda, double time) noexcept {
+double Exponential::Compute(double lambda, double time) noexcept {
   return p_exp(lambda, time);
 }
 
-GlmExpression::GlmExpression(Expression* gamma, Expression* lambda,
-                             Expression* mu, Expression* t)
+Glm::Glm(Expression* gamma, Expression* lambda, Expression* mu, Expression* t)
     : ExpressionFormula({gamma, lambda, mu, t}),
       gamma_(*gamma),
       lambda_(*lambda),
       mu_(*mu),
       time_(*t) {}
 
-void GlmExpression::Validate() const {
+void Glm::Validate() const {
   EnsurePositive<InvalidArgument>(&lambda_, "rate of failure");
   EnsureNonNegative<InvalidArgument>(&mu_, "rate of repair");
   EnsureNonNegative<InvalidArgument>(&time_, "mission time");
   EnsureProbability<InvalidArgument>(&gamma_, "failure on demand");
 }
 
-double GlmExpression::Compute(double gamma, double lambda, double mu,
-                              double time) noexcept {
+double Glm::Compute(double gamma, double lambda, double mu,
+                    double time) noexcept {
   double r = lambda + mu;
   return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
 }
 
-WeibullExpression::WeibullExpression(Expression* alpha, Expression* beta,
-                                     Expression* t0, Expression* time)
+Weibull::Weibull(Expression* alpha, Expression* beta, Expression* t0,
+                 Expression* time)
     : ExpressionFormula({alpha, beta, t0, time}),
       alpha_(*alpha),
       beta_(*beta),
       t0_(*t0),
       time_(*time) {}
 
-void WeibullExpression::Validate() const {
+void Weibull::Validate() const {
   EnsurePositive<InvalidArgument>(&alpha_,
                                   "scale parameter for Weibull distribution");
   EnsurePositive<InvalidArgument>(&beta_,
@@ -111,8 +110,8 @@ void WeibullExpression::Validate() const {
   EnsureNonNegative<InvalidArgument>(&time_, "mission time");
 }
 
-double WeibullExpression::Compute(double alpha, double beta,
-                                  double t0, double time) noexcept {
+double Weibull::Compute(double alpha, double beta, double t0,
+                        double time) noexcept {
   return time <= t0 ? 0 : 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
 
