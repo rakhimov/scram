@@ -733,6 +733,9 @@
       <element name="sin">
         <ref name="expression"/>
       </element>
+      <element name="sinh">
+        <ref name="expression"/>
+      </element>
       <element name="tan">
         <ref name="expression"/>
       </element>
