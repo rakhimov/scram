@@ -32,6 +32,7 @@ using Not = NaryExpression<std::logical_not<>, 1>;  ///< Logical negation.
 using And = NaryExpression<std::logical_and<>, -1>;  ///< Logical conjunction.
 using Or = NaryExpression<std::logical_or<>, -1>;  ///< Logical disjunction.
 using Eq = NaryExpression<std::equal_to<>, 2>;  ///< Equality test.
+using Df = NaryExpression<std::not_equal_to<>, 2>;  ///< Inequality test.
 
 }  // namespace mef
 }  // namespace scram
