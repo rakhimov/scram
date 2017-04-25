@@ -796,6 +796,11 @@
       <element name="not">
         <ref name="expression"/>
       </element>
+      <element name="and">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
     </choice>
   </define>
 

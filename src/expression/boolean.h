@@ -29,6 +29,7 @@ namespace scram {
 namespace mef {
 
 using Not = NaryExpression<std::logical_not<>, 1>;  ///< Logical negation.
+using And = NaryExpression<std::logical_and<>, -1>;  ///< Logical conjunction.
 
 }  // namespace mef
 }  // namespace scram
