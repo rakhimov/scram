@@ -269,5 +269,10 @@ The input tries to utilize all the functionality including optional cases.
         <int value="4"/>
       </sqrt>
     </define-parameter>
+    <define-parameter name="Ceil">
+      <ceil>
+        <float value="0.25"/>
+      </ceil>
+    </define-parameter>
   </model-data>
 </opsa-mef>

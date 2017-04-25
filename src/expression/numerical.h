@@ -131,6 +131,7 @@ using Log10 = FunctorExpression<&std::log10>;  ///< Decimal logarithm.
 using Mod = NaryExpression<std::modulus<int>, 2>;  ///< Modulo (%) operation.
 using Pow = BifunctorExpression<&std::pow>;  ///< Base raised to a power.
 using Sqrt = FunctorExpression<&std::sqrt>;  ///< Square root.
+using Ceil = FunctorExpression<&std::ceil>;  ///< Nearest (>=) integer.
 
 }  // namespace mef
 }  // namespace scram

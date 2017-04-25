@@ -762,6 +762,9 @@
       <element name="sqrt">
         <ref name="expression"/>
       </element>
+      <element name="ceil">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 
