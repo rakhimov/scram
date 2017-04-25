@@ -818,6 +818,10 @@
         <ref name="expression"/>
         <ref name="expression"/>
       </element>
+      <element name="gt">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 
