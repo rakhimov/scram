@@ -94,5 +94,12 @@ void ValidateExpression<Bifunctor<&std::pow>>(
                           "positive exponent is required.");
 }
 
+template <>
+void ValidateExpression<Functor<&std::sqrt>>(
+    const std::vector<Expression*>& args) {
+  assert(args.size() == 1);
+  EnsureNonNegative<InvalidArgument>(args.front(), "Square root argument");
+}
+
 }  // namespace mef
 }  // namespace scram

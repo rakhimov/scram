@@ -759,6 +759,9 @@
       <element name="tanh">
         <ref name="expression"/>
       </element>
+      <element name="sqrt">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

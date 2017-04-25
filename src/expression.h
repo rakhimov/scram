@@ -326,9 +326,9 @@ void EnsureProbability(Expression* expression, const std::string& description,
 template <typename T>
 void EnsurePositive(Expression* expression, const std::string& description) {
   if (expression->value() <= 0)
-    throw T(description + " value must be positive.");
+    throw T(description + " argument value must be positive.");
   if (IsPositive(expression->interval()) == false)
-    throw T(description + " sample domain must be positive.");
+    throw T(description + " argument sample domain must be positive.");
 }
 
 /// Ensures that expression yields non-negative (>= 0) values.
@@ -342,9 +342,9 @@ void EnsurePositive(Expression* expression, const std::string& description) {
 template <typename T>
 void EnsureNonNegative(Expression* expression, const std::string& description) {
   if (expression->value() < 0)
-    throw T(description + " value cannot be negative.");
+    throw T(description + " argument value cannot be negative.");
   if (IsNonNegative(expression->interval()) == false)
-    throw T(description + " sample domain cannot have negative values.");
+    throw T(description + " argument sample cannot have negative values.");
 }
 
 /// Ensures that expression values are within the interval.

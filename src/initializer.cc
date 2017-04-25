@@ -818,7 +818,8 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"log", &Extract<Log>},
     {"log10", &Extract<Log10>},
     {"mod", &Extract<Mod>},
-    {"pow", &Extract<Pow>}};
+    {"pow", &Extract<Pow>},
+    {"sqrt", &Extract<Sqrt>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {

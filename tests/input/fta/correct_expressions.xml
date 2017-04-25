@@ -264,5 +264,10 @@ The input tries to utilize all the functionality including optional cases.
         <int value="2"/>
       </pow>
     </define-parameter>
+    <define-parameter name="Sqrt">
+      <sqrt>
+        <int value="4"/>
+      </sqrt>
+    </define-parameter>
   </model-data>
 </opsa-mef>

@@ -975,6 +975,27 @@ TEST(ExpressionTest, Power) {
   EXPECT_NO_THROW(dev->Validate());
 }
 
+TEST(ExpressionTest, Sqrt) {
+  OpenExpression arg_one(0);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Sqrt>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 4;
+  EXPECT_DOUBLE_EQ(2, dev->value());
+  arg_one.mean = 0.0625;
+  EXPECT_DOUBLE_EQ(0.25, dev->value());
+
+  EXPECT_NO_THROW(dev->Validate());
+  arg_one.mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  arg_one.mean = 4;
+  EXPECT_NO_THROW(dev->Validate());
+
+  arg_one.min = -1;
+  arg_one.max = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

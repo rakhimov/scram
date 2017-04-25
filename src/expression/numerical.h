@@ -79,6 +79,9 @@ void ValidateExpression<std::modulus<int>>(
 template <>
 void ValidateExpression<Bifunctor<&std::pow>>(
     const std::vector<Expression*>& args);
+template <>
+void ValidateExpression<Functor<&std::sqrt>>(
+    const std::vector<Expression*>& args);
 /// @}
 
 /// Interval specialization for math functions.
@@ -127,6 +130,7 @@ using Log = FunctorExpression<&std::log>;  ///< Natural logarithm.
 using Log10 = FunctorExpression<&std::log10>;  ///< Decimal logarithm.
 using Mod = NaryExpression<std::modulus<int>, 2>;  ///< Modulo (%) operation.
 using Pow = BifunctorExpression<&std::pow>;  ///< Base raised to a power.
+using Sqrt = FunctorExpression<&std::sqrt>;  ///< Square root.
 
 }  // namespace mef
 }  // namespace scram
