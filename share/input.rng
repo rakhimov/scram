@@ -822,6 +822,10 @@
         <ref name="expression"/>
         <ref name="expression"/>
       </element>
+      <element name="leq">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

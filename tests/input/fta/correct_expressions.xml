@@ -341,5 +341,11 @@ The input tries to utilize all the functionality including optional cases.
         <bool value="false"/>
       </gt>
     </define-parameter>
+    <define-parameter name="LEQ">
+      <leq>
+        <float value="10"/>
+        <bool value="false"/>
+      </leq>
+    </define-parameter>
   </model-data>
 </opsa-mef>
