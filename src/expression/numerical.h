@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "constant.h"
+#include "src/error.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -56,59 +57,6 @@ struct Bifunctor {  // Nasty abuse of terminology :(. Haskellers will hate this.
 /// Expression with a bifunctor wrapping a function.
 template <double (*F)(double, double)>
 using BifunctorExpression = NaryExpression<Bifunctor<F>, 2>;
-
-/// Validation specialization for math functions.
-/// @{
-template <>
-void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Functor<&std::acos>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Functor<&std::asin>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Functor<&std::log>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Functor<&std::log10>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<std::modulus<int>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Bifunctor<&std::pow>>(
-    const std::vector<Expression*>& args);
-template <>
-void ValidateExpression<Functor<&std::sqrt>>(
-    const std::vector<Expression*>& args);
-/// @}
-
-/// Interval specialization for math functions.
-/// @{
-template <>
-inline Interval GetInterval<Functor<&std::acos>>(Expression* /*arg*/) {
-  return Interval::closed(0, ConstantExpression::kPi.value());
-}
-template <>
-inline Interval GetInterval<Functor<&std::asin>>(Expression* /*arg*/) {
-  double half_pi = ConstantExpression::kPi.value() / 2;
-  return Interval::closed(-half_pi, half_pi);
-}
-template <>
-inline Interval GetInterval<Functor<&std::atan>>(Expression* /*arg*/) {
-  double half_pi = ConstantExpression::kPi.value() / 2;
-  return Interval::closed(-half_pi, half_pi);
-}
-template <>
-inline Interval GetInterval<Functor<&std::cos>>(Expression* /*arg*/) {
-  return Interval::closed(-1, 1);
-}
-template <>
-inline Interval GetInterval<Functor<&std::sin>>(Expression* /*arg*/) {
-  return Interval::closed(-1, 1);
-}
-/// @}
 
 using Neg = NaryExpression<std::negate<>, 1>;  ///< Negation.
 using Add = NaryExpression<std::plus<>, -1>;  ///< Sum operation.
@@ -168,6 +116,82 @@ class Mean : public ExpressionFormula<Mean> {
     return sum / Expression::args().size();
   }
 };
+
+/// @cond Doxygen_With_Smart_Using_Declaration
+/// Validation specialization for math functions.
+/// @{
+template <>
+void Div::Validate() const;
+
+template <>
+inline void Acos::Validate() const {
+  assert(args().size() == 1);
+  EnsureWithin<InvalidArgument>(args().front(), Interval::closed(-1, 1),
+                                "Arc cos");
+}
+
+template <>
+inline void Asin::Validate() const {
+  assert(args().size() == 1);
+  EnsureWithin<InvalidArgument>(args().front(), Interval::closed(-1, 1),
+                                "Arc sin");
+}
+
+template <>
+inline void Log::Validate() const {
+  assert(args().size() == 1);
+  EnsurePositive<InvalidArgument>(args().front(), "Natural Logarithm");
+}
+
+template <>
+inline void Log10::Validate() const {
+  assert(args().size() == 1);
+  EnsurePositive<InvalidArgument>(args().front(), "Decimal Logarithm");
+}
+
+template <>
+void Mod::Validate() const;
+
+template <>
+void Pow::Validate() const;
+
+template <>
+inline void Sqrt::Validate() const {
+  assert(args().size() == 1);
+  EnsureNonNegative<InvalidArgument>(args().front(), "Square root argument");
+}
+/// @}
+
+/// Interval specialization for math functions.
+/// @{
+template <>
+inline Interval Acos::interval() noexcept {
+  return Interval::closed(0, ConstantExpression::kPi.value());
+}
+
+template <>
+inline Interval Asin::interval() noexcept {
+  double half_pi = ConstantExpression::kPi.value() / 2;
+  return Interval::closed(-half_pi, half_pi);
+}
+
+template <>
+inline Interval Atan::interval() noexcept {
+  double half_pi = ConstantExpression::kPi.value() / 2;
+  return Interval::closed(-half_pi, half_pi);
+}
+
+template <>
+inline Interval Cos::interval() noexcept {
+  return Interval::closed(-1, 1);
+}
+
+template <>
+inline Interval Sin::interval() noexcept {
+  return Interval::closed(-1, 1);
+}
+/// @}
+/// @endcond
 
 }  // namespace mef
 }  // namespace scram

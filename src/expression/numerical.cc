@@ -20,15 +20,14 @@
 
 #include "numerical.h"
 
-#include "src/error.h"
-
 namespace scram {
 namespace mef {
 
+/// @cond Doxygen_With_Smart_Using_Declaration
 template <>
-void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args) {
-  auto it = args.begin();
-  for (++it; it != args.end(); ++it) {
+void Div::Validate() const {
+  auto it = Expression::args().begin();
+  for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;
     Interval arg_interval = expr->interval();
     if (expr->value() == 0 || Contains(arg_interval, 0))
@@ -37,40 +36,9 @@ void ValidateExpression<std::divides<>>(const std::vector<Expression*>& args) {
 }
 
 template <>
-void ValidateExpression<Functor<&std::acos>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 1);
-  EnsureWithin<InvalidArgument>(args.front(), Interval::closed(-1, 1),
-                                "Arc cos");
-}
-
-template <>
-void ValidateExpression<Functor<&std::asin>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 1);
-  EnsureWithin<InvalidArgument>(args.front(), Interval::closed(-1, 1),
-                                "Arc sin");
-}
-
-template <>
-void ValidateExpression<Functor<&std::log>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 1);
-  EnsurePositive<InvalidArgument>(args.front(), "Natural Logarithm");
-}
-
-template <>
-void ValidateExpression<Functor<&std::log10>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 1);
-  EnsurePositive<InvalidArgument>(args.front(), "Decimal Logarithm");
-}
-
-template <>
-void ValidateExpression<std::modulus<int>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 2);
-  auto* arg_two = args.back();
+void Mod::Validate() const {
+  assert(args().size() == 2);
+  auto* arg_two = args().back();
   int arg_value = arg_two->value();
   if (arg_value == 0)
     throw InvalidArgument("Modulo second operand must not be 0.");
@@ -82,24 +50,17 @@ void ValidateExpression<std::modulus<int>>(
 }
 
 template <>
-void ValidateExpression<Bifunctor<&std::pow>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 2);
-  auto* arg_one = args.front();
-  auto* arg_two = args.back();
+void Pow::Validate() const {
+  assert(args().size() == 2);
+  auto* arg_one = args().front();
+  auto* arg_two = args().back();
   if (arg_one->value() == 0 && arg_two->value() <= 0)
     throw InvalidArgument("0 to power 0 or less is undefined.");
   if (Contains(arg_one->interval(), 0) && !IsPositive(arg_two->interval()))
     throw InvalidArgument("Power expression 'base' sample range contains 0;"
                           "positive exponent is required.");
 }
-
-template <>
-void ValidateExpression<Functor<&std::sqrt>>(
-    const std::vector<Expression*>& args) {
-  assert(args.size() == 1);
-  EnsureNonNegative<InvalidArgument>(args.front(), "Square root argument");
-}
+/// @endcond
 
 Mean::Mean(std::vector<Expression*> args) : ExpressionFormula(std::move(args)) {
   if (Expression::args().size() < 2)

@@ -138,7 +138,7 @@ class Expression : private boost::noncopyable {
   bool sampled_;  ///< Indication if the expression is already sampled.
 };
 
-/// CRTP for Expressions with a same formula to evaluate and sample.
+/// CRTP for Expressions with the same formula to evaluate and sample.
 ///
 /// @tparam T  The Expression type with Compute function.
 template <class T>
@@ -167,33 +167,6 @@ class ExpressionFormula : public Expression {
 template <typename T, int N>
 class NaryExpression;
 
-/// Validates expressions of specific type with its given arguments.
-template <typename T>
-void ValidateExpression(const std::vector<Expression*>& /*args*/) {}
-
-/// Get the validation interval for unary expression T with a given argument.
-template <typename T>
-Interval GetInterval(Expression* arg) {
-  Interval arg_interval = arg->interval();
-  double max_value = T()(arg_interval.upper());
-  double min_value = T()(arg_interval.lower());
-  auto min_max = std::minmax(max_value, min_value);
-  return Interval::closed(min_max.first, min_max.second);
-}
-
-/// Get the validation interval for binary expression with given arguments.
-template <typename T>
-Interval GetInterval(Expression* arg_one, Expression* arg_two) {
-  Interval interval_one = arg_one->interval();
-  Interval interval_two = arg_two->interval();
-  double max_max = T()(interval_one.upper(), interval_two.upper());
-  double max_min = T()(interval_one.upper(), interval_two.lower());
-  double min_max = T()(interval_one.lower(), interval_two.upper());
-  double min_min = T()(interval_one.lower(), interval_two.lower());
-  auto interval_pair = std::minmax({max_max, max_min, min_max, min_min});
-  return Interval::closed(interval_pair.first, interval_pair.second);
-}
-
 /// Unary expression.
 template <typename T>
 class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
@@ -203,11 +176,15 @@ class NaryExpression<T, 1> : public ExpressionFormula<NaryExpression<T, 1>> {
       : ExpressionFormula<NaryExpression<T, 1>>({expression}),
         expression_(*expression) {}
 
-  void Validate() const override {
-    return ValidateExpression<T>(Expression::args());
-  }
+  void Validate() const override {}
 
-  Interval interval() noexcept override { return GetInterval<T>(&expression_); }
+  Interval interval() noexcept override {
+    Interval arg_interval = expression_.interval();
+    double max_value = T()(arg_interval.upper());
+    double min_value = T()(arg_interval.lower());
+    auto min_max = std::minmax(max_value, min_value);
+    return Interval::closed(min_max.first, min_max.second);
+  }
 
   /// Computes the expression value with a given argument value extractor.
   template <typename F>
@@ -227,13 +204,17 @@ class NaryExpression<T, 2> : public ExpressionFormula<NaryExpression<T, 2>> {
   explicit NaryExpression(Expression* arg_one, Expression* arg_two)
       : ExpressionFormula<NaryExpression<T, 2>>({arg_one, arg_two}) {}
 
-  void Validate() const override {
-    return ValidateExpression<T>(Expression::args());
-  }
+  void Validate() const override {}
 
   Interval interval() noexcept override {
-    return GetInterval<T>(Expression::args().front(),
-                          Expression::args().back());
+    Interval interval_one = Expression::args().front()->interval();
+    Interval interval_two = Expression::args().back()->interval();
+    double max_max = T()(interval_one.upper(), interval_two.upper());
+    double max_min = T()(interval_one.upper(), interval_two.lower());
+    double min_max = T()(interval_one.lower(), interval_two.upper());
+    double min_min = T()(interval_one.lower(), interval_two.lower());
+    auto interval_pair = std::minmax({max_max, max_min, min_max, min_min});
+    return Interval::closed(interval_pair.first, interval_pair.second);
   }
 
   /// Computes the expression value with a given argument value extractor.
@@ -259,9 +240,7 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
       throw InvalidArgument("Expression requires 2 or more arguments.");
   }
 
-  void Validate() const override {
-    return ValidateExpression<T>(Expression::args());
-  }
+  void Validate() const override {}
 
   Interval interval() noexcept override {
     auto it = Expression::args().begin();
