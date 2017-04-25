@@ -721,6 +721,9 @@
       <element name="asin">
         <ref name="expression"/>
       </element>
+      <element name="atan">
+        <ref name="expression"/>
+      </element>
     </choice>
   </define>
 

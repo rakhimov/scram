@@ -764,6 +764,22 @@ TEST(ExpressionTest, Asin) {
       << dev->interval();
 }
 
+TEST(ExpressionTest, Atan) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Atan>(&arg_one));
+  double half_pi = 0.5 * ConstantExpression::kPi.value();
+  double quarter_pi = 0.25 * ConstantExpression::kPi.value();
+  EXPECT_DOUBLE_EQ(quarter_pi, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = -1;
+  EXPECT_DOUBLE_EQ(-quarter_pi, dev->value());
+
+  EXPECT_TRUE(Interval::closed(-half_pi, half_pi) == dev->interval())
+      << dev->interval();
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

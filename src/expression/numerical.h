@@ -67,6 +67,11 @@ inline Interval GetInterval<Functor<&std::asin>>(Expression* /*arg*/) {
   double half_pi = ConstantExpression::kPi.value() / 2;
   return Interval::closed(-half_pi, half_pi);
 }
+template <>
+inline Interval GetInterval<Functor<&std::atan>>(Expression* /*arg*/) {
+  double half_pi = ConstantExpression::kPi.value() / 2;
+  return Interval::closed(-half_pi, half_pi);
+}
 /// @}
 
 using Neg = NaryExpression<std::negate<>, 1>;  ///< Negation.
@@ -77,6 +82,7 @@ using Div = NaryExpression<std::divides<>, -1>;  ///< Division of the first.
 using Abs = FunctorExpression<&std::abs>;  ///< The absolute value.
 using Acos = FunctorExpression<&std::acos>;  ///< Arc cosine.
 using Asin = FunctorExpression<&std::asin>;  ///< Arc sine.
+using Atan = FunctorExpression<&std::atan>;  ///< Arc tangent.
 
 }  // namespace mef
 }  // namespace scram
