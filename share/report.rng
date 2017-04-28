@@ -103,6 +103,11 @@
           </element>
         </optional>
         <optional>
+          <element name="sequences">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
           <element name="initiating-events">
             <data type="nonNegativeInteger"/>
           </element>
