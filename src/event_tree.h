@@ -83,13 +83,21 @@ class FunctionalEvent : public Element {
   using Element::Element;
 };
 
-/// Functional events are defined in event trees but referenced in the model.
-using FunctionalEventPtr = std::shared_ptr<FunctionalEvent>;
+/// Functional events are defined in and unique to event trees.
+using FunctionalEventPtr = std::unique_ptr<FunctionalEvent>;
 
 /// Event Tree representation with MEF constructs.
 class EventTree : public Element, private boost::noncopyable {
  public:
   using Element::Element;
+
+  /// @returns The container of event tree constructs of specific kind
+  ///          with construct original names as keys.
+  /// @{
+  const ElementTable<FunctionalEventPtr>& functional_events() const {
+    return functional_events_;
+  }
+  /// @}
 
   /// Adds event tree constructs into the container.
   ///

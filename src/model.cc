@@ -37,11 +37,6 @@ void Model::Add(EventTreePtr event_tree) {
                                      "Redefinition of event tree: ");
 }
 
-void Model::Add(const FunctionalEventPtr& functional_event) {
-  mef::AddElement<RedefinitionError>(functional_event, &functional_events_,
-                                     "Redefinition of functional event: ");
-}
-
 void Model::Add(const SequencePtr& sequence) {
   mef::AddElement<RedefinitionError>(sequence, &sequences_,
                                      "Redefinition of sequence: ");

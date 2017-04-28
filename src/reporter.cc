@@ -232,7 +232,12 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("ccf-groups", model.ccf_groups());
   feature("fault-trees", model.fault_trees());
   feature("event-trees", model.event_trees());
-  feature("functional-events", model.functional_events());
+
+  int num_functional_events = 0;
+  for (const mef::EventTreePtr& event_tree : model.event_trees())
+    num_functional_events += event_tree->functional_events().size();
+  if (num_functional_events)
+    model_features.AddChild("functional-events").AddText(num_functional_events);
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
