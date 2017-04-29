@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="first">
+    <define-functional-event name="F"/>
+    <define-sequence name="S">
+      <collect-expression>
+        <bool value="true"/>
+      </collect-expression>
+    </define-sequence>
+    <define-branch name="Branch">
+      <sequence name="S"/>
+    </define-branch>
+    <define-branch name="Branch">
+      <sequence name="S"/>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

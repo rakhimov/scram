@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="source">
+    <define-sequence name="S"/>
+    <define-branch name="B">
+      <sequence name="S"/>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+  <define-event-tree name="simplest">
+    <initial-state>
+      <branch name="B"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

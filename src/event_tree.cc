@@ -30,6 +30,11 @@ Instruction::~Instruction() = default;
 CollectExpression::CollectExpression(Expression* expression)
     : expression_(expression) {}
 
+Path::Path(std::string state) : state_(std::move(state)) {
+  if (state_.empty())
+    throw LogicError("The state string for functional events cannot be empty");
+}
+
 void EventTree::Add(SequencePtr sequence) {
   mef::AddElement<ValidationError>(std::move(sequence), &sequences_,
                                    "Duplicate sequence: ");
@@ -39,6 +44,11 @@ void EventTree::Add(FunctionalEventPtr functional_event) {
   mef::AddElement<ValidationError>(std::move(functional_event),
                                    &functional_events_,
                                    "Duplicate functional event: ");
+}
+
+void EventTree::Add(NamedBranchPtr branch) {
+  mef::AddElement<ValidationError>(std::move(branch), &branches_,
+                                   "Duplicate named branch: ");
 }
 
 }  // namespace mef

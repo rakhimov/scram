@@ -34,6 +34,7 @@
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
+#include "ext/find_iterator.h"
 #include "logger.h"
 #include "xml.h"
 
@@ -153,10 +154,10 @@ void Initializer::CheckFileExistence(
 void Initializer::CheckDuplicateFiles(
     const std::vector<std::string>& xml_files) {
   namespace fs = boost::filesystem;
-  using Path = std::pair<fs::path, std::string>;  // Path mapping.
+  using File = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
-  std::vector<Path> files;
-  auto comparator = [](const Path& lhs, const Path& rhs) {
+  std::vector<File> files;
+  auto comparator = [](const File& lhs, const File& rhs) {
     return lhs.first < rhs.first;
   };
 
@@ -165,17 +166,17 @@ void Initializer::CheckDuplicateFiles(
 
   auto it = boost::adjacent_find(
       boost::sort(files, comparator),  // NOLINT(build/include_what_you_use)
-      [](const Path& lhs, const Path& rhs) { return lhs.first == rhs.first; });
+      [](const File& lhs, const File& rhs) { return lhs.first == rhs.first; });
 
   if (it != files.end()) {
     std::stringstream msg;
     msg << "Duplicate input files:\n";
-    const Path& path = *it;
-    auto it_end = std::upper_bound(it, files.end(), path, comparator);
+    const File& file_path = *it;
+    auto it_end = std::upper_bound(it, files.end(), file_path, comparator);
     for (; it != it_end; ++it) {
       msg << "    " << it->second << "\n";
     }
-    msg << "  POSIX Path: " << path.first.c_str();
+    msg << "  POSIX Path: " << file_path.first.c_str();
     throw DuplicateArgumentError(msg.str());
   }
 }
@@ -431,6 +432,23 @@ void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
   }
   sequence->instructions(std::move(instructions));
 }
+
+template <>
+void Initializer::Define(const xmlpp::Element* et_node, EventTree* event_tree) {
+  auto it = event_tree->branches().begin();
+  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+    assert(it != event_tree->branches().end());
+    assert((*it)->name() == GetAttributeValue(XmlElement(node), "name"));
+    DefineBranch(GetNonAttributeElements(XmlElement(node)), event_tree,
+                 it->get());
+    ++it;
+  }
+  xmlpp::NodeSet state_node = et_node->find("./initial-state");
+  assert(state_node.size() == 1);
+  Branch initial_state;
+  DefineBranch(state_node.front()->find("./*"), event_tree, &initial_state);
+  event_tree->initial_state(std::move(initial_state));
+}
 /// @}
 
 void Initializer::ProcessTbdElements() {
@@ -463,7 +481,17 @@ void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
     event_tree->Add(Register<Sequence>(XmlElement(node), event_tree->name(),
                                        RoleSpecifier::kPublic));
   }
+  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+    try {
+      event_tree->Add(ConstructElement<NamedBranch>(XmlElement(node)));
+    } catch (ValidationError& err) {
+      err.msg(GetLine(node) + err.msg());
+      throw;
+    }
+  }
+  EventTree* tbd_element = event_tree.get();
   Register(std::move(event_tree), et_node);
+  tbd_.emplace_back(tbd_element, et_node);  // Save only after registration.
 }
 
 void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
@@ -609,6 +637,54 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
     throw;
   }
   return formula;
+}
+
+void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
+                               EventTree* event_tree, Branch* branch) {
+  assert(!xml_nodes.empty() && "At least the branch target must be defined.");
+  const xmlpp::Element* target_node = XmlElement(xml_nodes.back());
+  if (target_node->get_name() == "fork") {
+    std::string name = GetAttributeValue(target_node, "functional-event");
+    if (auto it = ext::find(event_tree->functional_events(), name)) {
+      std::vector<Path> paths;
+      for (xmlpp::Node* node : target_node->find("./path")) {
+        const xmlpp::Element* path_element = XmlElement(node);
+        paths.emplace_back(GetAttributeValue(path_element, "state"));
+        DefineBranch(path_element->find("./*"), event_tree, &paths.back());
+      }
+      assert(!paths.empty());
+      auto fork = std::make_unique<Fork>(**it, std::move(paths));
+      branch->target(fork.get());
+      event_tree->Add(std::move(fork));
+    } else {
+      throw ValidationError(GetLine(target_node) + "Functional event " +
+                            name + " is not defined in " + event_tree->name());
+    }
+  } else if (target_node->get_name() == "sequence") {
+    std::string name = GetAttributeValue(target_node, "name");
+    if (auto it = ext::find(model_->sequences(), name)) {
+      branch->target(it->get());
+    } else {
+      throw ValidationError(GetLine(target_node) + "Sequence " + name +
+                            " is not defined in the model.");
+    }
+  } else {
+    assert(target_node->get_name() == "branch");
+    std::string name = GetAttributeValue(target_node, "name");
+    if (auto it = ext::find(event_tree->branches(), name)) {
+      branch->target(it->get());
+    } else {
+      throw ValidationError(GetLine(target_node) + "Branch " + name +
+                            " is not defined in " + event_tree->name());
+    }
+  }
+
+  std::vector<InstructionPtr> instructions;
+  for (auto it = xml_nodes.begin(), it_end = std::prev(xml_nodes.end());
+       it != it_end; ++it) {
+    instructions.emplace_back(GetInstruction(XmlElement(*it)));
+  }
+  branch->instructions(std::move(instructions));
 }
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
