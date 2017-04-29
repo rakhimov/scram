@@ -346,6 +346,15 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     model_->mission_time()->value(settings_.mission_time());
   }
 
+  for (const xmlpp::Node* node : root->find("./define-initiating-event")) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    InitiatingEventPtr initiating_event =
+        ConstructElement<InitiatingEvent>(xml_node);
+    auto* ref_ptr = initiating_event.get();
+    Register(std::move(initiating_event), xml_node);
+    tbd_.emplace_back(ref_ptr, xml_node);
+  }
+
   for (const xmlpp::Node* node : root->find("./define-event-tree")) {
     DefineEventTree(XmlElement(node));
   }
@@ -448,6 +457,20 @@ void Initializer::Define(const xmlpp::Element* et_node, EventTree* event_tree) {
   Branch initial_state;
   DefineBranch(state_node.front()->find("./*"), event_tree, &initial_state);
   event_tree->initial_state(std::move(initial_state));
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* xml_node,
+                         InitiatingEvent* initiating_event) {
+  std::string event_tree_name = GetAttributeValue(xml_node, "event-tree");
+  if (!event_tree_name.empty()) {
+    if (auto it = ext::find(model_->event_trees(), event_tree_name)) {
+      initiating_event->event_tree(it->get());
+    } else {
+      throw ValidationError(GetLine(xml_node) + "Event tree " +
+                            event_tree_name + " is not defined in model.");
+    }
+  }
 }
 /// @}
 

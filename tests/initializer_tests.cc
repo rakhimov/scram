@@ -85,7 +85,8 @@ TEST(InitializerTest, EmptyAttributeElementText) {
 TEST(InitializerTest, CorrectEtaInputs) {
   std::string dir = "./share/scram/input/eta/";
   const char* correct_inputs[] = {"simplest_correct.xml",
-                                  "public_sequence.xml"};
+                                  "public_sequence.xml",
+                                  "initiating_event.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -95,10 +96,12 @@ TEST(InitializerTest, CorrectEtaInputs) {
 TEST(InitializerTest, IncorrectEtaInputs) {
   std::string dir = "./share/scram/input/eta/";
   const char* incorrect_inputs[] = {
+      "doubly_defined_initiating_event.xml",
       "doubly_defined_event_tree.xml",
       "doubly_defined_sequence.xml",
       "doubly_defined_functional_event.xml",
       "doubly_defined_branch.xml",
+      "undefined_event_tree.xml",
       "undefined_sequence.xml",
       "undefined_branch.xml",
       "undefined_functional_event.xml",

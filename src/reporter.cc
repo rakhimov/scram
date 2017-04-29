@@ -240,6 +240,7 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
     model_features.AddChild("functional-events").AddText(num_functional_events);
 
   feature("sequences", model.sequences());
+  feature("initiating-events", model.initiating_events());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,

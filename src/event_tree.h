@@ -215,7 +215,34 @@ class EventTree : public Element, private boost::noncopyable {
   std::vector<std::unique_ptr<Fork>> forks_;  ///< Lifetime management of forks.
 };
 
-using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in models.
+using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in a model.
+
+/// Event-tree Initiating Event.
+class InitiatingEvent : public Element {
+ public:
+  using Element::Element;
+
+  /// Associates an event tree to the initiating event.
+  ///
+  /// @param[in] event_tree  Fully initialized event tree container.
+  void event_tree(EventTree* event_tree) {
+    assert(!event_tree_ && event_tree && "Resetting or un-setting event tree.");
+    event_tree_ = event_tree;
+  }
+
+  /// @returns The event tree of the initiating event.
+  ///          nullptr if the event tree is not set.
+  /// @{
+  EventTree* event_tree() const { return event_tree_; }
+  EventTree* event_tree() { return event_tree_; }
+  /// @}
+
+ private:
+  EventTree* event_tree_ = nullptr;  ///< The optional event tree specification.
+};
+
+/// Unique initiating events in a model.
+using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
 }  // namespace mef
 }  // namespace scram

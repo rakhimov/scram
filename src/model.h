@@ -59,6 +59,9 @@ class Model : public Element, private boost::noncopyable {
 
   /// @returns Defined constructs in the model.
   /// @{
+  const ElementTable<InitiatingEventPtr>& initiating_events() const {
+    return initiating_events_;
+  }
   const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
   const ElementTable<SequencePtr>& sequences() const { return sequences_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
@@ -85,6 +88,7 @@ class Model : public Element, private boost::noncopyable {
   /// @throws RedefinitionError  The element is already defined in the model.
   ///
   /// @{
+  void Add(InitiatingEventPtr element);
   void Add(EventTreePtr element);
   void Add(const FunctionalEventPtr& element);
   void Add(const SequencePtr& element);
@@ -175,6 +179,7 @@ class Model : public Element, private boost::noncopyable {
 
   /// A collection of defined constructs in the model.
   /// @{
+  ElementTable<InitiatingEventPtr> initiating_events_;
   ElementTable<EventTreePtr> event_trees_;
   ElementTable<SequencePtr> sequences_;
   ElementTable<FaultTreePtr> fault_trees_;

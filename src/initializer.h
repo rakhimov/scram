@@ -365,9 +365,12 @@ class Initializer : private boost::noncopyable {
   /// Gates rely on gate, basic event, and house event registrations.
   /// CCF groups rely on both parameter and basic event registrations.
   /// Event tree branches and instructions have complex interdependencies.
+  /// Initiating events may reference their associated event trees.
   ///
   /// Elements are assumed to be unique.
-  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree> tbd_;
+  TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
+               InitiatingEvent>
+      tbd_;
 
   /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;

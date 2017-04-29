@@ -24,6 +24,7 @@
         <choice>
           <ref name="model-data"/>
           <ref name="event-tree-definition"/>
+          <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
         </choice>
@@ -91,6 +92,21 @@
   <!-- ============================================================= -->
   <!-- II.1. Initiating events, Initiating event Groups -->
   <!-- ============================================================= -->
+
+  <define name="initiating-event-definition">
+    <element name="define-initiating-event">
+      <ref name="name"/>
+      <optional>
+        <attribute name="event-tree"> <ref name="Identifier"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+    </element>
+  </define>
 
 
   <!-- ============================================================= -->
