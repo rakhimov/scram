@@ -60,8 +60,9 @@ Config::Config(const std::string& config_file) {
   std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(config_file);
   try {
     validator.validate(parser->get_document());
-  } catch (const xmlpp::validity_error& err) {
-    throw ValidationError("In file '" + config_file + "', " + err.what());
+  } catch (const xmlpp::validity_error&) {
+    throw ValidationError("Config XML failed schema validation:\n" +
+                          xmlpp::format_xml_error());
   }
   const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "scram");

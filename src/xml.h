@@ -54,7 +54,7 @@ inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
     }
     return dom_parser;
   } catch (const xmlpp::exception& ex) {
-    throw ValidationError("XML file is invalid: " + std::string(ex.what()));
+    throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));
   }
 }
 
