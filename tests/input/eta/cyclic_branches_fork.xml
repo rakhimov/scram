@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="CyclicBranches">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <define-branch name="B">
+      <fork functional-event="F">
+        <path state="true">
+          <branch name="B"/>
+        </path>
+      </fork>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

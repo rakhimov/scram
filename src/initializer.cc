@@ -1050,9 +1050,16 @@ void Initializer::ValidateInitialization() {
     }
   }
 
-  // Keep node marks clean after use.
-  for (const GatePtr& gate : model_->gates())
-    gate->mark(NodeMark::kClear);
+  // Check for cycles in event tree branches.
+  for (const EventTreePtr& event_tree : model_->event_trees()) {
+    std::vector<NamedBranch*> cycle;
+    for (const NamedBranchPtr& branch : event_tree->branches()) {
+      if (cycle::DetectCycle(branch.get(), &cycle)) {
+        throw CycleError("Detected a cycle in " + branch->name() +
+                         " branch:\n" + cycle::PrintCycle(cycle));
+      }
+    }
+  }
 
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
@@ -1080,9 +1087,6 @@ void Initializer::ValidateExpressions() {
                        " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
-
-  for (const ParameterPtr& param : model_->parameters())
-    param->mark(NodeMark::kClear);
 
   // Validate expressions.
   for (const std::pair<Expression*, const xmlpp::Element*>& expression :
@@ -1129,6 +1133,9 @@ void Initializer::ValidateExpressions() {
 void Initializer::SetupForAnalysis() {
   {
     TIMER(DEBUG2, "Collecting top events of fault trees");
+    for (const GatePtr& gate : model_->gates())
+      gate->mark(NodeMark::kClear);
+
     for (const FaultTreePtr& ft : model_->fault_trees())
       ft->CollectTopEvents();
   }

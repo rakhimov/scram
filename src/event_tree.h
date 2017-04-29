@@ -124,7 +124,7 @@ class Branch {
 };
 
 /// Named branches that can be referenced and reused.
-class NamedBranch : public Element, public Branch {
+class NamedBranch : public Element, public Branch, public NodeMark {
  public:
   using Element::Element;
 };
@@ -158,7 +158,10 @@ class Fork {
   const FunctionalEvent& functional_event() const { return functional_event_; }
 
   /// @returns The fork paths with functional event states.
+  /// @{
   const std::vector<Path>& paths() const { return paths_; }
+  std::vector<Path>& paths() { return paths_; }
+  /// @}
 
  private:
   const FunctionalEvent& functional_event_;  ///< The fork source.

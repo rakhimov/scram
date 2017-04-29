@@ -30,6 +30,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "event.h"
+#include "event_tree.h"
 #include "parameter.h"
 
 namespace scram {
@@ -45,6 +46,7 @@ namespace cycle {
 /// @{
 inline const Formula* GetConnector(Gate* node) { return &node->formula(); }
 inline Expression* GetConnector(Parameter* node) { return node; }
+inline Branch* GetConnector(NamedBranch* node) { return node; }
 /// @}
 
 /// Retrieves nodes from a connector.
@@ -156,8 +158,44 @@ bool ContinueConnector(T* connector, std::vector<N*>* cycle) {
   return false;
 }
 
+/// Cycle detection specialization for event tree named branches.
+template <>
+inline bool ContinueConnector(Branch* connector,
+                              std::vector<NamedBranch*>* cycle) {
+  struct {
+    bool operator()(NamedBranch* branch) { return DetectCycle(branch, cycle_); }
+
+    bool operator()(Fork* fork) {
+      for (Branch& branch : fork->paths()) {
+        if (ContinueConnector(&branch, cycle_))
+          return true;
+      }
+      return false;
+    }
+
+    bool operator()(Sequence*) { return false; }
+
+    decltype(cycle) cycle_;
+  } continue_connector{cycle};
+
+  return boost::apply_visitor(continue_connector, connector->target());
+}
+
+/// Produces unique name for the cycle node for error messages.
+///
+/// @param[in] node  The node in the cycle.
+///
+/// @returns The unique identifier of the node by default.
+/// @{
+inline const std::string& PrintCycleNode(Element* node) { return node->name(); }
+inline const std::string& PrintCycleNode(Id* node) { return node->id(); }
+/// @}
+
 /// Prints the detected cycle from the output
 /// produced by cycle detection functions.
+///
+/// The unique node names are retrieved with unqualified calls to
+/// PrintCycleNode(node).
 ///
 /// @tparam T  The node type with member function id()->std::string.
 ///
@@ -171,7 +209,7 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
   return boost::join(
       boost::adaptors::reverse(cycle) |
           boost::adaptors::transformed(
-              [](T* node) -> const std::string& { return node->id(); }),
+              [](T* node) -> decltype(auto) { return PrintCycleNode(node); }),
       "->");
 }
 
