@@ -64,10 +64,13 @@ class Sequence : public Element {
  public:
   using Element::Element;
 
-  /// @param[in] instructions  One or more instructions for the sequence.
-  ///
-  /// @throws LogicError  The instructions are empty.
-  void instructions(InstructionContainer instructions);
+  /// @param[in] instructions  Zero or more instructions for the sequence.
+  void instructions(InstructionContainer instructions) {
+    instructions_ = std::move(instructions);
+  }
+
+  /// @returns The instructions to be applied at this sequence.
+  const InstructionContainer& instructions() const { return instructions_; }
 
  private:
   /// Instructions to execute with the sequence.

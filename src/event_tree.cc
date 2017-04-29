@@ -30,14 +30,6 @@ Instruction::~Instruction() = default;
 CollectExpression::CollectExpression(Expression* expression)
     : expression_(expression) {}
 
-void Sequence::instructions(InstructionContainer instructions) {
-  if (instructions.empty()) {
-    throw LogicError("Sequence " + Element::name() +
-                     " requires at least one instruction");
-  }
-  instructions_ = std::move(instructions);
-}
-
 void EventTree::Add(SequencePtr sequence) {
   mef::AddElement<ValidationError>(std::move(sequence), &sequences_,
                                    "Duplicate sequence: ");

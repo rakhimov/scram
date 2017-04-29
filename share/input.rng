@@ -140,9 +140,9 @@
       <optional>
         <ref name="attributes"/>
       </optional>
-      <oneOrMore>
+      <zeroOrMore>
         <ref name="instruction"/>
-      </oneOrMore>
+      </zeroOrMore>
     </element>
   </define>
 
