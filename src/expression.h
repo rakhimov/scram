@@ -105,7 +105,7 @@ class Expression : private boost::noncopyable {
   /// or if they are random deviates.
   ///
   /// @returns true if the expression's value deviates from its mean.
-  /// @returns false if the expression's value not need sampling.
+  /// @returns false if the expression's value does not need sampling.
   ///
   /// @warning Improper registration of arguments
   ///          may yield silent failure.
@@ -118,7 +118,7 @@ class Expression : private boost::noncopyable {
   /// All the arguments are called to reset themselves.
   /// If this expression was not sampled,
   /// its arguments are not going to get any calls.
-  virtual void Reset() noexcept;
+  void Reset() noexcept;
 
  protected:
   /// Registers an additional argument expression.
