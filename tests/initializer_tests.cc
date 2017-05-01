@@ -116,6 +116,11 @@ TEST(InitializerTest, IncorrectEtaInputs) {
   }
 }
 
+TEST(InitializerTest, CorrectLabelsAndAttributes) {
+  const char* input = "./share/scram/input/fta/labels_and_attributes.xml";
+  EXPECT_NO_THROW(Initializer({input}, core::Settings()));
+}
+
 // Test correct inputs without probability information.
 TEST(InitializerTest, CorrectFtaInputs) {
   std::string dir = "./share/scram/input/fta/";
@@ -131,7 +136,6 @@ TEST(InitializerTest, CorrectFtaInputs) {
       "two_trees.xml",
       "two_top_events.xml",
       "two_top_through_formula.xml",
-      "labels_and_attributes.xml",
       "orphan_primary_event.xml",
       "very_long_mcs.xml",
       "unordered_structure.xml",
