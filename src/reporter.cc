@@ -211,7 +211,8 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
       .SetAttribute("name", "SCRAM")
       .SetAttribute("version", *version::describe() != '\0'
                                    ? version::describe()
-                                   : version::core());
+                                   : version::core())
+      .SetAttribute("contacts", "https://scram-pra.org");
   namespace pt = boost::posix_time;
   information->AddChild("time").AddText(
       pt::to_iso_extended_string(pt::second_clock::universal_time()));
