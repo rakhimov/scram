@@ -37,8 +37,11 @@ const char* core();
 /// @returns The version of the boost.
 const char* boost();
 
-/// @returns The version of XML libraries.
-const char* xml();
+/// @returns The version of the XML C++ wrapper.
+const char* libxmlpp();
+
+/// @returns The version of the XML C library.
+const char* libxml();
 
 }  // namespace version
 }  // namespace scram
