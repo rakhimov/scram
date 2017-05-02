@@ -415,6 +415,11 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
   EXPECT_THROW(Reporter().Report(*analysis, output), IOError);
 }
 
+TEST_F(RiskAnalysisTest, ReportEmpty) {
+  std::string tree_input = "./share/scram/input/empty_model.xml";
+  CheckReport(tree_input);
+}
+
 // Reporting of the default analysis for MCS only without probabilities.
 TEST_P(RiskAnalysisTest, ReportDefaultMCS) {
   CheckReport("./share/scram/input/fta/correct_tree_input.xml");

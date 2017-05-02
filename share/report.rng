@@ -8,7 +8,9 @@
   <start>
     <element name="report">
       <ref name="information-layer"/>
-      <ref name="results-layer"/>
+      <optional>
+        <ref name="results-layer"/>
+      </optional>
     </element>
   </start>
 
@@ -33,39 +35,15 @@
         </optional>
       </element>
       <element name="time"> <data type="string"/> </element>
-      <element name="performance">
-        <zeroOrMore>
-          <element name="calculation-time">
-            <attribute name="name"> <data type="NCName"/> </attribute>
-            <optional>
-              <element name="products">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="probability">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="importance">
-                <data type="double"/>
-              </element>
-            </optional>
-            <optional>
-              <element name="uncertainty">
-                <data type="double"/>
-              </element>
-            </optional>
-          </element>
-        </zeroOrMore>
-      </element>
-      <oneOrMore>
+      <optional>
+        <ref name="performance-info"/>
+      </optional>
+      <zeroOrMore>
         <ref name="calculated-quantity"/>
-      </oneOrMore>
+      </zeroOrMore>
       <element name="model-features">
         <optional>
-          <attribute name="name"> <text/> </attribute>
+          <attribute name="name"> <data type="NCName"/> </attribute>
         </optional>
         <optional>
           <element name="gates">
@@ -119,6 +97,36 @@
       <optional>
         <element name="feedback"> <text/> </element>
       </optional>
+    </element>
+  </define>
+
+  <define name="performance-info">
+    <element name="performance">
+      <oneOrMore>
+        <element name="calculation-time">
+          <attribute name="name"> <data type="NCName"/> </attribute>
+          <optional>
+            <element name="products">
+              <data type="double"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="probability">
+              <data type="double"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="importance">
+              <data type="double"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="uncertainty">
+              <data type="double"/>
+            </element>
+          </optional>
+        </element>
+      </oneOrMore>
     </element>
   </define>
 

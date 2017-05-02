@@ -42,6 +42,8 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
+  if (risk_an.fault_tree_analyses().empty())
+    return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
@@ -246,6 +248,8 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* information) {
+  if (risk_an.fault_tree_analyses().empty())
+    return;
   // Setup for performance information.
   XmlStreamElement performance = information->AddChild("performance");
   for (const auto& fta : risk_an.fault_tree_analyses()) {
