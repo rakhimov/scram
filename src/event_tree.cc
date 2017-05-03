@@ -41,9 +41,12 @@ void EventTree::Add(SequencePtr sequence) {
 }
 
 void EventTree::Add(FunctionalEventPtr functional_event) {
+  assert(functional_event->order() == 0 && "Non-unique functional event.");
+  auto& unordered_event = *functional_event;
   mef::AddElement<ValidationError>(std::move(functional_event),
                                    &functional_events_,
                                    "Duplicate functional event: ");
+  unordered_event.order(functional_events_.size());
 }
 
 void EventTree::Add(NamedBranchPtr branch) {

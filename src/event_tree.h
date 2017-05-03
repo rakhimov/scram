@@ -82,10 +82,24 @@ class Sequence : public Element {
 /// Sequences are defined in event trees but referenced in other constructs.
 using SequencePtr = std::shared_ptr<Sequence>;
 
+class EventTree;  // Manages the order assignment to functional events.
+
 /// Representation of functional events in event trees.
 class FunctionalEvent : public Element {
+  friend class EventTree;
+
  public:
   using Element::Element;
+
+  /// @returns The order of the functional event in the event tree.
+  /// @returns 0 if no order has been assigned.
+  int order() const { return order_; }
+
+ private:
+  /// Sets the functional event order.
+  void order(int order) { order_ = order; }
+
+  int order_ = 0;  ///< The order of the functional event.
 };
 
 /// Functional events are defined in and unique to event trees.
