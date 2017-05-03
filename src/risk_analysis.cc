@@ -36,6 +36,7 @@ RiskAnalysis::RiskAnalysis(std::shared_ptr<const mef::Model> model,
       model_(std::move(model)) {}
 
 void RiskAnalysis::Analyze() noexcept {
+  assert(results_.empty() && "Rerunning the analysis.");
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
@@ -44,65 +45,65 @@ void RiskAnalysis::Analyze() noexcept {
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis: " << target->id();
-      RunAnalysis(target->id(), *target);
+      RunAnalysis(*target);
       LOG(INFO) << "Finished analysis: " << target->id();
     }
   }
 }
 
-void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const mef::Gate& target) noexcept {
+void RiskAnalysis::RunAnalysis(const mef::Gate& target) noexcept {
   switch (Analysis::settings().algorithm()) {
     case Algorithm::kBdd:
-      RunAnalysis<Bdd>(name, target);
+      RunAnalysis<Bdd>(target);
       break;
     case Algorithm::kZbdd:
-      RunAnalysis<Zbdd>(name, target);
+      RunAnalysis<Zbdd>(target);
       break;
     case Algorithm::kMocus:
-      RunAnalysis<Mocus>(name, target);
+      RunAnalysis<Mocus>(target);
   }
 }
 
 template <class Algorithm>
-void RiskAnalysis::RunAnalysis(const std::string& name,
-                               const mef::Gate& target) noexcept {
+void RiskAnalysis::RunAnalysis(const mef::Gate& target) noexcept {
   auto fta =
       std::make_unique<FaultTreeAnalyzer<Algorithm>>(target,
                                                      Analysis::settings());
   fta->Analyze();
+  Result result{target};
   if (Analysis::settings().probability_analysis()) {
     switch (Analysis::settings().approximation()) {
       case Approximation::kNone:
-        RunAnalysis<Algorithm, Bdd>(name, fta.get());
+        RunAnalysis<Algorithm, Bdd>(fta.get(), &result);
         break;
       case Approximation::kRareEvent:
-        RunAnalysis<Algorithm, RareEventCalculator>(name, fta.get());
+        RunAnalysis<Algorithm, RareEventCalculator>(fta.get(), &result);
         break;
       case Approximation::kMcub:
-        RunAnalysis<Algorithm, McubCalculator>(name, fta.get());
+        RunAnalysis<Algorithm, McubCalculator>(fta.get(), &result);
     }
   }
-  fault_tree_analyses_.emplace(name, std::move(fta));
+  result.fault_tree_analysis = std::move(fta);
+  results_.push_back(std::move(result));
 }
 
 template <class Algorithm, class Calculator>
-void RiskAnalysis::RunAnalysis(const std::string& name,
-                               FaultTreeAnalyzer<Algorithm>* fta) noexcept {
+void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
+                               Result* result) noexcept {
   auto pa = std::make_unique<ProbabilityAnalyzer<Calculator>>(
       fta, model_->mission_time().get());
   pa->Analyze();
   if (Analysis::settings().importance_analysis()) {
     auto ia = std::make_unique<ImportanceAnalyzer<Calculator>>(pa.get());
     ia->Analyze();
-    importance_analyses_.emplace(name, std::move(ia));
+    result->importance_analysis = std::move(ia);
   }
   if (Analysis::settings().uncertainty_analysis()) {
     auto ua = std::make_unique<UncertaintyAnalyzer<Calculator>>(pa.get());
     ua->Analyze();
-    uncertainty_analyses_.emplace(name, std::move(ua));
+    result->uncertainty_analysis = std::move(ua);
   }
-  probability_analyses_.emplace(name, std::move(pa));
+  result->probability_analysis = std::move(pa);
 }
 
 }  // namespace core

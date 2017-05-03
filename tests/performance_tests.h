@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,26 +52,28 @@ class PerformanceTest : public ::testing::Test {
 
   // Total probability as a result of analysis.
   double p_total() {
-    assert(!analysis->probability_analyses().empty());
-    return analysis->probability_analyses().begin()->second->p_total();
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().probability_analysis);
+    return analysis->results().front().probability_analysis->p_total();
   }
 
   // The number of products as a result of analysis.
   int NumOfProducts() {
-    assert(!analysis->fault_tree_analyses().empty());
-    return analysis->fault_tree_analyses().begin()->second->products().size();
+    assert(analysis->results().size() == 1);
+    return analysis->results().front().fault_tree_analysis->products().size();
   }
 
   // Time taken to find products.
   double ProductGenerationTime() {
-    assert(!analysis->fault_tree_analyses().empty());
-    return analysis->fault_tree_analyses().begin()->second->analysis_time();
+    assert(analysis->results().size() == 1);
+    return analysis->results().front().fault_tree_analysis->analysis_time();
   }
 
   // Time taken to calculate total probability.
   double ProbabilityCalculationTime() {
-    assert(!analysis->probability_analyses().empty());
-    return analysis->probability_analyses().begin()->second->analysis_time();
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().probability_analysis);
+    return analysis->results().front().probability_analysis->analysis_time();
   }
 
   std::unique_ptr<RiskAnalysis> analysis;

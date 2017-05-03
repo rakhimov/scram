@@ -42,29 +42,22 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
-  if (risk_an.fault_tree_analyses().empty())
+  if (risk_an.results().empty())
     return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
-  for (const auto& fta : risk_an.fault_tree_analyses()) {
-    const std::string& id = fta.first;
-    core::ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
-    if (risk_an.settings().probability_analysis()) {
-      prob_analysis = risk_an.probability_analyses().at(id).get();
-    }
-    ReportResults(id, *fta.second, prob_analysis, &results);
+  for (const core::RiskAnalysis::Result& result : risk_an.results()) {
+    ReportResults(result.gate.id(), *result.fault_tree_analysis,
+                  result.probability_analysis.get(), &results);
 
-    if (prob_analysis) {
-      ReportResults(id, *prob_analysis, &results);
-    }
+    if (result.probability_analysis)
+      ReportResults(result.gate.id(), *result.probability_analysis, &results);
 
-    if (risk_an.settings().importance_analysis()) {
-      ReportResults(id, *risk_an.importance_analyses().at(id), &results);
-    }
+    if (result.importance_analysis)
+      ReportResults(result.gate.id(), *result.importance_analysis, &results);
 
-    if (risk_an.settings().uncertainty_analysis()) {
-      ReportResults(id, *risk_an.uncertainty_analyses().at(id), &results);
-    }
+    if (result.uncertainty_analysis)
+      ReportResults(result.gate.id(), *result.uncertainty_analysis, &results);
   }
 }
 
@@ -248,29 +241,32 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* information) {
-  if (risk_an.fault_tree_analyses().empty())
+  if (risk_an.results().empty())
     return;
   // Setup for performance information.
   XmlStreamElement performance = information->AddChild("performance");
-  for (const auto& fta : risk_an.fault_tree_analyses()) {
+  for (const core::RiskAnalysis::Result& result : risk_an.results()) {
     XmlStreamElement calc_time = performance.AddChild("calculation-time");
-    const std::string& id = fta.first;
-    calc_time.SetAttribute("name", id);
-    calc_time.AddChild("products").AddText(fta.second->analysis_time());
+    calc_time.SetAttribute("name", result.gate.id());
+    calc_time.AddChild("products")
+        .AddText(result.fault_tree_analysis->analysis_time());
 
     if (risk_an.settings().probability_analysis()) {
+      assert(result.probability_analysis);
       calc_time.AddChild("probability")
-          .AddText(risk_an.probability_analyses().at(id)->analysis_time());
+          .AddText(result.probability_analysis->analysis_time());
     }
 
     if (risk_an.settings().importance_analysis()) {
+      assert(result.importance_analysis);
       calc_time.AddChild("importance")
-          .AddText(risk_an.importance_analyses().at(id)->analysis_time());
+          .AddText(result.importance_analysis->analysis_time());
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
+      assert(result.uncertainty_analysis);
       calc_time.AddChild("uncertainty")
-          .AddText(risk_an.uncertainty_analyses().at(id)->analysis_time());
+          .AddText(result.uncertainty_analysis->analysis_time());
     }
   }
 }

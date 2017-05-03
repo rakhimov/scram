@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,19 +77,19 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   void PrintProducts();
 
   double p_total() {
-    assert(!analysis->probability_analyses().empty());
-    assert(analysis->probability_analyses().size() == 1);
-    return analysis->probability_analyses().begin()->second->p_total();
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().probability_analysis);
+    return analysis->results().front().probability_analysis->p_total();
   }
 
   /// @returns Products and their probabilities.
   const std::map<std::set<std::string>, double>& product_probability();
 
   const ImportanceFactors& importance(const std::string& id) {
-    assert(!analysis->importance_analyses().empty());
-    assert(analysis->importance_analyses().size() == 1);
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().importance_analysis);
     const auto& importance =
-        analysis->importance_analyses().begin()->second->importance();
+        analysis->results().front().importance_analysis->importance();
     auto it = boost::find_if(importance, [&id](const ImportanceRecord& record) {
       return record.event.id() == id;
     });
@@ -115,15 +115,15 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
 
   // Uncertainty analysis.
   double mean() {
-    assert(!analysis->uncertainty_analyses().empty());
-    assert(analysis->uncertainty_analyses().size() == 1);
-    return analysis->uncertainty_analyses().begin()->second->mean();
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().uncertainty_analysis);
+    return analysis->results().front().uncertainty_analysis->mean();
   }
 
   double sigma() {
-    assert(!analysis->uncertainty_analyses().empty());
-    assert(analysis->uncertainty_analyses().size() == 1);
-    return analysis->uncertainty_analyses().begin()->second->sigma();
+    assert(analysis->results().size() == 1);
+    assert(analysis->results().front().uncertainty_analysis);
+    return analysis->results().front().uncertainty_analysis->sigma();
   }
 
   // Members
