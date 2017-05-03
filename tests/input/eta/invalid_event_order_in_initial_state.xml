@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="InvalidOrder">
+    <define-functional-event name="F1"/>
+    <define-functional-event name="F2"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F2">
+        <path state="true">
+          <fork functional-event="F1">
+            <path state="true">
+              <sequence name="S"/>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

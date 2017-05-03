@@ -331,6 +331,13 @@ class Initializer : private boost::noncopyable {
   ///       if this error condition may lead resource leaks.
   void ValidateInitialization();
 
+  /// Checks the proper order of functional events in event tree forks.
+  ///
+  /// @param[in] branch  The event tree branch to start the check.
+  ///
+  /// @throws ValidationError  The order of forks is invalid.
+  void CheckFunctionalEventOrder(const Branch& branch);
+
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.

@@ -1084,6 +1084,19 @@ void Initializer::ValidateInitialization() {
     }
   }
 
+  // Check the order of functional events in forks.
+  for (const EventTreePtr& event_tree : model_->event_trees()) {
+    try {
+      for (const NamedBranchPtr& branch : event_tree->branches()) {
+        CheckFunctionalEventOrder(*branch);
+      }
+      CheckFunctionalEventOrder(event_tree->initial_state());
+    } catch (ValidationError& err) {
+      err.msg("In event tree " + event_tree->name() + ", " + err.msg());
+      throw;
+    }
+  }
+
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -1098,6 +1111,47 @@ void Initializer::ValidateInitialization() {
   }
 
   ValidateExpressions();
+}
+
+void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
+  struct CheckOrder {
+    void operator()(Sequence*) const {}
+
+    void operator()(NamedBranch* named_branch) const {
+      boost::apply_visitor(*this, named_branch->target());
+    }
+
+    void operator()(Fork* fork) const {
+      if (functional_event.order() == fork->functional_event().order()) {
+        assert(&functional_event == &fork->functional_event());
+        throw ValidationError("Functional event " + functional_event.name() +
+                              " is duplicated in event tree fork paths.");
+      }
+
+      if (functional_event.order() > fork->functional_event().order())
+        throw ValidationError("Functional event " + functional_event.name() +
+                              " must appear after functional event " +
+                              fork->functional_event().name() +
+                              " in event tree fork paths.");
+    }
+
+    const FunctionalEvent& functional_event;
+  };
+
+  struct OrderValidator {
+    void operator()(Sequence*) const {}
+    void operator()(NamedBranch*) const {}
+    void operator()(Fork* fork) const {
+      for (const Path& fork_path : fork->paths()) {
+        initializer->CheckFunctionalEventOrder(fork_path);
+        boost::apply_visitor(CheckOrder{fork->functional_event()},
+                             fork_path.target());
+      }
+    }
+    Initializer* initializer;
+  };
+
+  boost::apply_visitor(OrderValidator{this}, branch.target());
 }
 
 void Initializer::ValidateExpressions() {

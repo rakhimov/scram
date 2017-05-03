@@ -109,7 +109,11 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "private_functional_event.xml",
       "cyclic_branches_fork.xml",
       "cyclic_branches_self.xml",
-      "cyclic_branches_transitive.xml"};
+      "cyclic_branches_transitive.xml",
+      "invalid_duplicate_event_in_forks.xml",
+      "invalid_event_order_in_branch.xml",
+      "invalid_event_order_in_initial_state.xml",
+      "invalid_event_order_in_ref_branch.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename: " << input;
