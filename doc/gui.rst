@@ -2,6 +2,11 @@
 GUI Front-End
 #############
 
+.. node::
+    The GUI front-end is not in distribution packages.
+    It is under developement.
+    The documentation is ahead of the developement.
+
 .. note::
     The GUI front-end does not provide access
     to all the features implemented in SCRAM.

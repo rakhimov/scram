@@ -47,7 +47,7 @@ to filter, group, sort, and do other data manipulations and visualization.
 
 Suggested tools:
 
-    - SCRAM GUI front-end
+    - SCRAM GUI front-end *Not Supported Yet*
     - R with `FaultTree.SCRAM <https://rdrr.io/rforge/FaultTree.SCRAM/>`_
     - Python with `lxml <http://lxml.de/>`_
     - `BaseX <http://basex.org>`_
