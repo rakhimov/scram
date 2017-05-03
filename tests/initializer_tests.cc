@@ -101,6 +101,7 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "doubly_defined_sequence.xml",
       "doubly_defined_functional_event.xml",
       "doubly_defined_branch.xml",
+      "doubly_defined_path_state.xml",
       "undefined_event_tree.xml",
       "undefined_sequence.xml",
       "undefined_branch.xml",

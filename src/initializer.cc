@@ -676,9 +676,14 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
         DefineBranch(path_element->find("./*"), event_tree, &paths.back());
       }
       assert(!paths.empty());
-      auto fork = std::make_unique<Fork>(**it, std::move(paths));
-      branch->target(fork.get());
-      event_tree->Add(std::move(fork));
+      try {
+        auto fork = std::make_unique<Fork>(**it, std::move(paths));
+        branch->target(fork.get());
+        event_tree->Add(std::move(fork));
+      } catch (ValidationError& err) {
+        err.msg("In event tree " + event_tree->name() + ", " + err.msg());
+        throw;
+      }
     } else {
       throw ValidationError(GetLine(target_node) + "Functional event " +
                             name + " is not defined in " + event_tree->name());

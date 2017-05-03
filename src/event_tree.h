@@ -166,8 +166,9 @@ class Fork {
  public:
   /// @param[in] functional_event  The source functional event.
   /// @param[in] paths  The fork paths with functional event states.
-  Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
-      : functional_event_(functional_event), paths_(std::move(paths)) {}
+  ///
+  /// @throws ValidationError  The path states are duplicated.
+  Fork(const FunctionalEvent& functional_event, std::vector<Path> paths);
 
   /// @returns The functional event of the fork.
   const FunctionalEvent& functional_event() const { return functional_event_; }

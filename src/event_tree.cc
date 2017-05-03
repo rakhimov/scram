@@ -20,6 +20,8 @@
 
 #include "event_tree.h"
 
+#include <algorithm>
+
 #include "error.h"
 
 namespace scram {
@@ -33,6 +35,21 @@ CollectExpression::CollectExpression(Expression* expression)
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
     throw LogicError("The state string for functional events cannot be empty");
+}
+
+Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
+      : functional_event_(functional_event), paths_(std::move(paths)) {
+  // There are expected to be very few paths (2 in most cases),
+  // so quadratic check is not a problem.
+  for (auto it = paths_.begin(); it != paths_.end(); ++it) {
+    auto it_find =
+        std::find_if(std::next(it), paths_.end(), [&it](const Path& fork_path) {
+          return fork_path.state() == it->state();
+        });
+    if (it_find != paths_.end())
+      throw ValidationError("Duplicate state '" + it->state() +
+                            "' path in fork " + functional_event_.name());
+  }
 }
 
 void EventTree::Add(SequencePtr sequence) {
