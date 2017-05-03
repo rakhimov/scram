@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <memory>
+#include <string>
+#include <vector>
 
 #include <QMainWindow>
-
-#include "src/model.h"
 
 namespace Ui {
 class MainWindow;
@@ -39,21 +38,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    /**
-     * @brief Sets the model to display in the window.
-     *
-     * @param model  Fully initialized and validated model.
-     *               nullptr if no model present,
-     *               or to remove the current model.
-     */
-    void setModel(std::shared_ptr<mef::Model> model)
+    void setConfig(const std::string &config)
     {
-        m_model = std::move(model);
+        m_config = QString::fromStdString(config);
     }
+    void addInputFiles(const std::vector<std::string>& /*input_files*/) {}
 
 private:
     Ui::MainWindow *ui;
-    std::shared_ptr<mef::Model> m_model; ///< The main model to display.
+    QString m_config;  ///< The main project configuration file.
 };
 
 } // namespace gui
