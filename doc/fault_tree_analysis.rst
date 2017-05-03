@@ -34,8 +34,8 @@ Analysis Algorithms
 - :ref:`probability_analysis`
 
 
-Currently Supported Gate Types
-==============================
+Supported Gate Types
+====================
 
 - AND
 - OR
@@ -48,8 +48,8 @@ Currently Supported Gate Types
 - VOTE
 
 
-Currently Supported Event Types
-===============================
+Supported Event Types
+=====================
 
 - Top
 - Intermediate

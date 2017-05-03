@@ -2,7 +2,7 @@
 GUI Front-End
 #############
 
-.. node::
+.. note::
     The GUI front-end is not in distribution packages.
     It is under developement.
     The documentation is ahead of the developement.
