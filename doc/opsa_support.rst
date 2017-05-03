@@ -43,8 +43,8 @@ More information about the initiative and format can be found on http://open-psa
 
 .. _opsa_support:
 
-Currently Supported Open-PSA MEF Features
-=========================================
+Supported Open-PSA MEF Features
+===============================
 
 The difference between `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
 and SCRAM's :ref:`schema` can be used
