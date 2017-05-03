@@ -30,6 +30,7 @@
 
 #include "element.h"
 #include "expression.h"
+#include "ext/variant.h"
 
 namespace scram {
 namespace mef {
@@ -114,7 +115,7 @@ class Branch {
   ///
   /// @pre The target has been set.
   const Target& target() const {
-    assert(boost::apply_visitor([](auto ptr) -> bool { return ptr; }, target_));
+    assert(ext::as<bool>(target_));
     return target_;
   }
 
