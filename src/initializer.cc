@@ -29,9 +29,12 @@
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
+#include "expression/boolean.h"
+#include "expression/conditional.h"
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
+#include "ext/find_iterator.h"
 #include "logger.h"
 #include "xml.h"
 
@@ -151,10 +154,10 @@ void Initializer::CheckFileExistence(
 void Initializer::CheckDuplicateFiles(
     const std::vector<std::string>& xml_files) {
   namespace fs = boost::filesystem;
-  using Path = std::pair<fs::path, std::string>;  // Path mapping.
+  using File = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
-  std::vector<Path> files;
-  auto comparator = [](const Path& lhs, const Path& rhs) {
+  std::vector<File> files;
+  auto comparator = [](const File& lhs, const File& rhs) {
     return lhs.first < rhs.first;
   };
 
@@ -163,17 +166,17 @@ void Initializer::CheckDuplicateFiles(
 
   auto it = boost::adjacent_find(
       boost::sort(files, comparator),  // NOLINT(build/include_what_you_use)
-      [](const Path& lhs, const Path& rhs) { return lhs.first == rhs.first; });
+      [](const File& lhs, const File& rhs) { return lhs.first == rhs.first; });
 
   if (it != files.end()) {
     std::stringstream msg;
     msg << "Duplicate input files:\n";
-    const Path& path = *it;
-    auto it_end = std::upper_bound(it, files.end(), path, comparator);
+    const File& file_path = *it;
+    auto it_end = std::upper_bound(it, files.end(), file_path, comparator);
     for (; it != it_end; ++it) {
       msg << "    " << it->second << "\n";
     }
-    msg << "  POSIX Path: " << path.first.c_str();
+    msg << "  POSIX Path: " << file_path.first.c_str();
     throw DuplicateArgumentError(msg.str());
   }
 }
@@ -313,16 +316,6 @@ CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
 }
 
 template <>
-FunctionalEventPtr Initializer::Register(const xmlpp::Element* xml_node,
-                                         const std::string& /*base_path*/,
-                                         RoleSpecifier /*container_role*/) {
-  FunctionalEventPtr functional_event =
-      ConstructElement<FunctionalEvent>(xml_node);
-  Register(functional_event, xml_node);
-  return functional_event;
-}
-
-template <>
 SequencePtr Initializer::Register(const xmlpp::Element* xml_node,
                                   const std::string& /*base_path*/,
                                   RoleSpecifier /*container_role*/) {
@@ -339,9 +332,9 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(xml_file);
   try {
     validator.validate(parser->get_document());
-  } catch (const xmlpp::validity_error& err) {
-    throw ValidationError("Document failed schema validation: " +
-                          std::string(err.what()));
+  } catch (const xmlpp::validity_error&) {
+    throw ValidationError("Document failed schema validation:\n" +
+                          xmlpp::format_xml_error());
   }
 
   const xmlpp::Node* root = parser->get_document()->get_root_node();
@@ -351,6 +344,15 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!model_) {  // Create only one model for multiple files.
     model_ = ConstructElement<Model>(XmlElement(root));
     model_->mission_time()->value(settings_.mission_time());
+  }
+
+  for (const xmlpp::Node* node : root->find("./define-initiating-event")) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    InitiatingEventPtr initiating_event =
+        ConstructElement<InitiatingEvent>(xml_node);
+    auto* ref_ptr = initiating_event.get();
+    Register(std::move(initiating_event), xml_node);
+    tbd_.emplace_back(ref_ptr, xml_node);
   }
 
   for (const xmlpp::Node* node : root->find("./define-event-tree")) {
@@ -439,6 +441,37 @@ void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
   }
   sequence->instructions(std::move(instructions));
 }
+
+template <>
+void Initializer::Define(const xmlpp::Element* et_node, EventTree* event_tree) {
+  auto it = event_tree->branches().begin();
+  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+    assert(it != event_tree->branches().end());
+    assert((*it)->name() == GetAttributeValue(XmlElement(node), "name"));
+    DefineBranch(GetNonAttributeElements(XmlElement(node)), event_tree,
+                 it->get());
+    ++it;
+  }
+  xmlpp::NodeSet state_node = et_node->find("./initial-state");
+  assert(state_node.size() == 1);
+  Branch initial_state;
+  DefineBranch(state_node.front()->find("./*"), event_tree, &initial_state);
+  event_tree->initial_state(std::move(initial_state));
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* xml_node,
+                         InitiatingEvent* initiating_event) {
+  std::string event_tree_name = GetAttributeValue(xml_node, "event-tree");
+  if (!event_tree_name.empty()) {
+    if (auto it = ext::find(model_->event_trees(), event_tree_name)) {
+      initiating_event->event_tree(it->get());
+    } else {
+      throw ValidationError(GetLine(xml_node) + "Event tree " +
+                            event_tree_name + " is not defined in model.");
+    }
+  }
+}
 /// @}
 
 void Initializer::ProcessTbdElements() {
@@ -460,14 +493,28 @@ void Initializer::ProcessTbdElements() {
 void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
   EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
   for (const xmlpp::Node* node : et_node->find("./define-functional-event")) {
-    event_tree->Add(Register<FunctionalEvent>(
-        XmlElement(node), event_tree->name(), RoleSpecifier::kPublic));
+    try {
+      event_tree->Add(ConstructElement<FunctionalEvent>(XmlElement(node)));
+    } catch (ValidationError& err) {
+      err.msg(GetLine(node) + err.msg());
+      throw;
+    }
   }
   for (const xmlpp::Node* node : et_node->find("./define-sequence")) {
     event_tree->Add(Register<Sequence>(XmlElement(node), event_tree->name(),
                                        RoleSpecifier::kPublic));
   }
+  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+    try {
+      event_tree->Add(ConstructElement<NamedBranch>(XmlElement(node)));
+    } catch (ValidationError& err) {
+      err.msg(GetLine(node) + err.msg());
+      throw;
+    }
+  }
+  EventTree* tbd_element = event_tree.get();
   Register(std::move(event_tree), et_node);
+  tbd_.emplace_back(tbd_element, et_node);  // Save only after registration.
 }
 
 void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
@@ -613,6 +660,54 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
     throw;
   }
   return formula;
+}
+
+void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
+                               EventTree* event_tree, Branch* branch) {
+  assert(!xml_nodes.empty() && "At least the branch target must be defined.");
+  const xmlpp::Element* target_node = XmlElement(xml_nodes.back());
+  if (target_node->get_name() == "fork") {
+    std::string name = GetAttributeValue(target_node, "functional-event");
+    if (auto it = ext::find(event_tree->functional_events(), name)) {
+      std::vector<Path> paths;
+      for (xmlpp::Node* node : target_node->find("./path")) {
+        const xmlpp::Element* path_element = XmlElement(node);
+        paths.emplace_back(GetAttributeValue(path_element, "state"));
+        DefineBranch(path_element->find("./*"), event_tree, &paths.back());
+      }
+      assert(!paths.empty());
+      auto fork = std::make_unique<Fork>(**it, std::move(paths));
+      branch->target(fork.get());
+      event_tree->Add(std::move(fork));
+    } else {
+      throw ValidationError(GetLine(target_node) + "Functional event " +
+                            name + " is not defined in " + event_tree->name());
+    }
+  } else if (target_node->get_name() == "sequence") {
+    std::string name = GetAttributeValue(target_node, "name");
+    if (auto it = ext::find(model_->sequences(), name)) {
+      branch->target(it->get());
+    } else {
+      throw ValidationError(GetLine(target_node) + "Sequence " + name +
+                            " is not defined in the model.");
+    }
+  } else {
+    assert(target_node->get_name() == "branch");
+    std::string name = GetAttributeValue(target_node, "name");
+    if (auto it = ext::find(event_tree->branches(), name)) {
+      branch->target(it->get());
+    } else {
+      throw ValidationError(GetLine(target_node) + "Branch " + name +
+                            " is not defined in " + event_tree->name());
+    }
+  }
+
+  std::vector<InstructionPtr> instructions;
+  for (auto it = xml_nodes.begin(), it_end = std::prev(xml_nodes.end());
+       it != it_end; ++it) {
+    instructions.emplace_back(GetInstruction(XmlElement(*it)));
+  }
+  branch->instructions(std::move(instructions));
 }
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
@@ -788,6 +883,27 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
   }
 }
 
+/// Specialization for Switch-Case operation extraction.
+template <>
+std::unique_ptr<Expression> Initializer::Extract<Switch>(
+    const xmlpp::NodeSet& args,
+    const std::string& base_path,
+    Initializer* init) {
+  assert(!args.empty());
+  Expression* default_value =
+      init->GetExpression(XmlElement(args.back()), base_path);
+  std::vector<Switch::Case> cases;
+  auto it_end = std::prev(args.end());
+  for (auto it = args.begin(); it != it_end; ++it) {
+    xmlpp::NodeSet nodes = (*it)->find("./*");
+    assert(nodes.size() == 2);
+    cases.push_back(
+        {*init->GetExpression(XmlElement(nodes.front()), base_path),
+         *init->GetExpression(XmlElement(nodes.back()), base_path)});
+  }
+  return std::make_unique<Switch>(std::move(cases), default_value);
+}
+
 const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"exponential", &Extract<Exponential>},
     {"GLM", &Extract<Glm>},
@@ -824,7 +940,18 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
     {"floor", &Extract<Floor>},
     {"min", &Extract<Min>},
     {"max", &Extract<Max>},
-    {"mean", &Extract<Mean>}};
+    {"mean", &Extract<Mean>},
+    {"not", &Extract<Not>},
+    {"and", &Extract<And>},
+    {"or", &Extract<Or>},
+    {"eq", &Extract<Eq>},
+    {"df", &Extract<Df>},
+    {"lt", &Extract<Lt>},
+    {"gt", &Extract<Gt>},
+    {"leq", &Extract<Leq>},
+    {"geq", &Extract<Geq>},
+    {"ite", &Extract<Ite>},
+    {"switch", &Extract<Switch>}};
 
 Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
                                        const std::string& base_path) {
@@ -946,9 +1073,16 @@ void Initializer::ValidateInitialization() {
     }
   }
 
-  // Keep node marks clean after use.
-  for (const GatePtr& gate : model_->gates())
-    gate->mark(NodeMark::kClear);
+  // Check for cycles in event tree branches.
+  for (const EventTreePtr& event_tree : model_->event_trees()) {
+    std::vector<NamedBranch*> cycle;
+    for (const NamedBranchPtr& branch : event_tree->branches()) {
+      if (cycle::DetectCycle(branch.get(), &cycle)) {
+        throw CycleError("Detected a cycle in " + branch->name() +
+                         " branch:\n" + cycle::PrintCycle(cycle));
+      }
+    }
+  }
 
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
@@ -976,9 +1110,6 @@ void Initializer::ValidateExpressions() {
                        " parameter:\n" + cycle::PrintCycle(cycle));
     }
   }
-
-  for (const ParameterPtr& param : model_->parameters())
-    param->mark(NodeMark::kClear);
 
   // Validate expressions.
   for (const std::pair<Expression*, const xmlpp::Element*>& expression :
@@ -1025,6 +1156,9 @@ void Initializer::ValidateExpressions() {
 void Initializer::SetupForAnalysis() {
   {
     TIMER(DEBUG2, "Collecting top events of fault trees");
+    for (const GatePtr& gate : model_->gates())
+      gate->mark(NodeMark::kClear);
+
     for (const FaultTreePtr& ft : model_->fault_trees())
       ft->CollectTopEvents();
   }

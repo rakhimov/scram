@@ -2,6 +2,15 @@
 GUI Front-End
 #############
 
+.. node::
+    The GUI front-end is not in distribution packages.
+    It is under developement.
+    The documentation is ahead of the developement.
+
+.. note::
+    The GUI front-end does not provide access
+    to all the features implemented in SCRAM.
+
 The GUI front-end is developed with `Qt5 and Qt Creator`_.
 
 .. _Qt5 and Qt Creator: https://www.qt.io/developers/

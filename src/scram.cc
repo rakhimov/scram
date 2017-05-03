@@ -128,7 +128,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << " (" << scram::version::describe() << ")"
               << "\n\nDependencies:\n"
               << "   Boost       " << scram::version::boost() << "\n"
-              << "   LibXML++    " << scram::version::xml() << std::endl;
+              << "   libxml++    " << scram::version::libxmlpp() << "\n"
+              << "   libxml2     " << scram::version::libxml() << std::endl;
     return -1;
   }
   if (!vm->count("input-files") && !vm->count("config-file")) {

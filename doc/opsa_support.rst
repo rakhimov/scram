@@ -43,8 +43,8 @@ More information about the initiative and format can be found on http://open-psa
 
 .. _opsa_support:
 
-Currently Supported Open-PSA MEF Features
-=========================================
+Supported Open-PSA MEF Features
+===============================
 
 The difference between `the Open-PSA MEF schema <https://github.com/open-psa/schemas/>`_
 and SCRAM's :ref:`schema` can be used
@@ -69,9 +69,10 @@ to identify the supported and unsupported features.
     * System mission time
     * Parameter
     * Numerical operations
+    * Boolean operations
+    * Conditional operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential with two parameters,
-      exponential with four parameters, Weibull, periodic-test)
+    * Built-in expressions (exponential, GLM, Weibull, periodic-test)
 
 
 Deviations from the Open-PSA MEF

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="E"/>
+</opsa-mef>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="first">
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

@@ -68,12 +68,10 @@ void RiskAnalysisTest::CheckReport(const std::string& tree_input) {
 }
 
 const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
-  assert(!analysis->fault_tree_analyses().empty());
-  assert(analysis->fault_tree_analyses().size() == 1);
+  assert(analysis->results().size() == 1);
   if (result_.products.empty()) {
-    const FaultTreeAnalysis* fta =
-        analysis->fault_tree_analyses().begin()->second.get();
-    for (const Product& product : fta->products()) {
+    for (const Product& product :
+         analysis->results().front().fault_tree_analysis->products()) {
       result_.products.emplace(Convert(product));
     }
   }
@@ -81,29 +79,24 @@ const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
 }
 
 std::vector<int> RiskAnalysisTest::ProductDistribution() {
-  assert(!analysis->fault_tree_analyses().empty());
-  assert(analysis->fault_tree_analyses().size() == 1);
-  const FaultTreeAnalysis* fta =
-      analysis->fault_tree_analyses().begin()->second.get();
-  return fta->products().Distribution();
+  assert(analysis->results().size() == 1);
+  return analysis->results()
+      .front()
+      .fault_tree_analysis->products()
+      .Distribution();
 }
 
 void RiskAnalysisTest::PrintProducts() {
-  assert(!analysis->fault_tree_analyses().empty());
-  assert(analysis->fault_tree_analyses().size() == 1);
-  const FaultTreeAnalysis* fta =
-      analysis->fault_tree_analyses().begin()->second.get();
-  Print(fta->products());
+  assert(analysis->results().size() == 1);
+  Print(analysis->results().front().fault_tree_analysis->products());
 }
 
 const std::map<std::set<std::string>, double>&
 RiskAnalysisTest::product_probability() {
-  assert(!analysis->fault_tree_analyses().empty());
-  assert(analysis->fault_tree_analyses().size() == 1);
+  assert(analysis->results().size() == 1);
   if (result_.product_probability.empty()) {
-    const FaultTreeAnalysis* fta =
-        analysis->fault_tree_analyses().begin()->second.get();
-    for (const Product& product : fta->products()) {
+    for (const Product& product :
+         analysis->results().front().fault_tree_analysis->products()) {
       result_.product_probability.emplace(Convert(product), product.p());
     }
   }
@@ -358,11 +351,12 @@ TEST_P(RiskAnalysisTest, AnalyzeProbabilityOverTime) {
                                7.197e-4, 9.595e-4, 1.199e-3};
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  ASSERT_FALSE(analysis->probability_analyses().empty());
+  ASSERT_FALSE(analysis->results().empty());
+  ASSERT_TRUE(analysis->results().front().probability_analysis);
   auto it = curve.begin();
   double time = 0;
   for (const std::pair<double, double>& p_vs_time :
-       analysis->probability_analyses().begin()->second->p_time()) {
+       analysis->results().front().probability_analysis->p_time()) {
     ASSERT_NE(curve.end(), it);
     if (time >= settings.mission_time()) {
       EXPECT_EQ(settings.mission_time(), p_vs_time.second);
@@ -384,8 +378,9 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   double pfh_fractions[] = {2.74e-7, 2.466e-6, 2.466e-5, 2.466e-4, 0.999726, 0};
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  ASSERT_FALSE(analysis->probability_analyses().empty());
-  const auto& prob_an = *analysis->probability_analyses().begin()->second;
+  ASSERT_FALSE(analysis->results().empty());
+  ASSERT_TRUE(analysis->results().front().probability_analysis);
+  const auto& prob_an = *analysis->results().front().probability_analysis;
   EXPECT_NEAR(0.04255, prob_an.sil().pfd_avg, 0.00001);
   EXPECT_NEAR(9.77e-6, prob_an.sil().pfh_avg, 1e-8);
   auto compare_fractions = [](const auto& sil_fractions, const auto& result,
@@ -413,6 +408,11 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_THROW(Reporter().Report(*analysis, output), IOError);
+}
+
+TEST_F(RiskAnalysisTest, ReportEmpty) {
+  std::string tree_input = "./share/scram/input/empty_model.xml";
+  CheckReport(tree_input);
 }
 
 // Reporting of the default analysis for MCS only without probabilities.

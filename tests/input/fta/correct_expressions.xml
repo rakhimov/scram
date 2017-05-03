@@ -298,5 +298,86 @@ The input tries to utilize all the functionality including optional cases.
         <int value="-10"/>
       </mean>
     </define-parameter>
+    <define-parameter name="Not">
+      <not>
+        <bool value="true"/>
+      </not>
+    </define-parameter>
+    <define-parameter name="And">
+      <and>
+        <bool value="true"/>
+        <bool value="false"/>
+        <bool value="true"/>
+      </and>
+    </define-parameter>
+    <define-parameter name="Or">
+      <or>
+        <bool value="true"/>
+        <bool value="false"/>
+        <bool value="true"/>
+      </or>
+    </define-parameter>
+    <define-parameter name="Equal">
+      <eq>
+        <float value="10"/>
+        <bool value="false"/>
+      </eq>
+    </define-parameter>
+    <define-parameter name="Not-Equal">
+      <df>
+        <float value="10"/>
+        <bool value="false"/>
+      </df>
+    </define-parameter>
+    <define-parameter name="Less-than">
+      <lt>
+        <float value="10"/>
+        <bool value="false"/>
+      </lt>
+    </define-parameter>
+    <define-parameter name="Greater-than">
+      <gt>
+        <float value="10"/>
+        <bool value="false"/>
+      </gt>
+    </define-parameter>
+    <define-parameter name="LEQ">
+      <leq>
+        <float value="10"/>
+        <bool value="false"/>
+      </leq>
+    </define-parameter>
+    <define-parameter name="GEQ">
+      <geq>
+        <float value="10"/>
+        <bool value="false"/>
+      </geq>
+    </define-parameter>
+    <define-parameter name="if-then-else">
+      <ite>
+        <bool value="true"/>
+        <int value="42"/>
+        <float value="-42"/>
+      </ite>
+    </define-parameter>
+    <define-parameter name="switch">
+      <switch>
+        <case>
+          <eq>
+            <parameter name="if-then-else"/>
+            <int value="1"/>
+          </eq>
+          <float value="1.0e-4"/>
+        </case>
+        <case>
+          <eq>
+            <parameter name="Modulo"/>
+            <int value="2"/>
+          </eq>
+          <float value="2.5e-4"/>
+        </case>
+        <float value="1.0e-3"/>
+      </switch>
+    </define-parameter>
   </model-data>
 </opsa-mef>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="simplest">
+    <initial-state>
+      <branch name="B"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

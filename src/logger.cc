@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 
 /// @file logger.cc
-/// Initializing static members of Logger class.
+/// Initializing static members and member functions of Logger class.
 
 #include "logger.h"
 
@@ -34,10 +34,9 @@ const char* const Logger::kLevelToString_[] = {"ERROR", "WARNING", "INFO",
 LogLevel Logger::report_level_ = ERROR;
 
 Logger::~Logger() noexcept {
-  os_ << std::endl;
-  // fprintf used for thread safety.
-  std::fprintf(stderr, "%s", os_.str().c_str());
-  std::fflush(stderr);
+  os_ << "\n";
+  std::fputs(os_.str().c_str(), stderr);  // stdio is used for thread safety.
+  std::fflush(stderr);  // Should be no-op for the unbuffered stderr.
 }
 
 void Logger::SetVerbosity(int level) {
@@ -50,8 +49,8 @@ void Logger::SetVerbosity(int level) {
 
 std::ostringstream& Logger::Get(LogLevel level) {
   os_ << Logger::kLevelToString_[level] << ": ";
-  if (level >= DEBUG1)
-    os_ << std::string(level - DEBUG1 + 1, '\t');
+  if (level > INFO)
+    os_ << std::string(level - INFO, '\t');
   return os_;
 }
 

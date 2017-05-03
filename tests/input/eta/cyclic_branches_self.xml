@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="CyclicBranches">
+    <define-sequence name="S"/>
+    <define-branch name="B">
+      <branch name="B"/>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

@@ -85,7 +85,7 @@ This is the default quantitative approximation
 for analysis algorithms that inherently run with approximations (MOCUS and ZBDD).
 
 
-The Min-Cut-Upper Bound (MCUB) Approximation
+The Min-Cut-Upper-Bound (MCUB) Approximation
 --------------------------------------------
 
 This method calculates the total probability

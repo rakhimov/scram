@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
-    <label>LabelA</label>
+    <label>
+      LabelA
+    </label>
     <attributes>
       <attribute name="AttributeA" value="valueA" type="TypeA"/>
       <attribute name="AttributeB" value="valueB"/>
     </attributes>
     <define-gate name="TopEvent">
-      <label>LabelA</label>
+      <label>
+        LabelA
+      </label>
       <attributes>
         <attribute name="AttributeA" value="valueA" type="TypeA"/>
         <attribute name="AttributeB" value="valueB"/>
@@ -30,7 +34,7 @@
       </or>
     </define-gate>
     <define-basic-event name="ValveOne">
-      <label>LabelA</label>
+      <label> LabelA </label>
       <attributes>
         <attribute name="AttributeA" value="valueA" type="TypeA"/>
         <attribute name="AttributeB" value="valueB"/>

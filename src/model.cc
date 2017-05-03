@@ -32,14 +32,15 @@ Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),
       mission_time_(std::make_shared<MissionTime>()) {}
 
+void Model::Add(InitiatingEventPtr initiating_event) {
+  mef::AddElement<RedefinitionError>(std::move(initiating_event),
+                                     &initiating_events_,
+                                     "Redefinition of initiating event: ");
+}
+
 void Model::Add(EventTreePtr event_tree) {
   mef::AddElement<RedefinitionError>(std::move(event_tree), &event_trees_,
                                      "Redefinition of event tree: ");
-}
-
-void Model::Add(const FunctionalEventPtr& functional_event) {
-  mef::AddElement<RedefinitionError>(functional_event, &functional_events_,
-                                     "Redefinition of functional event: ");
 }
 
 void Model::Add(const SequencePtr& sequence) {

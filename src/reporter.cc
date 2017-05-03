@@ -42,27 +42,22 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
+  if (risk_an.results().empty())
+    return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
-  for (const auto& fta : risk_an.fault_tree_analyses()) {
-    const std::string& id = fta.first;
-    core::ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
-    if (risk_an.settings().probability_analysis()) {
-      prob_analysis = risk_an.probability_analyses().at(id).get();
-    }
-    ReportResults(id, *fta.second, prob_analysis, &results);
+  for (const core::RiskAnalysis::Result& result : risk_an.results()) {
+    ReportResults(result.gate.id(), *result.fault_tree_analysis,
+                  result.probability_analysis.get(), &results);
 
-    if (prob_analysis) {
-      ReportResults(id, *prob_analysis, &results);
-    }
+    if (result.probability_analysis)
+      ReportResults(result.gate.id(), *result.probability_analysis, &results);
 
-    if (risk_an.settings().importance_analysis()) {
-      ReportResults(id, *risk_an.importance_analyses().at(id), &results);
-    }
+    if (result.importance_analysis)
+      ReportResults(result.gate.id(), *result.importance_analysis, &results);
 
-    if (risk_an.settings().uncertainty_analysis()) {
-      ReportResults(id, *risk_an.uncertainty_analyses().at(id), &results);
-    }
+    if (result.uncertainty_analysis)
+      ReportResults(result.gate.id(), *result.uncertainty_analysis, &results);
   }
 }
 
@@ -211,7 +206,8 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
       .SetAttribute("name", "SCRAM")
       .SetAttribute("version", *version::describe() != '\0'
                                    ? version::describe()
-                                   : version::core());
+                                   : version::core())
+      .SetAttribute("contacts", "https://scram-pra.org");
   namespace pt = boost::posix_time;
   information->AddChild("time").AddText(
       pt::to_iso_extended_string(pt::second_clock::universal_time()));
@@ -232,32 +228,45 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("ccf-groups", model.ccf_groups());
   feature("fault-trees", model.fault_trees());
   feature("event-trees", model.event_trees());
-  feature("functional-events", model.functional_events());
+
+  int num_functional_events = 0;
+  for (const mef::EventTreePtr& event_tree : model.event_trees())
+    num_functional_events += event_tree->functional_events().size();
+  if (num_functional_events)
+    model_features.AddChild("functional-events").AddText(num_functional_events);
+
+  feature("sequences", model.sequences());
+  feature("initiating-events", model.initiating_events());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
                                  XmlStreamElement* information) {
+  if (risk_an.results().empty())
+    return;
   // Setup for performance information.
   XmlStreamElement performance = information->AddChild("performance");
-  for (const auto& fta : risk_an.fault_tree_analyses()) {
+  for (const core::RiskAnalysis::Result& result : risk_an.results()) {
     XmlStreamElement calc_time = performance.AddChild("calculation-time");
-    const std::string& id = fta.first;
-    calc_time.SetAttribute("name", id);
-    calc_time.AddChild("products").AddText(fta.second->analysis_time());
+    calc_time.SetAttribute("name", result.gate.id());
+    calc_time.AddChild("products")
+        .AddText(result.fault_tree_analysis->analysis_time());
 
     if (risk_an.settings().probability_analysis()) {
+      assert(result.probability_analysis);
       calc_time.AddChild("probability")
-          .AddText(risk_an.probability_analyses().at(id)->analysis_time());
+          .AddText(result.probability_analysis->analysis_time());
     }
 
     if (risk_an.settings().importance_analysis()) {
+      assert(result.importance_analysis);
       calc_time.AddChild("importance")
-          .AddText(risk_an.importance_analyses().at(id)->analysis_time());
+          .AddText(result.importance_analysis->analysis_time());
     }
 
     if (risk_an.settings().uncertainty_analysis()) {
+      assert(result.uncertainty_analysis);
       calc_time.AddChild("uncertainty")
-          .AddText(risk_an.uncertainty_analyses().at(id)->analysis_time());
+          .AddText(result.uncertainty_analysis->analysis_time());
     }
   }
 }
@@ -295,15 +304,20 @@ void Reporter::ReportResults(const std::string& ft_name,
   CLOCK(cs_time);
   LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
-  sum_of_products.SetAttribute("name", ft_name)
+  sum_of_products.SetAttribute("name", ft_name);
+
+  std::string warning = fta.warnings();
+  if (prob_analysis && prob_analysis->warnings().empty() == false)
+    warning += "; " + prob_analysis->warnings();
+  if (!warning.empty())
+    sum_of_products.SetAttribute("warning", warning);
+
+  sum_of_products
       .SetAttribute("basic-events", fta.products().product_events().size())
       .SetAttribute("products", fta.products().size());
 
-  std::string warning = fta.warnings();
-  if (prob_analysis) {
+  if (prob_analysis)
     sum_of_products.SetAttribute("probability", prob_analysis->p_total());
-    warning += prob_analysis->warnings();
-  }
 
   if (fta.products().empty() == false) {
     sum_of_products.SetAttribute(
@@ -312,10 +326,6 @@ void Reporter::ReportResults(const std::string& ft_name,
                         boost::adaptors::transformed(
                             [](int number) { return std::to_string(number); }),
                     " "));
-  }
-
-  if (!warning.empty()) {
-    sum_of_products.AddChild("warning").AddText(warning);
   }
 
   double sum = 0;  // Sum of probabilities for contribution calculations.
@@ -387,11 +397,11 @@ void Reporter::ReportResults(
     XmlStreamElement* results) {
   XmlStreamElement importance = results->AddChild("importance");
   importance.SetAttribute("name", ft_name);
+  if (!importance_analysis.warnings().empty()) {
+    importance.SetAttribute("warning", importance_analysis.warnings());
+  }
   importance.SetAttribute("basic-events",
                           importance_analysis.importance().size());
-  if (!importance_analysis.warnings().empty()) {
-    importance.AddChild("warning").AddText(importance_analysis.warnings());
-  }
 
   for (const core::ImportanceRecord& entry : importance_analysis.importance()) {
     const core::ImportanceFactors& factors = entry.factors;
@@ -415,7 +425,7 @@ void Reporter::ReportResults(const std::string& ft_name,
   XmlStreamElement measure = results->AddChild("measure");
   measure.SetAttribute("name", ft_name);
   if (!uncert_analysis.warnings().empty()) {
-    measure.AddChild("warning").AddText(uncert_analysis.warnings());
+    measure.SetAttribute("warning", uncert_analysis.warnings());
   }
   measure.AddChild("mean").SetAttribute("value", uncert_analysis.mean());
   measure.AddChild("standard-deviation")

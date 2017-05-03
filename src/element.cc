@@ -30,7 +30,7 @@ namespace mef {
 
 Element::Element(std::string name) : kName_(std::move(name)) {
   if (kName_.empty())
-    throw LogicError("The element name can't be empty");
+    throw LogicError("The element name cannot be empty");
 
   if (kName_.find('.') != std::string::npos)
     throw InvalidArgument("The element name is malformed.");

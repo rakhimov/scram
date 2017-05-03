@@ -232,6 +232,7 @@ include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
 include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
 include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
+include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
 
 include_directories("${PROJECT_SOURCE_DIR}")  # Include the core headers via "src".
 

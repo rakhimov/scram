@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="simplest">
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="true">
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

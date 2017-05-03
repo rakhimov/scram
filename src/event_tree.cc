@@ -30,12 +30,9 @@ Instruction::~Instruction() = default;
 CollectExpression::CollectExpression(Expression* expression)
     : expression_(expression) {}
 
-void Sequence::instructions(InstructionContainer instructions) {
-  if (instructions.empty()) {
-    throw LogicError("Sequence " + Element::name() +
-                     " requires at least one instruction");
-  }
-  instructions_ = std::move(instructions);
+Path::Path(std::string state) : state_(std::move(state)) {
+  if (state_.empty())
+    throw LogicError("The state string for functional events cannot be empty");
 }
 
 void EventTree::Add(SequencePtr sequence) {
@@ -47,6 +44,11 @@ void EventTree::Add(FunctionalEventPtr functional_event) {
   mef::AddElement<ValidationError>(std::move(functional_event),
                                    &functional_events_,
                                    "Duplicate functional event: ");
+}
+
+void EventTree::Add(NamedBranchPtr branch) {
+  mef::AddElement<ValidationError>(std::move(branch), &branches_,
+                                   "Duplicate named branch: ");
 }
 
 }  // namespace mef

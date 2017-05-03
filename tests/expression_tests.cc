@@ -16,6 +16,8 @@
  */
 
 #include "expression.h"
+#include "expression/boolean.h"
+#include "expression/conditional.h"
 #include "expression/exponential.h"
 #include "expression/constant.h"
 #include "expression/numerical.h"
@@ -1042,6 +1044,147 @@ TEST(ExpressionTest, Mean) {
 
   EXPECT_TRUE(Interval::closed(31.25, 48.75) == dev->interval())
       << dev->interval();
+}
+
+TEST(ExpressionTest, Not) {
+  OpenExpression arg_one(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Not>(&arg_one));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, And) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(1);
+  OpenExpression arg_three(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = MakeUnique<And>({&arg_one, &arg_two, &arg_three}));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_three.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_three.mean = 0.5;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
+TEST(ExpressionTest, Or) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(1);
+  OpenExpression arg_three(1);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = MakeUnique<Or>({&arg_one, &arg_two, &arg_three}));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_three.mean = 0;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_two.mean = arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, Eq) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Eq>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
+TEST(ExpressionTest, Df) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Df>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, Lt) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Lt>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 9.999999;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
+TEST(ExpressionTest, Gt) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Gt>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_one.mean = 9.999999;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, Leq) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Leq>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(0, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 9.999999;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+}
+
+TEST(ExpressionTest, Geq) {
+  OpenExpression arg_one(100);
+  OpenExpression arg_two(10);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Geq>(&arg_one, &arg_two));
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_two.mean = arg_one.mean;
+  EXPECT_DOUBLE_EQ(1, dev->value());
+  arg_one.mean = 9.999999;
+  EXPECT_DOUBLE_EQ(0, dev->value());
+}
+
+TEST(ExpressionTest, Ite) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(42, 42, 32, 52);
+  OpenExpression arg_three(10, 10, 5, 15);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(dev = std::make_unique<Ite>(&arg_one, &arg_two, &arg_three));
+  EXPECT_DOUBLE_EQ(42, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(10, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(42, dev->value());
+
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
+      << dev->interval();
+}
+
+TEST(ExpressionTest, Switch) {
+  OpenExpression arg_one(1);
+  OpenExpression arg_two(42, 42, 32, 52);
+  OpenExpression arg_three(10, 10, 5, 15);
+  std::unique_ptr<Expression> dev;
+  ASSERT_NO_THROW(
+      dev = std::make_unique<Switch>(
+          std::vector<Switch::Case>{{arg_one, arg_two}}, &arg_three));
+  EXPECT_DOUBLE_EQ(42, dev->value());
+  arg_one.mean = 0;
+  EXPECT_DOUBLE_EQ(10, dev->value());
+  arg_one.mean = 0.5;
+  EXPECT_DOUBLE_EQ(42, dev->value());
+
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
+      << dev->interval();
+
+  EXPECT_DOUBLE_EQ(10, Switch({}, &arg_three).value());
 }
 
 }  // namespace test
