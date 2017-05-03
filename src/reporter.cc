@@ -308,15 +308,20 @@ void Reporter::ReportResults(const std::string& ft_name,
   CLOCK(cs_time);
   LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   XmlStreamElement sum_of_products = results->AddChild("sum-of-products");
-  sum_of_products.SetAttribute("name", ft_name)
+  sum_of_products.SetAttribute("name", ft_name);
+
+  std::string warning = fta.warnings();
+  if (prob_analysis && prob_analysis->warnings().empty() == false)
+    warning += "; " + prob_analysis->warnings();
+  if (!warning.empty())
+    sum_of_products.SetAttribute("warning", warning);
+
+  sum_of_products
       .SetAttribute("basic-events", fta.products().product_events().size())
       .SetAttribute("products", fta.products().size());
 
-  std::string warning = fta.warnings();
-  if (prob_analysis) {
+  if (prob_analysis)
     sum_of_products.SetAttribute("probability", prob_analysis->p_total());
-    warning += prob_analysis->warnings();
-  }
 
   if (fta.products().empty() == false) {
     sum_of_products.SetAttribute(
@@ -325,10 +330,6 @@ void Reporter::ReportResults(const std::string& ft_name,
                         boost::adaptors::transformed(
                             [](int number) { return std::to_string(number); }),
                     " "));
-  }
-
-  if (!warning.empty()) {
-    sum_of_products.AddChild("warning").AddText(warning);
   }
 
   double sum = 0;  // Sum of probabilities for contribution calculations.
@@ -400,11 +401,11 @@ void Reporter::ReportResults(
     XmlStreamElement* results) {
   XmlStreamElement importance = results->AddChild("importance");
   importance.SetAttribute("name", ft_name);
+  if (!importance_analysis.warnings().empty()) {
+    importance.SetAttribute("warning", importance_analysis.warnings());
+  }
   importance.SetAttribute("basic-events",
                           importance_analysis.importance().size());
-  if (!importance_analysis.warnings().empty()) {
-    importance.AddChild("warning").AddText(importance_analysis.warnings());
-  }
 
   for (const core::ImportanceRecord& entry : importance_analysis.importance()) {
     const core::ImportanceFactors& factors = entry.factors;
@@ -428,7 +429,7 @@ void Reporter::ReportResults(const std::string& ft_name,
   XmlStreamElement measure = results->AddChild("measure");
   measure.SetAttribute("name", ft_name);
   if (!uncert_analysis.warnings().empty()) {
-    measure.AddChild("warning").AddText(uncert_analysis.warnings());
+    measure.SetAttribute("warning", uncert_analysis.warnings());
   }
   measure.AddChild("mean").SetAttribute("value", uncert_analysis.mean());
   measure.AddChild("standard-deviation")

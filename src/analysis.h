@@ -56,7 +56,7 @@ class Analysis : private boost::noncopyable {
   /// @param[in] msg  Informative message without special characters.
   void AddWarning(std::string msg) {
     assert(!msg.empty() && "Warnings cannot be empty.");
-    warnings_ += " " + msg;
+    warnings_ += (warnings_.empty() ? "" : "; ") + msg;
   }
 
   /// Adds time to the total analysis time.

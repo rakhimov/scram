@@ -100,11 +100,21 @@
     </element>
   </define>
 
+  <define name="analysis-id">
+    <attribute name="name"> <data type="NCName"/> </attribute>
+    <optional>
+      <attribute name="description"> <text/> </attribute>
+    </optional>
+    <optional>
+      <attribute name="warning"> <text/> </attribute>
+    </optional>
+  </define>
+
   <define name="performance-info">
     <element name="performance">
       <oneOrMore>
         <element name="calculation-time">
-          <attribute name="name"> <data type="NCName"/> </attribute>
+          <ref name="analysis-id"/>
           <optional>
             <element name="products">
               <data type="double"/>
@@ -149,6 +159,9 @@
     <element name="calculation-method">
       <attribute name="name"> <text/> </attribute>
       <optional>
+        <attribute name="warning"> <text/> </attribute>
+      </optional>
+      <optional>
         <element name="limits">
           <optional>
             <element name="product-order">
@@ -181,14 +194,6 @@
           </optional>
         </element>
       </optional>
-      <optional>
-        <element name="calculation-time">
-          <data type="double"/>
-        </element>
-      </optional>
-      <optional>
-        <element name="warning"> <text/> </element>
-      </optional>
     </element>
   </define>
 
@@ -216,10 +221,7 @@
 
   <define name="sum-of-products">
     <element name="sum-of-products">
-      <attribute name="name"> <data type="NCName"/> </attribute>
-      <optional>
-        <attribute name="description"> <text/> </attribute>
-      </optional>
+      <ref name="analysis-id"/>
       <attribute name="basic-events">
         <data type="nonNegativeInteger"/>
       </attribute>
@@ -237,9 +239,6 @@
             </oneOrMore>
           </list>
         </attribute>
-      </optional>
-      <optional>
-        <element name="warning"> <text/> </element>
       </optional>
       <zeroOrMore>
         <ref name="product"/>
@@ -299,13 +298,7 @@
 
   <define name="statistical-measure">
     <element name="measure">
-      <attribute name="name"> <data type="NCName"/> </attribute>
-      <optional>
-        <attribute name="description"> <text/> </attribute>
-      </optional>
-      <optional>
-        <element name="warning"> <text/> </element>
-      </optional>
+      <ref name="analysis-id"/>
       <element name="mean">
         <attribute name="value"> <ref name="probability-data"/> </attribute>
       </element>
@@ -383,10 +376,7 @@
 
   <define name="curve">
     <element name="curve">
-      <attribute name="name"> <data type="NCName"/> </attribute>
-      <optional>
-        <attribute name="description"> <text/> </attribute>
-      </optional>
+      <ref name="analysis-id"/>
       <attribute name="X-title"> <data type="string"/> </attribute>
       <attribute name="Y-title"> <data type="string"/> </attribute>
       <optional>
@@ -430,16 +420,10 @@
 
   <define name="importance">
     <element name="importance">
-      <attribute name="name"> <data type="NCName"/> </attribute>
-      <optional>
-        <attribute name="description"> <text/> </attribute>
-      </optional>
+      <ref name="analysis-id"/>
       <attribute name="basic-events">
         <data type="nonNegativeInteger"/>
       </attribute>
-      <optional>
-        <element name="warning"> <text/> </element>
-      </optional>
       <zeroOrMore>
         <choice>
           <element name="basic-event">
@@ -482,10 +466,7 @@
 
   <define name="safety-integrity-levels">
     <element name="safety-integrity-levels">
-      <attribute name="name"> <data type="NCName"/> </attribute>
-      <optional>
-        <attribute name="description"> <text/> </attribute>
-      </optional>
+      <ref name="analysis-id"/>
       <attribute name="PFD-avg"> <ref name="probability-data"/> </attribute>
       <attribute name="PFH-avg"> <ref name="probability-data"/> </attribute>
       <ref name="histogram"/>  <!-- Implicit PFD histogram -->
