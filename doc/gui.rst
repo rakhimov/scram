@@ -2,6 +2,10 @@
 GUI Front-End
 #############
 
+.. note::
+    The GUI front-end does not provide access
+    to all the features implemented in SCRAM.
+
 The GUI front-end is developed with `Qt5 and Qt Creator`_.
 
 .. _Qt5 and Qt Creator: https://www.qt.io/developers/

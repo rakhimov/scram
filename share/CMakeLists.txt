@@ -5,3 +5,11 @@ install(FILES
   DESTINATION share/scram
   COMPONENT scram
   )
+
+if(BUILD_GUI)
+  install(FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/gui.rng"
+    DESTINATION share/scram
+    COMPONENT gui
+  )
+endif()
