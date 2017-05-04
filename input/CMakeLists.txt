@@ -12,6 +12,7 @@ install(DIRECTORY
   "${CMAKE_CURRENT_SOURCE_DIR}/ThreeMotor"
   "${CMAKE_CURRENT_SOURCE_DIR}/Lift"
   "${CMAKE_CURRENT_SOURCE_DIR}/HIPPS"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EventTrees"
   DESTINATION share/scram/input
   COMPONENT examples
   )

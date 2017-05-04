@@ -38,7 +38,7 @@ Path::Path(std::string state) : state_(std::move(state)) {
 }
 
 Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
-      : functional_event_(functional_event), paths_(std::move(paths)) {
+    : functional_event_(functional_event), paths_(std::move(paths)) {
   // There are expected to be very few paths (2 in most cases),
   // so quadratic check is not a problem.
   for (auto it = paths_.begin(); it != paths_.end(); ++it) {

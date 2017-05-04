@@ -20,6 +20,8 @@
 
 #include "risk_analysis.h"
 
+#include <boost/range/algorithm/find_if.hpp>
+
 #include "bdd.h"
 #include "fault_tree.h"
 #include "logger.h"
@@ -41,6 +43,15 @@ void RiskAnalysis::Analyze() noexcept {
   // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
+
+  for (const mef::InitiatingEventPtr& initiating_event :
+       model_->initiating_events()) {
+    if (initiating_event->event_tree()) {
+      LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
+      event_tree_results_.push_back(Analyze(*initiating_event));
+      LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
+    }
+  }
 
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
@@ -104,6 +115,48 @@ void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
     result->uncertainty_analysis = std::move(ua);
   }
   result->probability_analysis = std::move(pa);
+}
+
+RiskAnalysis::EventTreeResult RiskAnalysis::Analyze(
+    const mef::InitiatingEvent& initiating_event) noexcept {
+  assert(initiating_event.event_tree());
+  EventTreeResult result{initiating_event};
+  CollectSequences(initiating_event.event_tree()->initial_state(), &result);
+  return result;
+}
+
+void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
+                                    EventTreeResult* result) noexcept {
+  struct Collector {
+    void operator()(const mef::Sequence* sequence) const {
+      auto it = boost::find_if(
+          result_->sequences,
+          [&sequence](
+              const std::pair<const mef::Sequence&, double>& p_sequence) {
+            return &p_sequence.first == sequence;
+          });
+      if (it != result_->sequences.end()) {
+        it->second += p_path_;
+      } else {
+        result_->sequences.emplace_back(*sequence, p_path_);
+      }
+    }
+    void operator()(const mef::Branch* branch) {
+      for (const mef::InstructionPtr& instruction : branch->instructions()) {
+        p_path_ *= static_cast<mef::CollectExpression&>(*instruction)
+                       .expression()
+                       .value();
+      }
+      boost::apply_visitor(*this, branch->target());
+    }
+    void operator()(const mef::Fork* fork) const {
+      for (const mef::Path& fork_path : fork->paths())
+        Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
+    }
+    EventTreeResult* result_;
+    double p_path_;
+  };
+  Collector{result, 1}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
 }  // namespace core

@@ -398,6 +398,30 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   compare_fractions(pfh_fractions, prob_an.sil().pfh_fractions, "PFH");
 }
 
+TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
+  const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  auto& results = analysis->event_tree_results().front().sequences;
+  ASSERT_EQ(2, results.size());
+  EXPECT_NE(results.front().first.name(), results.back().first.name());
+  EXPECT_EQ((std::set<std::string>{"Success", "Failure"}),
+            (std::set<std::string>{results.front().first.name(),
+                                  results.back().first.name()}));
+  double p_success;
+  double p_fail;
+  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
+    if (results.front().first.name() == "Success") {
+      return {results.front().second, results.back().second};
+    }
+    return {results.back().second, results.front().second};
+  }();
+
+  EXPECT_DOUBLE_EQ(0.594, p_success);
+  EXPECT_DOUBLE_EQ(0.406, p_fail);
+}
+
 // Test Reporting capabilities
 // Tests the output against the schema. However the contents of the
 // output are not verified or validated.
