@@ -210,6 +210,7 @@
           <ref name="safety-integrity-levels"/>
           <ref name="statistical-measure"/>
           <ref name="curve"/>
+          <ref name="initiating-event"/>
         </choice>
       </oneOrMore>
     </element>
@@ -471,6 +472,22 @@
       <attribute name="PFH-avg"> <ref name="probability-data"/> </attribute>
       <ref name="histogram"/>  <!-- Implicit PFD histogram -->
       <ref name="histogram"/>  <!-- Implicit PFH histogram -->
+    </element>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.6. Initiating events and Sequences -->
+  <!-- ============================================================= -->
+
+  <define name="initiating-event">
+    <element name="initiating-event">
+      <ref name="analysis-id"/>
+      <oneOrMore>
+        <element name="sequence">
+          <attribute name="name"> <data type="NCName"/> </attribute>
+          <attribute name="value"> <ref name="probability-data"/> </attribute>
+        </element>
+      </oneOrMore>
     </element>
   </define>
 

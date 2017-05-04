@@ -480,6 +480,12 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   CheckReport(tree_input);
 }
 
+// Reporting event tree analysis with an initiating event.
+TEST_F(RiskAnalysisTest, ReportInitiatingEventAnalysis) {
+  const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  CheckReport(tree_input);
+}
+
 // Reporting of CCF analysis.
 TEST_F(RiskAnalysisTest, ReportCCF) {
   std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";

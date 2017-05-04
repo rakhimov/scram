@@ -42,10 +42,21 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   XmlStreamElement report("report", out);
   ReportInformation(risk_an, &report);
 
-  if (risk_an.results().empty())
+  if (risk_an.results().empty() && risk_an.event_tree_results().empty())
     return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
+  for (const core::RiskAnalysis::EventTreeResult& result :
+       risk_an.event_tree_results()) {
+    XmlStreamElement initiating_event = results.AddChild("initiating-event");
+    initiating_event.SetAttribute("name", result.initiating_event.name());
+    for (const std::pair<const mef::Sequence&, double>& result_sequence :
+         result.sequences) {
+      initiating_event.AddChild("sequence")
+          .SetAttribute("name", result_sequence.first.name())
+          .SetAttribute("value", result_sequence.second);
+    }
+  }
   for (const core::RiskAnalysis::Result& result : risk_an.results()) {
     ReportResults(result.gate.id(), *result.fault_tree_analysis,
                   result.probability_analysis.get(), &results);
