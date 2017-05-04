@@ -482,6 +482,9 @@
   <define name="initiating-event">
     <element name="initiating-event">
       <ref name="analysis-id"/>
+      <attribute name="sequences">
+        <data type="nonNegativeInteger"/>
+      </attribute>
       <oneOrMore>
         <element name="sequence">
           <attribute name="name"> <data type="NCName"/> </attribute>
