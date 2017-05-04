@@ -29,6 +29,7 @@
 #include <boost/variant.hpp>
 
 #include "element.h"
+#include "event.h"
 #include "expression.h"
 #include "ext/variant.h"
 
@@ -52,13 +53,27 @@ class CollectExpression : public Instruction {
  public:
   /// @param[in] expression  The expression to multiply
   ///                        the current sequence probability.
-  explicit CollectExpression(Expression* expression);
+  explicit CollectExpression(Expression* expression)
+      : expression_(expression) {}
 
   /// @returns The collected expression for value extraction.
   Expression& expression() const { return *expression_; }
 
  private:
   Expression* expression_;  ///< The probability expression to multiply.
+};
+
+/// The operation of connecting fault tree events into the event tree.
+class CollectFormula : public Instruction {
+ public:
+  /// @param[in] formula  The valid formula to add into the sequence fault tree.
+  explicit CollectFormula(FormulaPtr formula) : formula_(std::move(formula)) {}
+
+  /// @returns The formula to include into the current product of the path.
+  Formula& formula() const { return *formula_; }
+
+ private:
+  FormulaPtr formula_;  ///< The valid single formula for the collection.
 };
 
 /// Representation of sequences in event trees.

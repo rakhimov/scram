@@ -637,8 +637,9 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
         formula->AddArgument(model_->GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
-      throw ValidationError(GetLine(node) + "Undefined " + element_type + " " +
-                            name + " with base path " + base_path);
+      throw ValidationError(
+          GetLine(node) + "Undefined " + element_type + " " + name +
+          (base_path.empty() ? "" : " with base path " + base_path));
     }
   };
 
@@ -716,10 +717,12 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
 }
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
-  assert(xml_element->get_name() == "collect-expression");
   const xmlpp::Element* arg_element =
       XmlElement(xml_element->find("./*").front());
-  return std::make_unique<CollectExpression>(GetExpression(arg_element, ""));
+  if (xml_element->get_name() == "collect-expression")
+    return std::make_unique<CollectExpression>(GetExpression(arg_element, ""));
+  assert(xml_element->get_name() == "collect-formula");
+  return std::make_unique<CollectFormula>(GetFormula(arg_element, ""));
 }
 
 template <class T, int N>
@@ -1019,8 +1022,9 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
       check_units(*param);
       return param;
     } catch (std::out_of_range&) {
-      throw ValidationError(GetLine(expr_element) + "Undefined parameter " +
-                            name + " with base path " + base_path);
+      throw ValidationError(
+          GetLine(expr_element) + "Undefined parameter " + name +
+          (base_path.empty() ? "" : " with base path " + base_path));
     }
   } else if (expr_type == "system-mission-time") {
     check_units(*model_->mission_time());

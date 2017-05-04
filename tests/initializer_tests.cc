@@ -86,7 +86,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
   std::string dir = "./share/scram/input/eta/";
   const char* correct_inputs[] = {"simplest_correct.xml",
                                   "public_sequence.xml",
-                                  "initiating_event.xml"};
+                                  "initiating_event.xml",
+                                  "collect_formula.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -114,7 +115,9 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "invalid_duplicate_event_in_forks.xml",
       "invalid_event_order_in_branch.xml",
       "invalid_event_order_in_initial_state.xml",
-      "invalid_event_order_in_ref_branch.xml"};
+      "invalid_event_order_in_ref_branch.xml",
+      "invalid_collect_formula.xml",
+      "undefined_arg_collect_formula.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename: " << input;

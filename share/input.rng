@@ -230,8 +230,15 @@
 
   <define name="collect">
     <choice>
+      <ref name="collect-formula"/>
       <ref name="collect-expression"/>
     </choice>
+  </define>
+
+  <define name="collect-formula">
+    <element name="collect-formula">
+      <ref name="formula"/>
+    </element>
   </define>
 
   <define name="collect-expression">

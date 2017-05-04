@@ -29,9 +29,6 @@ namespace mef {
 
 Instruction::~Instruction() = default;
 
-CollectExpression::CollectExpression(Expression* expression)
-    : expression_(expression) {}
-
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
     throw LogicError("The state string for functional events cannot be empty");
