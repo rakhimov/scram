@@ -53,6 +53,14 @@ to identify the supported and unsupported features.
 - Label
 - Attributes
 - Public and Private Roles
+- Event Tree Layer
+
+    * Initiating events
+    * Sequences
+    * Functional events
+    * Branches
+    * Instructions (collect-expression)
+
 - Fault Tree Layer
 
     * Components

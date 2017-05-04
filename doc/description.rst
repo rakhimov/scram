@@ -46,3 +46,4 @@ Analysis
 - :ref:`common_cause_failure`
 - :ref:`probability_analysis`
 - :ref:`uncertainty_analysis`
+- :ref:`event_tree_analysis`
