@@ -39,12 +39,6 @@ TEST_P(RiskAnalysisTest, AttackEventTree) {
   double p_success;
   double p_fail;
   std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
-    if (results.front().first.name() == "Success") {
-      return {results.front().second, results.back().second};
-    }
-    return {results.back().second, results.front().second};
-  }();
-  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
     if (results.front().first.name() == "AttackSucceeds") {
       return {results.front().second, results.back().second};
     }
