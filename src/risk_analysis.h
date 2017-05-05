@@ -89,6 +89,20 @@ class RiskAnalysis : public Analysis {
   }
 
  private:
+  /// Expressions and formulas collected in an event tree path.
+  struct PathCollector {
+    std::vector<mef::Expression*> expressions;  ///< Multiplication arguments.
+    std::vector<mef::Formula*> formulas;  ///< AND connective formulas.
+  };
+
+  /// Walks the event tree paths and collects sequences.
+  struct SequenceCollector {
+    const mef::InitiatingEvent& initiating_event;  ///< The analysis initiator.
+    /// Sequences with collected paths.
+    std::unordered_map<const mef::Sequence*, std::vector<PathCollector>>
+        sequences;
+  };
+
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
@@ -134,7 +148,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @post The sequences in the result are joined and unique.
   void CollectSequences(const mef::Branch& initial_state,
-                        EventTreeResult* result) noexcept;
+                        SequenceCollector* result) noexcept;
 
   std::shared_ptr<const mef::Model> model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.

@@ -24,6 +24,7 @@
 
 #include "bdd.h"
 #include "fault_tree.h"
+#include "expression/numerical.h"  ///< @todo Move elsewhere or substitute.
 #include "logger.h"
 #include "mocus.h"
 #include "random.h"
@@ -120,32 +121,43 @@ void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
 RiskAnalysis::EventTreeResult RiskAnalysis::Analyze(
     const mef::InitiatingEvent& initiating_event) noexcept {
   assert(initiating_event.event_tree());
+  SequenceCollector collector{initiating_event};
+  CollectSequences(initiating_event.event_tree()->initial_state(), &collector);
   EventTreeResult result{initiating_event};
-  CollectSequences(initiating_event.event_tree()->initial_state(), &result);
+  for (auto& sequence : collector.sequences) {
+    double p_sequence = 0;
+    for (PathCollector& path_collector : sequence.second) {
+      if (path_collector.expressions.empty())
+        continue;
+      if (path_collector.expressions.size() == 1) {
+        p_sequence += path_collector.expressions.front()->value();
+      } else {
+        p_sequence += mef::Mul(std::move(path_collector.expressions)).value();
+      }
+    }
+    result.sequences.emplace_back(*sequence.first, p_sequence);
+  }
   return result;
 }
 
 void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
-                                    EventTreeResult* result) noexcept {
+                                    SequenceCollector* result) noexcept {
   struct Collector {
     void operator()(const mef::Sequence* sequence) const {
-      auto it = boost::find_if(
-          result_->sequences,
-          [&sequence](
-              const std::pair<const mef::Sequence&, double>& p_sequence) {
-            return &p_sequence.first == sequence;
-          });
-      if (it != result_->sequences.end()) {
-        it->second += p_path_;
-      } else {
-        result_->sequences.emplace_back(*sequence, p_path_);
-      }
+      result_->sequences[sequence].push_back(std::move(path_collector_));
     }
+
     void operator()(const mef::Branch* branch) {
       for (const mef::InstructionPtr& instruction : branch->instructions()) {
-        p_path_ *= static_cast<mef::CollectExpression&>(*instruction)
-                       .expression()
-                       .value();
+        /// @todo Rework without dynamic casts.
+        if (auto* collect_formula =
+                dynamic_cast<mef::CollectFormula*>(instruction.get())) {
+          path_collector_.formulas.push_back(&collect_formula->formula());
+        } else {
+          auto& expression =
+              static_cast<mef::CollectExpression&>(*instruction).expression();
+          path_collector_.expressions.push_back(&expression);
+        }
       }
       boost::apply_visitor(*this, branch->target());
     }
@@ -153,10 +165,10 @@ void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
       for (const mef::Path& fork_path : fork->paths())
         Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
     }
-    EventTreeResult* result_;
-    double p_path_;
+    SequenceCollector* result_;
+    PathCollector path_collector_;
   };
-  Collector{result, 1}(&initial_state);  // NOLINT(whitespace/braces)
+  Collector{result}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
 }  // namespace core
