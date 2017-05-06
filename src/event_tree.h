@@ -85,6 +85,27 @@ class CollectFormula : public Instruction {
   FormulaPtr formula_;  ///< The valid single formula for the collection.
 };
 
+/// Conditional application of instructions.
+class IfThenElse : public Instruction {
+ public:
+  /// @param[in] expression  The expression to evaluate for truth.
+  /// @param[in] then_instruction  The required instruction to execute.
+  /// @param[in] else_instruction  An optional instruction for the false case.
+  IfThenElse(Expression* expression, InstructionPtr then_instruction,
+             InstructionPtr else_instruction = nullptr)
+      : expression_(expression),
+        then_instruction_(std::move(then_instruction)),
+        else_instruction_(std::move(else_instruction)) {}
+
+  /// Forwards the visitor to the appropriate sub-instruction.
+  void Accept(InstructionVisitor* visitor) const override;
+
+ private:
+  Expression* expression_;           ///< The condition source.
+  InstructionPtr then_instruction_;  ///< The mandatory 'truth' instruction.
+  InstructionPtr else_instruction_;  ///< The optional 'false' instruction.
+};
+
 /// The base abstract class for instruction visitors.
 class InstructionVisitor {
  public:

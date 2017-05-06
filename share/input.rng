@@ -225,7 +225,18 @@
   <define name="instruction">
     <choice>
       <ref name="collect"/>
+      <ref name="if-then-else"/>
     </choice>
+  </define>
+
+  <define name="if-then-else">
+    <element name="if">
+      <ref name="expression"/>
+      <ref name="instruction"/>
+      <optional>
+        <ref name="instruction"/>
+      </optional>
+    </element>
   </define>
 
   <define name="collect">

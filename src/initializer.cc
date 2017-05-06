@@ -717,12 +717,20 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
 }
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
-  const xmlpp::Element* arg_element =
-      XmlElement(xml_element->find("./*").front());
+  xmlpp::NodeSet args = xml_element->find("./*");
+  assert(!args.empty());
+  const xmlpp::Element* arg_element = XmlElement(args.front());
   if (xml_element->get_name() == "collect-expression")
     return std::make_unique<CollectExpression>(GetExpression(arg_element, ""));
-  assert(xml_element->get_name() == "collect-formula");
-  return std::make_unique<CollectFormula>(GetFormula(arg_element, ""));
+
+  if (xml_element->get_name() == "collect-formula")
+    return std::make_unique<CollectFormula>(GetFormula(arg_element, ""));
+
+  assert(xml_element->get_name() == "if");
+  assert(args.size() > 1);
+  return std::make_unique<IfThenElse>(
+      GetExpression(arg_element, ""), GetInstruction(XmlElement(args[1])),
+      args.size() == 2 ? nullptr : GetInstruction(XmlElement(args[2])));
 }
 
 template <class T, int N>

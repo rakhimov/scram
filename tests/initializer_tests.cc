@@ -87,7 +87,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
   const char* correct_inputs[] = {"simplest_correct.xml",
                                   "public_sequence.xml",
                                   "initiating_event.xml",
-                                  "collect_formula.xml"};
+                                  "collect_formula.xml",
+                                  "if_then_else_instruction.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;

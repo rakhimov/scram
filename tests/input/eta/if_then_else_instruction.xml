@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="InstructionCheck"/>
+  <define-event-tree name="InstructionCheck">
+    <define-sequence name="S"/>
+    <define-branch name="B">
+      <if>
+        <bool value="false"/>
+        <collect-expression>
+          <float value="0.2"/>
+        </collect-expression>
+        <collect-expression>
+          <float value="0.5"/>
+        </collect-expression>
+      </if>
+      <sequence name="S"/>
+    </define-branch>
+    <initial-state>
+      <if>
+        <bool value="true"/>
+        <collect-expression>
+          <float value="0.1"/>
+        </collect-expression>
+      </if>
+      <branch name="B"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>
