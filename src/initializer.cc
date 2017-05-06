@@ -1041,7 +1041,7 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
     std::string name = GetAttributeValue(expr_element, "name");
     try {
       Parameter* param = model_->GetParameter(name, base_path);
-      param->unused(false);
+      param->usage(true);
       check_units(*param);
       return param;
     } catch (std::out_of_range&) {

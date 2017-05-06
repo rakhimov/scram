@@ -97,8 +97,8 @@ void Formula::AddArgument(EventArg event_arg) {
     throw DuplicateArgumentError("Duplicate argument " + event->name());
   }
   event_args_.push_back(event_arg);
-  if (event->orphan())
-    event->orphan(false);
+  if (!event->usage())
+    event->usage(true);
 }
 
 void Formula::Validate() const {

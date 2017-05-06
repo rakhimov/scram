@@ -66,10 +66,12 @@ Steps in XML Input Validation
 
 #. Warnings for potential errors:
 
-    - Orphan primary events.
-    - Unused parameters.
-    - Unused initiating events or event groups. *Not Implemented*
-    - Unused functional events, branches, sequences. *Not Implemented*
+    - Unused model constructs:
+
+        * Primary events
+        * Parameters
+        * Initiating events or event groups. *Not Implemented*
+        * Functional events, branches, sequences. *Not Implemented*
 
 
 .. _schema:

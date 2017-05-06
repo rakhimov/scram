@@ -244,6 +244,22 @@ class NodeMark {
   Mark mark_ = kClear;  ///< The mark for traversal or toposort.
 };
 
+/// Mixin class for providing usage marks for elements.
+class Usage {
+ public:
+  /// @returns true if the element is used in the model or analysis.
+  bool usage() const { return usage_; }
+
+  /// @param[in] usage  The usage state of the element in a model.
+  void usage(bool usage) { usage_ = usage; }
+
+ protected:
+  ~Usage() = default;
+
+ private:
+  bool usage_ = false;  ///< Elements are assumed to be unused at construction.
+};
+
 }  // namespace mef
 }  // namespace scram
 

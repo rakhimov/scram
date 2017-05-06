@@ -287,11 +287,11 @@ void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
                                          XmlStreamElement* information) {
   std::string out;
   for (const mef::BasicEventPtr& param : model.basic_events()) {
-    if (param->orphan())
+    if (!param->usage())
       out += param->id() + " ";
   }
   for (const mef::HouseEventPtr& param : model.house_events()) {
-    if (param->orphan())
+    if (!param->usage())
       out += param->id() + " ";
   }
   if (!out.empty())
@@ -302,7 +302,7 @@ void Reporter::ReportUnusedParameters(const mef::Model& model,
                                       XmlStreamElement* information) {
   std::string out;
   for (const mef::ParameterPtr& param : model.parameters()) {
-    if (param->unused())
+    if (!param->usage())
       out += param->id() + " ";
   }
   if (!out.empty())
