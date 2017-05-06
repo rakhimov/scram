@@ -708,7 +708,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
     }
   }
 
-  std::vector<InstructionPtr> instructions;
+  InstructionContainer instructions;
   for (auto it = xml_nodes.begin(), it_end = std::prev(xml_nodes.end());
        it != it_end; ++it) {
     instructions.emplace_back(GetInstruction(XmlElement(*it)));
@@ -718,19 +718,34 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
 
 InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
   xmlpp::NodeSet args = xml_element->find("./*");
-  assert(!args.empty());
-  const xmlpp::Element* arg_element = XmlElement(args.front());
-  if (xml_element->get_name() == "collect-expression")
-    return std::make_unique<CollectExpression>(GetExpression(arg_element, ""));
+  std::string name = xml_element->get_name();
+  if (name == "collect-expression") {
+    assert(args.size() == 1);
+    return std::make_unique<CollectExpression>(
+        GetExpression(XmlElement(args.front()), ""));
+  }
 
-  if (xml_element->get_name() == "collect-formula")
-    return std::make_unique<CollectFormula>(GetFormula(arg_element, ""));
+  if (name == "collect-formula") {
+    assert(args.size() == 1);
+    return std::make_unique<CollectFormula>(
+        GetFormula(XmlElement(args.front()), ""));
+  }
 
-  assert(xml_element->get_name() == "if");
-  assert(args.size() > 1);
-  return std::make_unique<IfThenElse>(
-      GetExpression(arg_element, ""), GetInstruction(XmlElement(args[1])),
-      args.size() == 2 ? nullptr : GetInstruction(XmlElement(args[2])));
+  if (name == "if") {
+    assert(args.size() > 1);
+    return std::make_unique<IfThenElse>(
+        GetExpression(XmlElement(args.front()), ""),
+        GetInstruction(XmlElement(args[1])),
+        args.size() == 2 ? nullptr : GetInstruction(XmlElement(args[2])));
+  }
+
+  if (name == "block") {
+    InstructionContainer instructions;
+    for (const xmlpp::Node* xml_node : args)
+      instructions.push_back(GetInstruction(XmlElement(xml_node)));
+    return std::make_unique<Block>(std::move(instructions));
+  }
+  assert(false && "Unknown instruction type.");
 }
 
 template <class T, int N>

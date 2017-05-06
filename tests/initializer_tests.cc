@@ -88,7 +88,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "public_sequence.xml",
                                   "initiating_event.xml",
                                   "collect_formula.xml",
-                                  "if_then_else_instruction.xml"};
+                                  "if_then_else_instruction.xml",
+                                  "block_instruction.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;

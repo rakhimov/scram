@@ -43,6 +43,11 @@ void IfThenElse::Accept(InstructionVisitor* visitor) const {
   }
 }
 
+void Block::Accept(InstructionVisitor* visitor) const {
+  for (const InstructionPtr& instruction : instructions_)
+    instruction->Accept(visitor);
+}
+
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
     throw LogicError("The state string for functional events cannot be empty");

@@ -226,6 +226,7 @@
     <choice>
       <ref name="collect"/>
       <ref name="if-then-else"/>
+      <ref name="block"/>
     </choice>
   </define>
 
@@ -258,6 +259,13 @@
     </element>
   </define>
 
+  <define name="block">
+    <element name="block">
+      <zeroOrMore>
+        <ref name="instruction"/>
+      </zeroOrMore>
+    </element>
+  </define>
 
 <!-- ############################################################### -->
 <!-- III. Meta-Logical Layer -->

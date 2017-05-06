@@ -106,6 +106,20 @@ class IfThenElse : public Instruction {
   InstructionPtr else_instruction_;  ///< The optional 'false' instruction.
 };
 
+/// Compound instructions.
+class Block : public Instruction {
+ public:
+  /// @param[in] instructions  Instructions to be applied in this block.
+  explicit Block(InstructionContainer instructions)
+      : instructions_(std::move(instructions)) {}
+
+  /// Applies the visitor to instructions in the block consecutively.
+  void Accept(InstructionVisitor* visitor) const override;
+
+ private:
+  InstructionContainer instructions_;  ///< Zero or more instructions.
+};
+
 /// The base abstract class for instruction visitors.
 class InstructionVisitor {
  public:
