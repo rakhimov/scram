@@ -108,7 +108,7 @@ class Reporter {
   /// @param[in] header  The header message to identify elements in the message.
   /// @param[in,out] information  The XML element to append the results.
   template <class T>
-  void ReportUnusedElements(const T& container, const char* header,
+  void ReportUnusedElements(const T& container, const std::string& header,
                             XmlStreamElement* information);
 
   /// Reports the results of fault tree analysis

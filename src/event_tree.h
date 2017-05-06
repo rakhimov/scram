@@ -133,7 +133,7 @@ class InstructionVisitor {
 };
 
 /// Representation of sequences in event trees.
-class Sequence : public Element {
+class Sequence : public Element, public Usage {
  public:
   using Element::Element;
 
@@ -156,7 +156,7 @@ using SequencePtr = std::shared_ptr<Sequence>;
 class EventTree;  // Manages the order assignment to functional events.
 
 /// Representation of functional events in event trees.
-class FunctionalEvent : public Element {
+class FunctionalEvent : public Element, public Usage {
   friend class EventTree;
 
  public:
@@ -210,7 +210,10 @@ class Branch {
 };
 
 /// Named branches that can be referenced and reused.
-class NamedBranch : public Element, public Branch, public NodeMark {
+class NamedBranch : public Element,
+                    public Branch,
+                    public NodeMark,
+                    public Usage {
  public:
   using Element::Element;
 };

@@ -183,6 +183,16 @@ class Id : public Element, public Role {
   /// @returns The unique id that is set upon the construction of this element.
   const std::string& id() const { return kId_; }
 
+  /// Produces unique name for the model element within the same type.
+  /// @{
+  static const std::string& unique_name(const Element& element) {
+    return element.name();
+  }
+  static const std::string& unique_name(const Id& element) {
+    return element.id();
+  }
+  /// @}
+
  protected:
   ~Id() = default;
 

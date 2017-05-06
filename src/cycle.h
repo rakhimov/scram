@@ -29,6 +29,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
+#include "element.h"
 #include "event.h"
 #include "event_tree.h"
 #include "parameter.h"
@@ -181,16 +182,6 @@ inline bool ContinueConnector(Branch* connector,
   return boost::apply_visitor(continue_connector, connector->target());
 }
 
-/// Produces unique name for the cycle node for error messages.
-///
-/// @param[in] node  The node in the cycle.
-///
-/// @returns The unique identifier of the node by default.
-/// @{
-inline const std::string& PrintCycleNode(Element* node) { return node->name(); }
-inline const std::string& PrintCycleNode(Id* node) { return node->id(); }
-/// @}
-
 /// Prints the detected cycle from the output
 /// produced by cycle detection functions.
 ///
@@ -209,7 +200,7 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
   return boost::join(
       boost::adaptors::reverse(cycle) |
           boost::adaptors::transformed(
-              [](T* node) -> decltype(auto) { return PrintCycleNode(node); }),
+              [](T* node) -> decltype(auto) { return Id::unique_name(*node); }),
       "->");
 }
 

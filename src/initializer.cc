@@ -681,6 +681,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
         auto fork = std::make_unique<Fork>(**it, std::move(paths));
         branch->target(fork.get());
         event_tree->Add(std::move(fork));
+        (*it)->usage(true);
       } catch (ValidationError& err) {
         err.msg("In event tree " + event_tree->name() + ", " + err.msg());
         throw;
@@ -693,6 +694,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
     std::string name = GetAttributeValue(target_node, "name");
     if (auto it = ext::find(model_->sequences(), name)) {
       branch->target(it->get());
+      (*it)->usage(true);
     } else {
       throw ValidationError(GetLine(target_node) + "Sequence " + name +
                             " is not defined in the model.");
@@ -702,6 +704,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
     std::string name = GetAttributeValue(target_node, "name");
     if (auto it = ext::find(event_tree->branches(), name)) {
       branch->target(it->get());
+      (*it)->usage(true);
     } else {
       throw ValidationError(GetLine(target_node) + "Branch " + name +
                             " is not defined in " + event_tree->name());

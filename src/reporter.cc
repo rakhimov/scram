@@ -31,6 +31,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "ccf_group.h"
+#include "element.h"
 #include "error.h"
 #include "logger.h"
 #include "parameter.h"
@@ -216,6 +217,15 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                        &information);
   ReportUnusedElements(risk_an.model().parameters(), "Unused parameters: ",
                        &information);
+  ReportUnusedElements(risk_an.model().sequences(), "Unused sequences: ",
+                       &information);
+  for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {
+    std::string header = "In event tree " + event_tree->name() + ", ";
+    ReportUnusedElements(event_tree->branches(), header + "unused branches: ",
+                         &information);
+    ReportUnusedElements(event_tree->functional_events(),
+                         header + "unused functional events: ", &information);
+  }
 }
 
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
@@ -289,13 +299,14 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
 }
 
 template <class T>
-void Reporter::ReportUnusedElements(const T& container, const char* header,
+void Reporter::ReportUnusedElements(const T& container,
+                                    const std::string& header,
                                     XmlStreamElement* information) {
   std::string out = boost::join(
       container | boost::adaptors::filtered([](auto& ptr) {
         return !ptr->usage();
       }) | boost::adaptors::transformed([](auto& ptr) -> decltype(auto) {
-        return ptr->id();
+        return mef::Id::unique_name(*ptr);
       }),
       " ");
   if (!out.empty())
