@@ -147,24 +147,36 @@ void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
       result_->sequences[sequence].push_back(std::move(path_collector_));
     }
 
-    void operator()(const mef::Branch* branch) {
-      for (const mef::InstructionPtr& instruction : branch->instructions()) {
-        /// @todo Rework without dynamic casts.
-        if (auto* collect_formula =
-                dynamic_cast<mef::CollectFormula*>(instruction.get())) {
-          path_collector_.formulas.push_back(&collect_formula->formula());
-        } else {
-          auto& expression =
-              static_cast<mef::CollectExpression&>(*instruction).expression();
-          path_collector_.expressions.push_back(&expression);
-        }
-      }
-      boost::apply_visitor(*this, branch->target());
-    }
     void operator()(const mef::Fork* fork) const {
       for (const mef::Path& fork_path : fork->paths())
         Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
     }
+
+    void operator()(const mef::Branch* branch) {
+      class Visitor : public mef::InstructionVisitor {
+       public:
+        explicit Visitor(Collector* collector) : collector_(*collector) {}
+
+        void Visit(const mef::CollectFormula* collect_formula) override {
+          collector_.path_collector_.formulas.push_back(
+              &collect_formula->formula());
+        }
+
+        void Visit(const mef::CollectExpression* collect_expression) override {
+          collector_.path_collector_.expressions.push_back(
+              &collect_expression->expression());
+        }
+
+       private:
+        Collector& collector_;
+      } visitor(this);
+
+      for (const mef::InstructionPtr& instruction : branch->instructions())
+        instruction->Accept(&visitor);
+
+      boost::apply_visitor(*this, branch->target());
+    }
+
     SequenceCollector* result_;
     PathCollector path_collector_;
   };

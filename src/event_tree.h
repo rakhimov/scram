@@ -36,10 +36,15 @@
 namespace scram {
 namespace mef {
 
+class InstructionVisitor;
+
 /// Instructions and rules for event tree paths.
 class Instruction : private boost::noncopyable {
  public:
-  virtual ~Instruction() = 0;
+  virtual ~Instruction() = default;
+
+  /// Applies the visitor to the object.
+  virtual void Accept(InstructionVisitor* visitor) const = 0;
 };
 
 /// Instructions are assumed not to be shared.
@@ -59,6 +64,8 @@ class CollectExpression : public Instruction {
   /// @returns The collected expression for value extraction.
   Expression& expression() const { return *expression_; }
 
+  void Accept(InstructionVisitor* visitor) const override;
+
  private:
   Expression* expression_;  ///< The probability expression to multiply.
 };
@@ -72,8 +79,22 @@ class CollectFormula : public Instruction {
   /// @returns The formula to include into the current product of the path.
   Formula& formula() const { return *formula_; }
 
+  void Accept(InstructionVisitor* visitor) const override;
+
  private:
   FormulaPtr formula_;  ///< The valid single formula for the collection.
+};
+
+/// The base abstract class for instruction visitors.
+class InstructionVisitor {
+ public:
+  virtual ~InstructionVisitor() = default;
+
+  /// A set of required visitation functions for concrete visitors to implement.
+  /// @{
+  virtual void Visit(const CollectExpression*) = 0;
+  virtual void Visit(const CollectFormula*) = 0;
+  /// @}
 };
 
 /// Representation of sequences in event trees.

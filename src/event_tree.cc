@@ -27,7 +27,13 @@
 namespace scram {
 namespace mef {
 
-Instruction::~Instruction() = default;
+void CollectExpression::Accept(InstructionVisitor* visitor) const {
+  visitor->Visit(this);
+}
+
+void CollectFormula::Accept(InstructionVisitor* visitor) const {
+  visitor->Visit(this);
+}
 
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
