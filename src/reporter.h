@@ -98,21 +98,18 @@ class Reporter {
   void ReportPerformance(const core::RiskAnalysis& risk_an,
                          XmlStreamElement* information);
 
-  /// Reports orphan primary events
+  /// Reports unused elements
   /// as warnings of the top information level.
   ///
-  /// @param[in] model  Model containing all primary events.
-  /// @param[in,out] information  The XML element to append the results.
-  void ReportOrphanPrimaryEvents(const mef::Model& model,
-                                 XmlStreamElement* information);
-
-  /// Reports unused parameters
-  /// as warnings of the top information level.
+  /// @tparam T  The range type of pointers to elements for forward traversal.
+  ///            The element type in the container must provide usage().
   ///
-  /// @param[in] model  Model containing all parameters.
+  /// @param[in] container  The container with pointers to elements.
+  /// @param[in] header  The header message to identify elements in the message.
   /// @param[in,out] information  The XML element to append the results.
-  void ReportUnusedParameters(const mef::Model& model,
-                              XmlStreamElement* information);
+  template <class T>
+  void ReportUnusedElements(const T& container, const char* header,
+                            XmlStreamElement* information);
 
   /// Reports the results of fault tree analysis
   /// to a specified output destination.

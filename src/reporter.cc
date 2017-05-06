@@ -27,6 +27,7 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/date_time.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "ccf_group.h"
@@ -209,8 +210,12 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
   ReportPerformance(risk_an, &information);
   ReportCalculatedQuantity(risk_an.settings(), &information);
   ReportModelFeatures(risk_an.model(), &information);
-  ReportOrphanPrimaryEvents(risk_an.model(), &information);
-  ReportUnusedParameters(risk_an.model(), &information);
+  ReportUnusedElements(risk_an.model().basic_events(), "Unused basic events: ",
+                       &information);
+  ReportUnusedElements(risk_an.model().house_events(), "Unused house events: ",
+                       &information);
+  ReportUnusedElements(risk_an.model().parameters(), "Unused parameters: ",
+                       &information);
 }
 
 void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
@@ -283,30 +288,18 @@ void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,
   }
 }
 
-void Reporter::ReportOrphanPrimaryEvents(const mef::Model& model,
-                                         XmlStreamElement* information) {
-  std::string out;
-  for (const mef::BasicEventPtr& param : model.basic_events()) {
-    if (!param->usage())
-      out += param->id() + " ";
-  }
-  for (const mef::HouseEventPtr& param : model.house_events()) {
-    if (!param->usage())
-      out += param->id() + " ";
-  }
+template <class T>
+void Reporter::ReportUnusedElements(const T& container, const char* header,
+                                    XmlStreamElement* information) {
+  std::string out = boost::join(
+      container | boost::adaptors::filtered([](auto& ptr) {
+        return !ptr->usage();
+      }) | boost::adaptors::transformed([](auto& ptr) -> decltype(auto) {
+        return ptr->id();
+      }),
+      " ");
   if (!out.empty())
-    information->AddChild("warning").AddText("Orphan Primary Events: " + out);
-}
-
-void Reporter::ReportUnusedParameters(const mef::Model& model,
-                                      XmlStreamElement* information) {
-  std::string out;
-  for (const mef::ParameterPtr& param : model.parameters()) {
-    if (!param->usage())
-      out += param->id() + " ";
-  }
-  if (!out.empty())
-    information->AddChild("warning").AddText("Unused Parameters: " + out);
+    information->AddChild("warning").AddText(header + out);
 }
 
 void Reporter::ReportResults(const std::string& ft_name,
