@@ -527,6 +527,11 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   CheckReport(tree_input);
 }
 
+TEST_F(RiskAnalysisTest, ReportUnusedEventTreeElements) {
+  std::string tree_input = "./share/scram/input/eta/unused_elements.xml";
+  CheckReport(tree_input);
+}
+
 // NAND and NOR as a child cases.
 TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";

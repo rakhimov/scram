@@ -217,6 +217,10 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                        &information);
   ReportUnusedElements(risk_an.model().parameters(), "Unused parameters: ",
                        &information);
+  ReportUnusedElements(risk_an.model().initiating_events(),
+                       "Unused initiating events: ", &information);
+  ReportUnusedElements(risk_an.model().event_trees(),
+                       "Unused event trees: ", &information);
   ReportUnusedElements(risk_an.model().sequences(), "Unused sequences: ",
                        &information);
   for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {

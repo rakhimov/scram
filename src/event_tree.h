@@ -259,7 +259,7 @@ class Fork {
 };
 
 /// Event Tree representation with MEF constructs.
-class EventTree : public Element, private boost::noncopyable {
+class EventTree : public Element, public Usage, private boost::noncopyable {
  public:
   using Element::Element;
 
@@ -308,7 +308,7 @@ class EventTree : public Element, private boost::noncopyable {
 using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in a model.
 
 /// Event-tree Initiating Event.
-class InitiatingEvent : public Element {
+class InitiatingEvent : public Element, public Usage {
  public:
   using Element::Element;
 

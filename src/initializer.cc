@@ -466,6 +466,8 @@ void Initializer::Define(const xmlpp::Element* xml_node,
   if (!event_tree_name.empty()) {
     if (auto it = ext::find(model_->event_trees(), event_tree_name)) {
       initiating_event->event_tree(it->get());
+      initiating_event->usage(true);
+      (*it)->usage(true);
     } else {
       throw ValidationError(GetLine(xml_node) + "Event tree " +
                             event_tree_name + " is not defined in model.");

@@ -70,8 +70,9 @@ Steps in XML Input Validation
 
         * Primary events
         * Parameters
-        * Initiating events or event groups. *Not Implemented*
-        * Functional events, branches, sequences.
+        * Event trees
+        * Initiating events or event groups
+        * Functional events, branches, sequences
 
 
 .. _schema:
