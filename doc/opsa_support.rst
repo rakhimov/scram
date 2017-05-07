@@ -88,6 +88,8 @@ Deviations from the Open-PSA MEF
 
 - Redefinition of constructs (e.g., containers, events, parameters) is an error.
 - Attributes are not inherited.
+- Recursive parameters are not allowed.
+- Recursive event-tree rules (instructions) are not allowed.
 - An empty text in XML attributes or elements is considered an error.
 
 

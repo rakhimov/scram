@@ -48,6 +48,7 @@ namespace cycle {
 inline const Formula* GetConnector(Gate* node) { return &node->formula(); }
 inline Expression* GetConnector(Parameter* node) { return node; }
 inline Branch* GetConnector(NamedBranch* node) { return node; }
+inline const Instruction* GetConnector(Rule* node) { return node; }
 /// @}
 
 /// Retrieves nodes from a connector.
@@ -182,11 +183,64 @@ inline bool ContinueConnector(Branch* connector,
   return boost::apply_visitor(continue_connector, connector->target());
 }
 
+/// Cycle detection specialization for visitor-based traversal of instructions.
+template <>
+inline bool ContinueConnector(const Instruction* connector,
+                              std::vector<Rule*>* cycle) {
+  struct Visitor : public InstructionVisitor {
+    struct ArgSelector : public InstructionVisitor {
+      explicit ArgSelector(Visitor* visitor) : visitor_(visitor) {}
+
+      void Visit(const CollectExpression*) override {}
+      void Visit(const CollectFormula*) override {}
+      void Visit(const IfThenElse* ite) override {
+        visitor_->Visit(ite);
+      }
+      void Visit(const Block* block) override {
+        visitor_->Visit(block);
+      }
+      void Visit(const Rule* rule) override {
+        // Non-const rules are only needed to mark the nodes.
+        DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_);
+      }
+
+      Visitor* visitor_;
+    };
+
+    explicit Visitor(std::vector<Rule*>* t_cycle)
+        : cycle_(t_cycle), selector_(this) {}
+
+    void Visit(const CollectExpression*) override {}
+    void Visit(const CollectFormula*) override {}
+    void Visit(const IfThenElse* ite) override {
+      ite->then_instruction()->Accept(&selector_);
+      if (cycle_->empty() && ite->else_instruction())
+        ite->else_instruction()->Accept(&selector_);
+    }
+    void Visit(const Block* block) override {
+      for (const Instruction* instruction : block->instructions()) {
+        instruction->Accept(&selector_);
+        if (!cycle_->empty())
+          return;
+      }
+    }
+    void Visit(const Rule* rule) override {
+      for (const Instruction* instruction : rule->instructions()) {
+        instruction->Accept(&selector_);
+        if (!cycle_->empty())
+          return;
+      }
+    }
+    std::vector<Rule*>* cycle_;
+    ArgSelector selector_;
+  } visitor(cycle);
+
+  connector->Accept(&visitor);
+  return !cycle->empty();
+}
+
 /// Prints the detected cycle from the output
 /// produced by cycle detection functions.
-///
-/// The unique node names are retrieved with unqualified calls to
-/// PrintCycleNode(node).
 ///
 /// @tparam T  The node type with member function id()->std::string.
 ///

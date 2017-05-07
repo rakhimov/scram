@@ -1146,6 +1146,15 @@ void Initializer::ValidateInitialization() {
     }
   }
 
+  // Check for cycles in event tree instruction rules.
+  for (const RulePtr& rule : model_->rules()) {
+    std::vector<Rule*> cycle;
+    if (cycle::DetectCycle(rule.get(), &cycle)) {
+      throw CycleError("Detected a cycle in " + rule->name() +
+                       " rule:\n" + cycle::PrintCycle(cycle));
+    }
+  }
+
   // Check for cycles in event tree branches.
   for (const EventTreePtr& event_tree : model_->event_trees()) {
     std::vector<NamedBranch*> cycle;

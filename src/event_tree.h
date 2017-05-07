@@ -47,8 +47,16 @@ class Instruction : private boost::noncopyable {
   virtual void Accept(InstructionVisitor* visitor) const = 0;
 };
 
+/// Default visit for instruction type of T.
+template <class T>
+class Visitable : public Instruction {
+ public:
+  /// Calls visit with the object pointer T*.
+  void Accept(InstructionVisitor* visitor) const final;
+};
+
 /// The operation of collecting expressions for event tree sequences.
-class CollectExpression : public Instruction {
+class CollectExpression : public Visitable<CollectExpression> {
  public:
   /// @param[in] expression  The expression to multiply
   ///                        the current sequence probability.
@@ -58,14 +66,12 @@ class CollectExpression : public Instruction {
   /// @returns The collected expression for value extraction.
   Expression& expression() const { return *expression_; }
 
-  void Accept(InstructionVisitor* visitor) const override;
-
  private:
   Expression* expression_;  ///< The probability expression to multiply.
 };
 
 /// The operation of connecting fault tree events into the event tree.
-class CollectFormula : public Instruction {
+class CollectFormula : public Visitable<CollectFormula> {
  public:
   /// @param[in] formula  The valid formula to add into the sequence fault tree.
   explicit CollectFormula(FormulaPtr formula) : formula_(std::move(formula)) {}
@@ -73,14 +79,12 @@ class CollectFormula : public Instruction {
   /// @returns The formula to include into the current product of the path.
   Formula& formula() const { return *formula_; }
 
-  void Accept(InstructionVisitor* visitor) const override;
-
  private:
   FormulaPtr formula_;  ///< The valid single formula for the collection.
 };
 
 /// Conditional application of instructions.
-class IfThenElse : public Instruction {
+class IfThenElse : public Visitable<IfThenElse> {
  public:
   /// @param[in] expression  The expression to evaluate for truth.
   /// @param[in] then_instruction  The required instruction to execute.
@@ -91,31 +95,43 @@ class IfThenElse : public Instruction {
         then_instruction_(std::move(then_instruction)),
         else_instruction_(std::move(else_instruction)) {}
 
-  /// Forwards the visitor to the appropriate sub-instruction.
-  void Accept(InstructionVisitor* visitor) const override;
+  /// @returns The conditional expression of the ternary instruction.
+  Expression* expression() const { return expression_; }
+
+  /// @returns The instruction to execute if the expression is true.
+  Instruction* then_instruction() const { return then_instruction_; }
+
+  /// @returns The instruction to execute if the expression is false.
+  ///          nullptr if the else instruction is optional and not set.
+  Instruction* else_instruction() const { return else_instruction_; }
 
  private:
-  Expression* expression_;           ///< The condition source.
+  Expression* expression_;         ///< The condition source.
   Instruction* then_instruction_;  ///< The mandatory 'truth' instruction.
   Instruction* else_instruction_;  ///< The optional 'false' instruction.
 };
 
 /// Compound instructions.
-class Block : public Instruction {
+class Block : public Visitable<Block> {
  public:
   /// @param[in] instructions  Instructions to be applied in this block.
   explicit Block(std::vector<Instruction*> instructions)
       : instructions_(std::move(instructions)) {}
 
-  /// Applies the visitor to instructions in the block consecutively.
-  void Accept(InstructionVisitor* visitor) const override;
+  /// @returns The instructions to be applied in the block.
+  const std::vector<Instruction*>& instructions() const {
+    return instructions_;
+  }
 
  private:
   std::vector<Instruction*> instructions_;  ///< Zero or more instructions.
 };
 
 /// A reusable collection of instructions.
-class Rule : public Element, public Instruction, public Usage {
+class Rule : public Element,
+             public Visitable<Rule>,
+             public NodeMark,
+             public Usage {
  public:
   using Element::Element;
 
@@ -129,9 +145,6 @@ class Rule : public Element, public Instruction, public Usage {
   const std::vector<Instruction*>& instructions() const {
     return instructions_;
   }
-
-  /// Applies the visitor to instructions in the rule consecutively.
-  void Accept(InstructionVisitor* visitor) const override;
 
  private:
   std::vector<Instruction*> instructions_;  ///< Instructions to execute.
@@ -148,8 +161,28 @@ class InstructionVisitor {
   /// @{
   virtual void Visit(const CollectExpression*) = 0;
   virtual void Visit(const CollectFormula*) = 0;
+  virtual void Visit(const IfThenElse* ite) {
+    if (ite->expression()->value()) {
+      ite->then_instruction()->Accept(this);
+    } else if (ite->else_instruction()) {
+      ite->else_instruction()->Accept(this);
+    }
+  }
+  virtual void Visit(const Block* block) {
+    for (const Instruction* instruction : block->instructions())
+      instruction->Accept(this);
+  }
+  virtual void Visit(const Rule* rule) {
+    for (const Instruction* instruction : rule->instructions())
+      instruction->Accept(this);
+  }
   /// @}
 };
+
+template <class T>
+void Visitable<T>::Accept(InstructionVisitor* visitor) const {
+  visitor->Visit(static_cast<const T*>(this));
+}
 
 /// Representation of sequences in event trees.
 class Sequence : public Element, public Usage {

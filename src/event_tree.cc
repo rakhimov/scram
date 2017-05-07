@@ -27,32 +27,6 @@
 namespace scram {
 namespace mef {
 
-void CollectExpression::Accept(InstructionVisitor* visitor) const {
-  visitor->Visit(this);
-}
-
-void CollectFormula::Accept(InstructionVisitor* visitor) const {
-  visitor->Visit(this);
-}
-
-void IfThenElse::Accept(InstructionVisitor* visitor) const {
-  if (expression_->value()) {
-    then_instruction_->Accept(visitor);
-  } else if (else_instruction_) {
-    else_instruction_->Accept(visitor);
-  }
-}
-
-void Block::Accept(InstructionVisitor* visitor) const {
-  for (const Instruction* instruction : instructions_)
-    instruction->Accept(visitor);
-}
-
-void Rule::Accept(InstructionVisitor* visitor) const {
-  for (const Instruction* instruction : instructions_)
-    instruction->Accept(visitor);
-}
-
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
     throw LogicError("The state string for functional events cannot be empty");

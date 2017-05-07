@@ -61,6 +61,7 @@ Steps in XML Input Validation
 
     - Report a cyclic tree (gates or event tree branches).
     - Report a cyclic parameter with expressions.
+    - Report a cyclic rule with instructions.
     - Report missing element descriptions.
     - Report an error if an event or a construct is being redefined.
 

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-rule name="R1">
+    <rule name="R2"/>
+  </define-rule>
+  <define-rule name="R2">
+    <rule name="R1"/>
+  </define-rule>
+</opsa-mef>
