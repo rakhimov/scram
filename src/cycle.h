@@ -30,6 +30,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "element.h"
+#include "error.h"
 #include "event.h"
 #include "event_tree.h"
 #include "parameter.h"
@@ -256,6 +257,26 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
           boost::adaptors::transformed(
               [](T* node) -> decltype(auto) { return Id::unique_name(*node); }),
       "->");
+}
+
+/// Checks for cycles in a model constructs.
+///
+/// @tparam T  The type of the node.
+/// @tparam SinglePassRange  The range type with node *smart* pointers.
+///
+/// @param[in] container  The range with nodes to be tested.
+/// @param[in] type  The type of nodes for error messages.
+///
+/// @throws CycleError  A cycle is detected in the graph of nodes.
+template <class T, class SinglePassRange>
+void CheckCycle(const SinglePassRange& container, const char* type) {
+  std::vector<T*> cycle;
+  for (const auto& node : container) {
+    if (DetectCycle(node.get(), &cycle)) {
+      throw CycleError("Detected a cycle in " + Id::unique_name(*node) + " " +
+                       std::string(type) + ":\n" + PrintCycle(cycle));
+    }
+  }
 }
 
 }  // namespace cycle

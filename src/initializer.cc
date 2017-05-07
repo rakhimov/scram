@@ -1138,31 +1138,18 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
 
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.
-  for (const GatePtr& gate : model_->gates()) {
-    std::vector<Gate*> cycle;
-    if (cycle::DetectCycle(gate.get(), &cycle)) {
-      throw CycleError("Detected a cycle in " + gate->name() +
-                       " gate:\n" + cycle::PrintCycle(cycle));
-    }
-  }
+  cycle::CheckCycle<Gate>(model_->gates(), "gate");
 
   // Check for cycles in event tree instruction rules.
-  for (const RulePtr& rule : model_->rules()) {
-    std::vector<Rule*> cycle;
-    if (cycle::DetectCycle(rule.get(), &cycle)) {
-      throw CycleError("Detected a cycle in " + rule->name() +
-                       " rule:\n" + cycle::PrintCycle(cycle));
-    }
-  }
+  cycle::CheckCycle<Rule>(model_->rules(), "rule");
 
   // Check for cycles in event tree branches.
   for (const EventTreePtr& event_tree : model_->event_trees()) {
-    std::vector<NamedBranch*> cycle;
-    for (const NamedBranchPtr& branch : event_tree->branches()) {
-      if (cycle::DetectCycle(branch.get(), &cycle)) {
-        throw CycleError("Detected a cycle in " + branch->name() +
-                         " branch:\n" + cycle::PrintCycle(cycle));
-      }
+    try {
+      cycle::CheckCycle<NamedBranch>(event_tree->branches(), "branch");
+    } catch (CycleError& err) {
+      err.msg("In event tree " + event_tree->name() + ", " + err.msg());
+      throw;
     }
   }
 
@@ -1239,13 +1226,7 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
 void Initializer::ValidateExpressions() {
   // Check for cycles in parameters.
   // This must be done before expressions.
-  for (const ParameterPtr& param : model_->parameters()) {
-    std::vector<Parameter*> cycle;
-    if (cycle::DetectCycle(param.get(), &cycle)) {
-      throw CycleError("Detected a cycle in " + param->name() +
-                       " parameter:\n" + cycle::PrintCycle(cycle));
-    }
-  }
+  cycle::CheckCycle<Parameter>(model_->parameters(), "parameter");
 
   // Validate expressions.
   for (const std::pair<Expression*, const xmlpp::Element*>& expression :
