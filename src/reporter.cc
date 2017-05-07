@@ -223,6 +223,8 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                        "Unused event trees: ", &information);
   ReportUnusedElements(risk_an.model().sequences(), "Unused sequences: ",
                        &information);
+  ReportUnusedElements(risk_an.model().rules(), "Unused rules: ",
+                       &information);
   for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {
     std::string header = "In event tree " + event_tree->name() + ", ";
     ReportUnusedElements(event_tree->branches(), header + "unused branches: ",
@@ -267,6 +269,7 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
     model_features.AddChild("functional-events").AddText(num_functional_events);
 
   feature("sequences", model.sequences());
+  feature("rules", model.rules());
   feature("initiating-events", model.initiating_events());
 }
 

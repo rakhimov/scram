@@ -272,10 +272,10 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] xml_element  The XML element with instruction definitions.
   ///
-  /// @returns The newly defined instruction.
+  /// @returns The newly defined or registered instruction.
   ///
   /// @throws ValidationError  Errors in instruction definitions.
-  InstructionPtr GetInstruction(const xmlpp::Element* xml_element);
+  Instruction* GetInstruction(const xmlpp::Element* xml_element);
 
   /// Processes Expression definitions in input file.
   ///
@@ -376,7 +376,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent>
+               InitiatingEvent, Rule>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.

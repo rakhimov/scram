@@ -24,6 +24,7 @@
         <choice>
           <ref name="model-data"/>
           <ref name="event-tree-definition"/>
+          <ref name="rule-definition"/>
           <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
@@ -227,6 +228,7 @@
       <ref name="collect"/>
       <ref name="if-then-else"/>
       <ref name="block"/>
+      <ref name="rule"/>
     </choice>
   </define>
 
@@ -266,6 +268,28 @@
       </zeroOrMore>
     </element>
   </define>
+
+  <define name="rule">
+    <element name="rule">
+      <ref name="name"/>
+    </element>
+  </define>
+
+  <define name="rule-definition">
+    <element name="define-rule">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="instruction"/>
+      </oneOrMore>
+    </element>
+  </define>
+
 
 <!-- ############################################################### -->
 <!-- III. Meta-Logical Layer -->

@@ -44,7 +44,12 @@ void IfThenElse::Accept(InstructionVisitor* visitor) const {
 }
 
 void Block::Accept(InstructionVisitor* visitor) const {
-  for (const InstructionPtr& instruction : instructions_)
+  for (const Instruction* instruction : instructions_)
+    instruction->Accept(visitor);
+}
+
+void Rule::Accept(InstructionVisitor* visitor) const {
+  for (const Instruction* instruction : instructions_)
     instruction->Accept(visitor);
 }
 

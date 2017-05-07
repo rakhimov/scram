@@ -86,6 +86,11 @@
           </element>
         </optional>
         <optional>
+          <element name="rules">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
           <element name="initiating-events">
             <data type="nonNegativeInteger"/>
           </element>

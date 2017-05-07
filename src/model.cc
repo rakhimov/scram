@@ -48,6 +48,11 @@ void Model::Add(const SequencePtr& sequence) {
                                      "Redefinition of sequence: ");
 }
 
+void Model::Add(RulePtr rule) {
+  mef::AddElement<RedefinitionError>(std::move(rule), &rules_,
+                                     "Redefinition of rule: ");
+}
+
 void Model::Add(FaultTreePtr fault_tree) {
   mef::AddElement<RedefinitionError>(std::move(fault_tree), &fault_trees_,
                                      "Redefinition of fault tree: ");

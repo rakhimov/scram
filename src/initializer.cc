@@ -355,6 +355,14 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     tbd_.emplace_back(ref_ptr, xml_node);
   }
 
+  for (const xmlpp::Node* node : root->find("./define-rule")) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    RulePtr rule = ConstructElement<Rule>(xml_node);
+    auto* ref_ptr = rule.get();
+    Register(std::move(rule), xml_node);
+    tbd_.emplace_back(ref_ptr, xml_node);
+  }
+
   for (const xmlpp::Node* node : root->find("./define-event-tree")) {
     DefineEventTree(XmlElement(node));
   }
@@ -435,7 +443,7 @@ void Initializer::Define(const xmlpp::Element* ccf_node, CcfGroup* ccf_group) {
 template <>
 void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
   xmlpp::NodeSet xml_instructions = GetNonAttributeElements(xml_node);
-  InstructionContainer instructions;
+  std::vector<Instruction*> instructions;
   for (const xmlpp::Node* xml_instruction : xml_instructions) {
     instructions.emplace_back(GetInstruction(XmlElement(xml_instruction)));
   }
@@ -473,6 +481,14 @@ void Initializer::Define(const xmlpp::Element* xml_node,
                             event_tree_name + " is not defined in model.");
     }
   }
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* rule_node, Rule* rule) {
+  std::vector<Instruction*> instructions;
+  for (const xmlpp::Node* xml_node : GetNonAttributeElements(rule_node))
+    instructions.push_back(GetInstruction(XmlElement(xml_node)));
+  rule->instructions(std::move(instructions));
 }
 /// @}
 
@@ -713,7 +729,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
     }
   }
 
-  InstructionContainer instructions;
+  std::vector<Instruction*> instructions;
   for (auto it = xml_nodes.begin(), it_end = std::prev(xml_nodes.end());
        it != it_end; ++it) {
     instructions.emplace_back(GetInstruction(XmlElement(*it)));
@@ -721,35 +737,55 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
   branch->instructions(std::move(instructions));
 }
 
-InstructionPtr Initializer::GetInstruction(const xmlpp::Element* xml_element) {
+Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
+  std::string node_name = xml_element->get_name();
+  if (node_name == "rule") {
+    std::string name = GetAttributeValue(xml_element, "name");
+    if (auto it = ext::find(model_->rules(), name)) {
+      (*it)->usage(true);
+      return it->get();
+    } else {
+      throw ValidationError(GetLine(xml_element) + "Rule " + name +
+                            " is not defined in the model.");
+    }
+  }
+
+  auto register_instruction = [this](std::unique_ptr<Instruction> instruction) {
+    auto* ret_ptr = instruction.get();
+    model_->Add(std::move(instruction));
+    return ret_ptr;
+  };
+
   xmlpp::NodeSet args = xml_element->find("./*");
-  std::string name = xml_element->get_name();
-  if (name == "collect-expression") {
+
+  if (node_name == "collect-expression") {
     assert(args.size() == 1);
-    return std::make_unique<CollectExpression>(
-        GetExpression(XmlElement(args.front()), ""));
+    return register_instruction(std::make_unique<CollectExpression>(
+        GetExpression(XmlElement(args.front()), "")));
   }
 
-  if (name == "collect-formula") {
+  if (node_name == "collect-formula") {
     assert(args.size() == 1);
-    return std::make_unique<CollectFormula>(
-        GetFormula(XmlElement(args.front()), ""));
+    return register_instruction(std::make_unique<CollectFormula>(
+        GetFormula(XmlElement(args.front()), "")));
   }
 
-  if (name == "if") {
+  if (node_name == "if") {
     assert(args.size() > 1);
-    return std::make_unique<IfThenElse>(
+    return register_instruction(std::make_unique<IfThenElse>(
         GetExpression(XmlElement(args.front()), ""),
         GetInstruction(XmlElement(args[1])),
-        args.size() == 2 ? nullptr : GetInstruction(XmlElement(args[2])));
+        args.size() == 2 ? nullptr : GetInstruction(XmlElement(args[2]))));
   }
 
-  if (name == "block") {
-    InstructionContainer instructions;
+  if (node_name == "block") {
+    std::vector<Instruction*> instructions;
     for (const xmlpp::Node* xml_node : args)
       instructions.push_back(GetInstruction(XmlElement(xml_node)));
-    return std::make_unique<Block>(std::move(instructions));
+    return register_instruction(
+        std::make_unique<Block>(std::move(instructions)));
   }
+
   assert(false && "Unknown instruction type.");
 }
 

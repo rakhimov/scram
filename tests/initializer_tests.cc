@@ -89,7 +89,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "initiating_event.xml",
                                   "collect_formula.xml",
                                   "if_then_else_instruction.xml",
-                                  "block_instruction.xml"};
+                                  "block_instruction.xml",
+                                  "rule_instruction.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -105,10 +106,12 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "doubly_defined_functional_event.xml",
       "doubly_defined_branch.xml",
       "doubly_defined_path_state.xml",
+      "doubly_defined_rule.xml",
       "undefined_event_tree.xml",
       "undefined_sequence.xml",
       "undefined_branch.xml",
       "undefined_functional_event.xml",
+      "undefined_rule.xml",
       "private_branch.xml",
       "private_functional_event.xml",
       "cyclic_branches_fork.xml",

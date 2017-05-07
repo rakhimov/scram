@@ -47,12 +47,6 @@ class Instruction : private boost::noncopyable {
   virtual void Accept(InstructionVisitor* visitor) const = 0;
 };
 
-/// Instructions are assumed not to be shared.
-using InstructionPtr = std::unique_ptr<Instruction>;
-
-/// A collection of instructions.
-using InstructionContainer = std::vector<InstructionPtr>;
-
 /// The operation of collecting expressions for event tree sequences.
 class CollectExpression : public Instruction {
  public:
@@ -91,8 +85,8 @@ class IfThenElse : public Instruction {
   /// @param[in] expression  The expression to evaluate for truth.
   /// @param[in] then_instruction  The required instruction to execute.
   /// @param[in] else_instruction  An optional instruction for the false case.
-  IfThenElse(Expression* expression, InstructionPtr then_instruction,
-             InstructionPtr else_instruction = nullptr)
+  IfThenElse(Expression* expression, Instruction* then_instruction,
+             Instruction* else_instruction = nullptr)
       : expression_(expression),
         then_instruction_(std::move(then_instruction)),
         else_instruction_(std::move(else_instruction)) {}
@@ -102,23 +96,48 @@ class IfThenElse : public Instruction {
 
  private:
   Expression* expression_;           ///< The condition source.
-  InstructionPtr then_instruction_;  ///< The mandatory 'truth' instruction.
-  InstructionPtr else_instruction_;  ///< The optional 'false' instruction.
+  Instruction* then_instruction_;  ///< The mandatory 'truth' instruction.
+  Instruction* else_instruction_;  ///< The optional 'false' instruction.
 };
 
 /// Compound instructions.
 class Block : public Instruction {
  public:
   /// @param[in] instructions  Instructions to be applied in this block.
-  explicit Block(InstructionContainer instructions)
+  explicit Block(std::vector<Instruction*> instructions)
       : instructions_(std::move(instructions)) {}
 
   /// Applies the visitor to instructions in the block consecutively.
   void Accept(InstructionVisitor* visitor) const override;
 
  private:
-  InstructionContainer instructions_;  ///< Zero or more instructions.
+  std::vector<Instruction*> instructions_;  ///< Zero or more instructions.
 };
+
+/// A reusable collection of instructions.
+class Rule : public Element, public Instruction, public Usage {
+ public:
+  using Element::Element;
+
+  /// @param[in] instructions  One or more instructions for the sequence.
+  void instructions(std::vector<Instruction*> instructions) {
+    assert(!instructions.empty());
+    instructions_ = std::move(instructions);
+  }
+
+  /// @returns The instructions to be applied in the rule.
+  const std::vector<Instruction*>& instructions() const {
+    return instructions_;
+  }
+
+  /// Applies the visitor to instructions in the rule consecutively.
+  void Accept(InstructionVisitor* visitor) const override;
+
+ private:
+  std::vector<Instruction*> instructions_;  ///< Instructions to execute.
+};
+
+using RulePtr = std::unique_ptr<Rule>;  ///< Unique rules in a model.
 
 /// The base abstract class for instruction visitors.
 class InstructionVisitor {
@@ -138,16 +157,18 @@ class Sequence : public Element, public Usage {
   using Element::Element;
 
   /// @param[in] instructions  Zero or more instructions for the sequence.
-  void instructions(InstructionContainer instructions) {
+  void instructions(std::vector<Instruction*> instructions) {
     instructions_ = std::move(instructions);
   }
 
   /// @returns The instructions to be applied at this sequence.
-  const InstructionContainer& instructions() const { return instructions_; }
+  const std::vector<Instruction*>& instructions() const {
+    return instructions_;
+  }
 
  private:
   /// Instructions to execute with the sequence.
-  InstructionContainer instructions_;
+  std::vector<Instruction*> instructions_;
 };
 
 /// Sequences are defined in event trees but referenced in other constructs.
@@ -186,12 +207,14 @@ class Branch {
   using Target = boost::variant<Sequence*, Fork*, NamedBranch*>;
 
   /// Sets the instructions to execute at the branch.
-  void instructions(InstructionContainer instructions) {
+  void instructions(std::vector<Instruction*> instructions) {
     instructions_ = std::move(instructions);
   }
 
   /// @returns The instructions to execute at the branch.
-  const InstructionContainer& instructions() const { return instructions_; }
+  const std::vector<Instruction*>& instructions() const {
+    return instructions_;
+  }
 
   /// Sets the target for the branch.
   void target(Target target) { target_ = std::move(target); }
@@ -205,7 +228,7 @@ class Branch {
   }
 
  private:
-  InstructionContainer instructions_;  ///< Zero or more instructions.
+  std::vector<Instruction*> instructions_;  ///< Zero or more instructions.
   Target target_;  ///< The target semantics of the branch.
 };
 

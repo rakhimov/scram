@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="undef">
+    <define-sequence name="S"/>
+    <initial-state>
+      <rule name="R"/>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

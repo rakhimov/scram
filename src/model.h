@@ -64,6 +64,7 @@ class Model : public Element, private boost::noncopyable {
   }
   const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
   const ElementTable<SequencePtr>& sequences() const { return sequences_; }
+  const ElementTable<RulePtr>& rules() const { return rules_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const {
     return parameters_.entities_by_id;
@@ -90,8 +91,8 @@ class Model : public Element, private boost::noncopyable {
   /// @{
   void Add(InitiatingEventPtr element);
   void Add(EventTreePtr element);
-  void Add(const FunctionalEventPtr& element);
   void Add(const SequencePtr& element);
+  void Add(RulePtr element);
   void Add(FaultTreePtr element);
   void Add(const ParameterPtr& element);
   void Add(const HouseEventPtr& element);
@@ -100,6 +101,9 @@ class Model : public Element, private boost::noncopyable {
   void Add(const CcfGroupPtr& element);
   void Add(std::unique_ptr<Expression> element) {
     expressions_.emplace_back(std::move(element));
+  }
+  void Add(std::unique_ptr<Instruction> element) {
+    instructions_.emplace_back(std::move(element));
   }
   /// @}
 
@@ -182,6 +186,7 @@ class Model : public Element, private boost::noncopyable {
   ElementTable<InitiatingEventPtr> initiating_events_;
   ElementTable<EventTreePtr> event_trees_;
   ElementTable<SequencePtr> sequences_;
+  ElementTable<RulePtr> rules_;
   ElementTable<FaultTreePtr> fault_trees_;
   LookupTable<Gate> gates_;
   LookupTable<HouseEvent> house_events_;
@@ -190,6 +195,7 @@ class Model : public Element, private boost::noncopyable {
   std::shared_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
   std::vector<std::unique_ptr<Expression>> expressions_;
+  std::vector<std::unique_ptr<Instruction>> instructions_;
   /// @}
   IdTable<Event*> events_;  ///< All events by ids.
 };

@@ -171,7 +171,7 @@ void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
         Collector& collector_;
       } visitor(this);
 
-      for (const mef::InstructionPtr& instruction : branch->instructions())
+      for (const mef::Instruction* instruction : branch->instructions())
         instruction->Accept(&visitor);
 
       boost::apply_visitor(*this, branch->target());
