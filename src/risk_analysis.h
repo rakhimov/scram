@@ -22,11 +22,11 @@
 #define SCRAM_SRC_RISK_ANALYSIS_H_
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "analysis.h"
 #include "event.h"
+#include "event_tree_analysis.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
 #include "model.h"
@@ -55,13 +55,6 @@ class RiskAnalysis : public Analysis {
     /// @}
   };
 
-  /// Event tree analysis results per initiating event.
-  struct EventTreeResult {
-    const mef::InitiatingEvent& initiating_event;  ///< The analysis initiator.
-    /// Sequences and their probabilities.
-    std::vector<std::pair<const mef::Sequence&, double>> sequences;
-  };
-
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
   RiskAnalysis(std::shared_ptr<const mef::Model> model,
@@ -84,25 +77,12 @@ class RiskAnalysis : public Analysis {
   const std::vector<Result>& results() const { return results_; }
 
   /// @returns The results of the event tree analysis.
-  const std::vector<EventTreeResult>& event_tree_results() const {
+  const std::vector<std::unique_ptr<EventTreeAnalysis>>& event_tree_results()
+      const {
     return event_tree_results_;
   }
 
  private:
-  /// Expressions and formulas collected in an event tree path.
-  struct PathCollector {
-    std::vector<mef::Expression*> expressions;  ///< Multiplication arguments.
-    std::vector<mef::Formula*> formulas;  ///< AND connective formulas.
-  };
-
-  /// Walks the event tree paths and collects sequences.
-  struct SequenceCollector {
-    const mef::InitiatingEvent& initiating_event;  ///< The analysis initiator.
-    /// Sequences with collected paths.
-    std::unordered_map<const mef::Sequence*, std::vector<PathCollector>>
-        sequences;
-  };
-
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
@@ -131,30 +111,11 @@ class RiskAnalysis : public Analysis {
   template <class Algorithm, class Calculator>
   void RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta, Result* result) noexcept;
 
-  /// Analyzes an event tree given the initiating event.
-  ///
-  /// @param[in] initiating_event  The unique initiating event.
-  ///
-  /// @returns The probabilities of sequences.
-  ///
-  /// @pre The initiating event has its event tree.
-  EventTreeResult Analyze(
-      const mef::InitiatingEvent& initiating_event) noexcept;
-
-  /// Walks the branch and collects sequences with expressions if any.
-  ///
-  /// @param[in] initial_state  The branch to start the traversal.
-  /// @param[in,out] result  The result container for sequences.
-  ///
-  /// @post The sequences in the result are joined and unique.
-  void CollectSequences(const mef::Branch& initial_state,
-                        SequenceCollector* result) noexcept;
-
   std::shared_ptr<const mef::Model> model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.
   /// Event tree analysis of sequences.
   /// @todo Incorporate into the main results container.
-  std::vector<EventTreeResult> event_tree_results_;
+  std::vector<std::unique_ptr<EventTreeAnalysis>> event_tree_results_;
 };
 
 }  // namespace core

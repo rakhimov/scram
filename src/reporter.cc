@@ -48,16 +48,16 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
     return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
-  for (const core::RiskAnalysis::EventTreeResult& result :
+  for (const std::unique_ptr<core::EventTreeAnalysis>& result :
        risk_an.event_tree_results()) {
     XmlStreamElement initiating_event = results.AddChild("initiating-event");
-    initiating_event.SetAttribute("name", result.initiating_event.name())
-        .SetAttribute("sequences", result.sequences.size());
-    for (const std::pair<const mef::Sequence&, double>& result_sequence :
-         result.sequences) {
+    initiating_event.SetAttribute("name", result->initiating_event().name())
+        .SetAttribute("sequences", result->results().size());
+    for (const core::EventTreeAnalysis::Result& result_sequence :
+         result->results()) {
       initiating_event.AddChild("sequence")
-          .SetAttribute("name", result_sequence.first.name())
-          .SetAttribute("value", result_sequence.second);
+          .SetAttribute("name", result_sequence.sequence.name())
+          .SetAttribute("value", result_sequence.p_sequence);
     }
   }
   for (const core::RiskAnalysis::Result& result : risk_an.results()) {

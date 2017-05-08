@@ -30,19 +30,19 @@ TEST_P(RiskAnalysisTest, AttackEventTree) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front().sequences;
+  auto& results = analysis->event_tree_results().front()->results();
   ASSERT_EQ(2, results.size());
-  EXPECT_NE(results.front().first.name(), results.back().first.name());
+  EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
   EXPECT_EQ((std::set<std::string>{"AttackSucceeds", "AttackFails"}),
-            (std::set<std::string>{results.front().first.name(),
-                                  results.back().first.name()}));
+            (std::set<std::string>{results.front().sequence.name(),
+                                   results.back().sequence.name()}));
   double p_success;
   double p_fail;
   std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
-    if (results.front().first.name() == "AttackSucceeds") {
-      return {results.front().second, results.back().second};
+    if (results.front().sequence.name() == "AttackSucceeds") {
+      return {results.front().p_sequence, results.back().p_sequence};
     }
-    return {results.back().second, results.front().second};
+    return {results.back().p_sequence, results.front().p_sequence};
   }();
 
   EXPECT_DOUBLE_EQ(0.772, p_success);

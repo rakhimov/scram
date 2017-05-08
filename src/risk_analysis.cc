@@ -20,11 +20,8 @@
 
 #include "risk_analysis.h"
 
-#include <boost/range/algorithm/find_if.hpp>
-
 #include "bdd.h"
 #include "fault_tree.h"
-#include "expression/numerical.h"  ///< @todo Move elsewhere or substitute.
 #include "logger.h"
 #include "mocus.h"
 #include "random.h"
@@ -49,7 +46,9 @@ void RiskAnalysis::Analyze() noexcept {
        model_->initiating_events()) {
     if (initiating_event->event_tree()) {
       LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
-      event_tree_results_.push_back(Analyze(*initiating_event));
+      event_tree_results_.push_back(std::make_unique<EventTreeAnalysis>(
+          *initiating_event, Analysis::settings()));
+      event_tree_results_.back()->Analyze();
       LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
     }
   }
@@ -116,71 +115,6 @@ void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
     result->uncertainty_analysis = std::move(ua);
   }
   result->probability_analysis = std::move(pa);
-}
-
-RiskAnalysis::EventTreeResult RiskAnalysis::Analyze(
-    const mef::InitiatingEvent& initiating_event) noexcept {
-  assert(initiating_event.event_tree());
-  SequenceCollector collector{initiating_event};
-  CollectSequences(initiating_event.event_tree()->initial_state(), &collector);
-  EventTreeResult result{initiating_event};
-  for (auto& sequence : collector.sequences) {
-    double p_sequence = 0;
-    for (PathCollector& path_collector : sequence.second) {
-      if (path_collector.expressions.empty())
-        continue;
-      if (path_collector.expressions.size() == 1) {
-        p_sequence += path_collector.expressions.front()->value();
-      } else {
-        p_sequence += mef::Mul(std::move(path_collector.expressions)).value();
-      }
-    }
-    result.sequences.emplace_back(*sequence.first, p_sequence);
-  }
-  return result;
-}
-
-void RiskAnalysis::CollectSequences(const mef::Branch& initial_state,
-                                    SequenceCollector* result) noexcept {
-  struct Collector {
-    void operator()(const mef::Sequence* sequence) const {
-      result_->sequences[sequence].push_back(std::move(path_collector_));
-    }
-
-    void operator()(const mef::Fork* fork) const {
-      for (const mef::Path& fork_path : fork->paths())
-        Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
-    }
-
-    void operator()(const mef::Branch* branch) {
-      class Visitor : public mef::InstructionVisitor {
-       public:
-        explicit Visitor(Collector* collector) : collector_(*collector) {}
-
-        void Visit(const mef::CollectFormula* collect_formula) override {
-          collector_.path_collector_.formulas.push_back(
-              &collect_formula->formula());
-        }
-
-        void Visit(const mef::CollectExpression* collect_expression) override {
-          collector_.path_collector_.expressions.push_back(
-              &collect_expression->expression());
-        }
-
-       private:
-        Collector& collector_;
-      } visitor(this);
-
-      for (const mef::Instruction* instruction : branch->instructions())
-        instruction->Accept(&visitor);
-
-      boost::apply_visitor(*this, branch->target());
-    }
-
-    SequenceCollector* result_;
-    PathCollector path_collector_;
-  };
-  Collector{result}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
 }  // namespace core
