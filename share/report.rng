@@ -108,6 +108,9 @@
   <define name="analysis-id">
     <attribute name="name"> <data type="NCName"/> </attribute>
     <optional>
+      <attribute name="initiating-event"> <data type="NCName"/> </attribute>
+    </optional>
+    <optional>
       <attribute name="description"> <text/> </attribute>
     </optional>
     <optional>
@@ -486,7 +489,13 @@
 
   <define name="initiating-event">
     <element name="initiating-event">
-      <ref name="analysis-id"/>
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="warning"> <text/> </attribute>
+      </optional>
       <attribute name="sequences">
         <data type="nonNegativeInteger"/>
       </attribute>

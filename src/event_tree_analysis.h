@@ -39,8 +39,9 @@ class EventTreeAnalysis : public Analysis {
   /// The analysis results binding to the unique analysis target.
   struct Result {
     const mef::Sequence& sequence;  ///< The analysis sequence.
-    double p_sequence;  ///< @todo Remove
     std::unique_ptr<mef::Gate> gate;  ///< The collected formulas into a gate.
+    bool is_expression_only;  ///< Indicator for expression only event trees.
+    double p_sequence;  ///< To be assigned by analyses: @todo Remove
   };
 
   /// @param[in] initiating_event  The unique initiating event.
@@ -59,7 +60,10 @@ class EventTreeAnalysis : public Analysis {
   }
 
   /// @returns The results of the event tree analysis.
-  const std::vector<Result>& results() const { return results_; }
+  /// @{
+  const std::vector<Result>& sequences() const { return sequences_; }
+  std::vector<Result>& sequences() { return sequences_; }
+  /// @}
 
  private:
   /// Expressions and formulas collected in an event tree path.
@@ -86,7 +90,7 @@ class EventTreeAnalysis : public Analysis {
                         SequenceCollector* result) noexcept;
 
   const mef::InitiatingEvent& initiating_event_;  ///< The analysis initiator.
-  std::vector<Result> results_;  ///< Analyzed sequences.
+  std::vector<Result> sequences_;  ///< Gathered sequences.
   /// Newly created expressions.
   std::vector<std::unique_ptr<mef::Expression>> expressions_;
   std::vector<mef::BasicEventPtr> basic_events_;  ///< Newly created events.

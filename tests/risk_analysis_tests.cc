@@ -400,10 +400,11 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
 
 TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front()->results();
+  auto& results = analysis->event_tree_results().front()->sequences();
   ASSERT_EQ(2, results.size());
   EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
   EXPECT_EQ((std::set<std::string>{"Success", "Failure"}),

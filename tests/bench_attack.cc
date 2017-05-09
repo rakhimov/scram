@@ -27,10 +27,11 @@ namespace test {
 
 TEST_P(RiskAnalysisTest, AttackEventTree) {
   const char* tree_input = "./share/scram/input/EventTrees/attack.xml";
+  settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front()->results();
+  auto& results = analysis->event_tree_results().front()->sequences();
   ASSERT_EQ(2, results.size());
   EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
   EXPECT_EQ((std::set<std::string>{"AttackSucceeds", "AttackFails"}),

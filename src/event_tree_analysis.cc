@@ -67,7 +67,7 @@ void EventTreeAnalysis::Analyze() noexcept {
       }
     }
     assert(gate_formulas.empty() || arg_expressions.empty());
-    double p_sequence = 1;
+    bool is_expression_only = !arg_expressions.empty();
     if (gate_formulas.size() == 1) {
       gate->formula(std::move(gate_formulas.front()));
     } else if (gate_formulas.size() > 1) {
@@ -87,13 +87,13 @@ void EventTreeAnalysis::Analyze() noexcept {
       }
       gate->formula(std::make_unique<mef::Formula>(mef::kNull));
       gate->formula().AddArgument(event.get());
-      p_sequence = event->p();
       basic_events_.push_back(std::move(event));
     } else {
       gate->formula(std::make_unique<mef::Formula>(mef::kNull));
       gate->formula().AddArgument(&mef::HouseEvent::kTrue);
     }
-    results_.push_back({*sequence.first, p_sequence, std::move(gate)});
+    sequences_.push_back(
+        {*sequence.first, std::move(gate), is_expression_only});
   }
 }
 
