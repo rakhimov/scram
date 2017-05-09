@@ -19,7 +19,7 @@
 
 #include "event_tree_analysis.h"
 
-#include "expression/numerical.h"  ///< @todo Move elsewhere or substitute.
+#include "expression/numerical.h"
 
 namespace scram {
 namespace core {
@@ -28,22 +28,53 @@ EventTreeAnalysis::EventTreeAnalysis(
     const mef::InitiatingEvent& initiating_event, const Settings& settings)
     : Analysis(settings), initiating_event_(initiating_event) {}
 
+namespace {  // The model cloning functions.
+
+std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
+  auto new_formula = std::make_unique<mef::Formula>(formula.type());
+  for (const mef::Formula::EventArg& arg : formula.event_args())
+    new_formula->AddArgument(arg);
+  for (const mef::FormulaPtr& arg : formula.formula_args())
+    new_formula->AddArgument(Clone(*arg));
+  return new_formula;
+}
+
+}  // namespace
+
 void EventTreeAnalysis::Analyze() noexcept {
   assert(initiating_event_.event_tree());
   SequenceCollector collector{initiating_event_};
   CollectSequences(initiating_event_.event_tree()->initial_state(), &collector);
   for (auto& sequence : collector.sequences) {
+    auto gate = std::make_unique<mef::Gate>("__" + sequence.first->name());
+    std::vector<mef::FormulaPtr> gate_formulas;
     double p_sequence = 0;
     for (PathCollector& path_collector : sequence.second) {
-      if (path_collector.expressions.empty())
-        continue;
+      if (path_collector.formulas.size() == 1) {
+        gate_formulas.push_back(core::Clone(*path_collector.formulas.front()));
+      } else if (path_collector.formulas.size() > 1) {
+        auto and_formula = std::make_unique<mef::Formula>(mef::kAnd);
+        for (const mef::Formula* arg_formula : path_collector.formulas)
+          and_formula->AddArgument(core::Clone(*arg_formula));
+        gate_formulas.push_back(std::move(and_formula));
+      }
       if (path_collector.expressions.size() == 1) {
         p_sequence += path_collector.expressions.front()->value();
-      } else {
+      } else if (path_collector.expressions.size() > 1) {
         p_sequence += mef::Mul(std::move(path_collector.expressions)).value();
       }
     }
-    results_.push_back({*sequence.first, p_sequence});
+    if (gate_formulas.size() == 1) {
+      gate->formula(std::move(gate_formulas.front()));
+    } else if (gate_formulas.size() > 1) {
+      auto or_formula = std::make_unique<mef::Formula>(mef::kOr);
+      for (mef::FormulaPtr& arg_formula : gate_formulas)
+        or_formula->AddArgument(std::move(arg_formula));
+      gate->formula(std::move(or_formula));
+    } else {
+      gate = nullptr;
+    }
+    results_.push_back({*sequence.first, p_sequence, std::move(gate)});
   }
 }
 

@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "analysis.h"
+#include "event.h"
 #include "event_tree.h"
 #include "settings.h"
 
@@ -37,6 +38,7 @@ class EventTreeAnalysis : public Analysis {
   struct Result {
     const mef::Sequence& sequence;  ///< The analysis sequence.
     double p_sequence;  ///< Sequence probability.
+    std::unique_ptr<mef::Gate> gate;  ///< The collected formulas into a gate.
   };
 
   /// @param[in] initiating_event  The unique initiating event.

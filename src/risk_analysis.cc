@@ -46,18 +46,27 @@ void RiskAnalysis::Analyze() noexcept {
        model_->initiating_events()) {
     if (initiating_event->event_tree()) {
       LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
-      event_tree_results_.push_back(std::make_unique<EventTreeAnalysis>(
-          *initiating_event, Analysis::settings()));
-      event_tree_results_.back()->Analyze();
+      auto eta = std::make_unique<EventTreeAnalysis>(*initiating_event,
+                                                     Analysis::settings());
+      eta->Analyze();
+      for (const EventTreeAnalysis::Result& result : eta->results()) {
+        if (!result.gate)
+          continue;
+        const mef::Sequence& sequence = result.sequence;
+        LOG(INFO) << "Running analysis for sequence: " << sequence.name();
+        RunAnalysis(*result.gate);
+        LOG(INFO) << "Finished analysis for sequence: " << sequence.name();
+      }
+      event_tree_results_.push_back(std::move(eta));
       LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
     }
   }
 
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
-      LOG(INFO) << "Running analysis: " << target->id();
+      LOG(INFO) << "Running analysis for gate: " << target->id();
       RunAnalysis(*target);
-      LOG(INFO) << "Finished analysis: " << target->id();
+      LOG(INFO) << "Finished analysis for gate: " << target->id();
     }
   }
 }
