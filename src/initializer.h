@@ -272,10 +272,10 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] xml_element  The XML element with instruction definitions.
   ///
-  /// @returns The newly defined instruction.
+  /// @returns The newly defined or registered instruction.
   ///
   /// @throws ValidationError  Errors in instruction definitions.
-  InstructionPtr GetInstruction(const xmlpp::Element* xml_element);
+  Instruction* GetInstruction(const xmlpp::Element* xml_element);
 
   /// Processes Expression definitions in input file.
   ///
@@ -331,6 +331,22 @@ class Initializer : private boost::noncopyable {
   ///       if this error condition may lead resource leaks.
   void ValidateInitialization();
 
+  /// Checks the proper order of functional events in event tree forks.
+  ///
+  /// @param[in] branch  The event tree branch to start the check.
+  ///
+  /// @throws ValidationError  The order of forks is invalid.
+  void CheckFunctionalEventOrder(const Branch& branch);
+
+  /// Checks that link instructions are used only in event-tree sequences.
+  ///
+  /// @param[in] branch  The event tree branch to start the check.
+  ///
+  /// @throws ValidationError  The Link instruction is misused.
+  ///
+  /// @pre All named branches are fed separately from initial states.
+  void EnsureLinksOnlyInSequences(const Branch& branch);
+
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.
@@ -369,11 +385,13 @@ class Initializer : private boost::noncopyable {
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent>
+               InitiatingEvent, Rule>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
+  /// Container for event tree links to check for cycles.
+  std::vector<Link*> links_;
 };
 
 }  // namespace mef

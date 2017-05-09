@@ -22,10 +22,14 @@
 #define SCRAM_SRC_RISK_ANALYSIS_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
+
+#include <boost/variant.hpp>
 
 #include "analysis.h"
 #include "event.h"
+#include "event_tree_analysis.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
 #include "model.h"
@@ -41,13 +45,15 @@ class RiskAnalysis : public Analysis {
  public:
   /// The analysis results binding to the unique analysis target.
   struct Result {
-    const mef::Gate& gate;  ///< The main analysis input or target.
-
-    /// Mandatory analysis, i.e., never nullptr.
-    std::unique_ptr<const FaultTreeAnalysis> fault_tree_analysis;
+    /// The analysis target type as a unique identifier.
+    using Id =
+        boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
+                                                   const mef::Sequence&>>;
+    const Id id;  ///< The main analysis input or target.
 
     /// Optional analyses, i.e., may be nullptr.
     /// @{
+    std::unique_ptr<const FaultTreeAnalysis> fault_tree_analysis;
     std::unique_ptr<const ProbabilityAnalysis> probability_analysis;
     std::unique_ptr<const ImportanceAnalysis> importance_analysis;
     std::unique_ptr<const UncertaintyAnalysis> uncertainty_analysis;
@@ -75,12 +81,19 @@ class RiskAnalysis : public Analysis {
   /// @returns The results of the analysis.
   const std::vector<Result>& results() const { return results_; }
 
+  /// @returns The results of the event tree analysis.
+  const std::vector<std::unique_ptr<EventTreeAnalysis>>& event_tree_results()
+      const {
+    return event_tree_results_;
+  }
+
  private:
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
   /// @param[in] target  Analysis target.
-  void RunAnalysis(const mef::Gate& target) noexcept;
+  /// @param[in,out] result  The result container element.
+  void RunAnalysis(const mef::Gate& target, Result* result) noexcept;
 
   /// Defines and runs Qualitative analysis on the target.
   /// Calls the Quantitative analysis if requested in settings.
@@ -88,8 +101,9 @@ class RiskAnalysis : public Analysis {
   /// @tparam Algorithm  Qualitative analysis algorithm.
   ///
   /// @param[in] target  Analysis target.
+  /// @param[in,out] result  The result container element.
   template <class Algorithm>
-  void RunAnalysis(const mef::Gate& target) noexcept;
+  void RunAnalysis(const mef::Gate& target, Result* result) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
   ///
@@ -106,6 +120,9 @@ class RiskAnalysis : public Analysis {
 
   std::shared_ptr<const mef::Model> model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.
+  /// Event tree analysis of sequences.
+  /// @todo Incorporate into the main results container.
+  std::vector<std::unique_ptr<EventTreeAnalysis>> event_tree_results_;
 };
 
 }  // namespace core

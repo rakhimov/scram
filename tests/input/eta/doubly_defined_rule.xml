@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-rule name="R">
+    <collect-expression>
+      <float value="0.1"/>
+    </collect-expression>
+  </define-rule>
+  <define-rule name="R">
+    <collect-expression>
+      <float value="0.2"/>
+    </collect-expression>
+  </define-rule>
+</opsa-mef>

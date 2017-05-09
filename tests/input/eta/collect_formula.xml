@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="simplest">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <collect-formula>
+            <basic-event name="B"/>
+          </collect-formula>
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <model-data>
+    <define-basic-event name="B">
+      <float value="0.5"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

@@ -37,22 +37,11 @@ namespace scram {
 namespace mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Id, private boost::noncopyable {
+class Event : public Id, public Usage, private boost::noncopyable {
  public:
   using Id::Id;
 
   virtual ~Event() = 0;  ///< Abstract class.
-
-  /// @returns True if this node is orphan.
-  bool orphan() const { return orphan_; }
-
-  /// Sets the orphan state.
-  ///
-  /// @param[in] state  True if this event is not used anywhere.
-  void orphan(bool state) { orphan_ = state; }
-
- private:
-  bool orphan_ = true;  ///< Indication of an orphan node.
 };
 
 /// Representation of a house event in a fault tree.

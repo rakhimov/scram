@@ -86,6 +86,11 @@
           </element>
         </optional>
         <optional>
+          <element name="rules">
+            <data type="nonNegativeInteger"/>
+          </element>
+        </optional>
+        <optional>
           <element name="initiating-events">
             <data type="nonNegativeInteger"/>
           </element>
@@ -102,6 +107,9 @@
 
   <define name="analysis-id">
     <attribute name="name"> <data type="NCName"/> </attribute>
+    <optional>
+      <attribute name="initiating-event"> <data type="NCName"/> </attribute>
+    </optional>
     <optional>
       <attribute name="description"> <text/> </attribute>
     </optional>
@@ -210,6 +218,7 @@
           <ref name="safety-integrity-levels"/>
           <ref name="statistical-measure"/>
           <ref name="curve"/>
+          <ref name="initiating-event"/>
         </choice>
       </oneOrMore>
     </element>
@@ -471,6 +480,31 @@
       <attribute name="PFH-avg"> <ref name="probability-data"/> </attribute>
       <ref name="histogram"/>  <!-- Implicit PFD histogram -->
       <ref name="histogram"/>  <!-- Implicit PFH histogram -->
+    </element>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.6. Initiating events and Sequences -->
+  <!-- ============================================================= -->
+
+  <define name="initiating-event">
+    <element name="initiating-event">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="warning"> <text/> </attribute>
+      </optional>
+      <attribute name="sequences">
+        <data type="nonNegativeInteger"/>
+      </attribute>
+      <oneOrMore>
+        <element name="sequence">
+          <attribute name="name"> <data type="NCName"/> </attribute>
+          <attribute name="value"> <ref name="probability-data"/> </attribute>
+        </element>
+      </oneOrMore>
     </element>
   </define>
 

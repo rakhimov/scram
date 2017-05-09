@@ -24,6 +24,7 @@
         <choice>
           <ref name="model-data"/>
           <ref name="event-tree-definition"/>
+          <ref name="rule-definition"/>
           <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
@@ -225,18 +226,74 @@
   <define name="instruction">
     <choice>
       <ref name="collect"/>
+      <ref name="if-then-else"/>
+      <ref name="block"/>
+      <ref name="rule"/>
+      <ref name="link"/>
     </choice>
+  </define>
+
+  <define name="if-then-else">
+    <element name="if">
+      <ref name="expression"/>
+      <ref name="instruction"/>
+      <optional>
+        <ref name="instruction"/>
+      </optional>
+    </element>
   </define>
 
   <define name="collect">
     <choice>
+      <ref name="collect-formula"/>
       <ref name="collect-expression"/>
     </choice>
+  </define>
+
+  <define name="collect-formula">
+    <element name="collect-formula">
+      <ref name="formula"/>
+    </element>
   </define>
 
   <define name="collect-expression">
     <element name="collect-expression">
       <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="block">
+    <element name="block">
+      <zeroOrMore>
+        <ref name="instruction"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="rule">
+    <element name="rule">
+      <ref name="name"/>
+    </element>
+  </define>
+
+  <define name="link">
+    <element name="event-tree">
+      <ref name="name"/>
+    </element>
+  </define>
+
+  <define name="rule-definition">
+    <element name="define-rule">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="instruction"/>
+      </oneOrMore>
     </element>
   </define>
 

@@ -24,6 +24,7 @@
 
 #include "error.h"
 #include "ext/algorithm.h"
+#include "ext/variant.h"
 
 namespace scram {
 namespace mef {
@@ -89,19 +90,15 @@ void Formula::vote_number(int number) {
 }
 
 void Formula::AddArgument(EventArg event_arg) {
-  auto up_cast = [](const EventArg& var_arg) {
-    return boost::apply_visitor([](auto* arg) -> Event* { return arg; },
-                                var_arg);
-  };
-  Event* event = up_cast(event_arg);
-  if (ext::any_of(event_args_, [&event, &up_cast](const EventArg& arg) {
-        return up_cast(arg)->id() == event->id();
+  Event* event = ext::as<Event*>(event_arg);
+  if (ext::any_of(event_args_, [&event](const EventArg& arg) {
+        return ext::as<Event*>(arg)->id() == event->id();
       })) {
     throw DuplicateArgumentError("Duplicate argument " + event->name());
   }
   event_args_.push_back(event_arg);
-  if (event->orphan())
-    event->orphan(false);
+  if (!event->usage())
+    event->usage(true);
 }
 
 void Formula::Validate() const {

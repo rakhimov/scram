@@ -29,6 +29,8 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
+#include "element.h"
+#include "error.h"
 #include "event.h"
 #include "event_tree.h"
 #include "parameter.h"
@@ -47,6 +49,8 @@ namespace cycle {
 inline const Formula* GetConnector(Gate* node) { return &node->formula(); }
 inline Expression* GetConnector(Parameter* node) { return node; }
 inline Branch* GetConnector(NamedBranch* node) { return node; }
+inline const Instruction* GetConnector(Rule* node) { return node; }
+inline const EventTree* GetConnector(Link* node) { return &node->event_tree(); }
 /// @}
 
 /// Retrieves nodes from a connector.
@@ -181,23 +185,147 @@ inline bool ContinueConnector(Branch* connector,
   return boost::apply_visitor(continue_connector, connector->target());
 }
 
-/// Produces unique name for the cycle node for error messages.
-///
-/// @param[in] node  The node in the cycle.
-///
-/// @returns The unique identifier of the node by default.
-/// @{
-inline const std::string& PrintCycleNode(Element* node) { return node->name(); }
-inline const std::string& PrintCycleNode(Id* node) { return node->id(); }
-/// @}
+/// Cycle detection specialization for visitor-based traversal of instructions.
+template <>
+inline bool ContinueConnector(const Instruction* connector,
+                              std::vector<Rule*>* cycle) {
+  struct Visitor : public InstructionVisitor {
+    struct ArgSelector : public InstructionVisitor {
+      explicit ArgSelector(Visitor* visitor) : visitor_(visitor) {}
+
+      void Visit(const CollectExpression*) override {}
+      void Visit(const CollectFormula*) override {}
+      void Visit(const Link*) override {}
+      void Visit(const IfThenElse* ite) override {
+        visitor_->Visit(ite);
+      }
+      void Visit(const Block* block) override {
+        visitor_->Visit(block);
+      }
+      void Visit(const Rule* rule) override {
+        // Non-const rules are only needed to mark the nodes.
+        DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_);
+      }
+
+      Visitor* visitor_;
+    };
+
+    explicit Visitor(std::vector<Rule*>* t_cycle)
+        : cycle_(t_cycle), selector_(this) {}
+
+    void Visit(const CollectExpression*) override {}
+    void Visit(const CollectFormula*) override {}
+    void Visit(const Link*) override {}
+    void Visit(const IfThenElse* ite) override {
+      ite->then_instruction()->Accept(&selector_);
+      if (cycle_->empty() && ite->else_instruction())
+        ite->else_instruction()->Accept(&selector_);
+    }
+    void Visit(const Block* block) override {
+      for (const Instruction* instruction : block->instructions()) {
+        instruction->Accept(&selector_);
+        if (!cycle_->empty())
+          return;
+      }
+    }
+    void Visit(const Rule* rule) override {
+      for (const Instruction* instruction : rule->instructions()) {
+        instruction->Accept(&selector_);
+        if (!cycle_->empty())
+          return;
+      }
+    }
+    std::vector<Rule*>* cycle_;
+    ArgSelector selector_;
+  } visitor(cycle);
+
+  connector->Accept(&visitor);
+  return !cycle->empty();
+}
+
+/// Cycle detection specialization for visitor-based traversal of event-trees.
+template <>
+inline bool ContinueConnector(const EventTree* connector,
+                              std::vector<Link*>* cycle) {
+  struct {
+    bool operator()(const Branch* branch) {
+      return boost::apply_visitor(*this, branch->target());
+    }
+
+    bool operator()(Fork* fork) {
+      for (Branch& branch : fork->paths()) {
+        if ((*this)(&branch))
+          return true;
+      }
+      return false;
+    }
+
+    bool operator()(Sequence* sequence) {
+      struct Visitor : public InstructionVisitor {
+        explicit Visitor(decltype(cycle) t_cycle) : visitor_cycle_(t_cycle) {}
+
+        void Visit(const CollectFormula*) override {}
+        void Visit(const CollectExpression*) override {}
+
+        void Visit(const Link* link) override {
+          DetectCycle(const_cast<Link*>(link), visitor_cycle_);
+        }
+
+        void Visit(const IfThenElse* ite) override {
+          ite->then_instruction()->Accept(this);
+          if (visitor_cycle_->empty() && ite->else_instruction())
+            ite->else_instruction()->Accept(this);
+        }
+
+        void Visit(const Block* block) override {
+          for (const Instruction* instruction : block->instructions()) {
+            instruction->Accept(this);
+            if (!visitor_cycle_->empty())
+              return;
+          }
+        }
+
+        void Visit(const Rule* rule) override {
+          for (const Instruction* instruction : rule->instructions()) {
+            instruction->Accept(this);
+            if (!visitor_cycle_->empty())
+              return;
+          }
+        }
+
+        decltype(cycle) visitor_cycle_;
+      } visitor(cycle_);
+
+      for (const Instruction* instruction : sequence->instructions()) {
+        instruction->Accept(&visitor);
+        if (!cycle_->empty())
+          return true;
+      }
+      return false;
+    }
+
+    decltype(cycle) cycle_;
+  } continue_connector{cycle};
+
+  return continue_connector(&connector->initial_state());
+}
+
+/// Retrieves a unique name for a node.
+template <class T>
+const std::string& GetUniqueName(const T* node) {
+  return Id::unique_name(*node);
+}
+
+/// Specialization for event-tree link name retrieval.
+template <>
+inline const std::string& GetUniqueName(const Link* node) {
+  return node->event_tree().name();
+}
 
 /// Prints the detected cycle from the output
 /// produced by cycle detection functions.
 ///
-/// The unique node names are retrieved with unqualified calls to
-/// PrintCycleNode(node).
-///
-/// @tparam T  The node type with member function id()->std::string.
+/// @tparam T  The node type with GetUniqueName(T*) defined.
 ///
 /// @param[in] cycle  Cycle containing nodes in reverse order.
 ///
@@ -209,8 +337,28 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
   return boost::join(
       boost::adaptors::reverse(cycle) |
           boost::adaptors::transformed(
-              [](T* node) -> decltype(auto) { return PrintCycleNode(node); }),
+              [](T* node) -> decltype(auto) { return GetUniqueName(node); }),
       "->");
+}
+
+/// Checks for cycles in a model constructs.
+///
+/// @tparam T  The type of the node.
+/// @tparam SinglePassRange  The range type with node pointers.
+///
+/// @param[in] container  The range with nodes to be tested.
+/// @param[in] type  The type of nodes for error messages.
+///
+/// @throws CycleError  A cycle is detected in the graph of nodes.
+template <class T, class SinglePassRange>
+void CheckCycle(const SinglePassRange& container, const char* type) {
+  std::vector<T*> cycle;
+  for (const auto& node : container) {
+    if (DetectCycle(&*node, &cycle)) {
+      throw CycleError("Detected a cycle in " + GetUniqueName(&*node) + " " +
+                       std::string(type) + ":\n" + PrintCycle(cycle));
+    }
+  }
 }
 
 }  // namespace cycle

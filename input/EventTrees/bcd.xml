@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+
+<!-- Simple event tree with collect-expressions instructions only -->
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="EventTree"/>
+  <define-event-tree name="EventTree">
+    <define-functional-event name="B"/>
+    <define-functional-event name="C"/>
+    <define-functional-event name="D"/>
+    <define-sequence name="Success"/>
+    <define-sequence name="Failure"/>
+    <define-branch name="D-if-B">
+      <fork functional-event="D">
+        <path state="success">
+          <collect-expression>
+            <float value="0.9"/>
+          </collect-expression>
+          <sequence name="Success"/>
+        </path>
+        <path state="failure">
+          <collect-expression>
+            <float value="0.1"/>
+          </collect-expression>
+          <sequence name="Failure"/>
+        </path>
+      </fork>
+    </define-branch>
+    <initial-state>
+      <fork functional-event="B">
+        <path state="success">
+          <collect-expression>
+            <float value="0.1"/>
+          </collect-expression>
+          <fork functional-event="C">  <!-- Irrelevant event on the path -->
+            <path state="success">
+              <collect-expression>
+                <float value="0.8"/>
+              </collect-expression>
+              <branch name="D-if-B"/>
+            </path>
+            <path state="failure">
+              <collect-expression>
+                <float value="0.2"/>
+              </collect-expression>
+              <branch name="D-if-B"/>
+            </path>
+          </fork>
+        </path>
+        <path state="failure">
+          <collect-expression>
+            <float value="0.9"/>
+          </collect-expression>
+          <fork functional-event="C">
+            <path state="success">
+              <collect-expression>
+                <float value="0.6"/>
+              </collect-expression>
+              <fork functional-event="D">
+                <path state="success">
+                  <collect-expression>
+                    <float value="0.6"/>
+                  </collect-expression>
+                  <sequence name="Success"/>
+                </path>
+                <path state="failure">
+                  <collect-expression>
+                    <float value="0.4"/>
+                  </collect-expression>
+                  <sequence name="Failure"/>
+                </path>
+              </fork>
+            </path>
+            <path state="failure">
+              <collect-expression>
+                <float value="0.4"/>
+              </collect-expression>
+              <fork functional-event="D">
+                <path state="success">
+                  <collect-expression>
+                    <float value="0.5"/>
+                  </collect-expression>
+                  <sequence name="Success"/>
+                </path>
+                <path state="failure">
+                  <collect-expression>
+                    <float value="0.5"/>
+                  </collect-expression>
+                  <sequence name="Failure"/>
+                </path>
+              </fork>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

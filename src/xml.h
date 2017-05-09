@@ -28,6 +28,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <libxml++/libxml++.h>
+#include <libxml/parser.h>
+#include <libxml/xinclude.h>
 
 #include "error.h"
 
@@ -47,11 +49,9 @@ inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
     const std::string& file_path) {
   try {
     auto dom_parser = std::make_unique<xmlpp::DomParser>(file_path);
+    xmlXIncludeProcessFlags(dom_parser->get_document()->cobj(),
+                            XML_PARSE_NOBASEFIX);
     dom_parser->get_document()->process_xinclude();
-    for (xmlpp::Node* node :
-         dom_parser->get_document()->get_root_node()->find("//*[@xml:base]")) {
-      static_cast<xmlpp::Element*>(node)->remove_attribute("base", "xml");
-    }
     return dom_parser;
   } catch (const xmlpp::exception& ex) {
     throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));

@@ -39,9 +39,9 @@ Steps in XML Input Validation
       which allows reuse of files with analysis constructs from other models.
 
 #. XML input file validation against the `RELAX NG`_ :ref:`schema`.
-#. The fault tree validation assumptions/requirements:
+#. The validation assumptions/requirements:
 
-    - Event names and references are case-sensitive.
+    - Construct names and references are case-sensitive.
     - Leading and trailing whitespace characters are trimmed.
     - Names and references should conform to the MEF recommendations.
     - Public names must be unique globally,
@@ -59,15 +59,21 @@ Steps in XML Input Validation
 
 #. Error messages (with a file name, line numbers, types of errors):
 
-    - Report a cyclic tree.
+    - Report a cyclic tree (gates or event tree branches).
     - Report a cyclic parameter with expressions.
+    - Report a cyclic rule with instructions.
     - Report missing element descriptions.
     - Report an error if an event or a construct is being redefined.
 
 #. Warnings for potential errors:
 
-    - Orphan primary events.
-    - Unused parameters.
+    - Unused model constructs:
+
+        * Primary events
+        * Parameters
+        * Event trees
+        * Initiating events or event groups
+        * Functional events, branches, sequences, rules
 
 
 .. _schema:

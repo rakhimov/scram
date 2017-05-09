@@ -86,7 +86,7 @@ class MissionTime : public Expression {
 /// This class provides a representation of a variable
 /// in basic event description.
 /// It is both expression and element description.
-class Parameter : public Expression, public Id, public NodeMark {
+class Parameter : public Expression, public Id, public NodeMark, public Usage {
  public:
   using Id::Id;
 
@@ -105,14 +105,6 @@ class Parameter : public Expression, public Id, public NodeMark {
   /// @param[in] unit  A valid unit.
   void unit(Units unit) { unit_ = unit; }
 
-  /// @returns The usage state of this parameter.
-  bool unused() { return unused_; }
-
-  /// Sets the usage state for this parameter.
-  ///
-  /// @param[in] state  The usage state for this parameter.
-  void unused(bool state) { unused_ = state; }
-
   double value() noexcept override { return expression_->value(); }
   Interval interval() noexcept override { return expression_->interval(); }
 
@@ -120,7 +112,6 @@ class Parameter : public Expression, public Id, public NodeMark {
   double DoSample() noexcept override { return expression_->Sample(); }
 
   Units unit_ = kUnitless;  ///< Units of this parameter.
-  bool unused_ = true;  ///< Usage state.
   Expression* expression_ = nullptr;  ///< Expression for this parameter.
 };
 

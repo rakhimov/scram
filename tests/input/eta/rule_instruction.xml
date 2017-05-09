@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-rule name="R">
+    <collect-expression>
+      <float value="0.1"/>
+    </collect-expression>
+  </define-rule>
+  <define-initiating-event name="I" event-tree="InstructionCheck"/>
+  <define-event-tree name="InstructionCheck">
+    <define-sequence name="S"/>
+    <initial-state>
+      <rule name="R"/>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

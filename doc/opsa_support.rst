@@ -53,6 +53,14 @@ to identify the supported and unsupported features.
 - Label
 - Attributes
 - Public and Private Roles
+- Event Tree Layer
+
+    * Initiating events
+    * Sequences
+    * Functional events
+    * Branches
+    * Instructions (collect-expression, collect-formula, if-then-else, block, rule, link)
+
 - Fault Tree Layer
 
     * Components
@@ -80,6 +88,9 @@ Deviations from the Open-PSA MEF
 
 - Redefinition of constructs (e.g., containers, events, parameters) is an error.
 - Attributes are not inherited.
+- Recursive parameters are not allowed.
+- Recursive event-tree rules (instructions) are not allowed.
+- Recursive event-tree links (instructions) are not allowed.
 - An empty text in XML attributes or elements is considered an error.
 
 

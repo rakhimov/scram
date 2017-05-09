@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-initiating-event name="Attack" event-tree="AttackTree"/>
+  <define-event-tree name="AttackTree">
+    <define-functional-event name="L1">
+      <label>access denied</label>
+    </define-functional-event>
+    <define-functional-event name="L2">
+      <label>attack detected</label>
+    </define-functional-event>
+    <define-functional-event name="L3">
+      <label>attack interdicted</label>
+    </define-functional-event>
+    <define-sequence name="AttackSucceeds"/>
+    <define-sequence name="AttackFails"/>
+    <initial-state>
+      <fork functional-event="L1">
+        <path state="yes">
+          <collect-expression>
+            <parameter name="L1-detection"/>
+          </collect-expression>
+          <sequence name="AttackFails"/>
+        </path>
+        <path state="no">
+          <collect-expression>
+            <sub>
+              <float value="1"/>
+              <parameter name="L1-detection"/>
+            </sub>
+          </collect-expression>
+          <fork functional-event="L2">
+            <path state="yes">
+              <collect-expression>
+                <parameter name="L2-detection"/>
+              </collect-expression>
+              <fork functional-event="L3">
+                <path state="yes">
+                  <collect-expression>
+                    <parameter name="L3-detection"/>
+                  </collect-expression>
+                  <sequence name="AttackFails"/>
+                </path>
+                <path state="no">
+                  <collect-expression>
+                    <sub>
+                      <float value="1"/>
+                      <parameter name="L3-detection"/>
+                    </sub>
+                  </collect-expression>
+                  <sequence name="AttackSucceeds"/>
+                </path>
+              </fork>
+            </path>
+            <path state="no">
+              <collect-expression>
+                <sub>
+                  <float value="1"/>
+                  <parameter name="L2-detection"/>
+                </sub>
+              </collect-expression>
+              <sequence name="AttackSucceeds"/>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <model-data>
+    <define-parameter name="L1-detection">
+      <float value="0.2"/>
+    </define-parameter>
+    <define-parameter name="L2-detection">
+      <float value="0.7"/>
+    </define-parameter>
+    <define-parameter name="L3-detection">
+      <float value="0.05"/>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

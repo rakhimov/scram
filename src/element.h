@@ -183,6 +183,16 @@ class Id : public Element, public Role {
   /// @returns The unique id that is set upon the construction of this element.
   const std::string& id() const { return kId_; }
 
+  /// Produces unique name for the model element within the same type.
+  /// @{
+  static const std::string& unique_name(const Element& element) {
+    return element.name();
+  }
+  static const std::string& unique_name(const Id& element) {
+    return element.id();
+  }
+  /// @}
+
  protected:
   ~Id() = default;
 
@@ -242,6 +252,22 @@ class NodeMark {
 
  private:
   Mark mark_ = kClear;  ///< The mark for traversal or toposort.
+};
+
+/// Mixin class for providing usage marks for elements.
+class Usage {
+ public:
+  /// @returns true if the element is used in the model or analysis.
+  bool usage() const { return usage_; }
+
+  /// @param[in] usage  The usage state of the element in a model.
+  void usage(bool usage) { usage_ = usage; }
+
+ protected:
+  ~Usage() = default;
+
+ private:
+  bool usage_ = false;  ///< Elements are assumed to be unused at construction.
 };
 
 }  // namespace mef

@@ -398,6 +398,31 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   compare_fractions(pfh_fractions, prob_an.sil().pfh_fractions, "PFH");
 }
 
+TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
+  const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  auto& results = analysis->event_tree_results().front()->sequences();
+  ASSERT_EQ(2, results.size());
+  EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
+  EXPECT_EQ((std::set<std::string>{"Success", "Failure"}),
+            (std::set<std::string>{results.front().sequence.name(),
+                                  results.back().sequence.name()}));
+  double p_success;
+  double p_fail;
+  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
+    if (results.front().sequence.name() == "Success") {
+      return {results.front().p_sequence, results.back().p_sequence};
+    }
+    return {results.back().p_sequence, results.front().p_sequence};
+  }();
+
+  EXPECT_DOUBLE_EQ(0.594, p_success);
+  EXPECT_DOUBLE_EQ(0.406, p_fail);
+}
+
 // Test Reporting capabilities
 // Tests the output against the schema. However the contents of the
 // output are not verified or validated.
@@ -456,6 +481,12 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   CheckReport(tree_input);
 }
 
+// Reporting event tree analysis with an initiating event.
+TEST_F(RiskAnalysisTest, ReportInitiatingEventAnalysis) {
+  const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  CheckReport(tree_input);
+}
+
 // Reporting of CCF analysis.
 TEST_F(RiskAnalysisTest, ReportCCF) {
   std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";
@@ -494,6 +525,11 @@ TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
 // Reporting of unused parameters.
 TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   std::string tree_input = "./share/scram/input/fta/unused_parameter.xml";
+  CheckReport(tree_input);
+}
+
+TEST_F(RiskAnalysisTest, ReportUnusedEventTreeElements) {
+  std::string tree_input = "./share/scram/input/eta/unused_elements.xml";
   CheckReport(tree_input);
 }
 

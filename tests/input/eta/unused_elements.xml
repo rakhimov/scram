@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-rule name="R42">
+    <collect-expression>
+      <float value="0.42"/>
+    </collect-expression>
+  </define-rule>
+  <define-initiating-event name="I42"/>
+  <define-event-tree name="EventTree42">
+    <define-functional-event name="F42"/>
+    <define-sequence name="S"/>
+    <define-sequence name="Seq42"/>
+    <define-branch name="Branch42">
+      <sequence name="S"/>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

@@ -93,64 +93,61 @@ class Reporter {
 
   /// Reports performance metrics of all conducted analyses.
   ///
-  /// @param[in] risk_an  Container of the analyses.
+  /// @param[in] risk_an  Risk analysis with all the performance information.
   /// @param[in,out] information  The XML element to append the results.
   void ReportPerformance(const core::RiskAnalysis& risk_an,
                          XmlStreamElement* information);
 
-  /// Reports orphan primary events
+  /// Reports unused elements
   /// as warnings of the top information level.
   ///
-  /// @param[in] model  Model containing all primary events.
-  /// @param[in,out] information  The XML element to append the results.
-  void ReportOrphanPrimaryEvents(const mef::Model& model,
-                                 XmlStreamElement* information);
-
-  /// Reports unused parameters
-  /// as warnings of the top information level.
+  /// @tparam T  The range type of pointers to elements for forward traversal.
+  ///            The element type in the container must provide usage().
   ///
-  /// @param[in] model  Model containing all parameters.
+  /// @param[in] container  The container with pointers to elements.
+  /// @param[in] header  The header message to identify elements in the message.
   /// @param[in,out] information  The XML element to append the results.
-  void ReportUnusedParameters(const mef::Model& model,
-                              XmlStreamElement* information);
+  template <class T>
+  void ReportUnusedElements(const T& container, const std::string& header,
+                            XmlStreamElement* information);
 
   /// Reports the results of fault tree analysis
   /// to a specified output destination.
   ///
-  /// @param[in] ft_name  The original name of a fault tree.
+  /// @param[in] id  The analysis id.
   /// @param[in] fta  Fault Tree Analysis with results.
   /// @param[in] prob_analysis  Probability Analysis with results.
   ///                           Null pointer for no probability analysis.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(const std::string& ft_name,
+  void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::FaultTreeAnalysis& fta,
                      const core::ProbabilityAnalysis* prob_analysis,
                      XmlStreamElement* results);
 
   /// Reports results of probability analysis.
   ///
-  /// @param[in] ft_name  The original name of a fault tree.
+  /// @param[in] id  The analysis id.
   /// @param[in] prob_analysis  Probability Analysis with results.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(const std::string& ft_name,
+  void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::ProbabilityAnalysis& prob_analysis,
                      XmlStreamElement* results);
 
   /// Reports results of importance analysis.
   ///
-  /// @param[in] ft_name  The original name of a fault tree.
+  /// @param[in] id  The analysis id.
   /// @param[in] importance_analysis  Importance analysis with results.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(const std::string& ft_name,
+  void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::ImportanceAnalysis& importance_analysis,
                      XmlStreamElement* results);
 
   /// Reports the results of uncertainty analysis.
   ///
-  /// @param[in] ft_name  The original name of a fault tree.
+  /// @param[in] id  The analysis id.
   /// @param[in] uncert_analysis  Uncertainty analysis with results.
   /// @param[in,out] results  XML element to for all results.
-  void ReportResults(const std::string& ft_name,
+  void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::UncertaintyAnalysis& uncert_analysis,
                      XmlStreamElement* results);
 

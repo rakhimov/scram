@@ -42,49 +42,74 @@ void RiskAnalysis::Analyze() noexcept {
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
 
+  for (const mef::InitiatingEventPtr& initiating_event :
+       model_->initiating_events()) {
+    if (initiating_event->event_tree()) {
+      LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
+      auto eta = std::make_unique<EventTreeAnalysis>(*initiating_event,
+                                                     Analysis::settings());
+      eta->Analyze();
+      for (EventTreeAnalysis::Result& result : eta->sequences()) {
+        const mef::Sequence& sequence = result.sequence;
+        LOG(INFO) << "Running analysis for sequence: " << sequence.name();
+        results_.push_back(
+            {std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
+                *initiating_event, sequence}});
+        RunAnalysis(*result.gate, &results_.back());
+        if (result.is_expression_only) {
+          results_.back().fault_tree_analysis = nullptr;
+          results_.back().importance_analysis = nullptr;
+        }
+        if (Analysis::settings().probability_analysis())
+          result.p_sequence = results_.back().probability_analysis->p_total();
+        LOG(INFO) << "Finished analysis for sequence: " << sequence.name();
+      }
+      event_tree_results_.push_back(std::move(eta));
+      LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
+    }
+  }
+
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
-      LOG(INFO) << "Running analysis: " << target->id();
-      RunAnalysis(*target);
-      LOG(INFO) << "Finished analysis: " << target->id();
+      LOG(INFO) << "Running analysis for gate: " << target->id();
+      results_.push_back({target});
+      RunAnalysis(*target, &results_.back());
+      LOG(INFO) << "Finished analysis for gate: " << target->id();
     }
   }
 }
 
-void RiskAnalysis::RunAnalysis(const mef::Gate& target) noexcept {
+void RiskAnalysis::RunAnalysis(const mef::Gate& target,
+                               Result* result) noexcept {
   switch (Analysis::settings().algorithm()) {
     case Algorithm::kBdd:
-      RunAnalysis<Bdd>(target);
-      break;
+      return RunAnalysis<Bdd>(target, result);
     case Algorithm::kZbdd:
-      RunAnalysis<Zbdd>(target);
-      break;
+      return RunAnalysis<Zbdd>(target, result);
     case Algorithm::kMocus:
-      RunAnalysis<Mocus>(target);
+      return RunAnalysis<Mocus>(target, result);
   }
 }
 
 template <class Algorithm>
-void RiskAnalysis::RunAnalysis(const mef::Gate& target) noexcept {
-  auto fta =
-      std::make_unique<FaultTreeAnalyzer<Algorithm>>(target,
-                                                     Analysis::settings());
+void RiskAnalysis::RunAnalysis(const mef::Gate& target,
+                               Result* result) noexcept {
+  auto fta = std::make_unique<FaultTreeAnalyzer<Algorithm>>(
+      target, Analysis::settings());
   fta->Analyze();
-  Result result{target};
   if (Analysis::settings().probability_analysis()) {
     switch (Analysis::settings().approximation()) {
       case Approximation::kNone:
-        RunAnalysis<Algorithm, Bdd>(fta.get(), &result);
+        RunAnalysis<Algorithm, Bdd>(fta.get(), result);
         break;
       case Approximation::kRareEvent:
-        RunAnalysis<Algorithm, RareEventCalculator>(fta.get(), &result);
+        RunAnalysis<Algorithm, RareEventCalculator>(fta.get(), result);
         break;
       case Approximation::kMcub:
-        RunAnalysis<Algorithm, McubCalculator>(fta.get(), &result);
+        RunAnalysis<Algorithm, McubCalculator>(fta.get(), result);
     }
   }
-  result.fault_tree_analysis = std::move(fta);
-  results_.push_back(std::move(result));
+  result->fault_tree_analysis = std::move(fta);
 }
 
 template <class Algorithm, class Calculator>
