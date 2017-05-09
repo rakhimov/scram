@@ -152,6 +152,21 @@ class Rule : public Element,
 
 using RulePtr = std::unique_ptr<Rule>;  ///< Unique rules in a model.
 
+class EventTree;  // The target of the Link.
+
+/// A link to another event tree in end-states only.
+class Link : public Visitable<Link> {
+ public:
+  /// @param[in] event_tree  The event tree to be linked in the end-sequence.
+  explicit Link(const EventTree& event_tree) : event_tree_(event_tree) {}
+
+  /// @returns The referenced event tree in the link.
+  const EventTree& event_tree() const { return event_tree_; }
+
+ private:
+  const EventTree& event_tree_;  ///< The referenced event tree.
+};
+
 /// The base abstract class for instruction visitors.
 class InstructionVisitor {
  public:
@@ -161,6 +176,7 @@ class InstructionVisitor {
   /// @{
   virtual void Visit(const CollectExpression*) = 0;
   virtual void Visit(const CollectFormula*) = 0;
+  virtual void Visit(const Link*) {}
   virtual void Visit(const IfThenElse* ite) {
     if (ite->expression()->value()) {
       ite->then_instruction()->Accept(this);

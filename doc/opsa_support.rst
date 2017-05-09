@@ -59,7 +59,7 @@ to identify the supported and unsupported features.
     * Sequences
     * Functional events
     * Branches
-    * Instructions (collect-expression, collect-formula, if-then-else, block, rule)
+    * Instructions (collect-expression, collect-formula, if-then-else, block, rule, link)
 
 - Fault Tree Layer
 

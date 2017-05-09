@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="InvalidOrder">
+    <define-functional-event name="F1"/>
+    <define-functional-event name="F2"/>
+    <define-sequence name="S"/>
+    <define-branch name="B">
+      <fork functional-event="F2">
+        <path state="true">
+          <fork functional-event="F1">
+            <path state="true">
+              <sequence name="S"/>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </define-branch>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+  <define-event-tree name="Link">
+    <define-sequence name="S-Link">
+      <event-tree name="InvalidOrder"/>
+    </define-sequence>
+    <initial-state>
+      <sequence name="S-Link"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

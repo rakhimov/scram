@@ -90,7 +90,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "collect_formula.xml",
                                   "if_then_else_instruction.xml",
                                   "block_instruction.xml",
-                                  "rule_instruction.xml"};
+                                  "rule_instruction.xml",
+                                  "link_instruction.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -122,9 +123,11 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "cyclic_rule_transitive.xml",
       "invalid_duplicate_event_in_forks.xml",
       "invalid_event_order_in_branch.xml",
+      "invalid_event_order_in_link.xml",
       "invalid_event_order_in_initial_state.xml",
       "invalid_event_order_in_ref_branch.xml",
       "invalid_collect_formula.xml",
+      "invalid_link_undefined_event_tree.xml",
       "undefined_arg_collect_formula.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)

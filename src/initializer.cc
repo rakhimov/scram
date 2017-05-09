@@ -756,6 +756,17 @@ Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
     return ret_ptr;
   };
 
+  if (node_name == "event-tree") {
+    std::string name = GetAttributeValue(xml_element, "name");
+    if (auto it = ext::find(model_->event_trees(), name)) {
+      (*it)->usage(true);
+      return register_instruction(std::make_unique<Link>(**it));
+    } else {
+      throw ValidationError(GetLine(xml_element) + "Event tree " + name +
+                            " is not defined in the model.");
+    }
+  }
+
   xmlpp::NodeSet args = xml_element->find("./*");
 
   if (node_name == "collect-expression") {

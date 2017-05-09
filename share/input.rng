@@ -229,6 +229,7 @@
       <ref name="if-then-else"/>
       <ref name="block"/>
       <ref name="rule"/>
+      <ref name="link"/>
     </choice>
   </define>
 
@@ -271,6 +272,12 @@
 
   <define name="rule">
     <element name="rule">
+      <ref name="name"/>
+    </element>
+  </define>
+
+  <define name="link">
+    <element name="event-tree">
       <ref name="name"/>
     </element>
   </define>
