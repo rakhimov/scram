@@ -50,8 +50,6 @@ void RiskAnalysis::Analyze() noexcept {
                                                      Analysis::settings());
       eta->Analyze();
       for (const EventTreeAnalysis::Result& result : eta->results()) {
-        if (!result.gate)
-          continue;
         const mef::Sequence& sequence = result.sequence;
         LOG(INFO) << "Running analysis for sequence: " << sequence.name();
         RunAnalysis(*result.gate);

@@ -48,7 +48,7 @@ void EventTreeAnalysis::Analyze() noexcept {
   for (auto& sequence : collector.sequences) {
     auto gate = std::make_unique<mef::Gate>("__" + sequence.first->name());
     std::vector<mef::FormulaPtr> gate_formulas;
-    double p_sequence = 0;
+    std::vector<mef::Expression*> arg_expressions;
     for (PathCollector& path_collector : sequence.second) {
       if (path_collector.formulas.size() == 1) {
         gate_formulas.push_back(core::Clone(*path_collector.formulas.front()));
@@ -59,11 +59,15 @@ void EventTreeAnalysis::Analyze() noexcept {
         gate_formulas.push_back(std::move(and_formula));
       }
       if (path_collector.expressions.size() == 1) {
-        p_sequence += path_collector.expressions.front()->value();
+        arg_expressions.push_back(path_collector.expressions.front());
       } else if (path_collector.expressions.size() > 1) {
-        p_sequence += mef::Mul(std::move(path_collector.expressions)).value();
+        expressions_.push_back(
+            std::make_unique<mef::Mul>(std::move(path_collector.expressions)));
+        arg_expressions.push_back(expressions_.back().get());
       }
     }
+    assert(gate_formulas.empty() || arg_expressions.empty());
+    double p_sequence = 1;
     if (gate_formulas.size() == 1) {
       gate->formula(std::move(gate_formulas.front()));
     } else if (gate_formulas.size() > 1) {
@@ -71,8 +75,23 @@ void EventTreeAnalysis::Analyze() noexcept {
       for (mef::FormulaPtr& arg_formula : gate_formulas)
         or_formula->AddArgument(std::move(arg_formula));
       gate->formula(std::move(or_formula));
+    } else if (!arg_expressions.empty()) {
+      auto event =
+          std::make_unique<mef::BasicEvent>("__" + sequence.first->name());
+      if (arg_expressions.size() == 1) {
+        event->expression(arg_expressions.front());
+      } else if (arg_expressions.size() > 1) {
+        expressions_.push_back(
+            std::make_unique<mef::Add>(std::move(arg_expressions)));
+        event->expression(expressions_.back().get());
+      }
+      gate->formula(std::make_unique<mef::Formula>(mef::kNull));
+      gate->formula().AddArgument(event.get());
+      p_sequence = event->p();
+      basic_events_.push_back(std::move(event));
     } else {
-      gate = nullptr;
+      gate->formula(std::make_unique<mef::Formula>(mef::kNull));
+      gate->formula().AddArgument(&mef::HouseEvent::kTrue);
     }
     results_.push_back({*sequence.first, p_sequence, std::move(gate)});
   }

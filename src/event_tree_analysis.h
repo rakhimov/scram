@@ -20,12 +20,14 @@
 #ifndef SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "analysis.h"
 #include "event.h"
 #include "event_tree.h"
+#include "expression.h"
 #include "settings.h"
 
 namespace scram {
@@ -37,7 +39,7 @@ class EventTreeAnalysis : public Analysis {
   /// The analysis results binding to the unique analysis target.
   struct Result {
     const mef::Sequence& sequence;  ///< The analysis sequence.
-    double p_sequence;  ///< Sequence probability.
+    double p_sequence;  ///< @todo Remove
     std::unique_ptr<mef::Gate> gate;  ///< The collected formulas into a gate.
   };
 
@@ -85,6 +87,9 @@ class EventTreeAnalysis : public Analysis {
 
   const mef::InitiatingEvent& initiating_event_;  ///< The analysis initiator.
   std::vector<Result> results_;  ///< Analyzed sequences.
+  /// Newly created expressions.
+  std::vector<std::unique_ptr<mef::Expression>> expressions_;
+  std::vector<mef::BasicEventPtr> basic_events_;  ///< Newly created events.
 };
 
 }  // namespace core
