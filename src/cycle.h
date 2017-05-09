@@ -195,6 +195,7 @@ inline bool ContinueConnector(const Instruction* connector,
 
       void Visit(const CollectExpression*) override {}
       void Visit(const CollectFormula*) override {}
+      void Visit(const Link*) override {}
       void Visit(const IfThenElse* ite) override {
         visitor_->Visit(ite);
       }
@@ -214,6 +215,7 @@ inline bool ContinueConnector(const Instruction* connector,
 
     void Visit(const CollectExpression*) override {}
     void Visit(const CollectFormula*) override {}
+    void Visit(const Link*) override {}
     void Visit(const IfThenElse* ite) override {
       ite->then_instruction()->Accept(&selector_);
       if (cycle_->empty() && ite->else_instruction())

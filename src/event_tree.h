@@ -176,7 +176,7 @@ class InstructionVisitor {
   /// @{
   virtual void Visit(const CollectExpression*) = 0;
   virtual void Visit(const CollectFormula*) = 0;
-  virtual void Visit(const Link*) {}
+  virtual void Visit(const Link*) = 0;
   virtual void Visit(const IfThenElse* ite) {
     if (ite->expression()->value()) {
       ite->then_instruction()->Accept(this);

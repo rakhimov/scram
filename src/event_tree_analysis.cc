@@ -100,8 +100,39 @@ void EventTreeAnalysis::Analyze() noexcept {
 void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
                                          SequenceCollector* result) noexcept {
   struct Collector {
-    void operator()(const mef::Sequence* sequence) const {
-      result_->sequences[sequence].push_back(std::move(path_collector_));
+    class Visitor : public mef::InstructionVisitor {
+     public:
+      explicit Visitor(Collector* collector) : collector_(*collector) {}
+
+      void Visit(const mef::Link* link) override {
+        is_linked_ = true;
+        Collector continue_connector(collector_);
+        continue_connector(&link->event_tree().initial_state());
+      }
+
+      void Visit(const mef::CollectFormula* collect_formula) override {
+        collector_.path_collector_.formulas.push_back(
+            &collect_formula->formula());
+      }
+
+      void Visit(const mef::CollectExpression* collect_expression) override {
+        collector_.path_collector_.expressions.push_back(
+            &collect_expression->expression());
+      }
+
+      bool is_linked() const { return is_linked_; }
+
+     private:
+      Collector& collector_;
+      bool is_linked_ = false;  /// Indicate that sequences not be registered.
+    };
+
+    void operator()(const mef::Sequence* sequence) {
+      Visitor visitor(this);
+      for (const mef::Instruction* instruction : sequence->instructions())
+        instruction->Accept(&visitor);
+      if (!visitor.is_linked())
+        result_->sequences[sequence].push_back(std::move(path_collector_));
     }
 
     void operator()(const mef::Fork* fork) const {
@@ -110,24 +141,7 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
     }
 
     void operator()(const mef::Branch* branch) {
-      class Visitor : public mef::InstructionVisitor {
-       public:
-        explicit Visitor(Collector* collector) : collector_(*collector) {}
-
-        void Visit(const mef::CollectFormula* collect_formula) override {
-          collector_.path_collector_.formulas.push_back(
-              &collect_formula->formula());
-        }
-
-        void Visit(const mef::CollectExpression* collect_expression) override {
-          collector_.path_collector_.expressions.push_back(
-              &collect_expression->expression());
-        }
-
-       private:
-        Collector& collector_;
-      } visitor(this);
-
+      Visitor visitor(this);
       for (const mef::Instruction* instruction : branch->instructions())
         instruction->Accept(&visitor);
 
