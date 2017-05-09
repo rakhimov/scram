@@ -26,6 +26,7 @@ are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 Implemented Features
 --------------------
 
+- Event tree analysis (Fault tree linking, Event tree linking)
 - Static fault tree analysis (MOCUS, BDD, ZBDD)
 - Analysis of non-coherent fault trees (Minimal Cut Sets, Prime Implicants)
 - Analysis with common-cause failure models
@@ -61,6 +62,7 @@ Documentation
     :maxdepth: 1
 
     doc/description
+    doc/event_tree_analysis
     doc/fault_tree_analysis
     doc/fta_preprocessing
     doc/fta_algorithms
