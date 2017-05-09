@@ -1164,13 +1164,15 @@ void Initializer::ValidateInitialization() {
     }
   }
 
-  // Check the order of functional events in forks.
+  // All other event-tree checks available after ensuring no-cycles.
   for (const EventTreePtr& event_tree : model_->event_trees()) {
     try {
       for (const NamedBranchPtr& branch : event_tree->branches()) {
-        CheckFunctionalEventOrder(*branch);
+        CheckFunctionalEventOrder(*branch);  // The order of events in forks.
+        EnsureLinksOnlyInSequences(*branch);  // Link instructions in sequences.
       }
       CheckFunctionalEventOrder(event_tree->initial_state());
+      EnsureLinksOnlyInSequences(event_tree->initial_state());
     } catch (ValidationError& err) {
       err.msg("In event tree " + event_tree->name() + ", " + err.msg());
       throw;
@@ -1232,6 +1234,41 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
   };
 
   boost::apply_visitor(OrderValidator{this}, branch.target());
+}
+
+void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
+  struct Validator : public InstructionVisitor {
+    void Visit(const CollectFormula*) override {}
+    void Visit(const CollectExpression*) override {}
+    void Visit(const Link* link) override {
+      throw ValidationError("Link " + link->event_tree().name() +
+                            " can only be used in end-state sequences.");
+    }
+    void Visit(const IfThenElse* ite) override {
+      ite->then_instruction()->Accept(this);
+      if (ite->else_instruction())
+        ite->else_instruction()->Accept(this);
+    }
+  };
+
+  struct CheckLink {
+    void operator()(Sequence*) {}
+    void operator()(const NamedBranch*) {}
+
+    void operator()(const Branch* arg_branch) {
+      for (const Instruction* instruction : arg_branch->instructions())
+        instruction->Accept(&validator);
+      boost::apply_visitor(*this, arg_branch->target());
+    }
+
+    void operator()(Fork* fork) {
+      for (const Path& fork_path : fork->paths())
+        (*this)(&fork_path);
+    }
+    Validator validator;
+  } link_checker;
+
+  link_checker(&branch);
 }
 
 void Initializer::ValidateExpressions() {

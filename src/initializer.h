@@ -338,6 +338,15 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  The order of forks is invalid.
   void CheckFunctionalEventOrder(const Branch& branch);
 
+  /// Checks that link instructions are used only in event-tree sequences.
+  ///
+  /// @param[in] branch  The event tree branch to start the check.
+  ///
+  /// @throws ValidationError  The Link instruction is misused.
+  ///
+  /// @pre All named branches are fed separately from initial states.
+  void EnsureLinksOnlyInSequences(const Branch& branch);
+
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.

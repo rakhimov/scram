@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="Link"/>
+  <define-rule name="Rule">  <!-- Only can be used in end-states -->
+    <event-tree name="Continue"/>
+  </define-rule>
+  <define-event-tree name="Continue">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <define-event-tree name="Link">
+    <define-functional-event name="L"/>
+    <initial-state>
+      <fork functional-event="L">
+        <path state="on">
+          <rule name="Rule"/>  <!-- Cannot be called because contains link -->
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

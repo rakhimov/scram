@@ -91,7 +91,8 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "if_then_else_instruction.xml",
                                   "block_instruction.xml",
                                   "rule_instruction.xml",
-                                  "link_instruction.xml"};
+                                  "link_instruction.xml",
+                                  "link_in_rule.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -128,6 +129,9 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "invalid_event_order_in_ref_branch.xml",
       "invalid_collect_formula.xml",
       "invalid_link_undefined_event_tree.xml",
+      "invalid_link_instruction.xml",
+      "invalid_link_in_branch.xml",
+      "invalid_link_in_rule.xml",
       "undefined_arg_collect_formula.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
