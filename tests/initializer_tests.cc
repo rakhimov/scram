@@ -122,6 +122,8 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "cyclic_rule_block.xml",
       "cyclic_rule_self.xml",
       "cyclic_rule_transitive.xml",
+      "cyclic_link_self.xml",
+      "cyclic_link_transitive.xml",
       "invalid_duplicate_event_in_forks.xml",
       "invalid_event_order_in_branch.xml",
       "invalid_event_order_in_link.xml",

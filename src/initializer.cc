@@ -760,7 +760,9 @@ Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
     std::string name = GetAttributeValue(xml_element, "name");
     if (auto it = ext::find(model_->event_trees(), name)) {
       (*it)->usage(true);
-      return register_instruction(std::make_unique<Link>(**it));
+      links_.push_back(static_cast<Link*>(
+          register_instruction(std::make_unique<Link>(**it))));
+      return links_.back();
     } else {
       throw ValidationError(GetLine(xml_element) + "Event tree " + name +
                             " is not defined in the model.");
@@ -1164,7 +1166,7 @@ void Initializer::ValidateInitialization() {
     }
   }
 
-  // All other event-tree checks available after ensuring no-cycles.
+  // All other event-tree checks available after ensuring no-cycles in branches.
   for (const EventTreePtr& event_tree : model_->event_trees()) {
     try {
       for (const NamedBranchPtr& branch : event_tree->branches()) {
@@ -1178,6 +1180,9 @@ void Initializer::ValidateInitialization() {
       throw;
     }
   }
+
+  // The cycles in links are checked only after ensuring their valid locations.
+  cycle::CheckCycle<Link>(links_, "event-tree link");
 
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {

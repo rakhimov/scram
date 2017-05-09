@@ -390,6 +390,8 @@ class Initializer : private boost::noncopyable {
 
   /// Container of defined expressions for later validation due to cycles.
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
+  /// Container for event tree links to check for cycles.
+  std::vector<Link*> links_;
 };
 
 }  // namespace mef

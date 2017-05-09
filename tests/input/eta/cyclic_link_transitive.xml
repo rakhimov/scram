@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="Link"/>
+  <define-event-tree name="Continue">
+    <define-sequence name="S">
+      <event-tree name="Link"/>
+    </define-sequence>
+    <initial-state>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+  <define-event-tree name="Link">
+    <define-sequence name="S-Link">
+      <event-tree name="Continue"/>
+    </define-sequence>
+    <initial-state>
+      <sequence name="S-Link"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

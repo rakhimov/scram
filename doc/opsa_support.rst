@@ -90,6 +90,7 @@ Deviations from the Open-PSA MEF
 - Attributes are not inherited.
 - Recursive parameters are not allowed.
 - Recursive event-tree rules (instructions) are not allowed.
+- Recursive event-tree links (instructions) are not allowed.
 - An empty text in XML attributes or elements is considered an error.
 
 

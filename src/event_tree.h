@@ -155,7 +155,7 @@ using RulePtr = std::unique_ptr<Rule>;  ///< Unique rules in a model.
 class EventTree;  // The target of the Link.
 
 /// A link to another event tree in end-states only.
-class Link : public Visitable<Link> {
+class Link : public Visitable<Link>, public NodeMark {
  public:
   /// @param[in] event_tree  The event tree to be linked in the end-sequence.
   explicit Link(const EventTree& event_tree) : event_tree_(event_tree) {}
