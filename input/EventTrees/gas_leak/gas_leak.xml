@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!-- Andrews J.D. and Dunnet S.J. -->
+<!-- "Event tree analysis using Binary Decision Diagrams" -->
+<!-- doi: 10.1109/24.877343 -->
+
+<opsa-mef>
+  <define-initiating-event name="Gas-Leak" event-tree="Gas-Leak-Event-Tree"/>
+  <define-event-tree name="Gas-Leak-Event-Tree">
+    <define-functional-event name="Gas-detection"/>
+    <define-sequence name="S9"/>
+    <define-sequence name="Link-to-reactive">
+      <event-tree name="Gas-Leak-Event-Tree-Reactive"/>
+    </define-sequence>
+    <initial-state>
+      <fork functional-event="Gas-detection">
+        <path state="W">
+          <collect-formula>
+            <not>
+              <gate name="Gas-detection-system.root"/>
+            </not>
+          </collect-formula>
+          <sequence name="Link-to-reactive"/>
+        </path>
+        <path state="F">
+          <collect-formula>
+            <gate name="Gas-detection-system.root"/>
+          </collect-formula>
+          <sequence name="S9"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <define-fault-tree name="Gas-detection-system">
+    <label>Gas detection system fails on demand</label>
+    <define-gate name="root" role="private">
+      <or>
+        <basic-event name="CPU"/>
+        <gate name="Incoming-signal"/>
+      </or>
+    </define-gate>
+    <define-gate name="Incoming-signal" role="private">
+      <atleast min="2">
+        <basic-event name="SEN1"/>
+        <basic-event name="SEN2"/>
+        <basic-event name="SEN3"/>
+      </atleast>
+    </define-gate>
+    <define-basic-event name="CPU">
+      <label>Computer fails to correctly process sensor signals</label>
+      <float value="0.05"/>
+    </define-basic-event>
+    <define-basic-event name="SEN1">
+      <label>Sensor 1</label>
+      <float value="0.05"/>
+    </define-basic-event>
+    <define-basic-event name="SEN2">
+      <label>Sensor 2</label>
+      <float value="0.05"/>
+    </define-basic-event>
+    <define-basic-event name="SEN3">
+      <label>Sensor 3</label>
+      <float value="0.05"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>
