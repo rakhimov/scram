@@ -346,7 +346,7 @@ void Reporter::ReportResults(const core::RiskAnalysis::Result::Id& id,
 
   std::string warning = fta.warnings();
   if (prob_analysis && prob_analysis->warnings().empty() == false)
-    warning += "; " + prob_analysis->warnings();
+    warning += (warning.empty() ? "" : "; ") + prob_analysis->warnings();
   if (!warning.empty())
     sum_of_products.SetAttribute("warning", warning);
 
