@@ -414,23 +414,14 @@ TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front()->sequences();
+  const auto& results = sequences();
   ASSERT_EQ(2, results.size());
-  EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
-  EXPECT_EQ((std::set<std::string>{"Success", "Failure"}),
-            (std::set<std::string>{results.front().sequence.name(),
-                                  results.back().sequence.name()}));
-  double p_success;
-  double p_fail;
-  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
-    if (results.front().sequence.name() == "Success") {
-      return {results.front().p_sequence, results.back().p_sequence};
-    }
-    return {results.back().p_sequence, results.front().p_sequence};
-  }();
-
-  EXPECT_DOUBLE_EQ(0.594, p_success);
-  EXPECT_DOUBLE_EQ(0.406, p_fail);
+  std::map<std::string, double> expected = {{"Success", 0.594},
+                                            {"Failure", 0.406}};
+  for (const auto& result : expected) {
+    ASSERT_TRUE(results.count(result.first)) << result.first;
+    EXPECT_DOUBLE_EQ(result.second, results.at(result.first)) << result.first;
+  }
 }
 
 // Test Reporting capabilities

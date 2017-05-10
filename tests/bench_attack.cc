@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <utility>
-
 #include <gtest/gtest.h>
 
 #include "risk_analysis_tests.h"
@@ -31,23 +29,11 @@ TEST_P(RiskAnalysisTest, AttackEventTree) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front()->sequences();
+  const auto& results = sequences();
   ASSERT_EQ(2, results.size());
-  EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
-  EXPECT_EQ((std::set<std::string>{"AttackSucceeds", "AttackFails"}),
-            (std::set<std::string>{results.front().sequence.name(),
-                                   results.back().sequence.name()}));
-  double p_success;
-  double p_fail;
-  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
-    if (results.front().sequence.name() == "AttackSucceeds") {
-      return {results.front().p_sequence, results.back().p_sequence};
-    }
-    return {results.back().p_sequence, results.front().p_sequence};
-  }();
-
-  EXPECT_DOUBLE_EQ(0.772, p_success);
-  EXPECT_DOUBLE_EQ(0.228, p_fail);
+  EXPECT_EQ((std::map<std::string, double>{{"AttackSucceeds", 0.772},
+                                           {"AttackFails", 0.228}}),
+            results);
 }
 
 }  // namespace test
