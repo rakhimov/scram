@@ -485,6 +485,7 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
 // Reporting event tree analysis with an initiating event.
 TEST_F(RiskAnalysisTest, ReportInitiatingEventAnalysis) {
   const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  settings.probability_analysis(true);
   CheckReport(tree_input);
 }
 

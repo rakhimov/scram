@@ -68,18 +68,13 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
     return;
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
-  for (const std::unique_ptr<core::EventTreeAnalysis>& result :
-       risk_an.event_tree_results()) {
-    XmlStreamElement initiating_event = results.AddChild("initiating-event");
-    initiating_event.SetAttribute("name", result->initiating_event().name())
-        .SetAttribute("sequences", result->sequences().size());
-    for (const core::EventTreeAnalysis::Result& result_sequence :
-         result->sequences()) {
-      initiating_event.AddChild("sequence")
-          .SetAttribute("name", result_sequence.sequence.name())
-          .SetAttribute("value", result_sequence.p_sequence);
+  if (risk_an.settings().probability_analysis()) {
+    for (const std::unique_ptr<core::EventTreeAnalysis>& result :
+         risk_an.event_tree_results()) {
+      ReportResults(*result, &results);
     }
   }
+
   for (const core::RiskAnalysis::Result& result : risk_an.results()) {
     if (result.fault_tree_analysis)
       ReportResults(result.id, *result.fault_tree_analysis,
@@ -334,6 +329,19 @@ void Reporter::ReportUnusedElements(const T& container,
       " ");
   if (!out.empty())
     information->AddChild("warning").AddText(header + out);
+}
+
+void Reporter::ReportResults(const core::EventTreeAnalysis& eta,
+                             XmlStreamElement* results) {
+  XmlStreamElement initiating_event = results->AddChild("initiating-event");
+  initiating_event.SetAttribute("name", eta.initiating_event().name())
+      .SetAttribute("sequences", eta.sequences().size());
+  for (const core::EventTreeAnalysis::Result& result_sequence :
+       eta.sequences()) {
+    initiating_event.AddChild("sequence")
+        .SetAttribute("name", result_sequence.sequence.name())
+        .SetAttribute("value", result_sequence.p_sequence);
+  }
 }
 
 void Reporter::ReportResults(const core::RiskAnalysis::Result::Id& id,
