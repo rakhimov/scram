@@ -195,6 +195,19 @@ class InstructionVisitor {
   /// @}
 };
 
+/// Visits only instructions and ignores non-instructions.
+class NullVisitor : public InstructionVisitor {
+ public:
+  void Visit(const CollectExpression*) override {}
+  void Visit(const CollectFormula*) override {}
+  void Visit(const Link*) override {}
+  void Visit(const IfThenElse* ite) override {
+    ite->then_instruction()->Accept(this);
+    if (ite->else_instruction())
+      ite->else_instruction()->Accept(this);
+  }
+};
+
 template <class T>
 void Visitable<T>::Accept(InstructionVisitor* visitor) const {
   visitor->Visit(static_cast<const T*>(this));

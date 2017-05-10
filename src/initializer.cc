@@ -1242,17 +1242,10 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
 }
 
 void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
-  struct Validator : public InstructionVisitor {
-    void Visit(const CollectFormula*) override {}
-    void Visit(const CollectExpression*) override {}
+  struct Validator : public NullVisitor {
     void Visit(const Link* link) override {
       throw ValidationError("Link " + link->event_tree().name() +
                             " can only be used in end-state sequences.");
-    }
-    void Visit(const IfThenElse* ite) override {
-      ite->then_instruction()->Accept(this);
-      if (ite->else_instruction())
-        ite->else_instruction()->Accept(this);
     }
   };
 
