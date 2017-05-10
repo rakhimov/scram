@@ -120,9 +120,9 @@ void FaultTreeAnalysis::Store(const Zbdd& products,
                               const Pdag& graph) noexcept {
   // Special cases of sets.
   if (products.empty()) {
-    Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
+    Analysis::AddWarning("The set is NULL/Empty.");
   } else if (products.base()) {
-    Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
+    Analysis::AddWarning("The set is UNITY/Base.");
   }
   products_ = std::make_unique<const ProductContainer>(products, graph);
 
