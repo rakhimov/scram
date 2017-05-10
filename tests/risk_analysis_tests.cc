@@ -103,6 +103,16 @@ RiskAnalysisTest::product_probability() {
   return result_.product_probability;
 }
 
+std::map<std::string, double> RiskAnalysisTest::sequences() {
+  assert(analysis->event_tree_results().size() == 1);
+  std::map<std::string, double> results;
+  for (const core::EventTreeAnalysis::Result& result :
+       analysis->event_tree_results().front()->sequences()) {
+    results.emplace(result.sequence.name(), result.p_sequence);
+  }
+  return results;
+}
+
 std::set<std::string> RiskAnalysisTest::Convert(const Product& product) {
   std::set<std::string> string_set;
   for (const Literal& literal : product) {

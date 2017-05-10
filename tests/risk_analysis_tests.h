@@ -126,6 +126,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     return analysis->results().front().uncertainty_analysis->sigma();
   }
 
+  /// @returns The event-tree analysis sequence results.
+  std::map<std::string, double> sequences();
+
   // Members
   std::unique_ptr<RiskAnalysis> analysis;
   std::shared_ptr<mef::Model> model;
