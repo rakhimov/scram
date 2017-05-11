@@ -21,6 +21,7 @@
 #define SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -68,8 +69,11 @@ class EventTreeAnalysis : public Analysis {
  private:
   /// Expressions and formulas collected in an event tree path.
   struct PathCollector {
+    PathCollector() = default;
+    PathCollector(const PathCollector&);  ///< Must deep copy formulas.
     std::vector<mef::Expression*> expressions;  ///< Multiplication arguments.
-    std::vector<mef::Formula*> formulas;  ///< AND connective formulas.
+    std::vector<mef::FormulaPtr> formulas;  ///< AND connective formulas.
+    std::unordered_map<std::string, bool> set_instructions;  ///< House events.
   };
 
   /// Walks the event tree paths and collects sequences.
@@ -93,7 +97,7 @@ class EventTreeAnalysis : public Analysis {
   std::vector<Result> sequences_;  ///< Gathered sequences.
   /// Newly created expressions.
   std::vector<std::unique_ptr<mef::Expression>> expressions_;
-  std::vector<mef::BasicEventPtr> basic_events_;  ///< Newly created events.
+  std::vector<std::unique_ptr<mef::Event>> events_;  ///< Newly created events.
 };
 
 }  // namespace core

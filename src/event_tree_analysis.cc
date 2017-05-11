@@ -20,6 +20,7 @@
 #include "event_tree_analysis.h"
 
 #include "expression/numerical.h"
+#include "ext/find_iterator.h"
 
 namespace scram {
 namespace core {
@@ -30,6 +31,7 @@ EventTreeAnalysis::EventTreeAnalysis(
 
 namespace {  // The model cloning functions.
 
+/// Clones the formula without any instruction application.
 std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
   auto new_formula = std::make_unique<mef::Formula>(formula.type());
   for (const mef::Formula::EventArg& arg : formula.event_args())
@@ -39,7 +41,64 @@ std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
   return new_formula;
 }
 
+/// Clones the formula by applying the set-instructions.
+///
+/// @param[in] formula  The formula to be deep-cloned.
+/// @param[in] set_instructions  The set instructions to change arguments.
+/// @param[in] clones  The storage container for newly created clones.
+///
+/// @returns The deep-copy of the argument formula with new (changed) arguments.
+std::unique_ptr<mef::Formula> Clone(
+    const mef::Formula& formula,
+    const std::unordered_map<std::string, bool>& set_instructions,
+    std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
+  auto new_formula = std::make_unique<mef::Formula>(formula.type());
+  struct {
+    mef::Formula::EventArg operator()(mef::BasicEvent* arg) { return arg; }
+    mef::Formula::EventArg operator()(mef::HouseEvent* arg) {
+      if (auto it = ext::find(set_house, arg->id())) {
+        if (it->second == arg->state())
+          return arg;
+        auto clone = std::make_unique<mef::HouseEvent>(
+            arg->name(), "__clone__." + arg->id(),
+            mef::RoleSpecifier::kPrivate);
+        clone->state(it->second);
+        auto* ptr = clone.get();
+        event_register->emplace_back(std::move(clone));
+        return ptr;
+      }
+      return arg;
+    }
+    mef::Formula::EventArg operator()(mef::Gate* arg) {
+      if (set_house.empty())
+        return arg;
+      auto clone = std::make_unique<mef::Gate>(
+          arg->name(), "__clone__." + arg->id(), mef::RoleSpecifier::kPrivate);
+      clone->formula(Clone(arg->formula(), set_house, event_register));
+      auto* ptr = clone.get();
+      event_register->emplace_back(std::move(clone));
+      return ptr;
+    }
+
+    const std::unordered_map<std::string, bool>& set_house;
+    std::vector<std::unique_ptr<mef::Event>>* event_register;
+  } cloner{set_instructions, clones};
+
+  for (const mef::Formula::EventArg& arg : formula.event_args())
+    new_formula->AddArgument(boost::apply_visitor(cloner, arg));
+  for (const mef::FormulaPtr& arg : formula.formula_args())
+    new_formula->AddArgument(Clone(*arg, set_instructions, clones));
+  return new_formula;
+}
+
 }  // namespace
+
+EventTreeAnalysis::PathCollector::PathCollector(const PathCollector& other)
+    : expressions(other.expressions),
+      set_instructions(other.set_instructions) {
+  for (const mef::FormulaPtr& formula : other.formulas)
+    formulas.push_back(core::Clone(*formula));
+}
 
 void EventTreeAnalysis::Analyze() noexcept {
   assert(initiating_event_.event_tree());
@@ -51,11 +110,11 @@ void EventTreeAnalysis::Analyze() noexcept {
     std::vector<mef::Expression*> arg_expressions;
     for (PathCollector& path_collector : sequence.second) {
       if (path_collector.formulas.size() == 1) {
-        gate_formulas.push_back(core::Clone(*path_collector.formulas.front()));
+        gate_formulas.push_back(std::move(path_collector.formulas.front()));
       } else if (path_collector.formulas.size() > 1) {
         auto and_formula = std::make_unique<mef::Formula>(mef::kAnd);
-        for (const mef::Formula* arg_formula : path_collector.formulas)
-          and_formula->AddArgument(core::Clone(*arg_formula));
+        for (mef::FormulaPtr& arg_formula : path_collector.formulas)
+          and_formula->AddArgument(std::move(arg_formula));
         gate_formulas.push_back(std::move(and_formula));
       }
       if (path_collector.expressions.size() == 1) {
@@ -87,7 +146,7 @@ void EventTreeAnalysis::Analyze() noexcept {
       }
       gate->formula(std::make_unique<mef::Formula>(mef::kNull));
       gate->formula().AddArgument(event.get());
-      basic_events_.push_back(std::move(event));
+      events_.push_back(std::move(event));
     } else {
       gate->formula(std::make_unique<mef::Formula>(mef::kNull));
       gate->formula().AddArgument(&mef::HouseEvent::kTrue);
@@ -104,8 +163,10 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
      public:
       explicit Visitor(Collector* collector) : collector_(*collector) {}
 
-      /// @todo
-      void Visit(const mef::SetHouseEvent*) override {}
+      void Visit(const mef::SetHouseEvent* house_event) override {
+        collector_.path_collector_.set_instructions[house_event->name()] =
+            house_event->state();
+      }
 
       void Visit(const mef::Link* link) override {
         is_linked_ = true;
@@ -115,7 +176,9 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
 
       void Visit(const mef::CollectFormula* collect_formula) override {
         collector_.path_collector_.formulas.push_back(
-            &collect_formula->formula());
+            core::Clone(collect_formula->formula(),
+                        collector_.path_collector_.set_instructions,
+                        collector_.clones_));
       }
 
       void Visit(const mef::CollectExpression* collect_expression) override {
@@ -152,9 +215,10 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
     }
 
     SequenceCollector* result_;
+    std::vector<std::unique_ptr<mef::Event>>* clones_;
     PathCollector path_collector_;
   };
-  Collector{result}(&initial_state);  // NOLINT(whitespace/braces)
+  Collector{result, &events_}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
 }  // namespace core
