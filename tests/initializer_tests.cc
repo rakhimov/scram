@@ -187,7 +187,6 @@ TEST(InitializerTest, CorrectFtaInputs) {
   }
 }
 
-
 TEST(InitializerTest, CorrectInclude) {
   std::string dir = "./share/scram/input/";
   const char* correct_inputs[] = {"xinclude.xml", "xinclude_transitive.xml"};

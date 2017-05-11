@@ -22,17 +22,31 @@
 #define SCRAM_SRC_EXPRESSION_TEST_EVENT_H_
 
 #include <string>
+#include <unordered_map>
 
 #include "src/expression.h"
 
 namespace scram {
 namespace mef {
 
+/// The context for test-event expressions.
+struct Context {
+  std::string initiating_event;  ///< The name of the initiating event.
+  /// The functional event names and states.
+  std::unordered_map<std::string, std::string> functional_events;
+};
+
 /// The abstract base class for non-deviate test-event expressions.
 class TestEvent : public Expression {
  public:
+  /// @param[in] context  The event-tree walk context.
+  explicit TestEvent(const Context* context) : context_(*context) {}
+
   Interval interval() noexcept override { return Interval::closed(0, 1); }
   bool IsDeviate() noexcept override { return false; }
+
+ protected:
+  const Context& context_;  ///< The evaluation context.
 
  private:
   double DoSample() noexcept override { return false; }
@@ -41,11 +55,13 @@ class TestEvent : public Expression {
 /// Upon event-tree walk, tests whether an initiating event has occurred.
 class TestInitiatingEvent : public TestEvent {
  public:
+  /// @copydoc TestEvent::TestEvent
   /// @param[in] name  The public element name of the initiating event to test.
-  explicit TestInitiatingEvent(std::string name) : name_(std::move(name)) {}
+  TestInitiatingEvent(std::string name, const Context* context)
+      : TestEvent(context), name_(std::move(name)) {}
 
   /// @returns true if the initiating event has occurred in the event-tree walk.
-  double value() noexcept override { return false; }
+  double value() noexcept override;
 
  private:
   std::string name_;  ///< The name of the initiating event.
@@ -54,13 +70,15 @@ class TestInitiatingEvent : public TestEvent {
 /// Upon event-tree walk, tests whether a functional event has occurred.
 class TestFunctionalEvent : public TestEvent {
  public:
+  /// @copydoc TestEvent::TestEvent
   /// @param[in] name  The public element name of the functional event to test.
   /// @param[in] state  One of the valid states of the functional event.
-  TestFunctionalEvent(std::string name, std::string state)
-      : name_(std::move(name)), state_(std::move(state)) {}
+  TestFunctionalEvent(std::string name, std::string state,
+                      const Context* context)
+      : TestEvent(context), name_(std::move(name)), state_(std::move(state)) {}
 
   /// @returns true if the functional event has occurred and is in given state.
-  double value() noexcept override { return false; }
+  double value() noexcept override;
 
  private:
   std::string name_;  ///< The name of the functional event.

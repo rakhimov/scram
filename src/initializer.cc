@@ -1079,12 +1079,12 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
 
   if (expr_type == "test-initiating-event") {
     return register_expression(std::make_unique<TestInitiatingEvent>(
-        GetAttributeValue(expr_element, "name")));
+        GetAttributeValue(expr_element, "name"), model_->context()));
   }
   if (expr_type == "test-functional-event") {
     return register_expression(std::make_unique<TestFunctionalEvent>(
         GetAttributeValue(expr_element, "name"),
-        GetAttributeValue(expr_element, "state")));
+        GetAttributeValue(expr_element, "state"), model_->context()));
   }
 
   if (auto* expression = GetParameter(expr_type, expr_element, base_path))

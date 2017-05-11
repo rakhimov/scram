@@ -26,8 +26,11 @@ namespace scram {
 namespace core {
 
 EventTreeAnalysis::EventTreeAnalysis(
-    const mef::InitiatingEvent& initiating_event, const Settings& settings)
-    : Analysis(settings), initiating_event_(initiating_event) {}
+    const mef::InitiatingEvent& initiating_event, const Settings& settings,
+    mef::Context* context)
+    : Analysis(settings),
+      initiating_event_(initiating_event),
+      context_(context) {}
 
 namespace {  // The model cloning functions.
 
@@ -102,7 +105,7 @@ EventTreeAnalysis::PathCollector::PathCollector(const PathCollector& other)
 
 void EventTreeAnalysis::Analyze() noexcept {
   assert(initiating_event_.event_tree());
-  SequenceCollector collector{initiating_event_};
+  SequenceCollector collector{initiating_event_, *context_};
   CollectSequences(initiating_event_.event_tree()->initial_state(), &collector);
   for (auto& sequence : collector.sequences) {
     auto gate = std::make_unique<mef::Gate>("__" + sequence.first->name());
@@ -171,7 +174,9 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
       void Visit(const mef::Link* link) override {
         is_linked_ = true;
         Collector continue_connector(collector_);
+        auto save = std::move(collector_.result_->context.functional_events);
         continue_connector(&link->event_tree().initial_state());
+        collector_.result_->context.functional_events = std::move(save);
       }
 
       void Visit(const mef::CollectFormula* collect_formula) override {
@@ -202,8 +207,15 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
     }
 
     void operator()(const mef::Fork* fork) const {
-      for (const mef::Path& fork_path : fork->paths())
+      const std::string& name = fork->functional_event().name();
+      assert(result_->context.functional_events.count(name) == false);
+      std::string& state = result_->context.functional_events[name];
+      assert(state.empty());
+      for (const mef::Path& fork_path : fork->paths()) {
+        state = fork_path.state();
         Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
+      }
+      result_->context.functional_events.erase(name);
     }
 
     void operator()(const mef::Branch* branch) {
@@ -218,6 +230,8 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
     std::vector<std::unique_ptr<mef::Event>>* clones_;
     PathCollector path_collector_;
   };
+  context_->functional_events.clear();
+  context_->initiating_event = initiating_event_.name();
   Collector{result, &events_}(&initial_state);  // NOLINT(whitespace/braces)
 }
 

@@ -47,7 +47,8 @@ void RiskAnalysis::Analyze() noexcept {
     if (initiating_event->event_tree()) {
       LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
       auto eta = std::make_unique<EventTreeAnalysis>(*initiating_event,
-                                                     Analysis::settings());
+                                                     Analysis::settings(),
+                                                     model_->context());
       eta->Analyze();
       for (EventTreeAnalysis::Result& result : eta->sequences()) {
         const mef::Sequence& sequence = result.sequence;

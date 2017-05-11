@@ -29,6 +29,7 @@
 #include "event.h"
 #include "event_tree.h"
 #include "expression.h"
+#include "expression/test_event.h"
 #include "settings.h"
 
 namespace scram {
@@ -47,10 +48,11 @@ class EventTreeAnalysis : public Analysis {
 
   /// @param[in] initiating_event  The unique initiating event.
   /// @param[in] settings  The analysis settings.
+  /// @param[in] context  The context to communicate with test-events.
   ///
   /// @pre The initiating event has its event tree.
   EventTreeAnalysis(const mef::InitiatingEvent& initiating_event,
-                    const Settings& settings);
+                    const Settings& settings, mef::Context* context);
 
   /// Analyzes an event tree given the initiating event.
   void Analyze() noexcept;
@@ -79,6 +81,7 @@ class EventTreeAnalysis : public Analysis {
   /// Walks the event tree paths and collects sequences.
   struct SequenceCollector {
     const mef::InitiatingEvent& initiating_event;  ///< The analysis initiator.
+    mef::Context& context;  ///< The collection context.
     /// Sequences with collected paths.
     std::unordered_map<const mef::Sequence*, std::vector<PathCollector>>
         sequences;
@@ -98,6 +101,7 @@ class EventTreeAnalysis : public Analysis {
   /// Newly created expressions.
   std::vector<std::unique_ptr<mef::Expression>> expressions_;
   std::vector<std::unique_ptr<mef::Event>> events_;  ///< Newly created events.
+  mef::Context* context_;  ///< The communication channel with test-events.
 };
 
 }  // namespace core
