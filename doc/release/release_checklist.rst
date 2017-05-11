@@ -76,9 +76,11 @@ Release
 - [ ] Publish the release notes on the scram-announce mailing list
 
 
-Distribution
-============
+Distributions
+=============
 
-- [ ] Update Alioth/PPA (Debian/Ubuntu)
-- [ ] Installation package (NSIS/Windows)
-- [ ] Homebrew
+- [ ] Alioth/Debian
+- [ ] PPA/Ubuntu
+- [ ] rpms/Fedora
+- [ ] Mingw-w64/NSIS/Windows
+- [ ] Homebrew/macOS

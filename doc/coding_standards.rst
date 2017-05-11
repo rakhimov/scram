@@ -149,8 +149,8 @@ Core C++ Code
   are pointers (raw or smart),
   they are never null pointers
   unless explicitly specified.
-  Null pointer based logic must be
-  rare, localized, and explicit.
+  Null-based logic must be
+  rare, localized, and explicit (consider using ``boost::optional`` instead).
 
 - Consider supplying a typedef or alias declaration
   for common smart pointers.
