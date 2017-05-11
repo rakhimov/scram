@@ -55,6 +55,25 @@ class Visitable : public Instruction {
   void Accept(InstructionVisitor* visitor) const final;
 };
 
+/// The operation to change house-events.
+class SetHouseEvent : public Visitable<SetHouseEvent> {
+ public:
+  /// @param[in] name  Non-empty public house-event name.
+  /// @param[in] state  The new state for the given house-event.
+  SetHouseEvent(std::string name, bool state)
+      : name_(std::move(name)), state_(state) {}
+
+  /// @returns The name of the house-event to apply this instruction.
+  const std::string& name() const { return name_; }
+
+  /// @returns The state of the target house-event to be changed into.
+  bool state() const { return state_; }
+
+ private:
+  std::string name_;  ///< The public name of the house event.
+  bool state_;  ///< The state for the house event.
+};
+
 /// The operation of collecting expressions for event tree sequences.
 class CollectExpression : public Visitable<CollectExpression> {
  public:
@@ -174,6 +193,7 @@ class InstructionVisitor {
 
   /// A set of required visitation functions for concrete visitors to implement.
   /// @{
+  virtual void Visit(const SetHouseEvent*) = 0;
   virtual void Visit(const CollectExpression*) = 0;
   virtual void Visit(const CollectFormula*) = 0;
   virtual void Visit(const Link*) = 0;
@@ -198,6 +218,7 @@ class InstructionVisitor {
 /// Visits only instructions and ignores non-instructions.
 class NullVisitor : public InstructionVisitor {
  public:
+  void Visit(const SetHouseEvent*) override {}
   void Visit(const CollectExpression*) override {}
   void Visit(const CollectFormula*) override {}
   void Visit(const Link*) override {}

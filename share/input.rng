@@ -225,11 +225,36 @@
 
   <define name="instruction">
     <choice>
+      <ref name="set"/>
       <ref name="collect"/>
       <ref name="if-then-else"/>
       <ref name="block"/>
       <ref name="rule"/>
       <ref name="link"/>
+    </choice>
+  </define>
+
+  <define name="set">
+    <choice>
+      <ref name="set-house-event"/>
+    </choice>
+  </define>
+
+  <define name="set-house-event">
+    <element name="set-house-event">
+      <ref name="name"/>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="Boolean-constant"/>
+    </element>
+  </define>
+
+  <define name="direction">
+    <choice>
+      <value>forward</value>
     </choice>
   </define>
 

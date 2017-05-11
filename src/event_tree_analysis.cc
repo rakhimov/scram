@@ -104,6 +104,9 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
      public:
       explicit Visitor(Collector* collector) : collector_(*collector) {}
 
+      /// @todo
+      void Visit(const mef::SetHouseEvent*) override {}
+
       void Visit(const mef::Link* link) override {
         is_linked_ = true;
         Collector continue_connector(collector_);

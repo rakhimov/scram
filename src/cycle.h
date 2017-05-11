@@ -193,6 +193,7 @@ inline bool ContinueConnector(const Instruction* connector,
     struct ArgSelector : public InstructionVisitor {
       explicit ArgSelector(Visitor* visitor) : visitor_(visitor) {}
 
+      void Visit(const SetHouseEvent*) override {}
       void Visit(const CollectExpression*) override {}
       void Visit(const CollectFormula*) override {}
       void Visit(const Link*) override {}
@@ -214,6 +215,7 @@ inline bool ContinueConnector(const Instruction* connector,
     explicit Visitor(std::vector<Rule*>* t_cycle)
         : cycle_(t_cycle), selector_(this) {}
 
+    void Visit(const SetHouseEvent*) override {}
     void Visit(const CollectExpression*) override {}
     void Visit(const CollectFormula*) override {}
     void Visit(const Link*) override {}

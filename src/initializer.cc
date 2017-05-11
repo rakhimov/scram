@@ -799,6 +799,20 @@ Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
         std::make_unique<Block>(std::move(instructions)));
   }
 
+  if (node_name == "set-house-event") {
+    std::string name = GetAttributeValue(xml_element, "name");
+    if (!model_->house_events().count(name)) {
+      throw ValidationError(GetLine(xml_element) + "House event " + name +
+                            " is not defined in the model.");
+    }
+    assert(args.size() == 1);
+    std::string val = GetAttributeValue(XmlElement(args.front()), "value");
+    assert(val == "true" || val == "false");
+    bool state = val == "true";
+    return register_instruction(
+        std::make_unique<SetHouseEvent>(std::move(name), state));
+  }
+
   assert(false && "Unknown instruction type.");
 }
 

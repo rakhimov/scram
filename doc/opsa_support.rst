@@ -60,6 +60,8 @@ to identify the supported and unsupported features.
     * Functional events
     * Branches
     * Instructions (collect-expression, collect-formula, if-then-else, block, rule, link)
+    * Set-instructions (set-house-event)
+    * Set-instruction directions (forward)
 
 - Fault Tree Layer
 
