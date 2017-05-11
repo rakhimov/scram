@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+
+<!-- This event-tree is meant to test the set-house-event instruction. -->
+<!-- Other than that, this event-tree is not meaningful. -->
+
+<opsa-mef>
+  <define-initiating-event name="ExternalEvent" event-tree="ThreeMotor"/>
+  <define-rule name="root">
+    <collect-formula>
+      <gate name="E1"/>
+    </collect-formula>
+  </define-rule>
+  <define-event-tree name="ThreeMotor">
+    <define-functional-event name="KT1"/>
+    <define-functional-event name="KT2"/>
+    <define-functional-event name="KT3"/>
+    <define-sequence name="S1">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S2">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S3">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S4">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S5">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S6">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S7">
+      <rule name="root"/>
+    </define-sequence>
+    <define-sequence name="S8">
+      <rule name="root"/>
+    </define-sequence>
+    <initial-state>
+      <set-house-event name="KT1">
+        <constant value="false"/>
+      </set-house-event>
+      <set-house-event name="KT2">
+        <constant value="false"/>
+      </set-house-event>
+      <set-house-event name="KT3">
+        <constant value="false"/>
+      </set-house-event>
+      <fork functional-event="KT1">
+        <path state="true">
+          <set-house-event name="KT1">
+            <constant value="true"/>
+          </set-house-event>
+          <fork functional-event="KT2">
+            <path state="true">
+              <set-house-event name="KT2">
+                <constant value="true"/>
+              </set-house-event>
+              <fork functional-event="KT3">
+                <path state="true">
+                  <set-house-event name="KT3">
+                    <constant value="true"/>
+                  </set-house-event>
+                  <sequence name="S1"/>
+                </path>
+                <path state="false">
+                  <sequence name="S2"/>
+                </path>
+              </fork>
+            </path>
+            <path state="false">
+              <fork functional-event="KT3">
+                <path state="true">
+                  <set-house-event name="KT3">
+                    <constant value="true"/>
+                  </set-house-event>
+                  <sequence name="S3"/>
+                </path>
+                <path state="false">
+                  <sequence name="S4"/>
+                </path>
+              </fork>
+            </path>
+          </fork>
+        </path>
+        <path state="false">
+          <fork functional-event="KT2">
+            <path state="true">
+              <set-house-event name="KT2">
+                <constant value="true"/>
+              </set-house-event>
+              <fork functional-event="KT3">
+                <path state="true">
+                  <set-house-event name="KT3">
+                    <constant value="true"/>
+                  </set-house-event>
+                  <sequence name="S5"/>
+                </path>
+                <path state="false">
+                  <sequence name="S6"/>
+                </path>
+              </fork>
+            </path>
+            <path state="false">
+              <fork functional-event="KT3">
+                <path state="true">
+                  <set-house-event name="KT3">
+                    <constant value="true"/>
+                  </set-house-event>
+                  <sequence name="S7"/>
+                </path>
+                <path state="false">
+                  <sequence name="S8"/>
+                </path>
+              </fork>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

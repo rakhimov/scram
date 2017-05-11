@@ -75,6 +75,25 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
   EXPECT_EQ(mcs, products());
 }
 
+// All permutations of house events.
+TEST_F(RiskAnalysisTest, ThreeMotorEventTree) {
+  std::string dir = "./share/scram/input/ThreeMotor/";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(
+      ProcessInputFiles({dir + "three_motor.xml", dir + "event_tree.xml"}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  std::map<std::string, double> expected = {
+      {"S1", 0.02115}, {"S2", 0.00272}, {"S3", 0.00309}, {"S4", 0.00272},
+      {"S5", 0.00272}, {"S6", 0.00272}, {"S7", 0.00272},  {"S8", 0.00272}};
+  const auto& results = sequences();
+  ASSERT_EQ(8, results.size());
+  for (const auto& result : expected) {
+    ASSERT_TRUE(results.count(result.first)) << result.first;
+    EXPECT_NEAR(result.second, results.at(result.first), 1e-5) << result.first;
+  }
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram
