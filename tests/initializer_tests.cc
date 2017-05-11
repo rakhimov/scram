@@ -93,7 +93,9 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "block_instruction.xml",
                                   "rule_instruction.xml",
                                   "link_instruction.xml",
-                                  "link_in_rule.xml"};
+                                  "link_in_rule.xml",
+                                  "test_initiating_event.xml",
+                                  "test_functional_event.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;

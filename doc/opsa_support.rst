@@ -83,6 +83,7 @@ to identify the supported and unsupported features.
     * Conditional operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
     * Built-in expressions (exponential, GLM, Weibull, periodic-test)
+    * Test event (test-initiating-event, test-functional-event)
 
 
 Deviations from the Open-PSA MEF

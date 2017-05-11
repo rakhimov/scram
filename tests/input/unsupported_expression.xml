@@ -5,7 +5,7 @@ This input uses unsupported but valid expression.
 <opsa-mef>
   <model-data>
     <define-parameter name="Unsupported">
-      <test-initiating-event name="Init"/>
+      <extern-function name="Init"/>
     </define-parameter>
   </model-data>
 </opsa-mef>

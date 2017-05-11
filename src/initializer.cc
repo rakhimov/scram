@@ -34,6 +34,7 @@
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
+#include "expression/test_event.h"
 #include "ext/find_iterator.h"
 #include "logger.h"
 #include "xml.h"
@@ -1075,6 +1076,16 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
   }
   if (expr_type == "pi")
     return &ConstantExpression::kPi;
+
+  if (expr_type == "test-initiating-event") {
+    return register_expression(std::make_unique<TestInitiatingEvent>(
+        GetAttributeValue(expr_element, "name")));
+  }
+  if (expr_type == "test-functional-event") {
+    return register_expression(std::make_unique<TestFunctionalEvent>(
+        GetAttributeValue(expr_element, "name"),
+        GetAttributeValue(expr_element, "state")));
+  }
 
   if (auto* expression = GetParameter(expr_type, expr_element, base_path))
     return expression;
