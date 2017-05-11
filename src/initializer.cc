@@ -1184,6 +1184,19 @@ void Initializer::ValidateInitialization() {
   // The cycles in links are checked only after ensuring their valid locations.
   cycle::CheckCycle<Link>(links_, "event-tree link");
 
+  // Event-tree instruction homogeneity checks only after cycle checks.
+  for (const EventTreePtr& event_tree : model_->event_trees()) {
+    try {
+      for (const NamedBranchPtr& branch : event_tree->branches()) {
+        EnsureHomogeneousEventTree(*branch);  // No mixed instructions.
+      }
+      EnsureHomogeneousEventTree(event_tree->initial_state());
+    } catch (ValidationError& err) {
+      err.msg("In event tree " + event_tree->name() + ", " + err.msg());
+      throw;
+    }
+  }
+
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -1249,7 +1262,7 @@ void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
     }
   };
 
-  struct CheckLink {
+  struct {
     void operator()(Sequence*) {}
     void operator()(const NamedBranch*) {}
 
@@ -1267,6 +1280,59 @@ void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
   } link_checker;
 
   link_checker(&branch);
+}
+
+void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
+  enum Type { kUnknown, kExpression, kFormula };
+
+  struct Visitor : public NullVisitor {
+    void Visit(const CollectExpression*) override {
+      switch (type) {
+        case kFormula:
+          throw ValidationError("Mixed collect-expression and collect-formula");
+        case kUnknown:
+          type = kExpression;
+        case kExpression:
+          break;
+      }
+    }
+
+    void Visit(const CollectFormula*) override {
+      switch (type) {
+        case kExpression:
+          throw ValidationError("Mixed collect-expression and collect-formula");
+        case kUnknown:
+          type = kFormula;
+        case kFormula:
+          break;
+      }
+    }
+
+    void Visit(const Link* link) override {
+      (*this)(&link->event_tree().initial_state());
+    }
+
+    void CheckInstructions(const std::vector<Instruction*>& instructions) {
+      for (const Instruction* instruction : instructions)
+        instruction->Accept(this);
+    }
+
+    void operator()(const Sequence* sequence) {
+      CheckInstructions(sequence->instructions());
+    }
+    void operator()(const Branch* arg_branch) {
+      CheckInstructions(arg_branch->instructions());
+      boost::apply_visitor(*this, arg_branch->target());
+    }
+    void operator()(const Fork* fork) {
+      for (const Path& fork_path : fork->paths())
+        (*this)(&fork_path);
+    }
+
+    Type type = kUnknown;
+  } homogeneous_checker;
+
+  homogeneous_checker(&branch);
 }
 
 void Initializer::ValidateExpressions() {

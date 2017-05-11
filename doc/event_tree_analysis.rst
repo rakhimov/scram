@@ -29,5 +29,9 @@ Event tree validation notes:
       In expressions evaluating a functional event state,
       the state must be one of possible states declared in functional event forks.
 
+    - The event-tree is exclusively defined by either formulas or expressions,
+      but no mix is allowed.
+
     - In general (fault-tree linking, event-tree linking),
-      there's no computationally cheap way to validate conditional independence of branches.
+      the validation of mutual-exclusivity, completeness (sum to 1), or conditional-independence
+      is not performed.

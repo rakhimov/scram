@@ -134,7 +134,10 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "invalid_link_instruction.xml",
       "invalid_link_in_branch.xml",
       "invalid_link_in_rule.xml",
-      "undefined_arg_collect_formula.xml"};
+      "undefined_arg_collect_formula.xml",
+      "mixing_collect_instructions.xml",
+      "mixing_collect_instructions_link.xml",
+      "mixing_collect_instructions_fork.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename: " << input;

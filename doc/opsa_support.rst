@@ -91,6 +91,7 @@ Deviations from the Open-PSA MEF
 - Recursive parameters are not allowed.
 - Recursive event-tree rules (instructions) are not allowed.
 - Recursive event-tree links (instructions) are not allowed.
+- Mixing collect-expression and collect-formula is not allowed.
 - An empty text in XML attributes or elements is considered an error.
 
 
