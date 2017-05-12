@@ -268,24 +268,27 @@ add_custom_target(uninstall
 if(PACKAGE)
   if(WIN32)
     set(CPACK_GENERATOR "NSIS")
-    # TODO: Find a way to programmatically detect shared libraries and add to installation.
     # The following configuration assumes MinGW64 is setup specifically for this project.
     get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
     message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
-    file(GLOB all_libs "${MINGW_DLL_DIR}/lib*.dll")
-    install(FILES
-      ${all_libs}
-      ${MINGW_DLL_DIR}/zlib1.dll
-      DESTINATION bin COMPONENT libraries
-    )
+    include(GetPrerequisites)
+    get_prerequisites("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram.exe"
+      SCRAM_ALL_PREREQUISITES 1 1 "" "")
+    message(STATUS "SCRAM dependency libs:\n${SCRAM_ALL_PREREQUISITES}")
+    foreach(item ${SCRAM_ALL_PREREQUISITES})
+      string(REGEX MATCH "scram" is_scram "${item}")
+      if(NOT is_scram)
+        gp_resolve_item("${MINGW_DLL_DIR}" "${item}" "" "" item)
+        list(APPEND SCRAM_PREREQUISITES ${item})
+      endif()
+    endforeach()
+    message(STATUS "SCRAM dependency libs resolution:\n${SCRAM_PREREQUISITES}")
 
-    # Qt Libraries
     install(FILES
-      ${MINGW_DLL_DIR}/Qt5Core.dll
-      ${MINGW_DLL_DIR}/Qt5Gui.dll
-      ${MINGW_DLL_DIR}/Qt5Widgets.dll
+      ${SCRAM_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
+    # TODO: Include GUI dependencies conditionally.
   endif()
 endif()
 
