@@ -482,6 +482,17 @@ TEST_P(RiskAnalysisTest, EmptyEventTree) {
   CheckReport(tree_input);
 }
 
+TEST_P(RiskAnalysisTest, SingleExpressionEventTree) {
+  std::string tree_input = "./share/scram/input/eta/single_expression.xml";
+  settings.probability_analysis(true).importance_analysis(true);
+  CheckReport(tree_input);
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  const auto& results = sequences();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ("S", results.begin()->first);
+  EXPECT_DOUBLE_EQ(0.5, results.begin()->second);
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

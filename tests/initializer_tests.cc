@@ -89,6 +89,7 @@ TEST(InitializerTest, CorrectEtaInputs) {
                                   "initiating_event.xml",
                                   "set_house_event.xml",
                                   "collect_formula.xml",
+                                  "single_expression.xml",
                                   "if_then_else_instruction.xml",
                                   "block_instruction.xml",
                                   "rule_instruction.xml",
