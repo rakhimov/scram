@@ -476,6 +476,12 @@ TEST_P(RiskAnalysisTest, OneProbability) {
   CheckReport(tree_input);
 }
 
+TEST_P(RiskAnalysisTest, EmptyEventTree) {
+  std::string tree_input = "./share/scram/input/eta/empty.xml";
+  settings.probability_analysis(true).importance_analysis(true);
+  CheckReport(tree_input);
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram
