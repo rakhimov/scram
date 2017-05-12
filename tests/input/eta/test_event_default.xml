@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="Test"/>
+  <define-event-tree name="Test">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <if>
+            <and>
+              <not>
+                <test-initiating-event name="FakeInit"/>
+              </not>
+              <not>
+                <test-functional-event name="F" state="phony"/>
+              </not>
+              <not>
+                <test-functional-event name="Extinct" state="phony"/>
+              </not>
+            </and>
+            <collect-formula>
+              <basic-event name="B"/>
+            </collect-formula>
+          </if>
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <model-data>
+    <define-basic-event name="B">
+      <float value="0.5"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

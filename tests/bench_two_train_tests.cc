@@ -43,6 +43,18 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
   EXPECT_EQ(mcs, products());
 }
 
+TEST_P(RiskAnalysisTest, TwoTrainUnityEventTree) {
+  std::string dir = "./share/scram/input/TwoTrain/";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(
+      ProcessInputFiles({dir + "two_train.xml", dir + "event_tree.xml"}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  const auto& results = sequences();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ((std::map<std::string, double>{{"S", 1}}), results);
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

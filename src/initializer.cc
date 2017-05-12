@@ -34,6 +34,7 @@
 #include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
+#include "expression/test_event.h"
 #include "ext/find_iterator.h"
 #include "logger.h"
 #include "xml.h"
@@ -799,6 +800,20 @@ Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
         std::make_unique<Block>(std::move(instructions)));
   }
 
+  if (node_name == "set-house-event") {
+    std::string name = GetAttributeValue(xml_element, "name");
+    if (!model_->house_events().count(name)) {
+      throw ValidationError(GetLine(xml_element) + "House event " + name +
+                            " is not defined in the model.");
+    }
+    assert(args.size() == 1);
+    std::string val = GetAttributeValue(XmlElement(args.front()), "value");
+    assert(val == "true" || val == "false");
+    bool state = val == "true";
+    return register_instruction(
+        std::make_unique<SetHouseEvent>(std::move(name), state));
+  }
+
   assert(false && "Unknown instruction type.");
 }
 
@@ -1062,6 +1077,16 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
   if (expr_type == "pi")
     return &ConstantExpression::kPi;
 
+  if (expr_type == "test-initiating-event") {
+    return register_expression(std::make_unique<TestInitiatingEvent>(
+        GetAttributeValue(expr_element, "name"), model_->context()));
+  }
+  if (expr_type == "test-functional-event") {
+    return register_expression(std::make_unique<TestFunctionalEvent>(
+        GetAttributeValue(expr_element, "name"),
+        GetAttributeValue(expr_element, "state"), model_->context()));
+  }
+
   if (auto* expression = GetParameter(expr_type, expr_element, base_path))
     return expression;
 
@@ -1184,6 +1209,19 @@ void Initializer::ValidateInitialization() {
   // The cycles in links are checked only after ensuring their valid locations.
   cycle::CheckCycle<Link>(links_, "event-tree link");
 
+  // Event-tree instruction homogeneity checks only after cycle checks.
+  for (const EventTreePtr& event_tree : model_->event_trees()) {
+    try {
+      for (const NamedBranchPtr& branch : event_tree->branches()) {
+        EnsureHomogeneousEventTree(*branch);  // No mixed instructions.
+      }
+      EnsureHomogeneousEventTree(event_tree->initial_state());
+    } catch (ValidationError& err) {
+      err.msg("In event tree " + event_tree->name() + ", " + err.msg());
+      throw;
+    }
+  }
+
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -1242,21 +1280,14 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
 }
 
 void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
-  struct Validator : public InstructionVisitor {
-    void Visit(const CollectFormula*) override {}
-    void Visit(const CollectExpression*) override {}
+  struct Validator : public NullVisitor {
     void Visit(const Link* link) override {
       throw ValidationError("Link " + link->event_tree().name() +
                             " can only be used in end-state sequences.");
     }
-    void Visit(const IfThenElse* ite) override {
-      ite->then_instruction()->Accept(this);
-      if (ite->else_instruction())
-        ite->else_instruction()->Accept(this);
-    }
   };
 
-  struct CheckLink {
+  struct {
     void operator()(Sequence*) {}
     void operator()(const NamedBranch*) {}
 
@@ -1274,6 +1305,59 @@ void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
   } link_checker;
 
   link_checker(&branch);
+}
+
+void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
+  enum Type { kUnknown, kExpression, kFormula };
+
+  struct Visitor : public NullVisitor {
+    void Visit(const CollectExpression*) override {
+      switch (type) {
+        case kFormula:
+          throw ValidationError("Mixed collect-expression and collect-formula");
+        case kUnknown:
+          type = kExpression;
+        case kExpression:
+          break;
+      }
+    }
+
+    void Visit(const CollectFormula*) override {
+      switch (type) {
+        case kExpression:
+          throw ValidationError("Mixed collect-expression and collect-formula");
+        case kUnknown:
+          type = kFormula;
+        case kFormula:
+          break;
+      }
+    }
+
+    void Visit(const Link* link) override {
+      (*this)(&link->event_tree().initial_state());
+    }
+
+    void CheckInstructions(const std::vector<Instruction*>& instructions) {
+      for (const Instruction* instruction : instructions)
+        instruction->Accept(this);
+    }
+
+    void operator()(const Sequence* sequence) {
+      CheckInstructions(sequence->instructions());
+    }
+    void operator()(const Branch* arg_branch) {
+      CheckInstructions(arg_branch->instructions());
+      boost::apply_visitor(*this, arg_branch->target());
+    }
+    void operator()(const Fork* fork) {
+      for (const Path& fork_path : fork->paths())
+        (*this)(&fork_path);
+    }
+
+    Type type = kUnknown;
+  } homogeneous_checker;
+
+  homogeneous_checker(&branch);
 }
 
 void Initializer::ValidateExpressions() {

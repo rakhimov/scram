@@ -20,3 +20,5 @@ Technical Issues
   The major contributing factors may be
   the template-heavy code
   and coupled physical layout of the project components.
+- Test coverage instruments fail to tally some inline functions and function templates
+  (gcc/gcov no-inline limitations).

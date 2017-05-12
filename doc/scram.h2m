@@ -4,7 +4,7 @@ SCRAM \- Command-line Risk Analysis Multi-tool
 [DESCRIPTION]
 .PP
 \fBSCRAM\fP is a probabilistic risk analysis (PRA) tool.
-It can perform static fault tree analysis,
+It can perform event tree analysis, static fault tree analysis,
 analysis with common cause failure models,
 probability calculations with importance analysis,
 and uncertainty analysis with Monte Carlo simulations.

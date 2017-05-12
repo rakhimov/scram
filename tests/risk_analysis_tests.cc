@@ -103,6 +103,16 @@ RiskAnalysisTest::product_probability() {
   return result_.product_probability;
 }
 
+std::map<std::string, double> RiskAnalysisTest::sequences() {
+  assert(analysis->event_tree_results().size() == 1);
+  std::map<std::string, double> results;
+  for (const core::EventTreeAnalysis::Result& result :
+       analysis->event_tree_results().front()->sequences()) {
+    results.emplace(result.sequence.name(), result.p_sequence);
+  }
+  return results;
+}
+
 std::set<std::string> RiskAnalysisTest::Convert(const Product& product) {
   std::set<std::string> string_set;
   for (const Literal& literal : product) {
@@ -404,23 +414,54 @@ TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
-  auto& results = analysis->event_tree_results().front()->sequences();
+  const auto& results = sequences();
   ASSERT_EQ(2, results.size());
-  EXPECT_NE(results.front().sequence.name(), results.back().sequence.name());
-  EXPECT_EQ((std::set<std::string>{"Success", "Failure"}),
-            (std::set<std::string>{results.front().sequence.name(),
-                                  results.back().sequence.name()}));
-  double p_success;
-  double p_fail;
-  std::tie(p_success, p_fail) = [&results]() -> std::pair<double, double> {
-    if (results.front().sequence.name() == "Success") {
-      return {results.front().p_sequence, results.back().p_sequence};
-    }
-    return {results.back().p_sequence, results.front().p_sequence};
-  }();
+  std::map<std::string, double> expected = {{"Success", 0.594},
+                                            {"Failure", 0.406}};
+  for (const auto& result : expected) {
+    ASSERT_TRUE(results.count(result.first)) << result.first;
+    EXPECT_DOUBLE_EQ(result.second, results.at(result.first)) << result.first;
+  }
+}
 
-  EXPECT_DOUBLE_EQ(0.594, p_success);
-  EXPECT_DOUBLE_EQ(0.406, p_fail);
+TEST_P(RiskAnalysisTest, AnalyzeTestEventDefault) {
+  const char* tree_input = "./share/scram/input/eta/test_event_default.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  const auto& results = sequences();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ("S", results.begin()->first);
+  EXPECT_DOUBLE_EQ(0.5, results.begin()->second);
+}
+
+TEST_P(RiskAnalysisTest, AnalyzeTestInitatingEvent) {
+  const char* tree_input = "./share/scram/input/eta/test_initiating_event.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  const auto& results = sequences();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ("S", results.begin()->first);
+  EXPECT_DOUBLE_EQ(0.5, results.begin()->second);
+}
+
+TEST_P(RiskAnalysisTest, AnalyzeTestFunctionalEvent) {
+  const char* tree_input[] = {
+      "./share/scram/input/eta/test_functional_event.xml",
+      "./share/scram/input/eta/test_functional_event_link.xml"};
+  settings.probability_analysis(true);
+  for (auto input : tree_input) {
+    ASSERT_NO_THROW(ProcessInputFiles({input}));
+    ASSERT_NO_THROW(analysis->Analyze()) << input;
+    EXPECT_EQ(1, analysis->event_tree_results().size()) << input;
+    const auto& results = sequences();
+    ASSERT_EQ(1, results.size()) << input;
+    EXPECT_EQ("S", results.begin()->first) << input;
+    EXPECT_DOUBLE_EQ(0.5, results.begin()->second) << input;
+  }
 }
 
 // Test Reporting capabilities
@@ -484,6 +525,7 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
 // Reporting event tree analysis with an initiating event.
 TEST_F(RiskAnalysisTest, ReportInitiatingEventAnalysis) {
   const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
+  settings.probability_analysis(true);
   CheckReport(tree_input);
 }
 

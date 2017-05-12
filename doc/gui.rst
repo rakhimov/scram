@@ -71,11 +71,11 @@ Design Assumptions
   the system can be described by an interrelated/interconnected collection of components.
 
 - A monolithic description of a component with a large number of elements (e.g. 100 or more)
-  is practically useless for human consumption, unmaintainable,
+  is practically incomprehensible for human consumption, unmaintainable,
   and error-prone, hiding the modeling errors.
 
 - A myriad (10 or more) of failure scenarios describing the model
-  is practically incomprehensible and useless for the analyst.
+  is practically incomprehensible for the analyst.
 
 - Qualitative and quantitative metrics (e.g. total probability, # of scenarios, etc.)
   together with data analysis and visualization help the analyst

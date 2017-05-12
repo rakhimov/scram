@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="Trigger" event-tree="InstructionMix"/>
+  <define-event-tree name="InstructionMix">
+    <define-functional-event name="F"/>
+    <define-functional-event name="G"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <collect-formula>
+            <basic-event name="B"/>
+          </collect-formula>
+          <fork functional-event="G">
+            <path state="on">
+              <collect-expression>
+                <float value="0.1"/>
+              </collect-expression>
+              <sequence name="S"/>
+            </path>
+          </fork>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <model-data>
+    <define-basic-event name="B">
+      <float value="0.5"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

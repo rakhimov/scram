@@ -193,6 +193,7 @@ inline bool ContinueConnector(const Instruction* connector,
     struct ArgSelector : public InstructionVisitor {
       explicit ArgSelector(Visitor* visitor) : visitor_(visitor) {}
 
+      void Visit(const SetHouseEvent*) override {}
       void Visit(const CollectExpression*) override {}
       void Visit(const CollectFormula*) override {}
       void Visit(const Link*) override {}
@@ -204,7 +205,8 @@ inline bool ContinueConnector(const Instruction* connector,
       }
       void Visit(const Rule* rule) override {
         // Non-const rules are only needed to mark the nodes.
-        DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_);
+        if (DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_))
+          throw true;
       }
 
       Visitor* visitor_;
@@ -213,34 +215,34 @@ inline bool ContinueConnector(const Instruction* connector,
     explicit Visitor(std::vector<Rule*>* t_cycle)
         : cycle_(t_cycle), selector_(this) {}
 
+    void Visit(const SetHouseEvent*) override {}
     void Visit(const CollectExpression*) override {}
     void Visit(const CollectFormula*) override {}
     void Visit(const Link*) override {}
     void Visit(const IfThenElse* ite) override {
       ite->then_instruction()->Accept(&selector_);
-      if (cycle_->empty() && ite->else_instruction())
+      if (ite->else_instruction())
         ite->else_instruction()->Accept(&selector_);
     }
     void Visit(const Block* block) override {
-      for (const Instruction* instruction : block->instructions()) {
+      for (const Instruction* instruction : block->instructions())
         instruction->Accept(&selector_);
-        if (!cycle_->empty())
-          return;
-      }
     }
     void Visit(const Rule* rule) override {
-      for (const Instruction* instruction : rule->instructions()) {
+      for (const Instruction* instruction : rule->instructions())
         instruction->Accept(&selector_);
-        if (!cycle_->empty())
-          return;
-      }
     }
     std::vector<Rule*>* cycle_;
     ArgSelector selector_;
   } visitor(cycle);
 
-  connector->Accept(&visitor);
-  return !cycle->empty();
+  try {
+    connector->Accept(&visitor);
+  } catch (bool& ret_val) {
+    assert(ret_val && !cycle->empty());
+    return true;
+  }
+  return false;
 }
 
 /// Cycle detection specialization for visitor-based traversal of event-trees.
@@ -248,66 +250,39 @@ template <>
 inline bool ContinueConnector(const EventTree* connector,
                               std::vector<Link*>* cycle) {
   struct {
-    bool operator()(const Branch* branch) {
-      return boost::apply_visitor(*this, branch->target());
+    void operator()(const Branch* branch) {
+      boost::apply_visitor(*this, branch->target());
     }
-
-    bool operator()(Fork* fork) {
-      for (Branch& branch : fork->paths()) {
-        if ((*this)(&branch))
-          return true;
-      }
-      return false;
+    void operator()(Fork* fork) {
+      for (Branch& branch : fork->paths())
+        (*this)(&branch);
     }
-
-    bool operator()(Sequence* sequence) {
-      struct Visitor : public InstructionVisitor {
+    void operator()(Sequence* sequence) {
+      struct Visitor : public NullVisitor {
         explicit Visitor(decltype(cycle) t_cycle) : visitor_cycle_(t_cycle) {}
 
-        void Visit(const CollectFormula*) override {}
-        void Visit(const CollectExpression*) override {}
-
         void Visit(const Link* link) override {
-          DetectCycle(const_cast<Link*>(link), visitor_cycle_);
-        }
-
-        void Visit(const IfThenElse* ite) override {
-          ite->then_instruction()->Accept(this);
-          if (visitor_cycle_->empty() && ite->else_instruction())
-            ite->else_instruction()->Accept(this);
-        }
-
-        void Visit(const Block* block) override {
-          for (const Instruction* instruction : block->instructions()) {
-            instruction->Accept(this);
-            if (!visitor_cycle_->empty())
-              return;
-          }
-        }
-
-        void Visit(const Rule* rule) override {
-          for (const Instruction* instruction : rule->instructions()) {
-            instruction->Accept(this);
-            if (!visitor_cycle_->empty())
-              return;
-          }
+          if (DetectCycle(const_cast<Link*>(link), visitor_cycle_))
+            throw true;
         }
 
         decltype(cycle) visitor_cycle_;
       } visitor(cycle_);
 
-      for (const Instruction* instruction : sequence->instructions()) {
+      for (const Instruction* instruction : sequence->instructions())
         instruction->Accept(&visitor);
-        if (!cycle_->empty())
-          return true;
-      }
-      return false;
     }
 
     decltype(cycle) cycle_;
   } continue_connector{cycle};
 
-  return continue_connector(&connector->initial_state());
+  try {
+    continue_connector(&connector->initial_state());
+  } catch (bool& ret_val) {
+    assert(ret_val && !cycle->empty());
+    return true;
+  }
+  return false;
 }
 
 /// Retrieves a unique name for a node.

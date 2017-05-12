@@ -225,11 +225,36 @@
 
   <define name="instruction">
     <choice>
+      <ref name="set"/>
       <ref name="collect"/>
       <ref name="if-then-else"/>
       <ref name="block"/>
       <ref name="rule"/>
       <ref name="link"/>
+    </choice>
+  </define>
+
+  <define name="set">
+    <choice>
+      <ref name="set-house-event"/>
+    </choice>
+  </define>
+
+  <define name="set-house-event">
+    <element name="set-house-event">
+      <ref name="name"/>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="Boolean-constant"/>
+    </element>
+  </define>
+
+  <define name="direction">
+    <choice>
+      <value>forward</value>
     </choice>
   </define>
 
@@ -670,6 +695,7 @@
       <ref name="operation"/>
       <ref name="built-in"/>
       <ref name="random-deviate"/>
+      <ref name="test-event"/>
     </choice>
   </define>
 
@@ -726,6 +752,13 @@
       <ref name="gamma-deviate"/>
       <ref name="beta-deviate"/>
       <ref name="histogram"/>
+    </choice>
+  </define>
+
+  <define name="test-event">
+    <choice>
+      <ref name="test-initiating-event"/>
+      <ref name="test-functional-event"/>
     </choice>
   </define>
 
@@ -1040,5 +1073,18 @@
     <!-- *********************************************************** -->
     <!-- V.2.8. Test-Events -->
     <!-- *********************************************************** -->
+
+    <define name="test-initiating-event">
+      <element name="test-initiating-event">
+        <ref name="name"/>
+      </element>
+    </define>
+
+    <define name="test-functional-event">
+      <element name="test-functional-event">
+        <ref name="name"/>
+        <attribute name="state"> <ref name="NonEmptyString"/> </attribute>
+      </element>
+    </define>
 
 </grammar>

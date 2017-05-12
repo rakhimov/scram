@@ -233,16 +233,10 @@ Fault tree generator flags to get the model.
 -b 300000 -a 3 --common-g 0.1 --common-b 0.1
 --------------------------------------------
 
-Debug build:
-~~~~~~~~~~~~
-
-- Initialization and Validation    28
-
-
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    16
+- Initialization and Validation    16 | 17.5
 
 - Memory:   1000
 

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="single"/>
+  <define-event-tree name="single">
+    <define-sequence name="S"/>
+    <initial-state>
+      <collect-expression>
+        <float value="0.5"/>
+      </collect-expression>
+      <sequence name="S"/>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

@@ -23,17 +23,32 @@ namespace scram {
 namespace core {
 namespace test {
 
-TEST_P(RiskAnalysisTest, AttackEventTree) {
-  const char* tree_input = "./share/scram/input/EventTrees/attack.xml";
+TEST_F(RiskAnalysisTest, GasLeakReactive) {
+  const char* tree_input =
+      "./share/scram/input/EventTrees/gas_leak/gas_leak_reactive.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
+  std::map<std::string, double> expected = {
+      {"S1", 0.81044}, {"S2", 0.04479}, {"S3", 0.04265}, {"S4", 2.36e-3},
+      {"S5", 0.04265}, {"S6", 2.36e-3}, {"S7", 4.5e-3},  {"S8", 0.05025}};
   const auto& results = sequences();
-  ASSERT_EQ(2, results.size());
-  EXPECT_EQ((std::map<std::string, double>{{"AttackSucceeds", 0.772},
-                                           {"AttackFails", 0.228}}),
-            results);
+  ASSERT_EQ(8, results.size());
+  for (const auto& result : expected) {
+    ASSERT_TRUE(results.count(result.first)) << result.first;
+    EXPECT_NEAR(result.second, results.at(result.first), 1e-5) << result.first;
+  }
+}
+
+/// @todo Expand
+TEST_F(RiskAnalysisTest, GasLeak) {
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(
+      {"./share/scram/input/EventTrees/gas_leak/gas_leak_reactive.xml",
+       "./share/scram/input/EventTrees/gas_leak/gas_leak.xml"}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(2, analysis->event_tree_results().size());
 }
 
 }  // namespace test

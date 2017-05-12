@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="simple"/>
+  <define-event-tree name="simple">
+    <define-functional-event name="F"/>
+    <define-functional-event name="T"/>
+    <define-sequence name="Success"/>
+    <define-sequence name="Failure"/>
+    <define-branch name="B">
+      <fork functional-event="T">
+        <path state="true">
+          <collect-formula>
+            <not><gate name="G2"/></not>
+          </collect-formula>
+          <sequence name="Success"/>
+        </path>
+        <path state="false">
+          <collect-formula>
+            <gate name="G2"/>
+          </collect-formula>
+          <sequence name="Failure"/>
+        </path>
+      </fork>
+    </define-branch>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="true">
+          <collect-formula>
+            <not>
+              <gate name="G1"/>
+            </not>
+          </collect-formula>
+          <branch name="B"/>
+        </path>
+        <path state="false">
+          <collect-formula>
+            <gate name="G1"/>
+          </collect-formula>
+          <branch name="B"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <define-fault-tree name="FaultTree">
+    <define-gate name="G1">
+      <not>
+        <event name="B"/>
+      </not>
+    </define-gate>
+    <define-gate name="G2">
+      <not>
+        <not>
+          <event name="B"/>
+        </not>
+      </not>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="B">
+      <float value="0.5"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

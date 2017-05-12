@@ -15,27 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
+/// @file test_event.cc
+/// Implementations of event occurrence tests.
 
-#include "risk_analysis_tests.h"
+#include "test_event.h"
+
+#include "src/ext/find_iterator.h"
 
 namespace scram {
-namespace core {
-namespace test {
+namespace mef {
 
-TEST_P(RiskAnalysisTest, AttackEventTree) {
-  const char* tree_input = "./share/scram/input/EventTrees/attack.xml";
-  settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(analysis->Analyze());
-  EXPECT_EQ(1, analysis->event_tree_results().size());
-  const auto& results = sequences();
-  ASSERT_EQ(2, results.size());
-  EXPECT_EQ((std::map<std::string, double>{{"AttackSucceeds", 0.772},
-                                           {"AttackFails", 0.228}}),
-            results);
+double TestInitiatingEvent::value() noexcept {
+  return context_.initiating_event == name_;
 }
 
-}  // namespace test
-}  // namespace core
+double TestFunctionalEvent::value() noexcept {
+  if (auto it = ext::find(context_.functional_events, name_))
+    return it->second == state_;
+  return false;
+}
+
+}  // namespace mef
 }  // namespace scram

@@ -87,12 +87,16 @@ TEST(InitializerTest, CorrectEtaInputs) {
   const char* correct_inputs[] = {"simplest_correct.xml",
                                   "public_sequence.xml",
                                   "initiating_event.xml",
+                                  "set_house_event.xml",
                                   "collect_formula.xml",
+                                  "single_expression.xml",
                                   "if_then_else_instruction.xml",
                                   "block_instruction.xml",
                                   "rule_instruction.xml",
                                   "link_instruction.xml",
-                                  "link_in_rule.xml"};
+                                  "link_in_rule.xml",
+                                  "test_initiating_event.xml",
+                                  "test_functional_event.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
         << " Filename: " << input;
@@ -114,6 +118,7 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "undefined_branch.xml",
       "undefined_functional_event.xml",
       "undefined_rule.xml",
+      "undefined_house_in_set_house.xml",
       "private_branch.xml",
       "private_functional_event.xml",
       "cyclic_branches_fork.xml",
@@ -134,7 +139,10 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "invalid_link_instruction.xml",
       "invalid_link_in_branch.xml",
       "invalid_link_in_rule.xml",
-      "undefined_arg_collect_formula.xml"};
+      "undefined_arg_collect_formula.xml",
+      "mixing_collect_instructions.xml",
+      "mixing_collect_instructions_link.xml",
+      "mixing_collect_instructions_fork.xml"};
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
         << " Filename: " << input;
@@ -179,7 +187,6 @@ TEST(InitializerTest, CorrectFtaInputs) {
         << " Filename: " << input;
   }
 }
-
 
 TEST(InitializerTest, CorrectInclude) {
   std::string dir = "./share/scram/input/";

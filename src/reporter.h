@@ -111,6 +111,16 @@ class Reporter {
   void ReportUnusedElements(const T& container, const std::string& header,
                             XmlStreamElement* information);
 
+  /// Reports the results of event tree analysis
+  /// to a specified output destination.
+  ///
+  /// @param[in] eta  Event Tree Analysis with sequence results.
+  /// @param[in,out] results  XML element to for all results.
+  ///
+  /// @pre The probability analysis has been performed.
+  void ReportResults(const core::EventTreeAnalysis& eta,
+                     XmlStreamElement* results);
+
   /// Reports the results of fault tree analysis
   /// to a specified output destination.
   ///

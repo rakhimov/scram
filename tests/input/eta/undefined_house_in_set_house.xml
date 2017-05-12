@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-event-tree name="SetHouseEvent-EventTree">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <set-house-event name="H">
+            <constant value="true"/>
+          </set-house-event>
+          <collect-formula>
+            <house-event name="H"/>
+          </collect-formula>
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

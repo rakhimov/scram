@@ -15,6 +15,7 @@ Low Hanging Fruits
           the items should graduate to GitHub issues.
 
 .. note:: Relative, subjective importance within groups is tagged in *italics*.
+          The order of items is arbitrary (i.e., irrelevant).
 
 
 Enhancements and Capabilities
@@ -24,24 +25,32 @@ Major
 -----
 
 - Sensitivity analysis. *Moderate*
-- Dynamic Fault Tree Analysis. *Moderate*
+- Dynamic fault tree analysis. *High*
+- Systems with loops (risk network, strongly-connected components). *Low*
+- Markov chains (numerical and simulation-based analyses). *Moderate*
+- Reliability block diagrams. *Moderate*
 
 
 Minor
 -----
 
-- Incorporation of cut-offs for ZBDD. *High*
-- Advanced variable ordering and reordering heuristics for BDD. *Low*
+- Quantitative analysis with BDD w/o qualitative analysis. *Moderate*
+- Event-tree analysis shadow-variables optimizations. *High*
+- Incorporation of cut-offs (probability, contribution, dynamic) for ZBDD. *Moderate*
+- Advanced variable ordering and reordering heuristics for BDD. *Moderate*
 - Joint importance reliability factor. *Low*
 - Analysis for all system gates (qualitative and quantitative).
   Multi-rooted graph analysis. *Low*
 - Importance factor calculation for gates (formulas). *Low*
 - Uncertainty analysis for importance factors. *Moderate*
 - Cardinality/Imply/IFF gates. *Low*
+- Generalization of parameter units and dimensional analysis. *Low*
 
 
 Code
 ====
+
+- Python front-end. *Moderate*
 
 - More tests for expressions. *Moderate*
 

@@ -336,6 +336,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in] branch  The event tree branch to start the check.
   ///
   /// @throws ValidationError  The order of forks is invalid.
+  ///
+  /// @pre All named branches are fed separately from initial states.
   void CheckFunctionalEventOrder(const Branch& branch);
 
   /// Checks that link instructions are used only in event-tree sequences.
@@ -346,6 +348,16 @@ class Initializer : private boost::noncopyable {
   ///
   /// @pre All named branches are fed separately from initial states.
   void EnsureLinksOnlyInSequences(const Branch& branch);
+
+  /// Ensures that event-tree does not mix
+  /// collect-expression and collect-formula.
+  ///
+  /// @param[in] branch  The event tree branch to start the check.
+  ///
+  /// @throws ValidationError  The Link instruction is misused.
+  ///
+  /// @pre All named branches are fed separately from initial states.
+  void EnsureHomogeneousEventTree(const Branch& branch);
 
   /// Validates expressions and anything
   /// that is dependent on them,

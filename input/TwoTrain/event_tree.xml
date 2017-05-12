@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- Dummy event tree that must result in Unity -->
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="EventTree"/>
+  <define-event-tree name="EventTree">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="true">
+          <collect-formula>
+            <not>
+              <gate name="TopEvent"/>
+            </not>
+          </collect-formula>
+          <sequence name="S"/>
+        </path>
+        <path state="false">
+          <collect-formula>
+            <gate name="TopEvent"/>
+          </collect-formula>
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+</opsa-mef>

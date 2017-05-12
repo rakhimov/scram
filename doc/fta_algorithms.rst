@@ -51,7 +51,7 @@ This algorithm is used in CAFTA, RiskA, and RiskMan.
 Prime Implicants vs. Minimal Cut Sets
 *************************************
 
-Minimal cut sets are sets of basic events (variables)
+Minimal cut sets are necessary and sufficient sets of basic events (variables)
 that induce the failure of the top event [Rau01]_.
 The set represents a conjunction of Boolean variables (product).
 Another way to represent the minimal sets of basic events

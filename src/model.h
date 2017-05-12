@@ -35,6 +35,8 @@
 #include "element.h"
 #include "event.h"
 #include "event_tree.h"
+#include "expression.h"
+#include "expression/test_event.h"
 #include "fault_tree.h"
 #include "parameter.h"
 
@@ -56,6 +58,13 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws InvalidArgument  The name is malformed.
   explicit Model(std::string name = "");
+
+  /// @returns The context to be used by test-event expressions
+  ///          for event-tree walks.
+  ///
+  /// @note There's only single context for the whole model (i.e., global);
+  ///       two event-trees cannot be walked concurrently.
+  Context* context() const { return const_cast<Context*>(&context_); }
 
   /// @returns Defined constructs in the model.
   /// @{
@@ -198,6 +207,7 @@ class Model : public Element, private boost::noncopyable {
   std::vector<std::unique_ptr<Instruction>> instructions_;
   /// @}
   IdTable<Event*> events_;  ///< All events by ids.
+  Context context_;  ///< The context to be used by test-event expressions.
 };
 
 }  // namespace mef

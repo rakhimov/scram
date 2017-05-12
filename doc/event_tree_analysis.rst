@@ -26,8 +26,14 @@ Event tree validation notes:
       This order must be respected in event tree paths.
 
     - Functional event states in forks can be arbitrary but unique (per fork).
-      In expressions evaluating a functional event state,
+
+    - In expressions evaluating a functional event state,
       the state must be one of possible states declared in functional event forks.
+      *This validation is not implemented.*
+
+    - The event-tree is exclusively defined by either formulas or expressions,
+      but no mix is allowed.
 
     - In general (fault-tree linking, event-tree linking),
-      there's no computationally cheap way to validate conditional independence of branches.
+      the validation of mutual-exclusivity, completeness (sum to 1), or conditional-independence
+      is not performed.
