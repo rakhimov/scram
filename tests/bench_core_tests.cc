@@ -493,6 +493,12 @@ TEST_P(RiskAnalysisTest, SingleExpressionEventTree) {
   EXPECT_DOUBLE_EQ(0.5, results.begin()->second);
 }
 
+TEST_F(RiskAnalysisTest, NestedFormulaEventTree) {
+  std::string tree_input = "./share/scram/input/eta/nested_formula.xml";
+  settings.probability_analysis(true).prime_implicants(true);
+  CheckReport(tree_input);
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram
