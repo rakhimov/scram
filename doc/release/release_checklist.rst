@@ -56,7 +56,6 @@ Release
     * [ ] Update version numbers
 
         + [ ] CMakeLists.txt
-        + [ ] scram.man
 
     * Commit the release with *SCRAM x.y.z* (x, y, z being version numbers)
 
