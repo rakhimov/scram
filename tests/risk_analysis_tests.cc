@@ -424,6 +424,18 @@ TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   }
 }
 
+TEST_P(RiskAnalysisTest, AnalyzeTestEventDefault) {
+  const char* tree_input = "./share/scram/input/eta/test_event_default.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(1, analysis->event_tree_results().size());
+  const auto& results = sequences();
+  ASSERT_EQ(1, results.size());
+  EXPECT_EQ("S", results.begin()->first);
+  EXPECT_DOUBLE_EQ(0.5, results.begin()->second);
+}
+
 TEST_P(RiskAnalysisTest, AnalyzeTestInitatingEvent) {
   const char* tree_input = "./share/scram/input/eta/test_initiating_event.xml";
   settings.probability_analysis(true);
