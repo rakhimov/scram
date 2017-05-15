@@ -64,17 +64,31 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionAboutScram"/>
     <addaction name="actionAboutQt"/>
    </widget>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAboutQt">
+   <property name="icon">
+    <iconset theme="help-about">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>About &amp;Qt</string>
    </property>
    <property name="statusTip">
     <string>About the Qt toolkit</string>
+   </property>
+  </action>
+  <action name="actionAboutScram">
+   <property name="icon">
+    <iconset theme="help-about">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;SCRAM</string>
    </property>
   </action>
  </widget>

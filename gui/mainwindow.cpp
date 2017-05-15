@@ -21,8 +21,10 @@
 #include <QAction>
 #include <QApplication>
 #include <QGraphicsScene>
+#include <QMessageBox>
 
 #include "event.h"
+#include "src/version.h"
 
 namespace scram {
 namespace gui {
@@ -35,6 +37,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionAboutQt, &QAction::triggered, qApp,
             &QApplication::aboutQt);
+    connect(ui->actionAboutScram, &QAction::triggered, this, [this] {
+        QMessageBox::about(
+            this, tr("About SCRAM"),
+            tr("<h1 align=\"center\">SCRAM %1</h1>"
+               "The GUI front-end for SCRAM,<br/>"
+               "a command-line risk analysis multi-tool.<br/><br/>"
+               "License: GPLv3+<br/>"
+               "Homepage: <a href=\"%2\">%2</a><br/>"
+               "The Model Exchange Format: <a href=\"%3\">%3</a><br/>"
+               "Technical support: <a href=\"%4\">forum</a><br/>"
+               "Bug Tracker: <a href=\"%5\">%5</a>")
+                .arg(QString::fromLatin1(version::core()))
+                .arg(QString::fromLatin1("https://scram-pra.org"))
+                .arg(QString::fromLatin1("https://open-psa.github.io/mef"))
+                .arg(QString::fromLatin1(
+                    "https://groups.google.com/forum/#!forum/scram-users"))
+                .arg(QString::fromLatin1(
+                    "https://github.com/rakhimov/scram/issues")));
+    });
 
     auto *scene = new QGraphicsScene;
     ui->diagrams->setScene(scene);
