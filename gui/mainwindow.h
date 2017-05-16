@@ -45,6 +45,14 @@ public:
     void addInputFiles(const std::vector<std::string>& /*input_files*/) {}
 
 private:
+    /**
+     * @brief Opens a new project configuration.
+     *
+     * The current project and input files are reset.
+     *
+     * @todo Check if the current documents need saving.
+     */
+    void createNewProject();
     Ui::MainWindow *ui;
     QString m_config;  ///< The main project configuration file.
 };

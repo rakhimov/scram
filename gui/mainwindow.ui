@@ -71,6 +71,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionNewProject"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -79,7 +81,8 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>About &amp;Qt</string>
@@ -90,7 +93,8 @@
   </action>
   <action name="actionAboutScram">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>About &amp;SCRAM</string>
@@ -98,13 +102,26 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
    </property>
    <property name="toolTip">
     <string>Exit the application</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="icon">
+    <iconset theme="document-new">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New project</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new project</string>
    </property>
   </action>
  </widget>

@@ -58,12 +58,21 @@ MainWindow::MainWindow(QWidget *parent)
     });
     ui->actionExit->setShortcuts(QKeySequence::Quit);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
+    ui->actionNewProject->setShortcuts(QKeySequence::New);
+    connect(ui->actionNewProject, &QAction::triggered, this,
+            &MainWindow::createNewProject);
 
     auto *scene = new QGraphicsScene;
     ui->diagrams->setScene(scene);
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+void MainWindow::createNewProject()
+{
+    m_config.clear();
+    /// @todo Implement the new project creation.
+}
 
 } // namespace gui
 } // namespace scram
