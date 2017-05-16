@@ -45,6 +45,8 @@ public:
     void addInputFiles(const std::vector<std::string>& /*input_files*/) {}
 
 private:
+    void setupActions();  ///< Setup all the actions with connections.
+
     /**
      * @brief Opens a new project configuration.
      *

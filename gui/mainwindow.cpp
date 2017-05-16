@@ -35,6 +35,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setupActions();
+
+    auto *scene = new QGraphicsScene;
+    ui->diagrams->setScene(scene);
+}
+
+MainWindow::~MainWindow() { delete ui; }
+
+void MainWindow::setupActions()
+{
     connect(ui->actionAboutQt, &QAction::triggered, qApp,
             &QApplication::aboutQt);
     connect(ui->actionAboutScram, &QAction::triggered, this, [this] {
@@ -61,12 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionNewProject->setShortcuts(QKeySequence::New);
     connect(ui->actionNewProject, &QAction::triggered, this,
             &MainWindow::createNewProject);
-
-    auto *scene = new QGraphicsScene;
-    ui->diagrams->setScene(scene);
 }
-
-MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::createNewProject()
 {
