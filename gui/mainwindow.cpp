@@ -56,6 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
                 .arg(QString::fromLatin1(
                     "https://github.com/rakhimov/scram/issues")));
     });
+    ui->actionExit->setShortcuts(QKeySequence::Quit);
+    connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
 
     auto *scene = new QGraphicsScene;
     ui->diagrams->setScene(scene);
