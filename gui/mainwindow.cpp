@@ -20,11 +20,11 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QMessageBox>
 
 #include "event.h"
-#include "src/version.h"
 
 namespace scram {
 namespace gui {
@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
                "The Model Exchange Format: <a href=\"%3\">%3</a><br/>"
                "Technical support: <a href=\"%4\">forum</a><br/>"
                "Bug Tracker: <a href=\"%5\">%5</a>")
-                .arg(QString::fromLatin1(version::core()))
+                .arg(QCoreApplication::applicationVersion())
                 .arg(QString::fromLatin1("https://scram-pra.org"))
                 .arg(QString::fromLatin1("https://open-psa.github.io/mef"))
                 .arg(QString::fromLatin1(

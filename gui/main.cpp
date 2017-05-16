@@ -21,10 +21,12 @@
 #include <vector>
 
 #include <QApplication>
+#include <QCoreApplication>
 
 #include <boost/program_options.hpp>
 
 #include "mainwindow.h"
+#include "src/version.h"
 
 namespace po = boost::program_options;
 
@@ -80,6 +82,12 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName(QString::fromLatin1("scram"));
+    QCoreApplication::setOrganizationDomain(
+        QString::fromLatin1("scram-pra.org"));
+    QCoreApplication::setApplicationName(QString::fromLatin1("scram"));
+    QCoreApplication::setApplicationVersion(
+        QString::fromLatin1(scram::version::core()));
     QApplication a(argc, argv);
     scram::gui::MainWindow w;
     w.show();
