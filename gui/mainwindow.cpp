@@ -66,17 +66,26 @@ void MainWindow::setupActions()
                 .arg(QString::fromLatin1(
                     "https://github.com/rakhimov/scram/issues")));
     });
-    ui->actionExit->setShortcuts(QKeySequence::Quit);
+    ui->actionExit->setShortcut(QKeySequence::Quit);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
-    ui->actionNewProject->setShortcuts(QKeySequence::New);
+    ui->actionNewProject->setShortcut(QKeySequence::New);
     connect(ui->actionNewProject, &QAction::triggered, this,
             &MainWindow::createNewProject);
+    ui->actionOpenProject->setShortcut(QKeySequence::Open);
+    connect(ui->actionOpenProject, &QAction::triggered, this,
+            &MainWindow::openProject);
 }
 
 void MainWindow::createNewProject()
 {
     m_config.clear();
     /// @todo Implement the new project creation.
+}
+
+void MainWindow::openProject()
+{
+    m_config.clear();
+    /// @todo Implement the file open for the configuration file.
 }
 
 } // namespace gui

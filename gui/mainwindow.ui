@@ -72,6 +72,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionNewProject"/>
+    <addaction name="actionOpenProject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -122,6 +123,17 @@
    </property>
    <property name="toolTip">
     <string>Create a new project</string>
+   </property>
+  </action>
+  <action name="actionOpenProject">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>&amp;Open project</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an existing project</string>
    </property>
   </action>
  </widget>

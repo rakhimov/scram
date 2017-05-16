@@ -55,6 +55,14 @@ private:
      * @todo Check if the current documents need saving.
      */
     void createNewProject();
+
+    /**
+     * @brief Opens an existing project configuration.
+     *
+     * The current project and input files are reset.
+     */
+    void openProject();
+
     Ui::MainWindow *ui;
     QString m_config;  ///< The main project configuration file.
 };
