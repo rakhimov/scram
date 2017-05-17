@@ -64,13 +64,16 @@ void MainWindow::setConfig(const std::string &config_path)
     m_config.file = config_path;
     m_config.xml = m_config.parser->get_document()->get_root_node();
 
+    ui->actionSaveProject->setEnabled(true);
+    ui->actionSaveProjectAs->setEnabled(true);
+
     emit configChanged();
 }
 
 void MainWindow::addInputFiles(const std::vector<std::string> &input_files) {
     if (input_files.empty())
         return;
-
+    /// @todo Handle the initial empty config.
     try {
         Config config(m_config.file);
         std::vector<std::string> all_input(m_input_files);
@@ -83,7 +86,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &input_files) {
         return;
     }
 
-    xmlpp::Element* container_element = [this] {
+    xmlpp::Element *container_element = [this] {
         xmlpp::NodeSet elements = m_config.xml->find("./input-files");
         if (elements.empty())
             return m_config.xml->add_child("input-files");
@@ -121,22 +124,38 @@ void MainWindow::setupActions()
                      QString::fromLatin1(
                          "https://github.com/rakhimov/scram/issues")));
     });
+
     ui->actionExit->setShortcut(QKeySequence::Quit);
     connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
+
     ui->actionNewProject->setShortcut(QKeySequence::New);
     connect(ui->actionNewProject, &QAction::triggered, this,
             &MainWindow::createNewProject);
+
     ui->actionOpenProject->setShortcut(QKeySequence::Open);
     connect(ui->actionOpenProject, &QAction::triggered, this,
             &MainWindow::openProject);
+
+    ui->actionSaveProject->setShortcut(QKeySequence::Save);
+    connect(ui->actionSaveProject, &QAction::triggered, this,
+            &MainWindow::saveProject);
+
+    ui->actionSaveProjectAs->setShortcut(QKeySequence::SaveAs);
+    connect(ui->actionSaveProjectAs, &QAction::triggered, this,
+            &MainWindow::saveProjectAs);
 }
 
 void MainWindow::createNewProject()
 {
-    m_config.file.clear();
+    if (m_config.parser == nullptr)
+        m_config.parser = std::make_unique<xmlpp::DomParser>();
     m_config.parser->parse_memory("<?xml version=\"1.0\"?><scram/>");
+    m_config.file.clear();
     m_config.xml = m_config.parser->get_document()->get_root_node();
     m_input_files.clear();
+
+    ui->actionSaveProject->setEnabled(true);
+    ui->actionSaveProjectAs->setEnabled(true);
 
     emit configChanged();
 }
@@ -149,6 +168,26 @@ void MainWindow::openProject()
     if (filename.isNull())
         return;
     setConfig(filename.toStdString());
+}
+
+void MainWindow::saveProject() {
+    if (m_config.file.empty())
+        return saveProjectAs();
+
+    m_config.parser->get_document()->write_to_file_formatted(
+        m_config.file, m_config.parser->get_document()->get_encoding());
+}
+
+void MainWindow::saveProjectAs() {
+    QString filename = QFileDialog::getSaveFileName(
+        this, tr("Save Project"), QDir::currentPath(),
+        tr("XML files (*.scram *.xml);;All files (*.*)"));
+    if (filename.isNull())
+        return;
+    m_config.parser->get_document()->write_to_file_formatted(
+        filename.toStdString(),
+        m_config.parser->get_document()->get_encoding());
+    m_config.file = filename.toStdString();
 }
 
 } // namespace gui

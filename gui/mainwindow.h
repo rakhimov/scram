@@ -73,6 +73,20 @@ private:
      */
     void openProject();
 
+    /**
+     * @brief Saves the project to a file.
+     *
+     * If the project is new,
+     * it does not have a default destination file.
+     * The user is required to specify the file upon save.
+     */
+    void saveProject();
+
+    /**
+     * @brief Saves the project to a potentially different file.
+     */
+    void saveProjectAs();
+
     std::unique_ptr<Ui::MainWindow> ui;
     XmlFile m_config;  ///< The main project configuration file.
     std::vector<std::string> m_input_files;  ///< The project model files.
