@@ -21,10 +21,15 @@
 #include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
+#include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
 
 #include "event.h"
+#include "src/config.h"
+#include "src/error.h"
+#include "src/initializer.h"
+#include "src/xml.h"
 
 namespace scram {
 namespace gui {
@@ -41,7 +46,56 @@ MainWindow::MainWindow(QWidget *parent)
     ui->diagrams->setScene(scene);
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() = default;
+
+void MainWindow::setConfig(const std::string &config_path)
+{
+    try {
+        Config config(config_path);
+        mef::Initializer(config.input_files(), config.settings());
+        m_config.parser = scram::ConstructDomParser(config_path);
+        m_input_files = config.input_files();
+    } catch (scram::Error &err) {
+        QMessageBox::critical(this, tr("Configuration Error"),
+                              QString::fromUtf8(err.what()));
+        return;
+    }
+
+    m_config.file = config_path;
+    m_config.xml = m_config.parser->get_document()->get_root_node();
+
+    emit configChanged();
+}
+
+void MainWindow::addInputFiles(const std::vector<std::string> &input_files) {
+    if (input_files.empty())
+        return;
+
+    try {
+        Config config(m_config.file);
+        std::vector<std::string> all_input(m_input_files);
+        all_input.insert(all_input.end(), input_files.begin(),
+                         input_files.end());
+        mef::Initializer(all_input, config.settings());
+    } catch (scram::Error &err) {
+        QMessageBox::critical(this, tr("Initialization Error"),
+                              QString::fromUtf8(err.what()));
+        return;
+    }
+
+    xmlpp::Element* container_element = [this] {
+        xmlpp::NodeSet elements = m_config.xml->find("./input-files");
+        if (elements.empty())
+            return m_config.xml->add_child("input-files");
+        return static_cast<xmlpp::Element *>(elements.front());
+    }();
+    for (const auto& input_file : input_files)
+        container_element->add_child("file")->add_child_text(input_file);
+    m_input_files.insert(m_input_files.end(), input_files.begin(),
+                         input_files.end());
+
+    emit configChanged();
+}
 
 void MainWindow::setupActions()
 {
@@ -78,14 +132,22 @@ void MainWindow::setupActions()
 
 void MainWindow::createNewProject()
 {
-    m_config.clear();
-    /// @todo Implement the new project creation.
+    m_config.file.clear();
+    m_config.parser->parse_memory("<?xml version=\"1.0\"?><scram/>");
+    m_config.xml = m_config.parser->get_document()->get_root_node();
+    m_input_files.clear();
+
+    emit configChanged();
 }
 
 void MainWindow::openProject()
 {
-    m_config.clear();
-    /// @todo Implement the file open for the configuration file.
+    QString filename = QFileDialog::getOpenFileName(
+        this, tr("Open Project"), QDir::currentPath(),
+        tr("XML files (*.scram *.xml);;All files (*.*)"));
+    if (filename.isNull())
+        return;
+    setConfig(filename.toStdString());
 }
 
 } // namespace gui

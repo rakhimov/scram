@@ -18,10 +18,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <QMainWindow>
+
+#include <libxml++/libxml++.h>
 
 namespace Ui {
 class MainWindow;
@@ -38,13 +41,20 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setConfig(const std::string &config)
-    {
-        m_config = QString::fromStdString(config);
-    }
-    void addInputFiles(const std::vector<std::string>& /*input_files*/) {}
+    void setConfig(const std::string &config_path);
+    void addInputFiles(const std::vector<std::string> &input_files);
+
+signals:
+    void configChanged();
 
 private:
+    /// Keeps the file location and XML data together.
+    struct XmlFile {
+        std::string file;    ///< The original location of the document.
+        xmlpp::Node *xml; ///< The root element of the document.
+        std::unique_ptr<xmlpp::DomParser> parser; ///< The document holder.
+    };
+
     void setupActions();  ///< Setup all the actions with connections.
 
     /**
@@ -63,8 +73,9 @@ private:
      */
     void openProject();
 
-    Ui::MainWindow *ui;
-    QString m_config;  ///< The main project configuration file.
+    std::unique_ptr<Ui::MainWindow> ui;
+    XmlFile m_config;  ///< The main project configuration file.
+    std::vector<std::string> m_input_files;  ///< The project model files.
 };
 
 } // namespace gui
