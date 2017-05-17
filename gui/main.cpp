@@ -82,6 +82,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 
 int main(int argc, char *argv[])
 {
+    Q_INIT_RESOURCE(res);
     QCoreApplication::setOrganizationName(QString::fromLatin1("scram"));
     QCoreApplication::setOrganizationDomain(
         QString::fromLatin1("scram-pra.org"));
