@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,21 +48,42 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() = default;
 
-void MainWindow::setConfig(const std::string &config_path)
+MainWindow::XmlFile::XmlFile() : xml(nullptr), parser(new xmlpp::DomParser()) {}
+
+MainWindow::XmlFile::XmlFile(std::string filename) : file(std::move(filename))
+{
+    parser = scram::ConstructDomParser(file);
+    xml = parser->get_document()->get_root_node();
+}
+
+void MainWindow::XmlFile::reset(std::string filename)
+{
+    parser->parse_file(filename);
+    file = std::move(filename);
+    xml = parser->get_document()->get_root_node();
+}
+
+std::vector<std::string> MainWindow::extractInputFiles()
+{
+    std::vector<std::string> inputFiles;
+    for (const XmlFile& input : m_inputFiles)
+        inputFiles.push_back(input.file);
+    return inputFiles;
+}
+
+void MainWindow::setConfig(const std::string &configPath)
 {
     try {
-        Config config(config_path);
+        Config config(configPath);
         mef::Initializer(config.input_files(), config.settings());
-        m_config.parser = scram::ConstructDomParser(config_path);
-        m_input_files = config.input_files();
+        addInputFiles(config.input_files());
+        m_config.reset(configPath);
+        m_settings = config.settings();
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Configuration Error"),
                               QString::fromUtf8(err.what()));
         return;
     }
-
-    m_config.file = config_path;
-    m_config.xml = m_config.parser->get_document()->get_root_node();
 
     ui->actionSaveProject->setEnabled(true);
     ui->actionSaveProjectAs->setEnabled(true);
@@ -70,32 +91,24 @@ void MainWindow::setConfig(const std::string &config_path)
     emit configChanged();
 }
 
-void MainWindow::addInputFiles(const std::vector<std::string> &input_files) {
-    if (input_files.empty())
+void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
+{
+    if (inputFiles.empty())
         return;
-    /// @todo Handle the initial empty config.
+
     try {
-        Config config(m_config.file);
-        std::vector<std::string> all_input(m_input_files);
-        all_input.insert(all_input.end(), input_files.begin(),
-                         input_files.end());
-        mef::Initializer(all_input, config.settings());
+        std::vector<std::string> all_input = extractInputFiles();
+        all_input.insert(all_input.end(), inputFiles.begin(),
+                         inputFiles.end());
+        mef::Initializer(all_input, m_settings);
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
         return;
     }
 
-    xmlpp::Element *container_element = [this] {
-        xmlpp::NodeSet elements = m_config.xml->find("./input-files");
-        if (elements.empty())
-            return m_config.xml->add_child("input-files");
-        return static_cast<xmlpp::Element *>(elements.front());
-    }();
-    for (const auto& input_file : input_files)
-        container_element->add_child("file")->add_child_text(input_file);
-    m_input_files.insert(m_input_files.end(), input_files.begin(),
-                         input_files.end());
+    for (const auto& input : inputFiles)
+        m_inputFiles.emplace_back(input);
 
     emit configChanged();
 }
@@ -152,7 +165,7 @@ void MainWindow::createNewProject()
     m_config.parser->parse_memory("<?xml version=\"1.0\"?><scram/>");
     m_config.file.clear();
     m_config.xml = m_config.parser->get_document()->get_root_node();
-    m_input_files.clear();
+    m_inputFiles.clear();
 
     ui->actionSaveProject->setEnabled(true);
     ui->actionSaveProjectAs->setEnabled(true);
@@ -170,24 +183,38 @@ void MainWindow::openProject()
     setConfig(filename.toStdString());
 }
 
-void MainWindow::saveProject() {
+void MainWindow::saveProject()
+{
     if (m_config.file.empty())
         return saveProjectAs();
+
+    xmlpp::Element *container_element = [this] {
+        xmlpp::NodeSet elements = m_config.xml->find("./input-files");
+        if (elements.empty())
+            return m_config.xml->add_child("input-files");
+        return static_cast<xmlpp::Element *>(elements.front());
+    }();
+
+    for (xmlpp::Node *node : container_element->find("./file"))
+        container_element->remove_child(node);
+
+    /// @todo Save as relative paths.
+    for (const XmlFile &input : m_inputFiles)
+        container_element->add_child("file")->add_child_text(input.file);
 
     m_config.parser->get_document()->write_to_file_formatted(
         m_config.file, m_config.parser->get_document()->get_encoding());
 }
 
-void MainWindow::saveProjectAs() {
+void MainWindow::saveProjectAs()
+{
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Project"), QDir::currentPath(),
         tr("XML files (*.scram *.xml);;All files (*.*)"));
     if (filename.isNull())
         return;
-    m_config.parser->get_document()->write_to_file_formatted(
-        filename.toStdString(),
-        m_config.parser->get_document()->get_encoding());
     m_config.file = filename.toStdString();
+    saveProject();
 }
 
 } // namespace gui

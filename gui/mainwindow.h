@@ -26,6 +26,8 @@
 
 #include <libxml++/libxml++.h>
 
+#include "src/settings.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -41,8 +43,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setConfig(const std::string &config_path);
-    void addInputFiles(const std::vector<std::string> &input_files);
+    void setConfig(const std::string &configPath);
+    void addInputFiles(const std::vector<std::string> &inputFiles);
 
 signals:
     void configChanged();
@@ -50,12 +52,18 @@ signals:
 private:
     /// Keeps the file location and XML data together.
     struct XmlFile {
-        std::string file;    ///< The original location of the document.
+        XmlFile();
+        explicit XmlFile(std::string filename);
+        void reset(std::string filename);
+        std::string file; ///< The original location of the document.
         xmlpp::Node *xml; ///< The root element of the document.
         std::unique_ptr<xmlpp::DomParser> parser; ///< The document holder.
     };
 
-    void setupActions();  ///< Setup all the actions with connections.
+    void setupActions(); ///< Setup all the actions with connections.
+
+    /// @returns The current set input file paths.
+    std::vector<std::string> extractInputFiles();
 
     /**
      * @brief Opens a new project configuration.
@@ -88,8 +96,9 @@ private:
     void saveProjectAs();
 
     std::unique_ptr<Ui::MainWindow> ui;
-    XmlFile m_config;  ///< The main project configuration file.
-    std::vector<std::string> m_input_files;  ///< The project model files.
+    XmlFile m_config; ///< The main project configuration file.
+    std::vector<XmlFile> m_inputFiles;  ///< The project model files.
+    core::Settings m_settings; ///< The analysis settings.
 };
 
 } // namespace gui
