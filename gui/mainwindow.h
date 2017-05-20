@@ -26,6 +26,7 @@
 
 #include <libxml++/libxml++.h>
 
+#include "model.h"
 #include "src/settings.h"
 
 namespace Ui {
@@ -65,6 +66,9 @@ private:
     /// @returns The current set input file paths.
     std::vector<std::string> extractInputFiles();
 
+    /// @returns The current set of XML model files.
+    std::vector<xmlpp::Node *> extractModelXml();
+
     /**
      * @brief Opens a new project configuration.
      *
@@ -99,6 +103,7 @@ private:
     XmlFile m_config; ///< The main project configuration file.
     std::vector<XmlFile> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
+    std::unique_ptr<Model> m_model; ///< The holder of the XML constructs.
 };
 
 } // namespace gui

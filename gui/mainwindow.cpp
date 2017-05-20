@@ -36,11 +36,14 @@ namespace gui {
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow)
+      ui(new Ui::MainWindow),
+      m_model(new Model({}))
 {
     ui->setupUi(this);
 
     setupActions();
+
+    ui->treeView->setModel(m_model.get());
 
     auto *scene = new QGraphicsScene;
     ui->diagrams->setScene(scene);
@@ -69,6 +72,14 @@ std::vector<std::string> MainWindow::extractInputFiles()
     for (const XmlFile& input : m_inputFiles)
         inputFiles.push_back(input.file);
     return inputFiles;
+}
+
+std::vector<xmlpp::Node *> MainWindow::extractModelXml()
+{
+    std::vector<xmlpp::Node *> modelXml;
+    for (const XmlFile& input : m_inputFiles)
+        modelXml.push_back(input.xml);
+    return modelXml;
 }
 
 void MainWindow::setConfig(const std::string &configPath)
@@ -204,6 +215,8 @@ void MainWindow::saveProject()
 
     m_config.parser->get_document()->write_to_file_formatted(
         m_config.file, m_config.parser->get_document()->get_encoding());
+
+    /// @todo Save the input files.
 }
 
 void MainWindow::saveProjectAs()
@@ -213,6 +226,7 @@ void MainWindow::saveProjectAs()
         tr("XML files (*.scram *.xml);;All files (*.*)"));
     if (filename.isNull())
         return;
+    /// @todo Save the input files into custom places.
     m_config.file = filename.toStdString();
     saveProject();
 }
