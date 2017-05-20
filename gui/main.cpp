@@ -22,10 +22,14 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QMessageBox>
+#include <QString>
 
 #include <boost/program_options.hpp>
 
 #include "mainwindow.h"
+
+#include "src/error.h"
 #include "src/version.h"
 
 namespace po = boost::program_options;
@@ -78,6 +82,28 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     return 0;
 }
 
+/// Guards the application from crashes on escaped internal exceptions.
+class GuardedApplication : public QApplication {
+public:
+    using QApplication::QApplication;
+
+    bool notify(QObject *receiver, QEvent *event) override
+    {
+        try {
+            return QApplication::notify(receiver, event);
+        } catch (const scram::Error &err) {
+            qCritical("%s", err.what());
+            QMessageBox::critical(nullptr, tr("Internal SCRAM Error"),
+                                  QString::fromUtf8(err.what()));
+        } catch (const std::exception &err) {
+            qCritical("%s", err.what());
+            QMessageBox::critical(nullptr, tr("Unexpected Error"),
+                                  QString::fromUtf8(err.what()));
+        }
+        return false;
+    }
+};
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -89,7 +115,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(QString::fromLatin1("scram"));
     QCoreApplication::setApplicationVersion(
         QString::fromLatin1(scram::version::core()));
-    QApplication a(argc, argv);
+    GuardedApplication a(argc, argv);
     scram::gui::MainWindow w;
     w.show();
 
