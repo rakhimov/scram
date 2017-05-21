@@ -153,7 +153,6 @@ void MainWindow::setupActions()
     });
 
     ui->actionExit->setShortcut(QKeySequence::Quit);
-    connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
 
     ui->actionNewProject->setShortcut(QKeySequence::New);
     connect(ui->actionNewProject, &QAction::triggered, this,
