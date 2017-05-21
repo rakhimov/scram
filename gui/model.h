@@ -38,6 +38,8 @@ public:
     explicit Model(std::vector<xmlpp::Node *> modelFiles,
                    QObject *parent = nullptr);
 
+    void update(std::vector<xmlpp::Node *> modelFiles);
+
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;

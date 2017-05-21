@@ -25,8 +25,14 @@ namespace scram {
 namespace gui {
 
 Model::Model(std::vector<xmlpp::Node *> modelFiles, QObject *parent)
-    : QAbstractItemModel(parent), m_modelFiles(std::move(modelFiles))
+    : QAbstractItemModel(parent)
 {
+    update(std::move(modelFiles));
+}
+
+void Model::update(std::vector<xmlpp::Node *> modelFiles)
+{
+    m_modelFiles = std::move(modelFiles);
 }
 
 QVariant Model::data(const QModelIndex &index, int role) const

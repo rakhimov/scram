@@ -26,6 +26,8 @@
 #include <QMessageBox>
 
 #include "event.h"
+#include "guiassert.h"
+
 #include "src/config.h"
 #include "src/error.h"
 #include "src/initializer.h"
@@ -37,16 +39,13 @@ namespace gui {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      m_model(new Model({}))
+      m_model(new Model({}, this))
 {
     ui->setupUi(this);
 
     setupActions();
 
-    ui->treeView->setModel(m_model.get());
-
-    auto *scene = new QGraphicsScene;
-    ui->diagrams->setScene(scene);
+    ui->treeView->setModel(m_model);
 }
 
 MainWindow::~MainWindow() = default;
@@ -124,6 +123,9 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     for (const auto& input : inputFiles)
         m_inputFiles.emplace_back(input);
 
+    m_model->update(extractModelXml());
+    ui->treeView->reset();
+
     emit configChanged();
 }
 
@@ -173,12 +175,14 @@ void MainWindow::setupActions()
 
 void MainWindow::createNewProject()
 {
-    if (m_config.parser == nullptr)
-        m_config.parser = std::make_unique<xmlpp::DomParser>();
+    GUI_ASSERT(m_config.parser,);
     m_config.parser->parse_memory("<?xml version=\"1.0\"?><scram/>");
     m_config.file.clear();
     m_config.xml = m_config.parser->get_document()->get_root_node();
     m_inputFiles.clear();
+
+    m_model->update({});
+    ui->treeView->reset();
 
     ui->actionSaveProject->setEnabled(true);
     ui->actionSaveProjectAs->setEnabled(true);
