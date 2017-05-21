@@ -6,6 +6,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # TODO: Qt moc offsetof applied to non-POD types is nonstandard.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if(Qt5Widgets_VERSION_STRING VERSION_LESS 5.4)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-inconsistent-missing-override")
+  endif()
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
