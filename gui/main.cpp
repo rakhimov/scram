@@ -47,13 +47,13 @@ namespace {
  * @returns 1 for errored state.
  * @returns -1 for information only state like help and version.
  */
-int parseArguments(int argc, char *argv[], po::variables_map *vm)
+int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
 {
     const char* usage = "Usage:    scram-gui [options] [input-files]...";
     po::options_description desc("Options");
     desc.add_options()
             ("help", "Display this help message")
-            ("config-file", po::value<std::string>(),
+            ("config-file", po::value<std::string>()->value_name("path"),
              "Project configuration file");
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -66,6 +66,12 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 
     po::notify(*vm);
 
+    // Process command-line arguments.
+    if (vm->count("help")) {
+        std::cout << usage << "\n\n" << desc << "\n";
+        return -1;
+    }
+    desc.add_options()("input-files", po::value<std::vector<std::string>>());
     po::positional_options_description p;
     p.add("input-files", -1);
 
@@ -73,12 +79,6 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
         po::command_line_parser(argc, argv).options(desc).positional(p).run(),
         *vm);
     po::notify(*vm);
-
-    // Process command-line arguments.
-    if (vm->count("help")) {
-        std::cout << usage << "\n\n" << desc << "\n";
-        return -1;
-    }
     return 0;
 }
 
@@ -126,10 +126,14 @@ int main(int argc, char *argv[])
             return 1;
         if (ret == -1)
             return 0;
-        if (vm.count("config-file"))
-            w.setConfig(vm["config-file"].as<std::string>());
+        std::vector<std::string> inputFiles;
         if (vm.count("input-files"))
-            w.addInputFiles(vm["input-files"].as<std::vector<std::string>>());
+            inputFiles = vm["input-files"].as<std::vector<std::string>>();
+        if (vm.count("config-file")) {
+            w.setConfig(vm["config-file"].as<std::string>(), inputFiles);
+        } else {
+            w.addInputFiles(inputFiles);
+        }
     }
     return a.exec();
 }

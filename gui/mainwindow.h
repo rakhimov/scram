@@ -44,7 +44,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setConfig(const std::string &configPath);
+    void setConfig(const std::string &configPath,
+                   std::vector<std::string> inputFiles = {});
     void addInputFiles(const std::vector<std::string> &inputFiles);
 
 signals:

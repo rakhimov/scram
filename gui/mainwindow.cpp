@@ -69,7 +69,7 @@ void MainWindow::XmlFile::reset(std::string filename)
 std::vector<std::string> MainWindow::extractInputFiles()
 {
     std::vector<std::string> inputFiles;
-    for (const XmlFile& input : m_inputFiles)
+    for (const XmlFile &input : m_inputFiles)
         inputFiles.push_back(input.file);
     return inputFiles;
 }
@@ -77,17 +77,20 @@ std::vector<std::string> MainWindow::extractInputFiles()
 std::vector<xmlpp::Node *> MainWindow::extractModelXml()
 {
     std::vector<xmlpp::Node *> modelXml;
-    for (const XmlFile& input : m_inputFiles)
+    for (const XmlFile &input : m_inputFiles)
         modelXml.push_back(input.xml);
     return modelXml;
 }
 
-void MainWindow::setConfig(const std::string &configPath)
+void MainWindow::setConfig(const std::string &configPath,
+                           std::vector<std::string> inputFiles)
 {
     try {
         Config config(configPath);
         mef::Initializer(config.input_files(), config.settings());
-        addInputFiles(config.input_files());
+        inputFiles.insert(inputFiles.begin(), config.input_files().begin(),
+                          config.input_files().end());
+        addInputFiles(inputFiles);
         m_config.reset(configPath);
         m_settings = config.settings();
     } catch (scram::Error &err) {
