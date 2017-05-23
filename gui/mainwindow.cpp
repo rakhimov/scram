@@ -38,14 +38,11 @@ namespace gui {
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow),
-      m_model(new Model({}, this))
+      ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
     setupActions();
-
-    ui->treeView->setModel(m_model);
 }
 
 MainWindow::~MainWindow() = default;
@@ -123,8 +120,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     for (const auto& input : inputFiles)
         m_inputFiles.emplace_back(input);
 
-    m_model->update(extractModelXml());
-    ui->treeView->reset();
+    resetTreeWidget();
 
     emit configChanged();
 }
@@ -181,13 +177,28 @@ void MainWindow::createNewProject()
     m_config.xml = m_config.parser->get_document()->get_root_node();
     m_inputFiles.clear();
 
-    m_model->update({});
-    ui->treeView->reset();
+    resetTreeWidget();
 
     ui->actionSaveProject->setEnabled(true);
     ui->actionSaveProjectAs->setEnabled(true);
 
     emit configChanged();
+}
+
+void MainWindow::resetTreeWidget()
+{
+    ui->treeWidget->clear();
+    if (m_inputFiles.empty()) {
+        ui->treeWidget->setHeaderLabel(tr("Model"));
+    } else {
+        std::string name = scram::GetAttributeValue(
+            XmlElement(m_inputFiles.front().xml), "name");
+        ui->treeWidget->setHeaderLabel(
+            tr("Model: %1").arg(QString::fromStdString(name)));
+    }
+    ui->treeWidget->addTopLevelItems({new QTreeWidgetItem({tr("Fault Trees")}),
+                                      new QTreeWidgetItem({tr("CCF Groups")}),
+                                      new QTreeWidgetItem({tr("Model Data")})});
 }
 
 void MainWindow::openProject()

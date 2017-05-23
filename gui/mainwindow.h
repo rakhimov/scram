@@ -26,8 +26,6 @@
 
 #include <libxml++/libxml++.h>
 
-#include "model.h"
-
 #include "src/settings.h"
 
 namespace Ui {
@@ -101,11 +99,15 @@ private:
      */
     void saveProjectAs();
 
+    /**
+     * Resets the tree widget with the new model.
+     */
+    void resetTreeWidget();
+
     std::unique_ptr<Ui::MainWindow> ui;
     XmlFile m_config; ///< The main project configuration file.
     std::vector<XmlFile> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
-    Model* m_model; ///< The holder of the XML constructs.
 };
 
 } // namespace gui

@@ -22,7 +22,6 @@ set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
 set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
   )
 set(SCRAM_GUI_BIN "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
 set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
