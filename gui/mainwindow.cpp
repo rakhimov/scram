@@ -196,9 +196,23 @@ void MainWindow::resetTreeWidget()
         ui->treeWidget->setHeaderLabel(
             tr("Model: %1").arg(QString::fromStdString(name)));
     }
-    ui->treeWidget->addTopLevelItems({new QTreeWidgetItem({tr("Fault Trees")}),
-                                      new QTreeWidgetItem({tr("CCF Groups")}),
-                                      new QTreeWidgetItem({tr("Model Data")})});
+
+    auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
+    for (const XmlFile &file : m_inputFiles) {
+        for (const xmlpp::Node *ft_node :
+             file.xml->find("./define-fault-tree")) {
+            faultTrees->addChild(new QTreeWidgetItem({QString::fromStdString(
+                scram::GetAttributeValue(XmlElement(ft_node), "name"))}));
+        }
+    }
+
+    auto *modelData = new QTreeWidgetItem({tr("Model Data")});
+    modelData->addChildren({new QTreeWidgetItem({tr("Basic Events")}),
+                            new QTreeWidgetItem({tr("House Events")}),
+                            new QTreeWidgetItem({tr("Parameters")})});
+
+    ui->treeWidget->addTopLevelItems(
+        {faultTrees, new QTreeWidgetItem({tr("CCF Groups")}), modelData});
 }
 
 void MainWindow::openProject()
