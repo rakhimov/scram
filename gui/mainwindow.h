@@ -50,25 +50,7 @@ public:
 signals:
     void configChanged();
 
-private:
-    /// Keeps the file location and XML data together.
-    struct XmlFile {
-        XmlFile();
-        explicit XmlFile(std::string filename);
-        void reset(std::string filename);
-        std::string file; ///< The original location of the document.
-        xmlpp::Node *xml; ///< The root element of the document.
-        std::unique_ptr<xmlpp::DomParser> parser; ///< The document holder.
-    };
-
-    void setupActions(); ///< Setup all the actions with connections.
-
-    /// @returns The current set input file paths.
-    std::vector<std::string> extractInputFiles();
-
-    /// @returns The current set of XML model files.
-    std::vector<xmlpp::Node *> extractModelXml();
-
+private slots:
     /**
      * @brief Opens a new project configuration.
      *
@@ -98,6 +80,25 @@ private:
      * @brief Saves the project to a potentially different file.
      */
     void saveProjectAs();
+
+private:
+    /// Keeps the file location and XML data together.
+    struct XmlFile {
+        XmlFile();
+        explicit XmlFile(std::string filename);
+        void reset(std::string filename);
+        std::string file; ///< The original location of the document.
+        xmlpp::Node *xml; ///< The root element of the document.
+        std::unique_ptr<xmlpp::DomParser> parser; ///< The document holder.
+    };
+
+    void setupActions(); ///< Setup all the actions with connections.
+
+    /// @returns The current set input file paths.
+    std::vector<std::string> extractInputFiles();
+
+    /// @returns The current set of XML model files.
+    std::vector<xmlpp::Node *> extractModelXml();
 
     /**
      * Resets the tree widget with the new model.

@@ -47,37 +47,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() = default;
 
-MainWindow::XmlFile::XmlFile() : xml(nullptr), parser(new xmlpp::DomParser()) {}
-
-MainWindow::XmlFile::XmlFile(std::string filename) : file(std::move(filename))
-{
-    parser = scram::ConstructDomParser(file);
-    xml = parser->get_document()->get_root_node();
-}
-
-void MainWindow::XmlFile::reset(std::string filename)
-{
-    parser->parse_file(filename);
-    file = std::move(filename);
-    xml = parser->get_document()->get_root_node();
-}
-
-std::vector<std::string> MainWindow::extractInputFiles()
-{
-    std::vector<std::string> inputFiles;
-    for (const XmlFile &input : m_inputFiles)
-        inputFiles.push_back(input.file);
-    return inputFiles;
-}
-
-std::vector<xmlpp::Node *> MainWindow::extractModelXml()
-{
-    std::vector<xmlpp::Node *> modelXml;
-    for (const XmlFile &input : m_inputFiles)
-        modelXml.push_back(input.xml);
-    return modelXml;
-}
-
 void MainWindow::setConfig(const std::string &configPath,
                            std::vector<std::string> inputFiles)
 {
@@ -185,36 +154,6 @@ void MainWindow::createNewProject()
     emit configChanged();
 }
 
-void MainWindow::resetTreeWidget()
-{
-    ui->treeWidget->clear();
-    if (m_inputFiles.empty()) {
-        ui->treeWidget->setHeaderLabel(tr("Model"));
-    } else {
-        std::string name = scram::GetAttributeValue(
-            XmlElement(m_inputFiles.front().xml), "name");
-        ui->treeWidget->setHeaderLabel(
-            tr("Model: %1").arg(QString::fromStdString(name)));
-    }
-
-    auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
-    for (const XmlFile &file : m_inputFiles) {
-        for (const xmlpp::Node *ft_node :
-             file.xml->find("./define-fault-tree")) {
-            faultTrees->addChild(new QTreeWidgetItem({QString::fromStdString(
-                scram::GetAttributeValue(XmlElement(ft_node), "name"))}));
-        }
-    }
-
-    auto *modelData = new QTreeWidgetItem({tr("Model Data")});
-    modelData->addChildren({new QTreeWidgetItem({tr("Basic Events")}),
-                            new QTreeWidgetItem({tr("House Events")}),
-                            new QTreeWidgetItem({tr("Parameters")})});
-
-    ui->treeWidget->addTopLevelItems(
-        {faultTrees, new QTreeWidgetItem({tr("CCF Groups")}), modelData});
-}
-
 void MainWindow::openProject()
 {
     QString filename = QFileDialog::getOpenFileName(
@@ -260,6 +199,67 @@ void MainWindow::saveProjectAs()
     /// @todo Save the input files into custom places.
     m_config.file = filename.toStdString();
     saveProject();
+}
+
+MainWindow::XmlFile::XmlFile() : xml(nullptr), parser(new xmlpp::DomParser()) {}
+
+MainWindow::XmlFile::XmlFile(std::string filename) : file(std::move(filename))
+{
+    parser = scram::ConstructDomParser(file);
+    xml = parser->get_document()->get_root_node();
+}
+
+void MainWindow::XmlFile::reset(std::string filename)
+{
+    parser->parse_file(filename);
+    file = std::move(filename);
+    xml = parser->get_document()->get_root_node();
+}
+
+std::vector<std::string> MainWindow::extractInputFiles()
+{
+    std::vector<std::string> inputFiles;
+    for (const XmlFile &input : m_inputFiles)
+        inputFiles.push_back(input.file);
+    return inputFiles;
+}
+
+std::vector<xmlpp::Node *> MainWindow::extractModelXml()
+{
+    std::vector<xmlpp::Node *> modelXml;
+    for (const XmlFile &input : m_inputFiles)
+        modelXml.push_back(input.xml);
+    return modelXml;
+}
+
+void MainWindow::resetTreeWidget()
+{
+    ui->treeWidget->clear();
+    if (m_inputFiles.empty()) {
+        ui->treeWidget->setHeaderLabel(tr("Model"));
+    } else {
+        std::string name = scram::GetAttributeValue(
+            XmlElement(m_inputFiles.front().xml), "name");
+        ui->treeWidget->setHeaderLabel(
+            tr("Model: %1").arg(QString::fromStdString(name)));
+    }
+
+    auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
+    for (const XmlFile &file : m_inputFiles) {
+        for (const xmlpp::Node *ft_node :
+             file.xml->find("./define-fault-tree")) {
+            faultTrees->addChild(new QTreeWidgetItem({QString::fromStdString(
+                scram::GetAttributeValue(XmlElement(ft_node), "name"))}));
+        }
+    }
+
+    auto *modelData = new QTreeWidgetItem({tr("Model Data")});
+    modelData->addChildren({new QTreeWidgetItem({tr("Basic Events")}),
+                            new QTreeWidgetItem({tr("House Events")}),
+                            new QTreeWidgetItem({tr("Parameters")})});
+
+    ui->treeWidget->addTopLevelItems(
+        {faultTrees, new QTreeWidgetItem({tr("CCF Groups")}), modelData});
 }
 
 } // namespace gui
