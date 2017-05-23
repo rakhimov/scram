@@ -341,6 +341,26 @@ can be found in the ``scripts`` directory.
 Help prompts and the documentation have more details how to use these tools.
 
 
+To launch the GUI
+=================
+
+To launch the GUI front-end from the command-line:
+
+.. code-block:: bash
+
+    scram-gui
+
+The command can also take project configuration and/or input files:
+
+.. code-block:: bash
+
+    scram-gui path/to/input/files
+
+    scram-gui --config-file path/to/config/file
+
+    scram-gui path/to/input/files --config-file path/to/config/file
+
+
 To run tests
 ============
 
