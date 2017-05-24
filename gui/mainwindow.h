@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <QMainWindow>
+#include <QTreeWidgetItem>
 
 #include <libxml++/libxml++.h>
 
@@ -80,6 +81,11 @@ private slots:
      * @brief Saves the project to a potentially different file.
      */
     void saveProjectAs();
+
+    /**
+     * Processes the element activation in the tree view.
+     */
+    void showElement(QTreeWidgetItem *item);
 
 private:
     /// Keeps the file location and XML data together.

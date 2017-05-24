@@ -24,6 +24,7 @@
 #include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
+#include <QTableWidget>
 
 #include "event.h"
 #include "guiassert.h"
@@ -43,6 +44,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setupActions();
+
+    connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
+            &MainWindow::showElement);
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
+            [this](int index) { ui->tabWidget->removeTab(index); });
 }
 
 MainWindow::~MainWindow() = default;
@@ -199,6 +205,40 @@ void MainWindow::saveProjectAs()
     /// @todo Save the input files into custom places.
     m_config.file = filename.toStdString();
     saveProject();
+}
+
+void MainWindow::showElement(QTreeWidgetItem *item)
+{
+    QString name = item->data(0, Qt::DisplayRole).toString();
+    if (name == tr("Basic Events")) {
+        auto *table = new QTableWidget(nullptr);
+        table->setColumnCount(2);
+        table->setHorizontalHeaderLabels({tr("Name"), tr("Label")});
+        int row = 0;
+        for (const XmlFile &file : m_inputFiles) {
+            xmlpp::NodeSet xml_nodes = file.xml->find("//define-basic-event");
+            table->setRowCount(row + xml_nodes.size());
+            for (const xmlpp::Node *xml_node : xml_nodes) {
+                table->setItem(
+                    row, 0, new QTableWidgetItem(
+                              QString::fromStdString(scram::GetAttributeValue(
+                                  XmlElement(xml_node), "name"))));
+                xmlpp::NodeSet label = xml_node->find("./label");
+                if (!label.empty()) {
+                    table->setItem(
+                        row, 1,
+                        new QTableWidgetItem(
+                            QString::fromStdString(scram::GetContent(
+                                XmlElement(label.front())->get_child_text()))));
+                }
+                ++row;
+            }
+        }
+        table->setWordWrap(false);
+        table->resizeColumnsToContents();
+        table->setSortingEnabled(true);
+        ui->tabWidget->addTab(table, name);
+    }
 }
 
 MainWindow::XmlFile::XmlFile() : xml(nullptr), parser(new xmlpp::DomParser()) {}
