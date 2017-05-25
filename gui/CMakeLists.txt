@@ -22,6 +22,22 @@ set(CMAKE_AUTORCC ON)
 # endif()
 
 set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
+
+if(NOT HAS_TANGO AND (WIN32 OR APPLE))
+  set(TANGO_QRC "${CMAKE_CURRENT_SOURCE_DIR}/qtango/icons/tango/tango.qrc")
+  execute_process(
+    COMMAND python generate_rcc.py icons/tango/index.theme
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/qtango"
+    RESULT_VARIABLE qtango_return
+    OUTPUT_VARIABLE qtango_out
+    ERROR_VARIABLE qtango_out
+    )
+  if(qtango_return)
+    message(FATAL_ERROR "Tango icon generation failed: ${qtango_out}")
+  endif()
+  list(APPEND SCRAM_GUI_RES "${TANGO_QRC}")
+endif()
+
 set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cpp"

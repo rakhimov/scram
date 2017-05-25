@@ -4,3 +4,6 @@
 [submodule "scripts/translators"]
 	path = scripts/translators
 	url = https://github.com/rakhimov/translators
+[submodule "gui/qtango"]
+	path = gui/qtango
+	url = https://github.com/rakhimov/qtango

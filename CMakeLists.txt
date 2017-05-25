@@ -31,6 +31,8 @@ option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
 option(WITH_PROFILE "Instrument for performance profiling" OFF)
 
+option(HAS_TANGO "The system provides the fall-back Tango icons" OFF)
+
 option(BUILD_GUI "Build the GUI front-end" ON)
 option(BUILD_TESTS "Build the tests" ON)
 

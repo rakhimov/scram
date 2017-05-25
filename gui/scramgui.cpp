@@ -29,6 +29,7 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QIcon>
 #include <QMessageBox>
 #include <QString>
 
@@ -137,7 +138,12 @@ int launchGui(int argc, char *argv[])
     QCoreApplication::setApplicationName(QString::fromLatin1("scram"));
     QCoreApplication::setApplicationVersion(
         QString::fromLatin1(scram::version::core()));
+
     GuardedApplication a(argc, argv);
+
+    if (QIcon::themeName().isEmpty())
+        QIcon::setThemeName(QStringLiteral("tango"));
+
     scram::gui::MainWindow w;
     w.show();
 
