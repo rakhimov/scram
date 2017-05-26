@@ -20,7 +20,7 @@ set(SCRAM_VERSION_MICRO 0)  # Bug fixes.
 
 option(BUILD_SHARED_LIBS OFF)
 
-option(INSTALL_LIBS "Install the generated libraries" ON)
+option(INSTALL_LIBS "Install the generated libraries" ${BUILD_SHARED_LIBS})
 
 # Linking of external libraries, such as BOOST.
 option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
@@ -30,6 +30,8 @@ option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 
 option(WITH_COVERAGE "Instrument for coverage analysis" OFF)
 option(WITH_PROFILE "Instrument for performance profiling" OFF)
+
+option(HAS_TANGO "The system provides the fall-back Tango icons" OFF)
 
 option(BUILD_GUI "Build the GUI front-end" ON)
 option(BUILD_TESTS "Build the tests" ON)
@@ -77,7 +79,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   CHECK_COMPILER_VERSION("6.1")
 
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("17.0.1")
   # TODO: CMAKE_CXX_STANDARD has no effect on icc.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -269,6 +271,8 @@ if(PACKAGE)
   if(WIN32)
     set(CPACK_GENERATOR "NSIS")
     # The following configuration assumes MinGW64 is setup specifically for this project.
+    # Moreover, the Qt5 libs and plugins must be linked staticly,
+    # so there's no headache with implicit (undiscoverable) dependencies.
     get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
     message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
     include(GetPrerequisites)
@@ -288,7 +292,6 @@ if(PACKAGE)
       ${SCRAM_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
-    # TODO: Include GUI dependencies conditionally.
   endif()
 endif()
 
@@ -298,6 +301,8 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${SCRAM_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SCRAM_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SCRAM_VERSION_MICRO}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+
+set(CPACK_STRIP_FILES ON)
 
 set(CPACK_COMPONENTS_ALL scram libraries gui examples)
 set(CPACK_COMPONENT_SCRAM_REQUIRED ON)

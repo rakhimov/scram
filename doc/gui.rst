@@ -15,6 +15,9 @@ The GUI front-end is developed with `Qt5 and Qt Creator`_.
 
 .. _Qt5 and Qt Creator: https://www.qt.io/developers/
 
+The front-end can be launched from the command-line with ``scram-gui``.
+Run ``scram-gui --help`` to get more information.
+
 
 GUI Concerns
 ============
@@ -102,7 +105,6 @@ GUI Features
 - Convenient, effective view of analysis results
 - Context menu
 - Smart defaults
-- Revision control
 
 
 Human Interface Guidelines

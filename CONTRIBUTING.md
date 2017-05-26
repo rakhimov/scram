@@ -18,6 +18,13 @@ such as the platform, version number, logs, and (sufficient) input.
 [user mailing list]: https://groups.google.com/forum/#!forum/scram-users
 
 
+## GUI Issues and Commits
+
+Prepend GUI issue and commit titles with "GUI:".
+For example, a GUI issue can be opened as "GUI: Crash with internal exception",
+and a git commit related to the GUI code can be "GUI: Fix the memory leak in Gate".
+
+
 ## Developer Workflow
 
 1. Start by forking this repository and setting it as the upstream repository.
