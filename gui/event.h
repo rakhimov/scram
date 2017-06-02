@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,9 @@
 #include <QGraphicsView>
 #include <QSize>
 
-#include "gate.h"
-
 namespace scram {
 namespace gui {
+namespace diagram {
 
 /**
  * @brief The base class for probabilistic events in a fault tree.
@@ -149,32 +148,44 @@ public:
 };
 
 /**
- * @brief Intermediate fault events with gates.
+ * @brief The Connective class provides the shape of the gate logic.
  */
-class IntermediateEvent : public Event
+class Connective : public QGraphicsItem
+{
+    using QGraphicsItem::QGraphicsItem;
+};
+
+/**
+ * @brief Fault tree intermediate events or gates.
+ */
+class Gate : public Event
 {
 public:
     /**
      * @param view  The host view.
      */
-    explicit IntermediateEvent(QGraphicsView *view);
+    explicit Gate(QGraphicsView *view);
 
     /**
      * @brief Sets the Boolean logic for the intermediate event inputs.
      *
-     * @param gate  The logic gate of the intermediate event.
+     * @param connective  The logic connective of the gate.
      */
-    void setGate(std::unique_ptr<Gate> gate)
+    void setConnective(std::unique_ptr<Connective> connective)
     {
-        setTypeGraphics(gate.release());
+        setTypeGraphics(connective.release());
     }
 
     /**
-     * @return The logic gate of the intermediate event.
+     * @return The logic of the gate.
      */
-    Gate *getGate() const { return static_cast<Gate *>(getTypeGraphics()); }
+    Connective *getConnective() const
+    {
+        return static_cast<Connective *>(getTypeGraphics());
+    }
 };
 
+} // namespace diagram
 } // namespace gui
 } // namespace scram
 

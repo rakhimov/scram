@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 namespace scram {
 namespace gui {
+namespace diagram {
 
 template <class T>
 Event::Event(const T &, QGraphicsView *view)
@@ -87,9 +88,8 @@ QGraphicsItem *Event::getTypeGraphics<BasicEvent>(const QSize &units)
 
 BasicEvent::BasicEvent(QGraphicsView *view) : Event(*this, view) {}
 
-IntermediateEvent::IntermediateEvent(QGraphicsView *view) : Event(*this, view)
-{
-}
+Gate::Gate(QGraphicsView *view) : Event(*this, view) {}
 
+} // namespace diagram
 } // namespace gui
 } // namespace scram
