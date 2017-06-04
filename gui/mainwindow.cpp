@@ -85,7 +85,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
         std::vector<std::string> all_input = extractInputFiles();
         all_input.insert(all_input.end(), inputFiles.begin(),
                          inputFiles.end());
-        mef::Initializer(all_input, m_settings);
+        m_model = mef::Initializer(all_input, m_settings).model();
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
@@ -212,27 +212,21 @@ void MainWindow::showElement(QTreeWidgetItem *item)
     QString name = item->data(0, Qt::DisplayRole).toString();
     if (name == tr("Basic Events")) {
         auto *table = new QTableWidget(nullptr);
-        table->setColumnCount(2);
-        table->setHorizontalHeaderLabels({tr("Name"), tr("Label")});
+        table->setColumnCount(3);
+        table->setHorizontalHeaderLabels(
+            {tr("Id"), tr("Probability"), tr("Label")});
+        table->setRowCount(m_model->basic_events().size());
         int row = 0;
-        for (const XmlFile &file : m_inputFiles) {
-            xmlpp::NodeSet xml_nodes = file.xml->find("//define-basic-event");
-            table->setRowCount(row + xml_nodes.size());
-            for (const xmlpp::Node *xml_node : xml_nodes) {
-                table->setItem(
-                    row, 0, new QTableWidgetItem(
-                              QString::fromStdString(scram::GetAttributeValue(
-                                  XmlElement(xml_node), "name"))));
-                xmlpp::NodeSet label = xml_node->find("./label");
-                if (!label.empty()) {
-                    table->setItem(
-                        row, 1,
-                        new QTableWidgetItem(
-                            QString::fromStdString(scram::GetContent(
-                                XmlElement(label.front())->get_child_text()))));
-                }
-                ++row;
-            }
+        for (const mef::BasicEventPtr &basicEvent : m_model->basic_events()) {
+            table->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(
+                                       basicEvent->id())));
+            table->setItem(row, 1, new QTableWidgetItem(
+                                       basicEvent->HasExpression()
+                                           ? QString::number(basicEvent->p())
+                                           : tr("N/A")));
+            table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(
+                                       basicEvent->label())));
+            ++row;
         }
         table->setWordWrap(false);
         table->resizeColumnsToContents();

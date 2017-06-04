@@ -28,6 +28,7 @@
 #include <libxml++/libxml++.h>
 
 #include "src/settings.h"
+#include "src/model.h"
 
 namespace Ui {
 class MainWindow;
@@ -115,6 +116,7 @@ private:
     XmlFile m_config; ///< The main project configuration file.
     std::vector<XmlFile> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
+    std::shared_ptr<mef::Model> m_model; ///< The analysis model.
 };
 
 } // namespace gui
