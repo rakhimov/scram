@@ -66,12 +66,12 @@ if(INSTALL_LIBS)
   else()
     set_target_properties(scramcore
       PROPERTIES
-      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
+      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram"
       )
     install(
       TARGETS scramcore
-      DESTINATION lib
+      DESTINATION lib/scram
       COMPONENT scram
       )
   endif()
