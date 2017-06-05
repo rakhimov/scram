@@ -23,6 +23,7 @@
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QMessageBox>
 #include <QTableWidget>
 
@@ -48,7 +49,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
             &MainWindow::showElement);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
-            [this](int index) { ui->tabWidget->removeTab(index); });
+            [this](int index) {
+                auto *widget = ui->tabWidget->widget(index);
+                ui->tabWidget->removeTab(index);
+                delete widget;
+            });
 }
 
 MainWindow::~MainWindow() = default;
@@ -277,6 +282,16 @@ void MainWindow::resetTreeWidget()
     for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
         faultTrees->addChild(
             new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
+
+        auto *scene = new QGraphicsScene(this);
+        auto *event = new diagram::BasicEvent();
+        event->setName(tr("Test"));
+        scene->addItem(event);
+
+        ui->tabWidget->addTab(
+            new QGraphicsView(scene, this),
+            tr("Fault Tree: %1")
+                .arg(QString::fromStdString(faultTree->name())));
     }
 
     auto *modelData = new QTreeWidgetItem({tr("Model Data")});

@@ -17,6 +17,7 @@
 
 #include "event.h"
 
+#include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
 #include <QPainterPath>
@@ -28,10 +29,9 @@ namespace gui {
 namespace diagram {
 
 template <class T>
-Event::Event(const T &, QGraphicsView *view)
-    : m_view(view), m_typeGraphics(Event::getTypeGraphics<T>(units()))
+Event::Event(const T &, QGraphicsItem *parent)
+    : QGraphicsItem(parent), m_typeGraphics(Event::getTypeGraphics<T>(units()))
 {
-    m_view->scene()->addItem(this);
     if (m_typeGraphics) {
         m_typeGraphics->setParentItem(this);
         m_typeGraphics->setPos(0, 5.5 * units().height());
@@ -40,7 +40,7 @@ Event::Event(const T &, QGraphicsView *view)
 
 QSize Event::units() const
 {
-    QFontMetrics font = m_view->fontMetrics();
+    QFontMetrics font = QApplication::fontMetrics();
     return {font.averageCharWidth(), font.height()};
 }
 
@@ -86,9 +86,9 @@ QGraphicsItem *Event::getTypeGraphics<BasicEvent>(const QSize &units)
     return new QGraphicsEllipseItem(-r, 0, d, d);
 }
 
-BasicEvent::BasicEvent(QGraphicsView *view) : Event(*this, view) {}
+BasicEvent::BasicEvent(QGraphicsItem *parent) : Event(*this, parent) {}
 
-Gate::Gate(QGraphicsView *view) : Event(*this, view) {}
+Gate::Gate(QGraphicsItem *parent) : Event(*this, parent) {}
 
 } // namespace diagram
 } // namespace gui

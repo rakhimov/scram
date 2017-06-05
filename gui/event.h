@@ -21,7 +21,6 @@
 #include <memory>
 
 #include <QGraphicsItem>
-#include <QGraphicsView>
 #include <QSize>
 
 namespace scram {
@@ -87,9 +86,10 @@ protected:
      *
      * @tparam T  The derived class type.
      *
-     * @param view  The host view.
+     * @param parent  The parent Graphics event.
      */
-    template <class T> Event(const T &, QGraphicsView *view);
+    template <class T>
+    explicit Event(const T &, QGraphicsItem *parent = nullptr);
 
     /**
      * @brief Provides the graphical representation of the derived type.
@@ -129,7 +129,6 @@ protected:
     QSize units() const;
 
 private:
-    QGraphicsView *m_view;         ///< The host view.
     QString m_name;                ///< Identifying name of the event.
     QString m_description;         ///< Description of the event.
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
@@ -142,9 +141,9 @@ class BasicEvent : public Event
 {
 public:
     /**
-     * @param view  The host view.
+     * @param parent  The parent graphics item.
      */
-    explicit BasicEvent(QGraphicsView *view);
+    explicit BasicEvent(QGraphicsItem *parent = nullptr);
 };
 
 /**
@@ -161,10 +160,7 @@ class Connective : public QGraphicsItem
 class Gate : public Event
 {
 public:
-    /**
-     * @param view  The host view.
-     */
-    explicit Gate(QGraphicsView *view);
+    explicit Gate(QGraphicsItem *parent = nullptr);
 
     /**
      * @brief Sets the Boolean logic for the intermediate event inputs.
