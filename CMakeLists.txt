@@ -212,19 +212,6 @@ message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_DATE_TIME_LIBRARY})
 message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 
-if(BUILD_GUI)
-  # Find the QtWidgets library.
-  if(APPLE)
-    # Qt5 with Homebrew.
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
-  endif()
-  find_package(Qt5Widgets REQUIRED)
-  if(Qt5Widgets_FOUND)
-    message(STATUS "Found Qt5")
-    message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
-  endif()
-endif()
-
 ########################## End of find libraries ########################
 
 ########################## Begin includes ###############################

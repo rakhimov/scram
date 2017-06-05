@@ -48,6 +48,7 @@ addons:
             - libglibmm-2.4-dev
             - libgoogle-perftools-dev
             - qt5-default
+            - libqt5svg5-dev
         sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty

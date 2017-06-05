@@ -1,3 +1,18 @@
+# Find the QtWidgets library.
+if(APPLE)
+  # Qt5 with Homebrew.
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
+endif()
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Svg REQUIRED)
+if(Qt5Widgets_FOUND)
+  message(STATUS "Found Qt5")
+  message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+endif()
+if(Qt5Svg_FOUND)
+  message(STATUS "Found Qt5 SVG")
+endif()
+
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
 
@@ -48,7 +63,9 @@ set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
 add_subdirectory("${SCRAM_GUI_TS_DIR}")
 
 add_library(scramgui ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-target_link_libraries(scramgui PRIVATE ${LIBS} scramcore Qt5::Core Qt5::Gui Qt5::Widgets)
+target_link_libraries(scramgui PRIVATE
+  ${LIBS} scramcore
+  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
 
 if(INSTALL_LIBS)
   if(WIN32)
