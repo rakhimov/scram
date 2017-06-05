@@ -284,8 +284,8 @@ void MainWindow::resetTreeWidget()
             new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
 
         auto *scene = new QGraphicsScene(this);
-        auto *event = new diagram::BasicEvent();
-        event->setName(tr("Test"));
+        auto *event
+            = new diagram::BasicEvent(**faultTree->basic_events().begin());
         scene->addItem(event);
 
         ui->tabWidget->addTab(

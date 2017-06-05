@@ -28,14 +28,9 @@ namespace scram {
 namespace gui {
 namespace diagram {
 
-template <class T>
-Event::Event(const T &, QGraphicsItem *parent)
-    : QGraphicsItem(parent), m_typeGraphics(Event::getTypeGraphics<T>(units()))
+Event::Event(const mef::Event &event, QGraphicsItem *parent)
+    : QGraphicsItem(parent), m_event(event), m_typeGraphics(nullptr)
 {
-    if (m_typeGraphics) {
-        m_typeGraphics->setParentItem(this);
-        m_typeGraphics->setPos(0, 5.5 * units().height());
-    }
 }
 
 QSize Event::units() const
@@ -67,28 +62,30 @@ void Event::paint(QPainter *painter,
     int h = units().height();
     QRectF rect(-8 * w, 0, 16 * w, 3 * h);
     painter->drawRect(rect);
-    painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, m_description);
+    painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
+                      QString::fromStdString(m_event.label()));
 
     painter->drawLine(QPointF(0, 3 * h), QPointF(0, 4 * h));
 
     QRectF nameRect(-5 * w, 4 * h, 10 * w, h);
     painter->drawRect(nameRect);
-    painter->drawText(nameRect, Qt::AlignCenter, m_name);
+    painter->drawText(nameRect, Qt::AlignCenter,
+                      QString::fromStdString(m_event.name()));
 
     painter->drawLine(QPointF(0, 5 * h), QPointF(0, 5.5 * h));
 }
 
-template <>
-QGraphicsItem *Event::getTypeGraphics<BasicEvent>(const QSize &units)
+BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
+    : Event(event, parent)
 {
-    double r = 5 * units.width();
+    double r = 5 * units().width();
     double d = 2 * r;
-    return new QGraphicsEllipseItem(-r, 0, d, d);
+    Event::setTypeGraphics(new QGraphicsEllipseItem(-r, 0, d, d));
 }
 
-BasicEvent::BasicEvent(QGraphicsItem *parent) : Event(*this, parent) {}
-
-Gate::Gate(QGraphicsItem *parent) : Event(*this, parent) {}
+Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
+{
+}
 
 } // namespace diagram
 } // namespace gui

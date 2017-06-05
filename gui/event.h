@@ -23,6 +23,8 @@
 #include <QGraphicsItem>
 #include <QSize>
 
+#include "src/event.h"
+
 namespace scram {
 namespace gui {
 namespace diagram {
@@ -45,34 +47,6 @@ namespace diagram {
 class Event : public QGraphicsItem
 {
 public:
-    /**
-     * @brief Assigns the short name or ID for the event.
-     *
-     * @param name  Identifying string name for the event.
-     */
-    void setName(QString name) { m_name = std::move(name); }
-
-    /**
-     * @return Identifying name string.
-     *         If the name has not been set,
-     *         the string is empty.
-     */
-    const QString &getName() const { return m_name; }
-
-    /**
-     * @brief Adds description to the event.
-     *
-     * @param desc  Information about the event.
-     *              Empty string for events without descriptions.
-     */
-    void setDescription(QString desc) { m_description = std::move(desc); }
-
-    /**
-     * @return Description of the event.
-     *         Empty string if no description is provided.
-     */
-    const QString &getDescription() { return m_description; }
-
     QRectF boundingRect() const final;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) final;
@@ -81,34 +55,10 @@ protected:
     /**
      * @brief Assigns an event to a presentation view.
      *
-     * The graphical representation of the derived type
-     * is deduced by calling getTypeGraphics.
-     *
-     * @tparam T  The derived class type.
-     *
+     * @param event  The data event.
      * @param parent  The parent Graphics event.
      */
-    template <class T>
-    explicit Event(const T &, QGraphicsItem *parent = nullptr);
-
-    /**
-     * @brief Provides the graphical representation of the derived type.
-     *
-     * @tparam T  The derived class type.
-     *
-     * @param units  The unit height and width for drawings.
-     *
-     * @return Graphics item to be attached to the event graphics.
-     *         nullptr if the item is undefined upon construction (default).
-     *
-     * @post The item is unowned and allocated on the heap
-     *       in order to be owned by the base event graphics item.
-     */
-    template <class T>
-    static QGraphicsItem *getTypeGraphics(const QSize & /*units*/)
-    {
-        return nullptr;
-    }
+    explicit Event(const mef::Event &event, QGraphicsItem *parent = nullptr);
 
     /**
      * @return The graphics of the derived class.
@@ -128,9 +78,10 @@ protected:
      */
     QSize units() const;
 
+protected:
+    const mef::Event &m_event; ///< The data.
+
 private:
-    QString m_name;                ///< Identifying name of the event.
-    QString m_description;         ///< Description of the event.
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
 };
 
@@ -140,10 +91,8 @@ private:
 class BasicEvent : public Event
 {
 public:
-    /**
-     * @param parent  The parent graphics item.
-     */
-    explicit BasicEvent(QGraphicsItem *parent = nullptr);
+    explicit BasicEvent(const mef::BasicEvent &event,
+                        QGraphicsItem *parent = nullptr);
 };
 
 /**
@@ -160,7 +109,7 @@ class Connective : public QGraphicsItem
 class Gate : public Event
 {
 public:
-    explicit Gate(QGraphicsItem *parent = nullptr);
+    explicit Gate(const mef::Gate &event, QGraphicsItem *parent = nullptr);
 
     /**
      * @brief Sets the Boolean logic for the intermediate event inputs.
