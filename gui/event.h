@@ -49,6 +49,9 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) final;
 
+    /// @returns The width of the whole subgraph.
+    virtual double width() const;
+
 protected:
     /// The confining size of the Event graphics in characters.
     /// The derived event types should stay within this confinement.
@@ -87,9 +90,6 @@ protected:
      */
     QSize units() const;
 
-    /// @returns The width of the whole subgraph.
-    virtual double width() const;
-
     const mef::Event &m_event; ///< The data.
 
 private:
@@ -116,8 +116,13 @@ public:
 
     std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Operator type);
 
+    double width() const override;
+
 private:
-    static const QSize m_maxSize;  ///< The constraints on type graphics.
+    static const QSize m_maxSize; ///< The constraints on type graphics.
+    static const double m_space;  ///< The space between children in chars.
+
+    double m_width = 0; ///< Assume the graph does not change its width.
 };
 
 } // namespace diagram

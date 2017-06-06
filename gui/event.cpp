@@ -17,8 +17,11 @@
 
 #include "event.h"
 
+#include <vector>
+
 #include <QApplication>
 #include <QFontMetrics>
+#include <QGraphicsLineItem>
 #include <QGraphicsPathItem>
 #include <QPainter>
 #include <QPainterPath>
@@ -49,7 +52,7 @@ QSize Event::units() const
 
 double Event::width() const
 {
-  return m_size.width() * units().width();
+    return m_size.width() * units().width();
 }
 
 void Event::setTypeGraphics(QGraphicsItem *item)
@@ -101,6 +104,7 @@ BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
 }
 
 const QSize Gate::m_maxSize = {6, 3};
+const double Gate::m_space = 1;
 
 Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
 {
@@ -111,6 +115,42 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
     pathItem->setPos(0, (m_baseHeight + m_maxSize.height()) * units().height());
     Event::setTypeGraphics(
         getGateGraphicsType(event.formula().type()).release());
+    struct {
+        Event *operator()(const mef::BasicEvent *arg)
+        {
+            return new BasicEvent(*arg, m_parent);
+        }
+        Event *operator()(const mef::HouseEvent *) { return nullptr; }
+        Event *operator()(const mef::Gate *arg)
+        {
+            return new Gate(*arg, m_parent);
+        }
+
+        QGraphicsItem *m_parent;
+    } formula_visitor{this};
+    double linkY = (m_size.height() - 1) * units().height();
+    std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
+    for (const mef::Formula::EventArg &eventArg :
+         event.formula().event_args()) {
+        auto *child = boost::apply_visitor(formula_visitor, eventArg);
+        auto *link = new QGraphicsLineItem(0, 0, 0, units().height(), this);
+        if (!children.empty())
+            m_width += m_space * units().height();
+        child->moveBy(m_width + child->width() / 2,
+                      m_size.height() * units().height());
+        link->moveBy(m_width + child->width() / 2, linkY);
+        m_width += child->width();
+        children.emplace_back(child, link);
+    }
+    // Shift the children left.
+    for (auto &child : children) {
+        child.first->moveBy(-m_width / 2, 0);
+        child.second->moveBy(-m_width / 2, 0);
+    }
+    // Add the planar line to complete the connection.
+    if (children.size() > 1)
+        new QGraphicsLineItem(children.front().first->pos().x(), linkY,
+                              children.back().first->pos().x(), linkY, this);
 }
 
 std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
@@ -148,6 +188,8 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
 }
+
+double Gate::width() const { return m_width; }
 
 } // namespace diagram
 } // namespace gui
