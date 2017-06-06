@@ -107,6 +107,16 @@ public:
 };
 
 /**
+ * @brief Representation of a fault tree house events.
+ */
+class HouseEvent : public Event
+{
+public:
+    explicit HouseEvent(const mef::HouseEvent &event,
+                        QGraphicsItem *parent = nullptr);
+};
+
+/**
  * @brief Fault tree intermediate events or gates.
  */
 class Gate : public Event

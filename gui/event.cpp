@@ -23,6 +23,7 @@
 #include <QFontMetrics>
 #include <QGraphicsLineItem>
 #include <QGraphicsPathItem>
+#include <QGraphicsPolygonItem>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRectF>
@@ -103,6 +104,15 @@ BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
     Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, d));
 }
 
+HouseEvent::HouseEvent(const mef::HouseEvent &event, QGraphicsItem *parent)
+    : Event(event, parent)
+{
+    double h = int(m_size.height() - m_baseHeight) * units().height();
+    double y0 = h * 0.25;
+    Event::setTypeGraphics(new QGraphicsPolygonItem(
+        {{{0, 0}, {-h / 2, y0}, {-h / 2, h}, {h / 2, h}, {h / 2, y0}}}));
+}
+
 const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
@@ -120,7 +130,10 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
         {
             return new BasicEvent(*arg, m_parent);
         }
-        Event *operator()(const mef::HouseEvent *) { return nullptr; }
+        Event *operator()(const mef::HouseEvent *arg)
+        {
+            return new HouseEvent(*arg, m_parent);
+        }
         Event *operator()(const mef::Gate *arg)
         {
             return new Gate(*arg, m_parent);
