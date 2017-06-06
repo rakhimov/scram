@@ -41,8 +41,6 @@ namespace diagram {
  * This class provides the reference units for derived classes to use.
  * All derived class shapes should stay within the allowed box limits
  * to make the fault tree structure layered.
- *
- * The derived classes must confine themselves in (10 width x 10 width) box.
  */
 class Event : public QGraphicsItem
 {
@@ -52,6 +50,17 @@ public:
                QWidget *widget) final;
 
 protected:
+    /// The confining size of the Event graphics in characters.
+    /// The derived event types should stay within this confinement.
+    static const QSize m_size;
+    /// The height of the confining space used only by the Event base class.
+    static const double m_baseHeight;
+    /// The length of the ID box in characters.
+    /// The height of the ID box is 1 character.
+    static const double m_idBoxLength;
+    /// The height of the Label box in characters.
+    static const double m_labelBoxHeight;
+
     /**
      * @brief Assigns an event to a presentation view.
      *
@@ -78,7 +87,9 @@ protected:
      */
     QSize units() const;
 
-protected:
+    /// @returns The width of the whole subgraph.
+    virtual double width() const;
+
     const mef::Event &m_event; ///< The data.
 
 private:

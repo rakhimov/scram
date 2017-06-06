@@ -287,11 +287,14 @@ void MainWindow::resetTreeWidget()
         auto *event
             = new diagram::BasicEvent(**faultTree->basic_events().begin());
         scene->addItem(event);
-
+        auto *root = new diagram::Gate(**faultTree->gates().begin());
+        scene->addItem(root);
+        root->setPos(0, 200);  ///< @todo Remove
+        auto *view = new QGraphicsView(scene, this);
+        view->setAlignment(Qt::AlignTop);
         ui->tabWidget->addTab(
-            new QGraphicsView(scene, this),
-            tr("Fault Tree: %1")
-                .arg(QString::fromStdString(faultTree->name())));
+            view, tr("Fault Tree: %1")
+                      .arg(QString::fromStdString(faultTree->name())));
     }
 
     auto *modelData = new QTreeWidgetItem({tr("Model Data")});

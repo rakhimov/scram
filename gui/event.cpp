@@ -19,6 +19,7 @@
 
 #include <QApplication>
 #include <QFontMetrics>
+#include <QGraphicsPathItem>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRectF>
@@ -27,6 +28,11 @@
 namespace scram {
 namespace gui {
 namespace diagram {
+
+const QSize Event::m_size = {16, 11};
+const double Event::m_baseHeight = 6.5;
+const double Event::m_idBoxLength = 10;
+const double Event::m_labelBoxHeight = 4;
 
 Event::Event(const mef::Event &event, QGraphicsItem *parent)
     : QGraphicsItem(parent), m_event(event), m_typeGraphics(nullptr)
@@ -39,19 +45,25 @@ QSize Event::units() const
     return {font.averageCharWidth(), font.height()};
 }
 
+double Event::width() const
+{
+  return m_size.width() * units().width();
+}
+
 void Event::setTypeGraphics(QGraphicsItem *item)
 {
     delete m_typeGraphics;
     m_typeGraphics = item;
     m_typeGraphics->setParentItem(this);
-    m_typeGraphics->setPos(0, 5.5 * units().height());
+    m_typeGraphics->setPos(0, m_baseHeight * units().height());
 }
 
 QRectF Event::boundingRect() const
 {
     int w = units().width();
     int h = units().height();
-    return QRectF(-8 * w, 0, 16 * w, 5.5 * h);
+    double labelBoxWidth = m_size.width() * w;
+    return QRectF(-labelBoxWidth / 2, 0, labelBoxWidth, m_baseHeight * h);
 }
 
 void Event::paint(QPainter *painter,
@@ -60,31 +72,41 @@ void Event::paint(QPainter *painter,
 {
     int w = units().width();
     int h = units().height();
-    QRectF rect(-8 * w, 0, 16 * w, 3 * h);
+    double labelBoxWidth = m_size.width() * w ;
+    QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
     painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
                       QString::fromStdString(m_event.label()));
 
-    painter->drawLine(QPointF(0, 3 * h), QPointF(0, 4 * h));
+    painter->drawLine(QPointF(0, m_labelBoxHeight * h),
+                      QPointF(0, (m_labelBoxHeight + 1) * h));
 
-    QRectF nameRect(-5 * w, 4 * h, 10 * w, h);
+    double idBoxWidth = m_idBoxLength * w;
+    QRectF nameRect(-idBoxWidth / 2, (m_labelBoxHeight + 1) * h, idBoxWidth, h);
     painter->drawRect(nameRect);
     painter->drawText(nameRect, Qt::AlignCenter,
                       QString::fromStdString(m_event.name()));
 
-    painter->drawLine(QPointF(0, 5 * h), QPointF(0, 5.5 * h));
+    painter->drawLine(QPointF(0, (m_labelBoxHeight + 2) * h),
+                      QPointF(0, (m_labelBoxHeight + 2.5) * h));
 }
 
 BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
     : Event(event, parent)
 {
-    double r = 5 * units().width();
-    double d = 2 * r;
-    Event::setTypeGraphics(new QGraphicsEllipseItem(-r, 0, d, d));
+    double d = int(m_size.height() - m_baseHeight) * units().height();
+    Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, d));
 }
 
 Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
 {
+    double availableHeight
+        = (m_size.height() - m_baseHeight) * units().height();
+    QPainterPath painterPath;
+    painterPath.lineTo(0, availableHeight);
+    auto *pathItem = new QGraphicsPathItem(painterPath, this);
+    pathItem->setZValue(-1);
+    pathItem->setPos(0, m_baseHeight * units().height());
 }
 
 } // namespace diagram
