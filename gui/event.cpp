@@ -128,6 +128,22 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         paintPath.closeSubpath();
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
+    case mef::kOr: {
+        QPainterPath paintPath;
+        double x1 = m_maxSize.width() * units().width() / 2;
+        double maxHeight = m_maxSize.height() * units().height();
+        QRectF rectangle(-x1, 0, x1 * 2, maxHeight * 2);
+        paintPath.arcMoveTo(rectangle, 0);
+        paintPath.arcTo(rectangle, 0, 180);
+        double lowerArc = 0.25;
+        rectangle.setHeight(rectangle.height() * lowerArc);
+        rectangle.moveTop(maxHeight * (1 - lowerArc));
+        paintPath.arcMoveTo(rectangle, 0);
+        paintPath.arcTo(rectangle, 0, 180);
+        paintPath.arcMoveTo(rectangle, 90);
+        paintPath.lineTo(0, maxHeight);
+        return std::make_unique<QGraphicsPathItem>(paintPath);
+    }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
