@@ -49,6 +49,7 @@ addons:
             - libgoogle-perftools-dev
             - qt5-default
             - libqt5svg5-dev
+            - libqt5opengl5-dev
         sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty

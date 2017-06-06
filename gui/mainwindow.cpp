@@ -26,6 +26,7 @@
 #include <QGraphicsView>
 #include <QMessageBox>
 #include <QTableWidget>
+#include <QtOpenGL>
 
 #include "event.h"
 #include "guiassert.h"
@@ -287,6 +288,7 @@ void MainWindow::resetTreeWidget()
         auto *root = new diagram::Gate(**faultTree->gates().begin());
         scene->addItem(root);
         auto *view = new QGraphicsView(scene, this);
+        view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
         view->setRenderHints(QPainter::Antialiasing
                              | QPainter::SmoothPixmapTransform);
         view->setAlignment(Qt::AlignTop);

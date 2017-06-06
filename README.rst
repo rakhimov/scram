@@ -140,6 +140,7 @@ The minimal list of required library package names is:
 #. libxml++2.6-dev
 #. qt5-default
 #. libqt5svg5-dev
+#. libqt5opengl5-dev
 
 and (optionally):
 
@@ -161,7 +162,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake lib{boost-all,xml++2.6,google-perftools,qt5svg5}-dev qt5-default
+    sudo apt-get install -y cmake lib{boost-all,xml++2.6,google-perftools,qt5{svg,opengl}5}-dev qt5-default
 
 
 macOS
