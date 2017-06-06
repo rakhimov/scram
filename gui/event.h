@@ -107,14 +107,6 @@ public:
 };
 
 /**
- * @brief The Connective class provides the shape of the gate logic.
- */
-class Connective : public QGraphicsItem
-{
-    using QGraphicsItem::QGraphicsItem;
-};
-
-/**
  * @brief Fault tree intermediate events or gates.
  */
 class Gate : public Event
@@ -122,23 +114,10 @@ class Gate : public Event
 public:
     explicit Gate(const mef::Gate &event, QGraphicsItem *parent = nullptr);
 
-    /**
-     * @brief Sets the Boolean logic for the intermediate event inputs.
-     *
-     * @param connective  The logic connective of the gate.
-     */
-    void setConnective(std::unique_ptr<Connective> connective)
-    {
-        setTypeGraphics(connective.release());
-    }
+    std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Operator type);
 
-    /**
-     * @return The logic of the gate.
-     */
-    Connective *getConnective() const
-    {
-        return static_cast<Connective *>(getTypeGraphics());
-    }
+private:
+    static const QSize m_maxSize;  ///< The constraints on type graphics.
 };
 
 } // namespace diagram

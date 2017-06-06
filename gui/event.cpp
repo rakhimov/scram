@@ -25,6 +25,8 @@
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
 
+#include "guiassert.h"
+
 namespace scram {
 namespace gui {
 namespace diagram {
@@ -98,15 +100,37 @@ BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
     Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, d));
 }
 
+const QSize Gate::m_maxSize = {6, 3};
+
 Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
 {
     double availableHeight
-        = (m_size.height() - m_baseHeight) * units().height();
-    QPainterPath painterPath;
-    painterPath.lineTo(0, availableHeight);
-    auto *pathItem = new QGraphicsPathItem(painterPath, this);
-    pathItem->setZValue(-1);
-    pathItem->setPos(0, m_baseHeight * units().height());
+        = m_size.height() - m_baseHeight - m_maxSize.height();
+    auto *pathItem = new QGraphicsLineItem(
+        0, 0, 0, (availableHeight - 1) * units().height(), this);
+    pathItem->setPos(0, (m_baseHeight + m_maxSize.height()) * units().height());
+    Event::setTypeGraphics(
+        getGateGraphicsType(event.formula().type()).release());
+}
+
+std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
+{
+    switch (type) {
+    case mef::kNull:
+        return std::make_unique<QGraphicsLineItem>(
+            0, 0, 0, m_maxSize.height() * units().height());
+    case mef::kAnd: {
+        QPainterPath paintPath;
+        double x1 = m_maxSize.width() * units().width() / 2;
+        double maxHeight = m_maxSize.height() * units().height();
+        paintPath.moveTo(0, maxHeight);
+        paintPath.arcTo(-x1, 0, x1 * 2, maxHeight * 2, 0, 180);
+        paintPath.closeSubpath();
+        return std::make_unique<QGraphicsPathItem>(paintPath);
+    }
+    default:
+        GUI_ASSERT(false && "Unexpected gate type", nullptr);
+    }
 }
 
 } // namespace diagram
