@@ -263,6 +263,17 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         paintPath.lineTo(0, h);
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
+    case mef::kXor: {
+        auto orItem = getGateGraphicsType(mef::kOr);
+        double x1 = m_maxSize.width() * units().width() / 2;
+        double h = m_maxSize.height() * units().height();
+        QPainterPath paintPath;
+        paintPath.lineTo(-x1, h);
+        paintPath.moveTo(x1, h);
+        paintPath.lineTo(0, 0);
+        new QGraphicsPathItem(paintPath, orItem.get());
+        return orItem;
+    }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
