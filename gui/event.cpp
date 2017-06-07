@@ -275,6 +275,16 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         new QGraphicsPathItem(paintPath, orItem.get());
         return orItem;
     }
+    case mef::kNor: {
+        auto orItem = getGateGraphicsType(mef::kOr);
+        auto circle = std::make_unique<QGraphicsEllipseItem>(
+            -units().height() / 2, 0, units().height(), units().height());
+        double orHeight = orItem->boundingRect().height();
+        orItem->setScale((orHeight - units().height()) / orHeight);
+        orItem->setPos(0, units().height());
+        orItem.release()->setParentItem(circle.get());
+        return std::move(circle);
+    }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
