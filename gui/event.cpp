@@ -255,12 +255,13 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     case mef::kNot: {
         double h = m_maxSize.height() * units().height();
         QPainterPath paintPath;
-        paintPath.lineTo(0, (h - units().height()) / 2);
-        paintPath.addEllipse(-units().height() / 2,
-                             (m_maxSize.height() - 1) * units().height() / 2,
-                             units().height(), units().height());
-        paintPath.moveTo(0, (h + units().height()) / 2);
-        paintPath.lineTo(0, h);
+        paintPath.addEllipse(-units().height() / 2, 0, units().height(),
+                             units().height());
+        paintPath.moveTo(0, units().height());
+        double a = h - units().height();
+        paintPath.lineTo(-a / 2, h);
+        paintPath.lineTo(a / 2, h);
+        paintPath.closeSubpath();
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
     case mef::kXor: {
