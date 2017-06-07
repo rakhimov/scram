@@ -252,6 +252,17 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
                      (h - text->boundingRect().height()) / 2);
         return std::move(polygon);
     }
+    case mef::kNot: {
+        double h = m_maxSize.height() * units().height();
+        QPainterPath paintPath;
+        paintPath.lineTo(0, (h - units().height()) / 2);
+        paintPath.addEllipse(-units().height() / 2,
+                             (m_maxSize.height() - 1) * units().height() / 2,
+                             units().height(), units().height());
+        paintPath.moveTo(0, (h + units().height()) / 2);
+        paintPath.lineTo(0, h);
+        return std::make_unique<QGraphicsPathItem>(paintPath);
+    }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
