@@ -27,6 +27,7 @@
 #include <QGraphicsPathItem>
 #include <QGraphicsPolygonItem>
 #include <QGraphicsRectItem>
+#include <QGraphicsTextItem>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRectF>
@@ -227,6 +228,29 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         paintPath.arcMoveTo(rectangle, 90);
         paintPath.lineTo(0, maxHeight);
         return std::make_unique<QGraphicsPathItem>(paintPath);
+    }
+    case mef::kVote: {
+        double h = m_maxSize.height() * units().height();
+        double a = h / sqrt(3);
+        auto polygon
+            = std::make_unique<QGraphicsPolygonItem>(QPolygonF{{{-a / 2, 0},
+                                                                {a / 2, 0},
+                                                                {a, h / 2},
+                                                                {a / 2, h},
+                                                                {-a / 2, h},
+                                                                {-a, h / 2}}});
+        const mef::Formula &formula
+            = static_cast<const mef::Gate &>(m_event).formula();
+        auto *text = new QGraphicsTextItem(QString::fromLatin1("%1/%2")
+                                               .arg(formula.vote_number())
+                                               .arg(formula.num_args()),
+                                           polygon.get());
+        QFont font = text->font();
+        font.setPointSizeF(1.5 * font.pointSizeF());
+        text->setFont(font);
+        text->setPos(-text->boundingRect().width() / 2,
+                     (h - text->boundingRect().height()) / 2);
+        return std::move(polygon);
     }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);

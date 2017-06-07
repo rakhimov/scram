@@ -285,13 +285,14 @@ void MainWindow::resetTreeWidget()
             new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
 
         auto *scene = new QGraphicsScene(this);
-        auto *root = new diagram::Gate(**faultTree->gates().begin());
+        auto *root = new diagram::Gate(*faultTree->top_events().front());
         scene->addItem(root);
         auto *view = new ZoomableView(scene, this);
         view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
         view->setRenderHints(QPainter::Antialiasing
                              | QPainter::SmoothPixmapTransform);
         view->setAlignment(Qt::AlignTop);
+        view->ensureVisible(root);
         ui->tabWidget->addTab(
             view, tr("Fault Tree: %1")
                       .arg(QString::fromStdString(faultTree->name())));
