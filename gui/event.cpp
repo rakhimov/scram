@@ -200,6 +200,7 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
 
 std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
 {
+    static_assert(mef::kNumOperators == 8, "Unexpected operator changes");
     switch (type) {
     case mef::kNull:
         return std::make_unique<QGraphicsLineItem>(
@@ -285,8 +286,16 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         orItem.release()->setParentItem(circle.get());
         return std::move(circle);
     }
-    default:
-        GUI_ASSERT(false && "Unexpected gate type", nullptr);
+    case mef::kNand: {
+        auto andItem = getGateGraphicsType(mef::kAnd);
+        auto circle = std::make_unique<QGraphicsEllipseItem>(
+            -units().height() / 2, 0, units().height(), units().height());
+        double andHeight = andItem->boundingRect().height();
+        andItem->setScale((andHeight - units().height()) / andHeight);
+        andItem->setPos(0, units().height());
+        andItem.release()->setParentItem(circle.get());
+        return std::move(circle);
+    }
     }
 }
 
