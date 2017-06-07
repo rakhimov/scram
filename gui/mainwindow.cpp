@@ -23,13 +23,13 @@
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QGraphicsScene>
-#include <QGraphicsView>
 #include <QMessageBox>
 #include <QTableWidget>
 #include <QtOpenGL>
 
 #include "event.h"
 #include "guiassert.h"
+#include "zoomableview.h"
 
 #include "src/config.h"
 #include "src/error.h"
@@ -287,7 +287,7 @@ void MainWindow::resetTreeWidget()
         auto *scene = new QGraphicsScene(this);
         auto *root = new diagram::Gate(**faultTree->gates().begin());
         scene->addItem(root);
-        auto *view = new QGraphicsView(scene, this);
+        auto *view = new ZoomableView(scene, this);
         view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
         view->setRenderHints(QPainter::Antialiasing
                              | QPainter::SmoothPixmapTransform);
