@@ -117,6 +117,16 @@ public:
 };
 
 /**
+ * @brief Placeholder for events with a potential to become a gate.
+ */
+class UndevelopedEvent : public Event
+{
+public:
+    explicit UndevelopedEvent(const mef::BasicEvent &event,
+                              QGraphicsItem *parent = nullptr);
+};
+
+/**
  * @brief Fault tree intermediate events or gates.
  */
 class Gate : public Event

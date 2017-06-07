@@ -17,6 +17,8 @@
 
 #include "event.h"
 
+#include <cmath>
+
 #include <vector>
 
 #include <QApplication>
@@ -24,6 +26,7 @@
 #include <QGraphicsLineItem>
 #include <QGraphicsPathItem>
 #include <QGraphicsPolygonItem>
+#include <QGraphicsRectItem>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRectF>
@@ -113,6 +116,18 @@ HouseEvent::HouseEvent(const mef::HouseEvent &event, QGraphicsItem *parent)
         {{{0, 0}, {-h / 2, y0}, {-h / 2, h}, {h / 2, h}, {h / 2, y0}}}));
 }
 
+UndevelopedEvent::UndevelopedEvent(const mef::BasicEvent &event,
+                                   QGraphicsItem *parent)
+    : Event(event, parent)
+{
+    double h = int(m_size.height() - m_baseHeight) * units().height();
+    double a = h / std::sqrt(2);
+    auto *diamond = new QGraphicsRectItem(-a / 2, (h - a) / 2, a, a);
+    diamond->setTransformOriginPoint(0, h / 2);
+    diamond->setRotation(45);
+    Event::setTypeGraphics(diamond);
+}
+
 const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
@@ -128,6 +143,11 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
     struct {
         Event *operator()(const mef::BasicEvent *arg)
         {
+            if (arg->HasAttribute("flavor")) {
+                const mef::Attribute &flavor = arg->GetAttribute("flavor");
+                if (flavor.value == "undeveloped")
+                    return new UndevelopedEvent(*arg, m_parent);
+            }
             return new BasicEvent(*arg, m_parent);
         }
         Event *operator()(const mef::HouseEvent *arg)
