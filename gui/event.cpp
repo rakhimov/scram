@@ -206,11 +206,23 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         return std::make_unique<QGraphicsLineItem>(
             0, 0, 0, m_maxSize.height() * units().height());
     case mef::kAnd: {
+        double h = m_maxSize.height() * units().height();
+        if (m_event.HasAttribute("flavor")
+            && m_event.GetAttribute("flavor").value == "inhibit") {
+            double a = h / 2;
+            double x1 = a * sqrt(3) / 2;
+            return std::make_unique<QGraphicsPolygonItem>(
+                QPolygonF{{{0, 0},
+                           {-x1, a / 2},
+                           {-x1, 1.5 * a},
+                           {0, h},
+                           {x1, 1.5 * a},
+                           {x1, a / 2}}});
+        }
         QPainterPath paintPath;
-        double x1 = m_maxSize.width() * units().width() / 2;
         double maxHeight = m_maxSize.height() * units().height();
         paintPath.moveTo(0, maxHeight);
-        paintPath.arcTo(-x1, 0, x1 * 2, maxHeight * 2, 0, 180);
+        paintPath.arcTo(-h / 2, 0, h, maxHeight * 2, 0, 180);
         paintPath.closeSubpath();
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
@@ -297,6 +309,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         return std::move(circle);
     }
     }
+    GUI_ASSERT(false && "Unexpected gate type", nullptr);
 }
 
 double Gate::width() const { return m_width; }
