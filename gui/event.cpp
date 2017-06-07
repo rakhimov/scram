@@ -128,6 +128,15 @@ UndevelopedEvent::UndevelopedEvent(const mef::BasicEvent &event,
     Event::setTypeGraphics(diamond);
 }
 
+ConditionalEvent::ConditionalEvent(const mef::BasicEvent &event,
+                                   QGraphicsItem *parent)
+    : Event(event, parent)
+{
+    double d = int(m_size.height() - m_baseHeight) * units().height();
+    double minor = 0.70 * d;
+    Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, minor));
+}
+
 const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
@@ -147,6 +156,8 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
                 const mef::Attribute &flavor = arg->GetAttribute("flavor");
                 if (flavor.value == "undeveloped")
                     return new UndevelopedEvent(*arg, m_parent);
+                if (flavor.value == "conditional")
+                    return new ConditionalEvent(*arg, m_parent);
             }
             return new BasicEvent(*arg, m_parent);
         }

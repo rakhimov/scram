@@ -127,6 +127,16 @@ public:
 };
 
 /**
+ * @brief The event used in Inhibit gates.
+ */
+class ConditionalEvent : public Event
+{
+public:
+    explicit ConditionalEvent(const mef::BasicEvent &event,
+                              QGraphicsItem *parent = nullptr);
+};
+
+/**
  * @brief Fault tree intermediate events or gates.
  */
 class Gate : public Event
