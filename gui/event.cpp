@@ -138,10 +138,21 @@ ConditionalEvent::ConditionalEvent(const mef::BasicEvent &event,
     Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, minor));
 }
 
+TransferIn::TransferIn(const mef::Gate &event, QGraphicsItem *parent)
+    : Event(event, parent)
+{
+    double d = int(m_size.height() - m_baseHeight) * units().height();
+    Event::setTypeGraphics(
+        new QGraphicsPolygonItem({{{0, 0}, {-d / 2, d}, {d / 2, d}}}));
+}
+
 const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
-Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
+Gate::Gate(const mef::Gate &event,
+           std::unordered_set<const mef::Gate *> *transfer,
+           QGraphicsItem *parent)
+    : Event(event, parent)
 {
     double availableHeight
         = m_size.height() - m_baseHeight - m_maxSize.height();
@@ -168,11 +179,14 @@ Gate::Gate(const mef::Gate &event, QGraphicsItem *parent) : Event(event, parent)
         }
         Event *operator()(const mef::Gate *arg)
         {
-            return new Gate(*arg, m_parent);
+            if (m_transfer->insert(arg).second)
+                return new Gate(*arg, m_transfer, m_parent);
+            return new TransferIn(*arg, m_parent);
         }
 
         QGraphicsItem *m_parent;
-    } formula_visitor{this};
+        decltype(transfer) m_transfer;
+    } formula_visitor{this, transfer};
     double linkY = (m_size.height() - 1) * units().height();
     std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
     for (const mef::Formula::EventArg &eventArg :

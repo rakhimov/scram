@@ -18,6 +18,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <unordered_set>
+
 #include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
@@ -285,7 +287,9 @@ void MainWindow::resetTreeWidget()
             new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
 
         auto *scene = new QGraphicsScene(this);
-        auto *root = new diagram::Gate(*faultTree->top_events().front());
+        std::unordered_set<const mef::Gate *> transfer;
+        auto *root
+            = new diagram::Gate(*faultTree->top_events().front(), &transfer);
         scene->addItem(root);
         auto *view = new ZoomableView(scene, this);
         view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));

@@ -19,6 +19,7 @@
 #define EVENT_H
 
 #include <memory>
+#include <unordered_set>
 
 #include <QGraphicsItem>
 #include <QSize>
@@ -137,12 +138,32 @@ public:
 };
 
 /**
+ * An alias pointer to a gate.
+ */
+class TransferIn : public Event
+{
+public:
+    explicit TransferIn(const mef::Gate &event,
+                        QGraphicsItem *parent = nullptr);
+};
+
+/**
  * @brief Fault tree intermediate events or gates.
  */
 class Gate : public Event
 {
 public:
-    explicit Gate(const mef::Gate &event, QGraphicsItem *parent = nullptr);
+    /**
+     * @brief Constructs the graph with the transfer symbols for gates.
+     *
+     * @param event  The event to be converted into a graphics item.
+     * @param transfer  The set of already processed gates
+     *                  to be shown as transfer event.
+     * @param parent  The optional parent graphics item.
+     */
+    Gate(const mef::Gate &event,
+         std::unordered_set<const mef::Gate *> *transfer,
+         QGraphicsItem *parent = nullptr);
 
     std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Operator type);
 
