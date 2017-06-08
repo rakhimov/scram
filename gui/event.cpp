@@ -33,6 +33,8 @@
 #include <QRectF>
 #include <QStyleOptionGraphicsItem>
 
+#include "src/ext/find_iterator.h"
+
 #include "guiassert.h"
 
 namespace scram {
@@ -150,7 +152,7 @@ const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
 Gate::Gate(const mef::Gate &event,
-           std::unordered_set<const mef::Gate *> *transfer,
+           std::unordered_map<const mef::Gate *, Gate *> *transfer,
            QGraphicsItem *parent)
     : Event(event, parent)
 {
@@ -179,9 +181,13 @@ Gate::Gate(const mef::Gate &event,
         }
         Event *operator()(const mef::Gate *arg)
         {
-            if (m_transfer->insert(arg).second)
-                return new Gate(*arg, m_transfer, m_parent);
-            return new TransferIn(*arg, m_parent);
+            if (auto it = ext::find(*m_transfer, arg)) {
+                it->second->addTransferOut();
+                return new TransferIn(*arg, m_parent);
+            }
+            auto *arg_gate = new Gate(*arg, m_transfer, m_parent);
+            m_transfer->emplace(arg, arg_gate);
+            return arg_gate;
         }
 
         QGraphicsItem *m_parent;
@@ -327,6 +333,21 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
 }
 
 double Gate::width() const { return m_width; }
+
+void Gate::addTransferOut()
+{
+    if (m_transferOut)
+        return;
+    m_transferOut = true;
+    QPainterPath paintPath;
+    double x1 = m_maxSize.width() * units().width() / 2;
+    double h = units().height() * std::sqrt(3) / 2;
+    paintPath.lineTo(x1 + units().height(), 0);
+    paintPath.lineTo(x1 + 0.5 * units().height(), h);
+    paintPath.lineTo(x1 + 1.5 * units().height(), h);
+    paintPath.lineTo(x1 + units().height(), 0);
+    new QGraphicsPathItem(paintPath, Event::getTypeGraphics());
+}
 
 } // namespace diagram
 } // namespace gui

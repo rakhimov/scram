@@ -18,7 +18,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <unordered_set>
+#include <unordered_map>
 
 #include <QAction>
 #include <QApplication>
@@ -330,7 +330,7 @@ void MainWindow::resetTreeWidget()
             new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
 
         auto *scene = new QGraphicsScene(this);
-        std::unordered_set<const mef::Gate *> transfer;
+        std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
         auto *root
             = new diagram::Gate(*faultTree->top_events().front(), &transfer);
         scene->addItem(root);

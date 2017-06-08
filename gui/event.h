@@ -19,7 +19,7 @@
 #define EVENT_H
 
 #include <memory>
-#include <unordered_set>
+#include <unordered_map>
 
 #include <QGraphicsItem>
 #include <QSize>
@@ -162,18 +162,24 @@ public:
      * @param parent  The optional parent graphics item.
      */
     Gate(const mef::Gate &event,
-         std::unordered_set<const mef::Gate *> *transfer,
+         std::unordered_map<const mef::Gate *, Gate *> *transfer,
          QGraphicsItem *parent = nullptr);
 
     std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Operator type);
 
     double width() const override;
 
+    /**
+     * @brief Adds the transfer-out symbol besides the gate shape.
+     */
+    void addTransferOut();
+
 private:
     static const QSize m_maxSize; ///< The constraints on type graphics.
     static const double m_space;  ///< The space between children in chars.
 
     double m_width = 0; ///< Assume the graph does not change its width.
+    bool m_transferOut = false;  ///< The indication of the transfer-out.
 };
 
 } // namespace diagram
