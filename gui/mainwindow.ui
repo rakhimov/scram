@@ -102,6 +102,8 @@
     <addaction name="actionSaveProject"/>
     <addaction name="actionSaveProjectAs"/>
     <addaction name="separator"/>
+    <addaction name="actionExportAs"/>
+    <addaction name="separator"/>
     <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -226,13 +228,22 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset theme="document-print"/>
+    <iconset theme="document-print">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Print...</string>
    </property>
    <property name="toolTip">
     <string>Print</string>
+   </property>
+  </action>
+  <action name="actionExportAs">
+   <property name="icon">
+    <iconset theme="document-export"/>
+   </property>
+   <property name="text">
+    <string>&amp;Export As...</string>
    </property>
   </action>
  </widget>

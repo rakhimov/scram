@@ -84,6 +84,11 @@ private slots:
     void saveProjectAs();
 
     /**
+     * @brief Exports the current active document/diagram.
+     */
+    void exportAs();
+
+    /**
      * @brief Prints the current document view.
      */
     void print();

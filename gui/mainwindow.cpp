@@ -28,6 +28,7 @@
 #include <QMessageBox>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QSvgGenerator>
 #include <QTableWidget>
 #include <QtOpenGL>
 
@@ -155,6 +156,9 @@ void MainWindow::setupActions()
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::print);
+
+    connect(ui->actionExportAs, &QAction::triggered, this,
+            &MainWindow::exportAs);
 }
 
 void MainWindow::createNewProject()
@@ -219,6 +223,29 @@ void MainWindow::saveProjectAs()
     /// @todo Save the input files into custom places.
     m_config.file = filename.toStdString();
     saveProject();
+}
+
+void MainWindow::exportAs()
+{
+    QString filename = QFileDialog::getSaveFileName(
+        this, tr("Export As"), QDir::currentPath(),
+        tr("SVG files (*.svg);;All files (*.*)"));
+    QWidget *widget = ui->tabWidget->currentWidget();
+    GUI_ASSERT(widget,);
+    QGraphicsView *view = qobject_cast<QGraphicsView *>(widget);
+    GUI_ASSERT(view,);
+    QGraphicsScene *scene = view->scene();
+    QSize sceneSize = scene->sceneRect().size().toSize();
+
+    QSvgGenerator generator;
+    generator.setFileName(filename);
+    generator.setSize(sceneSize);
+    generator.setViewBox(QRect(0, 0, sceneSize.width(), sceneSize.height()));
+    generator.setTitle(filename);
+    QPainter painter;
+    painter.begin(&generator);
+    scene->render(&painter);
+    painter.end();
 }
 
 void MainWindow::print()
