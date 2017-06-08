@@ -102,6 +102,8 @@
     <addaction name="actionSaveProject"/>
     <addaction name="actionSaveProjectAs"/>
     <addaction name="separator"/>
+    <addaction name="actionPrint"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -220,6 +222,17 @@
    </property>
    <property name="text">
     <string>&amp;Toolbar</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="icon">
+    <iconset theme="document-print"/>
+   </property>
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="toolTip">
+    <string>Print</string>
    </property>
   </action>
  </widget>

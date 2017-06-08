@@ -26,6 +26,8 @@
 #include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
+#include <QPrinter>
+#include <QPrintDialog>
 #include <QTableWidget>
 #include <QtOpenGL>
 
@@ -150,6 +152,9 @@ void MainWindow::setupActions()
     ui->actionSaveProjectAs->setShortcut(QKeySequence::SaveAs);
     connect(ui->actionSaveProjectAs, &QAction::triggered, this,
             &MainWindow::saveProjectAs);
+
+    ui->actionPrint->setShortcut(QKeySequence::Print);
+    connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::print);
 }
 
 void MainWindow::createNewProject()
@@ -214,6 +219,17 @@ void MainWindow::saveProjectAs()
     /// @todo Save the input files into custom places.
     m_config.file = filename.toStdString();
     saveProject();
+}
+
+void MainWindow::print()
+{
+    QPrinter printer;
+    QPrintDialog dialog(&printer, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        QPainter painter(&printer);
+        painter.setRenderHint(QPainter::Antialiasing);
+        ui->tabWidget->currentWidget()->render(&painter);
+    }
 }
 
 void MainWindow::showElement(QTreeWidgetItem *item)

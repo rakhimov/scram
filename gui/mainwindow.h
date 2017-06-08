@@ -84,6 +84,11 @@ private slots:
     void saveProjectAs();
 
     /**
+     * @brief Prints the current document view.
+     */
+    void print();
+
+    /**
      * Processes the element activation in the tree view.
      */
     void showElement(QTreeWidgetItem *item);
