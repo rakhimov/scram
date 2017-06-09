@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=SCRAM
+Comment=Probabilistic risk analysis tool
+TryExec=scram-gui
+Exec=scram-gui %F
+Icon=scram
+Terminal=false
+Type=Application
+Categories=Science;Engineering;

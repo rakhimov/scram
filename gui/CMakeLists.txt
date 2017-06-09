@@ -107,6 +107,27 @@ install(TARGETS scram-gui
   COMPONENT gui
   )
 
+if(UNIX AND NOT APPLE)
+  foreach (size IN ITEMS 32 128)
+    install(
+      FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram${size}x${size}.png"
+      DESTINATION "share/icons/hicolor/${size}x${size}/apps"
+      COMPONENT gui
+      RENAME      "scram.png")
+  endforeach ()
+  install(
+    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_logo.svg"
+    DESTINATION "share/icons/hicolor/scalable/apps"
+    COMPONENT gui
+    RENAME      "scram.svg")
+
+  # install a desktop file so CMake appears in the application start menu
+  # with an icon
+  install(FILES scram-gui.desktop
+    DESTINATION "share/applications"
+    COMPONENT gui)
+endif()
+
 set(SCRAM_GUI_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 if(BUILD_TESTS AND NOT WIN32)
