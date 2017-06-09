@@ -55,6 +55,13 @@ addons:
             - llvm-toolchain-trusty
             - sourceline: "ppa:kzemek/boost"
 
+before_install:
+    - >
+      echo "$TRAVIS_COMMIT_MESSAGE"
+      | grep -E  '\[(skip travis|travis skip)\]'
+      && echo "[skip travis] has been found, exiting."
+      && exit 0
+
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
     - if [[ -n "${INTEL_COMPILER}" ]]; then
