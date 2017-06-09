@@ -93,7 +93,13 @@ if(INSTALL_LIBS)
   endif()
 endif()
 
-add_executable(scram-gui WIN32 "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+if(WIN32)
+  add_executable(scram-gui WIN32
+    "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scram.rc")
+else()
+  add_executable(scram-gui "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+endif()
 target_link_libraries(scram-gui scramgui)
 
 install(TARGETS scram-gui

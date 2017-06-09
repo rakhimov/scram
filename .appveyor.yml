@@ -29,7 +29,7 @@ build_script:
     - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_PREFIX_PATH="C:/msys64/mingw64/qt5-static" -DBUILD_SHARED_LIBS=ON
     - make install/strip -j 2
     - cmake .. -DPACKAGE=ON
-    - cpack
+    - cpack --verbose
     - cd ..
 
 after_build:
@@ -39,6 +39,9 @@ test_script:
     - scram_tests
     - scram --version
     - scram input\TwoTrain\two_train.xml
+
+on_failure:
+    - type build\_CPack_Packages\win64\NSIS\NSISOutput.log
 
 artifacts:
     - path: build/SCRAM*.exe

@@ -257,6 +257,15 @@ add_custom_target(uninstall
 if(PACKAGE)
   if(WIN32)
     set(CPACK_GENERATOR "NSIS")
+    # set(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}\\\\gui\\\\images\\\\scram_logo.bmp")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\scram-gui.exe")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_HELP_LINK "https://scram-pra.org")
+    set(CPACK_NSIS_URL_INFO_ABOUT "https://scram-pra.org")
+    set(CPACK_NSIS_CONTACT "scram-users@googlegroups.com")
+    set(CPACK_PACKAGE_EXECUTABLES "scram-gui" "SCRAM")
+    set(CPACK_CREATE_DESKTOP_LINKS "scram-gui")
+    set(CPACK_COMPONENT_GUI_REQUIRED ON)
     # The following configuration assumes MinGW64 is setup specifically for this project.
     # Moreover, the Qt5 libs and plugins must be linked staticly,
     # so there's no headache with implicit (undiscoverable) dependencies.
