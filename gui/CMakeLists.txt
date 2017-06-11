@@ -110,13 +110,13 @@ install(TARGETS scram-gui
 if(UNIX AND NOT APPLE)
   foreach (size IN ITEMS 32 128)
     install(
-      FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram${size}x${size}.png"
+      FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid${size}x${size}.png"
       DESTINATION "share/icons/hicolor/${size}x${size}/apps"
       COMPONENT gui
       RENAME      "scram.png")
   endforeach ()
   install(
-    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_logo.svg"
+    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid.svg"
     DESTINATION "share/icons/hicolor/scalable/apps"
     COMPONENT gui
     RENAME      "scram.svg")
