@@ -24,6 +24,7 @@
 
 #include <QDir>
 #include <QMainWindow>
+#include <QRegularExpressionValidator>
 #include <QTreeWidgetItem>
 
 #include <libxml++/libxml++.h>
@@ -109,6 +110,7 @@ private:
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
+    QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
 };
 
 } // namespace gui

@@ -23,12 +23,14 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QRegularExpression>
 #include <QSvgGenerator>
 #include <QTableWidget>
 #include <QtOpenGL>
@@ -57,9 +59,19 @@ public:
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow)
+      ui(new Ui::MainWindow),
+      m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)")))
 {
     ui->setupUi(this);
+
+    auto *zoomBox = new QComboBox();
+    zoomBox->setEditable(true);
+    zoomBox->setInsertPolicy(QComboBox::NoInsert);
+    zoomBox->setValidator(&m_percentValidator);
+    for (QAction *action : ui->menuZoom->actions())
+        zoomBox->addItem(action->text());
+    zoomBox->setCurrentText(QStringLiteral("100%"));
+    ui->zoomToolBar->addWidget(zoomBox);
 
     setupActions();
 
@@ -156,6 +168,7 @@ void MainWindow::setupActions()
                          "https://github.com/rakhimov/scram/issues")));
     });
 
+    // File menu actions.
     ui->actionExit->setShortcut(QKeySequence::Quit);
 
     ui->actionNewModel->setShortcut(QKeySequence::New);
@@ -178,6 +191,10 @@ void MainWindow::setupActions()
 
     connect(ui->actionExportAs, &QAction::triggered, this,
             &MainWindow::exportAs);
+
+    // View menu actions.
+    ui->actionZoomIn->setShortcut(QKeySequence::ZoomIn);
+    ui->actionZoomOut->setShortcut(QKeySequence::ZoomOut);
 }
 
 void MainWindow::createNewModel()
