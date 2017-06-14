@@ -46,15 +46,13 @@
 namespace scram {
 namespace gui {
 
-class StartPage : public QWidget
+class StartPage : public QWidget, public Ui::StartPage
 {
 public:
-    StartPage(QWidget *parent = nullptr)
-        : QWidget(parent), ui(new Ui::StartPage)
+    explicit StartPage(QWidget *parent = nullptr) : QWidget(parent)
     {
-        ui->setupUi(this);
+        setupUi(this);
     }
-    const std::unique_ptr<Ui::StartPage> ui;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -66,11 +64,11 @@ MainWindow::MainWindow(QWidget *parent)
     setupActions();
 
     auto *startPage = new StartPage;
-    connect(startPage->ui->newModelButton, &QAbstractButton::clicked,
+    connect(startPage->newModelButton, &QAbstractButton::clicked,
             ui->actionNewModel, &QAction::trigger);
-    connect(startPage->ui->openModelButton, &QAbstractButton::clicked,
+    connect(startPage->openModelButton, &QAbstractButton::clicked,
             ui->actionOpenFiles, &QAction::trigger);
-    connect(startPage->ui->exampleModelsButton, &QAbstractButton::clicked, this,
+    connect(startPage->exampleModelsButton, &QAbstractButton::clicked, this,
             [this]() {
                 openFiles(QString::fromStdString(Env::install_dir()
                                                  + "/share/scram/input"));
