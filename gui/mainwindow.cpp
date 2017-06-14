@@ -92,18 +92,16 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
         return;
 
     try {
-        std::vector<std::string> all_input = extractInputFiles();
+        std::vector<std::string> all_input = m_inputFiles;
         all_input.insert(all_input.end(), inputFiles.begin(),
                          inputFiles.end());
         m_model = mef::Initializer(all_input, m_settings).model();
+        m_inputFiles = std::move(all_input);
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
         return;
     }
-
-    for (const auto& input : inputFiles)
-        m_inputFiles.emplace_back(input);
 
     resetTreeWidget();
 
@@ -276,37 +274,6 @@ void MainWindow::showElement(QTreeWidgetItem *item)
         table->setSortingEnabled(true);
         ui->tabWidget->addTab(table, name);
     }
-}
-
-MainWindow::XmlFile::XmlFile() : xml(nullptr), parser(new xmlpp::DomParser()) {}
-
-MainWindow::XmlFile::XmlFile(std::string filename) : file(std::move(filename))
-{
-    parser = scram::ConstructDomParser(file);
-    xml = parser->get_document()->get_root_node();
-}
-
-void MainWindow::XmlFile::reset(std::string filename)
-{
-    parser->parse_file(filename);
-    file = std::move(filename);
-    xml = parser->get_document()->get_root_node();
-}
-
-std::vector<std::string> MainWindow::extractInputFiles()
-{
-    std::vector<std::string> inputFiles;
-    for (const XmlFile &input : m_inputFiles)
-        inputFiles.push_back(input.file);
-    return inputFiles;
-}
-
-std::vector<xmlpp::Node *> MainWindow::extractModelXml()
-{
-    std::vector<xmlpp::Node *> modelXml;
-    for (const XmlFile &input : m_inputFiles)
-        modelXml.push_back(input.xml);
-    return modelXml;
 }
 
 void MainWindow::resetTreeWidget()
