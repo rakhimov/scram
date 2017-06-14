@@ -96,11 +96,11 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNewProject"/>
-    <addaction name="actionOpenProject"/>
+    <addaction name="actionNewModel"/>
+    <addaction name="actionOpenFiles"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveProject"/>
-    <addaction name="actionSaveProjectAs"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
     <addaction name="actionExportAs"/>
     <addaction name="separator"/>
@@ -129,10 +129,10 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNewProject"/>
-   <addaction name="actionOpenProject"/>
-   <addaction name="actionSaveProject"/>
-   <addaction name="actionSaveProjectAs"/>
+   <addaction name="actionNewModel"/>
+   <addaction name="actionOpenFiles"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionSaveAs"/>
   </widget>
   <action name="actionAboutQt">
    <property name="icon">
@@ -167,31 +167,31 @@
     <string>Exit the application</string>
    </property>
   </action>
-  <action name="actionNewProject">
+  <action name="actionNewModel">
    <property name="icon">
     <iconset theme="document-new">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;New Project</string>
+    <string>&amp;New Model</string>
    </property>
    <property name="toolTip">
-    <string>Create a new project</string>
+    <string>Create a new model</string>
    </property>
   </action>
-  <action name="actionOpenProject">
+  <action name="actionOpenFiles">
    <property name="icon">
     <iconset theme="document-open">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open Project</string>
+    <string>&amp;Open Model Files...</string>
    </property>
    <property name="toolTip">
-    <string>Open an existing project</string>
+    <string>Open existing model files</string>
    </property>
   </action>
-  <action name="actionSaveProject">
+  <action name="actionSave">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -200,10 +200,10 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save Project</string>
+    <string>&amp;Save Model</string>
    </property>
   </action>
-  <action name="actionSaveProjectAs">
+  <action name="actionSaveAs">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -212,7 +212,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Save Project &amp;As...</string>
+    <string>Save Model &amp;As...</string>
    </property>
   </action>
   <action name="actionToolbar">

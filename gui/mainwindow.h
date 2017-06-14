@@ -60,14 +60,12 @@ private slots:
      *
      * @todo Check if the current documents need saving.
      */
-    void createNewProject();
+    void createNewModel();
 
     /**
-     * @brief Opens an existing project configuration.
-     *
-     * The current project and input files are reset.
+     * @brief Opens model files.
      */
-    void openProject();
+    void openFiles();
 
     /**
      * @brief Saves the project to a file.
@@ -76,12 +74,12 @@ private slots:
      * it does not have a default destination file.
      * The user is required to specify the file upon save.
      */
-    void saveProject();
+    void saveModel();
 
     /**
      * @brief Saves the project to a potentially different file.
      */
-    void saveProjectAs();
+    void saveModelAs();
 
     /**
      * @brief Exports the current active document/diagram.
@@ -123,7 +121,6 @@ private:
     void resetTreeWidget();
 
     std::unique_ptr<Ui::MainWindow> ui;
-    XmlFile m_config; ///< The main project configuration file.
     std::vector<XmlFile> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.

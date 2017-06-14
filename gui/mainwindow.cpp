@@ -73,7 +73,6 @@ void MainWindow::setConfig(const std::string &configPath,
         inputFiles.insert(inputFiles.begin(), config.input_files().begin(),
                           config.input_files().end());
         addInputFiles(inputFiles);
-        m_config.reset(configPath);
         m_settings = config.settings();
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Configuration Error"),
@@ -81,8 +80,8 @@ void MainWindow::setConfig(const std::string &configPath,
         return;
     }
 
-    ui->actionSaveProject->setEnabled(true);
-    ui->actionSaveProjectAs->setEnabled(true);
+    ui->actionSave->setEnabled(true);
+    ui->actionSaveAs->setEnabled(true);
 
     emit configChanged();
 }
@@ -138,21 +137,20 @@ void MainWindow::setupActions()
 
     ui->actionExit->setShortcut(QKeySequence::Quit);
 
-    ui->actionNewProject->setShortcut(QKeySequence::New);
-    connect(ui->actionNewProject, &QAction::triggered, this,
-            &MainWindow::createNewProject);
+    ui->actionNewModel->setShortcut(QKeySequence::New);
+    connect(ui->actionNewModel, &QAction::triggered, this,
+            &MainWindow::createNewModel);
 
-    ui->actionOpenProject->setShortcut(QKeySequence::Open);
-    connect(ui->actionOpenProject, &QAction::triggered, this,
-            &MainWindow::openProject);
+    ui->actionOpenFiles->setShortcut(QKeySequence::Open);
+    connect(ui->actionOpenFiles, &QAction::triggered, this,
+            &MainWindow::openFiles);
 
-    ui->actionSaveProject->setShortcut(QKeySequence::Save);
-    connect(ui->actionSaveProject, &QAction::triggered, this,
-            &MainWindow::saveProject);
+    ui->actionSave->setShortcut(QKeySequence::Save);
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveModel);
 
-    ui->actionSaveProjectAs->setShortcut(QKeySequence::SaveAs);
-    connect(ui->actionSaveProjectAs, &QAction::triggered, this,
-            &MainWindow::saveProjectAs);
+    ui->actionSaveAs->setShortcut(QKeySequence::SaveAs);
+    connect(ui->actionSaveAs, &QAction::triggered, this,
+            &MainWindow::saveModelAs);
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::print);
@@ -161,68 +159,61 @@ void MainWindow::setupActions()
             &MainWindow::exportAs);
 }
 
-void MainWindow::createNewProject()
+void MainWindow::createNewModel()
 {
-    GUI_ASSERT(m_config.parser,);
-    m_config.parser->parse_memory("<?xml version=\"1.0\"?><scram/>");
-    m_config.file.clear();
-    m_config.xml = m_config.parser->get_document()->get_root_node();
+    while (ui->tabWidget->count()) {
+        auto *widget = ui->tabWidget->widget(0);
+        ui->tabWidget->removeTab(0);
+        delete widget;
+    }
     m_inputFiles.clear();
     m_model = std::make_shared<mef::Model>();
 
     resetTreeWidget();
 
-    ui->actionSaveProject->setEnabled(true);
-    ui->actionSaveProjectAs->setEnabled(true);
+    ui->actionSave->setEnabled(true);
+    ui->actionSaveAs->setEnabled(true);
 
     emit configChanged();
 }
 
-void MainWindow::openProject()
+void MainWindow::openFiles()
 {
-    QString filename = QFileDialog::getOpenFileName(
-        this, tr("Open Project"), QDir::currentPath(),
-        tr("XML files (*.scram *.xml);;All files (*.*)"));
-    if (filename.isNull())
+    QStringList filenames = QFileDialog::getOpenFileNames(
+        this, tr("Open Model Files"), QDir::currentPath(),
+        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+            .arg(tr("Model Exchange Format"), tr("All files")));
+    if (filenames.empty())
         return;
-    setConfig(filename.toStdString());
+    std::vector<std::string> inputFiles;
+    for (const auto &filename : filenames)
+        inputFiles.push_back(filename.toStdString());
+    addInputFiles(inputFiles);
 }
 
-void MainWindow::saveProject()
+void MainWindow::saveModel()
 {
-    if (m_config.file.empty())
-        return saveProjectAs();
-
-    xmlpp::Element *container_element = [this] {
-        xmlpp::NodeSet elements = m_config.xml->find("./input-files");
-        if (elements.empty())
-            return m_config.xml->add_child("input-files");
-        return static_cast<xmlpp::Element *>(elements.front());
-    }();
-
-    for (xmlpp::Node *node : container_element->find("./file"))
-        container_element->remove_child(node);
-
-    /// @todo Save as relative paths.
-    for (const XmlFile &input : m_inputFiles)
-        container_element->add_child("file")->add_child_text(input.file);
-
-    m_config.parser->get_document()->write_to_file_formatted(
-        m_config.file, m_config.parser->get_document()->get_encoding());
+    if (m_inputFiles.empty())
+        return saveModelAs();
 
     /// @todo Save the input files.
+    GUI_ASSERT(m_inputFiles.size() == 1,);
+
+    /// @todo Implement the save of the model to one file.
+    GUI_ASSERT(false && "Not implemented",);
 }
 
-void MainWindow::saveProjectAs()
+void MainWindow::saveModelAs()
 {
     QString filename = QFileDialog::getSaveFileName(
-        this, tr("Save Project"), QDir::currentPath(),
-        tr("XML files (*.scram *.xml);;All files (*.*)"));
+        this, tr("Save Model As"), QDir::currentPath(),
+        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+            .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
         return;
     /// @todo Save the input files into custom places.
-    m_config.file = filename.toStdString();
-    saveProject();
+    GUI_ASSERT(false && "Not implemented",);
+    saveModel();
 }
 
 void MainWindow::exportAs()
