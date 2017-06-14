@@ -17,6 +17,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "ui_startpage.h"
 
 #include <unordered_map>
 
@@ -37,12 +38,24 @@
 #include "zoomableview.h"
 
 #include "src/config.h"
+#include "src/env.h"
 #include "src/error.h"
 #include "src/initializer.h"
 #include "src/xml.h"
 
 namespace scram {
 namespace gui {
+
+class StartPage : public QWidget
+{
+public:
+    StartPage(QWidget *parent = nullptr)
+        : QWidget(parent), ui(new Ui::StartPage)
+    {
+        ui->setupUi(this);
+    }
+    const std::unique_ptr<Ui::StartPage> ui;
+};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -51,6 +64,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setupActions();
+
+    auto *startPage = new StartPage;
+    connect(startPage->ui->newModelButton, &QAbstractButton::clicked,
+            ui->actionNewModel, &QAction::trigger);
+    connect(startPage->ui->openModelButton, &QAbstractButton::clicked,
+            ui->actionOpenFiles, &QAction::trigger);
+    connect(startPage->ui->exampleModelsButton, &QAbstractButton::clicked, this,
+            [this]() {
+                openFiles(QString::fromStdString(Env::install_dir()
+                                                 + "/share/scram/input"));
+            });
+    ui->tabWidget->addTab(startPage, tr("Start Here"));
 
     connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
             &MainWindow::showElement);
@@ -141,7 +166,7 @@ void MainWindow::setupActions()
 
     ui->actionOpenFiles->setShortcut(QKeySequence::Open);
     connect(ui->actionOpenFiles, &QAction::triggered, this,
-            &MainWindow::openFiles);
+            [this]() { openFiles(); });
 
     ui->actionSave->setShortcut(QKeySequence::Save);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveModel);
@@ -159,11 +184,6 @@ void MainWindow::setupActions()
 
 void MainWindow::createNewModel()
 {
-    while (ui->tabWidget->count()) {
-        auto *widget = ui->tabWidget->widget(0);
-        ui->tabWidget->removeTab(0);
-        delete widget;
-    }
     m_inputFiles.clear();
     m_model = std::make_shared<mef::Model>();
 
@@ -175,10 +195,10 @@ void MainWindow::createNewModel()
     emit configChanged();
 }
 
-void MainWindow::openFiles()
+void MainWindow::openFiles(QString directory)
 {
     QStringList filenames = QFileDialog::getOpenFileNames(
-        this, tr("Open Model Files"), QDir::currentPath(),
+        this, tr("Open Model Files"), directory,
         QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filenames.empty())
@@ -204,7 +224,7 @@ void MainWindow::saveModel()
 void MainWindow::saveModelAs()
 {
     QString filename = QFileDialog::getSaveFileName(
-        this, tr("Save Model As"), QDir::currentPath(),
+        this, tr("Save Model As"), QDir::homePath(),
         QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
@@ -217,7 +237,7 @@ void MainWindow::saveModelAs()
 void MainWindow::exportAs()
 {
     QString filename = QFileDialog::getSaveFileName(
-        this, tr("Export As"), QDir::currentPath(),
+        this, tr("Export As"), QDir::homePath(),
         tr("SVG files (*.svg);;All files (*.*)"));
     QWidget *widget = ui->tabWidget->currentWidget();
     GUI_ASSERT(widget,);
@@ -278,6 +298,11 @@ void MainWindow::showElement(QTreeWidgetItem *item)
 
 void MainWindow::resetTreeWidget()
 {
+    while (ui->tabWidget->count()) {
+        auto *widget = ui->tabWidget->widget(0);
+        ui->tabWidget->removeTab(0);
+        delete widget;
+    }
     ui->treeWidget->clear();
     ui->treeWidget->setHeaderLabel(
         tr("Model: %1").arg(QString::fromStdString(m_model->name())));

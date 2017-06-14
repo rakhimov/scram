@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include <QDir>
 #include <QMainWindow>
 #include <QTreeWidgetItem>
 
@@ -65,7 +66,7 @@ private slots:
     /**
      * @brief Opens model files.
      */
-    void openFiles();
+    void openFiles(QString directory = QDir::homePath());
 
     /**
      * @brief Saves the project to a file.
