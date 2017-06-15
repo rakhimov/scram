@@ -28,10 +28,13 @@ const int ZoomableView::m_minZoomLevel = 10;
 
 void ZoomableView::setZoom(int level)
 {
-    if (level < m_minZoomLevel)
+    if (isHidden())
         return;
+
     if (level == m_zoom)
         return;
+    if (level < m_minZoomLevel)
+        level = m_minZoomLevel;
 
     double scaleValue = 0.01 * level;
     QMatrix matrix;
@@ -53,6 +56,18 @@ void ZoomableView::wheelEvent(QWheelEvent *event)
     } else {
         QGraphicsView::wheelEvent(event);
     }
+}
+
+void ZoomableView::hideEvent(QHideEvent *event)
+{
+    QGraphicsView::hideEvent(event);
+    emit zoomDisabled();
+}
+
+void ZoomableView::showEvent(QShowEvent *event)
+{
+    QGraphicsView::showEvent(event);
+    emit zoomEnabled(m_zoom);
 }
 
 } // namespace gui

@@ -19,11 +19,11 @@
 #include "ui_mainwindow.h"
 #include "ui_startpage.h"
 
+#include <algorithm>
 #include <unordered_map>
 
 #include <QAction>
 #include <QApplication>
-#include <QComboBox>
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QGraphicsScene>
@@ -37,7 +37,6 @@
 
 #include "event.h"
 #include "guiassert.h"
-#include "zoomableview.h"
 
 #include "src/config.h"
 #include "src/env.h"
@@ -60,18 +59,22 @@ public:
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)")))
+      m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)"))),
+      m_zoomBox(new QComboBox)
 {
     ui->setupUi(this);
 
-    auto *zoomBox = new QComboBox();
-    zoomBox->setEditable(true);
-    zoomBox->setInsertPolicy(QComboBox::NoInsert);
-    zoomBox->setValidator(&m_percentValidator);
-    for (QAction *action : ui->menuZoom->actions())
-        zoomBox->addItem(action->text());
-    zoomBox->setCurrentText(QStringLiteral("100%"));
-    ui->zoomToolBar->addWidget(zoomBox);
+    m_zoomBox->setEditable(true);
+    m_zoomBox->setInsertPolicy(QComboBox::NoInsert);
+    m_zoomBox->setValidator(&m_percentValidator);
+    for (QAction *action : ui->menuZoom->actions()) {
+        m_zoomBox->addItem(action->text());
+        connect(action, &QAction::triggered, m_zoomBox, [action, this] {
+            m_zoomBox->setCurrentText(action->text());
+        });
+    }
+    m_zoomBox->setCurrentText(QStringLiteral("100%"));
+    ui->zoomToolBar->addWidget(m_zoomBox); // Transfer the ownership.
 
     setupActions();
 
@@ -95,6 +98,8 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->tabWidget->removeTab(index);
                 delete widget;
             });
+
+    deactivateZoom();
 }
 
 MainWindow::~MainWindow() = default;
@@ -311,6 +316,55 @@ void MainWindow::showElement(QTreeWidgetItem *item)
     }
 }
 
+void MainWindow::activateZoom(int level)
+{
+    GUI_ASSERT(level > 0,);
+    m_zoomBox->setEnabled(true);
+    m_zoomBox->setCurrentText(QString::fromLatin1("%1%").arg(level));
+    ui->actionZoomIn->setEnabled(true);
+    ui->actionZoomIn->setEnabled(true);
+    ui->actionZoomOut->setEnabled(true);
+    ui->actionBestFit->setEnabled(true);
+    ui->menuZoom->setEnabled(true);
+}
+
+void MainWindow::deactivateZoom()
+{
+    m_zoomBox->setEnabled(false);
+    ui->actionZoomIn->setEnabled(false);
+    ui->actionZoomOut->setEnabled(false);
+    ui->actionBestFit->setEnabled(false);
+    ui->menuZoom->setEnabled(false);
+}
+
+void MainWindow::setupZoomableView(ZoomableView *view)
+{
+    connect(view, &ZoomableView::zoomEnabled, this, &MainWindow::activateZoom);
+    connect(view, &ZoomableView::zoomDisabled, this,
+            &MainWindow::deactivateZoom);
+    connect(view, &ZoomableView::zoomChanged, this, [this](int level) {
+        m_zoomBox->setCurrentText(QString::fromLatin1("%1%").arg(level));
+    });
+    connect(ui->actionZoomIn, &QAction::triggered, view,
+            [view] { view->zoomIn(5); });
+    connect(ui->actionZoomOut, &QAction::triggered, view,
+            [view] { view->zoomOut(5); });
+    connect(m_zoomBox, &QComboBox::currentTextChanged, view,
+            [view](QString text) {
+                text.remove(QLatin1Char('%'));
+                view->setZoom(text.toInt());
+            });
+    connect(ui->actionBestFit, &QAction::triggered, view, [view] {
+        QSize viewSize = view->size();
+        QSize sceneSize = view->scene()->sceneRect().size().toSize();
+        double ratioHeight
+            = static_cast<double>(viewSize.height()) / sceneSize.height();
+        double ratioWidth
+            = static_cast<double>(viewSize.width()) / sceneSize.width();
+        view->setZoom(std::min(ratioHeight, ratioWidth) * 100);
+    });
+}
+
 void MainWindow::resetTreeWidget()
 {
     while (ui->tabWidget->count()) {
@@ -338,6 +392,7 @@ void MainWindow::resetTreeWidget()
                              | QPainter::SmoothPixmapTransform);
         view->setAlignment(Qt::AlignTop);
         view->ensureVisible(root);
+        setupZoomableView(view);
         ui->tabWidget->addTab(
             view, tr("Fault Tree: %1")
                       .arg(QString::fromStdString(faultTree->name())));

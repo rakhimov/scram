@@ -22,12 +22,15 @@
 #include <string>
 #include <vector>
 
+#include <QComboBox>
 #include <QDir>
 #include <QMainWindow>
 #include <QRegularExpressionValidator>
 #include <QTreeWidgetItem>
 
 #include <libxml++/libxml++.h>
+
+#include "zoomableview.h"
 
 #include "src/settings.h"
 #include "src/model.h"
@@ -98,8 +101,21 @@ private slots:
      */
     void showElement(QTreeWidgetItem *item);
 
+    /**
+     * Activates the Zoom actions
+     * and updates the displayed zoom level.
+     */
+    void activateZoom(int level);
+
+    /**
+     * Disables the Zoom actions.
+     */
+    void deactivateZoom();
+
 private:
     void setupActions(); ///< Setup all the actions with connections.
+
+    void setupZoomableView(ZoomableView *view); ///< Connect to actions.
 
     /**
      * Resets the tree widget with the new model.
@@ -111,6 +127,7 @@ private:
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
+    QComboBox *m_zoomBox;  ///< The main zoom chooser/displayer widget.
 };
 
 } // namespace gui

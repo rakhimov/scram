@@ -39,6 +39,8 @@ public:
 
 signals:
     void zoomChanged(int level);
+    void zoomEnabled(int level);
+    void zoomDisabled();
 
 public slots:
     void setZoom(int level);
@@ -47,6 +49,8 @@ public slots:
 
 protected:
     void wheelEvent(QWheelEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 private:
     static const int m_minZoomLevel;
