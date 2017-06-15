@@ -18,8 +18,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <QComboBox>
@@ -127,7 +129,9 @@ private:
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
-    QComboBox *m_zoomBox;  ///< The main zoom chooser/displayer widget.
+    QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
+    std::unordered_map<QTreeWidgetItem *, std::function<void()>>
+        m_treeActions; ///< Actions on elements of the main tree widget.
 };
 
 } // namespace gui

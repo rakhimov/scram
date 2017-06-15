@@ -20,7 +20,6 @@
 #include "ui_startpage.h"
 
 #include <algorithm>
-#include <unordered_map>
 
 #include <QAction>
 #include <QApplication>
@@ -41,6 +40,7 @@
 #include "src/config.h"
 #include "src/env.h"
 #include "src/error.h"
+#include "src/ext/find_iterator.h"
 #include "src/initializer.h"
 #include "src/xml.h"
 
@@ -290,30 +290,8 @@ void MainWindow::print()
 
 void MainWindow::showElement(QTreeWidgetItem *item)
 {
-    QString name = item->data(0, Qt::DisplayRole).toString();
-    if (name == tr("Basic Events")) {
-        auto *table = new QTableWidget(nullptr);
-        table->setColumnCount(3);
-        table->setHorizontalHeaderLabels(
-            {tr("Id"), tr("Probability"), tr("Label")});
-        table->setRowCount(m_model->basic_events().size());
-        int row = 0;
-        for (const mef::BasicEventPtr &basicEvent : m_model->basic_events()) {
-            table->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(
-                                       basicEvent->id())));
-            table->setItem(row, 1, new QTableWidgetItem(
-                                       basicEvent->HasExpression()
-                                           ? QString::number(basicEvent->p())
-                                           : tr("N/A")));
-            table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(
-                                       basicEvent->label())));
-            ++row;
-        }
-        table->setWordWrap(false);
-        table->resizeColumnsToContents();
-        table->setSortingEnabled(true);
-        ui->tabWidget->addTab(table, name);
-    }
+    if (auto it = ext::find(m_treeActions, item))
+        it->second();
 }
 
 void MainWindow::activateZoom(int level)
@@ -372,39 +350,69 @@ void MainWindow::resetTreeWidget()
         ui->tabWidget->removeTab(0);
         delete widget;
     }
+    m_treeActions.clear();
     ui->treeWidget->clear();
     ui->treeWidget->setHeaderLabel(
         tr("Model: %1").arg(QString::fromStdString(m_model->name())));
 
     auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
     for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
-        faultTrees->addChild(
-            new QTreeWidgetItem({QString::fromStdString(faultTree->name())}));
+        auto *widgetItem
+            = new QTreeWidgetItem({QString::fromStdString(faultTree->name())});
+        faultTrees->addChild(widgetItem);
 
-        auto *scene = new QGraphicsScene(this);
-        std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
-        auto *root
-            = new diagram::Gate(*faultTree->top_events().front(), &transfer);
-        scene->addItem(root);
-        auto *view = new ZoomableView(scene, this);
-        view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
-        view->setRenderHints(QPainter::Antialiasing
-                             | QPainter::SmoothPixmapTransform);
-        view->setAlignment(Qt::AlignTop);
-        view->ensureVisible(root);
-        setupZoomableView(view);
-        ui->tabWidget->addTab(
-            view, tr("Fault Tree: %1")
-                      .arg(QString::fromStdString(faultTree->name())));
+        m_treeActions.emplace(widgetItem, [this, &faultTree] {
+            auto *scene = new QGraphicsScene(this);
+            std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
+            auto *root = new diagram::Gate(*faultTree->top_events().front(),
+                                           &transfer);
+            scene->addItem(root);
+            auto *view = new ZoomableView(scene, this);
+            view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+            view->setRenderHints(QPainter::Antialiasing
+                                 | QPainter::SmoothPixmapTransform);
+            view->setAlignment(Qt::AlignTop);
+            view->ensureVisible(root);
+            setupZoomableView(view);
+            ui->tabWidget->addTab(
+                view, tr("Fault Tree: %1")
+                          .arg(QString::fromStdString(faultTree->name())));
+            ui->tabWidget->setCurrentWidget(view);
+        });
     }
 
     auto *modelData = new QTreeWidgetItem({tr("Model Data")});
-    modelData->addChildren({new QTreeWidgetItem({tr("Basic Events")}),
-                            new QTreeWidgetItem({tr("House Events")}),
+    auto *basicEvents = new QTreeWidgetItem({tr("Basic Events")});
+    modelData->addChild(basicEvents);
+    m_treeActions.emplace(basicEvents, [this] {
+        auto *table = new QTableWidget(nullptr);
+        table->setColumnCount(3);
+        table->setHorizontalHeaderLabels(
+            {tr("Id"), tr("Probability"), tr("Label")});
+        table->setRowCount(m_model->basic_events().size());
+        int row = 0;
+        for (const mef::BasicEventPtr &basicEvent : m_model->basic_events()) {
+            table->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(
+                                       basicEvent->id())));
+            table->setItem(row, 1, new QTableWidgetItem(
+                                       basicEvent->HasExpression()
+                                           ? QString::number(basicEvent->p())
+                                           : tr("N/A")));
+            table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(
+                                       basicEvent->label())));
+            ++row;
+        }
+        table->setWordWrap(false);
+        table->resizeColumnsToContents();
+        table->setSortingEnabled(true);
+        ui->tabWidget->addTab(table, tr("Basic Events"));
+        ui->tabWidget->setCurrentWidget(table);
+    });
+
+    modelData->addChildren({new QTreeWidgetItem({tr("House Events")}),
                             new QTreeWidgetItem({tr("Parameters")})});
 
-    ui->treeWidget->addTopLevelItems(
-        {faultTrees, new QTreeWidgetItem({tr("CCF Groups")}), modelData});
+    ui->treeWidget->addTopLevelItems({faultTrees, modelData});
 }
 
 } // namespace gui
