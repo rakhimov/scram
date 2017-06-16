@@ -88,7 +88,8 @@ MainWindow::MainWindow(QWidget *parent)
                 openFiles(QString::fromStdString(Env::install_dir()
                                                  + "/share/scram/input"));
             });
-    ui->tabWidget->addTab(startPage, tr("Start Here"));
+    ui->tabWidget->addTab(startPage, startPage->windowIcon(),
+                          startPage->windowTitle());
 
     connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
             &MainWindow::showElement);

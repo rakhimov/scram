@@ -11,7 +11,10 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Start Here</string>
+  </property>
+  <property name="windowIcon">
+   <iconset theme="start-here"/>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
