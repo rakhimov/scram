@@ -46,7 +46,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <item row="0" column="1">
+    <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
        <number>-1</number>
@@ -57,21 +57,6 @@
       <property name="movable">
        <bool>true</bool>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QTreeWidget" name="treeWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <column>
-       <property name="text">
-        <string/>
-       </property>
-      </column>
      </widget>
     </item>
    </layout>
@@ -165,6 +150,51 @@
    <addaction name="actionZoomIn"/>
    <addaction name="actionBestFit"/>
    <addaction name="actionZoomOut"/>
+  </widget>
+  <widget class="QDockWidget" name="modelDockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QTreeWidget" name="treeWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="animated">
+        <bool>true</bool>
+       </property>
+       <column>
+        <property name="text">
+         <string/>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="actionAboutQt">
    <property name="icon">
@@ -281,7 +311,8 @@
   </action>
   <action name="actionZoomIn">
    <property name="icon">
-    <iconset theme="zoom-in"/>
+    <iconset theme="zoom-in">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;In</string>
@@ -289,7 +320,8 @@
   </action>
   <action name="actionZoomOut">
    <property name="icon">
-    <iconset theme="zoom-out"/>
+    <iconset theme="zoom-out">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;Out</string>
@@ -337,7 +369,8 @@
   </action>
   <action name="actionBestFit">
    <property name="icon">
-    <iconset theme="zoom-fit-best"/>
+    <iconset theme="zoom-fit-best">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Best &amp;Fit</string>
