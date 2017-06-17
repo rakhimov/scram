@@ -62,6 +62,7 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
 endif()
 
 set(SCRAM_GUI_SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/zoomableview.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"

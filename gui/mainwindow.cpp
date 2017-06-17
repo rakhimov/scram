@@ -34,15 +34,16 @@
 #include <QTableWidget>
 #include <QtOpenGL>
 
-#include "event.h"
-#include "guiassert.h"
-
 #include "src/config.h"
 #include "src/env.h"
 #include "src/error.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
 #include "src/xml.h"
+
+#include "event.h"
+#include "guiassert.h"
+#include "settingsdialog.h"
 
 namespace scram {
 namespace gui {
@@ -99,6 +100,11 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->tabWidget->removeTab(index);
                 delete widget;
             });
+
+    connect(ui->actionSettings, &QAction::triggered, this, [this] {
+        SettingsDialog dialog(this);
+        dialog.exec();
+    });
 
     deactivateZoom();
 }
