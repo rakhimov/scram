@@ -110,12 +110,23 @@
      <addaction name="action70"/>
      <addaction name="action50"/>
     </widget>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>&amp;Toolbars</string>
+     </property>
+     <addaction name="actionModelToolBar"/>
+     <addaction name="actionZoomToolBar"/>
+     <addaction name="actionAnalysisToolBar"/>
+    </widget>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
     <addaction name="menuZoom"/>
     <addaction name="actionBestFit"/>
     <addaction name="separator"/>
-    <addaction name="actionToolbar"/>
+    <addaction name="menuToolbars"/>
+    <addaction name="separator"/>
+    <addaction name="actionData"/>
+    <addaction name="actionReports"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis">
     <property name="title">
@@ -131,9 +142,9 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="modelToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Model Tool Bar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -148,7 +159,7 @@
   </widget>
   <widget class="QToolBar" name="zoomToolBar">
    <property name="windowTitle">
-    <string>toolBar_2</string>
+    <string>Zoom Tool Bar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -162,7 +173,7 @@
   </widget>
   <widget class="QDockWidget" name="modelDockWidget">
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
     <string>Data</string>
@@ -210,7 +221,7 @@
   </widget>
   <widget class="QDockWidget" name="reportDockWidget">
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
     <string>Reports</string>
@@ -247,7 +258,7 @@
   </widget>
   <widget class="QToolBar" name="analysisToolBar">
    <property name="windowTitle">
-    <string>analysisToolBar</string>
+    <string>Analysis Tool Bar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -337,17 +348,6 @@
    </property>
    <property name="text">
     <string>Save Model &amp;As...</string>
-   </property>
-  </action>
-  <action name="actionToolbar">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Toolbar</string>
    </property>
   </action>
   <action name="actionPrint">
@@ -468,6 +468,61 @@
     <string>Analysis Settings</string>
    </property>
   </action>
+  <action name="actionModelToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Model</string>
+   </property>
+  </action>
+  <action name="actionZoomToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Zoom</string>
+   </property>
+  </action>
+  <action name="actionAnalysisToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Analysis</string>
+   </property>
+  </action>
+  <action name="actionData">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Data</string>
+   </property>
+  </action>
+  <action name="actionReports">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Reports</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -475,9 +530,9 @@
  </resources>
  <connections>
   <connection>
-   <sender>actionToolbar</sender>
+   <sender>actionModelToolBar</sender>
    <signal>toggled(bool)</signal>
-   <receiver>toolBar</receiver>
+   <receiver>modelToolBar</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -491,9 +546,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolBar</sender>
+   <sender>modelToolBar</sender>
    <signal>visibilityChanged(bool)</signal>
-   <receiver>actionToolbar</receiver>
+   <receiver>actionModelToolBar</receiver>
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -519,6 +574,134 @@
     <hint type="destinationlabel">
      <x>319</x>
      <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>zoomToolBar</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionZoomToolBar</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionZoomToolBar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>zoomToolBar</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>217</x>
+     <y>44</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>analysisToolBar</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionAnalysisToolBar</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>458</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAnalysisToolBar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>analysisToolBar</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>44</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionData</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>modelDockWidget</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>162</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>modelDockWidget</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionData</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionReports</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>reportDockWidget</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>reportDockWidget</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionReports</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>359</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>
