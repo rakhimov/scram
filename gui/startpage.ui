@@ -14,7 +14,8 @@
    <string>Start Here</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="start-here"/>
+   <iconset theme="start-here">
+    <normaloff>.</normaloff>.</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
@@ -22,7 +23,7 @@
      <item>
       <widget class="QCommandLinkButton" name="newModelButton">
        <property name="text">
-        <string>Start New Model</string>
+        <string>Start a New Model</string>
        </property>
       </widget>
      </item>

@@ -288,7 +288,7 @@
     <string>E&amp;xit</string>
    </property>
    <property name="toolTip">
-    <string>Exit the application</string>
+    <string>Exit the Application</string>
    </property>
   </action>
   <action name="actionNewModel">
@@ -300,7 +300,7 @@
     <string>&amp;New Model</string>
    </property>
    <property name="toolTip">
-    <string>Create a new model</string>
+    <string>Create a New Model</string>
    </property>
   </action>
   <action name="actionOpenFiles">
@@ -312,7 +312,7 @@
     <string>&amp;Open Model Files...</string>
    </property>
    <property name="toolTip">
-    <string>Open existing model files</string>
+    <string>Open Model Files</string>
    </property>
   </action>
   <action name="actionSave">
@@ -440,7 +440,8 @@
   </action>
   <action name="actionRun">
    <property name="icon">
-    <iconset theme="utilities-terminal"/>
+    <iconset theme="utilities-terminal">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Run</string>
@@ -454,7 +455,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset theme="applications-system"/>
+    <iconset theme="applications-system">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Settings...</string>
