@@ -18,15 +18,92 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 
+#include "src/error.h"
+
+#include "guiassert.h"
+
 namespace scram {
 namespace gui {
 
-SettingsDialog::SettingsDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SettingsDialog)
+SettingsDialog::SettingsDialog(const core::Settings &initSettings,
+                               QWidget *parent)
+    : QDialog(parent), ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
+    setupState(initSettings);
+    setupConnections();
+}
 
+SettingsDialog::~SettingsDialog() = default;
+
+core::Settings SettingsDialog::settings() const
+{
+    core::Settings result;
+    try {
+        if (ui->bdd->isChecked()) {
+            result.algorithm(core::Algorithm::kBdd);
+        } else if (ui->zbdd->isChecked()) {
+            result.algorithm(core::Algorithm::kZbdd);
+        } else {
+            GUI_ASSERT(ui->mocus->isChecked(), result);
+            result.algorithm(core::Algorithm::kMocus);
+        }
+
+        result.prime_implicants(ui->primeImplicants->isChecked());
+
+        if (ui->approximationsBox->isChecked() == false) {
+            result.approximation(core::Approximation::kNone);
+        } else if (ui->rareEvent->isChecked()) {
+            result.approximation(core::Approximation::kRareEvent);
+        } else {
+            GUI_ASSERT(ui->mcub->isChecked(), result);
+            result.approximation(core::Approximation::kMcub);
+        }
+
+        result.limit_order(ui->productOrder->value());
+        result.mission_time(ui->missionTime->value());
+    } catch (Error& err) {
+        GUI_ASSERT(false && err.what(), result);
+    }
+    return result;
+}
+
+void SettingsDialog::setupState(const core::Settings &initSettings)
+{
+    ui->primeImplicants->setChecked(initSettings.prime_implicants());
+    ui->probability->setChecked(initSettings.probability_analysis());
+    ui->importance->setChecked(initSettings.importance_analysis());
+    ui->missionTime->setValue(initSettings.mission_time());
+    ui->productOrder->setValue(initSettings.limit_order());
+
+    switch (initSettings.algorithm()) {
+    case core::Algorithm::kBdd:
+        ui->bdd->setChecked(true);
+        break;
+    case core::Algorithm::kZbdd:
+        ui->zbdd->setChecked(true);
+        break;
+    case core::Algorithm::kMocus:
+        ui->mocus->setChecked(true);
+        break;
+    }
+
+    ui->approximationsBox->setChecked(true);
+    switch (initSettings.approximation()) {
+    case core::Approximation::kNone:
+        ui->approximationsBox->setChecked(false);
+        break;
+    case core::Approximation::kRareEvent:
+        ui->rareEvent->setChecked(true);
+        break;
+    case core::Approximation::kMcub:
+        ui->mcub->setChecked(true);
+        break;
+    }
+}
+
+void SettingsDialog::setupConnections()
+{
     connect(ui->probability, &QAbstractButton::toggled, [this](bool checked) {
         if (!checked)
             ui->importance->setChecked(false);
@@ -56,8 +133,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
         }
     });
 }
-
-SettingsDialog::~SettingsDialog() = default;
 
 } // namespace gui
 } // namespace scram

@@ -22,6 +22,8 @@
 
 #include <QDialog>
 
+#include "src/settings.h"
+
 namespace Ui {
 class SettingsDialog;
 }
@@ -34,10 +36,18 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(QWidget *parent = nullptr);
+    /// @param[in] initSettings  The initial settings to setup the dialog.
+    explicit SettingsDialog(const core::Settings &initSettings,
+                            QWidget *parent = nullptr);
     ~SettingsDialog();
 
+    /// @returns Analysis settings derived from the dialog state.
+    core::Settings settings() const;
+
 private:
+    void setupState(const core::Settings &initSettings);
+    void setupConnections();
+
     std::unique_ptr<Ui::SettingsDialog> ui;
 };
 

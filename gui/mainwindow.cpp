@@ -102,8 +102,9 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
-        SettingsDialog dialog(this);
-        dialog.exec();
+        SettingsDialog dialog(m_settings, this);
+        if (dialog.exec() == QDialog::Accepted)
+            m_settings = dialog.settings();
     });
 
     deactivateZoom();
