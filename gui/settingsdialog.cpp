@@ -50,6 +50,8 @@ core::Settings SettingsDialog::settings() const
         }
 
         result.prime_implicants(ui->primeImplicants->isChecked());
+        result.probability_analysis(ui->probability->isChecked());
+        result.importance_analysis(ui->importance->isChecked());
 
         if (ui->approximationsBox->isChecked() == false) {
             result.approximation(core::Approximation::kNone);
