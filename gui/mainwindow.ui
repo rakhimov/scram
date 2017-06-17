@@ -452,6 +452,9 @@
    <property name="toolTip">
     <string>Run Analysis</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+R</string>
+   </property>
   </action>
   <action name="actionSettings">
    <property name="icon">
@@ -466,6 +469,9 @@
    </property>
    <property name="toolTip">
     <string>Analysis Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+S</string>
    </property>
   </action>
   <action name="actionModelToolBar">
