@@ -7,6 +7,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Svg REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 if(Qt5Widgets_FOUND)
   message(STATUS "Found Qt5")
   message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
@@ -19,6 +20,9 @@ if(Qt5OpenGL_FOUND)
 endif()
 if(Qt5PrintSupport_FOUND)
   message(STATUS "Found Qt5 PrintSupport")
+endif()
+if(Qt5Concurrent_FOUND)
+  message(STATUS "Found Qt5 Concurrent")
 endif()
 
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
@@ -75,7 +79,7 @@ add_subdirectory("${SCRAM_GUI_TS_DIR}")
 add_library(scramgui ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
 target_link_libraries(scramgui PRIVATE
   ${LIBS} scramcore
-  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport)
+  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
 if(INSTALL_LIBS)
   if(WIN32)

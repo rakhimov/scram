@@ -29,9 +29,11 @@
 #include <QMessageBox>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
 #include <QTableWidget>
+#include <QtConcurrent>
 #include <QtOpenGL>
 
 #include "src/config.h"
@@ -39,6 +41,7 @@
 #include "src/error.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
+#include "src/risk_analysis.h"
 #include "src/xml.h"
 
 #include "event.h"
@@ -54,6 +57,27 @@ public:
     explicit StartPage(QWidget *parent = nullptr) : QWidget(parent)
     {
         setupUi(this);
+    }
+};
+
+class WaitDialog : public QProgressDialog
+{
+public:
+    explicit WaitDialog(QWidget *parent) : QProgressDialog(parent)
+    {
+        setWindowFlags(static_cast<Qt::WindowFlags>(windowFlags()
+                                                    | Qt::FramelessWindowHint));
+        setCancelButton(nullptr);
+        setRange(0, 0);
+        setMinimumDuration(0);
+    }
+
+private:
+    void keyPressEvent(QKeyEvent *event) override
+    {
+        if (event->key() == Qt::Key_Escape)
+            return event->accept();
+        QProgressDialog::keyPressEvent(event);
     }
 };
 
@@ -105,6 +129,17 @@ MainWindow::MainWindow(QWidget *parent)
         SettingsDialog dialog(m_settings, this);
         if (dialog.exec() == QDialog::Accepted)
             m_settings = dialog.settings();
+    });
+    connect(ui->actionRun, &QAction::triggered, this, [this] {
+        WaitDialog progress(this);
+        progress.setLabelText(tr("Running analysis..."));
+        core::RiskAnalysis analysis(m_model, m_settings);
+        QFutureWatcher<void> futureWatcher;
+        connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
+        futureWatcher.setFuture(
+            QtConcurrent::run([&analysis] { analysis.Analyze(); }));
+        progress.exec();
+        futureWatcher.waitForFinished();
     });
 
     deactivateZoom();
