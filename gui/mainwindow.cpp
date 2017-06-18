@@ -493,7 +493,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
 
         GUI_ASSERT(result.fault_tree_analysis,);
         auto *productItem = new QTreeWidgetItem(
-            {tr("Products: %1")
+            {tr("Products: %L1")
                  .arg(result.fault_tree_analysis->products().size())});
         widgetItem->addChild(productItem);
         m_reportActions.emplace(productItem, [this, &result, name] {
@@ -546,9 +546,46 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         }
 
         if (result.importance_analysis) {
-            auto *importanceItem
-                = new QTreeWidgetItem({tr("Importance Factors")});
+            auto *importanceItem = new QTreeWidgetItem(
+                {tr("Importance Factors: %L1")
+                     .arg(result.importance_analysis->importance().size())});
             widgetItem->addChild(importanceItem);
+            m_reportActions.emplace(importanceItem, [this, &result, name] {
+                auto *table = new QTableWidget(nullptr);
+                table->setColumnCount(8);
+                table->setHorizontalHeaderLabels(
+                    {tr("Id"), tr("Occurrence"), tr("Probability"), tr("MIF"),
+                     tr("CIF"), tr("DIF"), tr("RAW"), tr("RRW")});
+                auto &records = result.importance_analysis->importance();
+                table->setRowCount(records.size());
+                int row = 0;
+                for (const core::ImportanceRecord &record : records) {
+                    table->setItem(
+                        row, 0, new QTableWidgetItem(
+                                    QString::fromStdString(record.event.id())));
+                    table->setItem(row, 1, new QTableWidgetItem(QString::number(
+                                               record.factors.occurrence)));
+                    table->setItem(row, 2, new QTableWidgetItem(QString::number(
+                                               record.event.p())));
+                    table->setItem(row, 3, new QTableWidgetItem(QString::number(
+                                               record.factors.mif)));
+                    table->setItem(row, 4, new QTableWidgetItem(QString::number(
+                                               record.factors.cif)));
+                    table->setItem(row, 5, new QTableWidgetItem(QString::number(
+                                               record.factors.dif)));
+                    table->setItem(row, 6, new QTableWidgetItem(QString::number(
+                                               record.factors.raw)));
+                    table->setItem(row, 7, new QTableWidgetItem(QString::number(
+                                               record.factors.rrw)));
+                    ++row;
+                }
+
+                table->setWordWrap(false);
+                table->resizeColumnsToContents();
+                table->setSortingEnabled(true);
+                ui->tabWidget->addTab(table, tr("Importance: %1").arg(name));
+                ui->tabWidget->setCurrentWidget(table);
+            });
         }
     }
 }
