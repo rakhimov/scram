@@ -469,6 +469,7 @@ void MainWindow::resetTreeWidget()
 void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
 {
     ui->reportTreeWidget->clear();
+    m_reportActions.clear();
     m_analysis = std::move(analysis);
     struct {
         QString operator()(const mef::Gate *gate)
@@ -484,13 +485,55 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         }
     } nameExtractor;
     for (const core::RiskAnalysis::Result &result : m_analysis->results()) {
-        auto *widgetItem = new QTreeWidgetItem(
-            {boost::apply_visitor(nameExtractor, result.id)});
+        QString name = boost::apply_visitor(nameExtractor, result.id);
+        auto *widgetItem = new QTreeWidgetItem({name});
         ui->reportTreeWidget->addTopLevelItem(widgetItem);
 
         GUI_ASSERT(result.fault_tree_analysis,);
         auto *productItem = new QTreeWidgetItem({tr("Products")});
         widgetItem->addChild(productItem);
+        m_reportActions.emplace(productItem, [this, &result, name] {
+            auto *table = new QTableWidget(nullptr);
+            const auto &products = result.fault_tree_analysis->products();
+            double sum = 0;
+            if (result.probability_analysis) {
+                table->setColumnCount(4);
+                table->setHorizontalHeaderLabels({tr("Product"), tr("Order"),
+                                                  tr("Probability"),
+                                                  tr("Contribution")});
+                for (const core::Product& product : products)
+                    sum += product.p();
+            } else {
+                table->setColumnCount(2);
+                table->setHorizontalHeaderLabels({tr("Product"), tr("Order")});
+            }
+            table->setRowCount(products.size());
+            int row = 0;
+            for (const core::Product &product : products) {
+                QStringList members;
+                for (const core::Literal &literal : product) {
+                    members.push_back(QString::fromStdString(
+                        (literal.complement ? "\u00AC" : "")
+                        + literal.event.id()));
+                }
+                table->setItem(row, 0, new QTableWidgetItem(members.join(
+                                           QStringLiteral(" \u22C5 "))));
+                table->setItem(row, 1, new QTableWidgetItem(
+                                           QString::number(product.order())));
+                if (result.probability_analysis) {
+                    table->setItem(row, 2, new QTableWidgetItem(
+                                               QString::number(product.p())));
+                    table->setItem(row, 3, new QTableWidgetItem(QString::number(
+                                               product.p() / sum)));
+                }
+                ++row;
+            }
+            table->setWordWrap(false);
+            table->resizeColumnsToContents();
+            table->setSortingEnabled(true);
+            ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
+            ui->tabWidget->setCurrentWidget(table);
+        });
 
         if (result.importance_analysis) {
             auto *importanceItem
