@@ -492,7 +492,9 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         ui->reportTreeWidget->addTopLevelItem(widgetItem);
 
         GUI_ASSERT(result.fault_tree_analysis,);
-        auto *productItem = new QTreeWidgetItem({tr("Products")});
+        auto *productItem = new QTreeWidgetItem(
+            {tr("Products: %1")
+                 .arg(result.fault_tree_analysis->products().size())});
         widgetItem->addChild(productItem);
         m_reportActions.emplace(productItem, [this, &result, name] {
             auto *table = new QTableWidget(nullptr);
@@ -536,6 +538,12 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
             ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
             ui->tabWidget->setCurrentWidget(table);
         });
+
+        if (result.probability_analysis) {
+            widgetItem->addChild(new QTreeWidgetItem(
+                {tr("Probability: %1")
+                     .arg(result.probability_analysis->p_total())}));
+        }
 
         if (result.importance_analysis) {
             auto *importanceItem
