@@ -32,10 +32,11 @@
 
 #include <libxml++/libxml++.h>
 
-#include "zoomableview.h"
-
-#include "src/settings.h"
 #include "src/model.h"
+#include "src/risk_analysis.h"
+#include "src/settings.h"
+
+#include "zoomableview.h"
 
 namespace Ui {
 class MainWindow;
@@ -99,11 +100,6 @@ private slots:
     void print();
 
     /**
-     * Processes the element activation in the tree view.
-     */
-    void showElement(QTreeWidgetItem *item);
-
-    /**
      * Activates the Zoom actions
      * and updates the displayed zoom level.
      */
@@ -124,7 +120,15 @@ private:
      */
     void resetTreeWidget();
 
+    /**
+     * @brief Resets the report view.
+     *
+     * @param analysis  The analysis with results.
+     */
+    void resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis);
+
     std::unique_ptr<Ui::MainWindow> ui;
+
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
@@ -132,6 +136,9 @@ private:
     QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>
         m_treeActions; ///< Actions on elements of the main tree widget.
+    std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
+    std::unordered_map<QTreeWidgetItem *, std::function<void()>>
+        m_reportActions; ///< Actions on elements of the report tree widget.
 };
 
 } // namespace gui

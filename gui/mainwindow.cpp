@@ -41,7 +41,6 @@
 #include "src/error.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
-#include "src/risk_analysis.h"
 #include "src/xml.h"
 
 #include "event.h"
@@ -117,7 +116,15 @@ MainWindow::MainWindow(QWidget *parent)
                           startPage->windowTitle());
 
     connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
-            &MainWindow::showElement);
+            [this](QTreeWidgetItem *item) {
+                if (auto it = ext::find(m_treeActions, item))
+                    it->second();
+            });
+    connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
+            [this](QTreeWidgetItem *item) {
+                if (auto it = ext::find(m_reportActions, item))
+                    it->second();
+            });
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
             [this](int index) {
                 auto *widget = ui->tabWidget->widget(index);
@@ -133,13 +140,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionRun, &QAction::triggered, this, [this] {
         WaitDialog progress(this);
         progress.setLabelText(tr("Running analysis..."));
-        core::RiskAnalysis analysis(m_model, m_settings);
+        auto analysis
+            = std::make_unique<core::RiskAnalysis>(m_model, m_settings);
         QFutureWatcher<void> futureWatcher;
         connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
         futureWatcher.setFuture(
-            QtConcurrent::run([&analysis] { analysis.Analyze(); }));
+            QtConcurrent::run([&analysis] { analysis->Analyze(); }));
         progress.exec();
         futureWatcher.waitForFinished();
+        resetReportWidget(std::move(analysis));
     });
 
     deactivateZoom();
@@ -331,12 +340,6 @@ void MainWindow::print()
     }
 }
 
-void MainWindow::showElement(QTreeWidgetItem *item)
-{
-    if (auto it = ext::find(m_treeActions, item))
-        it->second();
-}
-
 void MainWindow::activateZoom(int level)
 {
     GUI_ASSERT(level > 0,);
@@ -393,6 +396,11 @@ void MainWindow::resetTreeWidget()
         ui->tabWidget->removeTab(0);
         delete widget;
     }
+
+    ui->reportTreeWidget->clear();
+    m_reportActions.clear();
+    m_analysis.reset();
+
     m_treeActions.clear();
     ui->treeWidget->clear();
     ui->treeWidget->setHeaderLabel(
@@ -456,6 +464,40 @@ void MainWindow::resetTreeWidget()
                             new QTreeWidgetItem({tr("Parameters")})});
 
     ui->treeWidget->addTopLevelItems({faultTrees, modelData});
+}
+
+void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
+{
+    ui->reportTreeWidget->clear();
+    m_analysis = std::move(analysis);
+    struct {
+        QString operator()(const mef::Gate *gate)
+        {
+            return QString::fromStdString(gate->id());
+        }
+
+        QString operator()(const std::pair<const mef::InitiatingEvent &,
+                                           const mef::Sequence &> &)
+        {
+            GUI_ASSERT(false && "unexpected analysis target", {});
+            return {};
+        }
+    } nameExtractor;
+    for (const core::RiskAnalysis::Result &result : m_analysis->results()) {
+        auto *widgetItem = new QTreeWidgetItem(
+            {boost::apply_visitor(nameExtractor, result.id)});
+        ui->reportTreeWidget->addTopLevelItem(widgetItem);
+
+        GUI_ASSERT(result.fault_tree_analysis,);
+        auto *productItem = new QTreeWidgetItem({tr("Products")});
+        widgetItem->addChild(productItem);
+
+        if (result.importance_analysis) {
+            auto *importanceItem
+                = new QTreeWidgetItem({tr("Importance Factors")});
+            widgetItem->addChild(importanceItem);
+        }
+    }
 }
 
 } // namespace gui

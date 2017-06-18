@@ -247,10 +247,18 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeView" name="reportTreeView">
+      <widget class="QTreeWidget" name="reportTreeWidget">
        <property name="animated">
         <bool>true</bool>
        </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
       </widget>
      </item>
     </layout>
