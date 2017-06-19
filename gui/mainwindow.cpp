@@ -82,6 +82,19 @@ private:
     }
 };
 
+namespace {
+
+/// @returns A new table item for data tables.
+QTableWidgetItem *constructTableItem(QVariant data)
+{
+    auto *item = new QTableWidgetItem;
+    item->setData(Qt::EditRole, std::move(data));
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    return item;
+}
+
+} // namespace
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
@@ -445,13 +458,13 @@ void MainWindow::resetTreeWidget()
         table->setRowCount(m_model->basic_events().size());
         int row = 0;
         for (const mef::BasicEventPtr &basicEvent : m_model->basic_events()) {
-            table->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(
+            table->setItem(row, 0, constructTableItem(QString::fromStdString(
                                        basicEvent->id())));
-            table->setItem(row, 1, new QTableWidgetItem(
-                                       basicEvent->HasExpression()
-                                           ? QString::number(basicEvent->p())
-                                           : tr("N/A")));
-            table->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(
+            table->setItem(row, 1,
+                           constructTableItem(basicEvent->HasExpression()
+                                                  ? QVariant(basicEvent->p())
+                                                  : QVariant(tr("NULL"))));
+            table->setItem(row, 2, constructTableItem(QString::fromStdString(
                                        basicEvent->label())));
             ++row;
         }
@@ -520,15 +533,13 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                         (literal.complement ? "\u00AC" : "")
                         + literal.event.id()));
                 }
-                table->setItem(row, 0, new QTableWidgetItem(members.join(
+                table->setItem(row, 0, constructTableItem(members.join(
                                            QStringLiteral(" \u22C5 "))));
-                table->setItem(row, 1, new QTableWidgetItem(
-                                           QString::number(product.order())));
+                table->setItem(row, 1, constructTableItem(product.order()));
                 if (result.probability_analysis) {
-                    table->setItem(row, 2, new QTableWidgetItem(
-                                               QString::number(product.p())));
-                    table->setItem(row, 3, new QTableWidgetItem(QString::number(
-                                               product.p() / sum)));
+                    table->setItem(row, 2, constructTableItem(product.p()));
+                    table->setItem(row, 3,
+                                   constructTableItem(product.p() / sum));
                 }
                 ++row;
             }
@@ -561,22 +572,22 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                 int row = 0;
                 for (const core::ImportanceRecord &record : records) {
                     table->setItem(
-                        row, 0, new QTableWidgetItem(
+                        row, 0, constructTableItem(
                                     QString::fromStdString(record.event.id())));
-                    table->setItem(row, 1, new QTableWidgetItem(QString::number(
-                                               record.factors.occurrence)));
-                    table->setItem(row, 2, new QTableWidgetItem(QString::number(
-                                               record.event.p())));
-                    table->setItem(row, 3, new QTableWidgetItem(QString::number(
-                                               record.factors.mif)));
-                    table->setItem(row, 4, new QTableWidgetItem(QString::number(
-                                               record.factors.cif)));
-                    table->setItem(row, 5, new QTableWidgetItem(QString::number(
-                                               record.factors.dif)));
-                    table->setItem(row, 6, new QTableWidgetItem(QString::number(
-                                               record.factors.raw)));
-                    table->setItem(row, 7, new QTableWidgetItem(QString::number(
-                                               record.factors.rrw)));
+                    table->setItem(
+                        row, 1, constructTableItem(record.factors.occurrence));
+                    table->setItem(row, 2,
+                                   constructTableItem(record.event.p()));
+                    table->setItem(row, 3,
+                                   constructTableItem(record.factors.mif));
+                    table->setItem(row, 4,
+                                   constructTableItem(record.factors.cif));
+                    table->setItem(row, 5,
+                                   constructTableItem(record.factors.dif));
+                    table->setItem(row, 6,
+                                   constructTableItem(record.factors.raw));
+                    table->setItem(row, 7,
+                                   constructTableItem(record.factors.rrw));
                     ++row;
                 }
 
