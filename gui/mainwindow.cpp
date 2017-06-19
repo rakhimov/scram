@@ -162,6 +162,8 @@ MainWindow::MainWindow(QWidget *parent)
                     ui->actionPrint->setEnabled(false);
                     ui->actionPrintPreview->setEnabled(false);
                 }
+                if (dynamic_cast<DiagramView *>(widget))
+                    ui->actionExportAs->setEnabled(false);
                 ui->tabWidget->removeTab(index);
                 delete widget;
             });
@@ -172,6 +174,8 @@ MainWindow::MainWindow(QWidget *parent)
                     ui->actionPrint->setEnabled(true);
                     ui->actionPrintPreview->setEnabled(true);
                 }
+                if (dynamic_cast<DiagramView *>(widget))
+                    ui->actionExportAs->setEnabled(true);
             });
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
@@ -363,9 +367,9 @@ void MainWindow::exportAs()
         this, tr("Export As"), QDir::homePath(),
         tr("SVG files (*.svg);;All files (*.*)"));
     QWidget *widget = ui->tabWidget->currentWidget();
-    GUI_ASSERT(widget,);
+    GUI_ASSERT(widget, );
     QGraphicsView *view = qobject_cast<QGraphicsView *>(widget);
-    GUI_ASSERT(view,);
+    GUI_ASSERT(view, );
     QGraphicsScene *scene = view->scene();
     QSize sceneSize = scene->sceneRect().size().toSize();
 
