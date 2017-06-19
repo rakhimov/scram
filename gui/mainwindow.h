@@ -100,6 +100,11 @@ private slots:
     void print();
 
     /**
+       @brief Provides a preview before printing.
+     */
+    void printPreview();
+
+    /**
      * Activates the Zoom actions
      * and updates the displayed zoom level.
      */

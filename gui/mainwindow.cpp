@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QPrintPreviewDialog>
 #include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
@@ -260,6 +261,8 @@ void MainWindow::setupActions()
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::print);
+    connect(ui->actionPrintPreview, &QAction::triggered, this,
+            &MainWindow::printPreview);
 
     connect(ui->actionExportAs, &QAction::triggered, this,
             &MainWindow::exportAs);
@@ -346,13 +349,26 @@ void MainWindow::exportAs()
 
 void MainWindow::print()
 {
-    QPrinter printer;
+    QPrinter printer(QPrinter::HighResolution);
     QPrintDialog dialog(&printer, this);
     if (dialog.exec() == QDialog::Accepted) {
         QPainter painter(&printer);
         painter.setRenderHint(QPainter::Antialiasing);
         ui->tabWidget->currentWidget()->render(&painter);
     }
+}
+
+void MainWindow::printPreview()
+{
+    QPrinter printer(QPrinter::HighResolution);
+    QPrintPreviewDialog preview(&printer, this);
+    connect(&preview, &QPrintPreviewDialog::paintRequested,
+            [this](QPrinter *t_printer) {
+        QPainter painter(t_printer);
+        painter.setRenderHint(QPainter::Antialiasing);
+        ui->tabWidget->currentWidget()->render(&painter);
+    });
+    preview.exec();
 }
 
 void MainWindow::activateZoom(int level)

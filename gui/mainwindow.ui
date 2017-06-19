@@ -89,6 +89,7 @@
     <addaction name="separator"/>
     <addaction name="actionExportAs"/>
     <addaction name="separator"/>
+    <addaction name="actionPrintPreview"/>
     <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -535,6 +536,14 @@
    </property>
    <property name="text">
     <string>&amp;Reports</string>
+   </property>
+  </action>
+  <action name="actionPrintPreview">
+   <property name="icon">
+    <iconset theme="document-print-preview"/>
+   </property>
+   <property name="text">
+    <string>Print Previe&amp;w...</string>
    </property>
   </action>
  </widget>
