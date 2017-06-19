@@ -21,7 +21,6 @@
 
 #include <algorithm>
 
-#include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
 #include <QFileDialog>
@@ -112,6 +111,7 @@ QTableWidgetItem *constructTableItem(QVariant data)
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
+      m_undoStack(new QUndoStack(this)),
       m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)"))),
       m_zoomBox(new QComboBox)
 {
@@ -307,6 +307,20 @@ void MainWindow::setupActions()
     // View menu actions.
     ui->actionZoomIn->setShortcut(QKeySequence::ZoomIn);
     ui->actionZoomOut->setShortcut(QKeySequence::ZoomOut);
+
+    // Edit menu actions.
+    m_undoAction = m_undoStack->createUndoAction(this);
+    m_undoAction->setShortcuts(QKeySequence::Undo);
+    m_undoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
+
+    m_redoAction = m_undoStack->createRedoAction(this);
+    m_redoAction->setShortcuts(QKeySequence::Redo);
+    m_redoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-redo")));
+
+    ui->menuEdit->addAction(m_undoAction);
+    ui->menuEdit->addAction(m_redoAction);
+    ui->editToolBar->addAction(m_undoAction);
+    ui->editToolBar->addAction(m_redoAction);
 }
 
 void MainWindow::createNewModel()

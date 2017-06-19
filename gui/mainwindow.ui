@@ -140,7 +140,13 @@
     <addaction name="separator"/>
     <addaction name="actionRun"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuAnalysis"/>
    <addaction name="menuHelp"/>
@@ -161,6 +167,17 @@
    <addaction name="actionSave"/>
    <addaction name="actionSaveAs"/>
   </widget>
+  <widget class="QToolBar" name="editToolBar">
+   <property name="windowTitle">
+    <string>Edit Tool Bar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <widget class="QToolBar" name="zoomToolBar">
    <property name="windowTitle">
     <string>Zoom Tool Bar</string>
@@ -174,6 +191,19 @@
    <addaction name="actionZoomIn"/>
    <addaction name="actionBestFit"/>
    <addaction name="actionZoomOut"/>
+  </widget>
+  <widget class="QToolBar" name="analysisToolBar">
+   <property name="windowTitle">
+    <string>Analysis Tool Bar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSettings"/>
+   <addaction name="actionRun"/>
   </widget>
   <widget class="QDockWidget" name="modelDockWidget">
    <property name="features">
@@ -267,19 +297,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QToolBar" name="analysisToolBar">
-   <property name="windowTitle">
-    <string>Analysis Tool Bar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionSettings"/>
-   <addaction name="actionRun"/>
   </widget>
   <action name="actionAboutQt">
    <property name="icon">

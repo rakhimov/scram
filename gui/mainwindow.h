@@ -24,11 +24,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include <QAction>
 #include <QComboBox>
 #include <QDir>
 #include <QMainWindow>
 #include <QRegularExpressionValidator>
 #include <QTreeWidgetItem>
+#include <QUndoStack>
 
 #include <libxml++/libxml++.h>
 
@@ -123,6 +125,9 @@ private:
     void resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis);
 
     std::unique_ptr<Ui::MainWindow> ui;
+    QAction *m_undoAction;
+    QAction *m_redoAction;
+    QUndoStack *m_undoStack;
 
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
