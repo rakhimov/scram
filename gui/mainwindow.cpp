@@ -92,7 +92,7 @@ private:
     {
         QPainter painter(printer);
         painter.setRenderHint(QPainter::Antialiasing);
-        render(&painter);
+        scene()->render(&painter);
     }
 };
 
