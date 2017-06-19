@@ -28,8 +28,6 @@
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QPrinter>
-#include <QPrintDialog>
-#include <QPrintPreviewDialog>
 #include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
@@ -46,6 +44,7 @@
 
 #include "event.h"
 #include "guiassert.h"
+#include "printable.h"
 #include "settingsdialog.h"
 
 namespace scram {
@@ -83,6 +82,20 @@ private:
     }
 };
 
+class DiagramView : public ZoomableView, public Printable
+{
+public:
+    using ZoomableView::ZoomableView;
+
+private:
+    void doPrint(QPrinter *printer) override
+    {
+        QPainter painter(printer);
+        painter.setRenderHint(QPainter::Antialiasing);
+        render(&painter);
+    }
+};
+
 namespace {
 
 /// @returns A new table item for data tables.
@@ -105,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     m_zoomBox->setEditable(true);
+    m_zoomBox->setEnabled(false);
     m_zoomBox->setInsertPolicy(QComboBox::NoInsert);
     m_zoomBox->setValidator(&m_percentValidator);
     for (QAction *action : ui->menuZoom->actions()) {
@@ -144,8 +158,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
             [this](int index) {
                 auto *widget = ui->tabWidget->widget(index);
+                if (dynamic_cast<Printable *>(widget)) {
+                    ui->actionPrint->setEnabled(false);
+                    ui->actionPrintPreview->setEnabled(false);
+                }
                 ui->tabWidget->removeTab(index);
                 delete widget;
+            });
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this,
+            [this](int index) {
+                auto *widget = ui->tabWidget->widget(index);
+                if (dynamic_cast<Printable *>(widget)) {
+                    ui->actionPrint->setEnabled(true);
+                    ui->actionPrintPreview->setEnabled(true);
+                }
             });
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
@@ -166,8 +192,6 @@ MainWindow::MainWindow(QWidget *parent)
         futureWatcher.waitForFinished();
         resetReportWidget(std::move(analysis));
     });
-
-    deactivateZoom();
 }
 
 MainWindow::~MainWindow() = default;
@@ -260,9 +284,18 @@ void MainWindow::setupActions()
             &MainWindow::saveModelAs);
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
-    connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::print);
-    connect(ui->actionPrintPreview, &QAction::triggered, this,
-            &MainWindow::printPreview);
+    connect(ui->actionPrint, &QAction::triggered, this, [this] {
+        auto *printable
+            = dynamic_cast<Printable *>(ui->tabWidget->currentWidget());
+        GUI_ASSERT(printable, );
+        printable->print();
+    });
+    connect(ui->actionPrintPreview, &QAction::triggered, this, [this] {
+        auto *printable
+            = dynamic_cast<Printable *>(ui->tabWidget->currentWidget());
+        GUI_ASSERT(printable, );
+        printable->printPreview();
+    });
 
     connect(ui->actionExportAs, &QAction::triggered, this,
             &MainWindow::exportAs);
@@ -347,30 +380,6 @@ void MainWindow::exportAs()
     painter.end();
 }
 
-void MainWindow::print()
-{
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintDialog dialog(&printer, this);
-    if (dialog.exec() == QDialog::Accepted) {
-        QPainter painter(&printer);
-        painter.setRenderHint(QPainter::Antialiasing);
-        ui->tabWidget->currentWidget()->render(&painter);
-    }
-}
-
-void MainWindow::printPreview()
-{
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, &QPrintPreviewDialog::paintRequested,
-            [this](QPrinter *t_printer) {
-        QPainter painter(t_printer);
-        painter.setRenderHint(QPainter::Antialiasing);
-        ui->tabWidget->currentWidget()->render(&painter);
-    });
-    preview.exec();
-}
-
 void MainWindow::activateZoom(int level)
 {
     GUI_ASSERT(level > 0,);
@@ -449,7 +458,7 @@ void MainWindow::resetTreeWidget()
             auto *root = new diagram::Gate(*faultTree->top_events().front(),
                                            &transfer);
             scene->addItem(root);
-            auto *view = new ZoomableView(scene, this);
+            auto *view = new DiagramView(scene, this);
             view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
             view->setRenderHints(QPainter::Antialiasing
                                  | QPainter::SmoothPixmapTransform);

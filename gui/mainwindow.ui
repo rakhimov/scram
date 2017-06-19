@@ -99,6 +99,9 @@
      <string>&amp;View</string>
     </property>
     <widget class="QMenu" name="menuZoom">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>&amp;Zoom</string>
      </property>
@@ -360,6 +363,9 @@
    </property>
   </action>
   <action name="actionPrint">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="document-print">
      <normaloff>.</normaloff>.</iconset>
@@ -372,6 +378,9 @@
    </property>
   </action>
   <action name="actionExportAs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="document-export">
      <normaloff>.</normaloff>.</iconset>
@@ -381,6 +390,9 @@
    </property>
   </action>
   <action name="actionZoomIn">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="zoom-in">
      <normaloff>.</normaloff>.</iconset>
@@ -390,6 +402,9 @@
    </property>
   </action>
   <action name="actionZoomOut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="zoom-out">
      <normaloff>.</normaloff>.</iconset>
@@ -439,6 +454,9 @@
    </property>
   </action>
   <action name="actionBestFit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="zoom-fit-best">
      <normaloff>.</normaloff>.</iconset>
@@ -539,8 +557,12 @@
    </property>
   </action>
   <action name="actionPrintPreview">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
-    <iconset theme="document-print-preview"/>
+    <iconset theme="document-print-preview">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Print Previe&amp;w...</string>
