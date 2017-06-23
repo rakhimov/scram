@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>449</width>
+    <width>452</width>
     <height>267</height>
    </rect>
   </property>
@@ -18,6 +18,48 @@
     <normaloff>.</normaloff>.</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="approximationsBox">
+     <property name="title">
+      <string>Approximations</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QRadioButton" name="rareEvent">
+        <property name="text">
+         <string>Rare-event</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="mcub">
+        <property name="text">
+         <string>MCUB</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="analysesBox">
      <property name="title">
@@ -81,48 +123,6 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="approximationsBox">
-     <property name="title">
-      <string>Approximations</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QRadioButton" name="rareEvent">
-        <property name="text">
-         <string>Rare-event</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="mcub">
-        <property name="text">
-         <string>MCUB</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QGroupBox" name="limitsBox">
      <property name="title">
@@ -132,7 +132,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="labelMissionTime">
         <property name="text">
-         <string>Mission time</string>
+         <string>Mission time:</string>
         </property>
        </widget>
       </item>
@@ -152,7 +152,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="labelProductOrder">
         <property name="text">
-         <string>Product order</string>
+         <string>Product order:</string>
         </property>
        </widget>
       </item>
