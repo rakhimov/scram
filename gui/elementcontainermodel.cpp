@@ -48,6 +48,15 @@ T *ElementContainerModel::getElement(int index) const
     return static_cast<T *>(m_elements[index]);
 }
 
+void ElementContainerModel::addElement(mef::Element *element)
+{
+    int index = m_elements.size();
+    beginInsertRows({}, index, index);
+    m_elementToIndex.emplace(element, index);
+    m_elements.push_back(element);
+    endInsertRows();
+}
+
 int ElementContainerModel::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : m_elements.size();
@@ -105,6 +114,8 @@ HouseEventContainerModel::HouseEventContainerModel(Model *model,
                                                    QObject *parent)
     : ElementContainerModel(model->data()->house_events(), parent)
 {
+    connect(model, &Model::addedHouseEvent, this,
+            &HouseEventContainerModel::addElement);
 }
 
 int HouseEventContainerModel::columnCount(const QModelIndex &parent) const

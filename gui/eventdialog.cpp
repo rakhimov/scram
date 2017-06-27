@@ -16,18 +16,11 @@
  */
 
 #include "eventdialog.h"
-#include "ui_eventdialog.h"
 
 namespace scram {
 namespace gui {
 
-EventDialog::EventDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::EventDialog)
-{
-    ui->setupUi(this);
-}
-
-EventDialog::~EventDialog() = default;
+EventDialog::EventDialog(QWidget *parent) : QDialog(parent) { setupUi(this); }
 
 } // namespace gui
 } // namespace scram

@@ -57,6 +57,8 @@ protected:
     /// @pre The element type matches type stored in the container.
     template <typename T> T *getElement(int index) const;
 
+    void addElement(mef::Element *element);
+
 private:
     std::vector<mef::Element *> m_elements;
     std::unordered_map<mef::Element *, int> m_elementToIndex;

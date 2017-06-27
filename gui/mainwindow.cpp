@@ -341,7 +341,13 @@ void MainWindow::setupActions()
     // Edit menu actions.
     connect(ui->actionAddElement, &QAction::triggered, this, [this] {
                 EventDialog dialog;
-                dialog.exec();
+                if (dialog.exec() == QDialog::Accepted) {
+                    if (dialog.typeBox->currentText() == tr("House event")) {
+                        m_guiModel->addHouseEvent(
+                            std::make_shared<mef::HouseEvent>(
+                                dialog.nameLine->text().toStdString()));
+                    }
+                }
             });
 
     // Undo/Redo actions

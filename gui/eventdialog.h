@@ -22,23 +22,17 @@
 
 #include <QDialog>
 
-namespace Ui {
-class EventDialog;
-}
+#include "ui_eventdialog.h"
 
 namespace scram {
 namespace gui {
 
-class EventDialog : public QDialog
+class EventDialog : public QDialog, public Ui::EventDialog
 {
     Q_OBJECT
 
 public:
     explicit EventDialog(QWidget *parent = nullptr);
-    ~EventDialog();
-
-private:
-    std::unique_ptr<Ui::EventDialog> ui;
 };
 
 } // namespace gui
