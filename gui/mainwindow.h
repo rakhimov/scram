@@ -133,6 +133,7 @@ private:
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
     QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
+    QRegularExpressionValidator m_nameValidator; ///< The proper name schema.
     QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>
         m_treeActions; ///< Actions on elements of the main tree widget.

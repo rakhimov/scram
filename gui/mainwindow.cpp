@@ -114,10 +114,11 @@ QTableWidgetItem *constructTableItem(QVariant data)
 } // namespace
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-      ui(new Ui::MainWindow),
+    : QMainWindow(parent), ui(new Ui::MainWindow),
       m_undoStack(new QUndoStack(this)),
       m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)"))),
+      m_nameValidator(
+          QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"))),
       m_zoomBox(new QComboBox)
 {
     ui->setupUi(this);
@@ -341,6 +342,16 @@ void MainWindow::setupActions()
     // Edit menu actions.
     connect(ui->actionAddElement, &QAction::triggered, this, [this] {
                 EventDialog dialog;
+                dialog.nameLine->setValidator(&m_nameValidator);
+                connect(dialog.buttonBox, &QDialogButtonBox::accepted, &dialog,
+                        [&dialog] {
+                    if (dialog.nameLine->text().isEmpty()) {
+                        QMessageBox::critical(&dialog, tr("Missing Data"),
+                                              tr("The name string is empty."));
+                        return;
+                    }
+                    dialog.accept();
+                });
                 if (dialog.exec() == QDialog::Accepted) {
                     if (dialog.typeBox->currentText() == tr("House event")) {
                         m_guiModel->addHouseEvent(
