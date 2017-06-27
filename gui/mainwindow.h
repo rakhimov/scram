@@ -36,6 +36,7 @@
 #include "src/risk_analysis.h"
 #include "src/settings.h"
 
+#include "model.h"
 #include "zoomableview.h"
 
 namespace Ui {
@@ -130,6 +131,7 @@ private:
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
+    std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
     QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
     QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>

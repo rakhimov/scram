@@ -28,8 +28,8 @@
 #include <QSortFilterProxyModel>
 
 #include "src/element.h"
-#include "src/event.h"
-#include "src/model.h"
+
+#include "model.h"
 
 namespace scram {
 namespace gui {
@@ -83,8 +83,7 @@ class BasicEventContainerModel : public ElementContainerModel
     Q_OBJECT
 
 public:
-    explicit BasicEventContainerModel(const mef::Model &mefModel,
-                                      QObject *parent = nullptr);
+    explicit BasicEventContainerModel(Model *model, QObject *parent = nullptr);
 
     int columnCount(const QModelIndex &parent) const override;
 
@@ -99,8 +98,7 @@ class HouseEventContainerModel : public ElementContainerModel
     Q_OBJECT
 
 public:
-    explicit HouseEventContainerModel(const mef::Model &mefModel,
-                                      QObject *parent = nullptr);
+    explicit HouseEventContainerModel(Model *model, QObject *parent = nullptr);
 
     int columnCount(const QModelIndex &parent) const override;
 

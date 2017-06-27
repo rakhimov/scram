@@ -19,6 +19,9 @@
 
 #include "elementcontainermodel.h"
 
+#include "src/event.h"
+#include "src/model.h"
+
 #include "guiassert.h"
 
 namespace scram {
@@ -50,9 +53,9 @@ int ElementContainerModel::rowCount(const QModelIndex &parent) const
     return parent.isValid() ? 0 : m_elements.size();
 }
 
-BasicEventContainerModel::BasicEventContainerModel(const mef::Model &mefModel,
+BasicEventContainerModel::BasicEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(mefModel.basic_events(), parent)
+    : ElementContainerModel(model->data()->basic_events(), parent)
 {
 }
 
@@ -98,9 +101,9 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     GUI_ASSERT(false && "unexpected column", {});
 }
 
-HouseEventContainerModel::HouseEventContainerModel(const mef::Model &mefModel,
+HouseEventContainerModel::HouseEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(mefModel.house_events(), parent)
+    : ElementContainerModel(model->data()->house_events(), parent)
 {
 }
 

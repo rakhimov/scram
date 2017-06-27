@@ -482,10 +482,10 @@ void MainWindow::setupZoomableView(ZoomableView *view)
 }
 
 template <typename ContainerModel>
-QTableView *constructElementTable(const mef::Model &model, QWidget *parent)
+QTableView *constructElementTable(model::Model *guiModel, QWidget *parent)
 {
     auto *table = new QTableView(parent);
-    auto *tableModel = new ContainerModel(model, table);
+    auto *tableModel = new ContainerModel(guiModel, table);
     auto *proxyModel = new model::SortFilterProxyModel(table);
     proxyModel->setSourceModel(tableModel);
     table->setModel(proxyModel);
@@ -513,6 +513,8 @@ void MainWindow::resetTreeWidget()
     ui->treeWidget->clear();
     ui->treeWidget->setHeaderLabel(
         tr("Model: %1").arg(QString::fromStdString(m_model->name())));
+
+    m_guiModel = std::make_unique<model::Model>(m_model.get());
 
     auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
     for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
@@ -545,7 +547,7 @@ void MainWindow::resetTreeWidget()
     modelData->addChild(basicEvents);
     m_treeActions.emplace(basicEvents, [this] {
         auto *table = constructElementTable<model::BasicEventContainerModel>(
-            *m_model, this);
+            m_guiModel.get(), this);
         ui->tabWidget->addTab(table, tr("Basic Events"));
         ui->tabWidget->setCurrentWidget(table);
     });
@@ -553,7 +555,7 @@ void MainWindow::resetTreeWidget()
     modelData->addChild(houseEvents);
     m_treeActions.emplace(houseEvents, [this] {
         auto *table = constructElementTable<model::HouseEventContainerModel>(
-            *m_model, this);
+            m_guiModel.get(), this);
         ui->tabWidget->addTab(table, tr("House Events"));
         ui->tabWidget->setCurrentWidget(table);
     });
