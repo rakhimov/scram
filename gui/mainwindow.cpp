@@ -319,10 +319,11 @@ void MainWindow::setupActions()
     m_redoAction->setShortcuts(QKeySequence::Redo);
     m_redoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-redo")));
 
-    ui->menuEdit->addAction(m_undoAction);
-    ui->menuEdit->addAction(m_redoAction);
-    ui->editToolBar->addAction(m_undoAction);
-    ui->editToolBar->addAction(m_redoAction);
+    ui->menuEdit->insertAction(ui->menuEdit->actions().front(), m_redoAction);
+    ui->menuEdit->insertAction(m_redoAction, m_undoAction);
+    ui->editToolBar->insertAction(ui->editToolBar->actions().front(),
+                                  m_redoAction);
+    ui->editToolBar->insertAction(m_redoAction, m_undoAction);
 }
 
 void MainWindow::createNewModel()

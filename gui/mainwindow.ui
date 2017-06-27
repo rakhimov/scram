@@ -144,6 +144,9 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <addaction name="separator"/>
+    <addaction name="actionAddElement"/>
+    <addaction name="actionRemoveElement"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -177,6 +180,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="separator"/>
+   <addaction name="actionAddElement"/>
+   <addaction name="actionRemoveElement"/>
   </widget>
   <widget class="QToolBar" name="zoomToolBar">
    <property name="windowTitle">
@@ -583,6 +589,30 @@
    </property>
    <property name="text">
     <string>Print Previe&amp;w...</string>
+   </property>
+  </action>
+  <action name="actionAddElement">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="list-add">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Add Element</string>
+   </property>
+  </action>
+  <action name="actionRemoveElement">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="list-remove">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Re&amp;move Element</string>
    </property>
   </action>
  </widget>
