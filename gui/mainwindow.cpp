@@ -344,11 +344,21 @@ void MainWindow::setupActions()
                 EventDialog dialog;
                 dialog.nameLine->setValidator(&m_nameValidator);
                 connect(dialog.buttonBox, &QDialogButtonBox::accepted, &dialog,
-                        [&dialog] {
-                    if (dialog.nameLine->text().isEmpty()) {
+                        [&dialog, this] {
+                    QString name = dialog.nameLine->text();
+                    if (name.isEmpty()) {
                         QMessageBox::critical(&dialog, tr("Missing Data"),
                                               tr("The name string is empty."));
                         return;
+                    }
+                    try {
+                        m_model->GetEvent(name.toStdString(), "");
+                        QMessageBox::critical(
+                            &dialog, tr("Duplicate Name"),
+                            tr("The event with name '%1' already exists.")
+                                .arg(name));
+                        return;
+                    } catch (std::out_of_range &) {
                     }
                     dialog.accept();
                 });
