@@ -449,6 +449,22 @@ void MainWindow::setupZoomableView(ZoomableView *view)
     });
 }
 
+template <typename ContainerModel>
+QTableView *constructElementTable(const mef::Model &model, QWidget *parent)
+{
+    auto *table = new QTableView(parent);
+    auto *tableModel = new ContainerModel(model, parent);
+    auto *proxyModel = new model::SortFilterProxyModel(parent);
+    proxyModel->setSourceModel(tableModel);
+    table->setModel(proxyModel);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+    table->setWordWrap(false);
+    table->resizeColumnsToContents();
+    table->setSortingEnabled(true);
+    return table;
+}
+
 void MainWindow::resetTreeWidget()
 {
     while (ui->tabWidget->count()) {
@@ -496,23 +512,19 @@ void MainWindow::resetTreeWidget()
     auto *basicEvents = new QTreeWidgetItem({tr("Basic Events")});
     modelData->addChild(basicEvents);
     m_treeActions.emplace(basicEvents, [this] {
-        auto *table = new QTableView(this);
-        auto *tableModel = new model::BasicEventContainerModel(*m_model, this);
-        auto *proxyModel = new model::SortFilterProxyModel(this);
-        proxyModel->setSourceModel(tableModel);
-        table->setModel(proxyModel);
-        table->setSelectionBehavior(QAbstractItemView::SelectRows);
-        table->setSelectionMode(QAbstractItemView::SingleSelection);
-        table->setWordWrap(false);
-        table->resizeColumnsToContents();
-        table->setSortingEnabled(true);
+        auto *table = constructElementTable<model::BasicEventContainerModel>(
+            *m_model, this);
         ui->tabWidget->addTab(table, tr("Basic Events"));
         ui->tabWidget->setCurrentWidget(table);
     });
-
-    modelData->addChildren({new QTreeWidgetItem({tr("House Events")}),
-                            new QTreeWidgetItem({tr("Parameters")})});
-
+    auto *houseEvents = new QTreeWidgetItem({tr("House Events")});
+    modelData->addChild(houseEvents);
+    m_treeActions.emplace(houseEvents, [this] {
+        auto *table = constructElementTable<model::HouseEventContainerModel>(
+            *m_model, this);
+        ui->tabWidget->addTab(table, tr("House Events"));
+        ui->tabWidget->setCurrentWidget(table);
+    });
     ui->treeWidget->addTopLevelItems({faultTrees, modelData});
 }
 

@@ -98,6 +98,53 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     GUI_ASSERT(false && "unexpected column", {});
 }
 
+HouseEventContainerModel::HouseEventContainerModel(const mef::Model &mefModel,
+                                                   QObject *parent)
+    : ElementContainerModel(mefModel.house_events(), parent)
+{
+}
+
+int HouseEventContainerModel::columnCount(const QModelIndex &parent) const
+{
+    return parent.isValid() ? 0 : 3;
+}
+
+QVariant HouseEventContainerModel::headerData(int section,
+                                              Qt::Orientation orientation,
+                                              int role) const
+{
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
+        return ElementContainerModel::headerData(section, orientation, role);
+
+    switch (section) {
+    case 0:
+        return tr("Id");
+    case 1:
+        return tr("State");
+    case 2:
+        return tr("Label");
+    }
+    GUI_ASSERT(false && "unexpected header section", {});
+}
+
+QVariant HouseEventContainerModel::data(const QModelIndex &index,
+                                        int role) const
+{
+    if (!index.isValid() || role != Qt::DisplayRole)
+        return {};
+    auto *houseEvent = getElement<mef::HouseEvent>(index.row());
+
+    switch (index.column()) {
+    case 0:
+        return QString::fromStdString(houseEvent->id());
+    case 1:
+        return houseEvent->state() ? tr("True") : tr("False");
+    case 2:
+        return QString::fromStdString(houseEvent->label());
+    }
+    GUI_ASSERT(false && "unexpected column", {});
+}
+
 } // namespace model
 } // namespace gui
 } // namespace scram

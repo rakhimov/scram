@@ -94,6 +94,22 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 };
 
+class HouseEventContainerModel : public ElementContainerModel
+{
+    Q_OBJECT
+
+public:
+    explicit HouseEventContainerModel(const mef::Model &mefModel,
+                                      QObject *parent = nullptr);
+
+    int columnCount(const QModelIndex &parent) const override;
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role) const override;
+
+    QVariant data(const QModelIndex &index, int role) const override;
+};
+
 } // namespace model
 } // namespace gui
 } // namespace scram
