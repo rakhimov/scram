@@ -35,6 +35,8 @@
 #include <QtConcurrent>
 #include <QtOpenGL>
 
+#include <libxml++/libxml++.h>
+
 #include "src/config.h"
 #include "src/env.h"
 #include "src/error.h"
@@ -231,14 +233,35 @@ void MainWindow::setConfig(const std::string &configPath,
 
 void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 {
+    static xmlpp::RelaxNGValidator validator(Env::install_dir()
+                                             + "/share/scram/gui.rng");
+
     if (inputFiles.empty())
         return;
+
+    auto validateWithGuiSchema = [](const std::string &xmlFile) {
+        std::unique_ptr<xmlpp::DomParser> parser
+            = ConstructDomParser(xmlFile);
+        try {
+            validator.validate(parser->get_document());
+        } catch (const xmlpp::validity_error &) {
+            throw ValidationError(
+                "Document failed validation against the GUI schema:\n"
+                + xmlpp::format_xml_error());
+        }
+    };
 
     try {
         std::vector<std::string> all_input = m_inputFiles;
         all_input.insert(all_input.end(), inputFiles.begin(),
                          inputFiles.end());
-        m_model = mef::Initializer(all_input, m_settings).model();
+        std::shared_ptr<mef::Model> new_model
+            = mef::Initializer(all_input, m_settings).model();
+
+        for (const std::string &inputFile : inputFiles)
+            validateWithGuiSchema(inputFile);
+
+        m_model = std::move(new_model);
         m_inputFiles = std::move(all_input);
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Initialization Error"),

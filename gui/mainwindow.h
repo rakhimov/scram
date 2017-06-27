@@ -32,8 +32,6 @@
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
-#include <libxml++/libxml++.h>
-
 #include "src/model.h"
 #include "src/risk_analysis.h"
 #include "src/settings.h"
