@@ -44,6 +44,7 @@
 
 #include "elementcontainermodel.h"
 #include "event.h"
+#include "eventdialog.h"
 #include "guiassert.h"
 #include "printable.h"
 #include "settingsdialog.h"
@@ -198,6 +199,13 @@ MainWindow::MainWindow(QWidget *parent)
         futureWatcher.waitForFinished();
         resetReportWidget(std::move(analysis));
     });
+
+    /// @todo Properly detect document changes.
+    connect(this, &MainWindow::configChanged, [this] {
+        ui->actionSave->setEnabled(true);
+        ui->actionSaveAs->setEnabled(true);
+        ui->actionAddElement->setEnabled(true);
+    });
 }
 
 MainWindow::~MainWindow() = default;
@@ -217,9 +225,6 @@ void MainWindow::setConfig(const std::string &configPath,
                               QString::fromUtf8(err.what()));
         return;
     }
-
-    ui->actionSave->setEnabled(true);
-    ui->actionSaveAs->setEnabled(true);
 
     emit configChanged();
 }
@@ -311,6 +316,12 @@ void MainWindow::setupActions()
     ui->actionZoomOut->setShortcut(QKeySequence::ZoomOut);
 
     // Edit menu actions.
+    connect(ui->actionAddElement, &QAction::triggered, this, [this] {
+                EventDialog dialog;
+                dialog.exec();
+            });
+
+    // Undo/Redo actions
     m_undoAction = m_undoStack->createUndoAction(this);
     m_undoAction->setShortcuts(QKeySequence::Undo);
     m_undoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
@@ -332,9 +343,6 @@ void MainWindow::createNewModel()
     m_model = std::make_shared<mef::Model>();
 
     resetTreeWidget();
-
-    ui->actionSave->setEnabled(true);
-    ui->actionSaveAs->setEnabled(true);
 
     emit configChanged();
 }
@@ -454,8 +462,8 @@ template <typename ContainerModel>
 QTableView *constructElementTable(const mef::Model &model, QWidget *parent)
 {
     auto *table = new QTableView(parent);
-    auto *tableModel = new ContainerModel(model, parent);
-    auto *proxyModel = new model::SortFilterProxyModel(parent);
+    auto *tableModel = new ContainerModel(model, table);
+    auto *proxyModel = new model::SortFilterProxyModel(table);
     proxyModel->setSourceModel(tableModel);
     table->setModel(proxyModel);
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
