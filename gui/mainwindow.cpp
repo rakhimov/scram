@@ -30,6 +30,7 @@
 #include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
+#include <QTableView>
 #include <QTableWidget>
 #include <QtConcurrent>
 #include <QtOpenGL>
@@ -41,6 +42,7 @@
 #include "src/initializer.h"
 #include "src/xml.h"
 
+#include "elementcontainermodel.h"
 #include "event.h"
 #include "guiassert.h"
 #include "printable.h"
@@ -494,23 +496,13 @@ void MainWindow::resetTreeWidget()
     auto *basicEvents = new QTreeWidgetItem({tr("Basic Events")});
     modelData->addChild(basicEvents);
     m_treeActions.emplace(basicEvents, [this] {
-        auto *table = new QTableWidget(nullptr);
-        table->setColumnCount(3);
-        table->setHorizontalHeaderLabels(
-            {tr("Id"), tr("Probability"), tr("Label")});
-        table->setRowCount(m_model->basic_events().size());
-        int row = 0;
-        for (const mef::BasicEventPtr &basicEvent : m_model->basic_events()) {
-            table->setItem(row, 0, constructTableItem(QString::fromStdString(
-                                       basicEvent->id())));
-            table->setItem(row, 1,
-                           constructTableItem(basicEvent->HasExpression()
-                                                  ? QVariant(basicEvent->p())
-                                                  : QVariant(tr("NULL"))));
-            table->setItem(row, 2, constructTableItem(QString::fromStdString(
-                                       basicEvent->label())));
-            ++row;
-        }
+        auto *table = new QTableView(this);
+        auto *tableModel = new model::BasicEventContainerModel(*m_model, this);
+        auto *proxyModel = new model::SortFilterProxyModel(this);
+        proxyModel->setSourceModel(tableModel);
+        table->setModel(proxyModel);
+        table->setSelectionBehavior(QAbstractItemView::SelectRows);
+        table->setSelectionMode(QAbstractItemView::SingleSelection);
         table->setWordWrap(false);
         table->resizeColumnsToContents();
         table->setSortingEnabled(true);
