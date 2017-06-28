@@ -56,9 +56,11 @@ TEST(ElementTest, Name) {
 TEST(ElementTest, Label) {
   NamedElement el("name");
   EXPECT_EQ("", el.label());
-  EXPECT_THROW(el.label(""), LogicError);
+  EXPECT_NO_THROW(el.label(""));
   ASSERT_NO_THROW(el.label("label"));
-  EXPECT_THROW(el.label("new_label"), LogicError);
+  EXPECT_EQ("label", el.label());
+  EXPECT_NO_THROW(el.label("new_label"));
+  EXPECT_NO_THROW(el.label(""));
 }
 
 TEST(ElementTest, Attribute) {

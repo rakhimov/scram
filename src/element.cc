@@ -36,15 +36,6 @@ Element::Element(std::string name) : kName_(std::move(name)) {
     throw InvalidArgument("The element name is malformed.");
 }
 
-void Element::label(std::string new_label) {
-  if (!label_.empty())
-    throw LogicError("Trying to reset the label: " + label_);
-  if (new_label.empty())
-    throw LogicError("Trying to apply empty label");
-
-  label_ = std::move(new_label);
-}
-
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
     throw DuplicateArgumentError(

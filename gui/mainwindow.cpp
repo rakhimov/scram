@@ -365,8 +365,9 @@ void MainWindow::setupActions()
                 if (dialog.exec() == QDialog::Accepted) {
                     QString type = dialog.typeBox->currentText();
                     std::string name = dialog.nameLine->text().toStdString();
-                    std::string label
-                        = dialog.labelText->toPlainText().toStdString();
+                    std::string label = dialog.labelText->toPlainText()
+                                            .simplified()
+                                            .toStdString();
                     if (type == tr("House event")) {
                         auto houseEvent = std::make_shared<mef::HouseEvent>(
                             std::move(name));

@@ -67,10 +67,7 @@ class Element {
   /// Sets the label.
   ///
   /// @param[in] new_label  The label to be set.
-  ///
-  /// @throws LogicError  The label is already set,
-  ///                     or the new label is empty.
-  void label(std::string new_label);
+  void label(std::string new_label) { label_ = std::move(new_label); }
 
   /// Adds an attribute to the attribute map.
   ///
