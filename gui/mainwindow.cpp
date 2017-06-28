@@ -392,11 +392,11 @@ void MainWindow::setupActions()
             });
 
     // Undo/Redo actions
-    m_undoAction = m_undoStack->createUndoAction(this);
+    m_undoAction = m_undoStack->createUndoAction(this, tr("Undo:"));
     m_undoAction->setShortcuts(QKeySequence::Undo);
     m_undoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
 
-    m_redoAction = m_undoStack->createRedoAction(this);
+    m_redoAction = m_undoStack->createRedoAction(this, tr("Redo:"));
     m_redoAction->setShortcuts(QKeySequence::Redo);
     m_redoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-redo")));
 
