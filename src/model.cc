@@ -86,6 +86,19 @@ void Model::Add(const CcfGroupPtr& ccf_group) {
                                      "Redefinition of CCF group: ");
 }
 
+void Model::Remove(HouseEvent* house_event) {
+  auto it = events_.find(house_event->id());
+  if (it == events_.end())
+    throw std::out_of_range("House event " + house_event->id() +
+                            " is not in the model.");
+  if (*it != house_event)
+    throw std::out_of_range("Duplicate event " + house_event->id() +
+                            " does not belong to the model.");
+
+  events_.erase(it);
+  house_events_.erase(house_event);
+}
+
 Parameter* Model::GetParameter(const std::string& entity_reference,
                                const std::string& base_path) {
   return GetEntity(entity_reference, base_path, parameters_);

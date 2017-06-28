@@ -22,6 +22,7 @@
 #define MODEL_H
 
 #include <QObject>
+#include <QUndoCommand>
 
 #include "src/event.h"
 #include "src/model.h"
@@ -43,13 +44,30 @@ public:
 
     void addHouseEvent(const mef::HouseEventPtr &houseEvent);
     void addBasicEvent(const mef::BasicEventPtr &basicEvent);
+    void removeHouseEvent(mef::HouseEvent *houseEvent);
+    void removeBasicEvent(mef::BasicEvent *basicEvent);
 
 signals:
     void addedHouseEvent(mef::HouseEvent *houseEvent);
     void addedBasicEvent(mef::BasicEvent *basicEvent);
+    void removedHouseEvent(mef::HouseEvent *houseEvent);
+    void removedBasicEvent(mef::BasicEvent *basicEvent);
 
 private:
     mef::Model *m_model;
+};
+
+class AddHouseEventCommand : public QUndoCommand
+{
+public:
+    AddHouseEventCommand(mef::HouseEventPtr houseEvent, Model *model);
+
+    void redo() override;
+    void undo() override;
+
+private:
+    Model *m_model;
+    mef::HouseEventPtr m_houseEvent;
 };
 
 class HouseEvent : public QObject

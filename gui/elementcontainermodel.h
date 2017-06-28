@@ -58,6 +58,7 @@ protected:
     template <typename T> T *getElement(int index) const;
 
     void addElement(mef::Element *element);
+    void removeElement(mef::Element *element);
 
 private:
     std::vector<mef::Element *> m_elements;

@@ -57,6 +57,25 @@ void ElementContainerModel::addElement(mef::Element *element)
     endInsertRows();
 }
 
+void ElementContainerModel::removeElement(mef::Element *element)
+{
+    GUI_ASSERT(m_elementToIndex.count(element), );
+    int index = m_elementToIndex.find(element)->second;
+    int lastIndex = m_elements.size() - 1;
+    auto *lastElement = m_elements.back();
+    // The following is basically a swap with the last item.
+    beginRemoveRows({}, lastIndex, lastIndex);
+    m_elementToIndex.erase(element);
+    m_elements.pop_back();
+    endRemoveRows();
+    if (index != lastIndex) {
+        m_elements[index] = lastElement;
+        m_elementToIndex[lastElement] = index;
+        emit dataChanged(createIndex(index, 0),
+                         createIndex(index, columnCount()));
+    }
+}
+
 int ElementContainerModel::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : m_elements.size();
@@ -68,6 +87,8 @@ BasicEventContainerModel::BasicEventContainerModel(Model *model,
 {
     connect(model, &Model::addedBasicEvent, this,
             &BasicEventContainerModel::addElement);
+    connect(model, &Model::removedBasicEvent, this,
+            &BasicEventContainerModel::removeElement);
 }
 
 int BasicEventContainerModel::columnCount(const QModelIndex &parent) const
@@ -125,6 +146,8 @@ HouseEventContainerModel::HouseEventContainerModel(Model *model,
 {
     connect(model, &Model::addedHouseEvent, this,
             &HouseEventContainerModel::addElement);
+    connect(model, &Model::removedHouseEvent, this,
+            &HouseEventContainerModel::removeElement);
 }
 
 int HouseEventContainerModel::columnCount(const QModelIndex &parent) const
