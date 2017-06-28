@@ -203,9 +203,10 @@ MainWindow::MainWindow(QWidget *parent)
         resetReportWidget(std::move(analysis));
     });
 
-    /// @todo Properly detect document changes.
     connect(this, &MainWindow::configChanged, [this] {
-        ui->actionSave->setEnabled(true);
+        m_undoStack->clear();
+        setWindowTitle(QString::fromLatin1("%1[*]").arg(
+            QString::fromStdString(m_model->name())));
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
     });
@@ -407,6 +408,10 @@ void MainWindow::setupActions()
     ui->editToolBar->insertAction(ui->editToolBar->actions().front(),
                                   m_redoAction);
     ui->editToolBar->insertAction(m_redoAction, m_undoAction);
+    connect(m_undoStack, &QUndoStack::cleanChanged, ui->actionSave,
+            &QAction::setDisabled);
+    connect(m_undoStack, &QUndoStack::cleanChanged,
+            [this](bool clean) { setWindowModified(!clean); });
 }
 
 void MainWindow::createNewModel()
@@ -437,6 +442,8 @@ void MainWindow::saveModel()
 {
     if (m_inputFiles.empty())
         return saveModelAs();
+
+    m_undoStack->setClean();
 
     /// @todo Save the input files.
     GUI_ASSERT(m_inputFiles.size() == 1,);
