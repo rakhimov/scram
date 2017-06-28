@@ -365,9 +365,13 @@ void MainWindow::setupActions()
                 if (dialog.exec() == QDialog::Accepted) {
                     QString type = dialog.typeBox->currentText();
                     std::string name = dialog.nameLine->text().toStdString();
+                    std::string label
+                        = dialog.labelText->toPlainText().toStdString();
                     if (type == tr("House event")) {
-                        m_guiModel->addHouseEvent(
-                            std::make_shared<mef::HouseEvent>(std::move(name)));
+                        auto houseEvent = std::make_shared<mef::HouseEvent>(
+                            std::move(name));
+                        houseEvent->label(std::move(label));
+                        m_guiModel->addHouseEvent(houseEvent);
                     } else {
                         auto basicEvent = std::make_shared<mef::BasicEvent>(
                             std::move(name));
@@ -380,6 +384,7 @@ void MainWindow::setupActions()
                         } else {
                             GUI_ASSERT(type == tr("Basic event"), );
                         }
+                        basicEvent->label(std::move(label));
                         m_guiModel->addBasicEvent(std::move(basicEvent));
                     }
                 }
