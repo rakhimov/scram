@@ -123,6 +123,7 @@ class Model : public Element, private boost::noncopyable {
   /// @throws std::out_of_range  The element cannot be found.
   /// @{
   void Remove(HouseEvent* element);
+  void Remove(BasicEvent* element);
   /// @}
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.

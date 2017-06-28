@@ -50,6 +50,7 @@ void Model::removeHouseEvent(mef::HouseEvent *houseEvent)
 
 void Model::removeBasicEvent(mef::BasicEvent *basicEvent)
 {
+    m_model->Remove(basicEvent);
     emit removedBasicEvent(basicEvent);
 }
 
@@ -69,6 +70,24 @@ void AddHouseEventCommand::redo()
 void AddHouseEventCommand::undo()
 {
     m_model->removeHouseEvent(m_houseEvent.get());
+}
+
+AddBasicEventCommand::AddBasicEventCommand(mef::BasicEventPtr basicEvent,
+                                           Model *model)
+    : QUndoCommand(QObject::tr("Add basic-event %1")
+                       .arg(QString::fromStdString(basicEvent->id()))),
+      m_model(model), m_basicEvent(std::move(basicEvent))
+{
+}
+
+void AddBasicEventCommand::redo()
+{
+    m_model->addBasicEvent(m_basicEvent);
+}
+
+void AddBasicEventCommand::undo()
+{
+    m_model->removeBasicEvent(m_basicEvent.get());
 }
 
 HouseEvent::HouseEvent(mef::HouseEvent *houseEvent) : m_houseEvent(houseEvent)

@@ -70,6 +70,19 @@ private:
     mef::HouseEventPtr m_houseEvent;
 };
 
+class AddBasicEventCommand : public QUndoCommand
+{
+public:
+    AddBasicEventCommand(mef::BasicEventPtr basicEvent, Model *model);
+
+    void redo() override;
+    void undo() override;
+
+private:
+    Model *m_model;
+    mef::BasicEventPtr m_basicEvent;
+};
+
 class HouseEvent : public QObject
 {
     Q_OBJECT

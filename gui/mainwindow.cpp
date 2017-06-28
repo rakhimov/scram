@@ -377,6 +377,7 @@ void MainWindow::setupActions()
                     } else {
                         auto basicEvent = std::make_shared<mef::BasicEvent>(
                             std::move(name));
+                        basicEvent->label(std::move(label));
                         if (type == tr("Conditional")) {
                             basicEvent->AddAttribute(
                                 {"flavor", "conditional", ""});
@@ -386,8 +387,8 @@ void MainWindow::setupActions()
                         } else {
                             GUI_ASSERT(type == tr("Basic event"), );
                         }
-                        basicEvent->label(std::move(label));
-                        m_guiModel->addBasicEvent(std::move(basicEvent));
+                        m_undoStack->push(new model::AddBasicEventCommand(
+                            std::move(basicEvent), m_guiModel.get()));
                     }
                 }
             });
