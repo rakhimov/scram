@@ -72,7 +72,7 @@ BasicEventContainerModel::BasicEventContainerModel(Model *model,
 
 int BasicEventContainerModel::columnCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : 3;
+    return parent.isValid() ? 0 : 4;
 }
 
 QVariant BasicEventContainerModel::headerData(int section,
@@ -86,8 +86,10 @@ QVariant BasicEventContainerModel::headerData(int section,
     case 0:
         return tr("Id");
     case 1:
-        return tr("Probability");
+        return tr("Flavor");
     case 2:
+        return tr("Probability");
+    case 3:
         return tr("Label");
     }
     GUI_ASSERT(false && "unexpected header section", {});
@@ -104,9 +106,14 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     case 0:
         return QString::fromStdString(basicEvent->id());
     case 1:
-        return basicEvent->HasExpression() ? QVariant(basicEvent->p())
-                                           : QVariant(tr("NULL"));
+        return basicEvent->HasAttribute("flavor")
+                   ? QVariant(QString::fromStdString(
+                         basicEvent->GetAttribute("flavor").value))
+                   : QVariant();
     case 2:
+        return basicEvent->HasExpression() ? QVariant(basicEvent->p())
+                                           : QVariant();
+    case 3:
         return QString::fromStdString(basicEvent->label());
     }
     GUI_ASSERT(false && "unexpected column", {});
