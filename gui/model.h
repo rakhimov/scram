@@ -42,9 +42,11 @@ public:
     mef::Model *data() { return m_model; }
 
     void addHouseEvent(const mef::HouseEventPtr &houseEvent);
+    void addBasicEvent(const mef::BasicEventPtr &basicEvent);
 
 signals:
     void addedHouseEvent(mef::HouseEvent *houseEvent);
+    void addedBasicEvent(mef::BasicEvent *basicEvent);
 
 private:
     mef::Model *m_model;

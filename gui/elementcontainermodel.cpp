@@ -66,6 +66,8 @@ BasicEventContainerModel::BasicEventContainerModel(Model *model,
                                                    QObject *parent)
     : ElementContainerModel(model->data()->basic_events(), parent)
 {
+    connect(model, &Model::addedBasicEvent, this,
+            &BasicEventContainerModel::addElement);
 }
 
 int BasicEventContainerModel::columnCount(const QModelIndex &parent) const

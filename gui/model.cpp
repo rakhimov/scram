@@ -36,6 +36,12 @@ void Model::addHouseEvent(const mef::HouseEventPtr &houseEvent)
     emit addedHouseEvent(houseEvent.get());
 }
 
+void Model::addBasicEvent(const mef::BasicEventPtr &basicEvent)
+{
+    m_model->Add(basicEvent);
+    emit addedBasicEvent(basicEvent.get());
+}
+
 HouseEvent::HouseEvent(mef::HouseEvent *houseEvent) : m_houseEvent(houseEvent)
 {
 }

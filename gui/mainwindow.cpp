@@ -363,10 +363,24 @@ void MainWindow::setupActions()
                     dialog.accept();
                 });
                 if (dialog.exec() == QDialog::Accepted) {
-                    if (dialog.typeBox->currentText() == tr("House event")) {
+                    QString type = dialog.typeBox->currentText();
+                    std::string name = dialog.nameLine->text().toStdString();
+                    if (type == tr("House event")) {
                         m_guiModel->addHouseEvent(
-                            std::make_shared<mef::HouseEvent>(
-                                dialog.nameLine->text().toStdString()));
+                            std::make_shared<mef::HouseEvent>(std::move(name)));
+                    } else {
+                        auto basicEvent = std::make_shared<mef::BasicEvent>(
+                            std::move(name));
+                        if (type == tr("Conditional")) {
+                            basicEvent->AddAttribute(
+                                {"flavor", "conditional", ""});
+                        } else if (type == tr("Undeveloped")) {
+                            basicEvent->AddAttribute(
+                                {"flavor", "undeveloped", ""});
+                        } else {
+                            GUI_ASSERT(type == tr("Basic event"), );
+                        }
+                        m_guiModel->addBasicEvent(std::move(basicEvent));
                     }
                 }
             });
