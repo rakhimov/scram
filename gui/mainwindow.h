@@ -66,8 +66,6 @@ private slots:
      * @brief Opens a new project configuration.
      *
      * The current project and input files are reset.
-     *
-     * @todo Check if the current documents need saving.
      */
     void createNewModel();
 
@@ -122,6 +120,16 @@ private:
      * @param analysis  The analysis with results.
      */
     void resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis);
+
+    /**
+     * Saves the model and sets the model file.
+     *
+     * @param destination  The destination file to become the main model file.
+     */
+    void saveToFile(std::string destination);
+
+    /// Override to save the model before closing the application.
+    void closeEvent(QCloseEvent *event) override;
 
     std::unique_ptr<Ui::MainWindow> ui;
     QAction *m_undoAction;

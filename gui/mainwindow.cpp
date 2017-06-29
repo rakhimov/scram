@@ -42,6 +42,7 @@
 #include "src/error.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
+#include "src/serialization.h"
 #include "src/xml.h"
 
 #include "elementcontainermodel.h"
@@ -418,6 +419,23 @@ void MainWindow::setupActions()
 
 void MainWindow::createNewModel()
 {
+    if (isWindowModified()) {
+        QMessageBox::StandardButton answer = QMessageBox::question(
+            this, tr("Save Model?"),
+            tr("Save changes to model '%1' before closing?")
+            .arg(QString::fromStdString(m_model->name())),
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+            QMessageBox::Save);
+
+        if (answer == QMessageBox::Cancel)
+            return;
+        if (answer == QMessageBox::Save) {
+            saveModel();
+            if (isWindowModified())
+                return;
+        }
+    }
+
     m_inputFiles.clear();
     m_model = std::make_shared<mef::Model>();
 
@@ -442,16 +460,9 @@ void MainWindow::openFiles(QString directory)
 
 void MainWindow::saveModel()
 {
-    if (m_inputFiles.empty())
+    if (m_inputFiles.empty() || m_inputFiles.size() > 1)
         return saveModelAs();
-
-    m_undoStack->setClean();
-
-    /// @todo Save the input files.
-    GUI_ASSERT(m_inputFiles.size() == 1,);
-
-    /// @todo Implement the save of the model to one file.
-    GUI_ASSERT(false && "Not implemented",);
+    saveToFile(m_inputFiles.front());
 }
 
 void MainWindow::saveModelAs()
@@ -462,9 +473,44 @@ void MainWindow::saveModelAs()
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
         return;
-    /// @todo Save the input files into custom places.
-    GUI_ASSERT(false && "Not implemented",);
+    saveToFile(filename.toStdString());
+}
+
+void MainWindow::saveToFile(std::string destination)
+{
+    GUI_ASSERT(!destination.empty(), );
+    GUI_ASSERT(m_model, );
+    try {
+        mef::Serialize(*m_model, destination);
+    } catch (Error &err) {
+        QMessageBox::critical(this, tr("Save Error"),
+                              QString::fromUtf8(err.what()));
+        return;
+    }
+    m_undoStack->setClean();
+    m_inputFiles.clear();
+    m_inputFiles.push_back(std::move(destination));
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (!isWindowModified())
+        return event->accept();
+
+    QMessageBox::StandardButton answer = QMessageBox::question(
+        this, tr("Save Model?"),
+        tr("Save changes to model '%1' before closing?")
+            .arg(QString::fromStdString(m_model->name())),
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+        QMessageBox::Save);
+
+    if (answer == QMessageBox::Cancel)
+        return event->ignore();
+    if (answer == QMessageBox::Discard)
+        return event->accept();
+
     saveModel();
+    return isWindowModified() ? event->ignore() : event->accept();
 }
 
 void MainWindow::exportAs()
