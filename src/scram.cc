@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "reporter.h"
 #include "risk_analysis.h"
+#include "serialization.h"
 #include "settings.h"
 #include "version.h"
 
@@ -79,6 +80,7 @@ po::options_description ConstructOptions() {
 #ifndef NDEBUG
   po::options_description debug("Debug Options");
   debug.add_options()
+      ("serialize", "Serialize the input model without further analysis")
       ("preprocessor", "Stop analysis after the preprocessing step")
       ("print", "Print analysis results in a terminal friendly way")
       ("no-report", "Don't generate analysis report");
@@ -241,6 +243,10 @@ void RunScram(const po::variables_map& vm) {
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
   auto init = std::make_unique<scram::mef::Initializer>(input_files, settings);
+#ifndef NDEBUG
+  if (vm.count("serialize"))
+    return Serialize(*init->model(), std::cout);
+#endif
   if (vm.count("validate"))
     return;  // Stop if only validation is requested.
 

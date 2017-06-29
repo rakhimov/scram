@@ -69,6 +69,9 @@ class Element {
   /// @param[in] new_label  The label to be set.
   void label(std::string new_label) { label_ = std::move(new_label); }
 
+  /// @returns The current set of element attributes.
+  const std::vector<Attribute>& attributes() const { return attributes_; }
+
   /// Adds an attribute to the attribute map.
   ///
   /// @param[in] attr  Unique attribute of this element.

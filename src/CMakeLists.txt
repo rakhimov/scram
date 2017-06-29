@@ -55,6 +55,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/uncertainty_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/reporter.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/serialization.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/initializer.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis.cc"
   )
