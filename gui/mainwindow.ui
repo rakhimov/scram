@@ -119,6 +119,7 @@
       <string>&amp;Toolbars</string>
      </property>
      <addaction name="actionModelToolBar"/>
+     <addaction name="actionEditToolBar"/>
      <addaction name="actionZoomToolBar"/>
      <addaction name="actionAnalysisToolBar"/>
     </widget>
@@ -532,7 +533,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Model</string>
+    <string>&amp;Model</string>
    </property>
   </action>
   <action name="actionZoomToolBar">
@@ -543,7 +544,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Zoom</string>
+    <string>&amp;Zoom</string>
    </property>
   </action>
   <action name="actionAnalysisToolBar">
@@ -554,7 +555,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Analysis</string>
+    <string>&amp;Analysis</string>
    </property>
   </action>
   <action name="actionData">
@@ -613,6 +614,17 @@
    </property>
    <property name="text">
     <string>Re&amp;move Element</string>
+   </property>
+  </action>
+  <action name="actionEditToolBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Edit</string>
    </property>
   </action>
  </widget>
@@ -790,6 +802,38 @@
     <hint type="sourcelabel">
      <x>127</x>
      <y>359</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionEditToolBar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>editToolBar</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>204</x>
+     <y>44</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editToolBar</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionEditToolBar</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>204</x>
+     <y>44</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
