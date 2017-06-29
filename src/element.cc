@@ -76,10 +76,9 @@ Id::Id(std::string name, std::string base_path, RoleSpecifier role)
       kId_(Role::role() == RoleSpecifier::kPublic
                ? Element::name()
                : Role::base_path() + "." + Element::name()) {
-  if (Element::name().empty())
-    throw LogicError("The name for an Id is empty!");
   if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
-    throw LogicError("The base path for a private element is empty.");
+    throw ValidationError("The element " + Element::name() +
+                          " cannot be private at model scope.");
 }
 
 }  // namespace mef

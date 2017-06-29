@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<opsa-mef name="PrivateModel">
+  <model-data>
+    <define-basic-event name="ValveOne" role="private"/>
+  </model-data>
+</opsa-mef>

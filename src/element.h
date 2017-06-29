@@ -177,6 +177,8 @@ class Id : public Element, public Role {
   /// Mangles the element name into a unique id.
   /// Private elements get their full path as their ids,
   /// while public elements retain their name as ids.
+  ///
+  /// @throws ValidationError  Private element at model/global scope.
   explicit Id(std::string name, std::string base_path = "",
               RoleSpecifier role = RoleSpecifier::kPublic);
 

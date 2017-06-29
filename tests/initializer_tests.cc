@@ -232,6 +232,7 @@ TEST(InitializerTest, IncorrectFtaInputs) {
   const char* incorrect_inputs[] = {
       "int_overflow.xml",
       "invalid_probability.xml",
+      "private_at_model_scope.xml",
       "doubly_defined_gate.xml",
       "doubly_defined_house.xml",
       "doubly_defined_basic.xml",
