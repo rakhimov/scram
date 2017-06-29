@@ -190,6 +190,7 @@ MainWindow::MainWindow(QWidget *parent)
             m_settings = dialog.settings();
     });
     connect(ui->actionRun, &QAction::triggered, this, [this] {
+        GUI_ASSERT(m_model, );
         WaitDialog progress(this);
         progress.setLabelText(tr("Running analysis..."));
         auto analysis
@@ -209,6 +210,7 @@ MainWindow::MainWindow(QWidget *parent)
             QString::fromStdString(m_model->name())));
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
+        ui->actionRun->setEnabled(true);
     });
 }
 

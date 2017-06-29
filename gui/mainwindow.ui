@@ -490,6 +490,9 @@
    </property>
   </action>
   <action name="actionRun">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="utilities-terminal">
      <normaloff>.</normaloff>.</iconset>
