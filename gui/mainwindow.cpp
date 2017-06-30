@@ -354,6 +354,7 @@ void MainWindow::setupActions()
                         auto houseEvent = std::make_shared<mef::HouseEvent>(
                             std::move(name));
                         houseEvent->label(std::move(label));
+                        houseEvent->state(dialog.booleanConstant());
                         m_undoStack->push(new model::AddHouseEventCommand(
                             std::move(houseEvent), m_guiModel.get()));
                     } else {

@@ -37,6 +37,9 @@ class EventDialog : public QDialog, public Ui::EventDialog
 public:
     explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
 
+    /// @returns The Boolean constant data.
+    bool booleanConstant() const { return stateBox->currentIndex(); }
+
 signals:
     void validated(bool valid);
 
