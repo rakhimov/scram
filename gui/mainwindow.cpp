@@ -118,8 +118,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_undoStack(new QUndoStack(this)),
       m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)"))),
-      m_nameValidator(
-          QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"))),
       m_zoomBox(new QComboBox)
 {
     ui->setupUi(this);
@@ -345,27 +343,7 @@ void MainWindow::setupActions()
 
     // Edit menu actions.
     connect(ui->actionAddElement, &QAction::triggered, this, [this] {
-                EventDialog dialog;
-                dialog.nameLine->setValidator(&m_nameValidator);
-                connect(dialog.buttonBox, &QDialogButtonBox::accepted, &dialog,
-                        [&dialog, this] {
-                    QString name = dialog.nameLine->text();
-                    if (name.isEmpty()) {
-                        QMessageBox::critical(&dialog, tr("Missing Data"),
-                                              tr("The name string is empty."));
-                        return;
-                    }
-                    try {
-                        m_model->GetEvent(name.toStdString(), "");
-                        QMessageBox::critical(
-                            &dialog, tr("Duplicate Name"),
-                            tr("The event with name '%1' already exists.")
-                                .arg(name));
-                        return;
-                    } catch (std::out_of_range &) {
-                    }
-                    dialog.accept();
-                });
+                EventDialog dialog(m_model.get(), this);
                 if (dialog.exec() == QDialog::Accepted) {
                     QString type = dialog.typeBox->currentText();
                     std::string name = dialog.nameLine->text().toStdString();

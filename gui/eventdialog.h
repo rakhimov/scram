@@ -21,8 +21,11 @@
 #include <memory>
 
 #include <QDialog>
+#include <QStatusBar>
 
 #include "ui_eventdialog.h"
+
+#include "src/model.h"
 
 namespace scram {
 namespace gui {
@@ -32,7 +35,17 @@ class EventDialog : public QDialog, public Ui::EventDialog
     Q_OBJECT
 
 public:
-    explicit EventDialog(QWidget *parent = nullptr);
+    explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
+
+signals:
+    void validated(bool valid);
+
+public slots:
+    void validate();
+
+private:
+    mef::Model *m_model;
+    QStatusBar *m_errorBar;
 };
 
 } // namespace gui
