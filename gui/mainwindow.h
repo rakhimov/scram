@@ -94,6 +94,11 @@ private slots:
     void exportAs();
 
     /**
+     * Exports the current analysis report.
+     */
+    void exportReportAs();
+
+    /**
      * Activates the Zoom actions
      * and updates the displayed zoom level.
      */

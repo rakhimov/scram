@@ -42,6 +42,7 @@
 #include "src/error.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
+#include "src/reporter.h"
 #include "src/serialization.h"
 #include "src/xml.h"
 
@@ -339,6 +340,8 @@ void MainWindow::setupActions()
 
     connect(ui->actionExportAs, &QAction::triggered, this,
             &MainWindow::exportAs);
+    connect(ui->actionExportReportAs, &QAction::triggered, this,
+            &MainWindow::exportReportAs);
 
     // View menu actions.
     ui->actionZoomIn->setShortcut(QKeySequence::ZoomIn);
@@ -523,6 +526,23 @@ void MainWindow::exportAs()
     painter.end();
 }
 
+void MainWindow::exportReportAs()
+{
+    GUI_ASSERT(m_analysis, );
+    QString filename = QFileDialog::getSaveFileName(
+        this, tr("Export Report As"), QDir::homePath(),
+        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+            .arg(tr("Model Exchange Format"), tr("All files")));
+    if (filename.isNull())
+        return;
+    try {
+        Reporter().Report(*m_analysis, filename.toStdString());
+    } catch (Error &err) {
+        QMessageBox::critical(this, tr("Reporting Error"),
+                              QString::fromUtf8(err.what()));
+    }
+}
+
 void MainWindow::activateZoom(int level)
 {
     GUI_ASSERT(level > 0,);
@@ -654,7 +674,8 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
     ui->reportTreeWidget->clear();
     m_reportActions.clear();
     m_analysis = std::move(analysis);
-    if (m_analysis == nullptr)
+    ui->actionExportReportAs->setEnabled(static_cast<bool>(m_analysis));
+    if (!m_analysis)
         return;
 
     struct {

@@ -91,6 +91,7 @@
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
     <addaction name="actionExportAs"/>
+    <addaction name="actionExportReportAs"/>
     <addaction name="separator"/>
     <addaction name="actionPrintPreview"/>
     <addaction name="actionPrint"/>
@@ -631,6 +632,17 @@
    </property>
    <property name="text">
     <string>&amp;Edit</string>
+   </property>
+  </action>
+  <action name="actionExportReportAs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="document-export"/>
+   </property>
+   <property name="text">
+    <string>Export &amp;Report As...</string>
    </property>
   </action>
  </widget>
