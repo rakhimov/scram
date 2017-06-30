@@ -44,6 +44,13 @@ public slots:
     void validate();
 
 private:
+    static QString redBackground;
+    static QString yellowBackground;
+
+    template <class T, class... Ts>
+    void connectLineEdits(T *lineEdit, Ts*... lineEdits);
+    void connectLineEdits() {};
+
     mef::Model *m_model;
     QStatusBar *m_errorBar;
 };

@@ -30,6 +30,11 @@
 namespace scram {
 namespace gui {
 
+QString EventDialog::redBackground(
+    QStringLiteral("QLineEdit { background : red; }"));
+QString EventDialog::yellowBackground(
+    QStringLiteral("QLineEdit { background : yellow; }"));
+
 #define OVERLOAD(type, name, ...)                                              \
     static_cast<void (type::*)(__VA_ARGS__)>(&type::name)
 
@@ -41,8 +46,6 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     static QDoubleValidator nonNegativeValidator(
         0, std::numeric_limits<double>::max(), 1000);
     static QDoubleValidator probabilityValidator(0, 1, 1000);
-    static QString redBackround(
-        QStringLiteral("QLineEdit { background : red; }"));
 
     setupUi(this);
     gridLayout->addWidget(m_errorBar, gridLayout->rowCount(), 0,
@@ -67,7 +70,10 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 default:
                     GUI_ASSERT(false, );
                 }
+                validate();
             });
+    connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
+    connectLineEdits(nameLine, constantValue, exponentialRate);
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -79,35 +85,56 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     QPushButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
     GUI_ASSERT(okButton, );
     okButton->setEnabled(false);
-
-    nameLine->setStyleSheet(redBackround);
-
-    connect(nameLine, &QLineEdit::textChanged, this, &EventDialog::validate);
     connect(this, &EventDialog::validated, okButton, &QPushButton::setEnabled);
 }
 
 void EventDialog::validate()
 {
-    static QString redBackround(
-        QStringLiteral("QLineEdit { background : red; }"));
-    static QString yellowBackground(
-        QStringLiteral("QLineEdit { background : yellow; }"));
-
+    m_errorBar->clearMessage();
     emit validated(false);
 
     if (nameLine->hasAcceptableInput() == false)
-        return nameLine->setStyleSheet(redBackround);
-    QString name = nameLine->text();
+        return;
     try {
+        QString name = nameLine->text();
         m_model->GetEvent(name.toStdString(), "");
         m_errorBar->showMessage(
-            tr("The event with name '%1' already exists.").arg(name), 5000);
+            tr("The event with name '%1' already exists.").arg(name));
         return nameLine->setStyleSheet(yellowBackground);
     } catch (std::out_of_range &) {
-        nameLine->setStyleSheet({});
     }
 
+    if (!tabExpression->isHidden() && expressionBox->isChecked()) {
+        switch (stackedWidgetExpressionData->currentIndex()) {
+        case 0:
+            if (constantValue->hasAcceptableInput() == false)
+                return;
+            break;
+        case 1:
+            if (exponentialRate->hasAcceptableInput() == false)
+                return;
+            break;
+        default:
+            GUI_ASSERT(false && "unexpected expression", );
+        }
+    }
+
+
     emit validated(true);
+}
+
+template <class T, class... Ts>
+void EventDialog::connectLineEdits(T *lineEdit, Ts*... lineEdits)
+{
+    lineEdit->setStyleSheet(redBackground);
+    connect(lineEdit, &QLineEdit::textChanged, [this, lineEdit] {
+        if (lineEdit->hasAcceptableInput())
+            lineEdit->setStyleSheet({});
+        else
+            lineEdit->setStyleSheet(redBackground);
+        validate();
+    });
+    connectLineEdits(lineEdits...);
 }
 
 } // namespace gui
