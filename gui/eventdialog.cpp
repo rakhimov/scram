@@ -33,10 +33,8 @@
 namespace scram {
 namespace gui {
 
-QString EventDialog::redBackground(
-    QStringLiteral("QLineEdit { background : red; }"));
-QString EventDialog::yellowBackground(
-    QStringLiteral("QLineEdit { background : yellow; }"));
+QString EventDialog::redBackground(QStringLiteral("background : red;"));
+QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
 
 #define OVERLOAD(type, name, ...)                                              \
     static_cast<void (type::*)(__VA_ARGS__)>(&type::name)
@@ -75,8 +73,10 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 }
                 validate();
             });
+    connect(expressionType, OVERLOAD(QComboBox, currentIndexChanged, int), this,
+            &EventDialog::validate);
     connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
-    connectLineEdits(nameLine, constantValue, exponentialRate);
+    connectLineEdits({nameLine, constantValue, exponentialRate});
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -98,9 +98,11 @@ std::unique_ptr<mef::Expression> EventDialog::expression() const
         return nullptr;
     switch (stackedWidgetExpressionData->currentIndex()) {
     case 0:
+        GUI_ASSERT(constantValue->hasAcceptableInput(), nullptr);
         return std::make_unique<mef::ConstantExpression>(
             constantValue->text().toDouble());
     case 1: {
+        GUI_ASSERT(exponentialRate->hasAcceptableInput(), nullptr);
         std::unique_ptr<mef::Expression> rate(
             new mef::ConstantExpression(exponentialRate->text().toDouble()));
         auto *rate_arg = rate.get();
@@ -148,18 +150,18 @@ void EventDialog::validate()
     emit validated(true);
 }
 
-template <class T, class... Ts>
-void EventDialog::connectLineEdits(T *lineEdit, Ts*... lineEdits)
+void EventDialog::connectLineEdits(std::initializer_list<QLineEdit *> lineEdits)
 {
-    lineEdit->setStyleSheet(redBackground);
-    connect(lineEdit, &QLineEdit::textChanged, [this, lineEdit] {
-        if (lineEdit->hasAcceptableInput())
-            lineEdit->setStyleSheet({});
-        else
-            lineEdit->setStyleSheet(redBackground);
-        validate();
-    });
-    connectLineEdits(lineEdits...);
+    for (QLineEdit *lineEdit : lineEdits) {
+        lineEdit->setStyleSheet(redBackground);
+        connect(lineEdit, &QLineEdit::textChanged, [this, lineEdit] {
+            if (lineEdit->hasAcceptableInput())
+                lineEdit->setStyleSheet({});
+            else
+                lineEdit->setStyleSheet(redBackground);
+            validate();
+        });
+    }
 }
 
 } // namespace gui

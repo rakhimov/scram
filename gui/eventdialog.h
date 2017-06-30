@@ -18,6 +18,7 @@
 #ifndef EVENTDIALOG_H
 #define EVENTDIALOG_H
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 
@@ -78,9 +79,7 @@ private:
     static QString redBackground;
     static QString yellowBackground;
 
-    template <class T, class... Ts>
-    void connectLineEdits(T *lineEdit, Ts*... lineEdits);
-    void connectLineEdits() {};
+    void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
 
     mef::Model *m_model;
     QStatusBar *m_errorBar;
