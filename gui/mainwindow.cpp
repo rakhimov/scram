@@ -210,7 +210,14 @@ MainWindow::MainWindow(QWidget *parent)
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
         ui->actionRun->setEnabled(true);
+        resetTreeWidget();
+        resetReportWidget(nullptr);
     });
+    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTreeWidget,
+            [this] {
+                if (m_analysis)
+                    resetReportWidget(nullptr);
+            });
 }
 
 MainWindow::~MainWindow() = default;
@@ -230,8 +237,6 @@ void MainWindow::setConfig(const std::string &configPath,
                               QString::fromUtf8(err.what()));
         return;
     }
-
-    emit configChanged();
 }
 
 void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
@@ -271,8 +276,6 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
                               QString::fromUtf8(err.what()));
         return;
     }
-
-    resetTreeWidget();
 
     emit configChanged();
 }
@@ -424,8 +427,6 @@ void MainWindow::createNewModel()
 
     m_inputFiles.clear();
     m_model = std::make_shared<mef::Model>();
-
-    resetTreeWidget();
 
     emit configChanged();
 }
@@ -595,10 +596,6 @@ void MainWindow::resetTreeWidget()
         delete widget;
     }
 
-    ui->reportTreeWidget->clear();
-    m_reportActions.clear();
-    m_analysis.reset();
-
     m_treeActions.clear();
     ui->treeWidget->clear();
     ui->treeWidget->setHeaderLabel(
@@ -657,6 +654,9 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
     ui->reportTreeWidget->clear();
     m_reportActions.clear();
     m_analysis = std::move(analysis);
+    if (m_analysis == nullptr)
+        return;
+
     struct {
         QString operator()(const mef::Gate *gate)
         {

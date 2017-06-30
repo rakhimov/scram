@@ -118,6 +118,7 @@ private:
      * @brief Resets the report view.
      *
      * @param analysis  The analysis with results.
+     *                  nullptr to clear the report widget.
      */
     void resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis);
 
