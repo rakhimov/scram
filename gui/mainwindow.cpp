@@ -344,35 +344,42 @@ void MainWindow::setupActions()
     // Edit menu actions.
     connect(ui->actionAddElement, &QAction::triggered, this, [this] {
                 EventDialog dialog(m_model.get(), this);
-                if (dialog.exec() == QDialog::Accepted) {
-                    QString type = dialog.typeBox->currentText();
-                    std::string name = dialog.nameLine->text().toStdString();
-                    std::string label = dialog.labelText->toPlainText()
-                                            .simplified()
-                                            .toStdString();
-                    if (type == tr("House event")) {
-                        auto houseEvent = std::make_shared<mef::HouseEvent>(
-                            std::move(name));
-                        houseEvent->label(std::move(label));
-                        houseEvent->state(dialog.booleanConstant());
-                        m_undoStack->push(new model::AddHouseEventCommand(
-                            std::move(houseEvent), m_guiModel.get()));
-                    } else {
-                        auto basicEvent = std::make_shared<mef::BasicEvent>(
-                            std::move(name));
-                        basicEvent->label(std::move(label));
-                        if (type == tr("Conditional")) {
-                            basicEvent->AddAttribute(
-                                {"flavor", "conditional", ""});
-                        } else if (type == tr("Undeveloped")) {
-                            basicEvent->AddAttribute(
-                                {"flavor", "undeveloped", ""});
-                        } else {
-                            GUI_ASSERT(type == tr("Basic event"), );
-                        }
-                        m_undoStack->push(new model::AddBasicEventCommand(
-                            std::move(basicEvent), m_guiModel.get()));
+                if (dialog.exec() == QDialog::Rejected)
+                    return;
+                auto addBasicEvent = [&]() -> decltype(auto) {
+                    auto basicEvent
+                        = std::make_shared<mef::BasicEvent>(dialog.name());
+                    basicEvent->label(dialog.label());
+                    if (auto p_expression = dialog.expression()) {
+                        basicEvent->expression(p_expression.get());
+                        m_model->Add(std::move(p_expression));
                     }
+                    auto &result = *basicEvent;
+                    m_undoStack->push(new model::AddBasicEventCommand(
+                        std::move(basicEvent), m_guiModel.get()));
+                    return result;
+                };
+                switch (dialog.currentType()) {
+                case EventDialog::HouseEvent: {
+                    auto houseEvent
+                        = std::make_shared<mef::HouseEvent>(dialog.name());
+                    houseEvent->label(dialog.label());
+                    houseEvent->state(dialog.booleanConstant());
+                    m_undoStack->push(new model::AddHouseEventCommand(
+                        std::move(houseEvent), m_guiModel.get()));
+                    break;
+                }
+                case EventDialog::BasicEvent:
+                    addBasicEvent();
+                    break;
+                case EventDialog::Undeveloped:
+                    addBasicEvent().AddAttribute({"flavor", "undeveloped", ""});
+                    break;
+                case EventDialog::Conditional:
+                    addBasicEvent().AddAttribute({"flavor", "conditional", ""});
+                    break;
+                default:
+                    GUI_ASSERT(false && "unexpected event type", );
                 }
             });
 

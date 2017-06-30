@@ -25,6 +25,9 @@
 #include <QStatusBar>
 #include <QRegularExpressionValidator>
 
+#include "src/expression/constant.h"
+#include "src/expression/exponential.h"
+
 #include "guiassert.h"
 
 namespace scram {
@@ -86,6 +89,28 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     GUI_ASSERT(okButton, );
     okButton->setEnabled(false);
     connect(this, &EventDialog::validated, okButton, &QPushButton::setEnabled);
+}
+
+std::unique_ptr<mef::Expression> EventDialog::expression() const
+{
+    GUI_ASSERT(tabExpression->isHidden() == false, nullptr);
+    if (expressionBox->isChecked() == false)
+        return nullptr;
+    switch (stackedWidgetExpressionData->currentIndex()) {
+    case 0:
+        return std::make_unique<mef::ConstantExpression>(
+            constantValue->text().toDouble());
+    case 1: {
+        std::unique_ptr<mef::Expression> rate(
+            new mef::ConstantExpression(exponentialRate->text().toDouble()));
+        auto *rate_arg = rate.get();
+        m_model->Add(std::move(rate));
+        return std::make_unique<mef::Exponential>(
+            rate_arg, m_model->mission_time().get());
+    }
+    default:
+        GUI_ASSERT(false && "unexpected expression", nullptr);
+    }
 }
 
 void EventDialog::validate()

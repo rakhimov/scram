@@ -19,26 +19,54 @@
 #define EVENTDIALOG_H
 
 #include <memory>
+#include <string>
 
 #include <QDialog>
 #include <QStatusBar>
+#include <QString>
 
 #include "ui_eventdialog.h"
 
+#include "src/expression.h"
 #include "src/model.h"
 
 namespace scram {
 namespace gui {
 
-class EventDialog : public QDialog, public Ui::EventDialog
+class EventDialog : public QDialog, private Ui::EventDialog
 {
     Q_OBJECT
 
 public:
+    enum EventType {
+        HouseEvent = 1 << 0,
+        BasicEvent = 1 << 1,
+        Undeveloped = 1 << 2,
+        Conditional = 1 << 3
+    };
+
     explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
+
+    /// @returns The type being defined by this dialog.
+    EventType currentType() const
+    {
+        return static_cast<EventType>(1 << typeBox->currentIndex());
+    }
+
+    /// @returns The name data.
+    std::string name() const { return nameLine->text().toStdString(); }
+    /// @returns The label data.
+    std::string label() const
+    {
+        return labelText->toPlainText().simplified().toStdString();
+    }
 
     /// @returns The Boolean constant data.
     bool booleanConstant() const { return stateBox->currentIndex(); }
+
+    /// @returns The probability expression for basic events.
+    ///          nullptr if no expression is defined.
+    std::unique_ptr<mef::Expression> expression() const;
 
 signals:
     void validated(bool valid);
