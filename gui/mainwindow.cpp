@@ -173,6 +173,7 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->actionPrint->setEnabled(false);
                 ui->actionPrintPreview->setEnabled(false);
                 ui->actionExportAs->setEnabled(false);
+                m_searchBar->setHidden(true);
 
                 auto *widget = ui->tabWidget->widget(index);
                 if (dynamic_cast<Printable *>(widget)) {
@@ -181,7 +182,21 @@ MainWindow::MainWindow(QWidget *parent)
                 }
                 if (dynamic_cast<DiagramView *>(widget))
                     ui->actionExportAs->setEnabled(true);
+                if (auto *tableView = dynamic_cast<QTableView *>(widget)) {
+                    if (dynamic_cast<model::SortFilterProxyModel *>(
+                            tableView->model()))
+                        m_searchBar->setHidden(false);
+                }
             });
+    connect(m_searchBar, &QLineEdit::editingFinished, this, [this] {
+        auto *tableView
+            = dynamic_cast<QTableView *>(ui->tabWidget->currentWidget());
+        GUI_ASSERT(tableView, );
+        auto *sortFilterModel
+            = dynamic_cast<model::SortFilterProxyModel *>(tableView->model());
+        GUI_ASSERT(sortFilterModel, );
+        sortFilterModel->setFilterRegExp(m_searchBar->text());
+    });
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
         SettingsDialog dialog(m_settings, this);
@@ -282,7 +297,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 void MainWindow::setupStatusBar()
 {
     m_searchBar = new QLineEdit;
-    m_searchBar->setEnabled(false);
+    m_searchBar->setHidden(true);
     m_searchBar->setFrame(false);
     m_searchBar->setMaximumHeight(m_searchBar->fontMetrics().height());
     m_searchBar->setSizePolicy(QSizePolicy::MinimumExpanding,
