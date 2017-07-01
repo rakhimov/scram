@@ -165,17 +165,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
             [this](int index) {
                 auto *widget = ui->tabWidget->widget(index);
-                if (dynamic_cast<Printable *>(widget)) {
-                    ui->actionPrint->setEnabled(false);
-                    ui->actionPrintPreview->setEnabled(false);
-                }
-                if (dynamic_cast<DiagramView *>(widget))
-                    ui->actionExportAs->setEnabled(false);
                 ui->tabWidget->removeTab(index);
                 delete widget;
             });
     connect(ui->tabWidget, &QTabWidget::currentChanged, this,
             [this](int index) {
+                ui->actionPrint->setEnabled(false);
+                ui->actionPrintPreview->setEnabled(false);
+                ui->actionExportAs->setEnabled(false);
+
                 auto *widget = ui->tabWidget->widget(index);
                 if (dynamic_cast<Printable *>(widget)) {
                     ui->actionPrint->setEnabled(true);
