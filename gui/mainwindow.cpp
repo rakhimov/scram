@@ -416,11 +416,11 @@ void MainWindow::setupActions()
 
     // Undo/Redo actions
     m_undoAction = m_undoStack->createUndoAction(this, tr("Undo:"));
-    m_undoAction->setShortcuts(QKeySequence::Undo);
+    m_undoAction->setShortcut(QKeySequence::Undo);
     m_undoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
 
     m_redoAction = m_undoStack->createRedoAction(this, tr("Redo:"));
-    m_redoAction->setShortcuts(QKeySequence::Redo);
+    m_redoAction->setShortcut(QKeySequence::Redo);
     m_redoAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-redo")));
 
     ui->menuEdit->insertAction(ui->menuEdit->actions().front(), m_redoAction);
@@ -432,6 +432,18 @@ void MainWindow::setupActions()
             &QAction::setDisabled);
     connect(m_undoStack, &QUndoStack::cleanChanged,
             [this](bool clean) { setWindowModified(!clean); });
+
+    // Search/filter bar shortcuts.
+    auto *searchAction = new QAction(this);
+    searchAction->setShortcuts({QKeySequence::Find, Qt::Key_Slash});
+    m_searchBar->addAction(searchAction);
+    connect(searchAction, &QAction::triggered,
+            [this] {
+        if (m_searchBar->isHidden())
+            return;
+        m_searchBar->setFocus();
+        m_searchBar->selectAll();
+    });
 }
 
 void MainWindow::createNewModel()
