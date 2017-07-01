@@ -27,6 +27,7 @@
 #include <QAction>
 #include <QComboBox>
 #include <QDir>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QRegularExpressionValidator>
 #include <QTreeWidgetItem>
@@ -110,6 +111,7 @@ private slots:
     void deactivateZoom();
 
 private:
+    void setupStatusBar(); ///< Setup widgets in the status bar.
     void setupActions(); ///< Setup all the actions with connections.
 
     void setupZoomableView(ZoomableView *view); ///< Connect to actions.
@@ -141,6 +143,7 @@ private:
     QAction *m_undoAction;
     QAction *m_redoAction;
     QUndoStack *m_undoStack;
+    QLineEdit *m_searchBar;
 
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.

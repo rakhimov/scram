@@ -136,6 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_zoomBox->setCurrentText(QStringLiteral("100%"));
     ui->zoomToolBar->addWidget(m_zoomBox); // Transfer the ownership.
 
+    setupStatusBar();
     setupActions();
 
     auto *startPage = new StartPage;
@@ -236,7 +237,6 @@ void MainWindow::setConfig(const std::string &configPath,
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Configuration Error"),
                               QString::fromUtf8(err.what()));
-        return;
     }
 }
 
@@ -279,6 +279,18 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     }
 
     emit configChanged();
+}
+
+void MainWindow::setupStatusBar()
+{
+    m_searchBar = new QLineEdit;
+    m_searchBar->setEnabled(false);
+    m_searchBar->setFrame(false);
+    m_searchBar->setMaximumHeight(m_searchBar->fontMetrics().height());
+    m_searchBar->setSizePolicy(QSizePolicy::MinimumExpanding,
+                               QSizePolicy::Fixed);
+    m_searchBar->setPlaceholderText(tr("Find/Filter (Perl Regex)"));
+    ui->statusBar->addPermanentWidget(m_searchBar);
 }
 
 void MainWindow::setupActions()
