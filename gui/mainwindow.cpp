@@ -183,6 +183,14 @@ MainWindow::MainWindow(QWidget *parent)
             });
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
             [this](int index) {
+                // Ensure show/hide order.
+                if (index == ui->tabWidget->currentIndex()) {
+                    int num_tabs = ui->tabWidget->count();
+                    if (num_tabs > 1) {
+                        ui->tabWidget->setCurrentIndex(
+                            index == (num_tabs - 1) ? index - 1 : index + 1);
+                    }
+                }
                 auto *widget = ui->tabWidget->widget(index);
                 ui->tabWidget->removeTab(index);
                 delete widget;
