@@ -572,15 +572,19 @@ void MainWindow::setupZoomableView(ZoomableView *view)
         }
         bool eventFilter(QObject *object, QEvent *event) override
         {
+            auto setEnabled = [this] (bool state) {
+                m_window->m_zoomBox->setEnabled(state);
+                m_window->ui->actionZoomIn->setEnabled(state);
+                m_window->ui->actionZoomIn->setEnabled(state);
+                m_window->ui->actionZoomOut->setEnabled(state);
+                m_window->ui->actionBestFit->setEnabled(state);
+                m_window->ui->menuZoom->setEnabled(state);
+            };
+
             if (event->type() == QEvent::Show) {
-                m_window->m_zoomBox->setEnabled(true);
+                setEnabled(true);
                 m_window->m_zoomBox->setCurrentText(
                     QString::fromLatin1("%1%").arg(m_zoomable->getZoom()));
-                m_window->ui->actionZoomIn->setEnabled(true);
-                m_window->ui->actionZoomIn->setEnabled(true);
-                m_window->ui->actionZoomOut->setEnabled(true);
-                m_window->ui->actionBestFit->setEnabled(true);
-                m_window->ui->menuZoom->setEnabled(true);
 
                 connect(m_zoomable, &ZoomableView::zoomChanged,
                         m_window->m_zoomBox, [this](int level) {
@@ -599,11 +603,7 @@ void MainWindow::setupZoomableView(ZoomableView *view)
                 connect(m_window->ui->actionBestFit, &QAction::triggered,
                         m_zoomable, &ZoomableView::zoomBestFit);
             } else if (event->type() == QEvent::Hide) {
-                m_window->m_zoomBox->setEnabled(false);
-                m_window->ui->actionZoomIn->setEnabled(false);
-                m_window->ui->actionZoomOut->setEnabled(false);
-                m_window->ui->actionBestFit->setEnabled(false);
-                m_window->ui->menuZoom->setEnabled(false);
+                setEnabled(false);
                 disconnect(m_zoomable, 0, m_window->m_zoomBox, 0);
                 disconnect(m_window->m_zoomBox, 0, m_zoomable, 0);
                 disconnect(m_window->ui->actionZoomIn, 0, m_zoomable, 0);
@@ -629,16 +629,18 @@ void MainWindow::setupPrintableView(T *view)
         }
         bool eventFilter(QObject *object, QEvent *event) override
         {
+            auto setEnabled = [this] (bool state) {
+                m_window->ui->actionPrint->setEnabled(state);
+                m_window->ui->actionPrintPreview->setEnabled(state);
+            };
             if (event->type() == QEvent::Show) {
-                m_window->ui->actionPrint->setEnabled(true);
-                m_window->ui->actionPrintPreview->setEnabled(true);
+                setEnabled(true);
                 connect(m_window->ui->actionPrint, &QAction::triggered,
                         m_printable, [this] { m_printable->print(); });
                 connect(m_window->ui->actionPrintPreview, &QAction::triggered,
                         m_printable, [this] { m_printable->printPreview(); });
             } else if (event->type() == QEvent::Hide) {
-                m_window->ui->actionPrint->setEnabled(false);
-                m_window->ui->actionPrintPreview->setEnabled(false);
+                setEnabled(false);
                 disconnect(m_window->ui->actionPrint, 0, m_printable, 0);
                 disconnect(m_window->ui->actionPrintPreview, 0, m_printable, 0);
             }
