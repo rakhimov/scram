@@ -28,9 +28,6 @@ const int ZoomableView::m_minZoomLevel = 10;
 
 void ZoomableView::setZoom(int level)
 {
-    if (isHidden())
-        return;
-
     if (level == m_zoom)
         return;
     if (level < m_minZoomLevel)
@@ -45,6 +42,17 @@ void ZoomableView::setZoom(int level)
     emit zoomChanged(level);
 }
 
+void ZoomableView::zoomBestFit()
+{
+    QSize viewSize = size();
+    QSize sceneSize = scene()->sceneRect().size().toSize();
+    double ratioHeight
+        = static_cast<double>(viewSize.height()) / sceneSize.height();
+    double ratioWidth
+        = static_cast<double>(viewSize.width()) / sceneSize.width();
+    setZoom(std::min(ratioHeight, ratioWidth) * 100);
+}
+
 void ZoomableView::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
@@ -56,18 +64,6 @@ void ZoomableView::wheelEvent(QWheelEvent *event)
     } else {
         QGraphicsView::wheelEvent(event);
     }
-}
-
-void ZoomableView::hideEvent(QHideEvent *event)
-{
-    QGraphicsView::hideEvent(event);
-    emit zoomDisabled();
-}
-
-void ZoomableView::showEvent(QShowEvent *event)
-{
-    QGraphicsView::showEvent(event);
-    emit zoomEnabled(m_zoom);
 }
 
 } // namespace gui

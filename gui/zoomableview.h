@@ -39,18 +39,15 @@ public:
 
 signals:
     void zoomChanged(int level);
-    void zoomEnabled(int level);
-    void zoomDisabled();
 
 public slots:
     void setZoom(int level);
     void zoomIn(int deltaLevel) { setZoom(m_zoom + deltaLevel); }
     void zoomOut(int deltaLevel) { setZoom(m_zoom - deltaLevel); }
+    void zoomBestFit();
 
 protected:
     void wheelEvent(QWheelEvent *event) override;
-    void hideEvent(QHideEvent *event) override;
-    void showEvent(QShowEvent *event) override;
 
 private:
     static const int m_minZoomLevel;

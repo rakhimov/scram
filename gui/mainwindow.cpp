@@ -563,54 +563,59 @@ void MainWindow::exportReportAs()
     }
 }
 
-void MainWindow::activateZoom(int level)
-{
-    GUI_ASSERT(level > 0,);
-    m_zoomBox->setEnabled(true);
-    m_zoomBox->setCurrentText(QString::fromLatin1("%1%").arg(level));
-    ui->actionZoomIn->setEnabled(true);
-    ui->actionZoomIn->setEnabled(true);
-    ui->actionZoomOut->setEnabled(true);
-    ui->actionBestFit->setEnabled(true);
-    ui->menuZoom->setEnabled(true);
-}
-
-void MainWindow::deactivateZoom()
-{
-    m_zoomBox->setEnabled(false);
-    ui->actionZoomIn->setEnabled(false);
-    ui->actionZoomOut->setEnabled(false);
-    ui->actionBestFit->setEnabled(false);
-    ui->menuZoom->setEnabled(false);
-}
-
 void MainWindow::setupZoomableView(ZoomableView *view)
 {
-    connect(view, &ZoomableView::zoomEnabled, this, &MainWindow::activateZoom);
-    connect(view, &ZoomableView::zoomDisabled, this,
-            &MainWindow::deactivateZoom);
+    struct ZoomFilter : public QObject {
+        ZoomFilter(ZoomableView *zoomable, MainWindow *window)
+            : QObject(zoomable), m_window(window), m_zoomable(zoomable)
+        {
+        }
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show) {
+                m_window->m_zoomBox->setEnabled(true);
+                m_window->m_zoomBox->setCurrentText(
+                    QString::fromLatin1("%1%").arg(m_zoomable->getZoom()));
+                m_window->ui->actionZoomIn->setEnabled(true);
+                m_window->ui->actionZoomIn->setEnabled(true);
+                m_window->ui->actionZoomOut->setEnabled(true);
+                m_window->ui->actionBestFit->setEnabled(true);
+                m_window->ui->menuZoom->setEnabled(true);
 
-    connect(view, &ZoomableView::zoomChanged, this, [this](int level) {
-        m_zoomBox->setCurrentText(QString::fromLatin1("%1%").arg(level));
-    });
-    connect(ui->actionZoomIn, &QAction::triggered, view,
-            [view] { view->zoomIn(5); });
-    connect(ui->actionZoomOut, &QAction::triggered, view,
-            [view] { view->zoomOut(5); });
-    connect(m_zoomBox, &QComboBox::currentTextChanged, view,
-            [view](QString text) {
-                text.remove(QLatin1Char('%'));
-                view->setZoom(text.toInt());
-            });
-    connect(ui->actionBestFit, &QAction::triggered, view, [view] {
-        QSize viewSize = view->size();
-        QSize sceneSize = view->scene()->sceneRect().size().toSize();
-        double ratioHeight
-            = static_cast<double>(viewSize.height()) / sceneSize.height();
-        double ratioWidth
-            = static_cast<double>(viewSize.width()) / sceneSize.width();
-        view->setZoom(std::min(ratioHeight, ratioWidth) * 100);
-    });
+                connect(m_zoomable, &ZoomableView::zoomChanged,
+                        m_window->m_zoomBox, [this](int level) {
+                            m_window->m_zoomBox->setCurrentText(
+                                QString::fromLatin1("%1%").arg(level));
+                        });
+                connect(m_window->m_zoomBox, &QComboBox::currentTextChanged,
+                        m_zoomable, [this](QString text) {
+                            text.remove(QLatin1Char('%'));
+                            m_zoomable->setZoom(text.toInt());
+                        });
+                connect(m_window->ui->actionZoomIn, &QAction::triggered,
+                        m_zoomable, [this] { m_zoomable->zoomIn(5); });
+                connect(m_window->ui->actionZoomOut, &QAction::triggered,
+                        m_zoomable, [this] { m_zoomable->zoomOut(5); });
+                connect(m_window->ui->actionBestFit, &QAction::triggered,
+                        m_zoomable, &ZoomableView::zoomBestFit);
+            } else if (event->type() == QEvent::Hide) {
+                m_window->m_zoomBox->setEnabled(false);
+                m_window->ui->actionZoomIn->setEnabled(false);
+                m_window->ui->actionZoomOut->setEnabled(false);
+                m_window->ui->actionBestFit->setEnabled(false);
+                m_window->ui->menuZoom->setEnabled(false);
+                disconnect(m_zoomable, 0, m_window->m_zoomBox, 0);
+                disconnect(m_window->m_zoomBox, 0, m_zoomable, 0);
+                disconnect(m_window->ui->actionZoomIn, 0, m_zoomable, 0);
+                disconnect(m_window->ui->actionZoomOut, 0, m_zoomable, 0);
+                disconnect(m_window->ui->actionBestFit, 0, m_zoomable, 0);
+            }
+            return QObject::eventFilter(object, event);
+        }
+        MainWindow *m_window;
+        ZoomableView *m_zoomable;
+    };
+    view->installEventFilter(new ZoomFilter(view, this));
 }
 
 template <class T>

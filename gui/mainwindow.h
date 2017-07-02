@@ -99,17 +99,6 @@ private slots:
      */
     void exportReportAs();
 
-    /**
-     * Activates the Zoom actions
-     * and updates the displayed zoom level.
-     */
-    void activateZoom(int level);
-
-    /**
-     * Disables the Zoom actions.
-     */
-    void deactivateZoom();
-
 private:
     void setupStatusBar(); ///< Setup widgets in the status bar.
     void setupActions(); ///< Setup all the actions with connections.
