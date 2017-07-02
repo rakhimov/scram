@@ -90,11 +90,6 @@ private slots:
     void saveModelAs();
 
     /**
-     * @brief Exports the current active document/diagram.
-     */
-    void exportAs();
-
-    /**
      * Exports the current analysis report.
      */
     void exportReportAs();
@@ -110,6 +105,12 @@ private:
     /// @tparam T  Any type with print() and printPreview() functions.
     template <class T>
     void setupPrintableView(T *view);
+
+    /// Connects the export actions to a widget.
+    ///
+    /// @tparam  Any type with exportAs() function.
+    template <class T>
+    void setupExportableView(T *view);
 
     /**
      * Resets the tree widget with the new model.

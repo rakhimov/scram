@@ -94,6 +94,25 @@ class DiagramView : public ZoomableView, public Printable
 public:
     using ZoomableView::ZoomableView;
 
+    void exportAs()
+    {
+        QString filename = QFileDialog::getSaveFileName(
+            this, tr("Export As"), QDir::homePath(),
+            tr("SVG files (*.svg);;All files (*.*)"));
+        QSize sceneSize = scene()->sceneRect().size().toSize();
+
+        QSvgGenerator generator;
+        generator.setFileName(filename);
+        generator.setSize(sceneSize);
+        generator.setViewBox(
+            QRect(0, 0, sceneSize.width(), sceneSize.height()));
+        generator.setTitle(filename);
+        QPainter painter;
+        painter.begin(&generator);
+        scene()->render(&painter);
+        painter.end();
+    }
+
 private:
     void doPrint(QPrinter *printer) override
     {
@@ -171,12 +190,8 @@ MainWindow::MainWindow(QWidget *parent)
             });
     connect(ui->tabWidget, &QTabWidget::currentChanged, this,
             [this](int index) {
-                ui->actionExportAs->setEnabled(false);
                 m_searchBar->setHidden(true);
-
                 auto *widget = ui->tabWidget->widget(index);
-                if (dynamic_cast<DiagramView *>(widget))
-                    ui->actionExportAs->setEnabled(true);
                 if (auto *tableView = dynamic_cast<QTableView *>(widget)) {
                     if (dynamic_cast<model::SortFilterProxyModel *>(
                             tableView->model()))
@@ -346,8 +361,6 @@ void MainWindow::setupActions()
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
 
-    connect(ui->actionExportAs, &QAction::triggered, this,
-            &MainWindow::exportAs);
     connect(ui->actionExportReportAs, &QAction::triggered, this,
             &MainWindow::exportReportAs);
 
@@ -523,29 +536,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     return isWindowModified() ? event->ignore() : event->accept();
 }
 
-void MainWindow::exportAs()
-{
-    QString filename = QFileDialog::getSaveFileName(
-        this, tr("Export As"), QDir::homePath(),
-        tr("SVG files (*.svg);;All files (*.*)"));
-    QWidget *widget = ui->tabWidget->currentWidget();
-    GUI_ASSERT(widget, );
-    QGraphicsView *view = qobject_cast<QGraphicsView *>(widget);
-    GUI_ASSERT(view, );
-    QGraphicsScene *scene = view->scene();
-    QSize sceneSize = scene->sceneRect().size().toSize();
-
-    QSvgGenerator generator;
-    generator.setFileName(filename);
-    generator.setSize(sceneSize);
-    generator.setViewBox(QRect(0, 0, sceneSize.width(), sceneSize.height()));
-    generator.setTitle(filename);
-    QPainter painter;
-    painter.begin(&generator);
-    scene->render(&painter);
-    painter.end();
-}
-
 void MainWindow::exportReportAs()
 {
     GUI_ASSERT(m_analysis, );
@@ -653,6 +643,35 @@ void MainWindow::setupPrintableView(T *view)
     view->installEventFilter(new PrintFilter(view, this));
 }
 
+template <class T>
+void MainWindow::setupExportableView(T *view)
+{
+    struct ExportFilter : public QObject {
+        ExportFilter(T *exportable, MainWindow *window)
+            : QObject(exportable), m_window(window), m_exportable(exportable)
+        {
+        }
+
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show) {
+                m_window->ui->actionExportAs->setEnabled(true);
+                connect(m_window->ui->actionExportAs, &QAction::triggered,
+                        m_exportable, [this] { m_exportable->exportAs(); });
+            } else if (event->type() == QEvent::Hide) {
+                m_window->ui->actionExportAs->setEnabled(false);
+                disconnect(m_window->ui->actionExportAs, 0, m_exportable, 0);
+            }
+
+            return QObject::eventFilter(object, event);
+        }
+
+        MainWindow *m_window;
+        T *m_exportable;
+    };
+    view->installEventFilter(new ExportFilter(view, this));
+}
+
 template <typename ContainerModel>
 QTableView *constructElementTable(model::Model *guiModel, QWidget *parent)
 {
@@ -704,6 +723,7 @@ void MainWindow::resetTreeWidget()
             view->ensureVisible(root);
             setupZoomableView(view);
             setupPrintableView(view);
+            setupExportableView(view);
             ui->tabWidget->addTab(
                 view, tr("Fault Tree: %1")
                           .arg(QString::fromStdString(faultTree->name())));
