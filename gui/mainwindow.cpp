@@ -606,6 +606,7 @@ void MainWindow::setupZoomableView(ZoomableView *view)
     connect(view, &ZoomableView::zoomEnabled, this, &MainWindow::activateZoom);
     connect(view, &ZoomableView::zoomDisabled, this,
             &MainWindow::deactivateZoom);
+
     connect(view, &ZoomableView::zoomChanged, this, [this](int level) {
         m_zoomBox->setCurrentText(QString::fromLatin1("%1%").arg(level));
     });

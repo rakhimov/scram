@@ -20,6 +20,7 @@
 
 #include "printable.h"
 
+#include <QObject>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 
@@ -38,8 +39,8 @@ void Printable::printPreview()
 {
     QPrinter printer;
     QPrintPreviewDialog preview(&printer);
-    QObject::connect(&preview, &QPrintPreviewDialog::paintRequested, this,
-                     &Printable::doPrint);
+    QObject::connect(&preview, &QPrintPreviewDialog::paintRequested,
+                     [this, &printer] { this->doPrint(&printer); });
     preview.exec();
 }
 

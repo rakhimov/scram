@@ -21,15 +21,12 @@
 #ifndef PRINTABLE_H
 #define PRINTABLE_H
 
-#include <QObject>
 #include <QPrinter>
 
 namespace scram {
 namespace gui {
 
-class Printable : public QObject {
-    Q_OBJECT
-
+class Printable {
 public:
     virtual ~Printable() = default;
 
