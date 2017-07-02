@@ -31,7 +31,6 @@
 #include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
-#include <QTableView>
 #include <QTableWidget>
 #include <QtConcurrent>
 #include <QtOpenGL>
@@ -188,25 +187,6 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->tabWidget->removeTab(index);
                 delete widget;
             });
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this,
-            [this](int index) {
-                m_searchBar->setHidden(true);
-                auto *widget = ui->tabWidget->widget(index);
-                if (auto *tableView = dynamic_cast<QTableView *>(widget)) {
-                    if (dynamic_cast<model::SortFilterProxyModel *>(
-                            tableView->model()))
-                        m_searchBar->setHidden(false);
-                }
-            });
-    connect(m_searchBar, &QLineEdit::editingFinished, this, [this] {
-        auto *tableView
-            = dynamic_cast<QTableView *>(ui->tabWidget->currentWidget());
-        GUI_ASSERT(tableView, );
-        auto *sortFilterModel
-            = dynamic_cast<model::SortFilterProxyModel *>(tableView->model());
-        GUI_ASSERT(sortFilterModel, );
-        sortFilterModel->setFilterRegExp(m_searchBar->text());
-    });
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
         SettingsDialog dialog(m_settings, this);
@@ -672,8 +652,41 @@ void MainWindow::setupExportableView(T *view)
     view->installEventFilter(new ExportFilter(view, this));
 }
 
+template <class T>
+void MainWindow::setupSearchable(QObject *view, T *model)
+{
+    struct SearchFilter : public QObject {
+        SearchFilter(T *searchable, MainWindow *window)
+            : QObject(searchable), m_window(window), m_searchable(searchable)
+        {
+        }
+
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show) {
+                m_window->m_searchBar->setHidden(false);
+                connect(m_window->m_searchBar, &QLineEdit::editingFinished,
+                        object, [this] {
+                            m_searchable->setFilterRegExp(
+                                m_window->m_searchBar->text());
+                        });
+            } else if (event->type() == QEvent::Hide) {
+                m_window->m_searchBar->setHidden(true);
+                disconnect(m_window->m_searchBar, 0, object, 0);
+            }
+
+            return QObject::eventFilter(object, event);
+        }
+
+        MainWindow *m_window;
+        T *m_searchable;
+    };
+    view->installEventFilter(new SearchFilter(model, this));
+}
+
 template <typename ContainerModel>
-QTableView *constructElementTable(model::Model *guiModel, QWidget *parent)
+QTableView *MainWindow::constructElementTable(model::Model *guiModel,
+                                              QWidget *parent)
 {
     auto *table = new QTableView(parent);
     auto *tableModel = new ContainerModel(guiModel, table);
@@ -685,6 +698,7 @@ QTableView *constructElementTable(model::Model *guiModel, QWidget *parent)
     table->setWordWrap(false);
     table->resizeColumnsToContents();
     table->setSortingEnabled(true);
+    setupSearchable(table, proxyModel);
     return table;
 }
 

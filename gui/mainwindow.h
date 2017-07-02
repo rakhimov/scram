@@ -30,6 +30,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QRegularExpressionValidator>
+#include <QTableView>
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
@@ -111,6 +112,15 @@ private:
     /// @tparam  Any type with exportAs() function.
     template <class T>
     void setupExportableView(T *view);
+
+    /// Connects the search bar to the model of the view.
+    ///
+    /// @tparam T  Any model type with setFilterRegExp(QString).
+    template <class T>
+    void setupSearchable(QObject *view, T *model);
+
+    template <typename ContainerModel>
+    QTableView *constructElementTable(model::Model *guiModel, QWidget *parent);
 
     /**
      * Resets the tree widget with the new model.
