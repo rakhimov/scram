@@ -20,6 +20,7 @@
 #include "ui_startpage.h"
 
 #include <algorithm>
+#include <type_traits>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -170,16 +171,10 @@ MainWindow::MainWindow(QWidget *parent)
             });
     connect(ui->tabWidget, &QTabWidget::currentChanged, this,
             [this](int index) {
-                ui->actionPrint->setEnabled(false);
-                ui->actionPrintPreview->setEnabled(false);
                 ui->actionExportAs->setEnabled(false);
                 m_searchBar->setHidden(true);
 
                 auto *widget = ui->tabWidget->widget(index);
-                if (dynamic_cast<Printable *>(widget)) {
-                    ui->actionPrint->setEnabled(true);
-                    ui->actionPrintPreview->setEnabled(true);
-                }
                 if (dynamic_cast<DiagramView *>(widget))
                     ui->actionExportAs->setEnabled(true);
                 if (auto *tableView = dynamic_cast<QTableView *>(widget)) {
@@ -350,18 +345,6 @@ void MainWindow::setupActions()
             &MainWindow::saveModelAs);
 
     ui->actionPrint->setShortcut(QKeySequence::Print);
-    connect(ui->actionPrint, &QAction::triggered, this, [this] {
-        auto *printable
-            = dynamic_cast<Printable *>(ui->tabWidget->currentWidget());
-        GUI_ASSERT(printable, );
-        printable->print();
-    });
-    connect(ui->actionPrintPreview, &QAction::triggered, this, [this] {
-        auto *printable
-            = dynamic_cast<Printable *>(ui->tabWidget->currentWidget());
-        GUI_ASSERT(printable, );
-        printable->printPreview();
-    });
 
     connect(ui->actionExportAs, &QAction::triggered, this,
             &MainWindow::exportAs);
@@ -630,6 +613,39 @@ void MainWindow::setupZoomableView(ZoomableView *view)
     });
 }
 
+template <class T>
+void MainWindow::setupPrintableView(T *view)
+{
+    static_assert(std::is_base_of<QObject, T>::value, "Missing QObject");
+    struct PrintFilter : public QObject {
+        PrintFilter(T *printable, MainWindow *window)
+            : QObject(printable), m_window(window), m_printable(printable)
+        {
+        }
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show) {
+                m_window->ui->actionPrint->setEnabled(true);
+                m_window->ui->actionPrintPreview->setEnabled(true);
+                connect(m_window->ui->actionPrint, &QAction::triggered,
+                        m_printable, [this] { m_printable->print(); });
+                connect(m_window->ui->actionPrintPreview, &QAction::triggered,
+                        m_printable, [this] { m_printable->printPreview(); });
+            } else if (event->type() == QEvent::Hide) {
+                m_window->ui->actionPrint->setEnabled(false);
+                m_window->ui->actionPrintPreview->setEnabled(false);
+                disconnect(m_window->ui->actionPrint, 0, m_printable, 0);
+                disconnect(m_window->ui->actionPrintPreview, 0, m_printable, 0);
+            }
+            return QObject::eventFilter(object, event);
+        }
+        MainWindow *m_window;
+        T *m_printable;
+    };
+
+    view->installEventFilter(new PrintFilter(view, this));
+}
+
 template <typename ContainerModel>
 QTableView *constructElementTable(model::Model *guiModel, QWidget *parent)
 {
@@ -680,6 +696,7 @@ void MainWindow::resetTreeWidget()
             view->setAlignment(Qt::AlignTop);
             view->ensureVisible(root);
             setupZoomableView(view);
+            setupPrintableView(view);
             ui->tabWidget->addTab(
                 view, tr("Fault Tree: %1")
                           .arg(QString::fromStdString(faultTree->name())));

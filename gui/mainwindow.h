@@ -116,6 +116,12 @@ private:
 
     void setupZoomableView(ZoomableView *view); ///< Connect to actions.
 
+    /// Connects print actions.
+    ///
+    /// @tparam T  Any type with print() and printPreview() functions.
+    template <class T>
+    void setupPrintableView(T *view);
+
     /**
      * Resets the tree widget with the new model.
      */
