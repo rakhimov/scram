@@ -48,7 +48,7 @@ T *ElementContainerModel::getElement(int index) const
     return static_cast<T *>(m_elements[index]);
 }
 
-void ElementContainerModel::addElement(mef::Element *element)
+void ElementContainerModel::addElement(Element *element)
 {
     int index = m_elements.size();
     beginInsertRows({}, index, index);
@@ -57,7 +57,7 @@ void ElementContainerModel::addElement(mef::Element *element)
     endInsertRows();
 }
 
-void ElementContainerModel::removeElement(mef::Element *element)
+void ElementContainerModel::removeElement(Element *element)
 {
     GUI_ASSERT(m_elementToIndex.count(element), );
     int index = m_elementToIndex.find(element)->second;
@@ -83,7 +83,7 @@ int ElementContainerModel::rowCount(const QModelIndex &parent) const
 
 BasicEventContainerModel::BasicEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(model->data()->basic_events(), parent)
+    : ElementContainerModel(model->basicEvents(), parent)
 {
     connect(model, &Model::addedBasicEvent, this,
             &BasicEventContainerModel::addElement);
@@ -121,28 +121,31 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    auto *basicEvent = getElement<mef::BasicEvent>(index.row());
+    auto *basicEvent = getElement<BasicEvent>(index.row());
 
     switch (index.column()) {
     case 0:
-        return QString::fromStdString(basicEvent->id());
+        return basicEvent->id();
     case 1:
-        return basicEvent->HasAttribute("flavor")
-                   ? QVariant(QString::fromStdString(
-                         basicEvent->GetAttribute("flavor").value))
-                   : QVariant();
+        switch (basicEvent->flavor()) {
+        case BasicEvent::Basic:
+            return {};
+        case BasicEvent::Undeveloped:
+            return tr("Undeveloped");
+        case BasicEvent::Conditional:
+            return tr("Conditional");
+        }
     case 2:
-        return basicEvent->HasExpression() ? QVariant(basicEvent->p())
-                                           : QVariant();
+        return basicEvent->probability<QVariant>();
     case 3:
-        return QString::fromStdString(basicEvent->label());
+        return basicEvent->label();
     }
     GUI_ASSERT(false && "unexpected column", {});
 }
 
 HouseEventContainerModel::HouseEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(model->data()->house_events(), parent)
+    : ElementContainerModel(model->houseEvents(), parent)
 {
     connect(model, &Model::addedHouseEvent, this,
             &HouseEventContainerModel::addElement);
@@ -178,15 +181,15 @@ QVariant HouseEventContainerModel::data(const QModelIndex &index,
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    auto *houseEvent = getElement<mef::HouseEvent>(index.row());
+    auto *houseEvent = getElement<HouseEvent>(index.row());
 
     switch (index.column()) {
     case 0:
-        return QString::fromStdString(houseEvent->id());
+        return houseEvent->id();
     case 1:
-        return houseEvent->state() ? tr("True") : tr("False");
+        return houseEvent->state<QString>();
     case 2:
-        return QString::fromStdString(houseEvent->label());
+        return houseEvent->label();
     }
     GUI_ASSERT(false && "unexpected column", {});
 }

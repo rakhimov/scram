@@ -25,33 +25,58 @@ namespace scram {
 namespace gui {
 namespace model {
 
-Model::Model(mef::Model *model, QObject *parent)
-    : QObject(parent), m_model(model)
+BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
+    : Element(basicEvent), m_flavor(Flavor::Basic)
 {
+    if (basicEvent->HasAttribute("flavor")) {
+        const mef::Attribute &flavor = basicEvent->GetAttribute("flavor");
+        if (flavor.value == "undeveloped") {
+            m_flavor = Flavor::Undeveloped;
+        } else if (flavor.value == "conditional") {
+            m_flavor = Flavor::Conditional;
+        }
+    }
+}
+
+Model::Model(mef::Model *model) : Element(model), m_model(model)
+{
+    m_houseEvents.reserve(m_model->house_events().size());
+    for (const mef::HouseEventPtr &houseEvent : m_model->house_events())
+        m_houseEvents.emplace(std::make_unique<HouseEvent>(houseEvent.get()));
+
+    m_basicEvents.reserve(m_model->basic_events().size());
+    for (const mef::BasicEventPtr &basicEvent : m_model->basic_events())
+        m_basicEvents.emplace(std::make_unique<BasicEvent>(basicEvent.get()));
 }
 
 void Model::addHouseEvent(const mef::HouseEventPtr &houseEvent)
 {
     m_model->Add(houseEvent);
-    emit addedHouseEvent(houseEvent.get());
+    auto *proxy = new HouseEvent(houseEvent.get());
+    m_houseEvents.emplace(proxy);
+    emit addedHouseEvent(proxy);
 }
 
 void Model::addBasicEvent(const mef::BasicEventPtr &basicEvent)
 {
     m_model->Add(basicEvent);
-    emit addedBasicEvent(basicEvent.get());
+    auto *proxy = new BasicEvent(basicEvent.get());
+    m_basicEvents.emplace(proxy);
+    emit addedBasicEvent(proxy);
 }
 
 void Model::removeHouseEvent(mef::HouseEvent *houseEvent)
 {
     m_model->Remove(houseEvent);
-    emit removedHouseEvent(houseEvent);
+    emit removedHouseEvent(m_houseEvents.find(houseEvent)->get());
+    m_houseEvents.erase(houseEvent);
 }
 
 void Model::removeBasicEvent(mef::BasicEvent *basicEvent)
 {
     m_model->Remove(basicEvent);
-    emit removedBasicEvent(basicEvent);
+    emit removedBasicEvent(m_basicEvents.find(basicEvent)->get());
+    m_basicEvents.erase(basicEvent);
 }
 
 AddHouseEventCommand::AddHouseEventCommand(mef::HouseEventPtr houseEvent,
@@ -88,10 +113,6 @@ void AddBasicEventCommand::redo()
 void AddBasicEventCommand::undo()
 {
     m_model->removeBasicEvent(m_basicEvent.get());
-}
-
-HouseEvent::HouseEvent(mef::HouseEvent *houseEvent) : m_houseEvent(houseEvent)
-{
 }
 
 } // namespace model
