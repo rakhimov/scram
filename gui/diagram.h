@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef DIAGRAM_H
+#define DIAGRAM_H
 
 #include <memory>
 #include <unordered_map>
@@ -186,4 +186,4 @@ private:
 } // namespace gui
 } // namespace scram
 
-#endif // EVENT_H
+#endif // DIAGRAM_H

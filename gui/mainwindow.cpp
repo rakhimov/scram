@@ -47,7 +47,7 @@
 #include "src/xml.h"
 
 #include "elementcontainermodel.h"
-#include "event.h"
+#include "diagram.h"
 #include "guiassert.h"
 #include "printable.h"
 #include "settingsdialog.h"

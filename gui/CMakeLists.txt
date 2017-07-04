@@ -72,7 +72,7 @@ set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/printable.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/zoomableview.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/event.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/diagram.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/scramgui.cpp"
   )
