@@ -6,4 +6,5 @@ ColumnLimit: 80
 Standard: Cpp11
 IndentWidth: 4
 BreakBeforeBraces: Linux
+AlwaysBreakTemplateDeclarations: true
 # ExperimentalAutoDetectBinPacking: true

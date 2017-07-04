@@ -119,7 +119,7 @@ private:
     template <class T>
     void setupSearchable(QObject *view, T *model);
 
-    template <typename ContainerModel>
+    template <class ContainerModel>
     QTableView *constructElementTable(model::Model *guiModel, QWidget *parent);
 
     /**

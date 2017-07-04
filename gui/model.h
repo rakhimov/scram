@@ -70,7 +70,7 @@ class BasicEvent : public Element
 
 public:
     enum Flavor {
-        Basic,
+        Basic = 0,
         Undeveloped,
         Conditional
     };

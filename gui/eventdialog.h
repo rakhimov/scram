@@ -31,6 +31,8 @@
 #include "src/expression.h"
 #include "src/model.h"
 
+#include "model.h"
+
 namespace scram {
 namespace gui {
 
@@ -47,6 +49,9 @@ public:
     };
 
     explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
+
+    void setupData(const model::HouseEvent &element);
+    void setupData(const model::BasicEvent &element);
 
     /// @returns The type being defined by this dialog.
     EventType currentType() const
@@ -76,6 +81,8 @@ public slots:
     void validate();
 
 private:
+    void setupData(const model::Element &element);
+
     static QString redBackground;
     static QString yellowBackground;
 
@@ -83,6 +90,7 @@ private:
 
     mef::Model *m_model;
     QStatusBar *m_errorBar;
+    QString m_initName;  ///< The name not validated for duplicates.
 };
 
 } // namespace gui

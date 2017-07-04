@@ -41,11 +41,17 @@ ElementContainerModel::ElementContainerModel(const T &container,
     }
 }
 
-template <typename T>
-T *ElementContainerModel::getElement(int index) const
+QModelIndex ElementContainerModel::index(int row, int column,
+                                         const QModelIndex &parent) const
+{
+    GUI_ASSERT(parent.isValid() == false, {});
+    return createIndex(row, column, getElement(row));
+}
+
+Element *ElementContainerModel::getElement(int index) const
 {
     GUI_ASSERT(index < m_elements.size(), nullptr);
-    return static_cast<T *>(m_elements[index]);
+    return m_elements[index];
 }
 
 void ElementContainerModel::addElement(Element *element)
@@ -121,7 +127,7 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    auto *basicEvent = getElement<BasicEvent>(index.row());
+    auto *basicEvent = static_cast<BasicEvent *>(index.internalPointer());
 
     switch (index.column()) {
     case 0:
@@ -181,7 +187,7 @@ QVariant HouseEventContainerModel::data(const QModelIndex &index,
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    auto *houseEvent = getElement<HouseEvent>(index.row());
+    auto *houseEvent = static_cast<HouseEvent *>(index.internalPointer());
 
     switch (index.column()) {
     case 0:

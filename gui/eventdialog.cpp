@@ -25,6 +25,8 @@
 #include <QStatusBar>
 #include <QRegularExpressionValidator>
 
+#include "src/element.h"
+#include "src/event.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
 
@@ -91,6 +93,44 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     connect(this, &EventDialog::validated, okButton, &QPushButton::setEnabled);
 }
 
+void EventDialog::setupData(const model::Element &element)
+{
+    m_initName = element.id();
+    nameLine->setText(m_initName);
+    labelText->setPlainText(element.label());
+}
+
+void EventDialog::setupData(const model::HouseEvent &element)
+{
+    setupData(static_cast<const model::Element &>(element));
+    typeBox->setCurrentIndex(0);
+    stateBox->setCurrentIndex(element.state());
+}
+
+void EventDialog::setupData(const model::BasicEvent &element)
+{
+    setupData(static_cast<const model::Element &>(element));
+    typeBox->setCurrentIndex(1 + element.flavor());
+    auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
+    if (basicEvent.HasExpression()) {
+        expressionBox->setChecked(true);
+        if (auto *constExpr = dynamic_cast<mef::ConstantExpression *>(
+                &basicEvent.expression())) {
+            expressionType->setCurrentIndex(0);
+            constantValue->setText(QString::number(constExpr->value()));
+        } else {
+            auto *exponentialExpr = dynamic_cast<mef::Exponential *>(
+                &basicEvent.expression());
+            GUI_ASSERT(exponentialExpr, );
+            expressionType->setCurrentIndex(1);
+            exponentialRate->setText(
+                QString::number(exponentialExpr->args().front()->value()));
+        }
+    } else {
+        expressionBox->setChecked(false);
+    }
+}
+
 std::unique_ptr<mef::Expression> EventDialog::expression() const
 {
     GUI_ASSERT(tabExpression->isHidden() == false, nullptr);
@@ -124,10 +164,12 @@ void EventDialog::validate()
         return;
     try {
         QString name = nameLine->text();
-        m_model->GetEvent(name.toStdString(), "");
-        m_errorBar->showMessage(
-            tr("The event with name '%1' already exists.").arg(name));
-        return nameLine->setStyleSheet(yellowBackground);
+        if (name != m_initName) {
+            m_model->GetEvent(name.toStdString(), "");
+            m_errorBar->showMessage(
+                tr("The event with name '%1' already exists.").arg(name));
+            return nameLine->setStyleSheet(yellowBackground);
+        }
     } catch (std::out_of_range &) {
     }
 

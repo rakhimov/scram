@@ -692,7 +692,7 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
-template <typename ContainerModel>
+template <class ContainerModel>
 QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                                               QWidget *parent)
 {
@@ -707,6 +707,15 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
     table->resizeColumnsToContents();
     table->setSortingEnabled(true);
     setupSearchable(table, proxyModel);
+    connect(table, &QAbstractItemView::activated,
+            [this, proxyModel](const QModelIndex &index) {
+                GUI_ASSERT(index.isValid(), );
+                EventDialog dialog(m_model.get(), this);
+                auto *item = static_cast<typename ContainerModel::ItemModel *>(
+                    proxyModel->mapToSource(index).internalPointer());
+                dialog.setupData(*item);
+                dialog.exec();
+            });
     return table;
 }
 

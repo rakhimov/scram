@@ -28,6 +28,7 @@
 #include <QSortFilterProxyModel>
 
 #include "src/element.h"
+#include "src/event.h"
 
 #include "model.h"
 
@@ -49,13 +50,14 @@ protected:
     explicit ElementContainerModel(const T &container,
                                    QObject *parent = nullptr);
 
-    /// @tparam T  The derived element type.
-    ///
-    /// @returns The element with the given index.
+    /// Puts the element pointer into the index's internal pointer.
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent) const override;
+
+    /// @returns The element with the given index (row).
     ///
     /// @pre The index is valid.
-    /// @pre The element type matches type stored in the container.
-    template <typename T> T *getElement(int index) const;
+    Element *getElement(int index) const;
 
     void addElement(Element *element);
     void removeElement(Element *element);
@@ -86,6 +88,9 @@ class BasicEventContainerModel : public ElementContainerModel
     Q_OBJECT
 
 public:
+    using ItemModel = BasicEvent;
+    using DataType = mef::BasicEvent;
+
     explicit BasicEventContainerModel(Model *model, QObject *parent = nullptr);
 
     int columnCount(const QModelIndex &parent) const override;
@@ -101,6 +106,9 @@ class HouseEventContainerModel : public ElementContainerModel
     Q_OBJECT
 
 public:
+    using ItemModel = HouseEvent;
+    using DataType = mef::HouseEvent;
+
     explicit HouseEventContainerModel(Model *model, QObject *parent = nullptr);
 
     int columnCount(const QModelIndex &parent) const override;
