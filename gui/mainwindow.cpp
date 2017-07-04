@@ -672,6 +672,8 @@ void MainWindow::setupSearchable(QObject *view, T *model)
         {
             if (event->type() == QEvent::Show) {
                 m_window->m_searchBar->setHidden(false);
+                m_window->m_searchBar->setText(
+                    m_searchable->filterRegExp().pattern());
                 connect(m_window->m_searchBar, &QLineEdit::editingFinished,
                         object, [this] {
                             m_searchable->setFilterRegExp(
