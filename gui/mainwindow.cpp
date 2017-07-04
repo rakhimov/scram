@@ -714,7 +714,12 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                 auto *item = static_cast<typename ContainerModel::ItemModel *>(
                     proxyModel->mapToSource(index).internalPointer());
                 dialog.setupData(*item);
-                dialog.exec();
+                if (dialog.exec() == QDialog::Accepted) {
+                    /// @todo Type change
+                    /// @todo Label change
+                    /// @todo Name change
+                    /// @todo Expression change
+                }
             });
     return table;
 }
