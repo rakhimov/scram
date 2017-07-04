@@ -8,9 +8,7 @@ cache:
     directories:
         - $HOME/.cache/pip
 
-os:
-    - linux
-    - osx
+os: linux
 
 compiler:
     - gcc
@@ -27,17 +25,15 @@ env:
         - RELEASE=true
 
 matrix:
-    exclude:
-        - os: osx
-          compiler: gcc  # GCC is Clang on OS X.
-        - os: osx
-          env: RELEASE=  # OS X builds are slow and limited.
     include:
+        - os: osx
+          compiler: clang
+          env: RELEASE=true  # OS X builds are slow and limited.
         - os: linux
           compiler: icc
-          env: INTEL_COMPILER=true
+          env: INTEL_COMPILER=true RELEASE=true
     allow_failures:
-        - compiler: icc  # TODO: Boost problems on Travis-CI Trusty
+        - compiler: icc  # TODO: C++14 compiler front-end bug
 
 addons:
     apt:
