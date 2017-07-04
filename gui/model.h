@@ -163,6 +163,22 @@ private:
     ProxyTable<BasicEvent> m_basicEvents;
 };
 
+/// Flips the house event state.
+class ChangeHouseEventStateCommand : public QUndoCommand
+{
+public:
+    ChangeHouseEventStateCommand(HouseEvent *houseEvent, Model *model);
+
+    void redo() override { flip(); }
+    void undo() override { flip(); }
+
+private:
+    void flip();
+
+    Model *m_model;
+    const mef::HouseEvent *m_houseEvent;
+};
+
 class AddHouseEventCommand : public QUndoCommand
 {
 public:

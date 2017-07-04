@@ -38,6 +38,7 @@
 #include "src/risk_analysis.h"
 #include "src/settings.h"
 
+#include "eventdialog.h"
 #include "model.h"
 #include "zoomableview.h"
 
@@ -121,6 +122,9 @@ private:
 
     template <class ContainerModel>
     QTableView *constructElementTable(model::Model *guiModel, QWidget *parent);
+
+    void editElement(EventDialog *dialog, model::HouseEvent *element);
+    void editElement(EventDialog *dialog, model::BasicEvent *element);
 
     /**
      * Resets the tree widget with the new model.

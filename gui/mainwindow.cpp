@@ -48,7 +48,6 @@
 
 #include "elementcontainermodel.h"
 #include "event.h"
-#include "eventdialog.h"
 #include "guiassert.h"
 #include "printable.h"
 #include "settingsdialog.h"
@@ -692,18 +691,19 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
-void editElement(EventDialog *dialog, model::BasicEvent *element)
+void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 {
     /// @todo Basic event editing.
     (void)element;
     (void)dialog;
 }
 
-void editElement(EventDialog *dialog, model::HouseEvent *element)
+void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 {
     GUI_ASSERT(dialog->currentType() == EventDialog::HouseEvent, );
     if (dialog->booleanConstant() != element->state())
-        element->setState(dialog->booleanConstant());
+        m_undoStack->push(
+            new model::ChangeHouseEventStateCommand(element, m_guiModel.get()));
 }
 
 template <class ContainerModel>

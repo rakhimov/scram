@@ -79,6 +79,22 @@ void Model::removeBasicEvent(mef::BasicEvent *basicEvent)
     m_basicEvents.erase(basicEvent);
 }
 
+ChangeHouseEventStateCommand::ChangeHouseEventStateCommand(
+    HouseEvent *houseEvent, Model *model)
+    : QUndoCommand(
+          QObject::tr("Change house event %1 state").arg(houseEvent->id())),
+      m_model(model), m_houseEvent(static_cast<const mef::HouseEvent *>(
+                          static_cast<const HouseEvent *>(houseEvent)->data()))
+{
+}
+
+void ChangeHouseEventStateCommand::flip()
+{
+    auto it = m_model->houseEvents().find(m_houseEvent);
+    GUI_ASSERT(it != m_model->houseEvents().end(), );
+    (*it)->setState(!m_houseEvent->state());
+}
+
 AddHouseEventCommand::AddHouseEventCommand(mef::HouseEventPtr houseEvent,
                                            Model *model)
     : QUndoCommand(QObject::tr("Add house-event %1")
