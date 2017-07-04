@@ -59,10 +59,20 @@ protected:
     /// @pre The index is valid.
     Element *getElement(int index) const;
 
+    /// @returns The current index (row) of the element.
+    ///
+    /// @pre The element is in the table.
+    int getElementIndex(Element *element) const;
+
     void addElement(Element *element);
     void removeElement(Element *element);
 
+    const std::vector<Element *> elements() const { return m_elements; }
+
 private:
+    /// Connects of the element change signals to the table modification.
+    virtual void connectElement(Element *element) = 0;
+
     std::vector<Element *> m_elements;
     std::unordered_map<Element *, int> m_elementToIndex;
 };
@@ -99,6 +109,9 @@ public:
                         int role) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+
+private:
+    void connectElement(Element *) final {} ///< @todo Track event changes.
 };
 
 class HouseEventContainerModel : public ElementContainerModel
@@ -117,6 +130,9 @@ public:
                         int role) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+
+private:
+    void connectElement(Element *element) final;
 };
 
 } // namespace model

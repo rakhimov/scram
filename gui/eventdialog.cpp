@@ -108,7 +108,6 @@ void EventDialog::setupData(const model::HouseEvent &element)
     setupData(static_cast<const model::Element &>(element));
     typeBox->setCurrentIndex(0);
     stateBox->setCurrentIndex(element.state());
-    stateBox->setEnabled(false);
 }
 
 void EventDialog::setupData(const model::BasicEvent &element)

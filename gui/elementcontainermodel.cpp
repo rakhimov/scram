@@ -54,6 +54,13 @@ Element *ElementContainerModel::getElement(int index) const
     return m_elements[index];
 }
 
+int ElementContainerModel::getElementIndex(Element *element) const
+{
+    auto it = m_elementToIndex.find(element);
+    GUI_ASSERT(it != m_elementToIndex.end(), -1);
+    return it->second;
+}
+
 void ElementContainerModel::addElement(Element *element)
 {
     int index = m_elements.size();
@@ -61,6 +68,7 @@ void ElementContainerModel::addElement(Element *element)
     m_elementToIndex.emplace(element, index);
     m_elements.push_back(element);
     endInsertRows();
+    connectElement(element);
 }
 
 void ElementContainerModel::removeElement(Element *element)
@@ -80,6 +88,7 @@ void ElementContainerModel::removeElement(Element *element)
         emit dataChanged(createIndex(index, 0),
                          createIndex(index, columnCount()));
     }
+    disconnect(element, 0, this, 0);
 }
 
 int ElementContainerModel::rowCount(const QModelIndex &parent) const
@@ -157,6 +166,8 @@ HouseEventContainerModel::HouseEventContainerModel(Model *model,
             &HouseEventContainerModel::addElement);
     connect(model, &Model::removedHouseEvent, this,
             &HouseEventContainerModel::removeElement);
+    for (Element *element : elements())
+        connectElement(element);
 }
 
 int HouseEventContainerModel::columnCount(const QModelIndex &parent) const
@@ -198,6 +209,16 @@ QVariant HouseEventContainerModel::data(const QModelIndex &index,
         return houseEvent->label();
     }
     GUI_ASSERT(false && "unexpected column", {});
+}
+
+void HouseEventContainerModel::connectElement(Element *element)
+{
+    connect(static_cast<HouseEvent *>(element), &HouseEvent::stateChanged, this,
+            [this, element] {
+                QModelIndex index
+                    = createIndex(getElementIndex(element), 1, element);
+                emit dataChanged(index, index);
+            });
 }
 
 } // namespace model

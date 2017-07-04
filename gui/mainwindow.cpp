@@ -692,6 +692,20 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+void editElement(EventDialog *dialog, model::BasicEvent *element)
+{
+    /// @todo Basic event editing.
+    (void)element;
+    (void)dialog;
+}
+
+void editElement(EventDialog *dialog, model::HouseEvent *element)
+{
+    GUI_ASSERT(dialog->currentType() == EventDialog::HouseEvent, );
+    if (dialog->booleanConstant() != element->state())
+        element->setState(dialog->booleanConstant());
+}
+
 template <class ContainerModel>
 QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                                               QWidget *parent)
@@ -719,6 +733,7 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                     /// @todo Label change
                     /// @todo Name change
                     /// @todo Expression change
+                    editElement(&dialog, item);
                 }
             });
     return table;

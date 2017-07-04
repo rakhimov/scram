@@ -106,6 +106,16 @@ public:
 
     template <typename T = bool>
     T state() const { return data<mef::HouseEvent>()->state(); };
+
+    void setState(bool value) {
+        if (value == state())
+            return;
+        data<mef::HouseEvent>()->state(value);
+        emit stateChanged(value);
+    }
+
+signals:
+    void stateChanged(bool value);
 };
 
 /// @returns The string representation of the house event state.
