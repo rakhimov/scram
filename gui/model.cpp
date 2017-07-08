@@ -65,18 +65,20 @@ void Model::addBasicEvent(const mef::BasicEventPtr &basicEvent)
     emit addedBasicEvent(proxy);
 }
 
-void Model::removeHouseEvent(mef::HouseEvent *houseEvent)
+std::unique_ptr<HouseEvent> Model::removeHouseEvent(mef::HouseEvent *houseEvent)
 {
     m_model->Remove(houseEvent);
-    emit removedHouseEvent(m_houseEvents.find(houseEvent)->get());
-    m_houseEvents.erase(houseEvent);
+    auto result = extract(houseEvent, &m_houseEvents);
+    emit removedHouseEvent(result.get());
+    return result;
 }
 
-void Model::removeBasicEvent(mef::BasicEvent *basicEvent)
+std::unique_ptr<BasicEvent> Model::removeBasicEvent(mef::BasicEvent *basicEvent)
 {
     m_model->Remove(basicEvent);
-    emit removedBasicEvent(m_basicEvents.find(basicEvent)->get());
-    m_basicEvents.erase(basicEvent);
+    auto result = extract(basicEvent, &m_basicEvents);
+    emit removedBasicEvent(result.get());
+    return result;
 }
 
 ChangeHouseEventStateCommand::ChangeHouseEventStateCommand(
