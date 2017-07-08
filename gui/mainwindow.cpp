@@ -369,7 +369,7 @@ void MainWindow::setupActions()
                         m_model->Add(std::move(p_expression));
                     }
                     auto &result = *basicEvent;
-                    m_undoStack->push(new model::AddBasicEventCommand(
+                    m_undoStack->push(new model::Model::AddBasicEvent(
                         std::move(basicEvent), m_guiModel.get()));
                     return result;
                 };
@@ -379,7 +379,7 @@ void MainWindow::setupActions()
                         = std::make_shared<mef::HouseEvent>(dialog.name());
                     houseEvent->label(dialog.label());
                     houseEvent->state(dialog.booleanConstant());
-                    m_undoStack->push(new model::AddHouseEventCommand(
+                    m_undoStack->push(new model::Model::AddHouseEvent(
                         std::move(houseEvent), m_guiModel.get()));
                     break;
                 }
@@ -704,8 +704,8 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 {
     GUI_ASSERT(dialog->currentType() == EventDialog::HouseEvent, );
     if (dialog->booleanConstant() != element->state())
-        m_undoStack->push(
-            new model::ChangeHouseEventStateCommand(element, m_guiModel.get()));
+        m_undoStack->push(new model::HouseEvent::SetState(
+            element, dialog->booleanConstant()));
 }
 
 template <class ContainerModel>

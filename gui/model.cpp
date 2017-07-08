@@ -38,6 +38,23 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
     }
 }
 
+HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)
+    : QUndoCommand(QObject::tr("Set house event %1 state to %2")
+                       .arg(houseEvent->id(), boolToString(state))),
+      m_state(state), m_houseEvent(houseEvent)
+{
+}
+
+void HouseEvent::SetState::redo()
+{
+    if (m_state == m_houseEvent->state())
+        return;
+    bool prev_state = m_houseEvent->state();
+    m_houseEvent->data<mef::HouseEvent>()->state(m_state);
+    emit m_houseEvent->stateChanged(m_state);
+    m_state = prev_state;
+}
+
 Model::Model(mef::Model *model) : Element(model), m_model(model)
 {
     m_houseEvents.reserve(m_model->house_events().size());
@@ -49,88 +66,48 @@ Model::Model(mef::Model *model) : Element(model), m_model(model)
         m_basicEvents.emplace(std::make_unique<BasicEvent>(basicEvent.get()));
 }
 
-void Model::addHouseEvent(const mef::HouseEventPtr &houseEvent)
-{
-    m_model->Add(houseEvent);
-    auto *proxy = new HouseEvent(houseEvent.get());
-    m_houseEvents.emplace(proxy);
-    emit addedHouseEvent(proxy);
-}
-
-void Model::addBasicEvent(const mef::BasicEventPtr &basicEvent)
-{
-    m_model->Add(basicEvent);
-    auto *proxy = new BasicEvent(basicEvent.get());
-    m_basicEvents.emplace(proxy);
-    emit addedBasicEvent(proxy);
-}
-
-std::unique_ptr<HouseEvent> Model::removeHouseEvent(mef::HouseEvent *houseEvent)
-{
-    m_model->Remove(houseEvent);
-    auto result = extract(houseEvent, &m_houseEvents);
-    emit removedHouseEvent(result.get());
-    return result;
-}
-
-std::unique_ptr<BasicEvent> Model::removeBasicEvent(mef::BasicEvent *basicEvent)
-{
-    m_model->Remove(basicEvent);
-    auto result = extract(basicEvent, &m_basicEvents);
-    emit removedBasicEvent(result.get());
-    return result;
-}
-
-ChangeHouseEventStateCommand::ChangeHouseEventStateCommand(
-    HouseEvent *houseEvent, Model *model)
-    : QUndoCommand(
-          QObject::tr("Change house event %1 state").arg(houseEvent->id())),
-      m_model(model), m_houseEvent(static_cast<const mef::HouseEvent *>(
-                          static_cast<const HouseEvent *>(houseEvent)->data()))
-{
-}
-
-void ChangeHouseEventStateCommand::flip()
-{
-    auto it = m_model->houseEvents().find(m_houseEvent);
-    GUI_ASSERT(it != m_model->houseEvents().end(), );
-    (*it)->setState(!m_houseEvent->state());
-}
-
-AddHouseEventCommand::AddHouseEventCommand(mef::HouseEventPtr houseEvent,
-                                           Model *model)
+Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
     : QUndoCommand(QObject::tr("Add house-event %1")
                        .arg(QString::fromStdString(houseEvent->id()))),
-      m_model(model), m_houseEvent(std::move(houseEvent))
+      m_model(model), m_proxy(std::make_unique<HouseEvent>(houseEvent.get())),
+      m_houseEvent(std::move(houseEvent))
 {
 }
 
-void AddHouseEventCommand::redo()
+void Model::AddHouseEvent::redo()
 {
-    m_model->addHouseEvent(m_houseEvent);
+    m_model->m_model->Add(m_houseEvent);
+    m_model->m_houseEvents.emplace(std::move(m_proxy));
+    emit m_model->addedHouseEvent(m_proxy.get());
 }
 
-void AddHouseEventCommand::undo()
+void Model::AddHouseEvent::undo()
 {
-    m_model->removeHouseEvent(m_houseEvent.get());
+    m_model->m_model->Remove(m_houseEvent.get());
+    m_proxy = extract(m_houseEvent.get(), &m_model->m_houseEvents);
+    emit m_model->removedHouseEvent(m_proxy.get());
 }
 
-AddBasicEventCommand::AddBasicEventCommand(mef::BasicEventPtr basicEvent,
-                                           Model *model)
+Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
     : QUndoCommand(QObject::tr("Add basic-event %1")
                        .arg(QString::fromStdString(basicEvent->id()))),
-      m_model(model), m_basicEvent(std::move(basicEvent))
+      m_model(model), m_proxy(std::make_unique<BasicEvent>(basicEvent.get())),
+      m_basicEvent(std::move(basicEvent))
 {
 }
 
-void AddBasicEventCommand::redo()
+void Model::AddBasicEvent::redo()
 {
-    m_model->addBasicEvent(m_basicEvent);
+    m_model->m_model->Add(m_basicEvent);
+    m_model->m_basicEvents.emplace(std::move(m_proxy));
+    emit m_model->addedBasicEvent(m_proxy.get());
 }
 
-void AddBasicEventCommand::undo()
+void Model::AddBasicEvent::undo()
 {
-    m_model->removeBasicEvent(m_basicEvent.get());
+    m_model->m_model->Remove(m_basicEvent.get());
+    m_proxy = extract(m_basicEvent.get(), &m_model->m_basicEvents);
+    emit m_model->removedBasicEvent(m_proxy.get());
 }
 
 } // namespace model

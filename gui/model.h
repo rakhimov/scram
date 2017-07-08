@@ -108,24 +108,37 @@ public:
     explicit HouseEvent(mef::HouseEvent *houseEvent) : Element(houseEvent) {}
 
     template <typename T = bool>
-    T state() const { return data<mef::HouseEvent>()->state(); };
+    T state() const { return data<mef::HouseEvent>()->state(); }
 
-    void setState(bool value) {
-        if (value == state())
-            return;
-        data<mef::HouseEvent>()->state(value);
-        emit stateChanged(value);
-    }
+    /// Flips the house event state.
+    class SetState : public QUndoCommand
+    {
+    public:
+        SetState(HouseEvent *houseEvent, bool state);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        bool m_state;
+        HouseEvent *m_houseEvent;
+    };
 
 signals:
     void stateChanged(bool value);
 };
 
+/// @returns String representation for the Boolean value.
+inline QString boolToString(bool value)
+{
+    return value ? QObject::tr("True") : QObject::tr("False");
+}
+
 /// @returns The string representation of the house event state.
 template <>
 inline QString HouseEvent::state<QString>() const
 {
-    return state() ? tr("True") : tr("False");
+    return boolToString(state());
 }
 
 /// Table of proxy elements uniquely wrapping the core model element.
@@ -170,10 +183,36 @@ public:
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
 
-    void addHouseEvent(const mef::HouseEventPtr &houseEvent);
-    void addBasicEvent(const mef::BasicEventPtr &basicEvent);
-    std::unique_ptr<HouseEvent> removeHouseEvent(mef::HouseEvent *houseEvent);
-    std::unique_ptr<BasicEvent> removeBasicEvent(mef::BasicEvent *basicEvent);
+    /// Model manipulation commands.
+    /// @{
+    class AddHouseEvent : public QUndoCommand
+    {
+    public:
+        AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model);
+
+        void redo() override;
+        void undo() override;
+
+    private:
+        Model *m_model;
+        ext::owner_ptr<HouseEvent> m_proxy;
+        mef::HouseEventPtr m_houseEvent;
+    };
+
+    class AddBasicEvent : public QUndoCommand
+    {
+    public:
+        AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model);
+
+        void redo() override;
+        void undo() override;
+
+    private:
+        Model *m_model;
+        ext::owner_ptr<BasicEvent> m_proxy;
+        mef::BasicEventPtr m_basicEvent;
+    };
+    /// @}
 
 signals:
     void addedHouseEvent(HouseEvent *houseEvent);
@@ -185,48 +224,6 @@ private:
     mef::Model *m_model;
     ProxyTable<HouseEvent> m_houseEvents;
     ProxyTable<BasicEvent> m_basicEvents;
-};
-
-/// Flips the house event state.
-class ChangeHouseEventStateCommand : public QUndoCommand
-{
-public:
-    ChangeHouseEventStateCommand(HouseEvent *houseEvent, Model *model);
-
-    void redo() override { flip(); }
-    void undo() override { flip(); }
-
-private:
-    void flip();
-
-    Model *m_model;
-    const mef::HouseEvent *m_houseEvent;
-};
-
-class AddHouseEventCommand : public QUndoCommand
-{
-public:
-    AddHouseEventCommand(mef::HouseEventPtr houseEvent, Model *model);
-
-    void redo() override;
-    void undo() override;
-
-private:
-    Model *m_model;
-    mef::HouseEventPtr m_houseEvent;
-};
-
-class AddBasicEventCommand : public QUndoCommand
-{
-public:
-    AddBasicEventCommand(mef::BasicEventPtr basicEvent, Model *model);
-
-    void redo() override;
-    void undo() override;
-
-private:
-    Model *m_model;
-    mef::BasicEventPtr m_basicEvent;
 };
 
 } // namespace model
