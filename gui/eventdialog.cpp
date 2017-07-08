@@ -99,7 +99,6 @@ void EventDialog::setupData(const model::Element &element)
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());
     nameLine->setEnabled(false);
-    labelText->setEnabled(false);
     typeBox->setEnabled(false);
 }
 

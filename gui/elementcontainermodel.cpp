@@ -41,6 +41,15 @@ ElementContainerModel::ElementContainerModel(const T &container,
     }
 }
 
+void ElementContainerModel::connectElement(Element *element)
+{
+    connect(element, &Element::labelChanged, this, [this, element] {
+        QModelIndex index
+            = createIndex(getElementIndex(element), columnCount() - 1, element);
+        emit dataChanged(index, index);
+    });
+}
+
 QModelIndex ElementContainerModel::index(int row, int column,
                                          const QModelIndex &parent) const
 {
@@ -104,6 +113,8 @@ BasicEventContainerModel::BasicEventContainerModel(Model *model,
             &BasicEventContainerModel::addElement);
     connect(model, &Model::removedBasicEvent, this,
             &BasicEventContainerModel::removeElement);
+    for (Element *element : elements())
+        connectElement(element);
 }
 
 int BasicEventContainerModel::columnCount(const QModelIndex &parent) const
@@ -213,6 +224,7 @@ QVariant HouseEventContainerModel::data(const QModelIndex &index,
 
 void HouseEventContainerModel::connectElement(Element *element)
 {
+    ElementContainerModel::connectElement(element);
     connect(static_cast<HouseEvent *>(element), &HouseEvent::stateChanged, this,
             [this, element] {
                 QModelIndex index

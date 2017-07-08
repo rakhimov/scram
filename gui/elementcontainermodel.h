@@ -69,10 +69,14 @@ protected:
 
     const std::vector<Element *> elements() const { return m_elements; }
 
-private:
+protected:
     /// Connects of the element change signals to the table modification.
-    virtual void connectElement(Element *element) = 0;
+    /// The base implementation only handles signals coming from base element.
+    /// The derived classes need to override this function
+    /// and append more connections.
+    virtual void connectElement(Element *element);
 
+private:
     std::vector<Element *> m_elements;
     std::unordered_map<Element *, int> m_elementToIndex;
 };
@@ -109,9 +113,6 @@ public:
                         int role) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
-
-private:
-    void connectElement(Element *) final {} ///< @todo Track event changes.
 };
 
 class HouseEventContainerModel : public ElementContainerModel

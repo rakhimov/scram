@@ -62,9 +62,9 @@ public:
     /// @returns The name data.
     std::string name() const { return nameLine->text().toStdString(); }
     /// @returns The label data.
-    std::string label() const
+    QString label() const
     {
-        return labelText->toPlainText().simplified().toStdString();
+        return labelText->toPlainText().simplified();
     }
 
     /// @returns The Boolean constant data.

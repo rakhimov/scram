@@ -25,6 +25,23 @@ namespace scram {
 namespace gui {
 namespace model {
 
+Element::SetLabel::SetLabel(Element *element, QString label)
+    : QUndoCommand(QObject::tr("Set element %1 label to '%2'")
+                       .arg(element->id(), label)),
+      m_label(std::move(label)), m_element(element)
+{
+}
+
+void Element::SetLabel::redo()
+{
+    QString cur_label = m_element->label();
+    if (m_label == cur_label)
+        return;
+    m_element->data()->label(m_label.toStdString());
+    emit m_element->labelChanged(m_label);
+    m_label = std::move(cur_label);
+}
+
 BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
     : Element(basicEvent), m_flavor(Flavor::Basic)
 {

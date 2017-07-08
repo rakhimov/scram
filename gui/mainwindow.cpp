@@ -363,7 +363,7 @@ void MainWindow::setupActions()
                 auto addBasicEvent = [&]() -> decltype(auto) {
                     auto basicEvent
                         = std::make_shared<mef::BasicEvent>(dialog.name());
-                    basicEvent->label(dialog.label());
+                    basicEvent->label(dialog.label().toStdString());
                     if (auto p_expression = dialog.expression()) {
                         basicEvent->expression(p_expression.get());
                         m_model->Add(std::move(p_expression));
@@ -377,7 +377,7 @@ void MainWindow::setupActions()
                 case EventDialog::HouseEvent: {
                     auto houseEvent
                         = std::make_shared<mef::HouseEvent>(dialog.name());
-                    houseEvent->label(dialog.label());
+                    houseEvent->label(dialog.label().toStdString());
                     houseEvent->state(dialog.booleanConstant());
                     m_undoStack->push(new model::Model::AddHouseEvent(
                         std::move(houseEvent), m_guiModel.get()));
@@ -693,16 +693,21 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+void MainWindow::editElement(EventDialog *dialog, model::Element *element)
+{
+    if (dialog->label() != element->label())
+        m_undoStack->push(
+            new model::Element::SetLabel(element, dialog->label()));
+}
+
 void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 {
-    /// @todo Basic event editing.
-    (void)element;
-    (void)dialog;
+    editElement(dialog, static_cast<model::Element *>(element));
 }
 
 void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 {
-    GUI_ASSERT(dialog->currentType() == EventDialog::HouseEvent, );
+    editElement(dialog, static_cast<model::Element *>(element));
     if (dialog->booleanConstant() != element->state())
         m_undoStack->push(new model::HouseEvent::SetState(
             element, dialog->booleanConstant()));
@@ -732,7 +737,6 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                 dialog.setupData(*item);
                 if (dialog.exec() == QDialog::Accepted) {
                     /// @todo Type change
-                    /// @todo Label change
                     /// @todo Name change
                     /// @todo Expression change
                     editElement(&dialog, item);

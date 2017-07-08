@@ -123,6 +123,7 @@ private:
     template <class ContainerModel>
     QTableView *constructElementTable(model::Model *guiModel, QWidget *parent);
 
+    void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);
     void editElement(EventDialog *dialog, model::BasicEvent *element);
 

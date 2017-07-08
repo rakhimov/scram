@@ -22,6 +22,7 @@
 #define MODEL_H
 
 #include <memory>
+#include <string>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
@@ -53,7 +54,23 @@ public:
     /// @returns The additional description for the element.
     QString label() const { return QString::fromStdString(m_data->label()); }
 
+    class SetLabel : public QUndoCommand
+    {
+    public:
+        SetLabel(Element *element, QString label);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        QString m_label;
+        Element *m_element;
+    };
+
     const mef::Element *data() const { return m_data; }
+
+signals:
+    void labelChanged(const QString &label);
 
 protected:
     explicit Element(mef::Element *element) : m_data(element) {}
