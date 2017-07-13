@@ -15,7 +15,7 @@ are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 - `C++ core code <api/index.xhtml>`_
 - `Python scripts <scripts/modules.html>`_
 
-.. _Open-PSA: http://open-psa.org
+.. _Open-PSA: https://open-psa.github.io
 .. _Model Exchange Format: https://open-psa.github.io/mef
 .. _GPLv3: https://github.com/rakhimov/scram/blob/master/LICENSE
 .. _release notes: https://github.com/rakhimov/scram/releases

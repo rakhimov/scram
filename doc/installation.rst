@@ -58,7 +58,7 @@ Installation with homebrew_:
 
     brew install homebrew/science/scram
 
-.. _homebrew: http://brew.sh/
+.. _homebrew: https://brew.sh/
 
 
 Windows

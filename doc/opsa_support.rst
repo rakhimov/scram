@@ -38,7 +38,7 @@ The MEF is designed with the "declarative modeling" criterion
 and interactions which the model represents".
 This paradigm is followed from the structured programming techniques.
 
-More information about the initiative and format can be found on http://open-psa.org
+More information about the initiative and format can be found on [OPSA]_.
 
 
 .. _opsa_support:
