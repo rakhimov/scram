@@ -73,15 +73,19 @@ Standards, Guides, Manuals, Handbooks
 
 .. [MEF] `Open PSA Model Exchange Format <https://open-psa.github.io/mef>`_
 
-.. [NUREG0492] `NRC NUREG-0492 <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/>`_
+.. [NUREG0492] `NRC NUREG-0492 <https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/>`_
 
-.. [WASH1400] `NRC NUREG-75/014 (WASH-1400), Appendices III & IV <http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr75-014/appendix-iii-iv/>`_
+.. [WASH1400] `NRC NUREG-75/014 (WASH-1400), Appendices III & IV <https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr75-014/appendix-iii-iv/>`_
 
-.. [CR2300] `NRC NUREG/CR-2300 (PRA Procedure Guide), Vols 1 & 2 <http://www.nrc.gov/reading-rm/doc-collections/nuregs/contract/cr2300/>`_
+.. [CR2300] `NRC NUREG/CR-2300 (PRA Procedure Guide), Vols 1 & 2 <https://www.nrc.gov/reading-rm/doc-collections/nuregs/contract/cr2300/>`_
 
-.. [FTACOURSE] `FTA: Concepts and Applications <http://www.hq.nasa.gov/office/codeq/risk/docs/ftacourse.pdf>`_
+.. [FTACOURSE] Bill Vesely,
+               "FTA: Concepts and Applications,"
+               NASA Headquarters, Washington DC, 2002.
 
-.. [FTHB] `Fault Tree Handbook with Aerospace Applications <http://www.hq.nasa.gov/office/codeq/doctree/fthb.pdf>`_
+.. [FTHB] NASA Office of Safety and Mission Assurance,
+          "Fault tree handbook with aerospace applications,"
+          NASA Headquarters, Washington DC, 2002.
 
 .. [STTFTA] `Software Test Techniques for System Fault-Tree Analysis <http://www.cs.virginia.edu/~jck/publications/safecomp.97.pdf>`_
 
@@ -89,7 +93,7 @@ Standards, Guides, Manuals, Handbooks
 Web Resources
 =============
 
-.. [OPSA] `The Open-PSA Initiative <http://open-psa.org>`_
+.. [OPSA] `The Open-PSA Initiative <https://open-psa.github.io>`_
 
 .. [PRA] `PRA Wiki Page <https://en.wikipedia.org/wiki/Probabilistic_risk_assessment>`_
 .. [FTA] `FTA Wiki Page <https://en.wikipedia.org/wiki/Fault_tree_analysis>`_
