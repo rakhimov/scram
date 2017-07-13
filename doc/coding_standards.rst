@@ -250,10 +250,6 @@ GUI Code
 
 - Prefer Qt Designer UI forms over hand-coded GUI.
 
-    * The UI class member must be aggregated as a private pointer member
-      and named ``ui`` without ``m_`` prefix (default in Qt Creator).
-    * Don't repeat ``includes`` provided by the ``ui`` header.
-
 - Common Qt includes may be omitted,
   for example, ``QString``, ``QList``, ``QStringList``, and ``QDir``.
 

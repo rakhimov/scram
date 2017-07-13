@@ -116,6 +116,16 @@ class Model : public Element, private boost::noncopyable {
   }
   /// @}
 
+  /// Removes MEF constructs from the model container.
+  ///
+  /// @param[in] element  An element defined in this model.
+  ///
+  /// @throws std::out_of_range  The element cannot be found.
+  /// @{
+  void Remove(HouseEvent* element);
+  void Remove(BasicEvent* element);
+  /// @}
+
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
   /// The reference is case sensitive
   /// and can contain an identifier, full path, or local path.
@@ -167,6 +177,14 @@ class Model : public Element, private boost::noncopyable {
       if (it.second)
         entities_by_path.insert(entity);
       return it;
+    }
+
+    /// Erases an element from the tables.
+    ///
+    /// @param[in,out] entity  The id element.
+    void erase(T *entity) {
+      entities_by_path.erase(GetFullPath(entity));
+      entities_by_id.erase(entity->id());
     }
 
     IdTable<std::shared_ptr<T>> entities_by_id;  ///< Entity id as a key.

@@ -59,6 +59,24 @@ TEST_P(RiskAnalysisTest, Baobab1L8) {
   EXPECT_EQ(distr, ProductDistribution());
 }
 
+TEST_P(RiskAnalysisTest, Baobab1L4Importance) {
+  std::vector<std::string> input_files = {
+      "./share/scram/input/Baobab/baobab1.xml",
+      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+  settings.limit_order(4).importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_EQ(72, products().size());
+  EXPECT_EQ(40, analysis->results()
+                    .front()
+                    .fault_tree_analysis->products()
+                    .product_events()
+                    .size());
+  EXPECT_EQ(
+      40,
+      analysis->results().front().importance_analysis->importance().size());
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

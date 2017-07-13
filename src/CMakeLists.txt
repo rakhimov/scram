@@ -55,6 +55,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/uncertainty_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/reporter.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/serialization.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/initializer.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis.cc"
   )
@@ -66,12 +67,12 @@ if(INSTALL_LIBS)
   else()
     set_target_properties(scramcore
       PROPERTIES
-      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
+      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram"
       )
     install(
       TARGETS scramcore
-      DESTINATION lib
+      DESTINATION lib/scram
       COMPONENT scram
       )
   endif()

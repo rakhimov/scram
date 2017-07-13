@@ -41,7 +41,9 @@ void ImportanceAnalysis::Analyze() noexcept {
       this->basic_events();
 
   std::vector<int> occurrences = this->occurrences();
-  for (int i = 0; i < basic_events.size() && occurrences[i]; ++i) {
+  for (int i = 0; i < basic_events.size(); ++i) {
+    if (occurrences[i] == 0)
+      continue;
     const mef::BasicEvent& event = *basic_events[i];
     double p_var = event.p();
     ImportanceFactors imp{};

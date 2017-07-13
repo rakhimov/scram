@@ -37,8 +37,7 @@ class find_iterator : public Iterator {
   /// @param[in] it  The result of ``find`` call.
   /// @param[in] it_end  The sentinel iterator indicator ``not-found``.
   find_iterator(Iterator&& it, const Iterator& it_end)
-      : Iterator(std::forward<Iterator>(it)),
-        found_(it != it_end) {}
+      : Iterator(std::move(it)), found_(*this != it_end) {}
 
   /// @returns true if the iterator indicates that the item is found.
   explicit operator bool() { return found_; }
@@ -51,15 +50,15 @@ class find_iterator : public Iterator {
 /// with ``find_iterator`` adaptor.
 ///
 /// @tparam T  Container type supporting ``find()`` and ``end()`` calls.
-/// @tparam Ts  The argument types to the ``find()`` call.
+/// @tparam Arg  The argument type to the ``find()`` call.
 ///
 /// @param[in] container  The container to operate upon.
-/// @param[in] args  Arguments to the ``find()`` function.
+/// @param[in] arg  The argument to the ``find()`` function.
 ///
 /// @returns find_iterator wrapping the resultant iterator.
-template <class T, typename... Ts>
-auto find(T&& container, Ts&&... args) {
-  auto it = container.find(std::forward<Ts>(args)...);
+template <class T, typename Arg>
+auto find(T&& container, Arg&& arg) {
+  auto it = container.find(std::forward<Arg>(arg));
   return find_iterator<decltype(it)>(std::move(it), container.end());
 }
 

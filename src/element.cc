@@ -36,15 +36,6 @@ Element::Element(std::string name) : kName_(std::move(name)) {
     throw InvalidArgument("The element name is malformed.");
 }
 
-void Element::label(std::string new_label) {
-  if (!label_.empty())
-    throw LogicError("Trying to reset the label: " + label_);
-  if (new_label.empty())
-    throw LogicError("Trying to apply empty label");
-
-  label_ = std::move(new_label);
-}
-
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
     throw DuplicateArgumentError(
@@ -85,10 +76,9 @@ Id::Id(std::string name, std::string base_path, RoleSpecifier role)
       kId_(Role::role() == RoleSpecifier::kPublic
                ? Element::name()
                : Role::base_path() + "." + Element::name()) {
-  if (Element::name().empty())
-    throw LogicError("The name for an Id is empty!");
   if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
-    throw LogicError("The base path for a private element is empty.");
+    throw ValidationError("The element " + Element::name() +
+                          " cannot be private at model scope.");
 }
 
 }  // namespace mef

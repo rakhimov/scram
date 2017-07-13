@@ -56,9 +56,11 @@ TEST(ElementTest, Name) {
 TEST(ElementTest, Label) {
   NamedElement el("name");
   EXPECT_EQ("", el.label());
-  EXPECT_THROW(el.label(""), LogicError);
+  EXPECT_NO_THROW(el.label(""));
   ASSERT_NO_THROW(el.label("label"));
-  EXPECT_THROW(el.label("new_label"), LogicError);
+  EXPECT_EQ("label", el.label());
+  EXPECT_NO_THROW(el.label("new_label"));
+  EXPECT_NO_THROW(el.label(""));
 }
 
 TEST(ElementTest, Attribute) {
@@ -101,7 +103,7 @@ class NameId : public Id {
 TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(""), LogicError);
   EXPECT_NO_THROW(NameId("name"));
-  EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), LogicError);
+  EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidationError);
   NameId id_public("name");
   NameId id_private("name", "path", RoleSpecifier::kPrivate);
   EXPECT_NE(id_public.id(), id_private.id());

@@ -120,10 +120,10 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/bin")
 endif()
 if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/lib")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/lib/scram")
 endif()
 if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/lib")
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/lib/scram")
 endif()
 
 set(SCRAM_EXECUTABLE_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -137,7 +137,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 if(INSTALL_LIBS)
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram")
 endif()
 
 # Add the automatically determined parts of the RPATH,
@@ -212,19 +212,6 @@ message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_DATE_TIME_LIBRARY})
 message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 
-if(BUILD_GUI)
-  # Find the QtWidgets library.
-  if(APPLE)
-    # Qt5 with Homebrew.
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
-  endif()
-  find_package(Qt5Widgets REQUIRED)
-  if(Qt5Widgets_FOUND)
-    message(STATUS "Found Qt5")
-    message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
-  endif()
-endif()
-
 ########################## End of find libraries ########################
 
 ########################## Begin includes ###############################
@@ -270,6 +257,15 @@ add_custom_target(uninstall
 if(PACKAGE)
   if(WIN32)
     set(CPACK_GENERATOR "NSIS")
+    # set(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}\\\\gui\\\\images\\\\scram_logo.bmp")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\scram-gui.exe")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_HELP_LINK "https://scram-pra.org")
+    set(CPACK_NSIS_URL_INFO_ABOUT "https://scram-pra.org")
+    set(CPACK_NSIS_CONTACT "scram-users@googlegroups.com")
+    set(CPACK_PACKAGE_EXECUTABLES "scram-gui" "SCRAM")
+    set(CPACK_CREATE_DESKTOP_LINKS "scram-gui")
+    set(CPACK_COMPONENT_GUI_REQUIRED ON)
     # The following configuration assumes MinGW64 is setup specifically for this project.
     # Moreover, the Qt5 libs and plugins must be linked staticly,
     # so there's no headache with implicit (undiscoverable) dependencies.

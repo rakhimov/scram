@@ -1,0 +1,10 @@
+# Configuration for Qt style code for the GUI
+BasedOnStyle: llvm
+AccessModifierOffset: -4
+BreakBeforeBinaryOperators: true
+ColumnLimit: 80
+Standard: Cpp11
+IndentWidth: 4
+BreakBeforeBraces: Linux
+AlwaysBreakTemplateDeclarations: true
+# ExperimentalAutoDetectBinPacking: true

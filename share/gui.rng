@@ -23,7 +23,6 @@
       <zeroOrMore>
         <choice>
           <ref name="fault-tree-definition"/>
-          <ref name="CCF-group-definition"/>
         </choice>
       </zeroOrMore>
       <optional>
@@ -32,7 +31,6 @@
             <choice>
               <ref name="house-event-definition"/>
               <ref name="basic-event-definition"/>
-              <ref name="parameter-definition"/>
             </choice>
           </zeroOrMore>
         </element>
@@ -51,7 +49,9 @@
   </define>
 
   <define name="reference">
-    <ref name="Identifier"/>
+    <attribute name="name">
+      <ref name="Identifier"/>
+    </attribute>
   </define>
 
   <define name="NonEmptyString">  <!-- Texts without LF and other special chars. -->
@@ -116,66 +116,6 @@
   <!-- III.1. CCF-Groups -->
   <!-- ============================================================= -->
 
-  <define name="CCF-group-definition">
-    <element name="define-CCF-group">
-      <ref name="name"/>
-      <attribute name="model">
-        <ref name="CCF-model"/>
-      </attribute>
-      <optional>
-        <ref name="label"/>
-      </optional>
-      <optional>
-        <ref name="attributes"/>
-      </optional>
-      <ref name="members"/>
-      <ref name="distribution"/>
-      <ref name="factors"/>
-    </element>
-  </define>
-
-  <define name="members">
-    <element name="members">
-      <oneOrMore>
-        <ref name="basic-event"/>
-      </oneOrMore>
-    </element>
-  </define>
-
-  <define name="factors">
-    <choice>
-      <element name="factors">
-        <oneOrMore>
-          <ref name="factor"/>
-        </oneOrMore>
-      </element>
-      <ref name="factor"/>
-    </choice>
-  </define>
-
-  <define name="factor">
-    <element name="factor">
-      <optional>
-        <attribute name="level"> <data type="positiveInteger"/> </attribute>
-      </optional>
-      <ref name="expression"/>
-    </element>
-  </define>
-
-  <define name="distribution">
-    <element name="distribution">
-      <ref name="expression"/>
-    </element>
-  </define>
-
-  <define name="CCF-model">
-    <choice>
-      <value>beta-factor</value>
-      <value>MGL</value>
-      <value>alpha-factor</value>
-      <value>phi-factor</value>
-    </choice>
-  </define>
 
   <!-- ============================================================= -->
   <!-- III.2. Substitutions -->
@@ -201,30 +141,7 @@
       </optional>
       <zeroOrMore>
         <choice>
-          <ref name="CCF-group-definition"/>
           <ref name="event-definition"/>
-          <ref name="component-definition"/>
-          <ref name="parameter-definition"/>
-        </choice>
-      </zeroOrMore>
-    </element>
-  </define>
-
-  <define name="component-definition">
-    <element name="define-component">
-      <ref name="name"/>
-      <optional>
-        <ref name="label"/>
-      </optional>
-      <optional>
-        <ref name="attributes"/>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="CCF-group-definition"/>
-          <ref name="event-definition"/>
-          <ref name="component-definition"/>
-          <ref name="parameter-definition"/>
         </choice>
       </zeroOrMore>
     </element>
@@ -396,38 +313,6 @@
   <!-- V.1. Definition of Parameters -->
   <!-- ============================================================= -->
 
-  <define name="parameter-definition">
-    <element name="define-parameter">
-      <ref name="name"/>
-      <optional>
-        <attribute name="unit">
-          <ref name="units"/>
-        </attribute>
-      </optional>
-      <optional>
-        <ref name="label"/>
-      </optional>
-      <optional>
-        <ref name="attributes"/>
-      </optional>
-      <ref name="expression"/>
-    </element>
-  </define>
-
-  <define name="units">
-    <choice>
-      <value>bool</value>
-      <value>int</value>
-      <value>float</value>
-      <value>hours</value>
-      <value>hours-1</value>
-      <value>years</value>
-      <value>years-1</value>
-      <value>fit</value>
-      <value>demands</value>
-    </choice>
-  </define>
-
   <!-- ============================================================= -->
   <!-- V.2. Expressions -->
   <!-- ============================================================= -->
@@ -439,7 +324,6 @@
   <define name="expression">
     <choice>
       <ref name="constant"/>
-      <ref name="parameter"/>
       <ref name="built-in"/>
     </choice>
   </define>
@@ -449,26 +333,6 @@
       <ref name="bool"/>
       <ref name="int"/>
       <ref name="float"/>
-    </choice>
-  </define>
-
-  <define name="parameter">
-    <choice>
-      <element name="parameter">
-        <ref name="reference"/>
-        <optional>
-          <attribute name="unit">
-            <ref name="units"/>
-          </attribute>
-        </optional>
-      </element>
-      <element name="system-mission-time">
-        <optional>
-          <attribute name="unit">
-            <ref name="units"/>
-          </attribute>
-        </optional>
-      </element>
     </choice>
   </define>
 
