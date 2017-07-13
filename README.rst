@@ -51,7 +51,6 @@ The latest stable release is packaged for `quick installation`_ on various platf
 .. _quick installation: https://scram-pra.org/doc/installation.html
 
 .. contents:: **Table of Contents**
-    :depth: 2
 
 
 ***********************
