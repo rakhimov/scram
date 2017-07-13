@@ -256,6 +256,9 @@ GUI Code
 - Avoid using forward declaration of Qt library classes.
   Just include the needed headers.
 
+- Avoid ``qobject_cast`` and its flavors.
+  Avoid the RTTI in general.
+
 
 Monitoring Code Quality
 =======================

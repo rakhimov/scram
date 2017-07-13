@@ -10,7 +10,7 @@ Installation Instructions
 Debian
 ======
 
-SCRAM is available in Debian’s *unstable* and *testing* repositories.
+SCRAM is available in Debian’s official repositories since Debian Stretch.
 
 .. code-block:: bash
 

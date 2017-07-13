@@ -4,8 +4,8 @@ GUI Front-End
 
 .. note::
     The GUI front-end is not in distribution packages.
-    It is under developement.
-    The documentation is ahead of the developement.
+    It is under development.
+    The documentation is ahead of the development.
 
 .. note::
     The GUI front-end does not provide access
