@@ -219,6 +219,14 @@ inline QString HouseEvent::state<QString>() const
     return boolToString(state());
 }
 
+class Gate : public Element
+{
+    Q_OBJECT
+
+public:
+    explicit Gate(mef::Gate *gate) : Element(gate) {}
+};
+
 /// Table of proxy elements uniquely wrapping the core model element.
 ///
 /// @tparam T  The proxy type.
@@ -260,6 +268,7 @@ public:
 
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
+    const ProxyTable<Gate> &gates() const { return m_gates; }
 
     /// Model manipulation commands.
     /// @{
@@ -302,6 +311,7 @@ private:
     mef::Model *m_model;
     ProxyTable<HouseEvent> m_houseEvents;
     ProxyTable<BasicEvent> m_basicEvents;
+    ProxyTable<Gate> m_gates;
 };
 
 } // namespace model

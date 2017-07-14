@@ -122,15 +122,23 @@ void HouseEvent::SetState::redo()
     m_state = prev_state;
 }
 
+namespace {
+
+template <class T, class S>
+void populate(const mef::IdTable<S> &source, ProxyTable<T> *proxyTable)
+{
+    proxyTable->reserve(source.size());
+    for (const S &element : source)
+        proxyTable->emplace(std::make_unique<T>(element.get()));
+}
+
+} // namespace
+
 Model::Model(mef::Model *model) : Element(model), m_model(model)
 {
-    m_houseEvents.reserve(m_model->house_events().size());
-    for (const mef::HouseEventPtr &houseEvent : m_model->house_events())
-        m_houseEvents.emplace(std::make_unique<HouseEvent>(houseEvent.get()));
-
-    m_basicEvents.reserve(m_model->basic_events().size());
-    for (const mef::BasicEventPtr &basicEvent : m_model->basic_events())
-        m_basicEvents.emplace(std::make_unique<BasicEvent>(basicEvent.get()));
+    populate<HouseEvent>(m_model->house_events(), &m_houseEvents);
+    populate<BasicEvent>(m_model->basic_events(), &m_basicEvents);
+    populate<Gate>(m_model->gates(), &m_gates);
 }
 
 Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
