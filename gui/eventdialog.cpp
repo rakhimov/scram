@@ -20,10 +20,11 @@
 #include <limits>
 
 #include <QDoubleValidator>
+#include <QListView>
 #include <QObject>
 #include <QPushButton>
-#include <QStatusBar>
 #include <QRegularExpressionValidator>
+#include <QStatusBar>
 
 #include "src/element.h"
 #include "src/event.h"
@@ -99,12 +100,12 @@ void EventDialog::setupData(const model::Element &element)
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());
     nameLine->setEnabled(false);
-    typeBox->setEnabled(false);
 }
 
 void EventDialog::setupData(const model::HouseEvent &element)
 {
     setupData(static_cast<const model::Element &>(element));
+    typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(0);
     stateBox->setCurrentIndex(element.state());
 }
@@ -112,6 +113,8 @@ void EventDialog::setupData(const model::HouseEvent &element)
 void EventDialog::setupData(const model::BasicEvent &element)
 {
     setupData(static_cast<const model::Element &>(element));
+    /// @todo Type change.
+    static_cast<QListView *>(typeBox->view())->setRowHidden(0, true);
     typeBox->setCurrentIndex(1 + element.flavor());
     auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
     if (basicEvent.HasExpression()) {

@@ -63,7 +63,8 @@ BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
 {
 }
 
-void BasicEvent::SetExpression::redo() {
+void BasicEvent::SetExpression::redo()
+{
     auto *mefEvent = m_basicEvent->data<mef::BasicEvent>();
     mef::Expression *cur_expression
         = mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
@@ -72,6 +73,36 @@ void BasicEvent::SetExpression::redo() {
     mefEvent->expression(m_expression);
     emit m_basicEvent->expressionChanged(m_expression);
     m_expression = cur_expression;
+}
+
+BasicEvent::SetFlavor::SetFlavor(BasicEvent *basicEvent, Flavor flavor)
+    : QUndoCommand(tr("Set basic event %1 flavor to %2")
+                       .arg(basicEvent->id(), flavorToString(flavor))),
+      m_flavor(flavor), m_basicEvent(basicEvent)
+{
+}
+
+void BasicEvent::SetFlavor::redo()
+{
+    Flavor cur_flavor = m_basicEvent->flavor();
+    if (m_flavor == cur_flavor)
+        return;
+
+    mef::Element *mefEvent = m_basicEvent->data();
+    switch (m_flavor) {
+    case Basic:
+        mefEvent->RemoveAttribute("flavor");
+        break;
+    case Undeveloped:
+        mefEvent->SetAttribute({"flavor", "undeveloped", ""});
+        break;
+    case Conditional:
+        mefEvent->SetAttribute({"flavor", "conditional", ""});
+        break;
+    }
+    m_basicEvent->m_flavor = m_flavor;
+    emit m_basicEvent->flavorChanged(m_flavor);
+    m_flavor = cur_flavor;
 }
 
 HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)

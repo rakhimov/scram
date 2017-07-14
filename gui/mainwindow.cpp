@@ -732,6 +732,36 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
             new model::BasicEvent::SetExpression(element, expression.get()));
         m_model->Add(std::move(expression));
     }
+
+    auto flavorToType = [](model::BasicEvent::Flavor flavor) {
+        switch (flavor) {
+        case model::BasicEvent::Basic:
+            return EventDialog::BasicEvent;
+        case model::BasicEvent::Undeveloped:
+            return EventDialog::Undeveloped;
+        case model::BasicEvent::Conditional:
+            return EventDialog::Conditional;
+        }
+        assert(false);
+    };
+
+    if (dialog->currentType() != flavorToType(element->flavor())) {
+        m_undoStack->push([&dialog, &element]() -> QUndoCommand * {
+            switch (dialog->currentType()) {
+            case EventDialog::BasicEvent:
+                return new model::BasicEvent::SetFlavor(
+                    element, model::BasicEvent::Basic);
+            case EventDialog::Undeveloped:
+                return new model::BasicEvent::SetFlavor(
+                    element, model::BasicEvent::Undeveloped);
+            case EventDialog::Conditional:
+                return new model::BasicEvent::SetFlavor(
+                    element, model::BasicEvent::Conditional);
+            default:
+                GUI_ASSERT(false && "Unexpected event type", nullptr);
+            }
+        }());
+    }
 }
 
 void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)

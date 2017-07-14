@@ -153,14 +153,7 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     case 0:
         return basicEvent->id();
     case 1:
-        switch (basicEvent->flavor()) {
-        case BasicEvent::Basic:
-            return {};
-        case BasicEvent::Undeveloped:
-            return tr("Undeveloped");
-        case BasicEvent::Conditional:
-            return tr("Conditional");
-        }
+        return BasicEvent::flavorToString(basicEvent->flavor());
     case 2:
         return basicEvent->probability<QVariant>();
     case 3:
@@ -172,6 +165,12 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
 void BasicEventContainerModel::connectElement(Element *element)
 {
     ElementContainerModel::connectElement(element);
+    connect(static_cast<BasicEvent *>(element), &BasicEvent::flavorChanged,
+            this, [this, element] {
+                QModelIndex index
+                    = createIndex(getElementIndex(element), 1, element);
+                emit dataChanged(index, index);
+            });
     connect(static_cast<BasicEvent *>(element), &BasicEvent::expressionChanged,
             this, [this, element] {
                 QModelIndex index

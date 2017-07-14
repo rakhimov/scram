@@ -95,6 +95,19 @@ public:
         Conditional
     };
 
+    static QString flavorToString(Flavor flavor)
+    {
+        switch (flavor) {
+        case Basic:
+            return tr("Basic");
+        case Undeveloped:
+            return tr("Undeveloped");
+        case Conditional:
+            return tr("Conditional");
+        }
+        assert(false);
+    }
+
     explicit BasicEvent(mef::BasicEvent *basicEvent);
 
     Flavor flavor() const { return m_flavor; }
@@ -135,8 +148,23 @@ public:
         BasicEvent *m_basicEvent;
     };
 
+    /// Sets the flavor of the basic event.
+    class SetFlavor : public QUndoCommand
+    {
+    public:
+        SetFlavor(BasicEvent *basicEvent, Flavor flavor);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        Flavor m_flavor;
+        BasicEvent *m_basicEvent;
+    };
+
 signals:
     void expressionChanged(mef::Expression *expression);
+    void flavorChanged(Flavor flavor);
 
 private:
     Flavor m_flavor;
