@@ -107,6 +107,13 @@ class Element {
   /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& name) const;
 
+  /// Removes the attribute of the element.
+  ///
+  /// @param[in] name  The identifying name of the attribute.
+  ///
+  /// @returns false No such attribute to remove.
+  bool RemoveAttribute(const std::string& name);
+
  protected:
   ~Element() = default;
 

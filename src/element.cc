@@ -73,6 +73,16 @@ const Attribute& Element::GetAttribute(const std::string& name) const {
   return *it;
 }
 
+bool Element::RemoveAttribute(const std::string& name) {
+  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
+    return attr.name == name;
+  });
+  if (it == attributes_.end())
+    return false;
+  attributes_.erase(it);
+  return true;
+}
+
 Role::Role(RoleSpecifier role, std::string base_path)
     : kBasePath_(std::move(base_path)),
       kRole_(role) {

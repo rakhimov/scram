@@ -99,6 +99,23 @@ TEST(ElementTest, SetAttribute) {
   EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
 }
 
+TEST(ElementTest, RemoveAttribute) {
+  NamedElement el("name");
+  Attribute attr;
+  attr.name = "impact";
+  attr.value = "0.1";
+  attr.type = "float";
+
+  EXPECT_FALSE(el.HasAttribute(attr.name));
+  EXPECT_TRUE(el.attributes().empty());
+  EXPECT_FALSE(el.RemoveAttribute(attr.name));
+
+  ASSERT_NO_THROW(el.AddAttribute(attr));
+  EXPECT_TRUE(el.RemoveAttribute(attr.name));
+  EXPECT_FALSE(el.HasAttribute(attr.name));
+  EXPECT_TRUE(el.attributes().empty());
+}
+
 namespace {
 
 class TestRole : public Role {
