@@ -40,6 +40,8 @@
 #include "src/config.h"
 #include "src/env.h"
 #include "src/error.h"
+#include "src/expression/constant.h"
+#include "src/expression/exponential.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
 #include "src/reporter.h"
@@ -703,6 +705,33 @@ void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 {
     editElement(dialog, static_cast<model::Element *>(element));
+    std::unique_ptr<mef::Expression> expression = dialog->expression();
+    auto isEqual = [](mef::Expression *lhs, mef::Expression *rhs) {
+        if (lhs == rhs) // Assumes immutable expressions.
+            return true;
+        if (!lhs || !rhs)
+            return false;
+
+        auto *const_lhs = dynamic_cast<mef::ConstantExpression *>(lhs);
+        auto *const_rhs = dynamic_cast<mef::ConstantExpression *>(rhs);
+        if (const_lhs && const_rhs && const_lhs->value() == const_rhs->value())
+            return true;
+
+        auto *exp_lhs = dynamic_cast<mef::Exponential *>(lhs);
+        auto *exp_rhs = dynamic_cast<mef::Exponential *>(rhs);
+        if (exp_lhs && exp_rhs
+            && exp_lhs->args().front()->value()
+                   == exp_rhs->args().front()->value())
+            return true;
+
+        return false;
+    };
+
+    if (!isEqual(expression.get(), element->expression())) {
+        m_undoStack->push(
+            new model::BasicEvent::SetExpression(element, expression.get()));
+        m_model->Add(std::move(expression));
+    }
 }
 
 void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)

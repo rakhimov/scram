@@ -55,6 +55,25 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
     }
 }
 
+BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
+                                         mef::Expression *expression)
+    : QUndoCommand(QObject::tr("Modify basic event %1 expression")
+                       .arg(basicEvent->id())),
+      m_expression(expression), m_basicEvent(basicEvent)
+{
+}
+
+void BasicEvent::SetExpression::redo() {
+    auto *mefEvent = m_basicEvent->data<mef::BasicEvent>();
+    mef::Expression *cur_expression
+        = mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
+    if (m_expression == cur_expression)
+        return;
+    mefEvent->expression(m_expression);
+    emit m_basicEvent->expressionChanged(m_expression);
+    m_expression = cur_expression;
+}
+
 HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)
     : QUndoCommand(QObject::tr("Set house event %1 state to %2")
                        .arg(houseEvent->id(), boolToString(state))),

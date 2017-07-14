@@ -113,6 +113,9 @@ public:
                         int role) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+
+private:
+    void connectElement(Element *element) final;
 };
 
 class HouseEventContainerModel : public ElementContainerModel

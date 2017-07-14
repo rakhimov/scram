@@ -169,6 +169,17 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     GUI_ASSERT(false && "unexpected column", {});
 }
 
+void BasicEventContainerModel::connectElement(Element *element)
+{
+    ElementContainerModel::connectElement(element);
+    connect(static_cast<BasicEvent *>(element), &BasicEvent::expressionChanged,
+            this, [this, element] {
+                QModelIndex index
+                    = createIndex(getElementIndex(element), 2, element);
+                emit dataChanged(index, index);
+            });
+}
+
 HouseEventContainerModel::HouseEventContainerModel(Model *model,
                                                    QObject *parent)
     : ElementContainerModel(model->houseEvents(), parent)

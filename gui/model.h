@@ -99,11 +99,44 @@ public:
 
     Flavor flavor() const { return m_flavor; }
 
+    /// @returns The current expression of this basic event.
+    ///          nullptr if no expression has been set.
+    mef::Expression *expression() const
+    {
+        return data<mef::BasicEvent>()->HasExpression()
+                   ? &data<mef::BasicEvent>()->expression()
+                   : nullptr;
+    }
+
     /// @returns The probability value of the event.
     ///
     /// @pre The basic event has expression.
     template <typename T = double>
     T probability() const { return data<mef::BasicEvent>()->p(); }
+
+    /// Sets the basic event expression.
+    ///
+    /// @note Currently, the expression change
+    ///       is detected with address comparison,
+    ///       which may fail if the current expression has been changed.
+    class SetExpression : public QUndoCommand
+    {
+    public:
+        /// @param[in] basicEvent  The basic event to receive an expression.
+        /// @param[in] expression  The valid expression for the basic event.
+        ///                        nullptr to unset the expression.
+        SetExpression(BasicEvent *basicEvent, mef::Expression *expression);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        mef::Expression *m_expression;
+        BasicEvent *m_basicEvent;
+    };
+
+signals:
+    void expressionChanged(mef::Expression *expression);
 
 private:
     Flavor m_flavor;

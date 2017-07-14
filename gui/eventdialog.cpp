@@ -131,7 +131,6 @@ void EventDialog::setupData(const model::BasicEvent &element)
     } else {
         expressionBox->setChecked(false);
     }
-    expressionBox->setEnabled(false);
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const
