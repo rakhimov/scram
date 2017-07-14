@@ -26,7 +26,7 @@ namespace gui {
 namespace model {
 
 Element::SetLabel::SetLabel(Element *element, QString label)
-    : QUndoCommand(QObject::tr("Set element %1 label to '%2'")
+    : QUndoCommand(QObject::tr("Set element '%1' label to '%2'")
                        .arg(element->id(), label)),
       m_label(std::move(label)), m_element(element)
 {
@@ -57,7 +57,7 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
 
 BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
                                          mef::Expression *expression)
-    : QUndoCommand(QObject::tr("Modify basic event %1 expression")
+    : QUndoCommand(QObject::tr("Modify basic event '%1' expression")
                        .arg(basicEvent->id())),
       m_expression(expression), m_basicEvent(basicEvent)
 {
@@ -76,7 +76,7 @@ void BasicEvent::SetExpression::redo()
 }
 
 BasicEvent::SetFlavor::SetFlavor(BasicEvent *basicEvent, Flavor flavor)
-    : QUndoCommand(tr("Set basic event %1 flavor to %2")
+    : QUndoCommand(tr("Set basic event '%1' flavor to '%2'")
                        .arg(basicEvent->id(), flavorToString(flavor))),
       m_flavor(flavor), m_basicEvent(basicEvent)
 {
@@ -106,7 +106,7 @@ void BasicEvent::SetFlavor::redo()
 }
 
 HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)
-    : QUndoCommand(QObject::tr("Set house event %1 state to %2")
+    : QUndoCommand(QObject::tr("Set house event '%1' state to '%2'")
                        .arg(houseEvent->id(), boolToString(state))),
       m_state(state), m_houseEvent(houseEvent)
 {
@@ -134,7 +134,7 @@ Model::Model(mef::Model *model) : Element(model), m_model(model)
 }
 
 Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
-    : QUndoCommand(QObject::tr("Add house-event %1")
+    : QUndoCommand(QObject::tr("Add house-event '%1'")
                        .arg(QString::fromStdString(houseEvent->id()))),
       m_model(model), m_proxy(std::make_unique<HouseEvent>(houseEvent.get())),
       m_houseEvent(std::move(houseEvent))
@@ -156,7 +156,7 @@ void Model::AddHouseEvent::undo()
 }
 
 Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
-    : QUndoCommand(QObject::tr("Add basic-event %1")
+    : QUndoCommand(QObject::tr("Add basic-event '%1'")
                        .arg(QString::fromStdString(basicEvent->id()))),
       m_model(model), m_proxy(std::make_unique<BasicEvent>(basicEvent.get())),
       m_basicEvent(std::move(basicEvent))
