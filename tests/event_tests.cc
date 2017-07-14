@@ -21,6 +21,7 @@
 
 #include "cycle.h"
 #include "error.h"
+#include "expression/constant.h"
 
 namespace scram {
 namespace mef {
@@ -30,6 +31,39 @@ namespace test {
 TEST(EventTest, Id) {
   BasicEvent event("event_name");
   EXPECT_EQ(event.id(), "event_name");
+}
+
+TEST(BasicEventTest, ExpressionReset) {
+  BasicEvent event("event");
+  EXPECT_FALSE(event.HasExpression());
+  ConstantExpression p_init(0.5);
+  event.expression(&p_init);
+  ASSERT_TRUE(event.HasExpression());
+  EXPECT_EQ(0.5, event.p());
+
+  ConstantExpression p_change(0.1);
+  event.expression(&p_change);
+  ASSERT_TRUE(event.HasExpression());
+  EXPECT_EQ(0.1, event.p());
+}
+
+TEST(BasicEventTest, Validate) {
+  BasicEvent event("event");
+  EXPECT_FALSE(event.HasExpression());
+  ConstantExpression p_valid(0.5);
+  event.expression(&p_valid);
+  ASSERT_TRUE(event.HasExpression());
+  EXPECT_NO_THROW(event.Validate());
+
+  ConstantExpression p_negative(-0.1);
+  event.expression(&p_negative);
+  ASSERT_TRUE(event.HasExpression());
+  EXPECT_THROW(event.Validate(), ValidationError);
+
+  ConstantExpression p_large(1.1);
+  event.expression(&p_large);
+  ASSERT_TRUE(event.HasExpression());
+  EXPECT_THROW(event.Validate(), ValidationError);
 }
 
 TEST(FormulaTest, VoteNumber) {

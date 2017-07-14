@@ -80,6 +80,7 @@ void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
     const xmlpp::Element* label = XmlElement(labels.front());
     const xmlpp::TextNode* text = label->get_child_text();
     assert(text);
+    assert(element->label().empty() && "Resetting element label.");
     element->label(GetContent(text));
   }
 
@@ -406,6 +407,7 @@ void Initializer::Define(const xmlpp::Element* event_node,
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node = XmlElement(expressions.back());
+    assert(basic_event->HasExpression() == false && "Resetting expressions.");
     basic_event->expression(GetExpression(expr_node, basic_event->base_path()));
   }
 }

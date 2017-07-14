@@ -88,10 +88,8 @@ class BasicEvent : public Event {
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression  The expression to describe this event.
-  void expression(Expression* expression) {
-    assert(!expression_ && "The basic event's expression is already set.");
-    expression_ = expression;
-  }
+  ///                        nullptr to remove unset the expression.
+  void expression(Expression* expression) { expression_ = expression; }
 
   /// @returns The previously set expression for analysis purposes.
   ///
@@ -103,10 +101,10 @@ class BasicEvent : public Event {
 
   /// @returns The mean probability of this basic event.
   ///
+  /// @pre The expression has been set.
+  ///
   /// @note The user of this function should make sure
   ///       that the returned value is acceptable for calculations.
-  ///
-  /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
     assert(expression_ && "The basic event's expression is not set.");
     return expression_->value();
