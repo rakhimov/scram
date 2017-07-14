@@ -52,6 +52,7 @@ public:
 
     void setupData(const model::HouseEvent &element);
     void setupData(const model::BasicEvent &element);
+    void setupData(const model::Gate &element);
 
     /// @returns The type being defined by this dialog.
     EventType currentType() const

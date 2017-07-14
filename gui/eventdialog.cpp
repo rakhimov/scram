@@ -136,6 +136,13 @@ void EventDialog::setupData(const model::BasicEvent &element)
     }
 }
 
+void EventDialog::setupData(const model::Gate &element)
+{
+    setupData(static_cast<const model::Element &>(element));
+    typeBox->setEnabled(false); ///< @todo Type change.
+    /// @todo Implement formula tab.
+}
+
 std::unique_ptr<mef::Expression> EventDialog::expression() const
 {
     GUI_ASSERT(tabExpression->isHidden() == false, nullptr);

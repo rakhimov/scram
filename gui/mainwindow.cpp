@@ -846,6 +846,13 @@ void MainWindow::resetTreeWidget()
             ui->tabWidget->setCurrentWidget(view);
         });
     }
+    auto *gates = new QTreeWidgetItem({tr("Gates")});
+    m_treeActions.emplace(gates, [this] {
+        auto *table = constructElementTable<model::GateContainerModel>(
+            m_guiModel.get(), this);
+        ui->tabWidget->addTab(table, tr("Gates"));
+        ui->tabWidget->setCurrentWidget(table);
+    });
 
     auto *modelData = new QTreeWidgetItem({tr("Model Data")});
     auto *basicEvents = new QTreeWidgetItem({tr("Basic Events")});
@@ -864,7 +871,7 @@ void MainWindow::resetTreeWidget()
         ui->tabWidget->addTab(table, tr("House Events"));
         ui->tabWidget->setCurrentWidget(table);
     });
-    ui->treeWidget->addTopLevelItems({faultTrees, modelData});
+    ui->treeWidget->addTopLevelItems({faultTrees, gates, modelData});
 }
 
 void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)

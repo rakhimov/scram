@@ -225,7 +225,40 @@ class Gate : public Element
 
 public:
     explicit Gate(mef::Gate *gate) : Element(gate) {}
+
+    template <typename T = mef::Operator>
+    T type() const
+    {
+        return data<mef::Gate>()->formula().type();
+    }
+
+    int numArgs() const { return data<mef::Gate>()->formula().num_args(); }
 };
+
+template <>
+inline QString Gate::type() const
+{
+    const mef::Formula &formula = data<mef::Gate>()->formula();
+    switch (formula.type()) {
+    case mef::kAnd:
+        return tr("and");
+    case mef::kOr:
+        return tr("or");
+    case mef::kVote:
+        return tr("at-least %1").arg(formula.vote_number());
+    case mef::kXor:
+        return tr("xor");
+    case mef::kNot:
+        return tr("not");
+    case mef::kNull:
+        return tr("null");
+    case mef::kNand:
+        return tr("nand");
+    case mef::kNor:
+        return tr("nor");
+    }
+    assert(false);
+}
 
 /// Table of proxy elements uniquely wrapping the core model element.
 ///

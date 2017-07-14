@@ -139,6 +139,24 @@ private:
     void connectElement(Element *element) final;
 };
 
+class GateContainerModel : public ElementContainerModel
+{
+    Q_OBJECT
+
+public:
+    using ItemModel = Gate;
+    using DataType = mef::Gate;
+
+    explicit GateContainerModel(Model *model, QObject *parent = nullptr);
+
+    int columnCount(const QModelIndex &parent) const override;
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role) const override;
+
+    QVariant data(const QModelIndex &index, int role) const override;
+};
+
 } // namespace model
 } // namespace gui
 } // namespace scram

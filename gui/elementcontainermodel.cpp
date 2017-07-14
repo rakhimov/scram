@@ -243,6 +243,57 @@ void HouseEventContainerModel::connectElement(Element *element)
             });
 }
 
+GateContainerModel::GateContainerModel(Model *model, QObject *parent)
+    : ElementContainerModel(model->gates(), parent)
+{
+    for (Element *element : elements())
+        connectElement(element);
+}
+
+int GateContainerModel::columnCount(const QModelIndex &parent) const
+{
+    return parent.isValid() ? 0 : 4;
+}
+
+QVariant GateContainerModel::headerData(int section,
+                                        Qt::Orientation orientation,
+                                        int role) const
+{
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
+        return ElementContainerModel::headerData(section, orientation, role);
+
+    switch (section) {
+    case 0:
+        return tr("Id");
+    case 1:
+        return tr("Connective");
+    case 2:
+        return tr("Args");
+    case 3:
+        return tr("Label");
+    }
+    GUI_ASSERT(false && "unexpected header section", {});
+}
+
+QVariant GateContainerModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || role != Qt::DisplayRole)
+        return {};
+    auto *gate = static_cast<Gate *>(index.internalPointer());
+
+    switch (index.column()) {
+    case 0:
+        return gate->id();
+    case 1:
+        return gate->type<QString>();
+    case 2:
+        return gate->numArgs();
+    case 3:
+        return gate->label();
+    }
+    GUI_ASSERT(false && "unexpected column", {});
+}
+
 } // namespace model
 } // namespace gui
 } // namespace scram
