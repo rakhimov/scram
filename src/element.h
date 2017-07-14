@@ -83,6 +83,16 @@ class Element {
   ///       to existing attributes may get invalidated.
   void AddAttribute(Attribute attr);
 
+  /// Sets an attribute to the attribute map.
+  /// If an attribute with the same name exits,
+  /// it gets overwritten.
+  ///
+  /// @param[in] attr  An attribute of this element.
+  ///
+  /// @post Pointers or references
+  ///       to existing attributes may get invalidated.
+  void SetAttribute(Attribute attr);
+
   /// Checks if the element has a given attribute.
   ///
   /// @param[in] name  The identifying name of the attribute.

@@ -45,6 +45,18 @@ void Element::AddAttribute(Attribute attr) {
   attributes_.emplace_back(std::move(attr));
 }
 
+void Element::SetAttribute(Attribute attr) {
+  auto it = boost::find_if(attributes_, [&attr](const Attribute& member) {
+    return attr.name == member.name;
+  });
+  if (it != attributes_.end()) {
+    it->value = std::move(attr.value);
+    it->type = std::move(attr.type);
+  } else {
+    attributes_.emplace_back(std::move(attr));
+  }
+}
+
 bool Element::HasAttribute(const std::string& name) const {
   return ext::any_of(attributes_, [&name](const Attribute& attr) {
     return attr.name == name;

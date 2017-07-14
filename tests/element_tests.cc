@@ -63,7 +63,7 @@ TEST(ElementTest, Label) {
   EXPECT_NO_THROW(el.label(""));
 }
 
-TEST(ElementTest, Attribute) {
+TEST(ElementTest, AddAttribute) {
   NamedElement el("name");
   Attribute attr;
   attr.name = "impact";
@@ -74,6 +74,29 @@ TEST(ElementTest, Attribute) {
   EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
+}
+
+TEST(ElementTest, SetAttribute) {
+  NamedElement el("name");
+  Attribute attr;
+  attr.name = "impact";
+  attr.value = "0.1";
+  attr.type = "float";
+  EXPECT_THROW(el.GetAttribute(attr.name), LogicError);
+  ASSERT_NO_THROW(el.SetAttribute(attr));
+  EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
+  ASSERT_TRUE(el.HasAttribute(attr.name));
+  ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
+
+  attr.value = "0.2";
+  ASSERT_NO_THROW(el.SetAttribute(attr));
+  EXPECT_EQ(1, el.attributes().size());
+  ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
 }
 
 namespace {
