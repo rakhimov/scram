@@ -362,18 +362,18 @@ void MainWindow::setupActions()
                 EventDialog dialog(m_model.get(), this);
                 if (dialog.exec() == QDialog::Rejected)
                     return;
-                auto addBasicEvent = [&]() -> decltype(auto) {
+                auto addBasicEvent = [&](mef::Attribute attr) {
                     auto basicEvent
                         = std::make_shared<mef::BasicEvent>(dialog.name());
                     basicEvent->label(dialog.label().toStdString());
+                    if (attr.name.empty() == false)
+                        basicEvent->AddAttribute(std::move(attr));
                     if (auto p_expression = dialog.expression()) {
                         basicEvent->expression(p_expression.get());
                         m_model->Add(std::move(p_expression));
                     }
-                    auto &result = *basicEvent;
                     m_undoStack->push(new model::Model::AddBasicEvent(
                         std::move(basicEvent), m_guiModel.get()));
-                    return result;
                 };
                 switch (dialog.currentType()) {
                 case EventDialog::HouseEvent: {
@@ -386,13 +386,13 @@ void MainWindow::setupActions()
                     break;
                 }
                 case EventDialog::BasicEvent:
-                    addBasicEvent();
+                    addBasicEvent({});
                     break;
                 case EventDialog::Undeveloped:
-                    addBasicEvent().AddAttribute({"flavor", "undeveloped", ""});
+                    addBasicEvent({"flavor", "undeveloped", ""});
                     break;
                 case EventDialog::Conditional:
-                    addBasicEvent().AddAttribute({"flavor", "conditional", ""});
+                    addBasicEvent({"flavor", "conditional", ""});
                     break;
                 default:
                     GUI_ASSERT(false && "unexpected event type", );
