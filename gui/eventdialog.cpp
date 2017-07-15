@@ -71,11 +71,17 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 case 3:
                     stackedWidgetType->setCurrentWidget(tabExpression);
                     break;
+                case 4:
+                    stackedWidgetType->setCurrentWidget(tabFormula);
+                    break;
                 default:
                     GUI_ASSERT(false, );
                 }
                 validate();
             });
+    connect(
+        connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+        [this](int index) { voteNumberBox->setEnabled(index == mef::kVote); });
     connect(expressionType, OVERLOAD(QComboBox, currentIndexChanged, int), this,
             &EventDialog::validate);
     connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
@@ -115,6 +121,7 @@ void EventDialog::setupData(const model::BasicEvent &element)
     setupData(static_cast<const model::Element &>(element));
     /// @todo Type change.
     static_cast<QListView *>(typeBox->view())->setRowHidden(0, true);
+    static_cast<QListView *>(typeBox->view())->setRowHidden(4, true);
     typeBox->setCurrentIndex(1 + element.flavor());
     auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
     if (basicEvent.HasExpression()) {
@@ -140,7 +147,12 @@ void EventDialog::setupData(const model::Gate &element)
 {
     setupData(static_cast<const model::Element &>(element));
     typeBox->setEnabled(false); ///< @todo Type change.
-    /// @todo Implement formula tab.
+    typeBox->setCurrentIndex(4);
+    connectiveBox->setCurrentIndex(element.type());
+    connectiveBox->setEnabled(false); ///< @todo Connective change.
+    if (element.type() == mef::kVote)
+        voteNumberBox->setValue(element.voteNumber());
+    voteNumberBox->setEnabled(false); ///< @todo Vote number change.
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const

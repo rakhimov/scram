@@ -233,19 +233,22 @@ public:
     }
 
     int numArgs() const { return data<mef::Gate>()->formula().num_args(); }
+    int voteNumber() const
+    {
+        return data<mef::Gate>()->formula().vote_number();
+    }
 };
 
 template <>
 inline QString Gate::type() const
 {
-    const mef::Formula &formula = data<mef::Gate>()->formula();
-    switch (formula.type()) {
+    switch (type()) {
     case mef::kAnd:
         return tr("and");
     case mef::kOr:
         return tr("or");
     case mef::kVote:
-        return tr("at-least %1").arg(formula.vote_number());
+        return tr("at-least %1").arg(voteNumber());
     case mef::kXor:
         return tr("xor");
     case mef::kNot:

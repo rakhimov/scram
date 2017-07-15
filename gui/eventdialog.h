@@ -45,7 +45,8 @@ public:
         HouseEvent = 1 << 0,
         BasicEvent = 1 << 1,
         Undeveloped = 1 << 2,
-        Conditional = 1 << 3
+        Conditional = 1 << 3,
+        Gate = 1 << 4
     };
 
     explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
