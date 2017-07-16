@@ -30,6 +30,7 @@
 #include "src/event.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
+#include "src/ext/variant.h"
 
 #include "guiassert.h"
 
@@ -153,6 +154,11 @@ void EventDialog::setupData(const model::Gate &element)
     if (element.type() == mef::kVote)
         voteNumberBox->setValue(element.voteNumber());
     voteNumberBox->setEnabled(false); ///< @todo Vote number change.
+    lineArgEdit->setEnabled(false); ///< @todo Gate arg addition.
+    listWidgetArgs->setEnabled(false); ///< @todo Gate arg manipulation.
+    for (const mef::Formula::EventArg &arg : element.args())
+        listWidgetArgs->addItem(
+            QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const

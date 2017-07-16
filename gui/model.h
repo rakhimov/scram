@@ -237,6 +237,11 @@ public:
     {
         return data<mef::Gate>()->formula().vote_number();
     }
+
+    const std::vector<mef::Formula::EventArg> &args() const
+    {
+        return data<mef::Gate>()->formula().event_args();
+    }
 };
 
 template <>
