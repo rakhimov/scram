@@ -8,22 +8,8 @@ find_package(Qt5Svg REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
-if(Qt5Widgets_FOUND)
-  message(STATUS "Found Qt5")
-  message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
-endif()
-if(Qt5Svg_FOUND)
-  message(STATUS "Found Qt5 SVG")
-endif()
-if(Qt5OpenGL_FOUND)
-  message(STATUS "Found Qt5 OpenGL")
-endif()
-if(Qt5PrintSupport_FOUND)
-  message(STATUS "Found Qt5 PrintSupport")
-endif()
-if(Qt5Concurrent_FOUND)
-  message(STATUS "Found Qt5 Concurrent")
-endif()
+message(STATUS "Found Qt5")
+message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
@@ -130,8 +116,8 @@ if(UNIX AND NOT APPLE)
     COMPONENT gui
     RENAME      "scram.svg")
 
-  # install a desktop file so CMake appears in the application start menu
-  # with an icon
+  # Install a desktop file
+  # so that SCRAM appears in the application start menu with an icon.
   install(FILES scram-gui.desktop
     DESTINATION "share/applications"
     COMPONENT gui)
