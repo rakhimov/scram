@@ -30,6 +30,7 @@
 #include "src/event.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
+#include "src/ext/bits.h"
 #include "src/ext/variant.h"
 
 #include "guiassert.h"
@@ -62,17 +63,17 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
 
     connect(typeBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
-                switch (index) {
-                case 0:
+                switch (1 << index) {
+                case HouseEvent:
                     GUI_ASSERT(typeBox->currentText() == tr("House event"), );
                     stackedWidgetType->setCurrentWidget(tabBoolean);
                     break;
-                case 1:
-                case 2:
-                case 3:
+                case BasicEvent:
+                case Undeveloped:
+                case Conditional:
                     stackedWidgetType->setCurrentWidget(tabExpression);
                     break;
-                case 4:
+                case Gate:
                     stackedWidgetType->setCurrentWidget(tabFormula);
                     break;
                 default:
@@ -113,7 +114,7 @@ void EventDialog::setupData(const model::HouseEvent &element)
 {
     setupData(static_cast<const model::Element &>(element));
     typeBox->setEnabled(false); ///< @todo Type change.
-    typeBox->setCurrentIndex(0);
+    typeBox->setCurrentIndex(ext::one_bit_index(HouseEvent));
     stateBox->setCurrentIndex(element.state());
 }
 
@@ -121,9 +122,11 @@ void EventDialog::setupData(const model::BasicEvent &element)
 {
     setupData(static_cast<const model::Element &>(element));
     /// @todo Type change.
-    static_cast<QListView *>(typeBox->view())->setRowHidden(0, true);
-    static_cast<QListView *>(typeBox->view())->setRowHidden(4, true);
-    typeBox->setCurrentIndex(1 + element.flavor());
+    static_cast<QListView *>(typeBox->view())
+        ->setRowHidden(ext::one_bit_index(HouseEvent), true);
+    static_cast<QListView *>(typeBox->view())
+        ->setRowHidden(ext::one_bit_index(Gate), true);
+    typeBox->setCurrentIndex(ext::one_bit_index(BasicEvent) + element.flavor());
     auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
     if (basicEvent.HasExpression()) {
         expressionBox->setChecked(true);
@@ -148,7 +151,7 @@ void EventDialog::setupData(const model::Gate &element)
 {
     setupData(static_cast<const model::Element &>(element));
     typeBox->setEnabled(false); ///< @todo Type change.
-    typeBox->setCurrentIndex(4);
+    typeBox->setCurrentIndex(ext::one_bit_index(Gate));
     connectiveBox->setCurrentIndex(element.type());
     connectiveBox->setEnabled(false); ///< @todo Connective change.
     if (element.type() == mef::kVote)

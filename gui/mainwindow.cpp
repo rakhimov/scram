@@ -797,7 +797,6 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                 if (dialog.exec() == QDialog::Accepted) {
                     /// @todo Type change
                     /// @todo Name change
-                    /// @todo Expression change
                     editElement(&dialog, item);
                 }
             });
