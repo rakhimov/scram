@@ -241,9 +241,9 @@ void MainWindow::setConfig(const std::string &configPath,
 {
     try {
         Config config(configPath);
-        mef::Initializer(config.input_files(), config.settings());
         inputFiles.insert(inputFiles.begin(), config.input_files().begin(),
                           config.input_files().end());
+        mef::Initializer(inputFiles, config.settings());
         addInputFiles(inputFiles);
         m_settings = config.settings();
     } catch (scram::Error &err) {
@@ -273,17 +273,26 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     };
 
     try {
-        std::vector<std::string> all_input = m_inputFiles;
-        all_input.insert(all_input.end(), inputFiles.begin(),
-                         inputFiles.end());
-        std::shared_ptr<mef::Model> new_model
-            = mef::Initializer(all_input, m_settings).model();
+        std::vector<std::string> allInput = m_inputFiles;
+        allInput.insert(allInput.end(), inputFiles.begin(), inputFiles.end());
+        std::shared_ptr<mef::Model> newModel
+            = mef::Initializer(allInput, m_settings).model();
 
         for (const std::string &inputFile : inputFiles)
             validateWithGuiSchema(inputFile);
 
-        m_model = std::move(new_model);
-        m_inputFiles = std::move(all_input);
+        for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
+            if (faultTree->top_events().size() > 1) {
+                QMessageBox::critical(
+                    this, tr("Initialization Error"),
+                    tr("Fault tree '%1' has more than one top-gate.")
+                        .arg(QString::fromStdString(faultTree->name())));
+                return;
+            }
+        }
+
+        m_model = std::move(newModel);
+        m_inputFiles = std::move(allInput);
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
@@ -853,6 +862,7 @@ void MainWindow::resetTreeWidget()
         m_treeActions.emplace(widgetItem, [this, &faultTree] {
             auto *scene = new QGraphicsScene(this);
             std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
+            GUI_ASSERT(faultTree->top_events().size() == 1, );
             auto *root = new diagram::Gate(*faultTree->top_events().front(),
                                            &transfer);
             scene->addItem(root);
