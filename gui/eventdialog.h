@@ -114,6 +114,9 @@ private:
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
     void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
 
+    /// Sets up the formula argument completer.
+    void setupArgCompleter();
+
     mef::Model *m_model;
     QStatusBar *m_errorBar;
     QString m_initName;  ///< The name not validated for duplicates.

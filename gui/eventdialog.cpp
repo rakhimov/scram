@@ -19,6 +19,7 @@
 
 #include <limits>
 
+#include <QCompleter>
 #include <QDoubleValidator>
 #include <QListView>
 #include <QObject>
@@ -121,6 +122,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     connect(addArgLine, &QLineEdit::textChanged,
             [this] { addArgLine->setStyleSheet({}); });
     stealTopFocus(addArgLine);
+    setupArgCompleter();
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -364,6 +366,24 @@ void EventDialog::stealTopFocus(QLineEdit *lineEdit)
     };
     lineEdit->installEventFilter(
         new FocusGrabber(lineEdit, buttonBox->button(QDialogButtonBox::Ok)));
+}
+
+void EventDialog::setupArgCompleter()
+{
+    /// @todo Optimize the completion model.
+    QStringList allEvents;
+    allEvents.reserve(m_model->gates().size() + m_model->basic_events().size()
+                      + m_model->house_events().size());
+    auto addEvents = [&allEvents](const auto &eventContainer) {
+        for (const auto &eventPtr : eventContainer)
+            allEvents.push_back(QString::fromStdString(eventPtr->id()));
+    };
+    addEvents(m_model->gates());
+    addEvents(m_model->basic_events());
+    addEvents(m_model->house_events());
+    auto *completer = new QCompleter(std::move(allEvents), this);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    addArgLine->setCompleter(completer);
 }
 
 } // namespace gui
