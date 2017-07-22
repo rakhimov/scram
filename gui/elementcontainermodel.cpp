@@ -246,6 +246,9 @@ void HouseEventContainerModel::connectElement(Element *element)
 GateContainerModel::GateContainerModel(Model *model, QObject *parent)
     : ElementContainerModel(model->gates(), parent)
 {
+    connect(model, &Model::addedGate, this, &GateContainerModel::addElement);
+    connect(model, &Model::removedGate, this,
+            &GateContainerModel::removeElement);
     for (Element *element : elements())
         connectElement(element);
 }

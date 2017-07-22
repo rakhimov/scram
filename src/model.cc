@@ -112,6 +112,19 @@ void Model::Remove(BasicEvent* basic_event) {
   basic_events_.erase(basic_event);
 }
 
+void Model::Remove(Gate* gate) {
+  auto it = events_.find(gate->id());
+  if (it == events_.end())
+    throw std::out_of_range("Gate " + gate->id() +
+                            " is not in the model.");
+  if (*it != gate)
+    throw std::out_of_range("Duplicate event " + gate->id() +
+                            " does not belong to the model.");
+
+  events_.erase(it);
+  gates_.erase(gate);
+}
+
 Parameter* Model::GetParameter(const std::string& entity_reference,
                                const std::string& base_path) {
   return GetEntity(entity_reference, base_path, parameters_);

@@ -394,6 +394,32 @@ void MainWindow::setupActions()
                 case EventDialog::Conditional:
                     addBasicEvent({"flavor", "conditional", ""});
                     break;
+                case EventDialog::Gate: {
+                    auto gate = std::make_shared<mef::Gate>(dialog.name());
+                    gate->label(dialog.label().toStdString());
+                    gate->formula(
+                        std::make_unique<mef::Formula>(dialog.connective()));
+                    if (dialog.connective() == mef::kVote)
+                        gate->formula().vote_number(dialog.voteNumber());
+
+                    for (const std::string &arg : dialog.arguments()) {
+                        try {
+                            gate->formula().AddArgument(
+                                m_model->GetEvent(arg, ""));
+                        } catch (std::out_of_range &) {
+                            auto argEvent
+                                = std::make_shared<mef::BasicEvent>(arg);
+                            argEvent->AddAttribute(
+                                {"flavor", "undeveloped", ""});
+                            gate->formula().AddArgument(argEvent.get());
+                            m_undoStack->push(new model::Model::AddBasicEvent(
+                                std::move(argEvent), m_guiModel.get()));
+                        }
+                    }
+                    m_undoStack->push(new model::Model::AddGate(
+                        std::move(gate), m_guiModel.get()));
+                    break;
+                }
                 default:
                     GUI_ASSERT(false && "unexpected event type", );
                 }

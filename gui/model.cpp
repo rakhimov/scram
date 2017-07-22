@@ -185,6 +185,28 @@ void Model::AddBasicEvent::undo()
     emit m_model->removedBasicEvent(m_proxy.get());
 }
 
+Model::AddGate::AddGate(mef::GatePtr gate, Model *model)
+    : QUndoCommand(
+          QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
+      m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
+      m_gate(std::move(gate))
+{
+}
+
+void Model::AddGate::redo()
+{
+    m_model->m_model->Add(m_gate);
+    m_model->m_gates.emplace(std::move(m_proxy));
+    emit m_model->addedGate(m_proxy.get());
+}
+
+void Model::AddGate::undo()
+{
+    m_model->m_model->Remove(m_gate.get());
+    m_proxy = extract(m_gate.get(), &m_model->m_gates);
+    emit m_model->removedGate(m_proxy.get());
+}
+
 } // namespace model
 } // namespace gui
 } // namespace scram

@@ -21,6 +21,7 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <QDialog>
 #include <QStatusBar>
@@ -28,6 +29,7 @@
 
 #include "ui_eventdialog.h"
 
+#include "src/event.h"
 #include "src/expression.h"
 #include "src/model.h"
 
@@ -36,6 +38,12 @@
 namespace scram {
 namespace gui {
 
+/// The Dialog to create, present, and manipulate event data.
+///
+/// Only valid data is accepted by this dialog.
+/// That is, the dialog constrains the user input to be valid,
+/// and upon the acceptance, it guarantees that the data is valid
+/// for usage by the Model classes.
 class EventDialog : public QDialog, private Ui::EventDialog
 {
     Q_OBJECT
@@ -75,6 +83,18 @@ public:
     /// @returns The probability expression for basic events.
     ///          nullptr if no expression is defined.
     std::unique_ptr<mef::Expression> expression() const;
+
+    /// @returns The operator type for the formula.
+    mef::Operator connective() const
+    {
+        return static_cast<mef::Operator>(connectiveBox->currentIndex());
+    }
+
+    /// @returns The value for the vote number for formulas.
+    int voteNumber() const { return voteNumberBox->value(); }
+
+    /// @returns The set of formula argument ids.
+    std::vector<std::string> arguments() const;
 
 signals:
     void validated(bool valid);

@@ -340,13 +340,29 @@ public:
         ext::owner_ptr<BasicEvent> m_proxy;
         mef::BasicEventPtr m_basicEvent;
     };
+
+    class AddGate : public QUndoCommand
+    {
+    public:
+        AddGate(mef::GatePtr gate, Model *model);
+
+        void redo() override;
+        void undo() override;
+
+    private:
+        Model *m_model;
+        ext::owner_ptr<Gate> m_proxy;
+        mef::GatePtr m_gate;
+    };
     /// @}
 
 signals:
     void addedHouseEvent(HouseEvent *houseEvent);
     void addedBasicEvent(BasicEvent *basicEvent);
+    void addedGate(Gate *gate);
     void removedHouseEvent(HouseEvent *houseEvent);
     void removedBasicEvent(BasicEvent *basicEvent);
+    void removedGate(Gate *gate);
 
 private:
     mef::Model *m_model;

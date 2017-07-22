@@ -27,7 +27,6 @@
 #include <QStatusBar>
 
 #include "src/element.h"
-#include "src/event.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
 #include "src/ext/bits.h"
@@ -134,6 +133,15 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     GUI_ASSERT(okButton, );
     okButton->setEnabled(false);
     connect(this, &EventDialog::validated, okButton, &QPushButton::setEnabled);
+}
+
+std::vector<std::string> EventDialog::arguments() const
+{
+    std::vector<std::string> result;
+    for (int i = 0; i < argsList->count(); ++i)
+        result.push_back(
+            argsList->item(i)->data(Qt::DisplayRole).toString().toStdString());
+    return result;
 }
 
 bool EventDialog::hasFormulaArg(const QString &name)
