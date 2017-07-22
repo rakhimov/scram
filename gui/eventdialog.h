@@ -87,6 +87,9 @@ private:
     static QString redBackground;
     static QString yellowBackground;
 
+    /// @returns true if the arg already list contains the string name.
+    bool hasFormulaArg(const QString &name);
+
     void setupData(const model::Element &element);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
     void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.

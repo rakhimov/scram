@@ -101,14 +101,20 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     });
     connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
                 QString name = addArgLine->text();
-                for (int i = 0; i < argsList->count(); ++i) {
-                    if (argsList->item(i)->data(Qt::DisplayRole) == name) {
-                        m_errorBar->showMessage(
-                            tr("The argument '%1' is already in formula.")
-                                .arg(name));
-                        return addArgLine->setStyleSheet(yellowBackground);
-                    }
+                addArgLine->setStyleSheet(yellowBackground);
+                if (hasFormulaArg(name)) {
+                    m_errorBar->showMessage(
+                        tr("The argument '%1' is already in formula.")
+                            .arg(name));
+                    return;
                 }
+                if (name == nameLine->text()) {
+                    m_errorBar->showMessage(
+                        tr("The argument '%1' would introduce a self-cycle.")
+                            .arg(name));
+                    return;
+                }
+                addArgLine->setStyleSheet({});
                 /// @todo Check for the cycle.
                 argsList->addItem(name);
                 emit formulaArgsChanged();
@@ -128,6 +134,15 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     GUI_ASSERT(okButton, );
     okButton->setEnabled(false);
     connect(this, &EventDialog::validated, okButton, &QPushButton::setEnabled);
+}
+
+bool EventDialog::hasFormulaArg(const QString &name)
+{
+    for (int i = 0; i < argsList->count(); ++i) {
+        if (argsList->item(i)->data(Qt::DisplayRole) == name)
+            return true;
+    }
+    return false;
 }
 
 void EventDialog::setupData(const model::Element &element)
@@ -224,16 +239,23 @@ void EventDialog::validate()
 
     if (nameLine->hasAcceptableInput() == false)
         return;
+    QString name = nameLine->text();
+    nameLine->setStyleSheet(yellowBackground);
     try {
-        QString name = nameLine->text();
         if (name != m_initName) {
             m_model->GetEvent(name.toStdString(), "");
             m_errorBar->showMessage(
                 tr("The event with name '%1' already exists.").arg(name));
-            return nameLine->setStyleSheet(yellowBackground);
+            return;
         }
     } catch (std::out_of_range &) {
     }
+    if (!tabFormula->isHidden() && hasFormulaArg(name)) {
+        m_errorBar->showMessage(
+            tr("Name '%1' would introduce a self-cycle.").arg(name));
+        return;
+    }
+    nameLine->setStyleSheet({});
 
     if (!tabExpression->isHidden() && expressionBox->isChecked()) {
         switch (stackedWidgetExpressionData->currentIndex()) {
