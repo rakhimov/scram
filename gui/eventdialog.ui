@@ -298,6 +298,9 @@
            <property name="minimum">
             <number>2</number>
            </property>
+           <property name="maximum">
+            <number>2</number>
+           </property>
           </widget>
          </item>
         </layout>
@@ -312,14 +315,14 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <widget class="QLineEdit" name="lineArgEdit">
+          <widget class="QLineEdit" name="addArgLine">
            <property name="placeholderText">
             <string>Add argument with its ID</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidgetArgs">
+          <widget class="QListWidget" name="argsList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -420,6 +423,10 @@
   <tabstop>expressionType</tabstop>
   <tabstop>constantValue</tabstop>
   <tabstop>exponentialRate</tabstop>
+  <tabstop>connectiveBox</tabstop>
+  <tabstop>voteNumberBox</tabstop>
+  <tabstop>addArgLine</tabstop>
+  <tabStop>argsList</tabStop>
   <tabstop>stackedWidgetExpressionData</tabstop>
   <tabstop>stackedWidgetType</tabstop>
  </tabstops>

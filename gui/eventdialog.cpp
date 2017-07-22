@@ -60,10 +60,11 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     nameLine->setValidator(&nameValidator);
     constantValue->setValidator(&probabilityValidator);
     exponentialRate->setValidator(&nonNegativeValidator);
+    addArgLine->setValidator(&nameValidator);
 
     connect(typeBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
-                switch (1 << index) {
+                switch (static_cast<EventType>(1 << index)) {
                 case HouseEvent:
                     GUI_ASSERT(typeBox->currentText() == tr("House event"), );
                     stackedWidgetType->setCurrentWidget(tabBoolean);
@@ -81,13 +82,40 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 }
                 validate();
             });
-    connect(
-        connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
-        [this](int index) { voteNumberBox->setEnabled(index == mef::kVote); });
     connect(expressionType, OVERLOAD(QComboBox, currentIndexChanged, int), this,
             &EventDialog::validate);
     connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
     connectLineEdits({nameLine, constantValue, exponentialRate});
+    connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+            [this](int index) {
+                voteNumberBox->setEnabled(index == mef::kVote);
+                validate();
+            });
+    connect(this, &EventDialog::formulaArgsChanged, [this] {
+        int numArgs = argsList->count();
+        int newMax = numArgs > 2 ? (numArgs - 1) : 2;
+        if (voteNumberBox->value() > newMax)
+            voteNumberBox->setValue(newMax);
+        voteNumberBox->setMaximum(newMax);
+        validate();
+    });
+    connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
+                QString name = addArgLine->text();
+                for (int i = 0; i < argsList->count(); ++i) {
+                    if (argsList->item(i)->data(Qt::DisplayRole) == name) {
+                        m_errorBar->showMessage(
+                            tr("The argument '%1' is already in formula.")
+                                .arg(name));
+                        return addArgLine->setStyleSheet(yellowBackground);
+                    }
+                }
+                /// @todo Check for the cycle.
+                argsList->addItem(name);
+                emit formulaArgsChanged();
+            });
+    connect(addArgLine, &QLineEdit::textChanged,
+            [this] { addArgLine->setStyleSheet({}); });
+    stealTopFocus(addArgLine);
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -157,11 +185,12 @@ void EventDialog::setupData(const model::Gate &element)
     if (element.type() == mef::kVote)
         voteNumberBox->setValue(element.voteNumber());
     voteNumberBox->setEnabled(false); ///< @todo Vote number change.
-    lineArgEdit->setEnabled(false); ///< @todo Gate arg addition.
-    listWidgetArgs->setEnabled(false); ///< @todo Gate arg manipulation.
+    addArgLine->setEnabled(false); ///< @todo Gate arg addition.
+    argsList->setEnabled(false); ///< @todo Gate arg manipulation.
     for (const mef::Formula::EventArg &arg : element.args())
-        listWidgetArgs->addItem(
+        argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
+    emit formulaArgsChanged();
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const
@@ -221,6 +250,50 @@ void EventDialog::validate()
         }
     }
 
+    if (!tabFormula->isHidden()) {
+        int numArgs = argsList->count();
+        switch (static_cast<mef::Operator>(connectiveBox->currentIndex())) {
+        case mef::kNot:
+        case mef::kNull:
+            if (numArgs != 1) {
+                m_errorBar->showMessage(
+                    tr("%1 connective requires a single argument.")
+                        .arg(connectiveBox->currentText()));
+                return;
+            }
+            break;
+        case mef::kAnd:
+        case mef::kOr:
+        case mef::kNand:
+        case mef::kNor:
+            if (numArgs < 2) {
+                m_errorBar->showMessage(
+                    tr("%1 connective requires 2 or more arguments.")
+                        .arg(connectiveBox->currentText()));
+                return;
+            }
+            break;
+        case mef::kXor:
+            if (numArgs != 2) {
+                m_errorBar->showMessage(
+                    tr("%1 connective requires exactly 2 arguments.")
+                        .arg(connectiveBox->currentText()));
+                return;
+            }
+            break;
+        case mef::kVote:
+            if (numArgs <= voteNumberBox->value()) {
+                m_errorBar->showMessage(
+                    tr("%1 connective requires at-least %2 arguments.")
+                        .arg(connectiveBox->currentText(),
+                             QString::number(voteNumberBox->value() + 1)));
+                return;
+            }
+            break;
+        default:
+            GUI_ASSERT(false && "unexpected connective", );
+        }
+    }
 
     emit validated(true);
 }
@@ -237,6 +310,30 @@ void EventDialog::connectLineEdits(std::initializer_list<QLineEdit *> lineEdits)
             validate();
         });
     }
+}
+
+void EventDialog::stealTopFocus(QLineEdit *lineEdit)
+{
+    struct FocusGrabber : public QObject {
+        FocusGrabber(QObject *parent, QPushButton *okButton)
+            : QObject(parent), m_ok(okButton)
+        {
+        }
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::FocusIn) {
+                m_ok->setDefault(false);
+                m_ok->setAutoDefault(false);
+            } else if (event->type() == QEvent::FocusOut) {
+                m_ok->setDefault(true);
+                m_ok->setAutoDefault(true);
+            }
+            return QObject::eventFilter(object, event);
+        }
+        QPushButton *m_ok;
+    };
+    lineEdit->installEventFilter(
+        new FocusGrabber(lineEdit, buttonBox->button(QDialogButtonBox::Ok)));
 }
 
 } // namespace gui

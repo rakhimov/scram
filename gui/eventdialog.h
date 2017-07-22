@@ -78,17 +78,18 @@ public:
 
 signals:
     void validated(bool valid);
+    void formulaArgsChanged();
 
 public slots:
     void validate();
 
 private:
-    void setupData(const model::Element &element);
-
     static QString redBackground;
     static QString yellowBackground;
 
+    void setupData(const model::Element &element);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
+    void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
 
     mef::Model *m_model;
     QStatusBar *m_errorBar;
