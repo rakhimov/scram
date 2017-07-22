@@ -32,6 +32,7 @@
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
 #include "src/ext/bits.h"
+#include "src/ext/find_iterator.h"
 #include "src/ext/variant.h"
 
 #include "guiassert.h"
@@ -62,6 +63,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     constantValue->setValidator(&probabilityValidator);
     exponentialRate->setValidator(&nonNegativeValidator);
     addArgLine->setValidator(&nameValidator);
+    containerFaultTreeName->setValidator(&nameValidator);
 
     connect(typeBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
@@ -81,12 +83,22 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 default:
                     GUI_ASSERT(false, );
                 }
+                if (index == ext::one_bit_index(EventType::Gate)) {
+                    containerFaultTree->setEnabled(true);
+                    containerFaultTree->setChecked(true);
+                    containerModel->setEnabled(false);
+                } else {
+                    containerFaultTree->setEnabled(false);
+                    containerModel->setEnabled(true);
+                    containerModel->setChecked(true);
+                }
                 validate();
             });
     connect(expressionType, OVERLOAD(QComboBox, currentIndexChanged, int), this,
             &EventDialog::validate);
     connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
-    connectLineEdits({nameLine, constantValue, exponentialRate});
+    connectLineEdits(
+        {nameLine, constantValue, exponentialRate, containerFaultTreeName});
     connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
                 voteNumberBox->setEnabled(index == mef::kVote);
@@ -145,6 +157,9 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
             emit formulaArgsChanged();
         }
     });
+
+    /// @todo Enable fault-tree as a container for events.
+    containerFaultTree->setEnabled(false);
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -351,6 +366,22 @@ void EventDialog::validate()
         }
     }
 
+    if (containerFaultTreeName->isEnabled()) {
+        if (containerFaultTreeName->hasAcceptableInput() == false)
+            return;
+        GUI_ASSERT(typeBox->currentIndex() == ext::one_bit_index(Gate), );
+        QString faultTreeName = containerFaultTreeName->text();
+        if (auto it
+            = ext::find(m_model->fault_trees(), faultTreeName.toStdString())) {
+            if ((*it)->top_events().empty() == false) {
+                m_errorBar->showMessage(
+                    tr("Fault tree '%1' is already defined with a top gate.")
+                        .arg(faultTreeName));
+                containerFaultTreeName->setStyleSheet(yellowBackground);
+            }
+            return;
+        }
+    }
     emit validated(true);
 }
 
