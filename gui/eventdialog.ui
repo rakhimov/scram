@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>501</width>
+    <width>545</width>
     <height>472</height>
    </rect>
   </property>
@@ -313,15 +313,15 @@
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
           <widget class="QLineEdit" name="addArgLine">
            <property name="placeholderText">
             <string>Add argument with its ID</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="1" column="0">
           <widget class="QListWidget" name="argsList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -334,6 +334,26 @@
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="addArgButton">
+           <property name="toolTip">
+            <string>Add Argument</string>
+           </property>
+           <property name="icon">
+            <iconset theme="list-add"/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="removeArgButton">
+           <property name="toolTip">
+            <string>Remove Argument</string>
+           </property>
+           <property name="icon">
+            <iconset theme="list-remove"/>
            </property>
           </widget>
          </item>
@@ -426,9 +446,9 @@
   <tabstop>connectiveBox</tabstop>
   <tabstop>voteNumberBox</tabstop>
   <tabstop>addArgLine</tabstop>
-  <tabStop>argsList</tabStop>
-  <tabstop>stackedWidgetExpressionData</tabstop>
-  <tabstop>stackedWidgetType</tabstop>
+  <tabstop>addArgButton</tabstop>
+  <tabstop>argsList</tabstop>
+  <tabstop>removeArgButton</tabstop>
  </tabstops>
  <resources/>
  <connections>

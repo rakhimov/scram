@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QPushButton>
 #include <QRegularExpressionValidator>
+#include <QShortcut>
 #include <QStatusBar>
 
 #include "src/element.h"
@@ -101,6 +102,8 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     });
     connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
                 QString name = addArgLine->text();
+                if (name.isEmpty())
+                    return;
                 addArgLine->setStyleSheet(yellowBackground);
                 if (hasFormulaArg(name)) {
                     m_errorBar->showMessage(
@@ -123,6 +126,25 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
             [this] { addArgLine->setStyleSheet({}); });
     stealTopFocus(addArgLine);
     setupArgCompleter();
+    connect(addArgButton, &QPushButton::clicked, addArgLine,
+            &QLineEdit::returnPressed);
+    connect(removeArgButton, &QPushButton::clicked, argsList, [this] {
+        int rows = argsList->count();
+        if (rows == 0)
+            return;
+        if (argsList->currentItem())
+            delete argsList->currentItem();
+        else
+            delete argsList->takeItem(rows - 1);
+        emit formulaArgsChanged();
+    });
+    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), argsList);
+    connect(shortcut, &QShortcut::activated, argsList, [this] {
+        if (argsList->currentItem()) {
+            delete argsList->currentItem();
+            emit formulaArgsChanged();
+        }
+    });
 
     // Ensure proper defaults.
     GUI_ASSERT(typeBox->currentIndex() == 0, );
@@ -212,6 +234,8 @@ void EventDialog::setupData(const model::Gate &element)
     voteNumberBox->setEnabled(false); ///< @todo Vote number change.
     addArgLine->setEnabled(false); ///< @todo Gate arg addition.
     argsList->setEnabled(false); ///< @todo Gate arg manipulation.
+    addArgButton->setEnabled(false);
+    removeArgButton->setEnabled(false);
     for (const mef::Formula::EventArg &arg : element.args())
         argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
