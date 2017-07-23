@@ -96,6 +96,12 @@ public:
     /// @returns The set of formula argument ids.
     std::vector<std::string> arguments() const;
 
+    /// @returns The fault tree container name.
+    std::string faultTree() const
+    {
+        return containerFaultTreeName->text().toStdString();
+    }
+
 signals:
     void validated(bool valid);
     void formulaArgsChanged();

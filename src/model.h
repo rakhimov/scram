@@ -125,6 +125,7 @@ class Model : public Element, private boost::noncopyable {
   void Remove(HouseEvent* element);
   void Remove(BasicEvent* element);
   void Remove(Gate* element);
+  void Remove(FaultTree* element);
   /// @}
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.

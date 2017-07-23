@@ -19,6 +19,8 @@
 
 #include "model.h"
 
+#include "src/fault_tree.h"
+
 #include "guiassert.h"
 
 namespace scram {
@@ -185,16 +187,21 @@ void Model::AddBasicEvent::undo()
     emit m_model->removedBasicEvent(m_proxy.get());
 }
 
-Model::AddGate::AddGate(mef::GatePtr gate, Model *model)
+Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
     : QUndoCommand(
           QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
       m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
-      m_gate(std::move(gate))
+      m_gate(std::move(gate)), m_faultTreeName(std::move(faultTree))
 {
 }
 
 void Model::AddGate::redo()
 {
+    auto faultTree = std::make_unique<mef::FaultTree>(m_faultTreeName);
+    faultTree->Add(m_gate);
+    faultTree->CollectTopEvents();
+    m_model->m_model->Add(std::move(faultTree));  ///< @todo Separate signal.
+
     m_model->m_model->Add(m_gate);
     m_model->m_gates.emplace(std::move(m_proxy));
     emit m_model->addedGate(m_proxy.get());
@@ -202,6 +209,10 @@ void Model::AddGate::redo()
 
 void Model::AddGate::undo()
 {
+    /// @todo Signal fault tree removal.
+    m_model->m_model->Remove(
+        m_model->m_model->fault_trees().find(m_faultTreeName)->get());
+
     m_model->m_model->Remove(m_gate.get());
     m_proxy = extract(m_gate.get(), &m_model->m_gates);
     emit m_model->removedGate(m_proxy.get());

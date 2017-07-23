@@ -125,6 +125,17 @@ void Model::Remove(Gate* gate) {
   gates_.erase(gate);
 }
 
+void Model::Remove(FaultTree* fault_tree) {
+  auto it = fault_trees_.find(fault_tree->name());
+  if (it == fault_trees_.end())
+    throw std::out_of_range("Fault tree " + fault_tree->name() +
+                            " is not in the model.");
+  if (it->get() != fault_tree)
+    throw std::out_of_range("Duplicate fault tree " + fault_tree->name() +
+                            " does not belong to the model.");
+  fault_trees_.erase(it);
+}
+
 Parameter* Model::GetParameter(const std::string& entity_reference,
                                const std::string& base_path) {
   return GetEntity(entity_reference, base_path, parameters_);

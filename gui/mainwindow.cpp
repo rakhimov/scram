@@ -282,10 +282,10 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
             validateWithGuiSchema(inputFile);
 
         for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
-            if (faultTree->top_events().size() > 1) {
+            if (faultTree->top_events().size() != 1) {
                 QMessageBox::critical(
                     this, tr("Initialization Error"),
-                    tr("Fault tree '%1' has more than one top-gate.")
+                    tr("Fault tree '%1' must have a single top-gate.")
                         .arg(QString::fromStdString(faultTree->name())));
                 return;
             }
@@ -426,7 +426,7 @@ void MainWindow::setupActions()
                         }
                     }
                     m_undoStack->push(new model::Model::AddGate(
-                        std::move(gate), m_guiModel.get()));
+                        std::move(gate), dialog.faultTree(), m_guiModel.get()));
                     break;
                 }
                 default:

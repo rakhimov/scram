@@ -344,7 +344,15 @@ public:
     class AddGate : public QUndoCommand
     {
     public:
-        AddGate(mef::GatePtr gate, Model *model);
+        /// The gate is assumed to be a fault-tree root.
+        /// In other words, this is an implicit way to create a fault-tree.
+        ///
+        /// @param[in] gate  Fully initialized and valid gate.
+        /// @param[in] faultTree  The new fault tree name.
+        /// @param[in,out] model  The destination model.
+        ///
+        /// @todo Make fault-tree creation explicit.
+        AddGate(mef::GatePtr gate, std::string faultTree, Model *model);
 
         void redo() override;
         void undo() override;
@@ -353,6 +361,7 @@ public:
         Model *m_model;
         ext::owner_ptr<Gate> m_proxy;
         mef::GatePtr m_gate;
+        const std::string m_faultTreeName;
     };
     /// @}
 

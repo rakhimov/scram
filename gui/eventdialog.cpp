@@ -242,6 +242,16 @@ void EventDialog::setupData(const model::Gate &element)
     setupData(static_cast<const model::Element &>(element));
     typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(ext::one_bit_index(Gate));
+
+    containerFaultTreeName->setEnabled(false); ///< @todo Container changes.
+    for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
+        if (faultTree->gates().count(element.data()->name())) {
+            containerFaultTreeName->setText(
+                QString::fromStdString(faultTree->name()));
+            break;
+        }
+    }
+
     connectiveBox->setCurrentIndex(element.type());
     connectiveBox->setEnabled(false); ///< @todo Connective change.
     if (element.type() == mef::kVote)
@@ -373,12 +383,11 @@ void EventDialog::validate()
         QString faultTreeName = containerFaultTreeName->text();
         if (auto it
             = ext::find(m_model->fault_trees(), faultTreeName.toStdString())) {
-            if ((*it)->top_events().empty() == false) {
-                m_errorBar->showMessage(
-                    tr("Fault tree '%1' is already defined with a top gate.")
-                        .arg(faultTreeName));
-                containerFaultTreeName->setStyleSheet(yellowBackground);
-            }
+            GUI_ASSERT((*it)->top_events().empty() == false, );
+            m_errorBar->showMessage(
+                tr("Fault tree '%1' is already defined with a top gate.")
+                    .arg(faultTreeName));
+            containerFaultTreeName->setStyleSheet(yellowBackground);
             return;
         }
     }
