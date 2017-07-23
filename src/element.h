@@ -58,7 +58,7 @@ class Element {
   explicit Element(std::string name);
 
   /// @returns The original name.
-  const std::string& name() const { return kName_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
@@ -66,8 +66,8 @@ class Element {
 
   /// Sets the label.
   ///
-  /// @param[in] new_label  The label to be set.
-  void label(std::string new_label) { label_ = std::move(new_label); }
+  /// @param[in] label  The label text to be set.
+  void label(std::string label) { label_ = std::move(label); }
 
   /// @returns The current set of element attributes.
   const std::vector<Attribute>& attributes() const { return attributes_; }
@@ -117,8 +117,16 @@ class Element {
  protected:
   ~Element() = default;
 
+  /// Resets the element name.
+  ///
+  /// @param[in] name  The local identifier name.
+  ///
+  /// @throws LogicError  The name is required and empty.
+  /// @throws InvalidArgument  The name is malformed.
+  void name(std::string name);
+
  private:
-  const std::string kName_;  ///< The original name of the element.
+  std::string name_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
 
   /// Container of attributes ordered by insertion time.

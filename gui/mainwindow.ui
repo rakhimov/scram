@@ -152,6 +152,8 @@
     <addaction name="separator"/>
     <addaction name="actionAddElement"/>
     <addaction name="actionRemoveElement"/>
+    <addaction name="separator"/>
+    <addaction name="actionRenameModel"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -642,6 +644,14 @@
    </property>
    <property name="text">
     <string>Export &amp;Report As...</string>
+   </property>
+  </action>
+  <action name="actionRenameModel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Re&amp;name Model</string>
    </property>
   </action>
  </widget>

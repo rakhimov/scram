@@ -28,18 +28,20 @@
 namespace scram {
 namespace mef {
 
-Element::Element(std::string name) : kName_(std::move(name)) {
-  if (kName_.empty())
-    throw LogicError("The element name cannot be empty");
+Element::Element(std::string name) { Element::name(std::move(name)); }
 
-  if (kName_.find('.') != std::string::npos)
+void Element::name(std::string name) {
+  if (name.empty())
+    throw LogicError("The element name cannot be empty");
+  if (name.find('.') != std::string::npos)
     throw InvalidArgument("The element name is malformed.");
+  name_ = std::move(name);
 }
 
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
     throw DuplicateArgumentError(
-        "Trying to overwrite an existing attribute {event: " + kName_ +
+        "Trying to overwrite an existing attribute {event: " + name_ +
         ", attr: " + attr.name + "} ");
   }
   attributes_.emplace_back(std::move(attr));

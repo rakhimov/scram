@@ -17,6 +17,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "ui_namedialog.h"
 #include "ui_startpage.h"
 
 #include <algorithm>
@@ -58,6 +59,19 @@
 
 namespace scram {
 namespace gui {
+
+class NameDialog : public QDialog, public Ui::NameDialog
+{
+public:
+    explicit NameDialog(QWidget *parent) : QDialog(parent)
+    {
+        setupUi(this);
+        /// @todo Provide validators from a central location.
+        static QRegularExpressionValidator nameValidator(
+            QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)")));
+        nameLine->setValidator(&nameValidator);
+    }
+};
 
 class StartPage : public QWidget, public Ui::StartPage
 {
@@ -232,6 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
             QString::fromStdString(m_model->name())));
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
+        ui->actionRenameModel->setEnabled(true);
         ui->actionRun->setEnabled(true);
         resetModelTree();
         resetReportWidget(nullptr);
@@ -442,6 +457,18 @@ void MainWindow::setupActions()
                     GUI_ASSERT(false && "unexpected event type", );
                 }
             });
+    connect(ui->actionRenameModel, &QAction::triggered, this, [this] {
+        NameDialog nameDialog(this);
+        if (!m_model->HasDefaultName())
+            nameDialog.nameLine->setText(m_guiModel->id());
+        if (nameDialog.exec() == QDialog::Accepted) {
+            QString name = nameDialog.nameLine->text();
+            if (name != QString::fromStdString(m_model->GetOptionalName())) {
+                m_undoStack->push(new model::Model::SetName(std::move(name),
+                                                            m_guiModel.get()));
+            }
+        }
+    });
 
     // Undo/Redo actions
     m_undoAction = m_undoStack->createUndoAction(this, tr("Undo:"));
@@ -481,7 +508,7 @@ void MainWindow::createNewModel()
         QMessageBox::StandardButton answer = QMessageBox::question(
             this, tr("Save Model?"),
             tr("Save changes to model '%1' before closing?")
-            .arg(QString::fromStdString(m_model->name())),
+                .arg(QString::fromStdString(m_model->name())),
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save);
 
@@ -858,6 +885,11 @@ void MainWindow::resetModelTree()
     auto *oldModel = ui->modelTree->model();
     ui->modelTree->setModel(new ModelTree(m_guiModel.get(), this));
     delete oldModel;
+
+    connect(m_guiModel.get(), &model::Model::modelNameChanged, this, [this] {
+        setWindowTitle(QString::fromLatin1("%1[*]").arg(
+            QString::fromStdString(m_model->name())));
+    });
 }
 
 void MainWindow::activateModelTree(const QModelIndex &index)

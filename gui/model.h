@@ -317,6 +317,19 @@ public:
 
     /// Model manipulation commands.
     /// @{
+    class SetName : public QUndoCommand
+    {
+    public:
+        SetName(QString name, Model *model);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        Model *m_model;
+        QString m_name;
+    };
+
     class AddHouseEvent : public QUndoCommand
     {
     public:
@@ -370,6 +383,7 @@ public:
     /// @}
 
 signals:
+    void modelNameChanged(QString name);
     void addedHouseEvent(HouseEvent *houseEvent);
     void addedBasicEvent(BasicEvent *basicEvent);
     void addedGate(Gate *gate);

@@ -143,6 +143,24 @@ Model::Model(mef::Model *model) : Element(model), m_model(model)
     populate<Gate>(m_model->gates(), &m_gates);
 }
 
+Model::SetName::SetName(QString name, Model *model)
+    : QUndoCommand(QObject::tr("Rename model to '%1'").arg(name)),
+      m_model(model), m_name(std::move(name))
+{
+}
+
+void Model::SetName::redo()
+{
+    QString currentName = m_model->m_model->HasDefaultName()
+                              ? QStringLiteral("")
+                              : m_model->id();
+    if (currentName == m_name)
+        return;
+    m_model->m_model->SetOptionalName(m_name.toStdString());
+    emit m_model->modelNameChanged(m_name);
+    m_name = std::move(currentName);
+}
+
 Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
     : QUndoCommand(QObject::tr("Add house-event '%1'")
                        .arg(QString::fromStdString(houseEvent->id()))),

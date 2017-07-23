@@ -46,10 +46,10 @@ namespace mef {
 /// This class represents a risk analysis model.
 class Model : public Element, private boost::noncopyable {
  public:
-  /// @todo Only Model is allowed to have an optional name,
-  ///       while all other Elements require names.
-  ///       An empty name is an error for Element class invariants as well.
-  ///       This leads to a nasty magic string based optional name for a model.
+  /// Only Model is allowed to have an optional name,
+  /// while all other Elements require names.
+  /// An empty name is an error for Element class invariants as well.
+  /// This leads to a nasty magic string based optional name for a model.
   static const char kDefaultName[];
 
   /// Creates a model container.
@@ -58,6 +58,20 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @throws InvalidArgument  The name is malformed.
   explicit Model(std::string name = "");
+
+  /// @returns true if the model name has not been set.
+  bool HasDefaultName() const { return Element::name() == kDefaultName; }
+
+  /// @returns The model name or an empty string for the optional name.
+  const std::string& GetOptionalName() const {
+    static const std::string empty_name("");
+    return HasDefaultName() ? empty_name : Element::name();
+  }
+
+  /// Sets the optional name of the model.
+  void SetOptionalName(std::string name = "") {
+    Element::name(name.empty() ? kDefaultName : std::move(name));
+  }
 
   /// @returns The context to be used by test-event expressions
   ///          for event-tree walks.
