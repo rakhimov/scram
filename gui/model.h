@@ -310,6 +310,10 @@ public:
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
     const ProxyTable<Gate> &gates() const { return m_gates; }
+    const mef::ElementTable<mef::FaultTreePtr> &faultTrees() const
+    {
+        return m_model->fault_trees();
+    }
 
     /// Model manipulation commands.
     /// @{

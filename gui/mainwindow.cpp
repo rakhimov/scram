@@ -51,6 +51,7 @@
 #include "elementcontainermodel.h"
 #include "diagram.h"
 #include "guiassert.h"
+#include "modeltree.h"
 #include "printable.h"
 #include "settingsdialog.h"
 
@@ -172,11 +173,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget->addTab(startPage, startPage->windowIcon(),
                           startPage->windowTitle());
 
-    connect(ui->treeWidget, &QTreeWidget::itemActivated, this,
-            [this](QTreeWidgetItem *item) {
-                if (auto it = ext::find(m_treeActions, item))
-                    it->second();
-            });
+    connect(ui->modelTree, &QTreeView::activated, this,
+            &MainWindow::activateModelTree);
     connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
             [this](QTreeWidgetItem *item) {
                 if (auto it = ext::find(m_reportActions, item))
@@ -224,7 +222,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
         ui->actionRun->setEnabled(true);
-        resetTreeWidget();
+        resetModelTree();
         resetReportWidget(nullptr);
     });
     connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTreeWidget,
@@ -838,73 +836,74 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
     return table;
 }
 
-void MainWindow::resetTreeWidget()
+void MainWindow::resetModelTree()
 {
     while (ui->tabWidget->count()) {
         auto *widget = ui->tabWidget->widget(0);
         ui->tabWidget->removeTab(0);
         delete widget;
     }
-
-    m_treeActions.clear();
-    ui->treeWidget->clear();
-    ui->treeWidget->setHeaderLabel(
-        tr("Model: %1").arg(QString::fromStdString(m_model->name())));
-
     m_guiModel = std::make_unique<model::Model>(m_model.get());
+    auto *oldModel = ui->modelTree->model();
+    ui->modelTree->setModel(new ModelTree(m_guiModel.get(), this));
+    delete oldModel;
+}
 
-    auto *faultTrees = new QTreeWidgetItem({tr("Fault Trees")});
-    for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
-        auto *widgetItem
-            = new QTreeWidgetItem({QString::fromStdString(faultTree->name())});
-        faultTrees->addChild(widgetItem);
-
-        m_treeActions.emplace(widgetItem, [this, &faultTree] {
-            auto *scene = new QGraphicsScene(this);
-            std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
-            GUI_ASSERT(faultTree->top_events().size() == 1, );
-            auto *root = new diagram::Gate(*faultTree->top_events().front(),
-                                           &transfer);
-            scene->addItem(root);
-            auto *view = new DiagramView(scene, this);
-            view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
-            view->setRenderHints(QPainter::Antialiasing
-                                 | QPainter::SmoothPixmapTransform);
-            view->setAlignment(Qt::AlignTop);
-            view->ensureVisible(root);
-            setupZoomableView(view);
-            setupPrintableView(view);
-            setupExportableView(view);
-            ui->tabWidget->addTab(
-                view, tr("Fault Tree: %1")
-                          .arg(QString::fromStdString(faultTree->name())));
-            ui->tabWidget->setCurrentWidget(view);
-        });
+void MainWindow::activateModelTree(const QModelIndex &index)
+{
+    GUI_ASSERT(index.isValid(), );
+    if (index.parent().isValid() == false) {
+        switch (static_cast<ModelTree::Row>(index.row())) {
+        case ModelTree::Row::Gates: {
+            auto *table = constructElementTable<model::GateContainerModel>(
+                m_guiModel.get(), this);
+            ui->tabWidget->addTab(table, tr("Gates"));
+            ui->tabWidget->setCurrentWidget(table);
+            return;
+        }
+        case ModelTree::Row::BasicEvents: {
+            auto *table
+                = constructElementTable<model::BasicEventContainerModel>(
+                    m_guiModel.get(), this);
+            ui->tabWidget->addTab(table, tr("Basic Events"));
+            ui->tabWidget->setCurrentWidget(table);
+        }
+        case ModelTree::Row::HouseEvents: {
+            auto *table
+                = constructElementTable<model::HouseEventContainerModel>(
+                    m_guiModel.get(), this);
+            ui->tabWidget->addTab(table, tr("House Events"));
+            ui->tabWidget->setCurrentWidget(table);
+            return;
+        }
+        case ModelTree::Row::FaultTrees:
+            return;
+        }
+        GUI_ASSERT(false, );
     }
-    auto *gates = new QTreeWidgetItem({tr("Gates")});
-    m_treeActions.emplace(gates, [this] {
-        auto *table = constructElementTable<model::GateContainerModel>(
-            m_guiModel.get(), this);
-        ui->tabWidget->addTab(table, tr("Gates"));
-        ui->tabWidget->setCurrentWidget(table);
-    });
-
-    auto *basicEvents = new QTreeWidgetItem({tr("Basic Events")});
-    m_treeActions.emplace(basicEvents, [this] {
-        auto *table = constructElementTable<model::BasicEventContainerModel>(
-            m_guiModel.get(), this);
-        ui->tabWidget->addTab(table, tr("Basic Events"));
-        ui->tabWidget->setCurrentWidget(table);
-    });
-    auto *houseEvents = new QTreeWidgetItem({tr("House Events")});
-    m_treeActions.emplace(houseEvents, [this] {
-        auto *table = constructElementTable<model::HouseEventContainerModel>(
-            m_guiModel.get(), this);
-        ui->tabWidget->addTab(table, tr("House Events"));
-        ui->tabWidget->setCurrentWidget(table);
-    });
-    ui->treeWidget->addTopLevelItems(
-        {faultTrees, gates, basicEvents, houseEvents});
+    GUI_ASSERT(index.parent().parent().isValid() == false, );
+    GUI_ASSERT(index.parent().row()
+                   == static_cast<int>(ModelTree::Row::FaultTrees), );
+    auto faultTree = static_cast<mef::FaultTree *>(index.internalPointer());
+    GUI_ASSERT(faultTree, );
+    auto *scene = new QGraphicsScene(this);
+    std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
+    GUI_ASSERT(faultTree->top_events().size() == 1, );
+    auto *root = new diagram::Gate(*faultTree->top_events().front(), &transfer);
+    scene->addItem(root);
+    auto *view = new DiagramView(scene, this);
+    view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+    view->setRenderHints(QPainter::Antialiasing
+                         | QPainter::SmoothPixmapTransform);
+    view->setAlignment(Qt::AlignTop);
+    view->ensureVisible(root);
+    setupZoomableView(view);
+    setupPrintableView(view);
+    setupExportableView(view);
+    ui->tabWidget->addTab(
+        view,
+        tr("Fault Tree: %1").arg(QString::fromStdString(faultTree->name())));
+    ui->tabWidget->setCurrentWidget(view);
 }
 
 void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)

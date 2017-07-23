@@ -128,9 +128,12 @@ private:
     void editElement(EventDialog *dialog, model::BasicEvent *element);
 
     /**
-     * Resets the tree widget with the new model.
+     * Resets the tree view of the new model.
      */
-    void resetTreeWidget();
+    void resetModelTree();
+
+    /// Activates the model tree elements.
+    void activateModelTree(const QModelIndex &index);
 
     /**
      * @brief Resets the report view.
@@ -162,8 +165,6 @@ private:
     std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
     QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
     QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
-    std::unordered_map<QTreeWidgetItem *, std::function<void()>>
-        m_treeActions; ///< Actions on elements of the main tree widget.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>
         m_reportActions; ///< Actions on elements of the report tree widget.

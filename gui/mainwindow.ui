@@ -244,7 +244,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="QTreeView" name="modelTree">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -254,11 +254,9 @@
        <property name="animated">
         <bool>true</bool>
        </property>
-       <column>
-        <property name="text">
-         <string/>
-        </property>
-       </column>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
       </widget>
      </item>
     </layout>
@@ -639,7 +637,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="document-export"/>
+    <iconset theme="document-export">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export &amp;Report As...</string>
