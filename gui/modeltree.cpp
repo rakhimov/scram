@@ -27,6 +27,28 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
 {
     for (const mef::FaultTreePtr &faultTree : m_model->faultTrees())
         m_faultTrees.insert(faultTree.get());
+
+    connect(m_model, &model::Model::addedFaultTree, this,
+            [this](mef::FaultTree *faultTree) {
+                auto it = m_faultTrees.lower_bound(faultTree);
+                int index = m_faultTrees.index_of(it);
+                beginInsertRows(
+                    this->index(static_cast<int>(Row::FaultTrees), 0, {}),
+                    index, index);
+                m_faultTrees.insert(it, faultTree);
+                endInsertRows();
+            });
+    connect(m_model, &model::Model::aboutToRemoveFaultTree, this,
+            [this](mef::FaultTree *faultTree) {
+                auto it = m_faultTrees.find(faultTree);
+                GUI_ASSERT(it != m_faultTrees.end(), );
+                int index = m_faultTrees.index_of(it);
+                beginRemoveRows(
+                    this->index(static_cast<int>(Row::FaultTrees), 0, {}),
+                    index, index);
+                m_faultTrees.erase(it);
+                endRemoveRows();
+            });
 }
 
 int ModelTree::rowCount(const QModelIndex &parent) const

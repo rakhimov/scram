@@ -376,6 +376,8 @@ signals:
     void removedHouseEvent(HouseEvent *houseEvent);
     void removedBasicEvent(BasicEvent *basicEvent);
     void removedGate(Gate *gate);
+    void addedFaultTree(mef::FaultTree *faultTree);
+    void aboutToRemoveFaultTree(mef::FaultTree *faultTree);
 
 private:
     mef::Model *m_model;

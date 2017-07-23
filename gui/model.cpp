@@ -200,7 +200,9 @@ void Model::AddGate::redo()
     auto faultTree = std::make_unique<mef::FaultTree>(m_faultTreeName);
     faultTree->Add(m_gate);
     faultTree->CollectTopEvents();
-    m_model->m_model->Add(std::move(faultTree));  ///< @todo Separate signal.
+    auto *signalPtr = faultTree.get();
+    m_model->m_model->Add(std::move(faultTree));
+    emit m_model->addedFaultTree(signalPtr);
 
     m_model->m_model->Add(m_gate);
     m_model->m_gates.emplace(std::move(m_proxy));
@@ -209,9 +211,10 @@ void Model::AddGate::redo()
 
 void Model::AddGate::undo()
 {
-    /// @todo Signal fault tree removal.
-    m_model->m_model->Remove(
-        m_model->m_model->fault_trees().find(m_faultTreeName)->get());
+    auto *faultTree
+        = m_model->m_model->fault_trees().find(m_faultTreeName)->get();
+    emit m_model->aboutToRemoveFaultTree(faultTree);
+    m_model->m_model->Remove(faultTree);
 
     m_model->m_model->Remove(m_gate.get());
     m_proxy = extract(m_gate.get(), &m_model->m_gates);
