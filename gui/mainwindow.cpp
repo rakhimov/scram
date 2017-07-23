@@ -878,6 +878,7 @@ void MainWindow::activateModelTree(const QModelIndex &index)
                     m_guiModel.get(), this);
             ui->tabWidget->addTab(table, tr("Basic Events"));
             ui->tabWidget->setCurrentWidget(table);
+            return;
         }
         case ModelTree::Row::HouseEvents: {
             auto *table
