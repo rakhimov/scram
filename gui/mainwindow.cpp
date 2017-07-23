@@ -42,6 +42,7 @@
 #include "src/error.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
+#include "src/ext/algorithm.h"
 #include "src/ext/find_iterator.h"
 #include "src/initializer.h"
 #include "src/reporter.h"
@@ -202,6 +203,16 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(ui->actionRun, &QAction::triggered, this, [this] {
         GUI_ASSERT(m_model, );
+        if (m_settings.probability_analysis()
+            && ext::any_of(m_model->basic_events(),
+                           [](const mef::BasicEventPtr &basicEvent) {
+                               return !basicEvent->HasExpression();
+                           })) {
+            QMessageBox::critical(this, tr("Validation Error"),
+                                  tr("Not all basic events have expressions "
+                                     "for probability analysis."));
+            return;
+        }
         WaitDialog progress(this);
         progress.setLabelText(tr("Running analysis..."));
         auto analysis
