@@ -48,6 +48,8 @@ namespace diagram {
 class Event : public QGraphicsItem
 {
 public:
+    ~Event() noexcept override;
+
     QRectF boundingRect() const final;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget) final;
@@ -97,6 +99,7 @@ protected:
 
 private:
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
+    QMetaObject::Connection m_labelConnection; ///< Tracks the label changes.
 };
 
 /**

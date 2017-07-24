@@ -49,6 +49,13 @@ const double Event::m_labelBoxHeight = 4;
 Event::Event(model::Element *event, QGraphicsItem *parent)
     : QGraphicsItem(parent), m_event(event), m_typeGraphics(nullptr)
 {
+    m_labelConnection = QObject::connect(event, &model::Element::labelChanged,
+                                         [this] { update(); });
+}
+
+Event::~Event() noexcept
+{
+    QObject::disconnect(m_labelConnection);
 }
 
 QSize Event::units() const
