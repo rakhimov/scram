@@ -930,10 +930,18 @@ void MainWindow::activateModelTree(const QModelIndex &index)
                    == static_cast<int>(ModelTree::Row::FaultTrees), );
     auto faultTree = static_cast<mef::FaultTree *>(index.internalPointer());
     GUI_ASSERT(faultTree, );
+    activateFaultTreeDiagram(faultTree);
+}
+
+void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
+{
+    GUI_ASSERT(faultTree, );
     auto *scene = new QGraphicsScene(this);
     std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
     GUI_ASSERT(faultTree->top_events().size() == 1, );
-    auto *root = new diagram::Gate(*faultTree->top_events().front(), &transfer);
+    auto *topGate = faultTree->top_events().front();
+    auto *root = new diagram::Gate(m_guiModel->gates().find(topGate)->get(),
+                                   m_guiModel.get(), &transfer);
     scene->addItem(root);
     auto *view = new DiagramView(scene, this);
     view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));

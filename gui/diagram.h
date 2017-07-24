@@ -26,6 +26,8 @@
 
 #include "src/event.h"
 
+#include "model.h"
+
 namespace scram {
 namespace gui {
 namespace diagram {
@@ -68,10 +70,10 @@ protected:
     /**
      * @brief Assigns an event to a presentation view.
      *
-     * @param event  The data event.
+     * @param event  The model event.
      * @param parent  The parent Graphics event.
      */
-    explicit Event(const mef::Event &event, QGraphicsItem *parent = nullptr);
+    explicit Event(model::Element *event, QGraphicsItem *parent = nullptr);
 
     /**
      * @return The graphics of the derived class.
@@ -91,7 +93,7 @@ protected:
      */
     QSize units() const;
 
-    const mef::Event &m_event; ///< The data.
+    model::Element *m_event; ///< The model data.
 
 private:
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
@@ -103,7 +105,7 @@ private:
 class BasicEvent : public Event
 {
 public:
-    explicit BasicEvent(const mef::BasicEvent &event,
+    explicit BasicEvent(model::BasicEvent *event,
                         QGraphicsItem *parent = nullptr);
 };
 
@@ -113,7 +115,7 @@ public:
 class HouseEvent : public Event
 {
 public:
-    explicit HouseEvent(const mef::HouseEvent &event,
+    explicit HouseEvent(model::HouseEvent *event,
                         QGraphicsItem *parent = nullptr);
 };
 
@@ -123,7 +125,7 @@ public:
 class UndevelopedEvent : public Event
 {
 public:
-    explicit UndevelopedEvent(const mef::BasicEvent &event,
+    explicit UndevelopedEvent(model::BasicEvent *event,
                               QGraphicsItem *parent = nullptr);
 };
 
@@ -133,7 +135,7 @@ public:
 class ConditionalEvent : public Event
 {
 public:
-    explicit ConditionalEvent(const mef::BasicEvent &event,
+    explicit ConditionalEvent(model::BasicEvent *event,
                               QGraphicsItem *parent = nullptr);
 };
 
@@ -143,8 +145,7 @@ public:
 class TransferIn : public Event
 {
 public:
-    explicit TransferIn(const mef::Gate &event,
-                        QGraphicsItem *parent = nullptr);
+    explicit TransferIn(model::Gate *event, QGraphicsItem *parent = nullptr);
 };
 
 /**
@@ -157,11 +158,12 @@ public:
      * @brief Constructs the graph with the transfer symbols for gates.
      *
      * @param event  The event to be converted into a graphics item.
+     * @param model  The model with wrapper object with signals.
      * @param transfer  The set of already processed gates
      *                  to be shown as transfer event.
      * @param parent  The optional parent graphics item.
      */
-    Gate(const mef::Gate &event,
+    Gate(model::Gate *event, model::Model *model,
          std::unordered_map<const mef::Gate *, Gate *> *transfer,
          QGraphicsItem *parent = nullptr);
 

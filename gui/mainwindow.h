@@ -134,6 +134,8 @@ private:
 
     /// Activates the model tree elements.
     void activateModelTree(const QModelIndex &index);
+    /// Activates the fault tree view.
+    void activateFaultTreeDiagram(mef::FaultTree *faultTree);
 
     /**
      * @brief Resets the report view.
