@@ -19,6 +19,7 @@
 
 #include <cmath>
 
+#include <unordered_map>
 #include <vector>
 
 #include <QApplication>
@@ -348,6 +349,26 @@ void Gate::addTransferOut()
     paintPath.lineTo(x1 + 1.5 * units().height(), h);
     paintPath.lineTo(x1 + units().height(), 0);
     new QGraphicsPathItem(paintPath, Event::getTypeGraphics());
+}
+
+DiagramScene::DiagramScene(model::Gate *event, model::Model *model,
+                           QObject *parent)
+    : QGraphicsScene(parent)
+{
+    std::unordered_map<const mef::Gate *, Gate *> transfer;
+    addItem(new Gate(event, model, &transfer));
+}
+
+void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+{
+    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+    const QList<QGraphicsItem *> items = selectedItems();
+    if (!items.empty()) {
+        GUI_ASSERT(items.size() == 1, );
+        auto *event = dynamic_cast<diagram::Event *>(items.front());
+        GUI_ASSERT(event, );
+        emit activated(event->data());
+    }
 }
 
 } // namespace diagram

@@ -26,7 +26,6 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QFileDialog>
-#include <QGraphicsScene>
 #include <QMessageBox>
 #include <QPrinter>
 #include <QProgressDialog>
@@ -936,19 +935,17 @@ void MainWindow::activateModelTree(const QModelIndex &index)
 void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
 {
     GUI_ASSERT(faultTree, );
-    auto *scene = new QGraphicsScene(this);
-    std::unordered_map<const mef::Gate *, diagram::Gate *> transfer;
     GUI_ASSERT(faultTree->top_events().size() == 1, );
     auto *topGate = faultTree->top_events().front();
-    auto *root = new diagram::Gate(m_guiModel->gates().find(topGate)->get(),
-                                   m_guiModel.get(), &transfer);
-    scene->addItem(root);
-    auto *view = new DiagramView(scene, this);
+    auto *view = new DiagramView(this);
+    auto *scene = new diagram::DiagramScene(
+        m_guiModel->gates().find(topGate)->get(), m_guiModel.get(), view);
+    view->setScene(scene);
     view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
     view->setRenderHints(QPainter::Antialiasing
                          | QPainter::SmoothPixmapTransform);
     view->setAlignment(Qt::AlignTop);
-    view->ensureVisible(root);
+    view->ensureVisible(0, 0, 0, 0);
     setupZoomableView(view);
     setupPrintableView(view);
     setupExportableView(view);
@@ -956,6 +953,27 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
         view,
         tr("Fault Tree: %1").arg(QString::fromStdString(faultTree->name())));
     ui->tabWidget->setCurrentWidget(view);
+
+    connect(scene, &diagram::DiagramScene::activated, this,
+            [this](model::Element *element) {
+                EventDialog dialog(m_model.get(), this);
+                auto action = [this, &dialog](auto *target) {
+                    dialog.setupData(*target);
+                    if (dialog.exec() == QDialog::Accepted) {
+                        editElement(&dialog, target);
+                    }
+                };
+                /// @todo Redesign/remove the RAII!
+                if (auto *basic = dynamic_cast<model::BasicEvent *>(element)) {
+                    action(basic);
+                } else if (auto *gate = dynamic_cast<model::Gate *>(element)) {
+                    action(gate);
+                } else {
+                    auto *house = dynamic_cast<model::HouseEvent *>(element);
+                    GUI_ASSERT(house, );
+                    action(house);
+                }
+            });
 }
 
 void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)

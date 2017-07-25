@@ -22,6 +22,7 @@
 #include <unordered_map>
 
 #include <QGraphicsItem>
+#include <QGraphicsScene>
 #include <QSize>
 
 #include "src/event.h"
@@ -56,6 +57,9 @@ public:
 
     /// @returns The width of the whole subgraph.
     virtual double width() const;
+
+    /// @returns The model data event.
+    model::Element *data() const { return m_event; }
 
 protected:
     /// The confining size of the Event graphics in characters.
@@ -185,6 +189,20 @@ private:
 
     double m_width = 0; ///< Assume the graph does not change its width.
     bool m_transferOut = false;  ///< The indication of the transfer-out.
+};
+
+class DiagramScene : public QGraphicsScene
+{
+    Q_OBJECT
+
+public:
+    DiagramScene(model::Gate *event, model::Model *model,
+                 QObject *parent = nullptr);
+signals:
+    void activated(model::Element *event);
+
+private:
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
 };
 
 } // namespace diagram
