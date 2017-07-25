@@ -51,6 +51,7 @@ Event::Event(model::Element *event, QGraphicsItem *parent)
 {
     m_labelConnection = QObject::connect(event, &model::Element::labelChanged,
                                          [this] { update(); });
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 Event::~Event() noexcept
@@ -85,10 +86,12 @@ QRectF Event::boundingRect() const
     return QRectF(-labelBoxWidth / 2, 0, labelBoxWidth, m_baseHeight * h);
 }
 
-void Event::paint(QPainter *painter,
-                  const QStyleOptionGraphicsItem * /*option*/,
+void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                   QWidget * /*widget*/)
 {
+    if (option->state & QStyle::State_Selected)
+        painter->setBrush(QColor("cyan"));
+
     int w = units().width();
     int h = units().height();
     double labelBoxWidth = m_size.width() * w ;
