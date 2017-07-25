@@ -19,6 +19,7 @@
 
 #include "elementcontainermodel.h"
 
+#include "src/ext/variant.h"
 #include "src/event.h"
 #include "src/model.h"
 
@@ -31,7 +32,7 @@ namespace model {
 template <typename T>
 ElementContainerModel::ElementContainerModel(const T &container,
                                              QObject *parent)
-    : QAbstractTableModel(parent)
+    : QAbstractItemModel(parent)
 {
     m_elements.reserve(container.size());
     m_elementToIndex.reserve(container.size());
@@ -255,7 +256,47 @@ GateContainerModel::GateContainerModel(Model *model, QObject *parent)
 
 int GateContainerModel::columnCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : 4;
+    if (!parent.isValid())
+        return 4;
+    if (parent.parent().isValid())
+        return 0;
+    return 1;
+}
+
+int GateContainerModel::rowCount(const QModelIndex &parent) const
+{
+    if (!parent.isValid())
+        return ElementContainerModel::rowCount(parent);
+    if (parent.parent().isValid())
+        return 0;
+    return static_cast<Gate *>(parent.internalPointer())->numArgs();
+}
+
+QModelIndex GateContainerModel::index(int row, int column,
+                                      const QModelIndex &parent) const
+{
+    if (!parent.isValid())
+        return ElementContainerModel::index(row, column, parent);
+    GUI_ASSERT(parent.parent().isValid() == false, {});
+    GUI_ASSERT(column == 0, {});
+
+    auto value = reinterpret_cast<std::uintptr_t>(parent.internalPointer());
+    GUI_ASSERT(value && !(value & m_parentMask), {});
+
+    return createIndex(row, column,
+                       reinterpret_cast<void *>(value | m_parentMask));
+}
+
+QModelIndex GateContainerModel::parent(const QModelIndex &index) const
+{
+    GUI_ASSERT(index.isValid(), {});
+    auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
+    GUI_ASSERT(value, {});
+    if (value & m_parentMask) {
+        auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
+        return createIndex(getElementIndex(parent), 0, parent);
+    }
+    return {};
 }
 
 QVariant GateContainerModel::headerData(int section,
@@ -282,8 +323,14 @@ QVariant GateContainerModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    auto *gate = static_cast<Gate *>(index.internalPointer());
+    auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
+    if (value & m_parentMask) {
+        auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
+        return QString::fromStdString(
+            ext::as<const mef::Event *>(parent->args().at(index.row()))->id());
+    }
 
+    auto *gate = static_cast<Gate *>(index.internalPointer());
     switch (index.column()) {
     case 0:
         return gate->id();

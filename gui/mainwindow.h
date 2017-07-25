@@ -24,13 +24,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include <QAbstractItemView>
 #include <QAction>
 #include <QComboBox>
 #include <QDir>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QRegularExpressionValidator>
-#include <QTableView>
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
@@ -121,7 +121,8 @@ private:
     void setupSearchable(QObject *view, T *model);
 
     template <class ContainerModel>
-    QTableView *constructElementTable(model::Model *guiModel, QWidget *parent);
+    QAbstractItemView *constructElementTable(model::Model *guiModel,
+                                             QWidget *parent);
 
     void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);

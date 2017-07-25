@@ -31,6 +31,7 @@
 #include <QProgressDialog>
 #include <QRegularExpression>
 #include <QSvgGenerator>
+#include <QTableView>
 #include <QTableWidget>
 #include <QtConcurrent>
 #include <QtOpenGL>
@@ -843,8 +844,8 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 }
 
 template <class ContainerModel>
-QTableView *MainWindow::constructElementTable(model::Model *guiModel,
-                                              QWidget *parent)
+QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
+                                                     QWidget *parent)
 {
     auto *table = new QTableView(parent);
     auto *tableModel = new ContainerModel(guiModel, table);
@@ -871,6 +872,40 @@ QTableView *MainWindow::constructElementTable(model::Model *guiModel,
                 }
             });
     return table;
+}
+
+/// Specialization to show gates as trees in tables.
+template <>
+QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
+    model::Model *guiModel, QWidget *parent)
+{
+    auto *tree = new QTreeView(parent);
+    auto *tableModel = new model::GateContainerModel(guiModel, tree);
+    auto *proxyModel = new model::SortFilterProxyModel(tree);
+    proxyModel->setSourceModel(tableModel);
+    tree->setModel(proxyModel);
+    tree->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tree->setSelectionMode(QAbstractItemView::SingleSelection);
+    tree->setWordWrap(false);
+    tree->resizeColumnToContents(0);
+    tree->setColumnWidth(0, 2 * tree->columnWidth(0));
+    tree->setAlternatingRowColors(true);
+    tree->setSortingEnabled(true);
+
+    setupSearchable(tree, proxyModel);
+    connect(tree, &QAbstractItemView::activated,
+            [this, proxyModel](const QModelIndex &index) {
+                GUI_ASSERT(index.isValid(), );
+                if (index.parent().isValid())
+                    return;
+                EventDialog dialog(m_model.get(), this);
+                auto *item = static_cast<model::Gate *>(
+                    proxyModel->mapToSource(index).internalPointer());
+                dialog.setupData(*item);
+                if (dialog.exec() == QDialog::Accepted)
+                    editElement(&dialog, item);
+            });
+    return tree;
 }
 
 void MainWindow::resetModelTree()
