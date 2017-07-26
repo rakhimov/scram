@@ -22,6 +22,8 @@
 /// from the actual main() entrance function,
 /// for there are weird dependency linking problems on Windows.
 
+#include <csignal>
+
 #include <exception>
 #include <iostream>
 #include <string>
@@ -110,12 +112,79 @@ public:
                                   QString::fromUtf8(err.what()));
         } catch (const std::exception &err) {
             qCritical("%s", err.what());
-            QMessageBox::critical(nullptr, tr("Unexpected Error"),
+            QMessageBox::critical(nullptr, tr("Internal Exception Error"),
                                   QString::fromUtf8(err.what()));
+        } catch (...) {
+            qCritical("Unknown exception type.");
+            QMessageBox::critical(nullptr, tr("Internal Exception Error"),
+                                  tr("Unknown exception type."));
         }
         return false;
     }
 };
+
+/// Produces the crash dialog with a given reasoning.
+/// The dialog allows access to other windows
+/// so that users may try saving the model before the crash.
+void crashDialog(const QString &text) noexcept
+{
+    QMessageBox message(QMessageBox::Critical,
+                        QObject::tr("Unrecoverable Internal Error"), text,
+                        QMessageBox::Ok);
+    message.setWindowModality(Qt::WindowModal);
+    message.exec();
+}
+
+/// Attempts to inform about imminent crash due to internal errors.
+void crashHandler(int signum) noexcept
+{
+    switch (signum) {
+    case SIGSEGV:
+        crashDialog(QObject::tr("SIGSEGV: Invalid memory access."));
+        break;
+    case SIGFPE:
+        crashDialog(QObject::tr("SIGFPE: Erroneous arithmetic operation."));
+        break;
+    case SIGILL:
+        crashDialog(QObject::tr("SIGILL: Illegal instruction."));
+        break;
+    }
+    std::signal(signum, SIG_DFL);
+    std::raise(signum);
+}
+
+/// Preserve the global default before setting a new terminate handler.
+static const std::terminate_handler gDefaultTerminateHandler
+    = std::get_terminate();
+
+/// Pulls the exception message into GUI before crash.
+void terminateHandler() noexcept
+{
+    QString error;
+    try {
+        std::rethrow_exception(std::current_exception());
+    } catch (const scram::Error &err) {
+        error = QObject::tr("SCRAM exception: %1")
+                    .arg(QString::fromUtf8(err.what()));
+    } catch (const std::exception &err) {
+        error = QObject::tr("Standard exception: %1")
+                    .arg(QString::fromUtf8(err.what()));
+    } catch (...) {
+        error = QObject::tr("Exception of unknown type: no message available.");
+    }
+    crashDialog(
+        QObject::tr("Exception no-throw contract violation:\n\n%1").arg(error));
+    gDefaultTerminateHandler();
+}
+
+/// Installs crash handlers for system signals.
+void installCrashHandlers() noexcept
+{
+    std::signal(SIGSEGV, crashHandler);
+    std::signal(SIGFPE, crashHandler);
+    std::signal(SIGILL, crashHandler);
+    std::set_terminate(terminateHandler);
+}
 
 } // namespace
 
@@ -131,6 +200,8 @@ int launchGui(int argc, char *argv[])
     // However, the most distributions are expected to be shared builds,
     // so the explicit load should not be used, but it is kept for debugging.
     /* Q_INIT_RESOURCE(res); */
+
+    installCrashHandlers();
 
     QCoreApplication::setOrganizationName(QString::fromLatin1("scram"));
     QCoreApplication::setOrganizationDomain(
