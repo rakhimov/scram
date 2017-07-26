@@ -130,9 +130,16 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                         tr("The argument '%1' would introduce a self-cycle.")
                             .arg(name));
                     return;
+                } else if (m_event) {
+                    auto it = m_model->gates().find(name.toStdString());
+                    if (it != m_model->gates().end() && checkCycle(it->get())) {
+                        m_errorBar->showMessage(
+                            tr("The argument '%1' would introduce a cycle.")
+                                .arg(name));
+                        return;
+                    }
                 }
                 addArgLine->setStyleSheet({});
-                /// @todo Check for the cycle.
                 argsList->addItem(name);
                 emit formulaArgsChanged();
             });
@@ -194,8 +201,29 @@ bool EventDialog::hasFormulaArg(const QString &name)
     return false;
 }
 
+bool EventDialog::checkCycle(const mef::Gate *gate)
+{
+    struct {
+        bool operator()(const mef::Event *) const { return false; }
+        bool operator()(const mef::Gate *arg) const
+        {
+            return m_self->checkCycle(arg);
+        }
+        EventDialog *m_self;
+    } visitor{this};
+
+    for (const mef::Formula::EventArg &arg : gate->formula().event_args()) {
+        if (ext::as<const mef::Element *>(arg) == m_event)
+            return true;
+        if (boost::apply_visitor(visitor, arg))
+            return true;
+    }
+    return false;
+}
+
 void EventDialog::setupData(const model::Element &element)
 {
+    m_event = element.data();
     m_initName = element.id();
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());

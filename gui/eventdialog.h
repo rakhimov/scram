@@ -116,6 +116,15 @@ private:
     /// @returns true if the arg already list contains the string name.
     bool hasFormulaArg(const QString &name);
 
+    /// @returns true if the arg would introduce a cycle.
+    ///
+    /// @pre The check is performed only for existing elements.
+    /// @pre The argument is not a self-cycle.
+    ///
+    /// @todo Optimize to be linear.
+    /// @todo Optimize with memoization.
+    bool checkCycle(const mef::Gate *gate);
+
     void setupData(const model::Element &element);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
     void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
@@ -126,6 +135,7 @@ private:
     mef::Model *m_model;
     QStatusBar *m_errorBar;
     QString m_initName;  ///< The name not validated for duplicates.
+    const mef::Element *m_event = nullptr;  ///< Set only for existing events.
 };
 
 } // namespace gui
