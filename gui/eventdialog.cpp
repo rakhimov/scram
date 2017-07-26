@@ -28,6 +28,8 @@
 #include <QShortcut>
 #include <QStatusBar>
 
+#include <boost/range/algorithm.hpp>
+
 #include "src/element.h"
 #include "src/expression/constant.h"
 #include "src/expression/exponential.h"
@@ -244,27 +246,20 @@ void EventDialog::setupData(const model::Gate &element)
     typeBox->setCurrentIndex(ext::one_bit_index(Gate));
 
     containerFaultTreeName->setEnabled(false); ///< @todo Container changes.
-    for (const mef::FaultTreePtr &faultTree : m_model->fault_trees()) {
-        if (faultTree->gates().count(element.data()->name())) {
-            containerFaultTreeName->setText(
-                QString::fromStdString(faultTree->name()));
-            break;
-        }
-    }
+    auto it = boost::find_if(
+        m_model->fault_trees(), [&element](const mef::FaultTreePtr &faultTree) {
+            return faultTree->gates().count(element.data()->name());
+        });
+    GUI_ASSERT(it != m_model->fault_trees().end(), );
+    containerFaultTreeName->setText(QString::fromStdString((*it)->name()));
 
     connectiveBox->setCurrentIndex(element.type());
-    connectiveBox->setEnabled(false); ///< @todo Connective change.
     if (element.type() == mef::kVote)
         voteNumberBox->setValue(element.voteNumber());
-    voteNumberBox->setEnabled(false); ///< @todo Vote number change.
-    addArgLine->setEnabled(false); ///< @todo Gate arg addition.
-    argsList->setEnabled(false); ///< @todo Gate arg manipulation.
-    addArgButton->setEnabled(false);
-    removeArgButton->setEnabled(false);
     for (const mef::Formula::EventArg &arg : element.args())
         argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
-    emit formulaArgsChanged();
+    emit formulaArgsChanged();  ///< @todo Bogus signal order conflicts.
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const

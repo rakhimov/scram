@@ -124,6 +124,18 @@ void HouseEvent::SetState::redo()
     m_state = prev_state;
 }
 
+Gate::SetFormula::SetFormula(Gate *gate, mef::FormulaPtr formula)
+    : QUndoCommand(QObject::tr("Update gate '%1' formula").arg(gate->id())),
+      m_formula(std::move(formula)), m_gate(gate)
+{
+}
+
+void Gate::SetFormula::redo()
+{
+    m_formula = m_gate->data<mef::Gate>()->formula(std::move(m_formula));
+    emit m_gate->formulaChanged();
+}
+
 namespace {
 
 template <class T, class S>

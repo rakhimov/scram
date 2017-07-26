@@ -254,6 +254,20 @@ GateContainerModel::GateContainerModel(Model *model, QObject *parent)
         connectElement(element);
 }
 
+void GateContainerModel::connectElement(Element *element)
+{
+    ElementContainerModel::connectElement(element);
+    connect(static_cast<Gate *>(element), &Gate::formulaChanged, this,
+            [this, element] {
+                int row = getElementIndex(element);
+                emit dataChanged(createIndex(row, 1, element),
+                                 createIndex(row, 2, element));
+                /// @todo Track gate formula changes more precisely.
+                beginResetModel();
+                endResetModel();
+            });
+}
+
 int GateContainerModel::columnCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())

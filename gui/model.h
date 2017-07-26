@@ -242,6 +242,23 @@ public:
     {
         return data<mef::Gate>()->formula().event_args();
     }
+
+    /// Formula modification commands.
+    class SetFormula : public QUndoCommand
+    {
+    public:
+        SetFormula(Gate *gate, mef::FormulaPtr formula);
+
+        void redo() override;
+        void undo() override { redo(); }
+
+    private:
+        mef::FormulaPtr m_formula;
+        Gate *m_gate;
+    };
+
+signals:
+    void formulaChanged();
 };
 
 template <>

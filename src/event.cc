@@ -44,6 +44,7 @@ void BasicEvent::Validate() const {
 }
 
 void Gate::Validate() const {
+  assert(formula_ && "The gate formula is missing.");
   // Detect inhibit flavor.
   if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit") {

@@ -391,6 +391,7 @@ void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
   // Assumes that there are no attributes and labels.
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node = XmlElement(formulas.front());
+  assert(!gate->HasFormula() && "Resetting gate formula");
   gate->formula(GetFormula(formula_node, gate->base_path()));
   try {
     gate->Validate();

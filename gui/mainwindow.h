@@ -96,6 +96,9 @@ private slots:
      */
     void exportReportAs();
 
+    /// Handles element addition with a dialog.
+    void addElement();
+
 private:
     void setupStatusBar(); ///< Setup widgets in the status bar.
     void setupActions(); ///< Setup all the actions with connections.
@@ -124,9 +127,13 @@ private:
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);
 
+    /// @returns The new formula constructed from the dialog data.
+    mef::FormulaPtr extractFormula(EventDialog *dialog);
+
     void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);
     void editElement(EventDialog *dialog, model::BasicEvent *element);
+    void editElement(EventDialog *dialog, model::Gate *element);
 
     /**
      * Resets the tree view of the new model.

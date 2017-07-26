@@ -170,6 +170,8 @@ public:
 
 private:
     static const std::uintptr_t m_parentMask = 1; ///< Tagged parent pointer.
+
+    void connectElement(Element *element) final;
 };
 
 } // namespace model

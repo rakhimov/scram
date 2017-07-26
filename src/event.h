@@ -59,9 +59,7 @@ class HouseEvent : public Event {
   /// Sets the state for House event.
   ///
   /// @param[in] constant  False or True for the state of this house event.
-  void state(bool constant) {
-    state_ = constant;
-  }
+  void state(bool constant) { state_ = constant; }
 
   /// @returns The true or false state of this house event.
   bool state() const { return state_; }
@@ -163,21 +161,37 @@ class Gate : public Event, public NodeMark {
  public:
   using Event::Event;
 
+  /// @returns true if the gate formula has been set.
+  bool HasFormula() const { return formula_ != nullptr; }
+
   /// @returns The formula of this gate.
+  ///
+  /// @pre The gate has its formula initialized.
+  ///
   /// @{
-  const Formula& formula() const { return *formula_; }
-  Formula& formula() { return *formula_; }
+  const Formula& formula() const {
+    assert(formula_ && "Gate formula is not set.");
+    return *formula_;
+  }
+  Formula& formula() {
+    return const_cast<Formula&>(static_cast<const Gate*>(this)->formula());
+  }
   /// @}
 
   /// Sets the formula of this gate.
   ///
-  /// @param[in] formula  Boolean formula of this gate.
-  void formula(FormulaPtr formula) {
-    assert(!formula_);
-    formula_ = std::move(formula);
+  /// @param[in] formula  The new Boolean formula of this gate.
+  ///
+  /// @returns The old formula.
+  FormulaPtr formula(FormulaPtr formula) {
+    assert(formula && "Cannot unset formula.");
+    formula_.swap(formula);
+    return formula;
   }
 
   /// Checks if a gate is initialized correctly.
+  ///
+  /// @pre The gate formula is set.
   ///
   /// @throws ValidationError  Errors in the gate's logic or setup.
   void Validate() const;

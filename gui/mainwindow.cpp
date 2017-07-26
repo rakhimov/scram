@@ -45,6 +45,7 @@
 #include "src/expression/exponential.h"
 #include "src/ext/algorithm.h"
 #include "src/ext/find_iterator.h"
+#include "src/ext/variant.h"
 #include "src/initializer.h"
 #include "src/reporter.h"
 #include "src/serialization.h"
@@ -391,72 +392,8 @@ void MainWindow::setupActions()
     ui->actionZoomOut->setShortcut(QKeySequence::ZoomOut);
 
     // Edit menu actions.
-    connect(ui->actionAddElement, &QAction::triggered, this, [this] {
-                EventDialog dialog(m_model.get(), this);
-                if (dialog.exec() == QDialog::Rejected)
-                    return;
-                auto addBasicEvent = [&](mef::Attribute attr) {
-                    auto basicEvent
-                        = std::make_shared<mef::BasicEvent>(dialog.name());
-                    basicEvent->label(dialog.label().toStdString());
-                    if (attr.name.empty() == false)
-                        basicEvent->AddAttribute(std::move(attr));
-                    if (auto p_expression = dialog.expression()) {
-                        basicEvent->expression(p_expression.get());
-                        m_model->Add(std::move(p_expression));
-                    }
-                    m_undoStack->push(new model::Model::AddBasicEvent(
-                        std::move(basicEvent), m_guiModel.get()));
-                };
-                switch (dialog.currentType()) {
-                case EventDialog::HouseEvent: {
-                    auto houseEvent
-                        = std::make_shared<mef::HouseEvent>(dialog.name());
-                    houseEvent->label(dialog.label().toStdString());
-                    houseEvent->state(dialog.booleanConstant());
-                    m_undoStack->push(new model::Model::AddHouseEvent(
-                        std::move(houseEvent), m_guiModel.get()));
-                    break;
-                }
-                case EventDialog::BasicEvent:
-                    addBasicEvent({});
-                    break;
-                case EventDialog::Undeveloped:
-                    addBasicEvent({"flavor", "undeveloped", ""});
-                    break;
-                case EventDialog::Conditional:
-                    addBasicEvent({"flavor", "conditional", ""});
-                    break;
-                case EventDialog::Gate: {
-                    auto gate = std::make_shared<mef::Gate>(dialog.name());
-                    gate->label(dialog.label().toStdString());
-                    gate->formula(
-                        std::make_unique<mef::Formula>(dialog.connective()));
-                    if (dialog.connective() == mef::kVote)
-                        gate->formula().vote_number(dialog.voteNumber());
-
-                    for (const std::string &arg : dialog.arguments()) {
-                        try {
-                            gate->formula().AddArgument(
-                                m_model->GetEvent(arg, ""));
-                        } catch (std::out_of_range &) {
-                            auto argEvent
-                                = std::make_shared<mef::BasicEvent>(arg);
-                            argEvent->AddAttribute(
-                                {"flavor", "undeveloped", ""});
-                            gate->formula().AddArgument(argEvent.get());
-                            m_undoStack->push(new model::Model::AddBasicEvent(
-                                std::move(argEvent), m_guiModel.get()));
-                        }
-                    }
-                    m_undoStack->push(new model::Model::AddGate(
-                        std::move(gate), dialog.faultTree(), m_guiModel.get()));
-                    break;
-                }
-                default:
-                    GUI_ASSERT(false && "unexpected event type", );
-                }
-            });
+    connect(ui->actionAddElement, &QAction::triggered, this,
+            &MainWindow::addElement);
     connect(ui->actionRenameModel, &QAction::triggered, this, [this] {
         NameDialog nameDialog(this);
         if (!m_model->HasDefaultName())
@@ -766,6 +703,74 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+void MainWindow::addElement()
+{
+    EventDialog dialog(m_model.get(), this);
+    if (dialog.exec() == QDialog::Rejected)
+        return;
+    auto addBasicEvent = [&](mef::Attribute attr) {
+        auto basicEvent = std::make_shared<mef::BasicEvent>(dialog.name());
+        basicEvent->label(dialog.label().toStdString());
+        if (attr.name.empty() == false)
+            basicEvent->AddAttribute(std::move(attr));
+        if (auto p_expression = dialog.expression()) {
+            basicEvent->expression(p_expression.get());
+            m_model->Add(std::move(p_expression));
+        }
+        m_undoStack->push(new model::Model::AddBasicEvent(std::move(basicEvent),
+                                                          m_guiModel.get()));
+    };
+    switch (dialog.currentType()) {
+    case EventDialog::HouseEvent: {
+        auto houseEvent = std::make_shared<mef::HouseEvent>(dialog.name());
+        houseEvent->label(dialog.label().toStdString());
+        houseEvent->state(dialog.booleanConstant());
+        m_undoStack->push(new model::Model::AddHouseEvent(std::move(houseEvent),
+                                                          m_guiModel.get()));
+        break;
+    }
+    case EventDialog::BasicEvent:
+        addBasicEvent({});
+        break;
+    case EventDialog::Undeveloped:
+        addBasicEvent({"flavor", "undeveloped", ""});
+        break;
+    case EventDialog::Conditional:
+        addBasicEvent({"flavor", "conditional", ""});
+        break;
+    case EventDialog::Gate: {
+        auto gate = std::make_shared<mef::Gate>(dialog.name());
+        gate->label(dialog.label().toStdString());
+        gate->formula(extractFormula(&dialog));
+        m_undoStack->push(new model::Model::AddGate(
+            std::move(gate), dialog.faultTree(), m_guiModel.get()));
+        break;
+    }
+    default:
+        GUI_ASSERT(false && "unexpected event type", );
+    }
+}
+
+mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
+{
+    auto formula = std::make_unique<mef::Formula>(dialog->connective());
+    if (formula->type() == mef::kVote)
+        formula->vote_number(dialog->voteNumber());
+
+    for (const std::string &arg : dialog->arguments()) {
+        try {
+            formula->AddArgument(m_model->GetEvent(arg, ""));
+        } catch (std::out_of_range &) {
+            auto argEvent = std::make_shared<mef::BasicEvent>(arg);
+            argEvent->AddAttribute({"flavor", "undeveloped", ""});
+            formula->AddArgument(argEvent.get());
+            m_undoStack->push(new model::Model::AddBasicEvent(
+                std::move(argEvent), m_guiModel.get()));
+        }
+    }
+    return formula;
+}
+
 void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 {
     if (dialog->label() != element->label())
@@ -841,6 +846,31 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
     if (dialog->booleanConstant() != element->state())
         m_undoStack->push(new model::HouseEvent::SetState(
             element, dialog->booleanConstant()));
+}
+
+void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
+{
+    editElement(dialog, static_cast<model::Element *>(element));
+    bool formulaChanged = [&dialog, &element] {
+        if (dialog->connective() != element->type())
+            return true;
+        if (element->type() == mef::kVote
+            && dialog->voteNumber() != element->voteNumber())
+            return true;
+        std::vector<std::string> dialogArgs = dialog->arguments();
+        if (element->numArgs() != dialogArgs.size())
+            return true;
+        auto it = dialogArgs.begin();
+        for (const mef::Formula::EventArg &arg : element->args()) {
+            if (*it != ext::as<const mef::Event *>(arg)->id())
+                return true;
+            ++it;
+        }
+        return false;
+    }();
+    if (formulaChanged)
+        m_undoStack->push(
+            new model::Gate::SetFormula(element, extractFormula(dialog)));
 }
 
 template <class ContainerModel>
