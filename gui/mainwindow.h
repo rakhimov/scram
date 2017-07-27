@@ -130,6 +130,7 @@ private:
     /// @returns The new formula constructed from the dialog data.
     mef::FormulaPtr extractFormula(EventDialog *dialog);
 
+    template <class T>
     void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);
     void editElement(EventDialog *dialog, model::BasicEvent *element);

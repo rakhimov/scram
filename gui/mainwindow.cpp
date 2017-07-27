@@ -708,8 +708,9 @@ void MainWindow::addElement()
     EventDialog dialog(m_model.get(), this);
     if (dialog.exec() == QDialog::Rejected)
         return;
+    std::string name = dialog.name().toStdString();
     auto addBasicEvent = [&](mef::Attribute attr) {
-        auto basicEvent = std::make_unique<mef::BasicEvent>(dialog.name());
+        auto basicEvent = std::make_unique<mef::BasicEvent>(std::move(name));
         basicEvent->label(dialog.label().toStdString());
         if (attr.name.empty() == false)
             basicEvent->AddAttribute(std::move(attr));
@@ -722,7 +723,7 @@ void MainWindow::addElement()
     };
     switch (dialog.currentType()) {
     case EventDialog::HouseEvent: {
-        auto houseEvent = std::make_unique<mef::HouseEvent>(dialog.name());
+        auto houseEvent = std::make_unique<mef::HouseEvent>(std::move(name));
         houseEvent->label(dialog.label().toStdString());
         houseEvent->state(dialog.booleanConstant());
         m_undoStack->push(new model::Model::AddHouseEvent(std::move(houseEvent),
@@ -739,7 +740,7 @@ void MainWindow::addElement()
         addBasicEvent({"flavor", "conditional", ""});
         break;
     case EventDialog::Gate: {
-        auto gate = std::make_unique<mef::Gate>(dialog.name());
+        auto gate = std::make_unique<mef::Gate>(std::move(name));
         gate->label(dialog.label().toStdString());
         gate->formula(extractFormula(&dialog));
         m_undoStack->push(new model::Model::AddGate(
@@ -771,8 +772,21 @@ mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
     return formula;
 }
 
+template <class T>
 void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 {
+    if (dialog->name() != element->id()) {
+        auto *faultTree = [this, dialog]() -> mef::FaultTree * {
+            if (dialog->faultTree().empty())
+                return nullptr;
+            auto it = m_model->fault_trees().find(dialog->faultTree());
+            GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
+            return it->get();
+        }();
+        m_undoStack->push(new model::Element::SetId<T>(
+            static_cast<T *>(element), dialog->name(), m_model.get(),
+            faultTree));
+    }
     if (dialog->label() != element->label())
         m_undoStack->push(
             new model::Element::SetLabel(element, dialog->label()));
@@ -780,7 +794,7 @@ void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 
 void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 {
-    editElement(dialog, static_cast<model::Element *>(element));
+    editElement<model::BasicEvent>(dialog, element);
     std::unique_ptr<mef::Expression> expression = dialog->expression();
     auto isEqual = [](mef::Expression *lhs, mef::Expression *rhs) {
         if (lhs == rhs) // Assumes immutable expressions.
@@ -842,7 +856,7 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 
 void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 {
-    editElement(dialog, static_cast<model::Element *>(element));
+    editElement<model::HouseEvent>(dialog, element);
     if (dialog->booleanConstant() != element->state())
         m_undoStack->push(new model::HouseEvent::SetState(
             element, dialog->booleanConstant()));
@@ -850,7 +864,7 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 
 void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
 {
-    editElement(dialog, static_cast<model::Element *>(element));
+    editElement<model::Gate>(dialog, element);
     bool formulaChanged = [&dialog, &element] {
         if (dialog->connective() != element->type())
             return true;

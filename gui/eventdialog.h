@@ -70,7 +70,7 @@ public:
     }
 
     /// @returns The name data.
-    std::string name() const { return nameLine->text().toStdString(); }
+    QString name() const { return nameLine->text(); }
     /// @returns The label data.
     QString label() const
     {

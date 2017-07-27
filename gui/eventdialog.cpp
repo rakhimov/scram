@@ -228,7 +228,6 @@ void EventDialog::setupData(const model::Element &element,
     m_initName = element.id();
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());
-    nameLine->setEnabled(false);
 }
 
 void EventDialog::setupData(const model::HouseEvent &element)

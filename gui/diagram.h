@@ -104,6 +104,7 @@ protected:
 private:
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
     QMetaObject::Connection m_labelConnection; ///< Tracks the label changes.
+    QMetaObject::Connection m_idConnection; ///< Tracks the ID changes.
 };
 
 /**

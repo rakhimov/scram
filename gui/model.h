@@ -69,8 +69,46 @@ public:
         Element *m_element;
     };
 
+    template <class T>
+    class SetId : public QUndoCommand
+    {
+    public:
+        SetId(T *event, QString name, mef::Model *model,
+              mef::FaultTree *faultTree = nullptr)
+            : QUndoCommand(QObject::tr("Rename event '%1' to '%2'")
+                               .arg(event->id(), name)),
+              m_name(std::move(name)), m_event(event), m_model(model),
+              m_faultTree(faultTree)
+        {
+        }
+
+        void undo() override { redo(); }
+        void redo() override
+        {
+            QString cur_name = m_event->id();
+            if (m_name == cur_name)
+                return;
+            if (m_faultTree)
+                m_faultTree->Remove(m_event->data());
+            auto ptr = m_model->Remove(m_event->data());
+            m_event->data()->id(m_name.toStdString());
+            if (m_faultTree)
+                m_faultTree->Add(m_event->data());
+            m_model->Add(std::move(ptr));
+            emit m_event->idChanged(m_name);
+            m_name = std::move(cur_name);
+        }
+
+    private:
+        QString m_name;
+        T *m_event;
+        mef::Model *m_model;
+        mef::FaultTree *m_faultTree;
+    };
+
 signals:
     void labelChanged(const QString &label);
+    void idChanged(const QString &id);
 
 protected:
     explicit Element(mef::Element *element) : m_data(element) {}

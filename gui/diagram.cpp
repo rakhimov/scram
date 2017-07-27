@@ -52,12 +52,15 @@ Event::Event(model::Element *event, QGraphicsItem *parent)
 {
     m_labelConnection = QObject::connect(event, &model::Element::labelChanged,
                                          [this] { update(); });
+    m_idConnection = QObject::connect(event, &model::Element::idChanged,
+                                      [this] { update(); });
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 Event::~Event() noexcept
 {
     QObject::disconnect(m_labelConnection);
+    QObject::disconnect(m_idConnection);
 }
 
 QSize Event::units() const

@@ -49,6 +49,10 @@ void ElementContainerModel::connectElement(Element *element)
             = createIndex(getElementIndex(element), columnCount() - 1, element);
         emit dataChanged(index, index);
     });
+    connect(element, &Element::idChanged, this, [this, element] {
+        QModelIndex index = createIndex(getElementIndex(element), 0, element);
+        emit dataChanged(index, index);
+    });
 }
 
 QModelIndex ElementContainerModel::index(int row, int column,
