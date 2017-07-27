@@ -226,13 +226,15 @@ int launchGui(int argc, char *argv[])
         if (ret == -1)
             return 0;
         std::vector<std::string> inputFiles;
-        if (vm.count("input-files"))
-            inputFiles = vm["input-files"].as<std::vector<std::string>>();
-        if (vm.count("config-file")) {
-            w.setConfig(vm["config-file"].as<std::string>(), inputFiles);
-        } else {
-            w.addInputFiles(inputFiles);
-        }
+        try {
+            if (vm.count("input-files"))
+                inputFiles = vm["input-files"].as<std::vector<std::string>>();
+            if (vm.count("config-file")) {
+                w.setConfig(vm["config-file"].as<std::string>(), inputFiles);
+            } else {
+                w.addInputFiles(inputFiles);
+            }
+        } catch (boost::exception &) { assert(false); }
     }
     return a.exec();
 }

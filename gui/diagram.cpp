@@ -301,7 +301,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     }
     case mef::kXor: {
         auto orItem = getGateGraphicsType(mef::kOr);
-        double x1 = m_maxSize.width() * units().width() / 2;
+        double x1 = m_maxSize.width() * units().width() / 2.0;
         double h = m_maxSize.height() * units().height();
         QPainterPath paintPath;
         paintPath.lineTo(-x1, h);
@@ -342,7 +342,7 @@ void Gate::addTransferOut()
         return;
     m_transferOut = true;
     QPainterPath paintPath;
-    double x1 = m_maxSize.width() * units().width() / 2;
+    double x1 = m_maxSize.width() * units().width() / 2.0;
     double h = units().height() * std::sqrt(3) / 2;
     paintPath.lineTo(x1 + units().height(), 0);
     paintPath.lineTo(x1 + 0.5 * units().height(), h);
