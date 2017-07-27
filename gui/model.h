@@ -293,25 +293,6 @@ using ProxyTable = boost::multi_index_container<
            boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
                Element, const mef::Element *, &Element::data>>>>;
 
-/// Extracts a value from multi_index container with ownership.
-///
-/// @param[in] key  The key to lookup the value in the container.
-/// @param[in,out] container  The container with the associated value.
-///
-/// @returns The unique pointer with the extracted value.
-///
-/// @pre The value for the given key exists.
-/// @pre The container currently owns the value object.
-template <typename T, typename K>
-std::unique_ptr<T> extract(K &&key, ProxyTable<T> *container) noexcept
-{
-    auto it = container->find(std::forward<K>(key));
-    std::unique_ptr<T> result
-        = std::move(const_cast<std::unique_ptr<T> &>(*it));
-    container->erase(it);
-    return result;
-}
-
 /// The wrapper around the MEF Model.
 class Model : public Element
 {

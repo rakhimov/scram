@@ -19,6 +19,7 @@
 
 #include "model.h"
 
+#include "src/ext/multi_index.h"
 #include "src/fault_tree.h"
 
 #include "guiassert.h"
@@ -191,7 +192,7 @@ void Model::AddHouseEvent::redo()
 void Model::AddHouseEvent::undo()
 {
     m_model->m_model->Remove(m_houseEvent.get());
-    m_proxy = extract(m_houseEvent.get(), &m_model->m_houseEvents);
+    m_proxy = ext::extract(m_houseEvent.get(), &m_model->m_houseEvents);
     emit m_model->removedHouseEvent(m_proxy.get());
 }
 
@@ -213,7 +214,7 @@ void Model::AddBasicEvent::redo()
 void Model::AddBasicEvent::undo()
 {
     m_model->m_model->Remove(m_basicEvent.get());
-    m_proxy = extract(m_basicEvent.get(), &m_model->m_basicEvents);
+    m_proxy = ext::extract(m_basicEvent.get(), &m_model->m_basicEvents);
     emit m_model->removedBasicEvent(m_proxy.get());
 }
 
@@ -247,7 +248,7 @@ void Model::AddGate::undo()
     m_model->m_model->Remove(faultTree);
 
     m_model->m_model->Remove(m_gate.get());
-    m_proxy = extract(m_gate.get(), &m_model->m_gates);
+    m_proxy = ext::extract(m_gate.get(), &m_model->m_gates);
     emit m_model->removedGate(m_proxy.get());
 }
 
