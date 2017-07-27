@@ -141,6 +141,9 @@ class Element {
 /// Table of elements with unique names.
 ///
 /// @tparam T  Value or (smart/raw) pointer type deriving from Element class.
+///
+/// @pre The element names are not modified
+///      while it is in the container.
 template <typename T>
 using ElementTable = boost::multi_index_container<
     T, boost::multi_index::indexed_by<
@@ -183,13 +186,13 @@ class Role {
 
 /// Computes the full path of an element.
 ///
-/// @tparam T  Pointer to Element type deriving from Role.
+/// @tparam Tptr  Pointer to Element type deriving from Role.
 ///
 /// @param[in] element  A valid element with a name and base path.
 ///
 /// @returns A string representation of the full path.
-template <typename T>
-std::string GetFullPath(const T& element) {
+template <typename Tptr>
+std::string GetFullPath(const Tptr& element) {
   return element->base_path() + "." + element->name();
 }
 
@@ -208,7 +211,17 @@ class Id : public Element, public Role {
               RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// @returns The unique id that is set upon the construction of this element.
-  const std::string& id() const { return kId_; }
+  const std::string& id() const { return id_; }
+
+  /// Resets the element ID.
+  ///
+  /// @param[in] name  The new valid name for the element.
+  ///
+  /// @pre The element is not in any container keyed by its ID or name.
+  ///
+  /// @throws LogicError  The name is empty.
+  /// @throws InvalidArgument  The name is malformed.
+  void id(std::string name);
 
   /// Produces unique name for the model element within the same type.
   /// @{
@@ -224,12 +237,21 @@ class Id : public Element, public Role {
   ~Id() = default;
 
  private:
-  const std::string kId_;  ///< Unique Id name of an element.
+  /// Creates an ID string for an element.
+  static std::string MakeId(const Id& element) {
+    return element.role() == RoleSpecifier::kPublic ? element.name()
+                                                    : GetFullPath(&element);
+  }
+
+  std::string id_;  ///< Unique Id name of an element.
 };
 
 /// Table of elements with unique ids.
 ///
 /// @tparam T  Value or (smart/raw) pointer type deriving from Id class.
+///
+/// @pre The element IDs are not modified
+///      while it is in the container.
 template <typename T>
 using IdTable = boost::multi_index_container<
     T,

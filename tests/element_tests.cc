@@ -144,9 +144,23 @@ TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(""), LogicError);
   EXPECT_NO_THROW(NameId("name"));
   EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidationError);
+
   NameId id_public("name");
+  EXPECT_EQ(id_public.id(), id_public.name());
+
   NameId id_private("name", "path", RoleSpecifier::kPrivate);
+  EXPECT_EQ("path.name", id_private.id());
+  EXPECT_NE(id_private.id(), id_private.name());
+
   EXPECT_NE(id_public.id(), id_private.id());
+
+  // Reset.
+  id_public.id("id");
+  EXPECT_EQ("id", id_public.id());
+  EXPECT_EQ("id", id_public.name());
+  id_private.id("id");
+  EXPECT_EQ("path.id", id_private.id());
+  EXPECT_EQ("id", id_private.name());
 }
 
 }  // namespace test

@@ -97,12 +97,15 @@ Role::Role(RoleSpecifier role, std::string base_path)
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)
     : Element(std::move(name)),
       Role(role, std::move(base_path)),
-      kId_(Role::role() == RoleSpecifier::kPublic
-               ? Element::name()
-               : Role::base_path() + "." + Element::name()) {
+      id_(MakeId(*this)) {
   if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
     throw ValidationError("The element " + Element::name() +
                           " cannot be private at model scope.");
+}
+
+void Id::id(std::string name) {
+  Element::name(std::move(name));
+  id_ = MakeId(*this);
 }
 
 }  // namespace mef
