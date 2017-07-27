@@ -129,6 +129,9 @@ TEST(ElementTest, Role) {
   EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), InvalidArgument);
   EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), InvalidArgument);
   EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
+
+  EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidationError);
+  EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, ""));
 }
 
 namespace {

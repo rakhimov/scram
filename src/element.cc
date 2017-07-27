@@ -92,16 +92,14 @@ Role::Role(RoleSpecifier role, std::string base_path)
       (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
     throw InvalidArgument("Element reference base path is malformed.");
   }
+  if (kRole_ == RoleSpecifier::kPrivate && kBasePath_.empty())
+    throw ValidationError("Elements cannot be private at model scope.");
 }
 
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)
     : Element(std::move(name)),
       Role(role, std::move(base_path)),
-      id_(MakeId(*this)) {
-  if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
-    throw ValidationError("The element " + Element::name() +
-                          " cannot be private at model scope.");
-}
+      id_(MakeId(*this)) {}
 
 void Id::id(std::string name) {
   Element::name(std::move(name));
