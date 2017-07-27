@@ -35,7 +35,6 @@
 
 #include "src/event.h"
 #include "src/model.h"
-#include "src/ext/owner_ptr.h"
 
 namespace scram {
 namespace gui {
@@ -290,7 +289,7 @@ inline QString Gate::type() const
 /// @tparam T  The proxy type.
 template <typename T>
 using ProxyTable = boost::multi_index_container<
-    ext::owner_ptr<T>, boost::multi_index::indexed_by<
+    std::unique_ptr<T>, boost::multi_index::indexed_by<
            boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
                Element, const mef::Element *, &Element::data>>>>;
 
@@ -306,11 +305,9 @@ using ProxyTable = boost::multi_index_container<
 template <typename T, typename K>
 std::unique_ptr<T> extract(K &&key, ProxyTable<T> *container) noexcept
 {
-    std::unique_ptr<T> result;
     auto it = container->find(std::forward<K>(key));
-    // Note that moving owner_ptr does not invalidate it.
-    container->modify(
-        it, [&result](ext::owner_ptr<T> &owner) { result = std::move(owner); });
+    std::unique_ptr<T> result
+        = std::move(const_cast<std::unique_ptr<T> &>(*it));
     container->erase(it);
     return result;
 }
@@ -357,7 +354,7 @@ public:
 
     private:
         Model *m_model;
-        ext::owner_ptr<HouseEvent> m_proxy;
+        std::unique_ptr<HouseEvent> m_proxy;
         mef::HouseEventPtr m_houseEvent;
     };
 
@@ -371,7 +368,7 @@ public:
 
     private:
         Model *m_model;
-        ext::owner_ptr<BasicEvent> m_proxy;
+        std::unique_ptr<BasicEvent> m_proxy;
         mef::BasicEventPtr m_basicEvent;
     };
 
@@ -393,7 +390,7 @@ public:
 
     private:
         Model *m_model;
-        ext::owner_ptr<Gate> m_proxy;
+        std::unique_ptr<Gate> m_proxy;
         mef::GatePtr m_gate;
         const std::string m_faultTreeName;
     };

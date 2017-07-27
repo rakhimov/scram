@@ -184,8 +184,8 @@ Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
 void Model::AddHouseEvent::redo()
 {
     m_model->m_model->Add(m_houseEvent);
-    m_model->m_houseEvents.emplace(std::move(m_proxy));
-    emit m_model->addedHouseEvent(m_proxy.get());
+    auto it = m_model->m_houseEvents.emplace(std::move(m_proxy)).first;
+    emit m_model->addedHouseEvent(it->get());
 }
 
 void Model::AddHouseEvent::undo()
@@ -206,8 +206,8 @@ Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
 void Model::AddBasicEvent::redo()
 {
     m_model->m_model->Add(m_basicEvent);
-    m_model->m_basicEvents.emplace(std::move(m_proxy));
-    emit m_model->addedBasicEvent(m_proxy.get());
+    auto it = m_model->m_basicEvents.emplace(std::move(m_proxy)).first;
+    emit m_model->addedBasicEvent(it->get());
 }
 
 void Model::AddBasicEvent::undo()
@@ -235,8 +235,8 @@ void Model::AddGate::redo()
     emit m_model->addedFaultTree(signalPtr);
 
     m_model->m_model->Add(m_gate);
-    m_model->m_gates.emplace(std::move(m_proxy));
-    emit m_model->addedGate(m_proxy.get());
+    auto it = m_model->m_gates.emplace(std::move(m_proxy)).first;
+    emit m_model->addedGate(it->get());
 }
 
 void Model::AddGate::undo()
