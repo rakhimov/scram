@@ -61,15 +61,15 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @returns The container of component constructs of specific kind
   ///          with construct original names as keys.
   /// @{
-  const ElementTable<GatePtr>& gates() const { return gates_; }
-  const ElementTable<BasicEventPtr>& basic_events() const {
+  const ElementTable<Gate*>& gates() const { return gates_; }
+  const ElementTable<BasicEvent*>& basic_events() const {
     return basic_events_;
   }
-  const ElementTable<HouseEventPtr>& house_events() const {
+  const ElementTable<HouseEvent*>& house_events() const {
     return house_events_;
   }
-  const ElementTable<ParameterPtr>& parameters() const { return parameters_; }
-  const ElementTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
+  const ElementTable<Parameter*>& parameters() const { return parameters_; }
+  const ElementTable<CcfGroup*>& ccf_groups() const { return ccf_groups_; }
   const ElementTable<std::unique_ptr<Component>>& components() const {
     return components_;
   }
@@ -82,11 +82,11 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @throws ValidationError  The element is already in this container.
   ///
   /// @{
-  void Add(GatePtr element);
-  void Add(BasicEventPtr element);
-  void Add(HouseEventPtr element);
-  void Add(ParameterPtr element);
-  void Add(CcfGroupPtr element);
+  void Add(Gate* element);
+  void Add(BasicEvent* element);
+  void Add(HouseEvent* element);
+  void Add(Parameter* element);
+  void Add(CcfGroup* element);
   void Add(std::unique_ptr<Component> element);
   /// @}
 
@@ -101,23 +101,23 @@ class Component : public Element, public Role, private boost::noncopyable {
  private:
   /// Adds an event into this component container.
   ///
-  /// @tparam Ptr  The smart pointer type to the event.
+  /// @tparam T  The event type.
   /// @tparam Container  Map with the event's original name as the key.
   ///
   /// @param[in] event  The event to be added to this component.
   /// @param[in,out] container  The destination container.
   ///
   /// @throws ValidationError  The event is already in this container.
-  template <class Ptr, class Container>
-  void AddEvent(const Ptr& event, Container* container);
+  template <class T, class Container>
+  void AddEvent(T* event, Container* container);
 
   /// Container for component constructs with original names as keys.
   /// @{
-  ElementTable<GatePtr> gates_;
-  ElementTable<BasicEventPtr> basic_events_;
-  ElementTable<HouseEventPtr> house_events_;
-  ElementTable<ParameterPtr> parameters_;
-  ElementTable<CcfGroupPtr> ccf_groups_;
+  ElementTable<Gate*> gates_;
+  ElementTable<BasicEvent*> basic_events_;
+  ElementTable<HouseEvent*> house_events_;
+  ElementTable<Parameter*> parameters_;
+  ElementTable<CcfGroup*> ccf_groups_;
   ElementTable<std::unique_ptr<Component>> components_;
   /// @}
 };

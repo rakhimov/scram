@@ -336,6 +336,7 @@ public:
     private:
         Model *m_model;
         std::unique_ptr<HouseEvent> m_proxy;
+        mef::HouseEvent *const m_address;
         mef::HouseEventPtr m_houseEvent;
     };
 
@@ -350,6 +351,7 @@ public:
     private:
         Model *m_model;
         std::unique_ptr<BasicEvent> m_proxy;
+        mef::BasicEvent *const m_address;
         mef::BasicEventPtr m_basicEvent;
     };
 
@@ -372,6 +374,7 @@ public:
     private:
         Model *m_model;
         std::unique_ptr<Gate> m_proxy;
+        mef::Gate *const m_address;
         mef::GatePtr m_gate;
         const std::string m_faultTreeName;
     };

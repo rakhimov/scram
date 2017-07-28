@@ -178,21 +178,21 @@ Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
     : QUndoCommand(QObject::tr("Add house-event '%1'")
                        .arg(QString::fromStdString(houseEvent->id()))),
       m_model(model), m_proxy(std::make_unique<HouseEvent>(houseEvent.get())),
-      m_houseEvent(std::move(houseEvent))
+      m_address(houseEvent.get()), m_houseEvent(std::move(houseEvent))
 {
 }
 
 void Model::AddHouseEvent::redo()
 {
-    m_model->m_model->Add(m_houseEvent);
+    m_model->m_model->Add(std::move(m_houseEvent));
     auto it = m_model->m_houseEvents.emplace(std::move(m_proxy)).first;
     emit m_model->addedHouseEvent(it->get());
 }
 
 void Model::AddHouseEvent::undo()
 {
-    m_model->m_model->Remove(m_houseEvent.get());
-    m_proxy = ext::extract(m_houseEvent.get(), &m_model->m_houseEvents);
+    m_houseEvent = m_model->m_model->Remove(m_address);
+    m_proxy = ext::extract(m_address, &m_model->m_houseEvents);
     emit m_model->removedHouseEvent(m_proxy.get());
 }
 
@@ -200,21 +200,21 @@ Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
     : QUndoCommand(QObject::tr("Add basic-event '%1'")
                        .arg(QString::fromStdString(basicEvent->id()))),
       m_model(model), m_proxy(std::make_unique<BasicEvent>(basicEvent.get())),
-      m_basicEvent(std::move(basicEvent))
+      m_address(basicEvent.get()), m_basicEvent(std::move(basicEvent))
 {
 }
 
 void Model::AddBasicEvent::redo()
 {
-    m_model->m_model->Add(m_basicEvent);
+    m_model->m_model->Add(std::move(m_basicEvent));
     auto it = m_model->m_basicEvents.emplace(std::move(m_proxy)).first;
     emit m_model->addedBasicEvent(it->get());
 }
 
 void Model::AddBasicEvent::undo()
 {
-    m_model->m_model->Remove(m_basicEvent.get());
-    m_proxy = ext::extract(m_basicEvent.get(), &m_model->m_basicEvents);
+    m_basicEvent = m_model->m_model->Remove(m_address);
+    m_proxy = ext::extract(m_address, &m_model->m_basicEvents);
     emit m_model->removedBasicEvent(m_proxy.get());
 }
 
@@ -222,20 +222,21 @@ Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
     : QUndoCommand(
           QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
       m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
-      m_gate(std::move(gate)), m_faultTreeName(std::move(faultTree))
+      m_address(gate.get()), m_gate(std::move(gate)),
+      m_faultTreeName(std::move(faultTree))
 {
 }
 
 void Model::AddGate::redo()
 {
     auto faultTree = std::make_unique<mef::FaultTree>(m_faultTreeName);
-    faultTree->Add(m_gate);
+    faultTree->Add(m_address);
     faultTree->CollectTopEvents();
     auto *signalPtr = faultTree.get();
     m_model->m_model->Add(std::move(faultTree));
     emit m_model->addedFaultTree(signalPtr);
 
-    m_model->m_model->Add(m_gate);
+    m_model->m_model->Add(std::move(m_gate));
     auto it = m_model->m_gates.emplace(std::move(m_proxy)).first;
     emit m_model->addedGate(it->get());
 }
@@ -247,8 +248,8 @@ void Model::AddGate::undo()
     emit m_model->aboutToRemoveFaultTree(faultTree);
     m_model->m_model->Remove(faultTree);
 
-    m_model->m_model->Remove(m_gate.get());
-    m_proxy = ext::extract(m_gate.get(), &m_model->m_gates);
+    m_gate = m_model->m_model->Remove(m_address);
+    m_proxy = ext::extract(m_address, &m_model->m_gates);
     emit m_model->removedGate(m_proxy.get());
 }
 

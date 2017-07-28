@@ -127,7 +127,7 @@ void Serialize(const FaultTree& fault_tree, XmlStreamElement* parent) {
   assert(fault_tree.role() == RoleSpecifier::kPublic);
   XmlStreamElement ft_element = parent->AddChild("define-fault-tree");
   SerializeElement(fault_tree, &ft_element);
-  for (const GatePtr& gate : fault_tree.gates())
+  for (Gate* gate : fault_tree.gates())
     Serialize(*gate, &ft_element);
 }
 

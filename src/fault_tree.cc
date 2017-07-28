@@ -30,28 +30,26 @@ Component::Component(std::string name, std::string base_path,
     : Element(std::move(name)),
       Role(role, std::move(base_path)) {}
 
-void Component::Add(GatePtr gate) {
-  AddEvent(gate, &gates_);
-}
+void Component::Add(Gate* gate) { AddEvent(gate, &gates_); }
 
-void Component::Add(BasicEventPtr basic_event) {
+void Component::Add(BasicEvent* basic_event) {
   AddEvent(basic_event, &basic_events_);
 }
 
-void Component::Add(HouseEventPtr house_event) {
+void Component::Add(HouseEvent* house_event) {
   AddEvent(house_event, &house_events_);
 }
 
-void Component::Add(ParameterPtr parameter) {
-  mef::AddElement<ValidationError>(std::move(parameter), &parameters_,
+void Component::Add(Parameter* parameter) {
+  mef::AddElement<ValidationError>(parameter, &parameters_,
                                    "Duplicate parameter: ");
 }
 
-void Component::Add(CcfGroupPtr ccf_group) {
+void Component::Add(CcfGroup* ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  for (const BasicEventPtr& member : ccf_group->members()) {
+  for (BasicEvent* member : ccf_group->members()) {
     const std::string& name = member->name();
     if (gates_.count(name) || basic_events_.count(name) ||
         house_events_.count(name)) {
@@ -72,15 +70,13 @@ void Component::Add(std::unique_ptr<Component> component) {
 }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  for (const GatePtr& gate : gates_)
-    gates->insert(gate.get());
-
+  gates->insert(gates_.begin(), gates_.end());
   for (const ComponentPtr& component : components_)
     component->GatherGates(gates);
 }
 
-template <class Ptr, class Container>
-void Component::AddEvent(const Ptr& event, Container* container) {
+template <class T, class Container>
+void Component::AddEvent(T* event, Container* container) {
   const std::string& name = event->name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {

@@ -22,6 +22,7 @@
 
 #include "error.h"
 #include "ext/find_iterator.h"
+#include "ext/multi_index.h"
 
 namespace scram {
 namespace mef {
@@ -103,39 +104,39 @@ namespace {
 
 /// Helper function to remove events from containers.
 template <class T, class Table>
-void RemoveEvent(T* event, Table* table) {
+std::unique_ptr<T> RemoveEvent(T* event, Table* table) {
   auto it = table->find(event->id());
   if (it == table->end())
-    throw std::out_of_range("Event " + event->id() + " is not in the model.");
+    throw UndefinedElement("Event " + event->id() + " is not in the model.");
   if (it->get() != event)
-    throw std::out_of_range("Duplicate event " + event->id() +
-                            " does not belong to the model.");
-  table->erase(it);
+    throw UndefinedElement("Duplicate event " + event->id() +
+                           " does not belong to the model.");
+  return ext::extract(it, table);
 }
 
 }  // namespace
 
-void Model::Remove(HouseEvent* house_event) {
-  RemoveEvent(house_event, &house_events_);
+HouseEventPtr Model::Remove(HouseEvent* house_event) {
+  return RemoveEvent(house_event, &house_events_);
 }
 
-void Model::Remove(BasicEvent* basic_event) {
-  RemoveEvent(basic_event, &basic_events_);
+BasicEventPtr Model::Remove(BasicEvent* basic_event) {
+  return RemoveEvent(basic_event, &basic_events_);
 }
 
-void Model::Remove(Gate* gate) {
-  RemoveEvent(gate, &gates_);
+GatePtr Model::Remove(Gate* gate) {
+  return RemoveEvent(gate, &gates_);
 }
 
-void Model::Remove(FaultTree* fault_tree) {
+FaultTreePtr Model::Remove(FaultTree* fault_tree) {
   auto it = fault_trees_.find(fault_tree->name());
   if (it == fault_trees_.end())
-    throw std::out_of_range("Fault tree " + fault_tree->name() +
-                            " is not in the model.");
+    throw UndefinedElement("Fault tree " + fault_tree->name() +
+                           " is not in the model.");
   if (it->get() != fault_tree)
-    throw std::out_of_range("Duplicate fault tree " + fault_tree->name() +
-                            " does not belong to the model.");
-  fault_trees_.erase(it);
+    throw UndefinedElement("Duplicate fault tree " + fault_tree->name() +
+                           " does not belong to the model.");
+  return ext::extract(it, &fault_trees_);
 }
 
 }  // namespace mef

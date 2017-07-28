@@ -71,7 +71,6 @@ class HouseEvent : public Event {
 };
 
 class Gate;
-using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public Event {
@@ -149,9 +148,12 @@ class BasicEvent : public Event {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
-using HouseEventPtr = std::shared_ptr<HouseEvent>;  ///< Shared house events.
-using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
+/// Convenience aliases for smart pointers @{
+using EventPtr = std::unique_ptr<Event>;
+using HouseEventPtr = std::unique_ptr<HouseEvent>;
+using BasicEventPtr = std::unique_ptr<BasicEvent>;
+using GatePtr = std::unique_ptr<Gate>;
+/// @}
 
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.

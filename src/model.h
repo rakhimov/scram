@@ -133,12 +133,14 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @param[in] element  An element defined in this model.
   ///
-  /// @throws std::out_of_range  The element cannot be found.
+  /// @returns The removed element.
+  ///
+  /// @throws UndefinedElement  The element cannot be found.
   /// @{
-  void Remove(HouseEvent* element);
-  void Remove(BasicEvent* element);
-  void Remove(Gate* element);
-  void Remove(FaultTree* element);
+  HouseEventPtr Remove(HouseEvent* element);
+  BasicEventPtr Remove(BasicEvent* element);
+  GatePtr Remove(Gate* element);
+  FaultTreePtr Remove(FaultTree* element);
   /// @}
 
  private:

@@ -709,7 +709,7 @@ void MainWindow::addElement()
     if (dialog.exec() == QDialog::Rejected)
         return;
     auto addBasicEvent = [&](mef::Attribute attr) {
-        auto basicEvent = std::make_shared<mef::BasicEvent>(dialog.name());
+        auto basicEvent = std::make_unique<mef::BasicEvent>(dialog.name());
         basicEvent->label(dialog.label().toStdString());
         if (attr.name.empty() == false)
             basicEvent->AddAttribute(std::move(attr));
@@ -722,7 +722,7 @@ void MainWindow::addElement()
     };
     switch (dialog.currentType()) {
     case EventDialog::HouseEvent: {
-        auto houseEvent = std::make_shared<mef::HouseEvent>(dialog.name());
+        auto houseEvent = std::make_unique<mef::HouseEvent>(dialog.name());
         houseEvent->label(dialog.label().toStdString());
         houseEvent->state(dialog.booleanConstant());
         m_undoStack->push(new model::Model::AddHouseEvent(std::move(houseEvent),
@@ -739,7 +739,7 @@ void MainWindow::addElement()
         addBasicEvent({"flavor", "conditional", ""});
         break;
     case EventDialog::Gate: {
-        auto gate = std::make_shared<mef::Gate>(dialog.name());
+        auto gate = std::make_unique<mef::Gate>(dialog.name());
         gate->label(dialog.label().toStdString());
         gate->formula(extractFormula(&dialog));
         m_undoStack->push(new model::Model::AddGate(
@@ -761,7 +761,7 @@ mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
         try {
             formula->AddArgument(m_model->GetEvent(arg));
         } catch (UndefinedElement &) {
-            auto argEvent = std::make_shared<mef::BasicEvent>(arg);
+            auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
             formula->AddArgument(argEvent.get());
             m_undoStack->push(new model::Model::AddBasicEvent(

@@ -84,12 +84,12 @@ class Initializer : private boost::noncopyable {
       std::vector<std::pair<boost::variant<Ts*...>, const xmlpp::Element*>>;
   /// Container with full paths to elements.
   ///
-  /// @tparam Ptr  Pointer type to the T.
-  template <typename Ptr>
+  /// @tparam T  The element type.
+  template <typename T>
   using PathTable = boost::multi_index_container<
-      Ptr, boost::multi_index::indexed_by<
-               boost::multi_index::hashed_unique<boost::multi_index::global_fun<
-                   const Ptr&, std::string, &GetFullPath>>>>;
+      T*, boost::multi_index::indexed_by<
+              boost::multi_index::hashed_unique<boost::multi_index::global_fun<
+                  const T*, std::string, &GetFullPath>>>>;
 
   /// @tparam T  Type of an expression.
   /// @tparam N  The number of arguments for the expression.
@@ -186,9 +186,8 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  Issues with the new element or registration.
   template <class T>
-  std::shared_ptr<T> Register(const xmlpp::Element* xml_node,
-                              const std::string& base_path,
-                              RoleSpecifier base_role);
+  T* Register(const xmlpp::Element* xml_node, const std::string& base_path,
+              RoleSpecifier base_role);
 
   /// Adds additional data to element definition
   /// after processing all the input files.
@@ -360,8 +359,8 @@ class Initializer : private boost::noncopyable {
   /// The reference is case sensitive
   /// and can contain an identifier, full path, or local path.
   ///
-  /// @tparam T  The entity type.
   /// @tparam P  The pointer type managing the entity.
+  /// @tparam T  The entity type.
   ///
   /// @param[in] entity_reference  Reference string to the entity.
   /// @param[in] base_path  The series of containers indicating the scope.
@@ -371,11 +370,10 @@ class Initializer : private boost::noncopyable {
   /// @returns Pointer to the requested entity.
   ///
   /// @throws std::out_of_range  The entity cannot be found.
-  template <class P>
-  typename P::element_type* GetEntity(const std::string& entity_reference,
-                                      const std::string& base_path,
-                                      const IdTable<P>& container,
-                                      const PathTable<P>& path_container);
+  template <class P, class T = typename P::element_type>
+  T* GetEntity(const std::string& entity_reference,
+               const std::string& base_path, const IdTable<P>& container,
+               const PathTable<T>& path_container);
 
   /// Validates if the initialization of the analysis is successful.
   ///
@@ -462,10 +460,10 @@ class Initializer : private boost::noncopyable {
 
   /// Containers for reference resolution with paths.
   /// @{
-  PathTable<GatePtr> path_gates_;
-  PathTable<BasicEventPtr> path_basic_events_;
-  PathTable<HouseEventPtr> path_house_events_;
-  PathTable<ParameterPtr> path_parameters_;
+  PathTable<Gate> path_gates_;
+  PathTable<BasicEvent> path_basic_events_;
+  PathTable<HouseEvent> path_house_events_;
+  PathTable<Parameter> path_parameters_;
   /// @}
 };
 

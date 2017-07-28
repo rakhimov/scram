@@ -187,13 +187,13 @@ class Role {
 
 /// Computes the full path of an element.
 ///
-/// @tparam Tptr  Pointer to Element type deriving from Role.
+/// @tparam T  Element type deriving from Role.
 ///
 /// @param[in] element  A valid element with a name and base path.
 ///
 /// @returns A string representation of the full path.
-template <typename Tptr>
-std::string GetFullPath(const Tptr& element) {
+template <typename T>
+std::string GetFullPath(const T* element) {
   return element->base_path() + "." + element->name();
 }
 
