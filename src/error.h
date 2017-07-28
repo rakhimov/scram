@@ -80,6 +80,11 @@ struct DuplicateArgumentError : public ValidationError {
   using ValidationError::ValidationError;
 };
 
+/// The error for undefined elements in a model.
+struct UndefinedElement : public ValidationError {
+  using ValidationError::ValidationError;
+};
+
 /// Signals unacceptable cycles in invalid structures.
 struct CycleError : public ValidationError {
   using ValidationError::ValidationError;

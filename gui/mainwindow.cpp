@@ -759,8 +759,8 @@ mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
 
     for (const std::string &arg : dialog->arguments()) {
         try {
-            formula->AddArgument(m_model->GetEvent(arg, ""));
-        } catch (std::out_of_range &) {
+            formula->AddArgument(m_model->GetEvent(arg));
+        } catch (UndefinedElement &) {
             auto argEvent = std::make_shared<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
             formula->AddArgument(argEvent.get());

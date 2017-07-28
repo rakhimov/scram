@@ -65,29 +65,38 @@ void Model::Add(ParameterPtr parameter) {
 
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
-  auto check = [&id](auto& table) { return table.entities_by_id.count(id); };
-  if (check(gates_) || check(basic_events_) || check(house_events_))
+  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
     throw RedefinitionError("Redefinition of event: " + id);
 }
 
 void Model::Add(HouseEventPtr house_event) {
   CheckDuplicateEvent(*house_event);
-  house_events_.insert(house_event);
+  house_events_.insert(std::move(house_event));
 }
 
 void Model::Add(BasicEventPtr basic_event) {
   CheckDuplicateEvent(*basic_event);
-  basic_events_.insert(basic_event);
+  basic_events_.insert(std::move(basic_event));
 }
 
 void Model::Add(GatePtr gate) {
   CheckDuplicateEvent(*gate);
-  gates_.insert(gate);
+  gates_.insert(std::move(gate));
 }
 
 void Model::Add(CcfGroupPtr ccf_group) {
   mef::AddElement<RedefinitionError>(std::move(ccf_group), &ccf_groups_,
                                      "Redefinition of CCF group: ");
+}
+
+Formula::EventArg Model::GetEvent(const std::string& id) {
+  if (auto it = ext::find(basic_events(), id))
+    return it->get();
+  if (auto it = ext::find(gates(), id))
+    return it->get();
+  if (auto it = ext::find(house_events(), id))
+    return it->get();
+  throw UndefinedElement("The event " + id + " is not in the model.");
 }
 
 namespace {
@@ -101,7 +110,7 @@ void RemoveEvent(T* event, Table* table) {
   if (it->get() != event)
     throw std::out_of_range("Duplicate event " + event->id() +
                             " does not belong to the model.");
-  table->erase(event);
+  table->erase(it);
 }
 
 }  // namespace
@@ -128,78 +137,6 @@ void Model::Remove(FaultTree* fault_tree) {
                             " does not belong to the model.");
   fault_trees_.erase(it);
 }
-
-Parameter* Model::GetParameter(const std::string& entity_reference,
-                               const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, parameters_);
-}
-
-HouseEvent* Model::GetHouseEvent(const std::string& entity_reference,
-                                 const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, house_events_);
-}
-
-BasicEvent* Model::GetBasicEvent(const std::string& entity_reference,
-                                 const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, basic_events_);
-}
-
-Gate* Model::GetGate(const std::string& entity_reference,
-                     const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, gates_);
-}
-
-template <class T>
-T* Model::GetEntity(const std::string& entity_reference,
-                    const std::string& base_path,
-                    const LookupTable<T>& container) {
-  assert(!entity_reference.empty());
-  if (!base_path.empty()) {  // Check the local scope.
-    if (auto it = ext::find(container.entities_by_path,
-                            base_path + "." + entity_reference))
-      return it->get();
-  }
-
-  auto at = [&entity_reference](const auto& reference_container) {
-    if (auto it = ext::find(reference_container, entity_reference))
-      return it->get();
-    throw std::out_of_range("The event cannot be found.");
-  };
-
-  if (entity_reference.find('.') == std::string::npos)  // Public entity.
-    return at(container.entities_by_id);
-
-  return at(container.entities_by_path);  // Direct access.
-}
-
-/// Helper macro for Model::GetEvent event discovery.
-#define GET_EVENT(access, path_reference)                          \
-  do {                                                             \
-    if (auto it = ext::find(gates_.access, path_reference))        \
-      return it->get();                                            \
-    if (auto it = ext::find(basic_events_.access, path_reference)) \
-      return it->get();                                            \
-    if (auto it = ext::find(house_events_.access, path_reference)) \
-      return it->get();                                            \
-  } while (false)
-
-Formula::EventArg Model::GetEvent(const std::string& entity_reference,
-                                  const std::string& base_path) {
-  assert(!entity_reference.empty());
-  if (!base_path.empty()) {  // Check the local scope.
-    std::string full_path = base_path + "." + entity_reference;
-    GET_EVENT(entities_by_path, full_path);
-  }
-
-  if (entity_reference.find('.') == std::string::npos) {  // Public entity.
-    GET_EVENT(entities_by_id, entity_reference);
-  } else {  // Direct access.
-    GET_EVENT(entities_by_path, entity_reference);
-  }
-  throw std::out_of_range("The event cannot be bound.");
-}
-
-#undef GET_EVENT
 
 }  // namespace mef
 }  // namespace scram

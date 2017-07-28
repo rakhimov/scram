@@ -232,6 +232,7 @@ GatePtr Initializer::Register(const xmlpp::Element* gate_node,
                               RoleSpecifier container_role) {
   GatePtr gate = ConstructElement<Gate>(gate_node, base_path, container_role);
   Register(gate, gate_node);
+  path_gates_.insert(gate);
   tbd_.emplace_back(gate.get(), gate_node);
   return gate;
 }
@@ -243,6 +244,7 @@ BasicEventPtr Initializer::Register(const xmlpp::Element* event_node,
   BasicEventPtr basic_event =
       ConstructElement<BasicEvent>(event_node, base_path, container_role);
   Register(basic_event, event_node);
+  path_basic_events_.insert(basic_event);
   tbd_.emplace_back(basic_event.get(), event_node);
   return basic_event;
 }
@@ -254,6 +256,7 @@ HouseEventPtr Initializer::Register(const xmlpp::Element* event_node,
   HouseEventPtr house_event =
       ConstructElement<HouseEvent>(event_node, base_path, container_role);
   Register(house_event, event_node);
+  path_house_events_.insert(house_event);
 
   // Only Boolean constant.
   xmlpp::NodeSet expression = event_node->find("./constant");
@@ -276,6 +279,7 @@ ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
   ParameterPtr parameter =
       ConstructElement<Parameter>(param_node, base_path, container_role);
   Register(parameter, param_node);
+  path_parameters_.insert(parameter);
   tbd_.emplace_back(parameter.get(), param_node);
 
   // Attach units.
@@ -646,17 +650,17 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        formula->AddArgument(model_->GetEvent(name, base_path));
+        formula->AddArgument(GetEvent(name, base_path));
 
       } else if (element_type == "gate") {
-        formula->AddArgument(model_->GetGate(name, base_path));
+        formula->AddArgument(GetGate(name, base_path));
 
       } else if (element_type == "basic-event") {
-        formula->AddArgument(model_->GetBasicEvent(name, base_path));
+        formula->AddArgument(GetBasicEvent(name, base_path));
 
       } else {
         assert(element_type == "house-event");
-        formula->AddArgument(model_->GetHouseEvent(name, base_path));
+        formula->AddArgument(GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
       throw ValidationError(
@@ -1122,7 +1126,7 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
   if (expr_type == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
     try {
-      Parameter* param = model_->GetParameter(name, base_path);
+      Parameter* param = GetParameter(name, base_path);
       param->usage(true);
       check_units(*param);
       return param;
@@ -1176,6 +1180,86 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
     throw;
   }
 }
+
+Parameter* Initializer::GetParameter(const std::string& entity_reference,
+                                     const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->parameters(),
+                   path_parameters_);
+}
+
+HouseEvent* Initializer::GetHouseEvent(const std::string& entity_reference,
+                                       const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->house_events(),
+                   path_house_events_);
+}
+
+BasicEvent* Initializer::GetBasicEvent(const std::string& entity_reference,
+                                       const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->basic_events(),
+                   path_basic_events_);
+}
+
+Gate* Initializer::GetGate(const std::string& entity_reference,
+                           const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->gates(), path_gates_);
+}
+
+template <class P>
+typename P::element_type* Initializer::GetEntity(
+    const std::string& entity_reference, const std::string& base_path,
+    const IdTable<P>& container, const PathTable<P>& path_container) {
+  assert(!entity_reference.empty());
+  if (!base_path.empty()) {  // Check the local scope.
+    if (auto it = ext::find(path_container,
+                            base_path + "." + entity_reference))
+      return it->get();
+  }
+
+  auto at = [&entity_reference](const auto& reference_container) {
+    if (auto it = ext::find(reference_container, entity_reference))
+      return it->get();
+    throw std::out_of_range("The entity cannot be found.");
+  };
+
+  if (entity_reference.find('.') == std::string::npos)  // Public entity.
+    return at(container);
+
+  return at(path_container);  // Direct access.
+}
+
+/// Helper macro for Initializer::GetEvent event discovery.
+#define GET_EVENT(gates, basic_events, house_events, path_reference) \
+  do {                                                               \
+    if (auto it = ext::find(gates, path_reference))                  \
+      return it->get();                                              \
+    if (auto it = ext::find(basic_events, path_reference))           \
+      return it->get();                                              \
+    if (auto it = ext::find(house_events, path_reference))           \
+      return it->get();                                              \
+  } while (false)
+
+Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
+                                        const std::string& base_path) {
+  // Do not implement this in terms of
+  // GetGate, GetBasicEvent, or GetHouseEvent.
+  // The semantics for local lookup with the base type is different.
+  assert(!entity_reference.empty());
+  if (!base_path.empty()) {  // Check the local scope.
+    std::string full_path = base_path + "." + entity_reference;
+    GET_EVENT(path_gates_, path_basic_events_, path_house_events_, full_path);
+  }
+
+  if (entity_reference.find('.') == std::string::npos) {  // Public entity.
+    GET_EVENT(model_->gates(), model_->basic_events(), model_->house_events(),
+              entity_reference);
+  } else {  // Direct access.
+    GET_EVENT(path_gates_, path_basic_events_, path_house_events_,
+              entity_reference);
+  }
+  throw std::out_of_range("The event cannot be bound.");
+}
+
+#undef GET_EVENT
 
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.
