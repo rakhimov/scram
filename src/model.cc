@@ -63,21 +63,25 @@ void Model::Add(const ParameterPtr& parameter) {
                                      "Redefinition of parameter: ");
 }
 
+void Model::CheckDuplicateEvent(const Event& event) {
+  const std::string& id = event.id();
+  auto check = [&id](auto& table) { return table.entities_by_id.count(id); };
+  if (check(gates_) || check(basic_events_) || check(house_events_))
+    throw RedefinitionError("Redefinition of event: " + id);
+}
+
 void Model::Add(const HouseEventPtr& house_event) {
-  mef::AddElement<RedefinitionError>(house_event.get(), &events_,
-                                     "Redefinition of event: ");
+  CheckDuplicateEvent(*house_event);
   house_events_.insert(house_event);
 }
 
 void Model::Add(const BasicEventPtr& basic_event) {
-  mef::AddElement<RedefinitionError>(basic_event.get(), &events_,
-                                     "Redefinition of event: ");
+  CheckDuplicateEvent(*basic_event);
   basic_events_.insert(basic_event);
 }
 
 void Model::Add(const GatePtr& gate) {
-  mef::AddElement<RedefinitionError>(gate.get(), &events_,
-                                     "Redefinition of event: ");
+  CheckDuplicateEvent(*gate);
   gates_.insert(gate);
 }
 
@@ -86,43 +90,32 @@ void Model::Add(const CcfGroupPtr& ccf_group) {
                                      "Redefinition of CCF group: ");
 }
 
-void Model::Remove(HouseEvent* house_event) {
-  auto it = events_.find(house_event->id());
-  if (it == events_.end())
-    throw std::out_of_range("House event " + house_event->id() +
-                            " is not in the model.");
-  if (*it != house_event)
-    throw std::out_of_range("Duplicate event " + house_event->id() +
-                            " does not belong to the model.");
+namespace {
 
-  events_.erase(it);
-  house_events_.erase(house_event);
+/// Helper function to remove events from containers.
+template <class T, class Table>
+void RemoveEvent(T* event, Table* table) {
+  auto it = table->find(event->id());
+  if (it == table->end())
+    throw std::out_of_range("Event " + event->id() + " is not in the model.");
+  if (it->get() != event)
+    throw std::out_of_range("Duplicate event " + event->id() +
+                            " does not belong to the model.");
+  table->erase(event);
+}
+
+}  // namespace
+
+void Model::Remove(HouseEvent* house_event) {
+  RemoveEvent(house_event, &house_events_);
 }
 
 void Model::Remove(BasicEvent* basic_event) {
-  auto it = events_.find(basic_event->id());
-  if (it == events_.end())
-    throw std::out_of_range("Basic event " + basic_event->id() +
-                            " is not in the model.");
-  if (*it != basic_event)
-    throw std::out_of_range("Duplicate event " + basic_event->id() +
-                            " does not belong to the model.");
-
-  events_.erase(it);
-  basic_events_.erase(basic_event);
+  RemoveEvent(basic_event, &basic_events_);
 }
 
 void Model::Remove(Gate* gate) {
-  auto it = events_.find(gate->id());
-  if (it == events_.end())
-    throw std::out_of_range("Gate " + gate->id() +
-                            " is not in the model.");
-  if (*it != gate)
-    throw std::out_of_range("Duplicate event " + gate->id() +
-                            " does not belong to the model.");
-
-  events_.erase(it);
-  gates_.erase(gate);
+  RemoveEvent(gate, &gates_);
 }
 
 void Model::Remove(FaultTree* fault_tree) {
@@ -152,7 +145,7 @@ BasicEvent* Model::GetBasicEvent(const std::string& entity_reference,
 }
 
 Gate* Model::GetGate(const std::string& entity_reference,
-                       const std::string& base_path) {
+                     const std::string& base_path) {
   return GetEntity(entity_reference, base_path, gates_);
 }
 

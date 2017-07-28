@@ -195,10 +195,20 @@ class Model : public Element, private boost::noncopyable {
       return it;
     }
 
+    /// Finds the element by its id.
+    ///
+    /// @param[in] id  The valid id string to lookup.
+    ///
+    /// @returns The iterator to the element in IdTable or end().
+    auto find(const std::string& id) { return entities_by_id.find(id); }
+
+    /// @returns The iterator to the end of the IdTable.
+    auto end() const { return entities_by_id.end(); }
+
     /// Erases an element from the tables.
     ///
     /// @param[in,out] entity  The id element.
-    void erase(T *entity) {
+    void erase(T* entity) {
       entities_by_path.erase(GetFullPath(entity));
       entities_by_id.erase(entity->id());
     }
@@ -224,6 +234,13 @@ class Model : public Element, private boost::noncopyable {
   T* GetEntity(const std::string& entity_reference,
                const std::string& base_path, const LookupTable<T>& container);
 
+  /// Checks if an event with the same id is already in the model.
+  ///
+  /// @param[in] event  The event to be tested for duplicate before insertion.
+  ///
+  /// @throws RedefinitionError  The element is already defined in the model.
+  void CheckDuplicateEvent(const Event& event);
+
   /// A collection of defined constructs in the model.
   /// @{
   ElementTable<InitiatingEventPtr> initiating_events_;
@@ -240,7 +257,6 @@ class Model : public Element, private boost::noncopyable {
   std::vector<std::unique_ptr<Expression>> expressions_;
   std::vector<std::unique_ptr<Instruction>> instructions_;
   /// @}
-  IdTable<Event*> events_;  ///< All events by ids.
   Context context_;  ///< The context to be used by test-event expressions.
 };
 
