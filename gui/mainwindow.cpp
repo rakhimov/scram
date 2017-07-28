@@ -1129,7 +1129,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                 auto *table = new QTableWidget(nullptr);
                 table->setColumnCount(8);
                 table->setHorizontalHeaderLabels(
-                    {tr("Id"), tr("Occurrence"), tr("Probability"), tr("MIF"),
+                    {tr("ID"), tr("Occurrence"), tr("Probability"), tr("MIF"),
                      tr("CIF"), tr("DIF"), tr("RAW"), tr("RRW")});
                 auto &records = result.importance_analysis->importance();
                 table->setRowCount(records.size());

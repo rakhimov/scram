@@ -132,7 +132,7 @@ QVariant BasicEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("Id");
+        return tr("ID");
     case 1:
         return tr("Flavor");
     case 2:
@@ -206,7 +206,7 @@ QVariant HouseEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("Id");
+        return tr("ID");
     case 1:
         return tr("State");
     case 2:
@@ -322,7 +322,7 @@ QVariant GateContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("Id");
+        return tr("ID");
     case 1:
         return tr("Connective");
     case 2:
