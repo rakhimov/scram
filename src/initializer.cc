@@ -354,7 +354,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   if (!model_) {  // Create only one model for multiple files.
     model_ = ConstructElement<Model>(XmlElement(root));
-    model_->mission_time()->value(settings_.mission_time());
+    model_->mission_time().value(settings_.mission_time());
   }
 
   for (const xmlpp::Node* node : root->find("./define-initiating-event")) {
@@ -1141,8 +1141,8 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
           (base_path.empty() ? "" : " with base path " + base_path));
     }
   } else if (expr_type == "system-mission-time") {
-    check_units(*model_->mission_time());
-    return model_->mission_time().get();
+    check_units(model_->mission_time());
+    return &model_->mission_time();
   }
   return nullptr;  // The expression is not a parameter.
 }

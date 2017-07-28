@@ -50,7 +50,7 @@ void RiskAnalysisTest::ProcessInputFiles(
     const std::vector<std::string>& input_files) {
   mef::Initializer init(input_files, settings);
   model = init.model();
-  analysis = std::make_unique<RiskAnalysis>(model, settings);
+  analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
   result_ = Result();
 }
 

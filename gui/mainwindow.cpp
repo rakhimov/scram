@@ -231,7 +231,7 @@ MainWindow::MainWindow(QWidget *parent)
         WaitDialog progress(this);
         progress.setLabelText(tr("Running analysis..."));
         auto analysis
-            = std::make_unique<core::RiskAnalysis>(m_model, m_settings);
+            = std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
         QFutureWatcher<void> futureWatcher;
         connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
         futureWatcher.setFuture(

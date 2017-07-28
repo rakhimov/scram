@@ -31,7 +31,7 @@ const char Model::kDefaultName[] = "__unnamed-model__";
 
 Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),
-      mission_time_(std::make_shared<MissionTime>()) {}
+      mission_time_(std::make_unique<MissionTime>()) {}
 
 void Model::Add(InitiatingEventPtr initiating_event) {
   mef::AddElement<RedefinitionError>(std::move(initiating_event),

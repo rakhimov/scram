@@ -306,8 +306,8 @@ std::unique_ptr<mef::Expression> EventDialog::expression() const
             new mef::ConstantExpression(exponentialRate->text().toDouble()));
         auto *rate_arg = rate.get();
         m_model->Add(std::move(rate));
-        return std::make_unique<mef::Exponential>(
-            rate_arg, m_model->mission_time().get());
+        return std::make_unique<mef::Exponential>(rate_arg,
+                                                  &m_model->mission_time());
     }
     default:
         GUI_ASSERT(false && "unexpected expression", nullptr);

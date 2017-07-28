@@ -45,7 +45,7 @@ class PerformanceTest : public ::testing::Test {
   void Analyze(const std::vector<std::string>& input_files) {
     {
       mef::Initializer init(input_files, settings);
-      analysis = std::make_unique<RiskAnalysis>(init.model(), settings);
+      analysis = std::make_unique<RiskAnalysis>(init.model().get(), settings);
     }
     analysis->Analyze();
   }

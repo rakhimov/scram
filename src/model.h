@@ -86,9 +86,8 @@ class Model : public Element, private boost::noncopyable {
   const ElementTable<RulePtr>& rules() const { return rules_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const IdTable<ParameterPtr>& parameters() const { return parameters_; }
-  const std::shared_ptr<MissionTime>& mission_time() const {
-    return mission_time_;
-  }
+  const MissionTime& mission_time() const { return *mission_time_; }
+  MissionTime& mission_time() { return *mission_time_; }
   const IdTable<HouseEventPtr>& house_events() const { return house_events_; }
   const IdTable<BasicEventPtr>& basic_events() const { return basic_events_; }
   const IdTable<GatePtr>& gates() const { return gates_; }
@@ -162,7 +161,7 @@ class Model : public Element, private boost::noncopyable {
   IdTable<HouseEventPtr> house_events_;
   IdTable<BasicEventPtr> basic_events_;
   IdTable<ParameterPtr> parameters_;
-  std::shared_ptr<MissionTime> mission_time_;
+  std::unique_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
   std::vector<std::unique_ptr<Expression>> expressions_;
   std::vector<std::unique_ptr<Instruction>> instructions_;

@@ -251,9 +251,8 @@ void RunScram(const po::variables_map& vm) {
     return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
-  auto analysis =
-      std::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
-  init.reset();  // Remove extra reference counts to shared objects.
+  auto analysis = std::make_unique<scram::core::RiskAnalysis>(
+      init->model().get(), settings);
 
   analysis->Analyze();
 #ifndef NDEBUG
