@@ -114,14 +114,14 @@ class Model : public Element, private boost::noncopyable {
   /// @{
   void Add(InitiatingEventPtr element);
   void Add(EventTreePtr element);
-  void Add(const SequencePtr& element);
+  void Add(SequencePtr element);
   void Add(RulePtr element);
   void Add(FaultTreePtr element);
-  void Add(const ParameterPtr& element);
-  void Add(const HouseEventPtr& element);
-  void Add(const BasicEventPtr& element);
-  void Add(const GatePtr& element);
-  void Add(const CcfGroupPtr& element);
+  void Add(ParameterPtr element);
+  void Add(HouseEventPtr element);
+  void Add(BasicEventPtr element);
+  void Add(GatePtr element);
+  void Add(CcfGroupPtr element);
   void Add(std::unique_ptr<Expression> element) {
     expressions_.emplace_back(std::move(element));
   }

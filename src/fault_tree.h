@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,11 +82,11 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @throws ValidationError  The element is already in this container.
   ///
   /// @{
-  void Add(const GatePtr& element);
-  void Add(const BasicEventPtr& element);
-  void Add(const HouseEventPtr& element);
-  void Add(const ParameterPtr& element);
-  void Add(const CcfGroupPtr& element);
+  void Add(GatePtr element);
+  void Add(BasicEventPtr element);
+  void Add(HouseEventPtr element);
+  void Add(ParameterPtr element);
+  void Add(CcfGroupPtr element);
   void Add(std::unique_ptr<Component> element);
   /// @}
 

@@ -43,8 +43,8 @@ void Model::Add(EventTreePtr event_tree) {
                                      "Redefinition of event tree: ");
 }
 
-void Model::Add(const SequencePtr& sequence) {
-  mef::AddElement<RedefinitionError>(sequence, &sequences_,
+void Model::Add(SequencePtr sequence) {
+  mef::AddElement<RedefinitionError>(std::move(sequence), &sequences_,
                                      "Redefinition of sequence: ");
 }
 
@@ -58,8 +58,8 @@ void Model::Add(FaultTreePtr fault_tree) {
                                      "Redefinition of fault tree: ");
 }
 
-void Model::Add(const ParameterPtr& parameter) {
-  mef::AddElement<RedefinitionError>(parameter, &parameters_,
+void Model::Add(ParameterPtr parameter) {
+  mef::AddElement<RedefinitionError>(std::move(parameter), &parameters_,
                                      "Redefinition of parameter: ");
 }
 
@@ -70,23 +70,23 @@ void Model::CheckDuplicateEvent(const Event& event) {
     throw RedefinitionError("Redefinition of event: " + id);
 }
 
-void Model::Add(const HouseEventPtr& house_event) {
+void Model::Add(HouseEventPtr house_event) {
   CheckDuplicateEvent(*house_event);
   house_events_.insert(house_event);
 }
 
-void Model::Add(const BasicEventPtr& basic_event) {
+void Model::Add(BasicEventPtr basic_event) {
   CheckDuplicateEvent(*basic_event);
   basic_events_.insert(basic_event);
 }
 
-void Model::Add(const GatePtr& gate) {
+void Model::Add(GatePtr gate) {
   CheckDuplicateEvent(*gate);
   gates_.insert(gate);
 }
 
-void Model::Add(const CcfGroupPtr& ccf_group) {
-  mef::AddElement<RedefinitionError>(ccf_group, &ccf_groups_,
+void Model::Add(CcfGroupPtr ccf_group) {
+  mef::AddElement<RedefinitionError>(std::move(ccf_group), &ccf_groups_,
                                      "Redefinition of CCF group: ");
 }
 

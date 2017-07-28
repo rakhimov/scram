@@ -30,24 +30,24 @@ Component::Component(std::string name, std::string base_path,
     : Element(std::move(name)),
       Role(role, std::move(base_path)) {}
 
-void Component::Add(const GatePtr& gate) {
+void Component::Add(GatePtr gate) {
   AddEvent(gate, &gates_);
 }
 
-void Component::Add(const BasicEventPtr& basic_event) {
+void Component::Add(BasicEventPtr basic_event) {
   AddEvent(basic_event, &basic_events_);
 }
 
-void Component::Add(const HouseEventPtr& house_event) {
+void Component::Add(HouseEventPtr house_event) {
   AddEvent(house_event, &house_events_);
 }
 
-void Component::Add(const ParameterPtr& parameter) {
-  mef::AddElement<ValidationError>(parameter, &parameters_,
+void Component::Add(ParameterPtr parameter) {
+  mef::AddElement<ValidationError>(std::move(parameter), &parameters_,
                                    "Duplicate parameter: ");
 }
 
-void Component::Add(const CcfGroupPtr& ccf_group) {
+void Component::Add(CcfGroupPtr ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
