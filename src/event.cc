@@ -102,6 +102,13 @@ void Formula::AddArgument(EventArg event_arg) {
     event->usage(true);
 }
 
+void Formula::RemoveArgument(EventArg event_arg) {
+  auto it = boost::find(event_args_, event_arg);
+  if (it == event_args_.end())
+    throw LogicError("The argument doesn't belong to this formula.");
+  event_args_.erase(it);
+}
+
 void Formula::Validate() const {
   switch (type_) {
     case kAnd:

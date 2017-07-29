@@ -102,6 +102,10 @@ TEST(FormulaTest, EventArguments) {
   EXPECT_NO_THROW(top->AddArgument(&second_child));
   EXPECT_EQ(2, top->event_args().size());
   EXPECT_EQ(&second_child, boost::get<BasicEvent*>(top->event_args().back()));
+
+  EXPECT_NO_THROW(top->RemoveArgument(&first_child));
+  EXPECT_EQ(1, top->num_args());
+  EXPECT_THROW(top->RemoveArgument(&first_child), LogicError);
 }
 
 TEST(FormulaTest, FormulaArguments) {

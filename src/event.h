@@ -278,6 +278,13 @@ class Formula : private boost::noncopyable {
     formula_args_.emplace_back(std::move(formula));
   }
 
+  /// Removes an event from the formula.
+  ///
+  /// @param[in] event_arg  The argument event of this formula.
+  ///
+  /// @throws LogicError  The argument does not belong to this formula.
+  void RemoveArgument(EventArg event_arg);
+
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
   /// @throws ValidationError  Problems with the operator or arguments.
