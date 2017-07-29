@@ -38,7 +38,7 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
                 m_faultTrees.insert(it, faultTree);
                 endInsertRows();
             });
-    connect(m_model, &model::Model::aboutToRemoveFaultTree, this,
+    connect(m_model, &model::Model::removedFaultTree, this,
             [this](mef::FaultTree *faultTree) {
                 auto it = m_faultTrees.find(faultTree);
                 GUI_ASSERT(it != m_faultTrees.end(), );

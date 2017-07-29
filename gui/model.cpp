@@ -223,18 +223,17 @@ Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
           QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
       m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
       m_address(gate.get()), m_gate(std::move(gate)),
-      m_faultTreeName(std::move(faultTree))
+      m_faultTree(std::make_unique<mef::FaultTree>(faultTree)),
+      m_faultTreeAddress(m_faultTree.get())
 {
+    m_faultTree->Add(m_address);
+    m_faultTree->CollectTopEvents();
 }
 
 void Model::AddGate::redo()
 {
-    auto faultTree = std::make_unique<mef::FaultTree>(m_faultTreeName);
-    faultTree->Add(m_address);
-    faultTree->CollectTopEvents();
-    auto *signalPtr = faultTree.get();
-    m_model->m_model->Add(std::move(faultTree));
-    emit m_model->addedFaultTree(signalPtr);
+    m_model->m_model->Add(std::move(m_faultTree));
+    emit m_model->addedFaultTree(m_faultTreeAddress);
 
     m_model->m_model->Add(std::move(m_gate));
     auto it = m_model->m_gates.emplace(std::move(m_proxy)).first;
@@ -243,10 +242,8 @@ void Model::AddGate::redo()
 
 void Model::AddGate::undo()
 {
-    auto *faultTree
-        = m_model->m_model->fault_trees().find(m_faultTreeName)->get();
-    emit m_model->aboutToRemoveFaultTree(faultTree);
-    m_model->m_model->Remove(faultTree);
+    m_faultTree = m_model->m_model->Remove(m_faultTreeAddress);
+    emit m_model->removedFaultTree(m_faultTreeAddress);
 
     m_gate = m_model->m_model->Remove(m_address);
     m_proxy = ext::extract(m_address, &m_model->m_gates);

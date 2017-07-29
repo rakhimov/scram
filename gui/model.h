@@ -376,7 +376,8 @@ public:
         std::unique_ptr<Gate> m_proxy;
         mef::Gate *const m_address;
         mef::GatePtr m_gate;
-        const std::string m_faultTreeName;
+        mef::FaultTreePtr m_faultTree;
+        mef::FaultTree *const m_faultTreeAddress;
     };
     /// @}
 
@@ -389,7 +390,7 @@ signals:
     void removedBasicEvent(BasicEvent *basicEvent);
     void removedGate(Gate *gate);
     void addedFaultTree(mef::FaultTree *faultTree);
-    void aboutToRemoveFaultTree(mef::FaultTree *faultTree);
+    void removedFaultTree(mef::FaultTree *faultTree);
 
 private:
     mef::Model *m_model;
