@@ -125,7 +125,7 @@ private:
     /// @todo Optimize with memoization.
     bool checkCycle(const mef::Gate *gate);
 
-    void setupData(const model::Element &element);
+    void setupData(const model::Element &element, const mef::Element *origin);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
     void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
 

@@ -40,7 +40,7 @@ void Element::SetLabel::redo()
     QString cur_label = m_element->label();
     if (m_label == cur_label)
         return;
-    m_element->data()->label(m_label.toStdString());
+    m_element->m_data->label(m_label.toStdString());
     emit m_element->labelChanged(m_label);
     m_label = std::move(cur_label);
 }
@@ -68,7 +68,7 @@ BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
 
 void BasicEvent::SetExpression::redo()
 {
-    auto *mefEvent = m_basicEvent->data<mef::BasicEvent>();
+    auto *mefEvent = m_basicEvent->data();
     mef::Expression *cur_expression
         = mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
     if (m_expression == cur_expression)
@@ -120,7 +120,7 @@ void HouseEvent::SetState::redo()
     if (m_state == m_houseEvent->state())
         return;
     bool prev_state = m_houseEvent->state();
-    m_houseEvent->data<mef::HouseEvent>()->state(m_state);
+    m_houseEvent->data()->state(m_state);
     emit m_houseEvent->stateChanged(m_state);
     m_state = prev_state;
 }
@@ -133,7 +133,7 @@ Gate::SetFormula::SetFormula(Gate *gate, mef::FormulaPtr formula)
 
 void Gate::SetFormula::redo()
 {
-    m_formula = m_gate->data<mef::Gate>()->formula(std::move(m_formula));
+    m_formula = m_gate->data()->formula(std::move(m_formula));
     emit m_gate->formulaChanged();
 }
 

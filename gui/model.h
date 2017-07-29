@@ -44,6 +44,9 @@ class Element : public QObject
 {
     Q_OBJECT
 
+    template <class, class>
+    friend class Proxy;  // Gets access to the data.
+
 public:
     /// @returns A unique ID string for element within the element type-group.
     ///
@@ -66,24 +69,37 @@ public:
         Element *m_element;
     };
 
-    const mef::Element *data() const { return m_data; }
-
 signals:
     void labelChanged(const QString &label);
 
 protected:
     explicit Element(mef::Element *element) : m_data(element) {}
 
-    template <class T = mef::Element>
-    T *data() { return static_cast<T *>(m_data); }
-    template <class T = mef::Element>
-    const T *data() const { return static_cast<const T *>(m_data); }
-
 private:
     mef::Element *const m_data;
 };
 
-class BasicEvent : public Element
+/// Provides the type and data of the origin for Proxy Elements.
+///
+/// @tparam E  The Element class.
+/// @tparam T  The MEF class.
+template <class E, class T>
+class Proxy
+{
+public:
+    using Origin = T;  ///< The MEF type.
+
+    const T *data() const
+    {
+        return static_cast<const T *>(static_cast<const E *>(this)->m_data);
+    }
+    T *data()
+    {
+        return const_cast<T *>(static_cast<const Proxy *>(this)->data());
+    }
+};
+
+class BasicEvent : public Element, public Proxy<BasicEvent, mef::BasicEvent>
 {
     Q_OBJECT
 
@@ -115,16 +131,14 @@ public:
     ///          nullptr if no expression has been set.
     mef::Expression *expression() const
     {
-        return data<mef::BasicEvent>()->HasExpression()
-                   ? &data<mef::BasicEvent>()->expression()
-                   : nullptr;
+        return data()->HasExpression() ? &data()->expression() : nullptr;
     }
 
     /// @returns The probability value of the event.
     ///
     /// @pre The basic event has expression.
     template <typename T = double>
-    T probability() const { return data<mef::BasicEvent>()->p(); }
+    T probability() const { return data()->p(); }
 
     /// Sets the basic event expression.
     ///
@@ -173,11 +187,10 @@ private:
 template <>
 inline QVariant BasicEvent::probability<QVariant>() const
 {
-    return data<mef::BasicEvent>()->HasExpression() ? QVariant(probability())
-                                                    : QVariant();
+    return data()->HasExpression() ? QVariant(probability()) : QVariant();
 }
 
-class HouseEvent : public Element
+class HouseEvent : public Element, public Proxy<HouseEvent, mef::HouseEvent>
 {
     Q_OBJECT
 
@@ -185,7 +198,10 @@ public:
     explicit HouseEvent(mef::HouseEvent *houseEvent) : Element(houseEvent) {}
 
     template <typename T = bool>
-    T state() const { return data<mef::HouseEvent>()->state(); }
+    T state() const
+    {
+        return data()->state();
+    }
 
     /// Flips the house event state.
     class SetState : public QUndoCommand
@@ -218,7 +234,7 @@ inline QString HouseEvent::state<QString>() const
     return boolToString(state());
 }
 
-class Gate : public Element
+class Gate : public Element, public Proxy<Gate, mef::Gate>
 {
     Q_OBJECT
 
@@ -228,18 +244,18 @@ public:
     template <typename T = mef::Operator>
     T type() const
     {
-        return data<mef::Gate>()->formula().type();
+        return data()->formula().type();
     }
 
-    int numArgs() const { return data<mef::Gate>()->formula().num_args(); }
+    int numArgs() const { return data()->formula().num_args(); }
     int voteNumber() const
     {
-        return data<mef::Gate>()->formula().vote_number();
+        return data()->formula().vote_number();
     }
 
     const std::vector<mef::Formula::EventArg> &args() const
     {
-        return data<mef::Gate>()->formula().event_args();
+        return data()->formula().event_args();
     }
 
     /// Formula modification commands.
@@ -287,14 +303,14 @@ inline QString Gate::type() const
 /// Table of proxy elements uniquely wrapping the core model element.
 ///
 /// @tparam T  The proxy type.
-template <typename T>
+template <class T, class M = typename T::Origin, class P = Proxy<T, M>>
 using ProxyTable = boost::multi_index_container<
     std::unique_ptr<T>, boost::multi_index::indexed_by<
            boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
-               Element, const mef::Element *, &Element::data>>>>;
+               P, const M *, &P::data>>>>;
 
 /// The wrapper around the MEF Model.
-class Model : public Element
+class Model : public Element, public Proxy<Model, mef::Model>
 {
     Q_OBJECT
 

@@ -221,9 +221,10 @@ bool EventDialog::checkCycle(const mef::Gate *gate)
     return false;
 }
 
-void EventDialog::setupData(const model::Element &element)
+void EventDialog::setupData(const model::Element &element,
+                            const mef::Element *origin)
 {
-    m_event = element.data();
+    m_event = origin;
     m_initName = element.id();
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());
@@ -232,7 +233,7 @@ void EventDialog::setupData(const model::Element &element)
 
 void EventDialog::setupData(const model::HouseEvent &element)
 {
-    setupData(static_cast<const model::Element &>(element));
+    setupData(element, element.data());
     typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(ext::one_bit_index(HouseEvent));
     stateBox->setCurrentIndex(element.state());
@@ -240,7 +241,7 @@ void EventDialog::setupData(const model::HouseEvent &element)
 
 void EventDialog::setupData(const model::BasicEvent &element)
 {
-    setupData(static_cast<const model::Element &>(element));
+    setupData(element, element.data());
     /// @todo Type change.
     static_cast<QListView *>(typeBox->view())
         ->setRowHidden(ext::one_bit_index(HouseEvent), true);
@@ -269,7 +270,7 @@ void EventDialog::setupData(const model::BasicEvent &element)
 
 void EventDialog::setupData(const model::Gate &element)
 {
-    setupData(static_cast<const model::Element &>(element));
+    setupData(element, element.data());
     typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(ext::one_bit_index(Gate));
 
