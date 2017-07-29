@@ -440,14 +440,14 @@ public:
 
 signals:
     void modelNameChanged(QString name);
-    void addedHouseEvent(HouseEvent *houseEvent);
-    void addedBasicEvent(BasicEvent *basicEvent);
-    void addedGate(Gate *gate);
-    void removedHouseEvent(HouseEvent *houseEvent);
-    void removedBasicEvent(BasicEvent *basicEvent);
-    void removedGate(Gate *gate);
-    void addedFaultTree(mef::FaultTree *faultTree);
-    void removedFaultTree(mef::FaultTree *faultTree);
+    void added(mef::FaultTree *faultTree);
+    void added(HouseEvent *houseEvent);
+    void added(BasicEvent *basicEvent);
+    void added(Gate *gate);
+    void removed(mef::FaultTree *faultTree);
+    void removed(HouseEvent *houseEvent);
+    void removed(BasicEvent *basicEvent);
+    void removed(Gate *gate);
 
 private:
     mef::Model *m_model;

@@ -18,6 +18,7 @@
 #include "modeltree.h"
 
 #include "guiassert.h"
+#include "overload.h"
 
 namespace scram {
 namespace gui {
@@ -28,7 +29,7 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
     for (const mef::FaultTreePtr &faultTree : m_model->faultTrees())
         m_faultTrees.insert(faultTree.get());
 
-    connect(m_model, &model::Model::addedFaultTree, this,
+    connect(m_model, OVERLOAD(model::Model, added, mef::FaultTree *), this,
             [this](mef::FaultTree *faultTree) {
                 auto it = m_faultTrees.lower_bound(faultTree);
                 int index = m_faultTrees.index_of(it);
@@ -38,7 +39,7 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
                 m_faultTrees.insert(it, faultTree);
                 endInsertRows();
             });
-    connect(m_model, &model::Model::removedFaultTree, this,
+    connect(m_model, OVERLOAD(model::Model, removed, mef::FaultTree *), this,
             [this](mef::FaultTree *faultTree) {
                 auto it = m_faultTrees.find(faultTree);
                 GUI_ASSERT(it != m_faultTrees.end(), );

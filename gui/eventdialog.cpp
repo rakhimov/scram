@@ -38,15 +38,13 @@
 #include "src/ext/variant.h"
 
 #include "guiassert.h"
+#include "overload.h"
 
 namespace scram {
 namespace gui {
 
 QString EventDialog::redBackground(QStringLiteral("background : red;"));
 QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
-
-#define OVERLOAD(type, name, ...)                                              \
-    static_cast<void (type::*)(__VA_ARGS__)>(&type::name)
 
 EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     : QDialog(parent), m_model(model), m_errorBar(new QStatusBar(this))

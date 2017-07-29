@@ -48,8 +48,8 @@ public:
 
 protected:
     /// @tparam T  The container of smart pointers to elements.
-    template <typename T>
-    explicit ElementContainerModel(const T &container,
+    template <class T>
+    explicit ElementContainerModel(const T &container, Model *model,
                                    QObject *parent = nullptr);
 
     /// Puts the element pointer into the index's internal pointer.

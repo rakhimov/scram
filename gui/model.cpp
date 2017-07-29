@@ -198,14 +198,14 @@ void Model::AddHouseEvent::redo()
 {
     m_model->m_model->Add(std::move(m_houseEvent));
     auto it = m_model->m_houseEvents.emplace(std::move(m_proxy)).first;
-    emit m_model->addedHouseEvent(it->get());
+    emit m_model->added(it->get());
 }
 
 void Model::AddHouseEvent::undo()
 {
     m_houseEvent = m_model->m_model->Remove(m_address);
     m_proxy = ext::extract(m_address, &m_model->m_houseEvents);
-    emit m_model->removedHouseEvent(m_proxy.get());
+    emit m_model->removed(m_proxy.get());
 }
 
 Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
@@ -220,14 +220,14 @@ void Model::AddBasicEvent::redo()
 {
     m_model->m_model->Add(std::move(m_basicEvent));
     auto it = m_model->m_basicEvents.emplace(std::move(m_proxy)).first;
-    emit m_model->addedBasicEvent(it->get());
+    emit m_model->added(it->get());
 }
 
 void Model::AddBasicEvent::undo()
 {
     m_basicEvent = m_model->m_model->Remove(m_address);
     m_proxy = ext::extract(m_address, &m_model->m_basicEvents);
-    emit m_model->removedBasicEvent(m_proxy.get());
+    emit m_model->removed(m_proxy.get());
 }
 
 Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
@@ -245,21 +245,21 @@ Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
 void Model::AddGate::redo()
 {
     m_model->m_model->Add(std::move(m_faultTree));
-    emit m_model->addedFaultTree(m_faultTreeAddress);
+    emit m_model->added(m_faultTreeAddress);
 
     m_model->m_model->Add(std::move(m_gate));
     auto it = m_model->m_gates.emplace(std::move(m_proxy)).first;
-    emit m_model->addedGate(it->get());
+    emit m_model->added(it->get());
 }
 
 void Model::AddGate::undo()
 {
     m_faultTree = m_model->m_model->Remove(m_faultTreeAddress);
-    emit m_model->removedFaultTree(m_faultTreeAddress);
+    emit m_model->removed(m_faultTreeAddress);
 
     m_gate = m_model->m_model->Remove(m_address);
     m_proxy = ext::extract(m_address, &m_model->m_gates);
-    emit m_model->removedGate(m_proxy.get());
+    emit m_model->removed(m_proxy.get());
 }
 
 } // namespace model
