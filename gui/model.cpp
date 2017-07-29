@@ -19,6 +19,8 @@
 
 #include "model.h"
 
+#include <boost/range/algorithm.hpp>
+
 #include "src/ext/multi_index.h"
 #include "src/fault_tree.h"
 
@@ -154,6 +156,16 @@ Model::Model(mef::Model *model) : Element(model), m_model(model)
     populate<HouseEvent>(m_model->house_events(), &m_houseEvents);
     populate<BasicEvent>(m_model->basic_events(), &m_basicEvents);
     populate<Gate>(m_model->gates(), &m_gates);
+}
+
+std::vector<Gate *> Model::parents(mef::Formula::EventArg event) const
+{
+    std::vector<Gate *> result;
+    for (const std::unique_ptr<Gate> &gate : m_gates) {
+        if (boost::find(gate->args(), event) != gate->args().end())
+            result.push_back(gate.get());
+    }
+    return result;
 }
 
 Model::SetName::SetName(QString name, Model *model)

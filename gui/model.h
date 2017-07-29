@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
@@ -363,6 +364,8 @@ public:
     {
         return m_model->fault_trees();
     }
+    /// @returns The parent gates of an event.
+    std::vector<Gate *> parents(mef::Formula::EventArg event) const;
 
     /// Model manipulation commands.
     /// @{
