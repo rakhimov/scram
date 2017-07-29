@@ -703,62 +703,14 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
-void MainWindow::addElement()
+template <>
+mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
-    EventDialog dialog(m_model.get(), this);
-    if (dialog.exec() == QDialog::Rejected)
-        return;
-    std::string name = dialog.name().toStdString();
-    auto addBasicEvent = [&](mef::Attribute attr) {
-        auto basicEvent = std::make_unique<mef::BasicEvent>(std::move(name));
-        basicEvent->label(dialog.label().toStdString());
-        if (attr.name.empty() == false)
-            basicEvent->AddAttribute(std::move(attr));
-        if (auto p_expression = dialog.expression()) {
-            basicEvent->expression(p_expression.get());
-            m_model->Add(std::move(p_expression));
-        }
-        m_undoStack->push(new model::Model::AddBasicEvent(std::move(basicEvent),
-                                                          m_guiModel.get()));
-    };
-    switch (dialog.currentType()) {
-    case EventDialog::HouseEvent: {
-        auto houseEvent = std::make_unique<mef::HouseEvent>(std::move(name));
-        houseEvent->label(dialog.label().toStdString());
-        houseEvent->state(dialog.booleanConstant());
-        m_undoStack->push(new model::Model::AddHouseEvent(std::move(houseEvent),
-                                                          m_guiModel.get()));
-        break;
-    }
-    case EventDialog::BasicEvent:
-        addBasicEvent({});
-        break;
-    case EventDialog::Undeveloped:
-        addBasicEvent({"flavor", "undeveloped", ""});
-        break;
-    case EventDialog::Conditional:
-        addBasicEvent({"flavor", "conditional", ""});
-        break;
-    case EventDialog::Gate: {
-        auto gate = std::make_unique<mef::Gate>(std::move(name));
-        gate->label(dialog.label().toStdString());
-        gate->formula(extractFormula(&dialog));
-        m_undoStack->push(new model::Model::AddGate(
-            std::move(gate), dialog.faultTree(), m_guiModel.get()));
-        break;
-    }
-    default:
-        GUI_ASSERT(false && "unexpected event type", );
-    }
-}
-
-mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
-{
-    auto formula = std::make_unique<mef::Formula>(dialog->connective());
+    auto formula = std::make_unique<mef::Formula>(dialog.connective());
     if (formula->type() == mef::kVote)
-        formula->vote_number(dialog->voteNumber());
+        formula->vote_number(dialog.voteNumber());
 
-    for (const std::string &arg : dialog->arguments()) {
+    for (const std::string &arg : dialog.arguments()) {
         try {
             formula->AddArgument(m_model->GetEvent(arg));
         } catch (UndefinedElement &) {
@@ -770,6 +722,77 @@ mef::FormulaPtr MainWindow::extractFormula(EventDialog *dialog)
         }
     }
     return formula;
+}
+
+template <>
+mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
+{
+    auto basicEvent
+        = std::make_unique<mef::BasicEvent>(dialog.name().toStdString());
+    basicEvent->label(dialog.label().toStdString());
+    switch (dialog.currentType()) {
+    case EventDialog::BasicEvent:
+        break;
+    case EventDialog::Undeveloped:
+        basicEvent->AddAttribute({"flavor", "undeveloped", ""});
+        break;
+    case EventDialog::Conditional:
+        basicEvent->AddAttribute({"flavor", "conditional", ""});
+        break;
+    default:
+        GUI_ASSERT(false && "unexpected event type", nullptr);
+    }
+    if (auto p_expression = dialog.expression()) {
+        basicEvent->expression(p_expression.get());
+        m_model->Add(std::move(p_expression));
+    }
+    return basicEvent;
+}
+
+template <>
+mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
+{
+    GUI_ASSERT(dialog.currentType() == EventDialog::HouseEvent, nullptr);
+    auto houseEvent
+        = std::make_unique<mef::HouseEvent>(dialog.name().toStdString());
+    houseEvent->label(dialog.label().toStdString());
+    houseEvent->state(dialog.booleanConstant());
+    return houseEvent;
+}
+
+template <>
+mef::GatePtr MainWindow::extract(const EventDialog &dialog)
+{
+    GUI_ASSERT(dialog.currentType() == EventDialog::Gate, nullptr);
+    auto gate = std::make_unique<mef::Gate>(dialog.name().toStdString());
+    gate->label(dialog.label().toStdString());
+    gate->formula(extract<mef::Formula>(dialog));
+    return gate;
+}
+
+void MainWindow::addElement()
+{
+    EventDialog dialog(m_model.get(), this);
+    if (dialog.exec() == QDialog::Rejected)
+        return;
+    switch (dialog.currentType()) {
+    case EventDialog::HouseEvent:
+        m_undoStack->push(new model::Model::AddHouseEvent(
+            extract<mef::HouseEvent>(dialog), m_guiModel.get()));
+        break;
+    case EventDialog::BasicEvent:
+    case EventDialog::Undeveloped:
+    case EventDialog::Conditional:
+        m_undoStack->push(new model::Model::AddBasicEvent(
+            extract<mef::BasicEvent>(dialog), m_guiModel.get()));
+        break;
+    case EventDialog::Gate:
+        m_undoStack->push(new model::Model::AddGate(
+            extract<mef::Gate>(dialog), dialog.faultTree(), m_guiModel.get()));
+        break;
+    default:
+        GUI_ASSERT(false && "unexpected event type", );
+    }
 }
 
 template <class T>
@@ -883,8 +906,8 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
         return false;
     }();
     if (formulaChanged)
-        m_undoStack->push(
-            new model::Gate::SetFormula(element, extractFormula(dialog)));
+        m_undoStack->push(new model::Gate::SetFormula(
+            element, extract<mef::Formula>(*dialog)));
 }
 
 template <class ContainerModel>

@@ -127,8 +127,9 @@ private:
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);
 
-    /// @returns The new formula constructed from the dialog data.
-    mef::FormulaPtr extractFormula(EventDialog *dialog);
+    /// @returns A new element constructed with the dialog data.
+    template <class T>
+    std::unique_ptr<T> extract(const EventDialog &dialog);
 
     template <class T>
     void editElement(EventDialog *dialog, model::Element *element);

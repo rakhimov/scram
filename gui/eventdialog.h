@@ -44,6 +44,8 @@ namespace gui {
 /// That is, the dialog constrains the user input to be valid,
 /// and upon the acceptance, it guarantees that the data is valid
 /// for usage by the Model classes.
+///
+/// However, the requested data must be relevant to the current type.
 class EventDialog : public QDialog, private Ui::EventDialog
 {
     Q_OBJECT
