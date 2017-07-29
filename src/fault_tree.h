@@ -90,6 +90,18 @@ class Component : public Element, public Role, private boost::noncopyable {
   void Add(std::unique_ptr<Component> element);
   /// @}
 
+  /// Removes Event from the component container.
+  ///
+  /// @param[in] element  An element defined in this model.
+  ///
+  /// @throws UndefinedElement  The element doesn't belong to this container.
+  ///
+  /// @{
+  void Remove(HouseEvent* element);
+  void Remove(BasicEvent* element);
+  void Remove(Gate* element);
+  /// @}
+
  protected:
   /// Recursively traverses components
   /// to gather gates relevant to the whole component.

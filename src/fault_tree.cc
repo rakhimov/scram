@@ -69,6 +69,33 @@ void Component::Add(std::unique_ptr<Component> component) {
   components_.insert(std::move(component));
 }
 
+namespace {
+
+/// Helper function to remove events from component containers.
+template <class T>
+void RemoveEvent(T* event, ElementTable<T*>* table) {
+  auto it = table->find(event->name());
+  if (it == table->end())
+    throw UndefinedElement("Event " + event->id() +
+                           " is not in the component.");
+  if (*it != event)
+    throw UndefinedElement("Duplicate event " + event->id() +
+                           " does not belong to the component.");
+  table->erase(it);
+}
+
+}  // namespace
+
+void Component::Remove(HouseEvent* element) {
+  return RemoveEvent(element, &house_events_);
+}
+
+void Component::Remove(BasicEvent* element) {
+  return RemoveEvent(element, &basic_events_);
+}
+
+void Component::Remove(Gate* element) { return RemoveEvent(element, &gates_); }
+
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
   gates->insert(gates_.begin(), gates_.end());
   for (const ComponentPtr& component : components_)
