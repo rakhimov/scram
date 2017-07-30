@@ -450,6 +450,13 @@ signals:
     void removed(Gate *gate);
 
 private:
+    /// Normalizes the model to the GUI expectations.
+    ///
+    /// @post No house events or basic events in fault tree containers.
+    ///
+    /// @todo Remove normalization upon full container support for elements.
+    void normalize(mef::Model *model);
+
     mef::Model *m_model;
     ProxyTable<HouseEvent> m_houseEvents;
     ProxyTable<BasicEvent> m_basicEvents;

@@ -153,9 +153,22 @@ void populate(const mef::IdTable<S> &source, ProxyTable<T> *proxyTable)
 
 Model::Model(mef::Model *model) : Element(model), m_model(model)
 {
+    normalize(model);
     populate<HouseEvent>(m_model->house_events(), &m_houseEvents);
     populate<BasicEvent>(m_model->basic_events(), &m_basicEvents);
     populate<Gate>(m_model->gates(), &m_gates);
+}
+
+void Model::normalize(mef::Model *model)
+{
+    for (const mef::FaultTreePtr &faultTree : model->fault_trees()) {
+        const_cast<mef::ElementTable<mef::BasicEvent *> &>(
+            faultTree->basic_events())
+            .clear();
+        const_cast<mef::ElementTable<mef::HouseEvent *> &>(
+            faultTree->house_events())
+            .clear();
+    }
 }
 
 std::vector<Gate *> Model::parents(mef::Formula::EventArg event) const
