@@ -399,59 +399,38 @@ public:
         QString m_name;
     };
 
-    class AddHouseEvent : public QUndoCommand
+    /// @tparam T  The Model event type.
+    template <class T>
+    class AddEvent : public QUndoCommand
     {
     public:
-        AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model);
+        AddEvent(std::unique_ptr<typename T::Origin> event, Model *model)
+            : QUndoCommand(QObject::tr("Add event '%1'")
+                               .arg(QString::fromStdString(event->id()))),
+              m_model(model), m_proxy(std::make_unique<T>(event.get())),
+              m_address(event.get()), m_event(std::move(event))
+        {
+        }
 
-        void redo() override;
-        void undo() override;
+    void redo() override
+    {
+        m_model->m_model->Add(std::move(m_event));
+        auto it = m_model->table<T>().emplace(std::move(m_proxy)).first;
+        emit m_model->added(it->get());
+    }
+
+    void undo() override
+    {
+        m_event = m_model->m_model->Remove(m_address);
+        m_proxy = ext::extract(m_address, &m_model->table<T>());
+        emit m_model->removed(m_proxy.get());
+    }
 
     private:
         Model *m_model;
-        std::unique_ptr<HouseEvent> m_proxy;
-        mef::HouseEvent *const m_address;
-        mef::HouseEventPtr m_houseEvent;
-    };
-
-    class AddBasicEvent : public QUndoCommand
-    {
-    public:
-        AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model);
-
-        void redo() override;
-        void undo() override;
-
-    private:
-        Model *m_model;
-        std::unique_ptr<BasicEvent> m_proxy;
-        mef::BasicEvent *const m_address;
-        mef::BasicEventPtr m_basicEvent;
-    };
-
-    class AddGate : public QUndoCommand
-    {
-    public:
-        /// The gate is assumed to be a fault-tree root.
-        /// In other words, this is an implicit way to create a fault-tree.
-        ///
-        /// @param[in] gate  Fully initialized and valid gate.
-        /// @param[in] faultTree  The new fault tree name.
-        /// @param[in,out] model  The destination model.
-        ///
-        /// @todo Make fault-tree creation explicit.
-        AddGate(mef::GatePtr gate, std::string faultTree, Model *model);
-
-        void redo() override;
-        void undo() override;
-
-    private:
-        Model *m_model;
-        std::unique_ptr<Gate> m_proxy;
-        mef::Gate *const m_address;
-        mef::GatePtr m_gate;
-        mef::FaultTreePtr m_faultTree;
-        mef::FaultTree *const m_faultTreeAddress;
+        std::unique_ptr<T> m_proxy;
+        typename T::Origin *const m_address;
+        std::unique_ptr<typename T::Origin> m_event;
     };
 
     /// Changes the event type.
@@ -564,6 +543,33 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 {
     return m_houseEvents;
 }
+
+/// Specialization due to implicit fault tree creation.
+template <>
+class Model::AddEvent<Gate> : public QUndoCommand
+{
+public:
+    /// The gate is assumed to be a fault-tree root.
+    /// In other words, this is an implicit way to create a fault-tree.
+    ///
+    /// @param[in] gate  Fully initialized and valid gate.
+    /// @param[in] faultTree  The new fault tree name.
+    /// @param[in,out] model  The destination model.
+    ///
+    /// @todo Make fault-tree creation explicit.
+    AddEvent(mef::GatePtr gate, std::string faultTree, Model *model);
+
+    void redo() override;
+    void undo() override;
+
+private:
+    Model *m_model;
+    std::unique_ptr<Gate> m_proxy;
+    mef::Gate *const m_address;
+    mef::GatePtr m_gate;
+    mef::FaultTreePtr m_faultTree;
+    mef::FaultTree *const m_faultTreeAddress;
+};
 
 } // namespace model
 } // namespace gui

@@ -769,7 +769,8 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
             formula->AddArgument(argEvent.get());
-            m_undoStack->push(new model::Model::AddBasicEvent(
+            /// @todo Add into the parent undo.
+            m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
                 std::move(argEvent), m_guiModel.get()));
         }
     }
@@ -829,17 +830,17 @@ void MainWindow::addElement()
         return;
     switch (dialog.currentType()) {
     case EventDialog::HouseEvent:
-        m_undoStack->push(new model::Model::AddHouseEvent(
+        m_undoStack->push(new model::Model::AddEvent<model::HouseEvent>(
             extract<mef::HouseEvent>(dialog), m_guiModel.get()));
         break;
     case EventDialog::BasicEvent:
     case EventDialog::Undeveloped:
     case EventDialog::Conditional:
-        m_undoStack->push(new model::Model::AddBasicEvent(
+        m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
             extract<mef::BasicEvent>(dialog), m_guiModel.get()));
         break;
     case EventDialog::Gate:
-        m_undoStack->push(new model::Model::AddGate(
+        m_undoStack->push(new model::Model::AddEvent<model::Gate>(
             extract<mef::Gate>(dialog), dialog.faultTree(), m_guiModel.get()));
         break;
     default:

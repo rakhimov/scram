@@ -198,51 +198,8 @@ void Model::SetName::redo()
     m_name = std::move(currentName);
 }
 
-Model::AddHouseEvent::AddHouseEvent(mef::HouseEventPtr houseEvent, Model *model)
-    : QUndoCommand(QObject::tr("Add house-event '%1'")
-                       .arg(QString::fromStdString(houseEvent->id()))),
-      m_model(model), m_proxy(std::make_unique<HouseEvent>(houseEvent.get())),
-      m_address(houseEvent.get()), m_houseEvent(std::move(houseEvent))
-{
-}
-
-void Model::AddHouseEvent::redo()
-{
-    m_model->m_model->Add(std::move(m_houseEvent));
-    auto it = m_model->m_houseEvents.emplace(std::move(m_proxy)).first;
-    emit m_model->added(it->get());
-}
-
-void Model::AddHouseEvent::undo()
-{
-    m_houseEvent = m_model->m_model->Remove(m_address);
-    m_proxy = ext::extract(m_address, &m_model->m_houseEvents);
-    emit m_model->removed(m_proxy.get());
-}
-
-Model::AddBasicEvent::AddBasicEvent(mef::BasicEventPtr basicEvent, Model *model)
-    : QUndoCommand(QObject::tr("Add basic-event '%1'")
-                       .arg(QString::fromStdString(basicEvent->id()))),
-      m_model(model), m_proxy(std::make_unique<BasicEvent>(basicEvent.get())),
-      m_address(basicEvent.get()), m_basicEvent(std::move(basicEvent))
-{
-}
-
-void Model::AddBasicEvent::redo()
-{
-    m_model->m_model->Add(std::move(m_basicEvent));
-    auto it = m_model->m_basicEvents.emplace(std::move(m_proxy)).first;
-    emit m_model->added(it->get());
-}
-
-void Model::AddBasicEvent::undo()
-{
-    m_basicEvent = m_model->m_model->Remove(m_address);
-    m_proxy = ext::extract(m_address, &m_model->m_basicEvents);
-    emit m_model->removed(m_proxy.get());
-}
-
-Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
+Model::AddEvent<Gate>::AddEvent(mef::GatePtr gate, std::string faultTree,
+                                Model *model)
     : QUndoCommand(
           QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
       m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
@@ -254,7 +211,7 @@ Model::AddGate::AddGate(mef::GatePtr gate, std::string faultTree, Model *model)
     m_faultTree->CollectTopEvents();
 }
 
-void Model::AddGate::redo()
+void Model::AddEvent<Gate>::redo()
 {
     m_model->m_model->Add(std::move(m_faultTree));
     emit m_model->added(m_faultTreeAddress);
@@ -264,7 +221,7 @@ void Model::AddGate::redo()
     emit m_model->added(it->get());
 }
 
-void Model::AddGate::undo()
+void Model::AddEvent<Gate>::undo()
 {
     m_faultTree = m_model->m_model->Remove(m_faultTreeAddress);
     emit m_model->removed(m_faultTreeAddress);
