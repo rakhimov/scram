@@ -123,6 +123,15 @@ private:
     template <class T>
     void setupSearchable(QObject *view, T *model);
 
+    /// Sets up remove action activation upon selection.
+    /// Only selection of top indices activate the removal.
+    ///
+    /// @tparam T  The type of the objects to remove.
+    ///
+    /// @pre Selections are single row.
+    template <class T>
+    void setupRemovable(QAbstractItemView *view);
+
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);

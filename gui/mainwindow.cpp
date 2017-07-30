@@ -392,6 +392,7 @@ void MainWindow::setupActions()
     ui->actionZoomOut->setShortcut(QKeySequence::ZoomOut);
 
     // Edit menu actions.
+    ui->actionRemoveElement->setShortcut(QKeySequence::Delete);
     connect(ui->actionAddElement, &QAction::triggered, this,
             &MainWindow::addElement);
     connect(ui->actionRenameModel, &QAction::triggered, this, [this] {
@@ -703,6 +704,57 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+template <class T>
+void MainWindow::setupRemovable(QAbstractItemView *view)
+{
+    struct RemoveFilter : public QObject {
+        RemoveFilter(QAbstractItemView *removable, MainWindow *window)
+            : QObject(removable), m_window(window), m_removable(removable) {}
+
+        void react(const QModelIndexList &indexes)
+        {
+            m_window->ui->actionRemoveElement->setEnabled(
+                !(indexes.empty() || indexes.front().parent().isValid()));
+        }
+
+        bool eventFilter(QObject *object, QEvent *event) override
+        {
+            if (event->type() == QEvent::Show) {
+                react(m_removable->selectionModel()->selectedIndexes());
+                connect(m_removable->selectionModel(),
+                        &QItemSelectionModel::selectionChanged,
+                        m_window->ui->actionRemoveElement,
+                        [this](const QItemSelection &selected) {
+                            react(selected.indexes());
+                        });
+                connect(
+                    m_window->ui->actionRemoveElement, &QAction::triggered,
+                    m_removable, [this] {
+                        auto currentIndexes
+                            = m_removable->selectionModel()->selectedIndexes();
+                        GUI_ASSERT(currentIndexes.empty() == false, );
+                        auto index = currentIndexes.front();
+                        GUI_ASSERT(index.parent().isValid() == false, );
+                        auto *element
+                            = static_cast<T *>(index.internalPointer());
+                        /// @todo Implement element removal.
+                        (void)element;
+                    });
+            } else if (event->type() == QEvent::Hide) {
+                m_window->ui->actionRemoveElement->setEnabled(false);
+                disconnect(m_window->ui->actionRemoveElement, 0, m_removable,
+                           0);
+            }
+
+            return QObject::eventFilter(object, event);
+        }
+
+        MainWindow *m_window;
+        QAbstractItemView *m_removable;
+    };
+    view->installEventFilter(new RemoveFilter(view, this));
+}
+
 template <>
 mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
@@ -988,6 +1040,7 @@ QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
     table->resizeColumnsToContents();
     table->setSortingEnabled(true);
     setupSearchable(table, proxyModel);
+    setupRemovable<typename ContainerModel::ItemModel>(table);
     connect(table, &QAbstractItemView::activated,
             [this, proxyModel](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
@@ -995,10 +1048,8 @@ QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
                 auto *item = static_cast<typename ContainerModel::ItemModel *>(
                     proxyModel->mapToSource(index).internalPointer());
                 dialog.setupData(*item);
-                if (dialog.exec() == QDialog::Accepted) {
-                    /// @todo Name change
+                if (dialog.exec() == QDialog::Accepted)
                     editElement(&dialog, item);
-                }
             });
     return table;
 }
@@ -1022,6 +1073,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
     tree->setSortingEnabled(true);
 
     setupSearchable(tree, proxyModel);
+    setupRemovable<model::Gate>(tree);
     connect(tree, &QAbstractItemView::activated,
             [this, proxyModel](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
