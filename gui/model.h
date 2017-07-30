@@ -426,11 +426,39 @@ public:
         emit m_model->removed(m_proxy.get());
     }
 
+    protected:
+        AddEvent(T *event, Model *model, QString description)
+            : QUndoCommand(std::move(description)), m_model(model),
+              m_address(event->data())
+        {
+        }
+
     private:
         Model *m_model;
         std::unique_ptr<T> m_proxy;
         typename T::Origin *const m_address;
         std::unique_ptr<typename T::Origin> m_event;
+    };
+
+    /// Removes an event from the model.
+    ///
+    /// @tparam T  The proxy event type.
+    ///
+    /// @pre The event has no dependent/parent gates.
+    template <class T>
+    class RemoveEvent : public AddEvent<T>
+    {
+        static_assert(std::is_base_of<Element, T>::value, "");
+
+    public:
+        RemoveEvent(T *event, Model *model)
+            : AddEvent<T>(event, model,
+                          QObject::tr("Remove event '%1'").arg(event->id()))
+        {
+        }
+
+        void redo() override { AddEvent<T>::undo(); }
+        void undo() override { AddEvent<T>::redo(); }
     };
 
     /// Changes the event type.

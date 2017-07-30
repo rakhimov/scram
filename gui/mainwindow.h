@@ -129,6 +129,7 @@ private:
     /// @tparam T  The type of the objects to remove.
     ///
     /// @pre Selections are single row.
+    /// @pre The model is proxy.
     template <class T>
     void setupRemovable(QAbstractItemView *view);
 

@@ -735,10 +735,26 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                         GUI_ASSERT(currentIndexes.empty() == false, );
                         auto index = currentIndexes.front();
                         GUI_ASSERT(index.parent().isValid() == false, );
-                        auto *element
-                            = static_cast<T *>(index.internalPointer());
-                        /// @todo Implement element removal.
-                        (void)element;
+                        auto *proxyModel = static_cast<QSortFilterProxyModel *>(
+                            m_removable->model());
+                        auto *element = static_cast<T *>(
+                            proxyModel->mapToSource(index).internalPointer());
+                        GUI_ASSERT(element, );
+                        auto parents
+                            = m_window->m_guiModel->parents(element->data());
+                        if (!parents.empty()) {
+                            QMessageBox::information(
+                                m_window, tr("Dependency Event Removal"),
+                                tr("Event '%1' is not removable because"
+                                   " it has dependents."
+                                   " Remove the event from the dependents"
+                                   " before this operation.")
+                                    .arg(element->id()));
+                            return;
+                        }
+                        m_window->m_undoStack->push(
+                            new model::Model::RemoveEvent<T>(
+                                element, m_window->m_guiModel.get()));
                     });
             } else if (event->type() == QEvent::Hide) {
                 m_window->ui->actionRemoveElement->setEnabled(false);
@@ -1074,7 +1090,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
     tree->setSortingEnabled(true);
 
     setupSearchable(tree, proxyModel);
-    setupRemovable<model::Gate>(tree);
+    /* setupRemovable<model::Gate>(tree); */ ///< @todo Implement gate removal.
     connect(tree, &QAbstractItemView::activated,
             [this, proxyModel](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
