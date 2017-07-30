@@ -795,20 +795,22 @@ void MainWindow::addElement()
     }
 }
 
+mef::FaultTree *MainWindow::getFaultTree(const EventDialog &dialog)
+{
+    if (dialog.faultTree().empty())
+        return nullptr;
+    auto it = m_model->fault_trees().find(dialog.faultTree());
+    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
+    return it->get();
+}
+
 template <class T>
 void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 {
     if (dialog->name() != element->id()) {
-        auto *faultTree = [this, dialog]() -> mef::FaultTree * {
-            if (dialog->faultTree().empty())
-                return nullptr;
-            auto it = m_model->fault_trees().find(dialog->faultTree());
-            GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-            return it->get();
-        }();
         m_undoStack->push(new model::Element::SetId<T>(
             static_cast<T *>(element), dialog->name(), m_model.get(),
-            faultTree));
+            getFaultTree(*dialog)));
     }
     if (dialog->label() != element->label())
         m_undoStack->push(
@@ -818,6 +820,26 @@ void MainWindow::editElement(EventDialog *dialog, model::Element *element)
 void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 {
     editElement<model::BasicEvent>(dialog, element);
+    switch (dialog->currentType()) {
+    case EventDialog::HouseEvent:
+        m_undoStack->push(new model::Model::ChangeEventType<model::BasicEvent,
+                                                            model::HouseEvent>(
+            element, extract<mef::HouseEvent>(*dialog), m_guiModel.get(),
+            getFaultTree(*dialog)));
+        return;
+    case EventDialog::BasicEvent:
+    case EventDialog::Undeveloped:
+    case EventDialog::Conditional:
+        break;
+    case EventDialog::Gate:
+        m_undoStack->push(
+            new model::Model::ChangeEventType<model::BasicEvent, model::Gate>(
+                element, extract<mef::Gate>(*dialog), m_guiModel.get(),
+                getFaultTree(*dialog)));
+        return;
+    default:
+        GUI_ASSERT(false && "Unexpected event type", );
+    }
     std::unique_ptr<mef::Expression> expression = dialog->expression();
     auto isEqual = [](mef::Expression *lhs, mef::Expression *rhs) {
         if (lhs == rhs) // Assumes immutable expressions.
@@ -880,6 +902,26 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
 void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 {
     editElement<model::HouseEvent>(dialog, element);
+    switch (dialog->currentType()) {
+    case EventDialog::HouseEvent:
+        break;
+    case EventDialog::BasicEvent:
+    case EventDialog::Undeveloped:
+    case EventDialog::Conditional:
+        m_undoStack->push(new model::Model::ChangeEventType<model::HouseEvent,
+                                                            model::BasicEvent>(
+            element, extract<mef::BasicEvent>(*dialog), m_guiModel.get(),
+            getFaultTree(*dialog)));
+        return;
+    case EventDialog::Gate:
+        m_undoStack->push(
+            new model::Model::ChangeEventType<model::HouseEvent, model::Gate>(
+                element, extract<mef::Gate>(*dialog), m_guiModel.get(),
+                getFaultTree(*dialog)));
+        return;
+    default:
+        GUI_ASSERT(false && "Unexpected event type", );
+    }
     if (dialog->booleanConstant() != element->state())
         m_undoStack->push(new model::HouseEvent::SetState(
             element, dialog->booleanConstant()));
@@ -888,6 +930,27 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
 void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
 {
     editElement<model::Gate>(dialog, element);
+    switch (dialog->currentType()) {
+    case EventDialog::HouseEvent:
+        m_undoStack->push(
+            new model::Model::ChangeEventType<model::Gate, model::HouseEvent>(
+                element, extract<mef::HouseEvent>(*dialog), m_guiModel.get(),
+                getFaultTree(*dialog)));
+        return;
+    case EventDialog::BasicEvent:
+    case EventDialog::Undeveloped:
+    case EventDialog::Conditional:
+        m_undoStack->push(
+            new model::Model::ChangeEventType<model::Gate, model::BasicEvent>(
+                element, extract<mef::BasicEvent>(*dialog), m_guiModel.get(),
+                getFaultTree(*dialog)));
+        return;
+    case EventDialog::Gate:
+        break;
+    default:
+        GUI_ASSERT(false && "Unexpected event type", );
+    }
+
     bool formulaChanged = [&dialog, &element] {
         if (dialog->connective() != element->type())
             return true;
@@ -933,7 +996,6 @@ QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
                     proxyModel->mapToSource(index).internalPointer());
                 dialog.setupData(*item);
                 if (dialog.exec() == QDialog::Accepted) {
-                    /// @todo Type change
                     /// @todo Name change
                     editElement(&dialog, item);
                 }

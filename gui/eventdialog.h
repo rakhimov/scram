@@ -46,6 +46,8 @@ namespace gui {
 /// for usage by the Model classes.
 ///
 /// However, the requested data must be relevant to the current type.
+///
+/// @pre The model is normalized.
 class EventDialog : public QDialog, private Ui::EventDialog
 {
     Q_OBJECT
@@ -127,7 +129,15 @@ private:
     /// @todo Optimize with memoization.
     bool checkCycle(const mef::Gate *gate);
 
-    void setupData(const model::Element &element, const mef::Element *origin);
+    /// @returns The fault tree the event belongs to.
+    ///          nullptr if the event is unused in fault trees.
+    ///
+    /// @note Only gates are guaranteed to be in fault trees.
+    template <class T>
+    mef::FaultTree *getFaultTree(const T *event) const;
+
+    template <class T>
+    void setupData(const model::Element &element, const T *origin);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
     void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
 
@@ -138,6 +148,7 @@ private:
     QStatusBar *m_errorBar;
     QString m_initName;  ///< The name not validated for duplicates.
     const mef::Element *m_event = nullptr;  ///< Set only for existing events.
+    bool m_fixContainerName = false;  ///< @todo Implement fault tree change.
 };
 
 } // namespace gui

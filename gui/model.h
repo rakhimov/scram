@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <boost/multi_index_container.hpp>
@@ -35,11 +36,27 @@
 #include <QVariant>
 
 #include "src/event.h"
+#include "src/ext/multi_index.h"
 #include "src/model.h"
 
 namespace scram {
 namespace gui {
 namespace model {
+
+/// Fault tree container element management assuming normalized model.
+/// @todo Move into an appropriate proxy type.
+/// @{
+inline void remove(mef::Event *, mef::FaultTree *)  {}
+inline void remove(mef::Gate *gate, mef::FaultTree *faultTree)
+{
+    faultTree->Remove(gate);
+}
+inline void add(mef::Event *, mef::FaultTree *)  {}
+inline void add(mef::Gate *gate, mef::FaultTree *faultTree)
+{
+    faultTree->Add(gate);
+}
+/// @}
 
 class Element : public QObject
 {
@@ -90,11 +107,11 @@ public:
             if (m_name == cur_name)
                 return;
             if (m_faultTree)
-                m_faultTree->Remove(m_event->data());
+                remove(m_event->data(), m_faultTree);
             auto ptr = m_model->Remove(m_event->data());
             m_event->data()->id(m_name.toStdString());
             if (m_faultTree)
-                m_faultTree->Add(m_event->data());
+                add(m_event->data(), m_faultTree);
             m_model->Add(std::move(ptr));
             emit m_event->idChanged(m_name);
             m_name = std::move(cur_name);
@@ -436,6 +453,75 @@ public:
         mef::FaultTreePtr m_faultTree;
         mef::FaultTree *const m_faultTreeAddress;
     };
+
+    /// Changes the event type.
+    ///
+    /// @tparam E  The type of the existing Model Event.
+    /// @tparam T  The type of the new (target) Event.
+    template <class E, class T>
+    class ChangeEventType : public QUndoCommand
+    {
+        static_assert(!std::is_same<E, T>::value, "");
+        static_assert(std::is_base_of<Element, E>::value, "");
+        static_assert(std::is_base_of<Element, T>::value, "");
+
+    public:
+        /// Assumes that events have the same ID.
+        ChangeEventType(E *currentEvent,
+                        std::unique_ptr<typename T::Origin> newEvent,
+                        Model *model, mef::FaultTree *faultTree = nullptr)
+            : QUndoCommand(QObject::tr("Change the type of event '%1'")
+                               .arg(currentEvent->id())),
+              m_switchTo{currentEvent, std::make_unique<T>(newEvent.get()),
+                         std::move(newEvent)},
+              m_model(model), m_faultTree(faultTree),
+              m_gates(model->parents(currentEvent->data()))
+        {
+        }
+
+        void undo() override { m_switchTo = m_switchFrom(*this); }
+        void redo() override { m_switchFrom = m_switchTo(*this); }
+
+    private:
+        template <class Current, class Next>
+        struct Switch
+        {
+            Switch<Next, Current> operator()(const ChangeEventType &self)
+            {
+                std::unique_ptr<typename Current::Origin> curEvent
+                    = self.m_model->m_model->Remove(m_address->data());
+                std::unique_ptr<Current> curProxy
+                    = ext::extract(m_address->data(),
+                                   &self.m_model->template table<Current>());
+                emit self.m_model->removed(m_address);
+                Next *nextAddress = m_proxy.get();
+                self.m_model->m_model->Add(std::move(m_event));
+                self.m_model->template table<Next>().emplace(
+                    std::move(m_proxy));
+                emit self.m_model->added(nextAddress);
+                if (self.m_faultTree) {
+                    remove(m_address->data(), self.m_faultTree);
+                    add(nextAddress->data(), self.m_faultTree);
+                }
+                for (Gate *gate : self.m_gates) {
+                    gate->data()->formula().RemoveArgument(m_address->data());
+                    gate->data()->formula().AddArgument(nextAddress->data());
+                    emit gate->formulaChanged();
+                }
+                return {nextAddress, std::move(curProxy), std::move(curEvent)};
+            }
+
+            Current *m_address;
+            std::unique_ptr<Next> m_proxy;
+            std::unique_ptr<typename Next::Origin> m_event;
+        };
+        Switch<E, T> m_switchTo;
+        Switch<T, E> m_switchFrom;
+
+        Model *m_model;
+        mef::FaultTree *m_faultTree;
+        std::vector<Gate *> m_gates;
+    };
     /// @}
 
 signals:
@@ -457,11 +543,27 @@ private:
     /// @todo Remove normalization upon full container support for elements.
     void normalize(mef::Model *model);
 
+    template <class T>
+    ProxyTable<T> &table();
+
     mef::Model *m_model;
     ProxyTable<HouseEvent> m_houseEvents;
     ProxyTable<BasicEvent> m_basicEvents;
     ProxyTable<Gate> m_gates;
 };
+
+template <>
+inline ProxyTable<Gate> &Model::table<Gate>() { return m_gates; }
+template <>
+inline ProxyTable<BasicEvent> &Model::table<BasicEvent>()
+{
+    return m_basicEvents;
+}
+template <>
+inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
+{
+    return m_houseEvents;
+}
 
 } // namespace model
 } // namespace gui

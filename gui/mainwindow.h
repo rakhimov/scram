@@ -131,6 +131,8 @@ private:
     template <class T>
     std::unique_ptr<T> extract(const EventDialog &dialog);
 
+    mef::FaultTree *getFaultTree(const EventDialog &dialog);
+
     template <class T>
     void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);

@@ -83,10 +83,13 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 default:
                     GUI_ASSERT(false, );
                 }
+                /// @todo Implement container change.
                 if (index == ext::one_bit_index(EventType::Gate)) {
                     containerFaultTree->setEnabled(true);
                     containerFaultTree->setChecked(true);
                     containerModel->setEnabled(false);
+                    if (m_fixContainerName)
+                        containerFaultTreeName->setEnabled(false);
                 } else {
                     containerFaultTree->setEnabled(false);
                     containerModel->setEnabled(true);
@@ -219,19 +222,53 @@ bool EventDialog::checkCycle(const mef::Gate *gate)
     return false;
 }
 
-void EventDialog::setupData(const model::Element &element,
-                            const mef::Element *origin)
+template <class T>
+mef::FaultTree *EventDialog::getFaultTree(const T *event) const
+{
+    // Find the fault tree of the first parent gate.
+    auto it
+        = boost::find_if(m_model->gates(), [&event](const mef::GatePtr &gate) {
+              return boost::find(gate->formula().event_args(),
+                                 mef::Formula::EventArg(const_cast<T *>(event)))
+                     != gate->formula().event_args().end();
+          });
+    if (it == m_model->gates().end())
+        return nullptr;
+    return getFaultTree(it->get());
+}
+
+template <>
+mef::FaultTree *EventDialog::getFaultTree(const mef::Gate *event) const
+{
+    auto it = boost::find_if(
+        m_model->fault_trees(), [&event](const mef::FaultTreePtr &faultTree) {
+            return faultTree->gates().count(event->name());
+        });
+    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
+    return it->get();
+}
+
+template <class T>
+void EventDialog::setupData(const model::Element &element, const T *origin)
 {
     m_event = origin;
     m_initName = element.id();
     nameLine->setText(m_initName);
     labelText->setPlainText(element.label());
+    m_fixContainerName = true;
+    mef::FaultTree *faultTree = getFaultTree(origin);
+    if (faultTree)
+        containerFaultTreeName->setText(
+            QString::fromStdString(faultTree->name()));
+    else
+        static_cast<QListView *>(typeBox->view())
+            ->setRowHidden(ext::one_bit_index(Gate), true);
+    /// @todo Allow type change w/ new fault tree creation.
 }
 
 void EventDialog::setupData(const model::HouseEvent &element)
 {
     setupData(element, element.data());
-    typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(ext::one_bit_index(HouseEvent));
     stateBox->setCurrentIndex(element.state());
 }
@@ -239,11 +276,6 @@ void EventDialog::setupData(const model::HouseEvent &element)
 void EventDialog::setupData(const model::BasicEvent &element)
 {
     setupData(element, element.data());
-    /// @todo Type change.
-    static_cast<QListView *>(typeBox->view())
-        ->setRowHidden(ext::one_bit_index(HouseEvent), true);
-    static_cast<QListView *>(typeBox->view())
-        ->setRowHidden(ext::one_bit_index(Gate), true);
     typeBox->setCurrentIndex(ext::one_bit_index(BasicEvent) + element.flavor());
     auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
     if (basicEvent.HasExpression()) {
@@ -268,16 +300,19 @@ void EventDialog::setupData(const model::BasicEvent &element)
 void EventDialog::setupData(const model::Gate &element)
 {
     setupData(element, element.data());
-    typeBox->setEnabled(false); ///< @todo Type change.
     typeBox->setCurrentIndex(ext::one_bit_index(Gate));
 
-    containerFaultTreeName->setEnabled(false); ///< @todo Container changes.
-    auto it = boost::find_if(
-        m_model->fault_trees(), [&element](const mef::FaultTreePtr &faultTree) {
-            return faultTree->gates().count(element.data()->name());
-        });
-    GUI_ASSERT(it != m_model->fault_trees().end(), );
-    containerFaultTreeName->setText(QString::fromStdString((*it)->name()));
+    /// @todo Deal with type changes of the top gate.
+    if (getFaultTree(element.data())->top_events().front() == element.data()) {
+        static_cast<QListView *>(typeBox->view())
+            ->setRowHidden(ext::one_bit_index(HouseEvent), true);
+        static_cast<QListView *>(typeBox->view())
+            ->setRowHidden(ext::one_bit_index(BasicEvent), true);
+        static_cast<QListView *>(typeBox->view())
+            ->setRowHidden(ext::one_bit_index(Conditional), true);
+        static_cast<QListView *>(typeBox->view())
+            ->setRowHidden(ext::one_bit_index(Undeveloped), true);
+    }
 
     connectiveBox->setCurrentIndex(element.type());
     if (element.type() == mef::kVote)

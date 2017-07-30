@@ -21,7 +21,6 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "src/ext/multi_index.h"
 #include "src/fault_tree.h"
 
 #include "guiassert.h"
