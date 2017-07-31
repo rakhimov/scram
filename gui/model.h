@@ -590,6 +590,10 @@ public:
     void redo() override;
     void undo() override;
 
+protected:
+    /// Support constructor for removal.
+    AddEvent(Gate *gate, Model *model, QString description);
+
 private:
     Model *m_model;
     std::unique_ptr<Gate> m_proxy;
@@ -597,6 +601,21 @@ private:
     mef::GatePtr m_gate;
     mef::FaultTreePtr m_faultTree;
     mef::FaultTree *const m_faultTreeAddress;
+};
+
+/// Specialization to implicitly remove fault tree.
+template <>
+class Model::RemoveEvent<Gate> : public Model::AddEvent<Gate>
+{
+public:
+    RemoveEvent(Gate *gate, Model *model)
+        : Model::AddEvent<Gate>(gate, model,
+                                QObject::tr("Remove gate '%1'").arg(gate->id()))
+    {
+    }
+
+    void redo() override { Model::AddEvent<Gate>::undo(); }
+    void undo() override { Model::AddEvent<Gate>::redo(); }
 };
 
 } // namespace model

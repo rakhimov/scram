@@ -211,6 +211,16 @@ Model::AddEvent<Gate>::AddEvent(mef::GatePtr gate, std::string faultTree,
     m_faultTree->CollectTopEvents();
 }
 
+Model::AddEvent<Gate>::AddEvent(Gate *gate, Model *model, QString description)
+    : QUndoCommand(description), m_model(model), m_address(gate->data()),
+      m_faultTreeAddress(
+          boost::find_if(model->faultTrees(), [gate](const mef::FaultTreePtr
+                                                         &faultTree) {
+              return faultTree->top_events().front() == gate->data();
+          })->get())
+{
+}
+
 void Model::AddEvent<Gate>::redo()
 {
     m_model->m_model->Add(std::move(m_faultTree));

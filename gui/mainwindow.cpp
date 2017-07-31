@@ -1090,7 +1090,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
     tree->setSortingEnabled(true);
 
     setupSearchable(tree, proxyModel);
-    /* setupRemovable<model::Gate>(tree); */ ///< @todo Implement gate removal.
+    setupRemovable<model::Gate>(tree);
     connect(tree, &QAbstractItemView::activated,
             [this, proxyModel](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
