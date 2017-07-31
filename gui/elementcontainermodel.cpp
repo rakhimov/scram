@@ -105,8 +105,8 @@ void ElementContainerModel::removeElement(Element *element)
     if (index != lastIndex) {
         m_elements[index] = lastElement;
         m_elementToIndex[lastElement] = index;
-        emit dataChanged(createIndex(index, 0),
-                         createIndex(index, columnCount()));
+        emit dataChanged(createIndex(index, 0, lastElement),
+                         createIndex(index, columnCount() - 1, lastElement));
     }
     disconnect(element, 0, this, 0);
 }
