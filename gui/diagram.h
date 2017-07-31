@@ -204,6 +204,12 @@ signals:
 
 private:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent) override;
+
+    /// Track changes more accurately.
+    void redraw();
+
+    model::Gate *m_root;
+    model::Model *m_model;
 };
 
 } // namespace diagram
