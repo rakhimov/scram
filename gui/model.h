@@ -408,10 +408,26 @@ public:
         void redo() override;
         void undo() override;
 
+    protected:
+        AddFaultTree(mef::FaultTree *address, Model *model, QString description)
+            : QUndoCommand(std::move(description)), m_model(model),
+              m_address(address)
+        {
+        }
+
     private:
         Model *m_model;
         mef::FaultTree *const m_address;
         mef::FaultTreePtr m_faultTree;
+    };
+
+    class RemoveFaultTree : public AddFaultTree
+    {
+    public:
+        RemoveFaultTree(mef::FaultTree *faultTree, Model *model);
+
+        void redo() override { AddFaultTree::undo(); }
+        void undo() override { AddFaultTree::redo(); }
     };
 
     /// @tparam T  The Model event type.

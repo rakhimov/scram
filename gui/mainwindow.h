@@ -139,6 +139,10 @@ private:
     template <class T>
     mef::FaultTree *getFaultTree(T *) { return nullptr; }
 
+    /// @tparam T  The model proxy type.
+    template <class T>
+    void removeEvent(T *event, mef::FaultTree *faultTree);
+
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);

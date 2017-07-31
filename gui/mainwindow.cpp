@@ -717,6 +717,43 @@ mef::FaultTree *MainWindow::getFaultTree(mef::Gate *gate)
 }
 
 template <class T>
+void MainWindow::removeEvent(T *event, mef::FaultTree *faultTree)
+{
+    m_undoStack->push(
+        new model::Model::RemoveEvent<T>(event, m_guiModel.get(), faultTree));
+}
+
+template <>
+void MainWindow::removeEvent(model::Gate *event, mef::FaultTree *faultTree)
+{
+    GUI_ASSERT(faultTree->top_events().empty() == false, );
+    GUI_ASSERT(faultTree->gates().empty() == false, );
+    if (faultTree->top_events().front() != event->data()) {
+        m_undoStack->push(new model::Model::RemoveEvent<model::Gate>(
+                event, m_guiModel.get(), faultTree));
+        return;
+    }
+    QString faultTreeName = QString::fromStdString(faultTree->name());
+    if (faultTree->gates().size() > 1) {
+        QMessageBox::information(
+            this, tr("Dependency Container Removal"),
+            tr("Fault tree '%1' with root '%2' is not removable because"
+               " it has dependent non-root gates."
+               " Remove the gates from the fault tree"
+               " before this operation.")
+                .arg(faultTreeName, event->id()));
+        return;
+    }
+    m_undoStack->beginMacro(tr("Remove fault tree '%1' with root '%2'")
+                                .arg(faultTreeName, event->id()));
+    m_undoStack->push(new model::Model::RemoveEvent<model::Gate>(
+        event, m_guiModel.get(), faultTree));
+    m_undoStack->push(
+        new model::Model::RemoveFaultTree(faultTree, m_guiModel.get()));
+    m_undoStack->endMacro();
+}
+
+template <class T>
 void MainWindow::setupRemovable(QAbstractItemView *view)
 {
     struct RemoveFilter : public QObject {
@@ -764,10 +801,9 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                                     .arg(element->id()));
                             return;
                         }
-                        m_window->m_undoStack->push(
-                            new model::Model::RemoveEvent<T>(
-                                element, m_window->m_guiModel.get(),
-                                m_window->getFaultTree(element->data())));
+                        m_window->removeEvent(
+                                element,
+                                m_window->getFaultTree(element->data()));
                     });
             } else if (event->type() == QEvent::Hide) {
                 m_window->ui->actionRemoveElement->setEnabled(false);
