@@ -44,8 +44,8 @@ class PerformanceTest : public ::testing::Test {
   // Convenient function to manage analysis of one model in input files.
   void Analyze(const std::vector<std::string>& input_files) {
     {
-      mef::Initializer init(input_files, settings);
-      analysis = std::make_unique<RiskAnalysis>(init.model().get(), settings);
+      model = mef::Initializer(input_files, settings).model();
+      analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
     }
     analysis->Analyze();
   }
@@ -76,6 +76,7 @@ class PerformanceTest : public ::testing::Test {
     return analysis->results().front().probability_analysis->analysis_time();
   }
 
+  std::shared_ptr<mef::Model> model;
   std::unique_ptr<RiskAnalysis> analysis;
   Settings settings;
   double delta;  // The range indicator for values.
