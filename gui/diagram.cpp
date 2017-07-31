@@ -360,6 +360,13 @@ DiagramScene::DiagramScene(model::Gate *event, model::Model *model,
     : QGraphicsScene(parent), m_root(event), m_model(model)
 {
     redraw();
+    connect(m_model, OVERLOAD(model::Model, removed, model::Gate *), this,
+            [this](model::Gate *gate) {
+                if (gate == m_root) {
+                    clear();
+                    m_root = nullptr; ///< @todo Remove the implicit delete.
+                }
+            });
 }
 
 void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -389,14 +396,14 @@ void DiagramScene::redraw()
         {
             auto *proxy = self->m_model->basicEvents().find(event)->get();
             connect(proxy, &model::BasicEvent::flavorChanged, self,
-                    &DiagramScene::redraw);
+                    &DiagramScene::redraw, Qt::UniqueConnection);
         }
         DiagramScene *self;
     } visitor{this};
 
     auto link = [this, &visitor](model::Gate *gate) {
         connect(gate, &model::Gate::formulaChanged, this,
-                &DiagramScene::redraw);
+                &DiagramScene::redraw, Qt::UniqueConnection);
         for (const mef::Formula::EventArg &arg : gate->args())
             boost::apply_visitor(visitor, arg);
     };
@@ -405,14 +412,6 @@ void DiagramScene::redraw()
     link(m_root);
     for (const auto &entry : transfer)
         link(m_model->gates().find(entry.first)->get());
-
-    connect(m_model, OVERLOAD(model::Model, removed, model::Gate *), this,
-            [this](model::Gate *gate) {
-                if (gate == m_root) {
-                    clear();
-                    m_root = nullptr; ///< @todo Remove the implicit delete.
-                }
-            });
 }
 
 } // namespace diagram
