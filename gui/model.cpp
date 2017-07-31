@@ -198,47 +198,24 @@ void Model::SetName::redo()
     m_name = std::move(currentName);
 }
 
-Model::AddEvent<Gate>::AddEvent(mef::GatePtr gate, std::string faultTree,
-                                Model *model)
-    : QUndoCommand(
-          QObject::tr("Add gate '%1'").arg(QString::fromStdString(gate->id()))),
-      m_model(model), m_proxy(std::make_unique<Gate>(gate.get())),
-      m_address(gate.get()), m_gate(std::move(gate)),
-      m_faultTree(std::make_unique<mef::FaultTree>(faultTree)),
-      m_faultTreeAddress(m_faultTree.get())
-{
-    m_faultTree->Add(m_address);
-    m_faultTree->CollectTopEvents();
-}
-
-Model::AddEvent<Gate>::AddEvent(Gate *gate, Model *model, QString description)
-    : QUndoCommand(description), m_model(model), m_address(gate->data()),
-      m_faultTreeAddress(
-          boost::find_if(model->faultTrees(), [gate](const mef::FaultTreePtr
-                                                         &faultTree) {
-              return faultTree->top_events().front() == gate->data();
-          })->get())
+Model::AddFaultTree::AddFaultTree(mef::FaultTreePtr faultTree, Model *model)
+    : QUndoCommand(QObject::tr("Add fault tree '%1'")
+                       .arg(QString::fromStdString(faultTree->name()))),
+      m_model(model), m_address(faultTree.get()),
+      m_faultTree(std::move(faultTree))
 {
 }
 
-void Model::AddEvent<Gate>::redo()
+void Model::AddFaultTree::redo()
 {
     m_model->m_model->Add(std::move(m_faultTree));
-    emit m_model->added(m_faultTreeAddress);
-
-    m_model->m_model->Add(std::move(m_gate));
-    auto it = m_model->m_gates.emplace(std::move(m_proxy)).first;
-    emit m_model->added(it->get());
+    emit m_model->added(m_address);
 }
 
-void Model::AddEvent<Gate>::undo()
+void Model::AddFaultTree::undo()
 {
-    m_faultTree = m_model->m_model->Remove(m_faultTreeAddress);
-    emit m_model->removed(m_faultTreeAddress);
-
-    m_gate = m_model->m_model->Remove(m_address);
-    m_proxy = ext::extract(m_address, &m_model->m_gates);
-    emit m_model->removed(m_proxy.get());
+    m_faultTree = m_model->m_model->Remove(m_address);
+    emit m_model->removed(m_address);
 }
 
 } // namespace model

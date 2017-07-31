@@ -704,6 +704,18 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+template <>
+mef::FaultTree *MainWindow::getFaultTree(mef::Gate *gate)
+{
+    /// @todo Duplicate code from EventDialog.
+    auto it = boost::find_if(
+        m_model->fault_trees(), [&gate](const mef::FaultTreePtr &faultTree) {
+            return faultTree->gates().count(gate->name());
+        });
+    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
+    return it->get();
+}
+
 template <class T>
 void MainWindow::setupRemovable(QAbstractItemView *view)
 {
@@ -754,7 +766,8 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                         }
                         m_window->m_undoStack->push(
                             new model::Model::RemoveEvent<T>(
-                                element, m_window->m_guiModel.get()));
+                                element, m_window->m_guiModel.get(),
+                                m_window->getFaultTree(element->data())));
                     });
             } else if (event->type() == QEvent::Hide) {
                 m_window->ui->actionRemoveElement->setEnabled(false);
@@ -855,10 +868,20 @@ void MainWindow::addElement()
         m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
             extract<mef::BasicEvent>(dialog), m_guiModel.get()));
         break;
-    case EventDialog::Gate:
+    case EventDialog::Gate: {
+        m_undoStack->beginMacro(
+            tr("Add fault tree '%1' with gate '%2'")
+                .arg(QString::fromStdString(dialog.faultTree()),
+                     dialog.name()));
+        auto faultTree = std::make_unique<mef::FaultTree>(dialog.faultTree());
+        auto *faultTreeAddress = faultTree.get();
+        m_undoStack->push(new model::Model::AddFaultTree(std::move(faultTree),
+                                                         m_guiModel.get()));
         m_undoStack->push(new model::Model::AddEvent<model::Gate>(
-            extract<mef::Gate>(dialog), dialog.faultTree(), m_guiModel.get()));
-        break;
+            extract<mef::Gate>(dialog), m_guiModel.get(), faultTreeAddress));
+        faultTreeAddress->CollectTopEvents();
+        m_undoStack->endMacro();
+    } break;
     default:
         GUI_ASSERT(false && "unexpected event type", );
     }

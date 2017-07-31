@@ -399,16 +399,33 @@ public:
         QString m_name;
     };
 
+    /// @todo Provide a proxy class for the fault tree.
+    class AddFaultTree : public QUndoCommand
+    {
+    public:
+        AddFaultTree(mef::FaultTreePtr faultTree, Model *model);
+
+        void redo() override;
+        void undo() override;
+
+    private:
+        Model *m_model;
+        mef::FaultTree *const m_address;
+        mef::FaultTreePtr m_faultTree;
+    };
+
     /// @tparam T  The Model event type.
     template <class T>
     class AddEvent : public QUndoCommand
     {
     public:
-        AddEvent(std::unique_ptr<typename T::Origin> event, Model *model)
+        AddEvent(std::unique_ptr<typename T::Origin> event, Model *model,
+                 mef::FaultTree *faultTree = nullptr)
             : QUndoCommand(QObject::tr("Add event '%1'")
                                .arg(QString::fromStdString(event->id()))),
               m_model(model), m_proxy(std::make_unique<T>(event.get())),
-              m_address(event.get()), m_event(std::move(event))
+              m_address(event.get()), m_event(std::move(event)),
+              m_faultTree(faultTree)
         {
         }
 
@@ -417,6 +434,9 @@ public:
         m_model->m_model->Add(std::move(m_event));
         auto it = m_model->table<T>().emplace(std::move(m_proxy)).first;
         emit m_model->added(it->get());
+
+        if (m_faultTree)
+            add(m_address, m_faultTree);
     }
 
     void undo() override
@@ -424,12 +444,16 @@ public:
         m_event = m_model->m_model->Remove(m_address);
         m_proxy = ext::extract(m_address, &m_model->table<T>());
         emit m_model->removed(m_proxy.get());
+
+        if (m_faultTree)
+            remove(m_address, m_faultTree);
     }
 
     protected:
-        AddEvent(T *event, Model *model, QString description)
+        AddEvent(T *event, Model *model, mef::FaultTree *faultTree,
+                 QString description)
             : QUndoCommand(std::move(description)), m_model(model),
-              m_address(event->data())
+              m_address(event->data()), m_faultTree(faultTree)
         {
         }
 
@@ -438,6 +462,7 @@ public:
         std::unique_ptr<T> m_proxy;
         typename T::Origin *const m_address;
         std::unique_ptr<typename T::Origin> m_event;
+        mef::FaultTree *m_faultTree;  ///< Optional container.
     };
 
     /// Removes an event from the model.
@@ -451,8 +476,8 @@ public:
         static_assert(std::is_base_of<Element, T>::value, "");
 
     public:
-        RemoveEvent(T *event, Model *model)
-            : AddEvent<T>(event, model,
+        RemoveEvent(T *event, Model *model, mef::FaultTree *faultTree = nullptr)
+            : AddEvent<T>(event, model, faultTree,
                           QObject::tr("Remove event '%1'").arg(event->id()))
         {
         }
@@ -571,52 +596,6 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 {
     return m_houseEvents;
 }
-
-/// Specialization due to implicit fault tree creation.
-template <>
-class Model::AddEvent<Gate> : public QUndoCommand
-{
-public:
-    /// The gate is assumed to be a fault-tree root.
-    /// In other words, this is an implicit way to create a fault-tree.
-    ///
-    /// @param[in] gate  Fully initialized and valid gate.
-    /// @param[in] faultTree  The new fault tree name.
-    /// @param[in,out] model  The destination model.
-    ///
-    /// @todo Make fault-tree creation explicit.
-    AddEvent(mef::GatePtr gate, std::string faultTree, Model *model);
-
-    void redo() override;
-    void undo() override;
-
-protected:
-    /// Support constructor for removal.
-    AddEvent(Gate *gate, Model *model, QString description);
-
-private:
-    Model *m_model;
-    std::unique_ptr<Gate> m_proxy;
-    mef::Gate *const m_address;
-    mef::GatePtr m_gate;
-    mef::FaultTreePtr m_faultTree;
-    mef::FaultTree *const m_faultTreeAddress;
-};
-
-/// Specialization to implicitly remove fault tree.
-template <>
-class Model::RemoveEvent<Gate> : public Model::AddEvent<Gate>
-{
-public:
-    RemoveEvent(Gate *gate, Model *model)
-        : Model::AddEvent<Gate>(gate, model,
-                                QObject::tr("Remove gate '%1'").arg(gate->id()))
-    {
-    }
-
-    void redo() override { Model::AddEvent<Gate>::undo(); }
-    void undo() override { Model::AddEvent<Gate>::redo(); }
-};
 
 } // namespace model
 } // namespace gui

@@ -133,6 +133,12 @@ private:
     template <class T>
     void setupRemovable(QAbstractItemView *view);
 
+    /// @tparam T  The MEF type.
+    ///
+    /// @returns The fault tree container of the element.
+    template <class T>
+    mef::FaultTree *getFaultTree(T *) { return nullptr; }
+
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);
