@@ -68,14 +68,16 @@ set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
 add_subdirectory("${SCRAM_GUI_TS_DIR}")
 
 add_library(scramgui ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-target_link_libraries(scramgui PRIVATE
+set(GUI_DEP_LIBS  # TODO: Link with shared libraries on Windows instead.
   ${LIBS} scramcore
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
 if(INSTALL_LIBS)
   if(WIN32)
+    target_link_libraries(scramgui PRIVATE ${GUI_DEP_LIBS})  # TODO: Remove.
     install(TARGETS scramgui RUNTIME DESTINATION bin COMPONENT gui)
   else()
+    target_link_libraries(scramgui ${GUI_DEP_LIBS})  # TODO: Make default.
     set_target_properties(scramgui
       PROPERTIES
       INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
