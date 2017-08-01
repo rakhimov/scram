@@ -72,6 +72,8 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 ///
 /// @param[in] xml_element  XML element.
 /// @param[out] element  The object that needs attributes and label.
+///
+/// @throws ValidationError  Invalid attribute setting.
 void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
                               Element* element) {
   xmlpp::NodeSet labels = xml_element->find("./label");
@@ -80,6 +82,7 @@ void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
     const xmlpp::Element* label = XmlElement(labels.front());
     const xmlpp::TextNode* text = label->get_child_text();
     assert(text);
+    assert(element->label().empty() && "Resetting element label.");
     element->label(GetContent(text));
   }
 
@@ -87,20 +90,18 @@ void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
   if (attributes.empty())
     return;
   assert(attributes.size() == 1);  // Only one big element 'attributes'.
-  const xmlpp::Element* attribute = nullptr;  // To report position.
-  const xmlpp::Element* attributes_element = XmlElement(attributes.front());
-
-  try {
-    for (const xmlpp::Node* node : attributes_element->find("./attribute")) {
-      attribute = XmlElement(node);
-      Attribute attribute_struct = {GetAttributeValue(attribute, "name"),
-                                    GetAttributeValue(attribute, "value"),
-                                    GetAttributeValue(attribute, "type")};
+  for (const xmlpp::Node* node :
+       XmlElement(attributes.front())->find("./attribute")) {
+    const xmlpp::Element* attribute = XmlElement(node);
+    Attribute attribute_struct = {GetAttributeValue(attribute, "name"),
+                                  GetAttributeValue(attribute, "value"),
+                                  GetAttributeValue(attribute, "type")};
+    try {
       element->AddAttribute(std::move(attribute_struct));
+    } catch (ValidationError& err) {
+      err.msg(GetLine(attribute) + err.msg());
+      throw;
     }
-  } catch(ValidationError& err) {
-    err.msg(GetLine(attribute) + err.msg());
-    throw;
   }
 }
 
@@ -226,33 +227,39 @@ void Initializer::Register(T&& element, const xmlpp::Element* xml_element) {
 /// Specializations for element registrations.
 /// @{
 template <>
-GatePtr Initializer::Register(const xmlpp::Element* gate_node,
-                              const std::string& base_path,
-                              RoleSpecifier container_role) {
-  GatePtr gate = ConstructElement<Gate>(gate_node, base_path, container_role);
-  Register(gate, gate_node);
-  tbd_.emplace_back(gate.get(), gate_node);
+Gate* Initializer::Register(const xmlpp::Element* gate_node,
+                            const std::string& base_path,
+                            RoleSpecifier container_role) {
+  GatePtr ptr = ConstructElement<Gate>(gate_node, base_path, container_role);
+  auto* gate = ptr.get();
+  Register(std::move(ptr), gate_node);
+  path_gates_.insert(gate);
+  tbd_.emplace_back(gate, gate_node);
   return gate;
 }
 
 template <>
-BasicEventPtr Initializer::Register(const xmlpp::Element* event_node,
+BasicEvent* Initializer::Register(const xmlpp::Element* event_node,
                                     const std::string& base_path,
                                     RoleSpecifier container_role) {
-  BasicEventPtr basic_event =
+  BasicEventPtr ptr =
       ConstructElement<BasicEvent>(event_node, base_path, container_role);
-  Register(basic_event, event_node);
-  tbd_.emplace_back(basic_event.get(), event_node);
+  auto* basic_event = ptr.get();
+  Register(std::move(ptr), event_node);
+  path_basic_events_.insert(basic_event);
+  tbd_.emplace_back(basic_event, event_node);
   return basic_event;
 }
 
 template <>
-HouseEventPtr Initializer::Register(const xmlpp::Element* event_node,
-                                    const std::string& base_path,
-                                    RoleSpecifier container_role) {
-  HouseEventPtr house_event =
+HouseEvent* Initializer::Register(const xmlpp::Element* event_node,
+                                  const std::string& base_path,
+                                  RoleSpecifier container_role) {
+  HouseEventPtr ptr =
       ConstructElement<HouseEvent>(event_node, base_path, container_role);
-  Register(house_event, event_node);
+  auto* house_event = ptr.get();
+  Register(std::move(ptr), event_node);
+  path_house_events_.insert(house_event);
 
   // Only Boolean constant.
   xmlpp::NodeSet expression = event_node->find("./constant");
@@ -269,13 +276,15 @@ HouseEventPtr Initializer::Register(const xmlpp::Element* event_node,
 }
 
 template <>
-ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
-                                   const std::string& base_path,
-                                   RoleSpecifier container_role) {
-  ParameterPtr parameter =
+Parameter* Initializer::Register(const xmlpp::Element* param_node,
+                                 const std::string& base_path,
+                                 RoleSpecifier container_role) {
+  ParameterPtr ptr =
       ConstructElement<Parameter>(param_node, base_path, container_role);
-  Register(parameter, param_node);
-  tbd_.emplace_back(parameter.get(), param_node);
+  auto* parameter = ptr.get();
+  Register(std::move(ptr), param_node);
+  path_parameters_.insert(parameter);
+  tbd_.emplace_back(parameter, param_node);
 
   // Attach units.
   std::string unit = GetAttributeValue(param_node, "unit");
@@ -288,10 +297,10 @@ ParameterPtr Initializer::Register(const xmlpp::Element* param_node,
 }
 
 template <>
-CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
-                                  const std::string& base_path,
-                                  RoleSpecifier container_role) {
-  auto ccf_group = [&]() -> CcfGroupPtr {
+CcfGroup* Initializer::Register(const xmlpp::Element* ccf_node,
+                                const std::string& base_path,
+                                RoleSpecifier container_role) {
+  auto ptr = [&]() -> CcfGroupPtr {
     std::string model = GetAttributeValue(ccf_node, "model");
     if (model == "beta-factor")
       return ConstructElement<BetaFactorModel>(ccf_node, base_path,
@@ -305,24 +314,25 @@ CcfGroupPtr Initializer::Register(const xmlpp::Element* ccf_node,
     return ConstructElement<PhiFactorModel>(ccf_node, base_path,
                                             container_role);
   }();
-
-  Register(ccf_group, ccf_node);
+  auto* ccf_group = ptr.get();
+  Register(std::move(ptr), ccf_node);
 
   xmlpp::NodeSet members = ccf_node->find("./members");
   assert(members.size() == 1);
-  ProcessCcfMembers(XmlElement(members[0]), ccf_group.get());
+  ProcessCcfMembers(XmlElement(members[0]), ccf_group);
 
-  tbd_.emplace_back(ccf_group.get(), ccf_node);
+  tbd_.emplace_back(ccf_group, ccf_node);
   return ccf_group;
 }
 
 template <>
-SequencePtr Initializer::Register(const xmlpp::Element* xml_node,
-                                  const std::string& /*base_path*/,
-                                  RoleSpecifier /*container_role*/) {
-  SequencePtr sequence = ConstructElement<Sequence>(xml_node);
-  Register(sequence, xml_node);
-  tbd_.emplace_back(sequence.get(), xml_node);
+Sequence* Initializer::Register(const xmlpp::Element* xml_node,
+                                const std::string& /*base_path*/,
+                                RoleSpecifier /*container_role*/) {
+  SequencePtr ptr = ConstructElement<Sequence>(xml_node);
+  auto* sequence = ptr.get();
+  Register(std::move(ptr), xml_node);
+  tbd_.emplace_back(sequence, xml_node);
   return sequence;
 }
 /// @}
@@ -344,7 +354,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   if (!model_) {  // Create only one model for multiple files.
     model_ = ConstructElement<Model>(XmlElement(root));
-    model_->mission_time()->value(settings_.mission_time());
+    model_->mission_time().value(settings_.mission_time());
   }
 
   for (const xmlpp::Node* node : root->find("./define-initiating-event")) {
@@ -390,6 +400,7 @@ void Initializer::Define(const xmlpp::Element* gate_node, Gate* gate) {
   // Assumes that there are no attributes and labels.
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node = XmlElement(formulas.front());
+  assert(!gate->HasFormula() && "Resetting gate formula");
   gate->formula(GetFormula(formula_node, gate->base_path()));
   try {
     gate->Validate();
@@ -406,6 +417,7 @@ void Initializer::Define(const xmlpp::Element* event_node,
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node = XmlElement(expressions.back());
+    assert(basic_event->HasExpression() == false && "Resetting expressions.");
     basic_event->expression(GetExpression(expr_node, basic_event->base_path()));
   }
 }
@@ -643,17 +655,17 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        formula->AddArgument(model_->GetEvent(name, base_path));
+        formula->AddArgument(GetEvent(name, base_path));
 
       } else if (element_type == "gate") {
-        formula->AddArgument(model_->GetGate(name, base_path));
+        formula->AddArgument(GetGate(name, base_path));
 
       } else if (element_type == "basic-event") {
-        formula->AddArgument(model_->GetBasicEvent(name, base_path));
+        formula->AddArgument(GetBasicEvent(name, base_path));
 
       } else {
         assert(element_type == "house-event");
-        formula->AddArgument(model_->GetHouseEvent(name, base_path));
+        formula->AddArgument(GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
       throw ValidationError(
@@ -829,7 +841,7 @@ struct Initializer::Extractor {
   /// @param[in,out] init  The host Initializer.
   /// @param[in] expressions  Accumulated argument expressions.
   ///
-  /// @returns A shared pointer to the extracted expression.
+  /// @returns The extracted expression.
   ///
   /// @throws std::out_of_range  Not enough arguments in the args container.
   template <class... Ts>
@@ -855,7 +867,7 @@ struct Initializer::Extractor<T, 0> {
   ///
   /// @param[in] expressions  All argument expressions for constructing T.
   ///
-  /// @returns A shared pointer to the constructed expression.
+  /// @returns The constructed expression.
   template <class... Ts>
   std::unique_ptr<T> operator()(const xmlpp::NodeSet& /*args*/,
                                 const std::string& /*base_path*/,
@@ -875,7 +887,7 @@ struct Initializer::Extractor<T, -1> {
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   /// @param[in,out] init  The host Initializer.
   ///
-  /// @returns A shared pointer to the constructed expression.
+  /// @returns The constructed expression.
   std::unique_ptr<T> operator()(const xmlpp::NodeSet& args,
                                 const std::string& base_path,
                                 Initializer* init) {
@@ -1119,7 +1131,7 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
   if (expr_type == "parameter") {
     std::string name = GetAttributeValue(expr_element, "name");
     try {
-      Parameter* param = model_->GetParameter(name, base_path);
+      Parameter* param = GetParameter(name, base_path);
       param->usage(true);
       check_units(*param);
       return param;
@@ -1129,8 +1141,8 @@ Expression* Initializer::GetParameter(const std::string& expr_type,
           (base_path.empty() ? "" : " with base path " + base_path));
     }
   } else if (expr_type == "system-mission-time") {
-    check_units(*model_->mission_time());
-    return model_->mission_time().get();
+    check_units(model_->mission_time());
+    return &model_->mission_time();
   }
   return nullptr;  // The expression is not a parameter.
 }
@@ -1142,16 +1154,16 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     assert("basic-event" == event_node->get_name());
 
     std::string name = GetAttributeValue(event_node, "name");
-    auto basic_event = std::make_shared<BasicEvent>(std::move(name),
+    auto basic_event = std::make_unique<BasicEvent>(std::move(name),
                                                     ccf_group->base_path(),
                                                     ccf_group->role());
     try {
-      ccf_group->AddMember(basic_event);
+      ccf_group->AddMember(basic_event.get());
     } catch (DuplicateArgumentError& err) {
       err.msg(GetLine(event_node) + err.msg());
       throw;
     }
-    Register(basic_event, event_node);
+    Register(std::move(basic_event), event_node);
   }
 }
 
@@ -1173,6 +1185,87 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
     throw;
   }
 }
+
+Parameter* Initializer::GetParameter(const std::string& entity_reference,
+                                     const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->parameters(),
+                   path_parameters_);
+}
+
+HouseEvent* Initializer::GetHouseEvent(const std::string& entity_reference,
+                                       const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->house_events(),
+                   path_house_events_);
+}
+
+BasicEvent* Initializer::GetBasicEvent(const std::string& entity_reference,
+                                       const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->basic_events(),
+                   path_basic_events_);
+}
+
+Gate* Initializer::GetGate(const std::string& entity_reference,
+                           const std::string& base_path) {
+  return GetEntity(entity_reference, base_path, model_->gates(), path_gates_);
+}
+
+template <class P, class T>
+T* Initializer::GetEntity(const std::string& entity_reference,
+                          const std::string& base_path,
+                          const IdTable<P>& container,
+                          const PathTable<T>& path_container) {
+  assert(!entity_reference.empty());
+  if (!base_path.empty()) {  // Check the local scope.
+    if (auto it = ext::find(path_container,
+                            base_path + "." + entity_reference))
+      return &**it;
+  }
+
+  auto at = [&entity_reference](const auto& reference_container) {
+    if (auto it = ext::find(reference_container, entity_reference))
+      return &**it;
+    throw std::out_of_range("The entity cannot be found.");
+  };
+
+  if (entity_reference.find('.') == std::string::npos)  // Public entity.
+    return at(container);
+
+  return at(path_container);  // Direct access.
+}
+
+/// Helper macro for Initializer::GetEvent event discovery.
+#define GET_EVENT(gates, basic_events, house_events, path_reference) \
+  do {                                                               \
+    if (auto it = ext::find(gates, path_reference))                  \
+      return &**it;                                                  \
+    if (auto it = ext::find(basic_events, path_reference))           \
+      return &**it;                                                  \
+    if (auto it = ext::find(house_events, path_reference))           \
+      return &**it;                                                  \
+  } while (false)
+
+Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
+                                        const std::string& base_path) {
+  // Do not implement this in terms of
+  // GetGate, GetBasicEvent, or GetHouseEvent.
+  // The semantics for local lookup with the base type is different.
+  assert(!entity_reference.empty());
+  if (!base_path.empty()) {  // Check the local scope.
+    std::string full_path = base_path + "." + entity_reference;
+    GET_EVENT(path_gates_, path_basic_events_, path_house_events_, full_path);
+  }
+
+  if (entity_reference.find('.') == std::string::npos) {  // Public entity.
+    GET_EVENT(model_->gates(), model_->basic_events(), model_->house_events(),
+              entity_reference);
+  } else {  // Direct access.
+    GET_EVENT(path_gates_, path_basic_events_, path_house_events_,
+              entity_reference);
+  }
+  throw std::out_of_range("The event cannot be bound.");
+}
+
+#undef GET_EVENT
 
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.

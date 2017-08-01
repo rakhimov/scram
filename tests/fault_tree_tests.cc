@@ -27,52 +27,52 @@ namespace test {
 
 TEST(FaultTreeTest, AddGate) {
   FaultTree ft("never_fail");
-  GatePtr gate(new Gate("Golden"));
-  EXPECT_NO_THROW(ft.Add(gate));
-  EXPECT_THROW(ft.Add(gate), ValidationError);  // Trying to re-add.
+  Gate gate("Golden");
+  EXPECT_NO_THROW(ft.Add(&gate));
+  EXPECT_THROW(ft.Add(&gate), ValidationError);  // Trying to re-add.
 
-  GatePtr gate_two(new Gate("Iron"));
-  EXPECT_NO_THROW(ft.Add(gate_two));  // No parent.
+  Gate gate_two("Iron");
+  EXPECT_NO_THROW(ft.Add(&gate_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddBasicEvent) {
   FaultTree ft("never_fail");
-  BasicEventPtr event(new BasicEvent("Golden"));
-  EXPECT_NO_THROW(ft.Add(event));
-  EXPECT_THROW(ft.Add(event), ValidationError);  // Trying to re-add.
+  BasicEvent event("Golden");
+  EXPECT_NO_THROW(ft.Add(&event));
+  EXPECT_THROW(ft.Add(&event), ValidationError);  // Trying to re-add.
 
-  BasicEventPtr event_two(new BasicEvent("Iron"));
-  EXPECT_NO_THROW(ft.Add(event_two));  // No parent.
+  BasicEvent event_two("Iron");
+  EXPECT_NO_THROW(ft.Add(&event_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddHouseEvent) {
   FaultTree ft("never_fail");
-  HouseEventPtr event(new HouseEvent("Golden"));
-  EXPECT_NO_THROW(ft.Add(event));
-  EXPECT_THROW(ft.Add(event), ValidationError);  // Trying to re-add.
+  HouseEvent event("Golden");
+  EXPECT_NO_THROW(ft.Add(&event));
+  EXPECT_THROW(ft.Add(&event), ValidationError);  // Trying to re-add.
 
-  HouseEventPtr event_two(new HouseEvent("Iron"));
-  EXPECT_NO_THROW(ft.Add(event_two));  // No parent.
+  HouseEvent event_two("Iron");
+  EXPECT_NO_THROW(ft.Add(&event_two));  // No parent.
 }
 
 TEST(FaultTreeTest, AddCcfGroup) {
   FaultTree ft("never_fail");
-  CcfGroupPtr group(new BetaFactorModel("Golden"));
-  EXPECT_NO_THROW(ft.Add(group));
-  EXPECT_THROW(ft.Add(group), ValidationError);  // Trying to re-add.
+  BetaFactorModel group("Golden");
+  EXPECT_NO_THROW(ft.Add(&group));
+  EXPECT_THROW(ft.Add(&group), ValidationError);  // Trying to re-add.
 
-  CcfGroupPtr group_two(new BetaFactorModel("Iron"));
-  EXPECT_NO_THROW(ft.Add(group_two));
+  BetaFactorModel group_two("Iron");
+  EXPECT_NO_THROW(ft.Add(&group_two));
 }
 
 TEST(FaultTreeTest, AddParameter) {
   FaultTree ft("never_fail");
-  ParameterPtr parameter(new Parameter("Golden"));
-  EXPECT_NO_THROW(ft.Add(parameter));
-  EXPECT_THROW(ft.Add(parameter), ValidationError);
+  Parameter parameter("Golden");
+  EXPECT_NO_THROW(ft.Add(&parameter));
+  EXPECT_THROW(ft.Add(&parameter), ValidationError);
 
-  ParameterPtr parameter_two(new Parameter("Iron"));
-  EXPECT_NO_THROW(ft.Add(parameter_two));
+  Parameter parameter_two("Iron");
+  EXPECT_NO_THROW(ft.Add(&parameter_two));
 }
 
 }  // namespace test

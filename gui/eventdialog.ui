@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>493</width>
-    <height>352</height>
+    <width>630</width>
+    <height>478</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,6 +20,55 @@
    <string>Event Editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="1">
+    <layout class="QFormLayout" name="formLayout_3">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Label:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPlainTextEdit" name="labelText">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>146</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
+       </property>
+       <property name="tabChangesFocus">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item row="6" column="0" colspan="3">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
@@ -27,6 +76,13 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -77,91 +133,14 @@
          <string>Conditional</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Gate</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="0" column="2">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>17</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1" colspan="2">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="1">
-    <layout class="QFormLayout" name="formLayout_3">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Label:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPlainTextEdit" name="labelText">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>146</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustToContents</enum>
-       </property>
-       <property name="tabChangesFocus">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="5" column="0" colspan="3">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Expanding</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item row="3" column="0" rowspan="2">
     <widget class="QStackedWidget" name="stackedWidgetType">
@@ -171,7 +150,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabBoolean" native="true">
+     <widget class="QWidget" name="tabBoolean">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QFormLayout" name="formLayout_4">
@@ -209,7 +188,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabExpression" native="true">
+     <widget class="QWidget" name="tabExpression">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QGroupBox" name="expressionBox">
@@ -245,7 +224,7 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <widget class="QWidget" name="pageConstant" native="true">
+            <widget class="QWidget" name="pageConstant">
              <layout class="QFormLayout" name="formLayout">
               <item row="0" column="0">
                <widget class="QLabel" name="label_3">
@@ -259,7 +238,7 @@
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="pageExponential" native="true">
+            <widget class="QWidget" name="pageExponential">
              <layout class="QFormLayout" name="formLayout_5">
               <item row="0" column="0">
                <widget class="QLabel" name="label_4">
@@ -280,7 +259,204 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabFormula">
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <layout class="QFormLayout" name="formLayout_9">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Connective:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="connectiveBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item>
+            <property name="text">
+             <string>AND</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ATLEAST</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>XOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>NOT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>NAND</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>NOR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>NULL</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="labelMin">
+           <property name="text">
+            <string>Min:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="voteNumberBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>2</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QLineEdit" name="addArgLine">
+           <property name="placeholderText">
+            <string>Add argument with its ID</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QListWidget" name="argsList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="addArgButton">
+           <property name="toolTip">
+            <string>Add Argument</string>
+           </property>
+           <property name="icon">
+            <iconset theme="list-add">
+             <normaloff>.</normaloff>.</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="removeArgButton">
+           <property name="toolTip">
+            <string>Remove Argument</string>
+           </property>
+           <property name="icon">
+            <iconset theme="list-remove">
+             <normaloff>.</normaloff>.</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
     </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Container</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QFormLayout" name="formLayout_6">
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="containerFaultTree">
+          <property name="text">
+           <string>Fault tree:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="containerFaultTreeName">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="containerModel">
+          <property name="text">
+           <string>Model</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="2" rowspan="4">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>17</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -293,8 +469,15 @@
   <tabstop>expressionType</tabstop>
   <tabstop>constantValue</tabstop>
   <tabstop>exponentialRate</tabstop>
-  <tabstop>stackedWidgetExpressionData</tabstop>
-  <tabstop>stackedWidgetType</tabstop>
+  <tabstop>connectiveBox</tabstop>
+  <tabstop>voteNumberBox</tabstop>
+  <tabstop>addArgLine</tabstop>
+  <tabstop>addArgButton</tabstop>
+  <tabstop>argsList</tabstop>
+  <tabstop>removeArgButton</tabstop>
+  <tabstop>containerModel</tabstop>
+  <tabstop>containerFaultTree</tabstop>
+  <tabstop>containerFaultTreeName</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -343,6 +526,22 @@
     <hint type="destinationlabel">
      <x>246</x>
      <y>175</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>containerFaultTree</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>containerFaultTreeName</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>402</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>531</x>
+     <y>177</y>
     </hint>
    </hints>
   </connection>

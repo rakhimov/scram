@@ -115,7 +115,7 @@ class Parameter : public Expression, public Id, public NodeMark, public Usage {
   Expression* expression_ = nullptr;  ///< Expression for this parameter.
 };
 
-using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
+using ParameterPtr = std::unique_ptr<Parameter>;  ///< Convenience alias.
 
 }  // namespace mef
 }  // namespace scram

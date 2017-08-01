@@ -33,6 +33,7 @@ Implemented Features
 - Probability analysis (Importance factors, IEC 61508 Safety Integrity Levels)
 - Uncertainty analysis with Monte Carlo simulations
 - Fault tree generator
+- GUI front-end
 
 
 Installation

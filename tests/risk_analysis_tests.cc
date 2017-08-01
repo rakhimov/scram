@@ -50,7 +50,7 @@ void RiskAnalysisTest::ProcessInputFiles(
     const std::vector<std::string>& input_files) {
   mef::Initializer init(input_files, settings);
   model = init.model();
-  analysis = std::make_unique<RiskAnalysis>(model, settings);
+  analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
   result_ = Result();
 }
 
@@ -135,21 +135,21 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, basic_events().count("ValveTwo"));
 
   ASSERT_TRUE(gates().count("TopEvent"));
-  mef::GatePtr top = *gates().find("TopEvent");
+  mef::Gate* top = gates().find("TopEvent")->get();
   EXPECT_EQ("TopEvent", top->id());
   ASSERT_NO_THROW(top->formula().type());
   EXPECT_EQ(mef::kAnd, top->formula().type());
   EXPECT_EQ(2, top->formula().event_args().size());
 
   ASSERT_TRUE(gates().count("TrainOne"));
-  mef::GatePtr inter = *gates().find("TrainOne");
+  mef::Gate* inter = gates().find("TrainOne")->get();
   EXPECT_EQ("TrainOne", inter->id());
   ASSERT_NO_THROW(inter->formula().type());
   EXPECT_EQ(mef::kOr, inter->formula().type());
   EXPECT_EQ(2, inter->formula().event_args().size());
 
   ASSERT_TRUE(basic_events().count("ValveOne"));
-  mef::BasicEventPtr primary = *basic_events().find("ValveOne");
+  mef::BasicEvent* primary = basic_events().find("ValveOne")->get();
   EXPECT_EQ("ValveOne", primary->id());
 }
 
@@ -165,10 +165,10 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   ASSERT_EQ(1, basic_events().count("ValveOne"));
   ASSERT_EQ(1, basic_events().count("ValveTwo"));
 
-  mef::BasicEventPtr p1 = *basic_events().find("PumpOne");
-  mef::BasicEventPtr p2 = *basic_events().find("PumpTwo");
-  mef::BasicEventPtr v1 = *basic_events().find("ValveOne");
-  mef::BasicEventPtr v2 = *basic_events().find("ValveTwo");
+  mef::BasicEvent* p1 = basic_events().find("PumpOne")->get();
+  mef::BasicEvent* p2 = basic_events().find("PumpTwo")->get();
+  mef::BasicEvent* v1 = basic_events().find("ValveOne")->get();
+  mef::BasicEvent* v2 = basic_events().find("ValveTwo")->get();
 
   ASSERT_NO_THROW(p1->p());
   ASSERT_NO_THROW(p2->p());

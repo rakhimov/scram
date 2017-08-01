@@ -62,8 +62,13 @@ class RiskAnalysis : public Analysis {
 
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
-  RiskAnalysis(std::shared_ptr<const mef::Model> model,
-               const Settings& settings);
+  ///
+  /// @note The model is not const
+  ///       because mission time and event-tree walk context are manipulated.
+  ///       However, at the end of analysis, everything is reset.
+  ///
+  /// @todo Make the analysis work with a constant model.
+  RiskAnalysis(mef::Model* model, const Settings& settings);
 
   /// @returns The model under analysis.
   const mef::Model& model() const { return *model_; }
@@ -118,7 +123,7 @@ class RiskAnalysis : public Analysis {
   template <class Algorithm, class Calculator>
   void RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta, Result* result) noexcept;
 
-  std::shared_ptr<const mef::Model> model_;  ///< The model with constructs.
+  mef::Model* model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.
   /// Event tree analysis of sequences.
   /// @todo Incorporate into the main results container.

@@ -27,6 +27,9 @@
 #include <utility>
 #include <vector>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/global_fun.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/variant.hpp>
 #include <libxml++/libxml++.h>
@@ -79,9 +82,14 @@ class Initializer : private boost::noncopyable {
   template <class... Ts>
   using TbdContainer =
       std::vector<std::pair<boost::variant<Ts*...>, const xmlpp::Element*>>;
-
-  /// Expressions mapped to their extraction functions.
-  static const ExtractorMap kExpressionExtractors_;
+  /// Container with full paths to elements.
+  ///
+  /// @tparam T  The element type.
+  template <typename T>
+  using PathTable = boost::multi_index_container<
+      T*, boost::multi_index::indexed_by<
+              boost::multi_index::hashed_unique<boost::multi_index::global_fun<
+                  const T*, std::string, &GetFullPath>>>>;
 
   /// @tparam T  Type of an expression.
   /// @tparam N  The number of arguments for the expression.
@@ -90,6 +98,9 @@ class Initializer : private boost::noncopyable {
   /// and constructs the requested expression T.
   template <class T, int N>
   struct Extractor;
+
+  /// Expressions mapped to their extraction functions.
+  static const ExtractorMap kExpressionExtractors_;
 
   /// Calls Extractor with an appropriate N to construct the expression.
   ///
@@ -175,9 +186,8 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  Issues with the new element or registration.
   template <class T>
-  std::shared_ptr<T> Register(const xmlpp::Element* xml_node,
-                              const std::string& base_path,
-                              RoleSpecifier base_role);
+  T* Register(const xmlpp::Element* xml_node, const std::string& base_path,
+              RoleSpecifier base_role);
 
   /// Adds additional data to element definition
   /// after processing all the input files.
@@ -322,6 +332,49 @@ class Initializer : private boost::noncopyable {
   ///                          or factors for specific CCF models.
   void DefineCcfFactor(const xmlpp::Element* factor_node, CcfGroup* ccf_group);
 
+  /// Finds an entity (parameter, basic and house event, gate) from a reference.
+  /// The reference is case sensitive
+  /// and can contain an identifier, full path, or local path.
+  ///
+  /// @param[in] entity_reference  Reference string to the entity.
+  /// @param[in] base_path  The series of containers indicating the scope.
+  ///
+  /// @returns Pointer to the entity found by following the given reference.
+  ///
+  /// @throws std::out_of_range  The entity cannot be found.
+  /// @{
+  Parameter* GetParameter(const std::string& entity_reference,
+                          const std::string& base_path);
+  HouseEvent* GetHouseEvent(const std::string& entity_reference,
+                            const std::string& base_path);
+  BasicEvent* GetBasicEvent(const std::string& entity_reference,
+                            const std::string& base_path);
+  Gate* GetGate(const std::string& entity_reference,
+                const std::string& base_path);
+  Formula::EventArg GetEvent(const std::string& entity_reference,
+                             const std::string& base_path);
+  /// @}
+
+  /// Generic helper function to find an entity from a reference.
+  /// The reference is case sensitive
+  /// and can contain an identifier, full path, or local path.
+  ///
+  /// @tparam P  The pointer type managing the entity.
+  /// @tparam T  The entity type.
+  ///
+  /// @param[in] entity_reference  Reference string to the entity.
+  /// @param[in] base_path  The series of containers indicating the scope.
+  /// @param[in] container  Model's lookup container for entities with IDs.
+  /// @param[in] path_container  The full path container for entities.
+  ///
+  /// @returns Pointer to the requested entity.
+  ///
+  /// @throws std::out_of_range  The entity cannot be found.
+  template <class P, class T = typename P::element_type>
+  T* GetEntity(const std::string& entity_reference,
+               const std::string& base_path, const IdTable<P>& container,
+               const PathTable<T>& path_container);
+
   /// Validates if the initialization of the analysis is successful.
   ///
   /// @throws CycleError  Model contains cycles.
@@ -404,6 +457,14 @@ class Initializer : private boost::noncopyable {
   std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
   /// Container for event tree links to check for cycles.
   std::vector<Link*> links_;
+
+  /// Containers for reference resolution with paths.
+  /// @{
+  PathTable<Gate> path_gates_;
+  PathTable<BasicEvent> path_basic_events_;
+  PathTable<HouseEvent> path_house_events_;
+  PathTable<Parameter> path_parameters_;
+  /// @}
 };
 
 }  // namespace mef

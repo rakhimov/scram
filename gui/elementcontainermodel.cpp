@@ -19,19 +19,21 @@
 
 #include "elementcontainermodel.h"
 
+#include "src/ext/variant.h"
 #include "src/event.h"
 #include "src/model.h"
 
 #include "guiassert.h"
+#include "overload.h"
 
 namespace scram {
 namespace gui {
 namespace model {
 
-template <typename T>
-ElementContainerModel::ElementContainerModel(const T &container,
+template <class T>
+ElementContainerModel::ElementContainerModel(const T &container, Model *model,
                                              QObject *parent)
-    : QAbstractTableModel(parent)
+    : QAbstractItemModel(parent)
 {
     m_elements.reserve(container.size());
     m_elementToIndex.reserve(container.size());
@@ -39,6 +41,11 @@ ElementContainerModel::ElementContainerModel(const T &container,
         m_elementToIndex.emplace(elementPtr.get(), m_elements.size());
         m_elements.push_back(elementPtr.get());
     }
+    using E = typename T::value_type::element_type;
+    connect(model, OVERLOAD(Model, added, E *), this,
+            &ElementContainerModel::addElement);
+    connect(model, OVERLOAD(Model, removed, E *), this,
+            &ElementContainerModel::removeElement);
 }
 
 void ElementContainerModel::connectElement(Element *element)
@@ -46,6 +53,10 @@ void ElementContainerModel::connectElement(Element *element)
     connect(element, &Element::labelChanged, this, [this, element] {
         QModelIndex index
             = createIndex(getElementIndex(element), columnCount() - 1, element);
+        emit dataChanged(index, index);
+    });
+    connect(element, &Element::idChanged, this, [this, element] {
+        QModelIndex index = createIndex(getElementIndex(element), 0, element);
         emit dataChanged(index, index);
     });
 }
@@ -94,8 +105,8 @@ void ElementContainerModel::removeElement(Element *element)
     if (index != lastIndex) {
         m_elements[index] = lastElement;
         m_elementToIndex[lastElement] = index;
-        emit dataChanged(createIndex(index, 0),
-                         createIndex(index, columnCount()));
+        emit dataChanged(createIndex(index, 0, lastElement),
+                         createIndex(index, columnCount() - 1, lastElement));
     }
     disconnect(element, 0, this, 0);
 }
@@ -107,12 +118,8 @@ int ElementContainerModel::rowCount(const QModelIndex &parent) const
 
 BasicEventContainerModel::BasicEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(model->basicEvents(), parent)
+    : ElementContainerModel(model->basicEvents(), model, parent)
 {
-    connect(model, &Model::addedBasicEvent, this,
-            &BasicEventContainerModel::addElement);
-    connect(model, &Model::removedBasicEvent, this,
-            &BasicEventContainerModel::removeElement);
     for (Element *element : elements())
         connectElement(element);
 }
@@ -131,7 +138,7 @@ QVariant BasicEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("Id");
+        return tr("ID");
     case 1:
         return tr("Flavor");
     case 2:
@@ -153,14 +160,7 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     case 0:
         return basicEvent->id();
     case 1:
-        switch (basicEvent->flavor()) {
-        case BasicEvent::Basic:
-            return {};
-        case BasicEvent::Undeveloped:
-            return tr("Undeveloped");
-        case BasicEvent::Conditional:
-            return tr("Conditional");
-        }
+        return BasicEvent::flavorToString(basicEvent->flavor());
     case 2:
         return basicEvent->probability<QVariant>();
     case 3:
@@ -169,14 +169,27 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     GUI_ASSERT(false && "unexpected column", {});
 }
 
+void BasicEventContainerModel::connectElement(Element *element)
+{
+    ElementContainerModel::connectElement(element);
+    connect(static_cast<BasicEvent *>(element), &BasicEvent::flavorChanged,
+            this, [this, element] {
+                QModelIndex index
+                    = createIndex(getElementIndex(element), 1, element);
+                emit dataChanged(index, index);
+            });
+    connect(static_cast<BasicEvent *>(element), &BasicEvent::expressionChanged,
+            this, [this, element] {
+                QModelIndex index
+                    = createIndex(getElementIndex(element), 2, element);
+                emit dataChanged(index, index);
+            });
+}
+
 HouseEventContainerModel::HouseEventContainerModel(Model *model,
                                                    QObject *parent)
-    : ElementContainerModel(model->houseEvents(), parent)
+    : ElementContainerModel(model->houseEvents(), model, parent)
 {
-    connect(model, &Model::addedHouseEvent, this,
-            &HouseEventContainerModel::addElement);
-    connect(model, &Model::removedHouseEvent, this,
-            &HouseEventContainerModel::removeElement);
     for (Element *element : elements())
         connectElement(element);
 }
@@ -195,7 +208,7 @@ QVariant HouseEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("Id");
+        return tr("ID");
     case 1:
         return tr("State");
     case 2:
@@ -231,6 +244,117 @@ void HouseEventContainerModel::connectElement(Element *element)
                     = createIndex(getElementIndex(element), 1, element);
                 emit dataChanged(index, index);
             });
+}
+
+GateContainerModel::GateContainerModel(Model *model, QObject *parent)
+    : ElementContainerModel(model->gates(), model, parent)
+{
+    for (Element *element : elements())
+        connectElement(element);
+}
+
+void GateContainerModel::connectElement(Element *element)
+{
+    ElementContainerModel::connectElement(element);
+    connect(static_cast<Gate *>(element), &Gate::formulaChanged, this,
+            [this, element] {
+                int row = getElementIndex(element);
+                emit dataChanged(createIndex(row, 1, element),
+                                 createIndex(row, 2, element));
+                /// @todo Track gate formula changes more precisely.
+                beginResetModel();
+                endResetModel();
+            });
+}
+
+int GateContainerModel::columnCount(const QModelIndex &parent) const
+{
+    if (!parent.isValid())
+        return 4;
+    if (parent.parent().isValid())
+        return 0;
+    return 1;
+}
+
+int GateContainerModel::rowCount(const QModelIndex &parent) const
+{
+    if (!parent.isValid())
+        return ElementContainerModel::rowCount(parent);
+    if (parent.parent().isValid())
+        return 0;
+    return static_cast<Gate *>(parent.internalPointer())->numArgs();
+}
+
+QModelIndex GateContainerModel::index(int row, int column,
+                                      const QModelIndex &parent) const
+{
+    if (!parent.isValid())
+        return ElementContainerModel::index(row, column, parent);
+    GUI_ASSERT(parent.parent().isValid() == false, {});
+    GUI_ASSERT(column == 0, {});
+
+    auto value = reinterpret_cast<std::uintptr_t>(parent.internalPointer());
+    GUI_ASSERT(value && !(value & m_parentMask), {});
+
+    return createIndex(row, column,
+                       reinterpret_cast<void *>(value | m_parentMask));
+}
+
+QModelIndex GateContainerModel::parent(const QModelIndex &index) const
+{
+    GUI_ASSERT(index.isValid(), {});
+    auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
+    GUI_ASSERT(value, {});
+    if (value & m_parentMask) {
+        auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
+        return createIndex(getElementIndex(parent), 0, parent);
+    }
+    return {};
+}
+
+QVariant GateContainerModel::headerData(int section,
+                                        Qt::Orientation orientation,
+                                        int role) const
+{
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
+        return ElementContainerModel::headerData(section, orientation, role);
+
+    switch (section) {
+    case 0:
+        return tr("ID");
+    case 1:
+        return tr("Connective");
+    case 2:
+        return tr("Args");
+    case 3:
+        return tr("Label");
+    }
+    GUI_ASSERT(false && "unexpected header section", {});
+}
+
+QVariant GateContainerModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid() || role != Qt::DisplayRole)
+        return {};
+    auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
+    if (value & m_parentMask) {
+        auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
+        return QString::fromStdString(
+            ext::as<const mef::Event *>(parent->args().at(index.row()))->id());
+    }
+
+    auto *gate = static_cast<Gate *>(index.internalPointer());
+    switch (index.column()) {
+    case 0:
+        return gate->id();
+    case 1:
+        return gate->type<QString>();
+    case 2:
+        return gate->numArgs();
+    case 3:
+        return gate->label();
+    }
+    GUI_ASSERT(false && "unexpected column", {});
 }
 
 } // namespace model

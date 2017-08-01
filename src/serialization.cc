@@ -127,7 +127,7 @@ void Serialize(const FaultTree& fault_tree, XmlStreamElement* parent) {
   assert(fault_tree.role() == RoleSpecifier::kPublic);
   XmlStreamElement ft_element = parent->AddChild("define-fault-tree");
   SerializeElement(fault_tree, &ft_element);
-  for (const GatePtr& gate : fault_tree.gates())
+  for (Gate* gate : fault_tree.gates())
     Serialize(*gate, &ft_element);
 }
 
@@ -171,7 +171,7 @@ void Serialize(const HouseEvent& house_event, XmlStreamElement* parent) {
 void Serialize(const Model& model, std::ostream& out) {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   XmlStreamElement root("opsa-mef", out);
-  if (model.name() != Model::kDefaultName)
+  if (!model.HasDefaultName())
     root.SetAttribute("name", model.name());
   SerializeLabelAndAttributes(model, &root);
   /// @todo Implement serialization for the following unsupported constructs.

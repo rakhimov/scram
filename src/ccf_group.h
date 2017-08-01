@@ -94,7 +94,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   virtual ~CcfGroup() = default;
 
   /// @returns Members of the CCF group with original names as keys.
-  const std::vector<BasicEventPtr>& members() const { return members_; }
+  const std::vector<BasicEvent*>& members() const { return members_; }
 
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
@@ -105,7 +105,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws IllegalOperation  The probability distribution or factors
   ///                           for this CCF group are already defined.
   ///                           No more members are accepted.
-  void AddMember(const BasicEventPtr& basic_event);
+  void AddMember(BasicEvent* basic_event);
 
   /// Adds the distribution that describes the probability of
   /// basic events in this CCF group.
@@ -198,7 +198,7 @@ class CcfGroup : public Id, private boost::noncopyable {
 
   int prev_level_ = 0;  ///< To deduce optional levels from the previous level.
   Expression* distribution_ = nullptr;  ///< The group probability distribution.
-  std::vector<BasicEventPtr> members_;  ///< Members of CCF groups.
+  std::vector<BasicEvent*> members_;  ///< Members of CCF groups.
   ExpressionMap factors_;  ///< CCF factors for models to get CCF probabilities.
   /// Collection of expressions created specifically for this group.
   std::vector<std::unique_ptr<Expression>> expressions_;
@@ -206,7 +206,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   std::vector<std::unique_ptr<CcfEvent>> ccf_events_;
 };
 
-using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
+using CcfGroupPtr = std::unique_ptr<CcfGroup>;  ///< Convenience alias.
 
 /// Common cause failure model that assumes,
 /// if common cause failure occurs,

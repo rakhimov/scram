@@ -21,6 +21,7 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <QDialog>
 #include <QStatusBar>
@@ -28,6 +29,7 @@
 
 #include "ui_eventdialog.h"
 
+#include "src/event.h"
 #include "src/expression.h"
 #include "src/model.h"
 
@@ -36,6 +38,16 @@
 namespace scram {
 namespace gui {
 
+/// The Dialog to create, present, and manipulate event data.
+///
+/// Only valid data is accepted by this dialog.
+/// That is, the dialog constrains the user input to be valid,
+/// and upon the acceptance, it guarantees that the data is valid
+/// for usage by the Model classes.
+///
+/// However, the requested data must be relevant to the current type.
+///
+/// @pre The model is normalized.
 class EventDialog : public QDialog, private Ui::EventDialog
 {
     Q_OBJECT
@@ -45,13 +57,15 @@ public:
         HouseEvent = 1 << 0,
         BasicEvent = 1 << 1,
         Undeveloped = 1 << 2,
-        Conditional = 1 << 3
+        Conditional = 1 << 3,
+        Gate = 1 << 4
     };
 
     explicit EventDialog(mef::Model *model, QWidget *parent = nullptr);
 
     void setupData(const model::HouseEvent &element);
     void setupData(const model::BasicEvent &element);
+    void setupData(const model::Gate &element);
 
     /// @returns The type being defined by this dialog.
     EventType currentType() const
@@ -60,7 +74,7 @@ public:
     }
 
     /// @returns The name data.
-    std::string name() const { return nameLine->text().toStdString(); }
+    QString name() const { return nameLine->text(); }
     /// @returns The label data.
     QString label() const
     {
@@ -74,23 +88,67 @@ public:
     ///          nullptr if no expression is defined.
     std::unique_ptr<mef::Expression> expression() const;
 
+    /// @returns The operator type for the formula.
+    mef::Operator connective() const
+    {
+        return static_cast<mef::Operator>(connectiveBox->currentIndex());
+    }
+
+    /// @returns The value for the vote number for formulas.
+    int voteNumber() const { return voteNumberBox->value(); }
+
+    /// @returns The set of formula argument ids.
+    std::vector<std::string> arguments() const;
+
+    /// @returns The fault tree container name.
+    std::string faultTree() const
+    {
+        return containerFaultTreeName->text().toStdString();
+    }
+
 signals:
     void validated(bool valid);
+    void formulaArgsChanged();
 
 public slots:
     void validate();
 
 private:
-    void setupData(const model::Element &element);
-
     static QString redBackground;
     static QString yellowBackground;
 
+    /// @returns true if the arg already list contains the string name.
+    bool hasFormulaArg(const QString &name);
+
+    /// @returns true if the arg would introduce a cycle.
+    ///
+    /// @pre The check is performed only for existing elements.
+    /// @pre The argument is not a self-cycle.
+    ///
+    /// @todo Optimize to be linear.
+    /// @todo Optimize with memoization.
+    bool checkCycle(const mef::Gate *gate);
+
+    /// @returns The fault tree the event belongs to.
+    ///          nullptr if the event is unused in fault trees.
+    ///
+    /// @note Only gates are guaranteed to be in fault trees.
+    template <class T>
+    mef::FaultTree *getFaultTree(const T *event) const;
+
+    template <class T>
+    void setupData(const model::Element &element, const T *origin);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
+    void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
+
+    /// Sets up the formula argument completer.
+    void setupArgCompleter();
 
     mef::Model *m_model;
     QStatusBar *m_errorBar;
     QString m_initName;  ///< The name not validated for duplicates.
+    const mef::Element *m_event = nullptr;  ///< Set only for existing events.
+    bool m_fixContainerName = false;  ///< @todo Implement fault tree change.
 };
 
 } // namespace gui

@@ -78,7 +78,7 @@ if(INSTALL_LIBS)
   endif()
 endif()
 
-target_link_libraries(scramcore PRIVATE ${LIBS})
+target_link_libraries(scramcore ${LIBS})
 
 add_executable(scram scram.cc)
 target_link_libraries(scram scramcore ${Boost_LIBRARIES})

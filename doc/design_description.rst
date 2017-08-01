@@ -33,6 +33,12 @@ Core
    After the initialization step,
    it is not expected that constructs of the analysis change.
 
+#. The Model container is the top-most container
+   that owns uniquely (non-shared) every object defined and registered in the model
+   either directly or transitively.
+   The analysis input constructs and containers are alive
+   as long as the parent Model container is alive.
+
 #. Risk Analyzer operates on a valid model
    with initialized fault, event trees, and other constructs
    to provide the requested results.

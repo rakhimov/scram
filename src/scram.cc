@@ -211,7 +211,7 @@ void ConstructSettings(const po::variables_map& vm,
 /// @param[in] vm  Variables map of program options.
 ///
 /// @throws Error  Exceptions specific to SCRAM.
-/// @throws boost::exception  Boost errors.
+/// @throws boost::exception  Boost errors with the variables map.
 /// @throws std::exception  All other problems.
 void RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
@@ -242,29 +242,27 @@ void RunScram(const po::variables_map& vm) {
   // Process input files
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
-  auto init = std::make_unique<scram::mef::Initializer>(input_files, settings);
+  std::shared_ptr<scram::mef::Model> model =
+      scram::mef::Initializer(input_files, settings).model();
 #ifndef NDEBUG
   if (vm.count("serialize"))
-    return Serialize(*init->model(), std::cout);
+    return Serialize(*model, std::cout);
 #endif
   if (vm.count("validate"))
     return;  // Stop if only validation is requested.
 
   // Initiate risk analysis with the given information.
-  auto analysis =
-      std::make_unique<scram::core::RiskAnalysis>(init->model(), settings);
-  init.reset();  // Remove extra reference counts to shared objects.
-
-  analysis->Analyze();
+  scram::core::RiskAnalysis analysis(model.get(), settings);
+  analysis.Analyze();
 #ifndef NDEBUG
   if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
     return;
 #endif
   scram::Reporter reporter;
   if (output_path.empty()) {
-    reporter.Report(*analysis, std::cout);
+    reporter.Report(analysis, std::cout);
   } else {
-    reporter.Report(*analysis, output_path);
+    reporter.Report(analysis, output_path);
   }
 }
 

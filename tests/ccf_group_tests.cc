@@ -28,24 +28,24 @@ namespace test {
 
 TEST(CcfGroupTest, AddMemberRepeated) {
   BetaFactorModel ccf_group("general");
-  BasicEventPtr member(new BasicEvent("id"));
-  ASSERT_NO_THROW(ccf_group.AddMember(member));
-  EXPECT_THROW(ccf_group.AddMember(member), ValidationError);
+  BasicEvent member("id");
+  ASSERT_NO_THROW(ccf_group.AddMember(&member));
+  EXPECT_THROW(ccf_group.AddMember(&member), ValidationError);
 }
 
 TEST(CcfGroupTest, AddMemberAfterDistribution) {
   BetaFactorModel ccf_group("general");
 
-  BasicEventPtr member_one(new BasicEvent("id"));
-  ASSERT_NO_THROW(ccf_group.AddMember(member_one));
+  BasicEvent member_one("id");
+  ASSERT_NO_THROW(ccf_group.AddMember(&member_one));
 
-  BasicEventPtr member_two(new BasicEvent("two"));
-  EXPECT_NO_THROW(ccf_group.AddMember(member_two));
+  BasicEvent member_two("two");
+  EXPECT_NO_THROW(ccf_group.AddMember(&member_two));
 
   ASSERT_NO_THROW(ccf_group.AddDistribution(&ConstantExpression::kOne));
 
-  BasicEventPtr member_three(new BasicEvent("three"));
-  EXPECT_THROW(ccf_group.AddMember(member_three), IllegalOperation);
+  BasicEvent member_three("three");
+  EXPECT_THROW(ccf_group.AddMember(&member_three), IllegalOperation);
 }
 
 }  // namespace test

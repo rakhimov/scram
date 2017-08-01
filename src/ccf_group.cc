@@ -35,13 +35,13 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
       ccf_group_(*ccf_group) {}
 
-void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
+void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            Element::name() +
                            " CCF group has already been defined.");
   }
-  if (ext::any_of(members_, [&basic_event](const BasicEventPtr& member) {
+  if (ext::any_of(members_, [&basic_event](BasicEvent* member) {
         return member->name() == basic_event->name();
       })) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
@@ -59,7 +59,7 @@ void CcfGroup::AddDistribution(Expression* distr) {
   }
   distribution_ = distr;
   // Define probabilities of all basic events.
-  for (const BasicEventPtr& member : members_)
+  for (BasicEvent* member : members_)
     member->expression(distribution_);
 }
 
@@ -138,7 +138,7 @@ std::string JoinNames(const std::vector<Gate*>& combination) {
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<Gate*> proxy_gates;
-  for (const BasicEventPtr& member : members_) {
+  for (BasicEvent* member : members_) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());

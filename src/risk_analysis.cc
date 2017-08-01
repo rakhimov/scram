@@ -30,10 +30,8 @@
 namespace scram {
 namespace core {
 
-RiskAnalysis::RiskAnalysis(std::shared_ptr<const mef::Model> model,
-                           const Settings& settings)
-    : Analysis(settings),
-      model_(std::move(model)) {}
+RiskAnalysis::RiskAnalysis(mef::Model* model, const Settings& settings)
+    : Analysis(settings), model_(model) {}
 
 void RiskAnalysis::Analyze() noexcept {
   assert(results_.empty() && "Rerunning the analysis.");
@@ -117,7 +115,7 @@ template <class Algorithm, class Calculator>
 void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
                                Result* result) noexcept {
   auto pa = std::make_unique<ProbabilityAnalyzer<Calculator>>(
-      fta, model_->mission_time().get());
+      fta, &model_->mission_time());
   pa->Analyze();
   if (Analysis::settings().importance_analysis()) {
     auto ia = std::make_unique<ImportanceAnalyzer<Calculator>>(pa.get());

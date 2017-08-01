@@ -21,10 +21,12 @@
 #ifndef ELEMENTCONTAINERMODEL_H
 #define ELEMENTCONTAINERMODEL_H
 
+#include <cstdint>
+
 #include <unordered_map>
 #include <vector>
 
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
 
 #include "src/element.h"
@@ -37,22 +39,25 @@ namespace gui {
 namespace model {
 
 /// The model to list elements in a table.
-class ElementContainerModel : public QAbstractTableModel
+class ElementContainerModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    int rowCount(const QModelIndex &parent) const final;
+    int rowCount(const QModelIndex &parent) const override;
 
 protected:
     /// @tparam T  The container of smart pointers to elements.
-    template <typename T>
-    explicit ElementContainerModel(const T &container,
+    template <class T>
+    explicit ElementContainerModel(const T &container, Model *model,
                                    QObject *parent = nullptr);
 
     /// Puts the element pointer into the index's internal pointer.
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
+
+    /// Assumes the table-layout and returns null index.
+    QModelIndex parent(const QModelIndex &) const override { return {}; }
 
     /// @returns The element with the given index (row).
     ///
@@ -113,6 +118,9 @@ public:
                         int role) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+
+private:
+    void connectElement(Element *element) final;
 };
 
 class HouseEventContainerModel : public ElementContainerModel
@@ -133,6 +141,36 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
+    void connectElement(Element *element) final;
+};
+
+/// Tree-view inside table.
+class GateContainerModel : public ElementContainerModel
+{
+    Q_OBJECT
+
+public:
+    using ItemModel = Gate;
+    using DataType = mef::Gate;
+
+    explicit GateContainerModel(Model *model, QObject *parent = nullptr);
+
+    int columnCount(const QModelIndex &parent) const override;
+    int rowCount(const QModelIndex &parent) const override;
+
+    /// The index for children embeds the parent information into the data.
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role) const override;
+
+    QVariant data(const QModelIndex &index, int role) const override;
+
+private:
+    static const std::uintptr_t m_parentMask = 1; ///< Tagged parent pointer.
+
     void connectElement(Element *element) final;
 };
 

@@ -59,9 +59,7 @@ class HouseEvent : public Event {
   /// Sets the state for House event.
   ///
   /// @param[in] constant  False or True for the state of this house event.
-  void state(bool constant) {
-    state_ = constant;
-  }
+  void state(bool constant) { state_ = constant; }
 
   /// @returns The true or false state of this house event.
   bool state() const { return state_; }
@@ -73,7 +71,6 @@ class HouseEvent : public Event {
 };
 
 class Gate;
-using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public Event {
@@ -88,10 +85,8 @@ class BasicEvent : public Event {
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression  The expression to describe this event.
-  void expression(Expression* expression) {
-    assert(!expression_ && "The basic event's expression is already set.");
-    expression_ = expression;
-  }
+  ///                        nullptr to remove unset the expression.
+  void expression(Expression* expression) { expression_ = expression; }
 
   /// @returns The previously set expression for analysis purposes.
   ///
@@ -103,10 +98,10 @@ class BasicEvent : public Event {
 
   /// @returns The mean probability of this basic event.
   ///
+  /// @pre The expression has been set.
+  ///
   /// @note The user of this function should make sure
   ///       that the returned value is acceptable for calculations.
-  ///
-  /// @warning Undefined behavior if the expression is not set.
   double p() const noexcept {
     assert(expression_ && "The basic event's expression is not set.");
     return expression_->value();
@@ -153,9 +148,12 @@ class BasicEvent : public Event {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
-using HouseEventPtr = std::shared_ptr<HouseEvent>;  ///< Shared house events.
-using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
+/// Convenience aliases for smart pointers @{
+using EventPtr = std::unique_ptr<Event>;
+using HouseEventPtr = std::unique_ptr<HouseEvent>;
+using BasicEventPtr = std::unique_ptr<BasicEvent>;
+using GatePtr = std::unique_ptr<Gate>;
+/// @}
 
 class Formula;  // To describe a gate's formula.
 using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
@@ -165,21 +163,37 @@ class Gate : public Event, public NodeMark {
  public:
   using Event::Event;
 
+  /// @returns true if the gate formula has been set.
+  bool HasFormula() const { return formula_ != nullptr; }
+
   /// @returns The formula of this gate.
+  ///
+  /// @pre The gate has its formula initialized.
+  ///
   /// @{
-  const Formula& formula() const { return *formula_; }
-  Formula& formula() { return *formula_; }
+  const Formula& formula() const {
+    assert(formula_ && "Gate formula is not set.");
+    return *formula_;
+  }
+  Formula& formula() {
+    return const_cast<Formula&>(static_cast<const Gate*>(this)->formula());
+  }
   /// @}
 
   /// Sets the formula of this gate.
   ///
-  /// @param[in] formula  Boolean formula of this gate.
-  void formula(FormulaPtr formula) {
-    assert(!formula_);
-    formula_ = std::move(formula);
+  /// @param[in] formula  The new Boolean formula of this gate.
+  ///
+  /// @returns The old formula.
+  FormulaPtr formula(FormulaPtr formula) {
+    assert(formula && "Cannot unset formula.");
+    formula_.swap(formula);
+    return formula;
   }
 
   /// Checks if a gate is initialized correctly.
+  ///
+  /// @pre The gate formula is set.
   ///
   /// @throws ValidationError  Errors in the gate's logic or setup.
   void Validate() const;
@@ -263,6 +277,13 @@ class Formula : private boost::noncopyable {
   void AddArgument(FormulaPtr formula) {
     formula_args_.emplace_back(std::move(formula));
   }
+
+  /// Removes an event from the formula.
+  ///
+  /// @param[in] event_arg  The argument event of this formula.
+  ///
+  /// @throws LogicError  The argument does not belong to this formula.
+  void RemoveArgument(EventArg event_arg);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///

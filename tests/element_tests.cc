@@ -63,7 +63,7 @@ TEST(ElementTest, Label) {
   EXPECT_NO_THROW(el.label(""));
 }
 
-TEST(ElementTest, Attribute) {
+TEST(ElementTest, AddAttribute) {
   NamedElement el("name");
   Attribute attr;
   attr.name = "impact";
@@ -74,6 +74,46 @@ TEST(ElementTest, Attribute) {
   EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
+}
+
+TEST(ElementTest, SetAttribute) {
+  NamedElement el("name");
+  Attribute attr;
+  attr.name = "impact";
+  attr.value = "0.1";
+  attr.type = "float";
+  EXPECT_THROW(el.GetAttribute(attr.name), LogicError);
+  ASSERT_NO_THROW(el.SetAttribute(attr));
+  EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
+  ASSERT_TRUE(el.HasAttribute(attr.name));
+  ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
+
+  attr.value = "0.2";
+  ASSERT_NO_THROW(el.SetAttribute(attr));
+  EXPECT_EQ(1, el.attributes().size());
+  ASSERT_NO_THROW(el.GetAttribute(attr.name));
+  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+}
+
+TEST(ElementTest, RemoveAttribute) {
+  NamedElement el("name");
+  Attribute attr;
+  attr.name = "impact";
+  attr.value = "0.1";
+  attr.type = "float";
+
+  EXPECT_FALSE(el.HasAttribute(attr.name));
+  EXPECT_TRUE(el.attributes().empty());
+  EXPECT_FALSE(el.RemoveAttribute(attr.name));
+
+  ASSERT_NO_THROW(el.AddAttribute(attr));
+  EXPECT_TRUE(el.RemoveAttribute(attr.name));
+  EXPECT_FALSE(el.HasAttribute(attr.name));
+  EXPECT_TRUE(el.attributes().empty());
 }
 
 namespace {
@@ -89,6 +129,9 @@ TEST(ElementTest, Role) {
   EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), InvalidArgument);
   EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), InvalidArgument);
   EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
+
+  EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidationError);
+  EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, ""));
 }
 
 namespace {
@@ -104,9 +147,23 @@ TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(""), LogicError);
   EXPECT_NO_THROW(NameId("name"));
   EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidationError);
+
   NameId id_public("name");
+  EXPECT_EQ(id_public.id(), id_public.name());
+
   NameId id_private("name", "path", RoleSpecifier::kPrivate);
+  EXPECT_EQ("path.name", id_private.id());
+  EXPECT_NE(id_private.id(), id_private.name());
+
   EXPECT_NE(id_public.id(), id_private.id());
+
+  // Reset.
+  id_public.id("id");
+  EXPECT_EQ("id", id_public.id());
+  EXPECT_EQ("id", id_public.name());
+  id_private.id("id");
+  EXPECT_EQ("path.id", id_private.id());
+  EXPECT_EQ("id", id_private.name());
 }
 
 }  // namespace test

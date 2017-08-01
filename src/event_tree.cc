@@ -47,8 +47,8 @@ Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
   }
 }
 
-void EventTree::Add(SequencePtr sequence) {
-  mef::AddElement<ValidationError>(std::move(sequence), &sequences_,
+void EventTree::Add(Sequence* sequence) {
+  mef::AddElement<ValidationError>(sequence, &sequences_,
                                    "Duplicate sequence: ");
 }
 

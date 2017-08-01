@@ -8,22 +8,8 @@ find_package(Qt5Svg REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
-if(Qt5Widgets_FOUND)
-  message(STATUS "Found Qt5")
-  message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
-endif()
-if(Qt5Svg_FOUND)
-  message(STATUS "Found Qt5 SVG")
-endif()
-if(Qt5OpenGL_FOUND)
-  message(STATUS "Found Qt5 OpenGL")
-endif()
-if(Qt5PrintSupport_FOUND)
-  message(STATUS "Found Qt5 PrintSupport")
-endif()
-if(Qt5Concurrent_FOUND)
-  message(STATUS "Found Qt5 Concurrent")
-endif()
+message(STATUS "Found Qt5")
+message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
@@ -67,6 +53,7 @@ endif()
 
 set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
@@ -81,14 +68,16 @@ set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
 add_subdirectory("${SCRAM_GUI_TS_DIR}")
 
 add_library(scramgui ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-target_link_libraries(scramgui PRIVATE
+set(GUI_DEP_LIBS  # TODO: Link with shared libraries on Windows instead.
   ${LIBS} scramcore
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
 if(INSTALL_LIBS)
   if(WIN32)
+    target_link_libraries(scramgui PRIVATE ${GUI_DEP_LIBS})  # TODO: Remove.
     install(TARGETS scramgui RUNTIME DESTINATION bin COMPONENT gui)
   else()
+    target_link_libraries(scramgui ${GUI_DEP_LIBS})  # TODO: Make default.
     set_target_properties(scramgui
       PROPERTIES
       INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
@@ -130,8 +119,8 @@ if(UNIX AND NOT APPLE)
     COMPONENT gui
     RENAME      "scram.svg")
 
-  # install a desktop file so CMake appears in the application start menu
-  # with an icon
+  # Install a desktop file
+  # so that SCRAM appears in the application start menu with an icon.
   install(FILES scram-gui.desktop
     DESTINATION "share/applications"
     COMPONENT gui)

@@ -28,21 +28,35 @@
 namespace scram {
 namespace mef {
 
-Element::Element(std::string name) : kName_(std::move(name)) {
-  if (kName_.empty())
-    throw LogicError("The element name cannot be empty");
+Element::Element(std::string name) { Element::name(std::move(name)); }
 
-  if (kName_.find('.') != std::string::npos)
+void Element::name(std::string name) {
+  if (name.empty())
+    throw LogicError("The element name cannot be empty");
+  if (name.find('.') != std::string::npos)
     throw InvalidArgument("The element name is malformed.");
+  name_ = std::move(name);
 }
 
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
     throw DuplicateArgumentError(
-        "Trying to overwrite an existing attribute {event: " + kName_ +
+        "Trying to overwrite an existing attribute {event: " + name_ +
         ", attr: " + attr.name + "} ");
   }
   attributes_.emplace_back(std::move(attr));
+}
+
+void Element::SetAttribute(Attribute attr) {
+  auto it = boost::find_if(attributes_, [&attr](const Attribute& member) {
+    return attr.name == member.name;
+  });
+  if (it != attributes_.end()) {
+    it->value = std::move(attr.value);
+    it->type = std::move(attr.type);
+  } else {
+    attributes_.emplace_back(std::move(attr));
+  }
 }
 
 bool Element::HasAttribute(const std::string& name) const {
@@ -61,6 +75,16 @@ const Attribute& Element::GetAttribute(const std::string& name) const {
   return *it;
 }
 
+bool Element::RemoveAttribute(const std::string& name) {
+  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
+    return attr.name == name;
+  });
+  if (it == attributes_.end())
+    return false;
+  attributes_.erase(it);
+  return true;
+}
+
 Role::Role(RoleSpecifier role, std::string base_path)
     : kBasePath_(std::move(base_path)),
       kRole_(role) {
@@ -68,17 +92,18 @@ Role::Role(RoleSpecifier role, std::string base_path)
       (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
     throw InvalidArgument("Element reference base path is malformed.");
   }
+  if (kRole_ == RoleSpecifier::kPrivate && kBasePath_.empty())
+    throw ValidationError("Elements cannot be private at model scope.");
 }
 
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)
     : Element(std::move(name)),
       Role(role, std::move(base_path)),
-      kId_(Role::role() == RoleSpecifier::kPublic
-               ? Element::name()
-               : Role::base_path() + "." + Element::name()) {
-  if (Role::role() == RoleSpecifier::kPrivate && Role::base_path().empty())
-    throw ValidationError("The element " + Element::name() +
-                          " cannot be private at model scope.");
+      id_(MakeId(*this)) {}
+
+void Id::id(std::string name) {
+  Element::name(std::move(name));
+  id_ = MakeId(*this);
 }
 
 }  // namespace mef

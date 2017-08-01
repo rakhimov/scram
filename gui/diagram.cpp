@@ -19,6 +19,7 @@
 
 #include <cmath>
 
+#include <unordered_map>
 #include <vector>
 
 #include <QApplication>
@@ -36,6 +37,7 @@
 #include "src/ext/find_iterator.h"
 
 #include "guiassert.h"
+#include "overload.h"
 
 namespace scram {
 namespace gui {
@@ -46,9 +48,20 @@ const double Event::m_baseHeight = 6.5;
 const double Event::m_idBoxLength = 10;
 const double Event::m_labelBoxHeight = 4;
 
-Event::Event(const mef::Event &event, QGraphicsItem *parent)
+Event::Event(model::Element *event, QGraphicsItem *parent)
     : QGraphicsItem(parent), m_event(event), m_typeGraphics(nullptr)
 {
+    m_labelConnection = QObject::connect(event, &model::Element::labelChanged,
+                                         [this] { update(); });
+    m_idConnection = QObject::connect(event, &model::Element::idChanged,
+                                      [this] { update(); });
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+}
+
+Event::~Event() noexcept
+{
+    QObject::disconnect(m_labelConnection);
+    QObject::disconnect(m_idConnection);
 }
 
 QSize Event::units() const
@@ -78,17 +91,19 @@ QRectF Event::boundingRect() const
     return QRectF(-labelBoxWidth / 2, 0, labelBoxWidth, m_baseHeight * h);
 }
 
-void Event::paint(QPainter *painter,
-                  const QStyleOptionGraphicsItem * /*option*/,
+void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                   QWidget * /*widget*/)
 {
+    if (option->state & QStyle::State_Selected)
+        painter->setBrush(QColor("cyan"));
+
     int w = units().width();
     int h = units().height();
     double labelBoxWidth = m_size.width() * w ;
     QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
     painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
-                      QString::fromStdString(m_event.label()));
+                      m_event->label());
 
     painter->drawLine(QPointF(0, m_labelBoxHeight * h),
                       QPointF(0, (m_labelBoxHeight + 1) * h));
@@ -96,21 +111,20 @@ void Event::paint(QPainter *painter,
     double idBoxWidth = m_idBoxLength * w;
     QRectF nameRect(-idBoxWidth / 2, (m_labelBoxHeight + 1) * h, idBoxWidth, h);
     painter->drawRect(nameRect);
-    painter->drawText(nameRect, Qt::AlignCenter,
-                      QString::fromStdString(m_event.name()));
+    painter->drawText(nameRect, Qt::AlignCenter, m_event->id());
 
     painter->drawLine(QPointF(0, (m_labelBoxHeight + 2) * h),
                       QPointF(0, (m_labelBoxHeight + 2.5) * h));
 }
 
-BasicEvent::BasicEvent(const mef::BasicEvent &event, QGraphicsItem *parent)
+BasicEvent::BasicEvent(model::BasicEvent *event, QGraphicsItem *parent)
     : Event(event, parent)
 {
     double d = int(m_size.height() - m_baseHeight) * units().height();
     Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, d));
 }
 
-HouseEvent::HouseEvent(const mef::HouseEvent &event, QGraphicsItem *parent)
+HouseEvent::HouseEvent(model::HouseEvent *event, QGraphicsItem *parent)
     : Event(event, parent)
 {
     double h = int(m_size.height() - m_baseHeight) * units().height();
@@ -119,7 +133,7 @@ HouseEvent::HouseEvent(const mef::HouseEvent &event, QGraphicsItem *parent)
         {{{0, 0}, {-h / 2, y0}, {-h / 2, h}, {h / 2, h}, {h / 2, y0}}}));
 }
 
-UndevelopedEvent::UndevelopedEvent(const mef::BasicEvent &event,
+UndevelopedEvent::UndevelopedEvent(model::BasicEvent *event,
                                    QGraphicsItem *parent)
     : Event(event, parent)
 {
@@ -131,7 +145,7 @@ UndevelopedEvent::UndevelopedEvent(const mef::BasicEvent &event,
     Event::setTypeGraphics(diamond);
 }
 
-ConditionalEvent::ConditionalEvent(const mef::BasicEvent &event,
+ConditionalEvent::ConditionalEvent(model::BasicEvent *event,
                                    QGraphicsItem *parent)
     : Event(event, parent)
 {
@@ -140,7 +154,7 @@ ConditionalEvent::ConditionalEvent(const mef::BasicEvent &event,
     Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, minor));
 }
 
-TransferIn::TransferIn(const mef::Gate &event, QGraphicsItem *parent)
+TransferIn::TransferIn(model::Gate *event, QGraphicsItem *parent)
     : Event(event, parent)
 {
     double d = int(m_size.height() - m_baseHeight) * units().height();
@@ -151,7 +165,7 @@ TransferIn::TransferIn(const mef::Gate &event, QGraphicsItem *parent)
 const QSize Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
-Gate::Gate(const mef::Gate &event,
+Gate::Gate(model::Gate *event, model::Model *model,
            std::unordered_map<const mef::Gate *, Gate *> *transfer,
            QGraphicsItem *parent)
     : Event(event, parent)
@@ -161,42 +175,47 @@ Gate::Gate(const mef::Gate &event,
     auto *pathItem = new QGraphicsLineItem(
         0, 0, 0, (availableHeight - 1) * units().height(), this);
     pathItem->setPos(0, (m_baseHeight + m_maxSize.height()) * units().height());
-    Event::setTypeGraphics(
-        getGateGraphicsType(event.formula().type()).release());
+    Event::setTypeGraphics(getGateGraphicsType(event->type()).release());
     struct {
         Event *operator()(const mef::BasicEvent *arg)
         {
-            if (arg->HasAttribute("flavor")) {
-                const mef::Attribute &flavor = arg->GetAttribute("flavor");
-                if (flavor.value == "undeveloped")
-                    return new UndevelopedEvent(*arg, m_parent);
-                if (flavor.value == "conditional")
-                    return new ConditionalEvent(*arg, m_parent);
+            model::BasicEvent *proxyEvent
+                = m_model->basicEvents().find(arg)->get();
+            switch (proxyEvent->flavor()) {
+            case model::BasicEvent::Basic:
+                return new BasicEvent(proxyEvent, m_parent);
+            case model::BasicEvent::Undeveloped:
+                return new UndevelopedEvent(proxyEvent, m_parent);
+            case model::BasicEvent::Conditional:
+                return new ConditionalEvent(proxyEvent, m_parent);
             }
-            return new BasicEvent(*arg, m_parent);
+            GUI_ASSERT(false && "Unexpected event flavor", nullptr);
         }
         Event *operator()(const mef::HouseEvent *arg)
         {
-            return new HouseEvent(*arg, m_parent);
+            return new HouseEvent(m_model->houseEvents().find(arg)->get(),
+                                  m_parent);
         }
         Event *operator()(const mef::Gate *arg)
         {
+            model::Gate *proxyEvent = m_model->gates().find(arg)->get();
             if (auto it = ext::find(*m_transfer, arg)) {
                 it->second->addTransferOut();
-                return new TransferIn(*arg, m_parent);
+                return new TransferIn(proxyEvent, m_parent);
             }
-            auto *arg_gate = new Gate(*arg, m_transfer, m_parent);
+            auto *arg_gate
+                = new Gate(proxyEvent, m_model, m_transfer, m_parent);
             m_transfer->emplace(arg, arg_gate);
             return arg_gate;
         }
 
         QGraphicsItem *m_parent;
+        decltype(model) m_model;
         decltype(transfer) m_transfer;
-    } formula_visitor{this, transfer};
+    } formula_visitor{this, model, transfer};
     double linkY = (m_size.height() - 1) * units().height();
     std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
-    for (const mef::Formula::EventArg &eventArg :
-         event.formula().event_args()) {
+    for (const mef::Formula::EventArg &eventArg : event->args()) {
         auto *child = boost::apply_visitor(formula_visitor, eventArg);
         auto *link = new QGraphicsLineItem(0, 0, 0, units().height(), this);
         if (!children.empty())
@@ -227,18 +246,6 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
             0, 0, 0, m_maxSize.height() * units().height());
     case mef::kAnd: {
         double h = m_maxSize.height() * units().height();
-        if (m_event.HasAttribute("flavor")
-            && m_event.GetAttribute("flavor").value == "inhibit") {
-            double a = h / 2;
-            double x1 = a * sqrt(3) / 2;
-            return std::make_unique<QGraphicsPolygonItem>(
-                QPolygonF{{{0, 0},
-                           {-x1, a / 2},
-                           {-x1, 1.5 * a},
-                           {0, h},
-                           {x1, 1.5 * a},
-                           {x1, a / 2}}});
-        }
         QPainterPath paintPath;
         double maxHeight = m_maxSize.height() * units().height();
         paintPath.moveTo(0, maxHeight);
@@ -272,11 +279,10 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
                                                                 {a / 2, h},
                                                                 {-a / 2, h},
                                                                 {-a, h / 2}}});
-        const mef::Formula &formula
-            = static_cast<const mef::Gate &>(m_event).formula();
+        auto *gate = static_cast<model::Gate *>(m_event);
         auto *text = new QGraphicsTextItem(QString::fromLatin1("%1/%2")
-                                               .arg(formula.vote_number())
-                                               .arg(formula.num_args()),
+                                               .arg(gate->voteNumber())
+                                               .arg(gate->numArgs()),
                                            polygon.get());
         QFont font = text->font();
         font.setPointSizeF(1.5 * font.pointSizeF());
@@ -299,7 +305,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     }
     case mef::kXor: {
         auto orItem = getGateGraphicsType(mef::kOr);
-        double x1 = m_maxSize.width() * units().width() / 2;
+        double x1 = m_maxSize.width() * units().width() / 2.0;
         double h = m_maxSize.height() * units().height();
         QPainterPath paintPath;
         paintPath.lineTo(-x1, h);
@@ -340,13 +346,72 @@ void Gate::addTransferOut()
         return;
     m_transferOut = true;
     QPainterPath paintPath;
-    double x1 = m_maxSize.width() * units().width() / 2;
+    double x1 = m_maxSize.width() * units().width() / 2.0;
     double h = units().height() * std::sqrt(3) / 2;
     paintPath.lineTo(x1 + units().height(), 0);
     paintPath.lineTo(x1 + 0.5 * units().height(), h);
     paintPath.lineTo(x1 + 1.5 * units().height(), h);
     paintPath.lineTo(x1 + units().height(), 0);
     new QGraphicsPathItem(paintPath, Event::getTypeGraphics());
+}
+
+DiagramScene::DiagramScene(model::Gate *event, model::Model *model,
+                           QObject *parent)
+    : QGraphicsScene(parent), m_root(event), m_model(model)
+{
+    redraw();
+    connect(m_model, OVERLOAD(model::Model, removed, model::Gate *), this,
+            [this](model::Gate *gate) {
+                if (gate == m_root) {
+                    clear();
+                    m_root = nullptr; ///< @todo Remove the implicit delete.
+                }
+            });
+}
+
+void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+{
+    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+    const QList<QGraphicsItem *> items = selectedItems();
+    if (!items.empty()) {
+        GUI_ASSERT(items.size() == 1, );
+        auto *event = dynamic_cast<diagram::Event *>(items.front());
+        GUI_ASSERT(event, );
+        emit activated(event->data());
+    }
+}
+
+void DiagramScene::redraw()
+{
+    if (m_root == nullptr)
+        return;
+
+    clear();
+    std::unordered_map<const mef::Gate *, Gate *> transfer;
+    addItem(new Gate(m_root, m_model, &transfer));
+
+    struct {
+        void operator()(mef::Event *) const {}
+        void operator()(mef::BasicEvent *event) const
+        {
+            auto *proxy = self->m_model->basicEvents().find(event)->get();
+            connect(proxy, &model::BasicEvent::flavorChanged, self,
+                    &DiagramScene::redraw, Qt::UniqueConnection);
+        }
+        DiagramScene *self;
+    } visitor{this};
+
+    auto link = [this, &visitor](model::Gate *gate) {
+        connect(gate, &model::Gate::formulaChanged, this,
+                &DiagramScene::redraw, Qt::UniqueConnection);
+        for (const mef::Formula::EventArg &arg : gate->args())
+            boost::apply_visitor(visitor, arg);
+    };
+
+    /// @todo Finer signal tracking.
+    link(m_root);
+    for (const auto &entry : transfer)
+        link(m_model->gates().find(entry.first)->get());
 }
 
 } // namespace diagram

@@ -255,7 +255,7 @@ class Sequence : public Element, public Usage {
 };
 
 /// Sequences are defined in event trees but referenced in other constructs.
-using SequencePtr = std::shared_ptr<Sequence>;
+using SequencePtr = std::unique_ptr<Sequence>;
 
 class EventTree;  // Manages the order assignment to functional events.
 
@@ -391,7 +391,7 @@ class EventTree : public Element, public Usage, private boost::noncopyable {
   /// @throws ValidationError  The element is already in this container.
   ///
   /// @{
-  void Add(SequencePtr element);
+  void Add(Sequence* element);
   void Add(FunctionalEventPtr element);
   void Add(NamedBranchPtr element);
   void Add(std::unique_ptr<Fork> element) {
@@ -404,7 +404,7 @@ class EventTree : public Element, public Usage, private boost::noncopyable {
 
   /// Containers for unique event tree constructs defined in this event tree.
   /// @{
-  ElementTable<SequencePtr> sequences_;
+  ElementTable<Sequence*> sequences_;
   ElementTable<FunctionalEventPtr> functional_events_;
   ElementTable<NamedBranchPtr> branches_;
   /// @}

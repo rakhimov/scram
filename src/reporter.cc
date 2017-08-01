@@ -265,7 +265,7 @@ void Reporter::ReportSoftwareInformation(XmlStreamElement* information) {
 void Reporter::ReportModelFeatures(const mef::Model& model,
                                    XmlStreamElement* information) {
   XmlStreamElement model_features = information->AddChild("model-features");
-  if (model.name() != mef::Model::kDefaultName)
+  if (!model.HasDefaultName())
     model_features.SetAttribute("name", model.name());
   auto feature = [&model_features](const char* name, const auto& container) {
     if (!container.empty())

@@ -30,28 +30,26 @@ Component::Component(std::string name, std::string base_path,
     : Element(std::move(name)),
       Role(role, std::move(base_path)) {}
 
-void Component::Add(const GatePtr& gate) {
-  AddEvent(gate, &gates_);
-}
+void Component::Add(Gate* gate) { AddEvent(gate, &gates_); }
 
-void Component::Add(const BasicEventPtr& basic_event) {
+void Component::Add(BasicEvent* basic_event) {
   AddEvent(basic_event, &basic_events_);
 }
 
-void Component::Add(const HouseEventPtr& house_event) {
+void Component::Add(HouseEvent* house_event) {
   AddEvent(house_event, &house_events_);
 }
 
-void Component::Add(const ParameterPtr& parameter) {
+void Component::Add(Parameter* parameter) {
   mef::AddElement<ValidationError>(parameter, &parameters_,
                                    "Duplicate parameter: ");
 }
 
-void Component::Add(const CcfGroupPtr& ccf_group) {
+void Component::Add(CcfGroup* ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  for (const BasicEventPtr& member : ccf_group->members()) {
+  for (BasicEvent* member : ccf_group->members()) {
     const std::string& name = member->name();
     if (gates_.count(name) || basic_events_.count(name) ||
         house_events_.count(name)) {
@@ -71,16 +69,41 @@ void Component::Add(std::unique_ptr<Component> component) {
   components_.insert(std::move(component));
 }
 
-void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  for (const GatePtr& gate : gates_)
-    gates->insert(gate.get());
+namespace {
 
+/// Helper function to remove events from component containers.
+template <class T>
+void RemoveEvent(T* event, ElementTable<T*>* table) {
+  auto it = table->find(event->name());
+  if (it == table->end())
+    throw UndefinedElement("Event " + event->id() +
+                           " is not in the component.");
+  if (*it != event)
+    throw UndefinedElement("Duplicate event " + event->id() +
+                           " does not belong to the component.");
+  table->erase(it);
+}
+
+}  // namespace
+
+void Component::Remove(HouseEvent* element) {
+  return RemoveEvent(element, &house_events_);
+}
+
+void Component::Remove(BasicEvent* element) {
+  return RemoveEvent(element, &basic_events_);
+}
+
+void Component::Remove(Gate* element) { return RemoveEvent(element, &gates_); }
+
+void Component::GatherGates(std::unordered_set<Gate*>* gates) {
+  gates->insert(gates_.begin(), gates_.end());
   for (const ComponentPtr& component : components_)
     component->GatherGates(gates);
 }
 
-template <class Ptr, class Container>
-void Component::AddEvent(const Ptr& event, Container* container) {
+template <class T, class Container>
+void Component::AddEvent(T* event, Container* container) {
   const std::string& name = event->name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {

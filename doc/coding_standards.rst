@@ -234,13 +234,11 @@ GUI Code
 - Upon using Qt containers and constructs,
   stick to their STL API and usage style
   as much as possible.
-  Avoid the Java-style API as much as possible.
+  Avoid the Java-style API.
 
 - Upon using Qt specialized containers (e.g., ``QStringList``),
   do not use a single-element constructor (e.g., ``QStringList(QString)``).
   Use the initializer list instead.
-
-- Avoid overloading signals and slots.
 
 - Avoid default arguments in signals and slots.
 

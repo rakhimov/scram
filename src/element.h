@@ -58,7 +58,7 @@ class Element {
   explicit Element(std::string name);
 
   /// @returns The original name.
-  const std::string& name() const { return kName_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
@@ -66,8 +66,8 @@ class Element {
 
   /// Sets the label.
   ///
-  /// @param[in] new_label  The label to be set.
-  void label(std::string new_label) { label_ = std::move(new_label); }
+  /// @param[in] label  The label text to be set.
+  void label(std::string label) { label_ = std::move(label); }
 
   /// @returns The current set of element attributes.
   const std::vector<Attribute>& attributes() const { return attributes_; }
@@ -83,6 +83,16 @@ class Element {
   ///       to existing attributes may get invalidated.
   void AddAttribute(Attribute attr);
 
+  /// Sets an attribute to the attribute map.
+  /// If an attribute with the same name exits,
+  /// it gets overwritten.
+  ///
+  /// @param[in] attr  An attribute of this element.
+  ///
+  /// @post Pointers or references
+  ///       to existing attributes may get invalidated.
+  void SetAttribute(Attribute attr);
+
   /// Checks if the element has a given attribute.
   ///
   /// @param[in] name  The identifying name of the attribute.
@@ -97,11 +107,26 @@ class Element {
   /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& name) const;
 
+  /// Removes the attribute of the element.
+  ///
+  /// @param[in] name  The identifying name of the attribute.
+  ///
+  /// @returns false No such attribute to remove.
+  bool RemoveAttribute(const std::string& name);
+
  protected:
   ~Element() = default;
 
+  /// Resets the element name.
+  ///
+  /// @param[in] name  The local identifier name.
+  ///
+  /// @throws LogicError  The name is required and empty.
+  /// @throws InvalidArgument  The name is malformed.
+  void name(std::string name);
+
  private:
-  const std::string kName_;  ///< The original name of the element.
+  std::string name_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
 
   /// Container of attributes ordered by insertion time.
@@ -116,6 +141,9 @@ class Element {
 /// Table of elements with unique names.
 ///
 /// @tparam T  Value or (smart/raw) pointer type deriving from Element class.
+///
+/// @pre The element names are not modified
+///      while it is in the container.
 template <typename T>
 using ElementTable = boost::multi_index_container<
     T, boost::multi_index::indexed_by<
@@ -139,6 +167,7 @@ class Role {
   /// @param[in] base_path  The series of containers to get this event.
   ///
   /// @throws InvalidArgument  The base path string is malformed.
+  /// @throws ValidationError  Private element at model/global scope.
   explicit Role(RoleSpecifier role = RoleSpecifier::kPublic,
                 std::string base_path = "");
 
@@ -158,13 +187,13 @@ class Role {
 
 /// Computes the full path of an element.
 ///
-/// @tparam T  Pointer to Element type deriving from Role.
+/// @tparam T  Element type deriving from Role.
 ///
 /// @param[in] element  A valid element with a name and base path.
 ///
 /// @returns A string representation of the full path.
 template <typename T>
-std::string GetFullPath(const T& element) {
+std::string GetFullPath(const T* element) {
   return element->base_path() + "." + element->name();
 }
 
@@ -177,13 +206,21 @@ class Id : public Element, public Role {
   /// Mangles the element name into a unique id.
   /// Private elements get their full path as their ids,
   /// while public elements retain their name as ids.
-  ///
-  /// @throws ValidationError  Private element at model/global scope.
   explicit Id(std::string name, std::string base_path = "",
               RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// @returns The unique id that is set upon the construction of this element.
-  const std::string& id() const { return kId_; }
+  const std::string& id() const { return id_; }
+
+  /// Resets the element ID.
+  ///
+  /// @param[in] name  The new valid name for the element.
+  ///
+  /// @pre The element is not in any container keyed by its ID or name.
+  ///
+  /// @throws LogicError  The name is empty.
+  /// @throws InvalidArgument  The name is malformed.
+  void id(std::string name);
 
   /// Produces unique name for the model element within the same type.
   /// @{
@@ -199,12 +236,21 @@ class Id : public Element, public Role {
   ~Id() = default;
 
  private:
-  const std::string kId_;  ///< Unique Id name of an element.
+  /// Creates an ID string for an element.
+  static std::string MakeId(const Id& element) {
+    return element.role() == RoleSpecifier::kPublic ? element.name()
+                                                    : GetFullPath(&element);
+  }
+
+  std::string id_;  ///< Unique Id name of an element.
 };
 
 /// Table of elements with unique ids.
 ///
 /// @tparam T  Value or (smart/raw) pointer type deriving from Id class.
+///
+/// @pre The element IDs are not modified
+///      while it is in the container.
 template <typename T>
 using IdTable = boost::multi_index_container<
     T,

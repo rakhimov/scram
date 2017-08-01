@@ -44,6 +44,7 @@ void BasicEvent::Validate() const {
 }
 
 void Gate::Validate() const {
+  assert(formula_ && "The gate formula is missing.");
   // Detect inhibit flavor.
   if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit") {
@@ -99,6 +100,13 @@ void Formula::AddArgument(EventArg event_arg) {
   event_args_.push_back(event_arg);
   if (!event->usage())
     event->usage(true);
+}
+
+void Formula::RemoveArgument(EventArg event_arg) {
+  auto it = boost::find(event_args_, event_arg);
+  if (it == event_args_.end())
+    throw LogicError("The argument doesn't belong to this formula.");
+  event_args_.erase(it);
 }
 
 void Formula::Validate() const {
