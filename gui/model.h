@@ -527,8 +527,8 @@ public:
         {
         }
 
-        void undo() override { m_switchTo = m_switchFrom(*this); }
         void redo() override { m_switchFrom = m_switchTo(*this); }
+        void undo() override { m_switchTo = m_switchFrom(*this); }
 
     private:
         template <class Current, class Next>
@@ -554,8 +554,10 @@ public:
                 for (Gate *gate : self.m_gates) {
                     gate->data()->formula().RemoveArgument(m_address->data());
                     gate->data()->formula().AddArgument(nextAddress->data());
-                    emit gate->formulaChanged();
                 }
+                for (Gate *gate : self.m_gates)
+                    emit gate->formulaChanged();
+
                 return {nextAddress, std::move(curProxy), std::move(curEvent)};
             }
 
