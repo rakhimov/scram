@@ -16,6 +16,8 @@ SCRAM is available in Debian’s official repositories since Debian Stretch.
 
     apt-get install scram
 
+    apt-get install scram-gui  # The GUI front-end in unstable.
+
 
 Ubuntu
 ======
@@ -35,6 +37,8 @@ Alternatively, run the following commands to get SCRAM from its PPA_.
     sudo apt-get update
 
     sudo apt-get install scram
+
+    sudo apt-get install scram-gui  # The GUI front-end in PPA.
 
 .. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
 
