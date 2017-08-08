@@ -1,5 +1,5 @@
 # Bash completion for scram.
-# Run 'source scram.sh' or put this file in /etc/bash_completion.d/
+# Run 'source scram' or put this file in /etc/bash_completion.d/
 
 ########################################
 # Searches for short and long options
