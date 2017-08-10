@@ -25,6 +25,7 @@ set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/expression_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/alignment_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/pdag_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/initializer_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_tests.cc"
