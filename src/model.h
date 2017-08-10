@@ -34,6 +34,7 @@
 #include "expression.h"
 #include "expression/test_event.h"
 #include "fault_tree.h"
+#include "instruction.h"
 #include "parameter.h"
 
 namespace scram {

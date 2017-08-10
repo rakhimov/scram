@@ -41,6 +41,7 @@
 #include "expression.h"
 #include "expression/constant.h"
 #include "fault_tree.h"
+#include "instruction.h"
 #include "model.h"
 #include "parameter.h"
 #include "settings.h"

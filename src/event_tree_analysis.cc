@@ -21,6 +21,7 @@
 
 #include "expression/numerical.h"
 #include "ext/find_iterator.h"
+#include "instruction.h"
 
 namespace scram {
 namespace core {

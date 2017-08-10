@@ -33,6 +33,7 @@
 #include "error.h"
 #include "event.h"
 #include "event_tree.h"
+#include "instruction.h"
 #include "parameter.h"
 
 namespace scram {
