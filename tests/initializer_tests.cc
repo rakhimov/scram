@@ -305,6 +305,38 @@ TEST(InitializerTest, NonOrphanTopEvent) {
       core::Settings()));
 }
 
+TEST(InitializerTest, CorrectModelInputs) {
+  std::string dir = "./share/scram/input/model/";
+  const char* correct_inputs[] = {
+      "valid_alignment.xml",
+      "valid_sum_alignment.xml",
+      "private_phases.xml"};
+
+  for (const auto& input : correct_inputs) {
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+        << " Filename: " << input;
+  }
+}
+
+TEST(InitializerTest, IncorrectModelInputs) {
+  std::string dir = "./share/scram/input/model/";
+
+  const char* incorrect_inputs[] = {
+      "duplicate_phases.xml",
+      "invalid_phase_fraction.xml",
+      "zero_phase_fraction.xml",
+      "negative_phase_fraction.xml",
+      "duplicate_alignment.xml",
+      "empty_alignment.xml",
+      "excess_alignment.xml",
+      "incomplete_alignment.xml"};
+
+  for (const auto& input : incorrect_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+        << " Filename:  " << input;
+  }
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

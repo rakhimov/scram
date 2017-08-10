@@ -248,6 +248,13 @@ class Initializer : private boost::noncopyable {
                              const std::string& base_path,
                              Component* component);
 
+  /// Defines the model alignment from the xml element.
+  ///
+  /// @param[in] xml_node  The XML element with alignment data.
+  ///
+  /// @throws ValidationError  Invalid alignment definition.
+  void DefineAlignment(const xmlpp::Element* xml_node);
+
   /// Processes model data with definitions of events and analysis.
   ///
   /// @param[in] model_data  XML node with model data description.

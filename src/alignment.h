@@ -87,6 +87,8 @@ class Alignment : public Element, private boost::noncopyable {
   ElementTable<PhasePtr> phases_;  ///< The partitioning of the alignment.
 };
 
+using AlignmentPtr = std::unique_ptr<Alignment>;  ///< Unique model alignments.
+
 }  // namespace mef
 }  // namespace scram
 
