@@ -27,6 +27,7 @@
 #include "expression/numerical.h"
 #include "ext/algorithm.h"
 #include "ext/combination_iterator.h"
+#include "ext/float_compare.h"
 
 namespace scram {
 namespace mef {
@@ -269,12 +270,8 @@ void PhiFactorModel::DoValidate() const {
     sum_min += interval.lower();
     sum_max += interval.upper();
   }
-  /// @todo Problems with floating point number comparison.
-  double epsilon = 1e-4;
-  double diff = std::abs(sum - 1);
-  double diff_min = std::abs(sum_min - 1);
-  double diff_max = std::abs(sum_max - 1);
-  if (diff_min > epsilon || diff > epsilon || diff_max > epsilon) {
+  if (!ext::is_close(1, sum, 1e-4) || !ext::is_close(1, sum_min, 1e-4) ||
+      !ext::is_close(1, sum_max, 1e-4)) {
     throw ValidationError("The factors for Phi model " + CcfGroup::name() +
                           " CCF group must sum to 1.");
   }

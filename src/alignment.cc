@@ -21,6 +21,7 @@
 #include "alignment.h"
 
 #include "error.h"
+#include "ext/float_compare.h"
 
 namespace scram {
 namespace mef {
@@ -40,7 +41,7 @@ void Alignment::Validate() {
   double sum = 0;
   for (const PhasePtr& phase : phases_)
     sum += phase->time_fraction();
-  if (sum != 1)
+  if (!ext::is_close(1, sum, 1e-4))
     throw ValidationError("The phases of alignment '" + Element::name() +
                           "' do not sum to 1.");
 }
