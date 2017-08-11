@@ -25,8 +25,10 @@
 #include <utility>
 #include <vector>
 
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
+#include "alignment.h"
 #include "analysis.h"
 #include "event.h"
 #include "event_tree_analysis.h"
@@ -43,13 +45,21 @@ namespace core {
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
  public:
+  /// Provides the optional context of the analysis.
+  struct Context {
+    const mef::Alignment& alignment;  ///< The model alignment.
+    const mef::Phase& phase;  ///< The phase within the alignment.
+  };
+
   /// The analysis results binding to the unique analysis target.
   struct Result {
     /// The analysis target type as a unique identifier.
     using Id =
         boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
                                                    const mef::Sequence&>>;
+
     const Id id;  ///< The main analysis input or target.
+    boost::optional<Context> context;  ///< Optional analysis context.
 
     /// Optional analyses, i.e., may be nullptr.
     /// @{
@@ -93,6 +103,15 @@ class RiskAnalysis : public Analysis {
   }
 
  private:
+  /// Runs the whole analysis with the given alignment.
+  ///
+  /// @param[in] context  The optional context with the current alignment/phase.
+  ///
+  /// @pre The model is in pristine.
+  ///
+  /// @post The model is restored to the original state.
+  void RunAnalysis(boost::optional<Context> context = {});
+
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
