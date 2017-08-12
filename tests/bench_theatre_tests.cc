@@ -27,7 +27,7 @@ namespace test {
 TEST_P(RiskAnalysisTest, Theatre) {
   std::string tree_input = "./share/scram/input/Theatre/theatre.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(0.00210, p_total());

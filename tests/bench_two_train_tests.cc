@@ -28,7 +28,7 @@ namespace test {
 TEST_P(RiskAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_DOUBLE_EQ(1, p_total());
