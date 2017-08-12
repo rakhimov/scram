@@ -43,7 +43,7 @@ namespace scram {
 namespace gui {
 namespace diagram {
 
-const QSize Event::m_size = {16, 11};
+const QSizeF Event::m_size = {16, 11};
 const double Event::m_baseHeight = 6.5;
 const double Event::m_idBoxLength = 10;
 const double Event::m_labelBoxHeight = 4;
@@ -66,8 +66,8 @@ Event::~Event() noexcept
 
 QSizeF Event::units() const
 {
-    QFontMetricsF font = QApplication::fontMetrics();
-    return {font.averageCharWidth(), font.height()};
+    double h = QApplication::fontMetrics().height();
+    return {h / 2, h};
 }
 
 double Event::width() const
@@ -162,7 +162,7 @@ TransferIn::TransferIn(model::Gate *event, QGraphicsItem *parent)
         new QGraphicsPolygonItem({{{0, 0}, {-d / 2, d}, {d / 2, d}}}));
 }
 
-const QSize Gate::m_maxSize = {6, 3};
+const QSizeF Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
 Gate::Gate(model::Gate *event, model::Model *model,
