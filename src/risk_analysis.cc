@@ -86,8 +86,9 @@ void RiskAnalysis::RunAnalysis(boost::optional<Context> context) {
         const mef::Sequence& sequence = result.sequence;
         LOG(INFO) << "Running analysis for sequence: " << sequence.name();
         results_.push_back(
-            {std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
-                *initiating_event, sequence}, context});
+            {{std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
+                  *initiating_event, sequence},
+              context}});
         RunAnalysis(*result.gate, &results_.back());
         if (result.is_expression_only) {
           results_.back().fault_tree_analysis = nullptr;
@@ -105,7 +106,7 @@ void RiskAnalysis::RunAnalysis(boost::optional<Context> context) {
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis for gate: " << target->id();
-      results_.push_back({target, context});
+      results_.push_back({{target, context}});
       RunAnalysis(*target, &results_.back());
       LOG(INFO) << "Finished analysis for gate: " << target->id();
     }

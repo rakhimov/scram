@@ -54,12 +54,14 @@ class RiskAnalysis : public Analysis {
   /// The analysis results binding to the unique analysis target.
   struct Result {
     /// The analysis target type as a unique identifier.
-    using Id =
-        boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
-                                                   const mef::Sequence&>>;
+    struct Id {
+      boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
+                                                 const mef::Sequence&>>
+          target;  ///< The main input to the analysis.
+      boost::optional<Context> context;  ///< Optional analysis context.
+    };
 
     const Id id;  ///< The main analysis input or target.
-    boost::optional<Context> context;  ///< Optional analysis context.
 
     /// Optional analyses, i.e., may be nullptr.
     /// @{

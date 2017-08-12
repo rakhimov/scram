@@ -575,6 +575,12 @@ TEST_F(RiskAnalysisTest, ReportUnusedEventTreeElements) {
   CheckReport(tree_input);
 }
 
+TEST_F(RiskAnalysisTest, ReportAlignment) {
+  std::string tree_input =
+      "./share/scram/input/TwoTrain/two_train_alignment.xml";
+  CheckReport(tree_input);
+}
+
 // NAND and NOR as a child cases.
 TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";

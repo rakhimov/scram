@@ -1291,7 +1291,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         }
     } nameExtractor;
     for (const core::RiskAnalysis::Result &result : m_analysis->results()) {
-        QString name = boost::apply_visitor(nameExtractor, result.id);
+        QString name = boost::apply_visitor(nameExtractor, result.id.target);
         auto *widgetItem = new QTreeWidgetItem({name});
         ui->reportTreeWidget->addTopLevelItem(widgetItem);
 

@@ -54,7 +54,12 @@ void PutId(const core::RiskAnalysis::Result::Id& id, XmlStreamElement* report) {
     }
     XmlStreamElement* report_;
   } extractor{report};
-  boost::apply_visitor(extractor, id);
+  boost::apply_visitor(extractor, id.target);
+
+  if (id.context) {
+    report->SetAttribute("alignment", id.context->alignment.name());
+    report->SetAttribute("phase", id.context->phase.name());
+  }
 }
 
 }  // namespace
