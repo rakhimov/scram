@@ -326,6 +326,7 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "invalid_phase_fraction.xml",
       "zero_phase_fraction.xml",
       "negative_phase_fraction.xml",
+      "undefined_target_set_house_event.xml",
       "duplicate_alignment.xml",
       "empty_alignment.xml",
       "excess_alignment.xml",

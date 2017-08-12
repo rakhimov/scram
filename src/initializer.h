@@ -248,13 +248,6 @@ class Initializer : private boost::noncopyable {
                              const std::string& base_path,
                              Component* component);
 
-  /// Defines the model alignment from the xml element.
-  ///
-  /// @param[in] xml_node  The XML element with alignment data.
-  ///
-  /// @throws ValidationError  Invalid alignment definition.
-  void DefineAlignment(const xmlpp::Element* xml_node);
-
   /// Processes model data with definitions of events and analysis.
   ///
   /// @param[in] model_data  XML node with model data description.
@@ -291,6 +284,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_element  The XML element with instruction definitions.
   ///
   /// @returns The newly defined or registered instruction.
+  ///
+  /// @pre All files have been processed (element pointers are available).
   ///
   /// @throws ValidationError  Errors in instruction definitions.
   Instruction* GetInstruction(const xmlpp::Element* xml_element);
@@ -455,10 +450,11 @@ class Initializer : private boost::noncopyable {
   /// CCF groups rely on both parameter and basic event registrations.
   /// Event tree branches and instructions have complex interdependencies.
   /// Initiating events may reference their associated event trees.
+  /// Alignments depend on instructions.
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent, Rule>
+               InitiatingEvent, Rule, Alignment>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.

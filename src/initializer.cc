@@ -403,7 +403,11 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   }
 
   for (const xmlpp::Node* node : root->find("./define-alignment")) {
-    DefineAlignment(XmlElement(node));
+    const xmlpp::Element* xml_node = XmlElement(node);
+    AlignmentPtr alignment = ConstructElement<Alignment>(xml_node);
+    auto* address = alignment.get();
+    Register(std::move(alignment), xml_node);
+    tbd_.emplace_back(address, xml_node);
   }
 
   for (const xmlpp::Node* node : root->find("./model-data")) {
@@ -523,6 +527,33 @@ void Initializer::Define(const xmlpp::Element* rule_node, Rule* rule) {
     instructions.push_back(GetInstruction(XmlElement(xml_node)));
   rule->instructions(std::move(instructions));
 }
+
+template <>
+void Initializer::Define(const xmlpp::Element* xml_node, Alignment* alignment) {
+  for (const xmlpp::Node* node : xml_node->find("./define-phase")) {
+    try {
+      PhasePtr phase = ConstructElement<Phase>(XmlElement(node));
+      std::vector<SetHouseEvent*> instructions;
+      for (const xmlpp::Node* arg : node->find("./set-house-event")) {
+        instructions.push_back(
+            static_cast<SetHouseEvent*>(GetInstruction(XmlElement(arg))));
+      }
+      phase->instructions(std::move(instructions));
+      alignment->Add(std::move(phase));
+    } catch (InvalidArgument& err) {
+      throw ValidationError(err.msg());
+    } catch (DuplicateArgumentError& err) {
+      err.msg(GetLine(node) + err.msg());
+      throw;
+    }
+  }
+  try {
+    alignment->Validate();
+  } catch (ValidationError& err) {
+    err.msg(GetLine(xml_node) + err.msg());
+    throw;
+  }
+}
 /// @}
 
 void Initializer::ProcessTbdElements() {
@@ -622,34 +653,6 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
       throw;
     }
   }
-}
-
-void Initializer::DefineAlignment(const xmlpp::Element* xml_node) {
-  AlignmentPtr alignment = ConstructElement<Alignment>(xml_node);
-  for (const xmlpp::Node* node : xml_node->find("./define-phase")) {
-    try {
-      PhasePtr phase = ConstructElement<Phase>(XmlElement(node));
-      std::vector<SetHouseEvent*> instructions;
-      for (const xmlpp::Node* arg : node->find("./set-house-event")) {
-        instructions.push_back(
-            static_cast<SetHouseEvent*>(GetInstruction(XmlElement(arg))));
-      }
-      phase->instructions(std::move(instructions));
-      alignment->Add(std::move(phase));
-    } catch (InvalidArgument& err) {
-      throw ValidationError(err.msg());
-    } catch (DuplicateArgumentError& err) {
-      err.msg(GetLine(node) + err.msg());
-      throw;
-    }
-  }
-  try {
-    alignment->Validate();
-  } catch (ValidationError& err) {
-    err.msg(GetLine(xml_node) + err.msg());
-    throw;
-  }
-  Register(std::move(alignment), xml_node);
 }
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {

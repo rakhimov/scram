@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-alignment name="one">
+    <define-phase name="phase-one" time-fraction="1">
+      <set-house-event name="H">
+        <constant value="true"/>
+      </set-house-event>
+    </define-phase>
+  </define-alignment>
+</opsa-mef>
