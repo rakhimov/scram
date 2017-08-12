@@ -64,9 +64,9 @@ Event::~Event() noexcept
     QObject::disconnect(m_idConnection);
 }
 
-QSize Event::units() const
+QSizeF Event::units() const
 {
-    QFontMetrics font = QApplication::fontMetrics();
+    QFontMetricsF font = QApplication::fontMetrics();
     return {font.averageCharWidth(), font.height()};
 }
 
@@ -85,8 +85,8 @@ void Event::setTypeGraphics(QGraphicsItem *item)
 
 QRectF Event::boundingRect() const
 {
-    int w = units().width();
-    int h = units().height();
+    double w = units().width();
+    double h = units().height();
     double labelBoxWidth = m_size.width() * w;
     return QRectF(-labelBoxWidth / 2, 0, labelBoxWidth, m_baseHeight * h);
 }
@@ -97,8 +97,8 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     if (option->state & QStyle::State_Selected)
         painter->setBrush(QColor("cyan"));
 
-    int w = units().width();
-    int h = units().height();
+    double w = units().width();
+    double h = units().height();
     double labelBoxWidth = m_size.width() * w ;
     QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
@@ -305,7 +305,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     }
     case mef::kXor: {
         auto orItem = getGateGraphicsType(mef::kOr);
-        double x1 = m_maxSize.width() * units().width() / 2.0;
+        double x1 = m_maxSize.width() * units().width() / 2;
         double h = m_maxSize.height() * units().height();
         QPainterPath paintPath;
         paintPath.lineTo(-x1, h);
@@ -346,7 +346,7 @@ void Gate::addTransferOut()
         return;
     m_transferOut = true;
     QPainterPath paintPath;
-    double x1 = m_maxSize.width() * units().width() / 2.0;
+    double x1 = m_maxSize.width() * units().width() / 2;
     double h = units().height() * std::sqrt(3) / 2;
     paintPath.lineTo(x1 + units().height(), 0);
     paintPath.lineTo(x1 + 0.5 * units().height(), h);

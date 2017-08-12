@@ -97,7 +97,7 @@ protected:
     /**
      * @return Unit width (x) and height (y) for shapes.
      */
-    QSize units() const;
+    QSizeF units() const;
 
     model::Element *m_event; ///< The model data.
 
