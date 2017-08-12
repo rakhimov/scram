@@ -497,6 +497,12 @@
     <element name="initiating-event">
       <attribute name="name"> <data type="NCName"/> </attribute>
       <optional>
+        <group>
+          <attribute name="alignment"> <data type="NCName"/> </attribute>
+          <attribute name="phase"> <data type="NCName"/> </attribute>
+        </group>
+      </optional>
+      <optional>
         <attribute name="description"> <text/> </attribute>
       </optional>
       <optional>

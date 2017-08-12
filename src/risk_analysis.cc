@@ -98,7 +98,8 @@ void RiskAnalysis::RunAnalysis(boost::optional<Context> context) {
           result.p_sequence = results_.back().probability_analysis->p_total();
         LOG(INFO) << "Finished analysis for sequence: " << sequence.name();
       }
-      event_tree_results_.push_back(std::move(eta));
+      event_tree_results_.push_back(
+          {*initiating_event, context, std::move(eta)});
       LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
     }
   }

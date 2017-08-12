@@ -104,10 +104,13 @@ RiskAnalysisTest::product_probability() {
 }
 
 std::map<std::string, double> RiskAnalysisTest::sequences() {
+  assert(model->alignments().empty());
   assert(analysis->event_tree_results().size() == 1);
   std::map<std::string, double> results;
   for (const core::EventTreeAnalysis::Result& result :
-       analysis->event_tree_results().front()->sequences()) {
+       analysis->event_tree_results()
+           .front()
+           .event_tree_analysis->sequences()) {
     results.emplace(result.sequence.name(), result.p_sequence);
   }
   return results;
@@ -579,6 +582,12 @@ TEST_F(RiskAnalysisTest, ReportAlignment) {
   std::string tree_input =
       "./share/scram/input/TwoTrain/two_train_alignment.xml";
   CheckReport({tree_input});
+}
+
+TEST_F(RiskAnalysisTest, ReportAlignmentEventTree) {
+  std::string dir = "./share/scram/input/EventTrees/";
+  settings.probability_analysis(true);
+  CheckReport({dir + "attack_alignment.xml", dir + "attack.xml"});
 }
 
 // NAND and NOR as a child cases.

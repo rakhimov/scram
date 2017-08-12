@@ -72,6 +72,16 @@ class RiskAnalysis : public Analysis {
     /// @}
   };
 
+  /// The analysis results grouped by an event-tree.
+  ///
+  /// @todo Replace with query (group_by).
+  struct EtaResult {
+    const mef::InitiatingEvent& initiating_event;  ///< Unique event per tree.
+    boost::optional<Context> context;  ///< The alignment context.
+    /// The holder of the analysis.
+    std::unique_ptr<const EventTreeAnalysis> event_tree_analysis;
+  };
+
   /// @param[in] model  An analysis model with fault trees, events, etc.
   /// @param[in] settings  Analysis settings for the given model.
   ///
@@ -99,8 +109,7 @@ class RiskAnalysis : public Analysis {
   const std::vector<Result>& results() const { return results_; }
 
   /// @returns The results of the event tree analysis.
-  const std::vector<std::unique_ptr<EventTreeAnalysis>>& event_tree_results()
-      const {
+  const std::vector<EtaResult>& event_tree_results() const {
     return event_tree_results_;
   }
 
@@ -146,9 +155,7 @@ class RiskAnalysis : public Analysis {
 
   mef::Model* model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.
-  /// Event tree analysis of sequences.
-  /// @todo Incorporate into the main results container.
-  std::vector<std::unique_ptr<EventTreeAnalysis>> event_tree_results_;
+  std::vector<EtaResult> event_tree_results_;  ///< Grouping of sequences.
 };
 
 }  // namespace core
