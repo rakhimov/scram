@@ -121,7 +121,7 @@ class RiskAnalysis : public Analysis {
   /// @pre The model is in pristine.
   ///
   /// @post The model is restored to the original state.
-  void RunAnalysis(boost::optional<Context> context = {});
+  void RunAnalysis(boost::optional<Context> context = {}) noexcept;
 
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.

@@ -50,18 +50,29 @@ void RiskAnalysis::Analyze() noexcept {
   }
 }
 
-void RiskAnalysis::RunAnalysis(boost::optional<Context> context) {
+void RiskAnalysis::RunAnalysis(boost::optional<Context> context) noexcept {
   /// Restores the model after application of the context.
   struct Restorator {
     ~Restorator() {
+      mission_time.first->value(mission_time.second);
+      settings.mission_time(mission_time.second);
+
       for (const std::pair<mef::HouseEvent*, bool>& entry : house_events)
         entry.first->state(entry.second);
     }
 
+    Settings& settings;
+    std::pair<mef::MissionTime*, double> mission_time;
     std::vector<std::pair<mef::HouseEvent*, bool>> house_events;
-  } restorator;
+  } restorator{Analysis::settings(),
+               {&model_->mission_time(), model_->mission_time().value()}};
 
   if (context) {
+    double mission_time =
+        context->phase.time_fraction() * model_->mission_time().value();
+    model_->mission_time().value(mission_time);
+    Analysis::settings().mission_time(mission_time);
+
     for (const mef::SetHouseEvent* instruction :
          context->phase.instructions()) {
       auto it = model_->house_events().find(instruction->name());
