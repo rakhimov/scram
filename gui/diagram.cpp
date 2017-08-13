@@ -103,7 +103,9 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
     painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
-                      m_event->label());
+                      painter->fontMetrics().elidedText(
+                          m_event->label(), Qt::ElideRight,
+                          labelBoxWidth * (m_labelBoxHeight - 0.5)));
 
     painter->drawLine(QPointF(0, m_labelBoxHeight * h),
                       QPointF(0, (m_labelBoxHeight + 1) * h));
@@ -111,7 +113,9 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     double idBoxWidth = m_idBoxLength * w;
     QRectF nameRect(-idBoxWidth / 2, (m_labelBoxHeight + 1) * h, idBoxWidth, h);
     painter->drawRect(nameRect);
-    painter->drawText(nameRect, Qt::AlignCenter, m_event->id());
+    painter->drawText(nameRect, Qt::AlignCenter,
+                      painter->fontMetrics().elidedText(
+                          m_event->id(), Qt::ElideRight, idBoxWidth));
 
     painter->drawLine(QPointF(0, (m_labelBoxHeight + 2) * h),
                       QPointF(0, (m_labelBoxHeight + 2.5) * h));
