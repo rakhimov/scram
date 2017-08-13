@@ -174,6 +174,20 @@ private:
     void connectElement(Element *element) final;
 };
 
+/// The proxy model specialized for the gate tree-table.
+class GateSortFilterProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+public:
+    using QSortFilterProxyModel::QSortFilterProxyModel;
+
+protected:
+    bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
+    bool lessThan(const QModelIndex &lhs,
+                  const QModelIndex &rhs) const override;
+};
+
 } // namespace model
 } // namespace gui
 } // namespace scram

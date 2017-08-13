@@ -1137,7 +1137,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
 {
     auto *tree = new QTreeView(parent);
     auto *tableModel = new model::GateContainerModel(guiModel, tree);
-    auto *proxyModel = new model::SortFilterProxyModel(tree);
+    auto *proxyModel = new model::GateSortFilterProxyModel(tree);
     proxyModel->setSourceModel(tableModel);
     tree->setModel(proxyModel);
     tree->setSelectionBehavior(QAbstractItemView::SelectRows);
