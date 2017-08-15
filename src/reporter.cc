@@ -54,7 +54,12 @@ void PutId(const core::RiskAnalysis::Result::Id& id, XmlStreamElement* report) {
     }
     XmlStreamElement* report_;
   } extractor{report};
-  boost::apply_visitor(extractor, id);
+  boost::apply_visitor(extractor, id.target);
+
+  if (id.context) {
+    report->SetAttribute("alignment", id.context->alignment.name());
+    report->SetAttribute("phase", id.context->phase.name());
+  }
 }
 
 }  // namespace
@@ -69,9 +74,9 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
   TIMER(DEBUG1, "Reporting analysis results");
   XmlStreamElement results = report.AddChild("results");
   if (risk_an.settings().probability_analysis()) {
-    for (const std::unique_ptr<core::EventTreeAnalysis>& result :
+    for (const core::RiskAnalysis::EtaResult& result :
          risk_an.event_tree_results()) {
-      ReportResults(*result, &results);
+      ReportResults(result, &results);
     }
   }
 
@@ -331,11 +336,19 @@ void Reporter::ReportUnusedElements(const T& container,
     information->AddChild("warning").AddText(header + out);
 }
 
-void Reporter::ReportResults(const core::EventTreeAnalysis& eta,
+void Reporter::ReportResults(const core::RiskAnalysis::EtaResult& eta_result,
                              XmlStreamElement* results) {
+  const core::EventTreeAnalysis& eta = *eta_result.event_tree_analysis;
   XmlStreamElement initiating_event = results->AddChild("initiating-event");
-  initiating_event.SetAttribute("name", eta.initiating_event().name())
-      .SetAttribute("sequences", eta.sequences().size());
+  initiating_event.SetAttribute("name", eta.initiating_event().name());
+
+  if (eta_result.context) {
+    initiating_event
+        .SetAttribute("alignment", eta_result.context->alignment.name())
+        .SetAttribute("phase", eta_result.context->phase.name());
+  }
+
+  initiating_event.SetAttribute("sequences", eta.sequences().size());
   for (const core::EventTreeAnalysis::Result& result_sequence :
        eta.sequences()) {
     initiating_event.AddChild("sequence")

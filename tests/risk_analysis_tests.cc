@@ -54,10 +54,10 @@ void RiskAnalysisTest::ProcessInputFiles(
   result_ = Result();
 }
 
-void RiskAnalysisTest::CheckReport(const std::string& tree_input) {
+void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
   static xmlpp::RelaxNGValidator validator(Env::report_schema());
 
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   std::stringstream output;
   ASSERT_NO_THROW(Reporter().Report(*analysis, output));
@@ -104,10 +104,13 @@ RiskAnalysisTest::product_probability() {
 }
 
 std::map<std::string, double> RiskAnalysisTest::sequences() {
+  assert(model->alignments().empty());
   assert(analysis->event_tree_results().size() == 1);
   std::map<std::string, double> results;
   for (const core::EventTreeAnalysis::Result& result :
-       analysis->event_tree_results().front()->sequences()) {
+       analysis->event_tree_results()
+           .front()
+           .event_tree_analysis->sequences()) {
     results.emplace(result.sequence.name(), result.p_sequence);
   }
   return results;
@@ -123,7 +126,7 @@ std::set<std::string> RiskAnalysisTest::Convert(const Product& product) {
 
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   EXPECT_EQ(3, gates().size());
   EXPECT_EQ(1, gates().count("TrainOne"));
   EXPECT_EQ(1, gates().count("TrainTwo"));
@@ -158,7 +161,7 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   // Input with probabilities
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_EQ(4, basic_events().size());
   ASSERT_EQ(1, basic_events().count("PumpOne"));
   ASSERT_EQ(1, basic_events().count("PumpTwo"));
@@ -183,7 +186,7 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
 // Test Analysis of Two train system.
 TEST_P(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
                                          {"PumpOne", "ValveTwo"},
@@ -195,7 +198,7 @@ TEST_P(RiskAnalysisTest, AnalyzeDefault) {
 
 TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_non_coherent.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.prime_implicants()) {
     std::set<std::set<std::string>> pi = {{"not PumpOne", "ValveOne"},
@@ -222,7 +225,7 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   std::set<std::string> mcs_4 = {"ValveOne", "ValveTwo"};
   std::set<std::set<std::string>> mcs = {mcs_1, mcs_2, mcs_3, mcs_4};
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
 
   EXPECT_EQ(mcs, products());
@@ -243,7 +246,7 @@ TEST_P(RiskAnalysisTest, EnforceExactProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.probability_analysis(true).approximation("none");
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
 }
@@ -254,7 +257,7 @@ TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
                                          {"PumpOne", "ValveTwo"},
                                          {"PumpTwo", "ValveOne"},
                                          {"ValveOne", "ValveTwo"}};
-  ASSERT_NO_THROW(ProcessInputFile(nested_input));
+  ASSERT_NO_THROW(ProcessInputFiles({nested_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(mcs, products());
 }
@@ -263,7 +266,7 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
   TestImportance({{"PumpOne", {2, 0.51, 0.4737, 0.7895, 1.316, 1.9}},
                   {"PumpTwo", {2, 0.38, 0.4118, 0.8235, 1.176, 1.7}},
@@ -274,7 +277,7 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
 TEST_F(RiskAnalysisTest, ImportanceNeg) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
   settings.prime_implicants(true).importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(0.04459, p_total(), 1e-3);
   // Check importance values with negative event.
@@ -287,7 +290,7 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
 TEST_P(RiskAnalysisTest, ImportanceSingleEvent) {
   std::string tree_input = "./share/scram/input/core/null_a.xml";
   settings.importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   TestImportance({{"OnlyChild", {1, 1, 1, 1, 2, 0}}});
 }
@@ -295,7 +298,7 @@ TEST_P(RiskAnalysisTest, ImportanceSingleEvent) {
 TEST_P(RiskAnalysisTest, ImportanceZeroProbability) {
   std::string tree_input = "./share/scram/input/core/zero_prob.xml";
   settings.importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   TestImportance({{"A", {1, 1, 0, 0, 0, 0}}});
 }
@@ -303,7 +306,7 @@ TEST_P(RiskAnalysisTest, ImportanceZeroProbability) {
 TEST_P(RiskAnalysisTest, ImportanceOneProbability) {
   std::string tree_input = "./share/scram/input/core/one_prob.xml";
   settings.importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   TestImportance({{"A", {1, 1, 1, 1, 1, 0}}});
 }
@@ -313,7 +316,7 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";
   // Probability calculations with the rare event approximation.
   settings.approximation("rare-event").importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.012, p_total());  // Adjusted probability.
   TestImportance({{"PumpOne", {2, 0.12, 0.6, 0.624, 10.4, 2.5}},
@@ -328,7 +331,7 @@ TEST_F(RiskAnalysisTest, Mcub) {
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
@@ -339,7 +342,7 @@ TEST_F(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ProcessInputFiles({with_prob}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(0.10, p_total(), 1e-5);
 }
@@ -350,7 +353,7 @@ TEST_P(RiskAnalysisTest, AnalyzeMC) {
   settings.uncertainty_analysis(true);
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
 }
 
@@ -359,7 +362,7 @@ TEST_P(RiskAnalysisTest, AnalyzeProbabilityOverTime) {
   settings.probability_analysis(true).time_step(24).mission_time(120);
   std::vector<double> curve = {0,        2.399e-4, 4.7989e-4,
                                7.197e-4, 9.595e-4, 1.199e-3};
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   ASSERT_FALSE(analysis->results().empty());
   ASSERT_TRUE(analysis->results().front().probability_analysis);
@@ -386,7 +389,7 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   double pfd_fractions[] = {1.142e-4, 1.0275e-3, 1.02796e-2,
                             0.1033,   0.88527,   0};
   double pfh_fractions[] = {2.74e-7, 2.466e-6, 2.466e-5, 2.466e-4, 0.999726, 0};
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   ASSERT_FALSE(analysis->results().empty());
   ASSERT_TRUE(analysis->results().front().probability_analysis);
@@ -411,7 +414,7 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
 TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
   const auto& results = sequences();
@@ -427,7 +430,7 @@ TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
 TEST_P(RiskAnalysisTest, AnalyzeTestEventDefault) {
   const char* tree_input = "./share/scram/input/eta/test_event_default.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
   const auto& results = sequences();
@@ -439,7 +442,7 @@ TEST_P(RiskAnalysisTest, AnalyzeTestEventDefault) {
 TEST_P(RiskAnalysisTest, AnalyzeTestInitatingEvent) {
   const char* tree_input = "./share/scram/input/eta/test_initiating_event.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(1, analysis->event_tree_results().size());
   const auto& results = sequences();
@@ -471,19 +474,19 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   // Messing up the output file.
   std::string output = "abracadabra.cadabraabra/output.txt";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_THROW(Reporter().Report(*analysis, output), IOError);
 }
 
 TEST_F(RiskAnalysisTest, ReportEmpty) {
   std::string tree_input = "./share/scram/input/empty_model.xml";
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of the default analysis for MCS only without probabilities.
 TEST_P(RiskAnalysisTest, ReportDefaultMCS) {
-  CheckReport("./share/scram/input/fta/correct_tree_input.xml");
+  CheckReport({"./share/scram/input/fta/correct_tree_input.xml"});
 }
 
 // Reporting of analysis for MCS with probability results.
@@ -491,19 +494,19 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.probability_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 TEST_F(RiskAnalysisTest, ReportProbabilityCurve) {
   std::string tree_input = "./share/scram/input/core/single_exponential.xml";
   settings.probability_analysis(true).time_step(24).mission_time(720);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 TEST_F(RiskAnalysisTest, ReportSil) {
   std::string tree_input = "./share/scram/input/core/single_exponential.xml";
   settings.time_step(24).safety_integrity_levels(true).mission_time(720);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of importance analysis.
@@ -511,7 +514,7 @@ TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.importance_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of uncertainty analysis.
@@ -519,28 +522,28 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.uncertainty_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting event tree analysis with an initiating event.
 TEST_F(RiskAnalysisTest, ReportInitiatingEventAnalysis) {
   const char* tree_input = "./share/scram/input/EventTrees/bcd.xml";
   settings.probability_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of CCF analysis.
 TEST_F(RiskAnalysisTest, ReportCCF) {
   std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";
   settings.ccf_analysis(true).importance_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of Negative events in MCS.
 TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
   std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
   settings.probability_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of all possible analyses.
@@ -549,36 +552,48 @@ TEST_F(RiskAnalysisTest, ReportAll) {
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   settings.importance_analysis(true).uncertainty_analysis(true)
       .ccf_analysis(true);
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting with public or private roles.
 TEST_F(RiskAnalysisTest, ReportRoles) {
   std::string tree_input = "./share/scram/input/fta/mixed_roles.xml";
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of orphan primary events.
 TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   std::string tree_input = "./share/scram/input/fta/orphan_primary_event.xml";
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 // Reporting of unused parameters.
 TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   std::string tree_input = "./share/scram/input/fta/unused_parameter.xml";
-  CheckReport(tree_input);
+  CheckReport({tree_input});
 }
 
 TEST_F(RiskAnalysisTest, ReportUnusedEventTreeElements) {
   std::string tree_input = "./share/scram/input/eta/unused_elements.xml";
-  CheckReport(tree_input);
+  CheckReport({tree_input});
+}
+
+TEST_F(RiskAnalysisTest, ReportAlignment) {
+  std::string tree_input =
+      "./share/scram/input/TwoTrain/two_train_alignment.xml";
+  CheckReport({tree_input});
+}
+
+TEST_F(RiskAnalysisTest, ReportAlignmentEventTree) {
+  std::string dir = "./share/scram/input/EventTrees/";
+  settings.probability_analysis(true);
+  CheckReport({dir + "attack_alignment.xml", dir + "attack.xml"});
 }
 
 // NAND and NOR as a child cases.
 TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.prime_implicants()) {
     std::set<std::set<std::string>> pi = {
@@ -593,7 +608,7 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
 // Simple test for several house event propagation.
 TEST_P(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {{"A", "B"}};
   EXPECT_EQ(mcs, products());
@@ -602,7 +617,7 @@ TEST_P(RiskAnalysisTest, ManyHouseEvents) {
 // Simple test for several constant gate propagation.
 TEST_P(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(kUnity, products());
 }
@@ -611,7 +626,7 @@ TEST_P(RiskAnalysisTest, ConstantGates) {
 TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
   std::string tree_input =
       "./share/scram/input/fta/ambiguous_events_with_roles.xml";
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {
       {"C", "Ambiguous.Private.A", "Ambiguous.Private.B"},

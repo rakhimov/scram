@@ -40,6 +40,51 @@ void RiskAnalysis::Analyze() noexcept {
   if (Analysis::settings().seed() >= 0)
     Random::seed(Analysis::settings().seed());
 
+  if (model_->alignments().empty()) {
+    RunAnalysis();
+  } else {
+    for (const mef::AlignmentPtr& alignment : model_->alignments()) {
+      for (const mef::PhasePtr& phase : alignment->phases())
+        RunAnalysis(Context{*alignment, *phase});
+    }
+  }
+}
+
+void RiskAnalysis::RunAnalysis(boost::optional<Context> context) noexcept {
+  /// Restores the model after application of the context.
+  struct Restorator {
+    ~Restorator() {
+      mission_time.first->value(mission_time.second);
+      settings.mission_time(mission_time.second);
+
+      for (const std::pair<mef::HouseEvent*, bool>& entry : house_events)
+        entry.first->state(entry.second);
+    }
+
+    Settings& settings;
+    std::pair<mef::MissionTime*, double> mission_time;
+    std::vector<std::pair<mef::HouseEvent*, bool>> house_events;
+  } restorator{Analysis::settings(),
+               {&model_->mission_time(), model_->mission_time().value()}};
+
+  if (context) {
+    double mission_time =
+        context->phase.time_fraction() * model_->mission_time().value();
+    model_->mission_time().value(mission_time);
+    Analysis::settings().mission_time(mission_time);
+
+    for (const mef::SetHouseEvent* instruction :
+         context->phase.instructions()) {
+      auto it = model_->house_events().find(instruction->name());
+      assert(it != model_->house_events().end() && "Invalid instruction.");
+      mef::HouseEvent* house_event = it->get();
+      if (house_event->state() != instruction->state()) {
+        restorator.house_events.emplace_back(house_event, house_event->state());
+        house_event->state(instruction->state());
+      }
+    }
+  }
+
   for (const mef::InitiatingEventPtr& initiating_event :
        model_->initiating_events()) {
     if (initiating_event->event_tree()) {
@@ -52,8 +97,9 @@ void RiskAnalysis::Analyze() noexcept {
         const mef::Sequence& sequence = result.sequence;
         LOG(INFO) << "Running analysis for sequence: " << sequence.name();
         results_.push_back(
-            {std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
-                *initiating_event, sequence}});
+            {{std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
+                  *initiating_event, sequence},
+              context}});
         RunAnalysis(*result.gate, &results_.back());
         if (result.is_expression_only) {
           results_.back().fault_tree_analysis = nullptr;
@@ -63,7 +109,8 @@ void RiskAnalysis::Analyze() noexcept {
           result.p_sequence = results_.back().probability_analysis->p_total();
         LOG(INFO) << "Finished analysis for sequence: " << sequence.name();
       }
-      event_tree_results_.push_back(std::move(eta));
+      event_tree_results_.push_back(
+          {*initiating_event, context, std::move(eta)});
       LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
     }
   }
@@ -71,7 +118,7 @@ void RiskAnalysis::Analyze() noexcept {
   for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
     for (const mef::Gate* target : ft->top_events()) {
       LOG(INFO) << "Running analysis for gate: " << target->id();
-      results_.push_back({target});
+      results_.push_back({{target, context}});
       RunAnalysis(*target, &results_.back());
       LOG(INFO) << "Finished analysis for gate: " << target->id();
     }

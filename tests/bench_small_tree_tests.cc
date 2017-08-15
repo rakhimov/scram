@@ -29,7 +29,7 @@ TEST_P(RiskAnalysisTest, SmallTree) {
   std::string tree_input = "./share/scram/input/SmallTree/SmallTree.xml";
   settings.uncertainty_analysis(true);
   settings.num_trials(10000);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {{"e1", "e2"}, {"e3", "e4"}};
   EXPECT_EQ(2, products().size());

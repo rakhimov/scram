@@ -59,6 +59,11 @@ void Model::Add(FaultTreePtr fault_tree) {
                                      "Redefinition of fault tree: ");
 }
 
+void Model::Add(AlignmentPtr alignment) {
+  mef::AddElement<RedefinitionError>(std::move(alignment), &alignments_,
+                                     "Redefinition of alignment: ");
+}
+
 void Model::Add(ParameterPtr parameter) {
   mef::AddElement<RedefinitionError>(std::move(parameter), &parameters_,
                                      "Redefinition of parameter: ");

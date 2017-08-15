@@ -29,7 +29,7 @@ TEST_P(RiskAnalysisTest, BSCU) {
   std::string tree_input = "./share/scram/input/BSCU/BSCU.xml";
   settings.uncertainty_analysis(true);
   settings.num_trials(10000);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   std::set<std::set<std::string>> mcs = {
       {"SwitchStuckInIntermediatePosition"},

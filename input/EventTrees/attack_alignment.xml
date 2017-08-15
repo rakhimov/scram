@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-alignment name="Default">
+    <define-phase name="Normal" time-fraction="1"/>
+  </define-alignment>
+</opsa-mef>

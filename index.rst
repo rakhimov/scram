@@ -32,6 +32,7 @@ Implemented Features
 - Analysis with common-cause failure models
 - Probability analysis (Importance factors, IEC 61508 Safety Integrity Levels)
 - Uncertainty analysis with Monte Carlo simulations
+- Alignment (Mission, Phases)
 - Fault tree generator
 - GUI front-end
 

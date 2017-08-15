@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<opsa-mef name="TwoTrains">
+  <define-alignment name="Maintenance">
+    <define-phase name="Normal" time-fraction="0.99452"/>
+    <define-phase name="PumpOne" time-fraction="0.00274">
+      <set-house-event name="PumpOneMaintenance">
+        <constant value="true"/>
+      </set-house-event>
+    </define-phase>
+    <define-phase name="PumpTwo" time-fraction="0.00274">
+      <set-house-event name="PumpTwoMaintenance">
+        <constant value="true"/>
+      </set-house-event>
+    </define-phase>
+  </define-alignment>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <and>
+          <event name="PumpOne"/>
+          <not>
+            <house-event name="PumpOneMaintenance"/>
+          </not>
+        </and>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <and>
+          <event name="PumpTwo"/>
+          <not>
+            <house-event name="PumpTwoMaintenance"/>
+          </not>
+        </and>
+      </or>
+    </define-gate>
+    <define-house-event name="PumpOneMaintenance">
+      <constant value="false"/>
+    </define-house-event>
+    <define-house-event name="PumpTwoMaintenance">
+      <constant value="false"/>
+    </define-house-event>
+  </define-fault-tree>
+  <define-CCF-group name="Pumps" model="beta-factor">
+    <members>
+      <basic-event name="PumpOne"/>
+      <basic-event name="PumpTwo"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factor level="2">
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
+  <define-CCF-group name="Valves" model="beta-factor">
+    <members>
+      <basic-event name="ValveOne"/>
+      <basic-event name="ValveTwo"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factor level="2">
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
+</opsa-mef>

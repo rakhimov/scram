@@ -42,6 +42,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tree.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/alignment.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/pdag.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.cc"

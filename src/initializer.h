@@ -41,6 +41,7 @@
 #include "expression.h"
 #include "expression/constant.h"
 #include "fault_tree.h"
+#include "instruction.h"
 #include "model.h"
 #include "parameter.h"
 #include "settings.h"
@@ -284,6 +285,8 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns The newly defined or registered instruction.
   ///
+  /// @pre All files have been processed (element pointers are available).
+  ///
   /// @throws ValidationError  Errors in instruction definitions.
   Instruction* GetInstruction(const xmlpp::Element* xml_element);
 
@@ -447,10 +450,11 @@ class Initializer : private boost::noncopyable {
   /// CCF groups rely on both parameter and basic event registrations.
   /// Event tree branches and instructions have complex interdependencies.
   /// Initiating events may reference their associated event trees.
+  /// Alignments depend on instructions.
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent, Rule>
+               InitiatingEvent, Rule, Alignment>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.

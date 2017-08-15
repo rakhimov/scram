@@ -27,7 +27,7 @@ namespace test {
 TEST_P(RiskAnalysisTest, Lift) {
   std::string tree_input = "./share/scram/input/Lift/lift.xml";
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(1.19999e-5, p_total(), 1e-5);
 

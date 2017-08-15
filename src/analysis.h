@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Olzhas Rakhimov
+ * Copyright (C) 2015-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,12 +36,12 @@ namespace core {
 class Analysis : private boost::noncopyable {
  public:
   /// @param[in] settings  Analysis settings for all calculations.
-  explicit Analysis(const Settings& settings);
+  explicit Analysis(Settings settings);
 
   virtual ~Analysis() = 0;  ///< Abstract class.
 
   /// @returns Analysis settings.
-  const Settings& settings() const { return kSettings_; }
+  const Settings& settings() const { return settings_; }
 
   /// @returns Warnings generated upon analysis.
   const std::string& warnings() const { return warnings_; }
@@ -50,6 +50,9 @@ class Analysis : private boost::noncopyable {
   double analysis_time() const { return analysis_time_; }
 
  protected:
+  /// @returns Modifiable analysis settings.
+  Settings& settings() { return settings_; }
+
   /// Appends a warning message to the analysis warnings.
   /// Warnings are separated by spaces.
   ///
@@ -68,7 +71,7 @@ class Analysis : private boost::noncopyable {
   }
 
  private:
-  const Settings kSettings_;  ///< All settings for analysis.
+  Settings settings_;  ///< All settings for analysis.
   double analysis_time_;  ///< Time taken by the analysis.
   std::string warnings_;  ///< Generated warnings in analysis.
 };

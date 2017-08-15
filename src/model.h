@@ -27,6 +27,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include "alignment.h"
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -34,6 +35,7 @@
 #include "expression.h"
 #include "expression/test_event.h"
 #include "fault_tree.h"
+#include "instruction.h"
 #include "parameter.h"
 
 namespace scram {
@@ -85,6 +87,7 @@ class Model : public Element, private boost::noncopyable {
   const ElementTable<SequencePtr>& sequences() const { return sequences_; }
   const ElementTable<RulePtr>& rules() const { return rules_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
+  const ElementTable<AlignmentPtr>& alignments() const { return alignments_; }
   const IdTable<ParameterPtr>& parameters() const { return parameters_; }
   const MissionTime& mission_time() const { return *mission_time_; }
   MissionTime& mission_time() { return *mission_time_; }
@@ -106,6 +109,7 @@ class Model : public Element, private boost::noncopyable {
   void Add(SequencePtr element);
   void Add(RulePtr element);
   void Add(FaultTreePtr element);
+  void Add(AlignmentPtr element);
   void Add(ParameterPtr element);
   void Add(HouseEventPtr element);
   void Add(BasicEventPtr element);
@@ -157,6 +161,7 @@ class Model : public Element, private boost::noncopyable {
   ElementTable<SequencePtr> sequences_;
   ElementTable<RulePtr> rules_;
   ElementTable<FaultTreePtr> fault_trees_;
+  ElementTable<AlignmentPtr> alignments_;
   IdTable<GatePtr> gates_;
   IdTable<HouseEventPtr> house_events_;
   IdTable<BasicEventPtr> basic_events_;

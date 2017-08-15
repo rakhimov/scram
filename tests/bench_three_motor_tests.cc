@@ -44,7 +44,7 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
   std::string T4inc = "T4inc";
 
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
   if (settings.approximation() == Approximation::kRareEvent) {
     EXPECT_NEAR(0.0212013, p_total(), 1e-5);

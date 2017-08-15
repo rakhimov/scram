@@ -25,8 +25,10 @@
 #include <utility>
 #include <vector>
 
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
+#include "alignment.h"
 #include "analysis.h"
 #include "event.h"
 #include "event_tree_analysis.h"
@@ -43,12 +45,22 @@ namespace core {
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
  public:
+  /// Provides the optional context of the analysis.
+  struct Context {
+    const mef::Alignment& alignment;  ///< The model alignment.
+    const mef::Phase& phase;  ///< The phase within the alignment.
+  };
+
   /// The analysis results binding to the unique analysis target.
   struct Result {
     /// The analysis target type as a unique identifier.
-    using Id =
-        boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
-                                                   const mef::Sequence&>>;
+    struct Id {
+      boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
+                                                 const mef::Sequence&>>
+          target;  ///< The main input to the analysis.
+      boost::optional<Context> context;  ///< Optional analysis context.
+    };
+
     const Id id;  ///< The main analysis input or target.
 
     /// Optional analyses, i.e., may be nullptr.
@@ -58,6 +70,16 @@ class RiskAnalysis : public Analysis {
     std::unique_ptr<const ImportanceAnalysis> importance_analysis;
     std::unique_ptr<const UncertaintyAnalysis> uncertainty_analysis;
     /// @}
+  };
+
+  /// The analysis results grouped by an event-tree.
+  ///
+  /// @todo Replace with query (group_by).
+  struct EtaResult {
+    const mef::InitiatingEvent& initiating_event;  ///< Unique event per tree.
+    boost::optional<Context> context;  ///< The alignment context.
+    /// The holder of the analysis.
+    std::unique_ptr<const EventTreeAnalysis> event_tree_analysis;
   };
 
   /// @param[in] model  An analysis model with fault trees, events, etc.
@@ -87,12 +109,20 @@ class RiskAnalysis : public Analysis {
   const std::vector<Result>& results() const { return results_; }
 
   /// @returns The results of the event tree analysis.
-  const std::vector<std::unique_ptr<EventTreeAnalysis>>& event_tree_results()
-      const {
+  const std::vector<EtaResult>& event_tree_results() const {
     return event_tree_results_;
   }
 
  private:
+  /// Runs the whole analysis with the given alignment.
+  ///
+  /// @param[in] context  The optional context with the current alignment/phase.
+  ///
+  /// @pre The model is in pristine.
+  ///
+  /// @post The model is restored to the original state.
+  void RunAnalysis(boost::optional<Context> context = {}) noexcept;
+
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
@@ -125,9 +155,7 @@ class RiskAnalysis : public Analysis {
 
   mef::Model* model_;  ///< The model with constructs.
   std::vector<Result> results_;  ///< The analysis result storage.
-  /// Event tree analysis of sequences.
-  /// @todo Incorporate into the main results container.
-  std::vector<std::unique_ptr<EventTreeAnalysis>> event_tree_results_;
+  std::vector<EtaResult> event_tree_results_;  ///< Grouping of sequences.
 };
 
 }  // namespace core

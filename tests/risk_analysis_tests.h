@@ -42,14 +42,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files);
 
-  // Parsing an input file to get the model.
-  void ProcessInputFile(const std::string& input_file) {
-    ProcessInputFiles({input_file});
-  }
-
   // Collection of assertions on the reporting after running analysis.
   // Note that the analysis is run by this function.
-  void CheckReport(const std::string& tree_input);
+  void CheckReport(const std::vector<std::string>& tree_input);
 
   // Returns a single fault tree, assuming one fault tree with single top gate.
   const mef::FaultTreePtr& fault_tree() {

@@ -24,6 +24,7 @@
         <choice>
           <ref name="model-data"/>
           <ref name="event-tree-definition"/>
+          <ref name="alignment-definition"/>
           <ref name="rule-definition"/>
           <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
@@ -84,6 +85,37 @@
   <!-- ============================================================= -->
   <!-- I.3. Missions, Phases -->
   <!-- ============================================================= -->
+
+  <define name="alignment-definition">
+    <element name="define-alignment">
+      <ref name="name"/>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="phase-definition"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="phase-definition">
+    <element name="define-phase">
+      <ref name="name"/>
+      <attribute name="time-fraction"> <data type="double"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="set-house-event"/>
+      </zeroOrMore>
+    </element>
+  </define>
 
 
 <!-- ############################################################### -->

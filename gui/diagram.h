@@ -64,7 +64,7 @@ public:
 protected:
     /// The confining size of the Event graphics in characters.
     /// The derived event types should stay within this confinement.
-    static const QSize m_size;
+    static const QSizeF m_size;
     /// The height of the confining space used only by the Event base class.
     static const double m_baseHeight;
     /// The length of the ID box in characters.
@@ -97,7 +97,7 @@ protected:
     /**
      * @return Unit width (x) and height (y) for shapes.
      */
-    QSize units() const;
+    QSizeF units() const;
 
     model::Element *m_event; ///< The model data.
 
@@ -185,7 +185,7 @@ public:
     void addTransferOut();
 
 private:
-    static const QSize m_maxSize; ///< The constraints on type graphics.
+    static const QSizeF m_maxSize; ///< The constraints on type graphics.
     static const double m_space;  ///< The space between children in chars.
 
     double m_width = 0; ///< Assume the graph does not change its width.

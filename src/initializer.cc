@@ -26,6 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/range/algorithm.hpp>
 
+#include "alignment.h"
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
@@ -135,6 +136,21 @@ ConstructElement(const xmlpp::Element* xml_element,
 /// @returns A set of XML child elements of MEF Element constructs.
 xmlpp::NodeSet GetNonAttributeElements(const xmlpp::Element* xml_element) {
   return xml_element->find("./*[name() != 'attributes' and name() != 'label']");
+}
+
+template <>
+PhasePtr ConstructElement<Phase>(const xmlpp::Element* xml_element) {
+  std::string name = GetAttributeValue(xml_element, "name");
+  double fraction = CastAttributeValue<double>(xml_element, "time-fraction");
+  PhasePtr element;
+  try {
+    element = std::make_unique<Phase>(std::move(name), fraction);
+  } catch (InvalidArgument& err) {
+    err.msg(GetLine(xml_element) + err.msg());
+    throw;
+  }
+  AttachLabelAndAttributes(xml_element, element.get());
+  return element;
 }
 
 }  // namespace
@@ -386,6 +402,14 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     Register<CcfGroup>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 
+  for (const xmlpp::Node* node : root->find("./define-alignment")) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    AlignmentPtr alignment = ConstructElement<Alignment>(xml_node);
+    auto* address = alignment.get();
+    Register(std::move(alignment), xml_node);
+    tbd_.emplace_back(address, xml_node);
+  }
+
   for (const xmlpp::Node* node : root->find("./model-data")) {
     ProcessModelData(XmlElement(node));
   }
@@ -502,6 +526,33 @@ void Initializer::Define(const xmlpp::Element* rule_node, Rule* rule) {
   for (const xmlpp::Node* xml_node : GetNonAttributeElements(rule_node))
     instructions.push_back(GetInstruction(XmlElement(xml_node)));
   rule->instructions(std::move(instructions));
+}
+
+template <>
+void Initializer::Define(const xmlpp::Element* xml_node, Alignment* alignment) {
+  for (const xmlpp::Node* node : xml_node->find("./define-phase")) {
+    try {
+      PhasePtr phase = ConstructElement<Phase>(XmlElement(node));
+      std::vector<SetHouseEvent*> instructions;
+      for (const xmlpp::Node* arg : node->find("./set-house-event")) {
+        instructions.push_back(
+            static_cast<SetHouseEvent*>(GetInstruction(XmlElement(arg))));
+      }
+      phase->instructions(std::move(instructions));
+      alignment->Add(std::move(phase));
+    } catch (InvalidArgument& err) {
+      throw ValidationError(err.msg());
+    } catch (DuplicateArgumentError& err) {
+      err.msg(GetLine(node) + err.msg());
+      throw;
+    }
+  }
+  try {
+    alignment->Validate();
+  } catch (ValidationError& err) {
+    err.msg(GetLine(xml_node) + err.msg());
+    throw;
+  }
 }
 /// @}
 

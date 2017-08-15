@@ -273,7 +273,9 @@ int GateContainerModel::columnCount(const QModelIndex &parent) const
         return 4;
     if (parent.parent().isValid())
         return 0;
-    return 1;
+    if (parent.column() == 0)
+        return 1;
+    return 0;
 }
 
 int GateContainerModel::rowCount(const QModelIndex &parent) const
@@ -282,7 +284,9 @@ int GateContainerModel::rowCount(const QModelIndex &parent) const
         return ElementContainerModel::rowCount(parent);
     if (parent.parent().isValid())
         return 0;
-    return static_cast<Gate *>(parent.internalPointer())->numArgs();
+    if (parent.column() == 0)
+        return static_cast<Gate *>(parent.internalPointer())->numArgs();
+    return 0;
 }
 
 QModelIndex GateContainerModel::index(int row, int column,
@@ -291,7 +295,6 @@ QModelIndex GateContainerModel::index(int row, int column,
     if (!parent.isValid())
         return ElementContainerModel::index(row, column, parent);
     GUI_ASSERT(parent.parent().isValid() == false, {});
-    GUI_ASSERT(column == 0, {});
 
     auto value = reinterpret_cast<std::uintptr_t>(parent.internalPointer());
     GUI_ASSERT(value && !(value & m_parentMask), {});
@@ -355,6 +358,22 @@ QVariant GateContainerModel::data(const QModelIndex &index, int role) const
         return gate->label();
     }
     GUI_ASSERT(false && "unexpected column", {});
+}
+
+bool GateSortFilterProxyModel::filterAcceptsRow(int row,
+                                                const QModelIndex &parent) const
+{
+    if (parent.isValid())
+        return true;
+    return QSortFilterProxyModel::filterAcceptsRow(row, parent);
+}
+
+bool GateSortFilterProxyModel::lessThan(const QModelIndex &lhs,
+                                        const QModelIndex &rhs) const
+{
+    if (lhs.parent().isValid())
+        return false;  // Don't sort arguments.
+    return QSortFilterProxyModel::lessThan(lhs, rhs);
 }
 
 } // namespace model

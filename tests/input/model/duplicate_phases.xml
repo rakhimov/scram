@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-alignment name="one">
+    <define-phase name="phase-one" time-fraction="0.5"/>
+    <define-phase name="phase-one" time-fraction="0.5"/>
+  </define-alignment>
+</opsa-mef>

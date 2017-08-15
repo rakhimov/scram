@@ -43,7 +43,7 @@ namespace scram {
 namespace gui {
 namespace diagram {
 
-const QSize Event::m_size = {16, 11};
+const QSizeF Event::m_size = {16, 11};
 const double Event::m_baseHeight = 6.5;
 const double Event::m_idBoxLength = 10;
 const double Event::m_labelBoxHeight = 4;
@@ -64,10 +64,10 @@ Event::~Event() noexcept
     QObject::disconnect(m_idConnection);
 }
 
-QSize Event::units() const
+QSizeF Event::units() const
 {
-    QFontMetrics font = QApplication::fontMetrics();
-    return {font.averageCharWidth(), font.height()};
+    double h = QApplication::fontMetrics().height();
+    return {h / 2, h};
 }
 
 double Event::width() const
@@ -85,8 +85,8 @@ void Event::setTypeGraphics(QGraphicsItem *item)
 
 QRectF Event::boundingRect() const
 {
-    int w = units().width();
-    int h = units().height();
+    double w = units().width();
+    double h = units().height();
     double labelBoxWidth = m_size.width() * w;
     return QRectF(-labelBoxWidth / 2, 0, labelBoxWidth, m_baseHeight * h);
 }
@@ -97,13 +97,15 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     if (option->state & QStyle::State_Selected)
         painter->setBrush(QColor("cyan"));
 
-    int w = units().width();
-    int h = units().height();
+    double w = units().width();
+    double h = units().height();
     double labelBoxWidth = m_size.width() * w ;
     QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
     painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
-                      m_event->label());
+                      painter->fontMetrics().elidedText(
+                          m_event->label(), Qt::ElideRight,
+                          labelBoxWidth * (m_labelBoxHeight - 0.5)));
 
     painter->drawLine(QPointF(0, m_labelBoxHeight * h),
                       QPointF(0, (m_labelBoxHeight + 1) * h));
@@ -111,7 +113,9 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     double idBoxWidth = m_idBoxLength * w;
     QRectF nameRect(-idBoxWidth / 2, (m_labelBoxHeight + 1) * h, idBoxWidth, h);
     painter->drawRect(nameRect);
-    painter->drawText(nameRect, Qt::AlignCenter, m_event->id());
+    painter->drawText(nameRect, Qt::AlignCenter,
+                      painter->fontMetrics().elidedText(
+                          m_event->id(), Qt::ElideRight, idBoxWidth));
 
     painter->drawLine(QPointF(0, (m_labelBoxHeight + 2) * h),
                       QPointF(0, (m_labelBoxHeight + 2.5) * h));
@@ -162,7 +166,7 @@ TransferIn::TransferIn(model::Gate *event, QGraphicsItem *parent)
         new QGraphicsPolygonItem({{{0, 0}, {-d / 2, d}, {d / 2, d}}}));
 }
 
-const QSize Gate::m_maxSize = {6, 3};
+const QSizeF Gate::m_maxSize = {6, 3};
 const double Gate::m_space = 1;
 
 Gate::Gate(model::Gate *event, model::Model *model,
@@ -305,7 +309,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     }
     case mef::kXor: {
         auto orItem = getGateGraphicsType(mef::kOr);
-        double x1 = m_maxSize.width() * units().width() / 2.0;
+        double x1 = m_maxSize.width() * units().width() / 2;
         double h = m_maxSize.height() * units().height();
         QPainterPath paintPath;
         paintPath.lineTo(-x1, h);
@@ -346,7 +350,7 @@ void Gate::addTransferOut()
         return;
     m_transferOut = true;
     QPainterPath paintPath;
-    double x1 = m_maxSize.width() * units().width() / 2.0;
+    double x1 = m_maxSize.width() * units().width() / 2;
     double h = units().height() * std::sqrt(3) / 2;
     paintPath.lineTo(x1 + units().height(), 0);
     paintPath.lineTo(x1 + 0.5 * units().height(), h);
