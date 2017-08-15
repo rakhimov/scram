@@ -53,6 +53,7 @@ to identify the supported and unsupported features.
 - Label
 - Attributes
 - Public and Private Roles
+- Alignment and Phases
 - Event Tree Layer
 
     * Initiating events
