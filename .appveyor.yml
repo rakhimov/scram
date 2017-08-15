@@ -17,8 +17,7 @@ install:
     - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
     - pacman --noconfirm -S mingw-w64-x86_64-boost
     - pacman --noconfirm -S mingw-w64-x86_64-libxml++2.6
-    - pacman --noconfirm -S mingw-w64-x86_64-jasper
-    - pacman --noconfirm -S mingw-w64-x86_64-qt5-static
+    - pacman --noconfirm -S mingw-w64-x86_64-qt5
 
 before_build:
     - md install
@@ -26,10 +25,12 @@ before_build:
 
 build_script:
     - cd build
-    - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_PREFIX_PATH="C:/msys64/mingw64/qt5-static" -DBUILD_SHARED_LIBS=ON
+    - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_SHARED_LIBS=ON
     - make install/strip -j 2
     - cmake .. -DPACKAGE=ON
+    - make install/strip -j 2
     - cpack --verbose
+    - dir
     - cd ..
 
 after_build:

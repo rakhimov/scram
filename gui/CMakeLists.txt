@@ -3,6 +3,7 @@ if(APPLE)
   # Qt5 with Homebrew.
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
 endif()
+find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Svg REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
@@ -28,11 +29,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-
-# TODO: Use the autogeneration for static Qt plugin linking by CMake (buggy as of Qt 5.8).
-# if(WIN32)
-#   set(CMAKE_AUTOSTATICPLUGINS ON)  # Special mingw64 cmake extension.
-# endif()
 
 set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
 
@@ -61,48 +57,20 @@ set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/zoomableview.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/diagram.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/scramgui.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
   )
 set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
 
 add_subdirectory("${SCRAM_GUI_TS_DIR}")
 
-add_library(scramgui ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-set(GUI_DEP_LIBS  # TODO: Link with shared libraries on Windows instead.
+if(WIN32)
+  list(APPEND SCRAM_GUI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/scram.rc")
+endif()
+add_executable(scram-gui WIN32 ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
+
+target_link_libraries(scram-gui
   ${LIBS} scramcore
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
-
-if(WIN32)
-  target_link_libraries(scramgui PRIVATE ${GUI_DEP_LIBS})  # TODO: Remove.
-else()
-  target_link_libraries(scramgui ${GUI_DEP_LIBS})  # TODO: Make default.
-endif()
-
-if(INSTALL_LIBS)
-  if(WIN32)
-    install(TARGETS scramgui RUNTIME DESTINATION bin COMPONENT gui)
-  else()
-    set_target_properties(scramgui
-      PROPERTIES
-      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram"
-      )
-    install(
-      TARGETS scramgui
-      DESTINATION lib/scram
-      COMPONENT gui
-      )
-  endif()
-endif()
-
-if(WIN32)
-  add_executable(scram-gui WIN32
-    "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/scram.rc")
-else()
-  add_executable(scram-gui "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-endif()
-target_link_libraries(scram-gui scramgui)
 
 install(TARGETS scram-gui
   RUNTIME DESTINATION bin
@@ -130,8 +98,41 @@ if(UNIX AND NOT APPLE)
     COMPONENT gui)
 endif()
 
+if(PACKAGE)
+  if(WIN32)
+    # Helper functions to bundle the dependencies.
+    macro(install_qt5_plugin _qt_plugin_name _qt_plugins_var)
+      get_target_property(_qt_plugin_path "${_qt_plugin_name}" LOCATION)
+      if(EXISTS "${_qt_plugin_path}")
+        get_filename_component(_qt_plugin_file "${_qt_plugin_path}" NAME)
+        get_filename_component(_qt_plugin_type "${_qt_plugin_path}" PATH)
+        get_filename_component(_qt_plugin_type "${_qt_plugin_type}" NAME)
+        if(APPLE)
+          set(_qt_plugin_dir "PlugIns")
+        elseif(WIN32)
+          set(_qt_plugin_dir "plugins")
+        endif()
+        set(_qt_plugin_dest "${_qt_plugin_dir}/${_qt_plugin_type}")
+        install(FILES "${_qt_plugin_path}"
+          DESTINATION "${_qt_plugin_dest}"
+          COMPONENT gui)
+        set(${_qt_plugins_var}
+          "${${_qt_plugins_var}};\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${_qt_plugin_dest}/${_qt_plugin_file}")
+      else()
+        message(FATAL_ERROR "QT plugin ${_qt_plugin_name} not found")
+      endif()
+    endmacro()
+    install_qt5_plugin("Qt5::QWindowsIntegrationPlugin" QT_PLUGINS)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
+      "[Paths]\nPlugins = ../${_qt_plugin_dir}\n")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
+      DESTINATION bin
+      COMPONENT gui)
+  endif()
+endif()
+
 set(SCRAM_GUI_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
-if(BUILD_TESTS AND NOT WIN32)
+if(BUILD_TESTS)
   add_subdirectory("${SCRAM_GUI_TEST_DIR}")
 endif()

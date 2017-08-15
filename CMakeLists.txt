@@ -267,25 +267,19 @@ if(PACKAGE)
     set(CPACK_CREATE_DESKTOP_LINKS "scram-gui")
     set(CPACK_COMPONENT_GUI_REQUIRED ON)
     # The following configuration assumes MinGW64 is setup specifically for this project.
-    # Moreover, the Qt5 libs and plugins must be linked staticly,
-    # so there's no headache with implicit (undiscoverable) dependencies.
     get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
     message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
-    include(GetPrerequisites)
-    get_prerequisites("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram.exe"
-      SCRAM_ALL_PREREQUISITES 1 1 "" "")
-    message(STATUS "SCRAM dependency libs:\n${SCRAM_ALL_PREREQUISITES}")
-    foreach(item ${SCRAM_ALL_PREREQUISITES})
-      string(REGEX MATCH "scram" is_scram "${item}")
-      if(NOT is_scram)
-        gp_resolve_item("${MINGW_DLL_DIR}" "${item}" "" "" item)
-        list(APPEND SCRAM_PREREQUISITES ${item})
-      endif()
-    endforeach()
-    message(STATUS "SCRAM dependency libs resolution:\n${SCRAM_PREREQUISITES}")
-
+    include(ScramBundle)
+    get_scram_prerequisites(SCRAM_PREREQUISITES
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram.exe" "${MINGW_DLL_DIR}")
     install(FILES
       ${SCRAM_PREREQUISITES}
+      DESTINATION bin COMPONENT libraries
+    )
+    get_scram_prerequisites(SCRAM_GUI_PREREQUISITES
+      "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram-gui.exe" "${MINGW_DLL_DIR}")
+    install(FILES
+      ${SCRAM_GUI_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
   endif()
