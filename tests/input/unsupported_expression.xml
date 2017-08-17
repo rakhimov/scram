@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!--
-This input uses unsupported but valid expression.
+This input uses unsupported but possibly valid.
 -->
 <opsa-mef>
   <model-data>
     <define-parameter name="Unsupported">
-      <extern-function name="Init"/>
+      <function name="Init"/>
     </define-parameter>
   </model-data>
 </opsa-mef>
