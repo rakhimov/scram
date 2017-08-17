@@ -177,7 +177,11 @@ message(STATUS ${LIBS})
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
-set(BOOST_MIN_VERSION "1.58.0")
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(BOOST_MIN_VERSION "1.58.0")
+else()
+  set(BOOST_MIN_VERSION "1.61.0")
+endif()
 set(Boost_USE_STATIC_LIBS ${WITH_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${WITH_STATIC_LIBS})
 

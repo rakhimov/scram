@@ -73,15 +73,15 @@ or the following commands must be executed after a normal clone.
 Dependencies
 ============
 
-====================   ==================
+====================   ====================
 Package                Minimum Version
-====================   ==================
+====================   ====================
 CMake                  2.8.12
-boost                  1.58
+boost                  1.61 (1.58 on Linux)
 libxml++               2.38.1
 Python                 2.7.3 or 3.3
 Qt                     5.2.1
-====================   ==================
+====================   ====================
 
 
 Optional Dependencies
