@@ -38,6 +38,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/exponential.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/random_deviate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/test_event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/expression/extern.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
