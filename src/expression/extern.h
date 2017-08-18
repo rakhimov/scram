@@ -61,12 +61,16 @@ class ExternLibrary : public Element, private boost::noncopyable {
   /// @returns The function pointer resolved from the symbol.
   ///
   /// @throws UndefinedElement  The symbol is not in the library.
+  ///
+  /// @note The functionality should fail at compile time (UB in C)
+  ///       if the platform doesn't support
+  ///       object pointer to function pointer casts.
   template <typename F>
   std::enable_if_t<std::is_pointer<F>::value &&
                        std::is_function<std::remove_pointer_t<F>>::value,
                    F>
   get(const std::string& symbol) const {
-    return static_cast<F>(get(symbol.c_str()));
+    return reinterpret_cast<F>(get(symbol.c_str()));
   }
 
  private:

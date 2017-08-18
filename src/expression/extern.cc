@@ -58,7 +58,7 @@ class ExternLibrary::Pimpl {
         bool decorate) : lib_handle_(nullptr) {
     if (decorate) {
       lib_path += ".so";
-      auto pos = lib_path.find('/');
+      auto pos = lib_path.rfind('/');
       lib_path.insert(pos == std::string::npos ? 0 : (pos + 1), "lib");
     }
     if (!system || lib_path.find('/') != std::string::npos) {
