@@ -74,6 +74,21 @@ TEST(ExternTest, ExternLibraryGet) {
   EXPECT_EQ(42, library->get<float(*)()>("baz")());
 }
 
+TEST(ExternTest, ExternFunction) {
+  const std::string bin_dir = Env::install_dir() + "/bin";
+  std::unique_ptr<ExternLibrary> library;
+  ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
+                      "dummy", kLibRelPath, bin_dir, false, true));
+
+  EXPECT_NO_THROW(ExternFunction<int>("extern", "foo", *library));
+  EXPECT_NO_THROW(ExternFunction<double>("extern", "bar", *library));
+  EXPECT_NO_THROW(ExternFunction<float>("extern", "baz", *library));
+  EXPECT_THROW(ExternFunction<int>("extern", "foobar", *library),
+               UndefinedElement);
+
+  EXPECT_EQ(42, ExternFunction<int>("extern", "foo", *library)());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

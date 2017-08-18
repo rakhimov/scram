@@ -88,6 +88,36 @@ class ExternLibrary : public Element, private boost::noncopyable {
   Pimpl* pimpl_;  ///< Provides basic implementation for function discovery.
 };
 
+/// Extern function abstraction to be referenced by expressions.
+///
+/// @tparam R  Numeric return type.
+/// @tparam Args  Numeric argument types.
+///
+/// @pre The source dynamic library is loaded as long as this function lives.
+template <typename R, typename... Args>
+class ExternFunction : public Element, private boost::noncopyable {
+ public:
+  using Pointer = R (*)(Args...);  ///< The function pointer type.
+
+  /// Loads a function from a library for further usage.
+  ///
+  /// @copydoc Element::Element
+  ///
+  /// @param[in] symbol  The symbol name for the function in the library.
+  /// @param[in] library  The dynamic library to lookup the function.
+  ///
+  /// @throws UndefinedElement  There is no such symbol in the library.
+  ExternFunction(std::string name, const std::string& symbol,
+                 const ExternLibrary& library)
+      : Element(name), fptr_(library.get<Pointer>(symbol)) {}
+
+  /// Calls the library function with the given numeric arguments.
+  R operator()(Args... args) const noexcept { return fptr_(args...); }
+
+ private:
+  Pointer fptr_;  ///< The pointer to the extern function in a library.
+};
+
 }  // namespace mef
 }  // namespace scram
 
