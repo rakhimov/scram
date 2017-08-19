@@ -282,11 +282,7 @@ HouseEvent* Initializer::Register(const xmlpp::Element* event_node,
   if (!expression.empty()) {
     assert(expression.size() == 1);
     const xmlpp::Element* constant = XmlElement(expression.front());
-
-    std::string val = GetAttributeValue(constant, "value");
-    assert(val == "true" || val == "false");
-    bool state = val == "true";
-    house_event->state(state);
+    house_event->state(CastAttributeValue<bool>(constant, "value"));
   }
   return house_event;
 }
@@ -686,7 +682,7 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
   auto add_arg = [this, &formula, &base_path](const xmlpp::Node* node) {
     const xmlpp::Element* element = XmlElement(node);
     if (element->get_name() == "constant") {
-      formula->AddArgument(GetAttributeValue(element, "value") == "true"
+      formula->AddArgument(CastAttributeValue<bool>(element, "value")
                                ? &HouseEvent::kTrue
                                : &HouseEvent::kFalse);
       return;
@@ -870,11 +866,9 @@ Instruction* Initializer::GetInstruction(const xmlpp::Element* xml_element) {
                             " is not defined in the model.");
     }
     assert(args.size() == 1);
-    std::string val = GetAttributeValue(XmlElement(args.front()), "value");
-    assert(val == "true" || val == "false");
-    bool state = val == "true";
-    return register_instruction(
-        std::make_unique<SetHouseEvent>(std::move(name), state));
+    return register_instruction(std::make_unique<SetHouseEvent>(
+        std::move(name),
+        CastAttributeValue<bool>(XmlElement(args.front()), "value")));
   }
 
   assert(false && "Unknown instruction type.");
@@ -1133,9 +1127,9 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
     return register_expression(std::make_unique<ConstantExpression>(val));
   }
   if (expr_type == "bool") {
-    std::string val = GetAttributeValue(expr_element, "value");
-    return val == "true" ? &ConstantExpression::kOne
-                         : &ConstantExpression::kZero;
+    return CastAttributeValue<bool>(expr_element, "value")
+               ? &ConstantExpression::kOne
+               : &ConstantExpression::kZero;
   }
   if (expr_type == "pi")
     return &ConstantExpression::kPi;
