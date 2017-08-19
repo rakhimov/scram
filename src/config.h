@@ -100,13 +100,6 @@ class Config {
   /// @param[in] limits  An XML element containing various limits.
   void SetLimits(const xmlpp::Element* limits);
 
-  /// Interprets the given string into a boolean value.
-  ///
-  /// @param[in] flag  A flag that can be 0, 1, true, or false.
-  ///
-  /// @returns The interpreted boolean.
-  bool GetBoolFromString(const std::string& flag);
-
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;

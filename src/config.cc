@@ -151,7 +151,7 @@ void Config::SetAlgorithm(const xmlpp::Element* analysis) {
 void Config::SetAnalysis(const xmlpp::Element* analysis) {
   for (const xmlpp::Attribute* type : analysis->get_attributes()) {
     std::string name = type->get_name();
-    bool flag = GetBoolFromString(type->get_value());
+    bool flag = CastAttributeValue<bool>(type);
     if (name == "probability") {
       settings_.probability_analysis(flag);
 
@@ -203,13 +203,6 @@ void Config::SetLimits(const xmlpp::Element* limits) {
       settings_.seed(CastChildText<int>(limit));
     }
   }
-}
-
-bool Config::GetBoolFromString(const std::string& flag) {
-  assert(flag == "1" || flag == "true" || flag == "0" || flag == "false");
-  if (flag == "1" || flag == "true")
-    return true;
-  return false;
 }
 
 }  // namespace scram
