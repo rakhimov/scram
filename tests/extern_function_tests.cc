@@ -28,6 +28,7 @@
 #endif
 
 #include "env.h"
+#include "expression/constant.h"
 
 namespace scram {
 namespace mef {
@@ -76,17 +77,36 @@ TEST(ExternTest, ExternLibraryGet) {
 
 TEST(ExternTest, ExternFunction) {
   const std::string bin_dir = Env::install_dir() + "/bin";
-  std::unique_ptr<ExternLibrary> library;
-  ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
-                      "dummy", kLibRelPath, bin_dir, false, true));
+  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
 
-  EXPECT_NO_THROW(ExternFunction<int>("extern", "foo", *library));
-  EXPECT_NO_THROW(ExternFunction<double>("extern", "bar", *library));
-  EXPECT_NO_THROW(ExternFunction<float>("extern", "baz", *library));
-  EXPECT_THROW(ExternFunction<int>("extern", "foobar", *library),
+  EXPECT_NO_THROW(ExternFunction<int>("extern", "foo", library));
+  EXPECT_NO_THROW(ExternFunction<double>("extern", "bar", library));
+  EXPECT_NO_THROW(ExternFunction<float>("extern", "baz", library));
+  EXPECT_THROW(ExternFunction<int>("extern", "foobar", library),
                UndefinedElement);
 
-  EXPECT_EQ(42, ExternFunction<int>("extern", "foo", *library)());
+  EXPECT_EQ(42, ExternFunction<int>("extern", "foo", library)());
+}
+
+TEST(ExternTest, ExternExpression) {
+  const std::string bin_dir = Env::install_dir() + "/bin";
+  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
+  ExternFunction<int> foo("dummy_foo", "foo", library);
+  ExternFunction<double, double> identity("dummy_id", "identity", library);
+  ConstantExpression arg_one(12);
+
+  EXPECT_NO_THROW(ExternExpression<int>(&foo, {}));
+  EXPECT_THROW(ExternExpression<int>(&foo, {&arg_one}), InvalidArgument);
+
+  EXPECT_EQ(42, ExternExpression<int>(&foo, {}).value());
+  EXPECT_EQ(42, ExternExpression<int>(&foo, {}).Sample());
+  EXPECT_FALSE(ExternExpression<int>(&foo, {}).IsDeviate());
+
+  EXPECT_NO_THROW((ExternExpression<double, double>(&identity, {&arg_one})));
+  EXPECT_THROW((ExternExpression<double, double>(&identity, {})),
+               InvalidArgument);
+  EXPECT_EQ(arg_one.value(),
+            (ExternExpression<double, double>(&identity, {&arg_one})).value());
 }
 
 }  // namespace test

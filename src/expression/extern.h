@@ -23,11 +23,13 @@
 
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "src/element.h"
+#include "src/error.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -116,6 +118,71 @@ class ExternFunction : public Element, private boost::noncopyable {
 
  private:
   Pointer fptr_;  ///< The pointer to the extern function in a library.
+};
+
+namespace detail {  // Helpers for extern function call with Expression values.
+
+/// Marshaller of expressions to extern function calls.
+///
+/// @tparam N  The number of arguments.
+///
+/// @pre The number of arguments is exactly the same at runtime.
+template <int N>
+struct Marshaller {
+  /// Evaluates the argument expressions and marshals the result to function.
+  template <typename F, typename R, typename... Ts, typename... Args>
+  R operator()(const ExternFunction<R, Args...>& self,
+               const std::vector<Expression*>& args, F&& eval,
+               Ts&&... values) const noexcept {
+    double value = eval(args[N - 1]);
+    return Marshaller<N - 1>()(self, args, std::forward<F>(eval), value,
+                               std::forward<Ts>(values)...);
+  }
+};
+
+/// Specialization to call the extern function with argument values.
+template <>
+struct Marshaller<0> {
+  /// Calls the extern function with the argument values.
+  template <typename F, typename R, typename... Ts, typename... Args>
+  R operator()(const ExternFunction<R, Args...>& self,
+               const std::vector<Expression*>&, F&&, Ts&&... values) const
+      noexcept {
+    return self(std::forward<Ts>(values)...);
+  }
+};
+
+}  // namespace detail
+
+/// Expression evaluating an extern function with expression arguments.
+///
+/// @tparam R  Numeric return type.
+/// @tparam Args  Numeric argument types.
+template <typename R, typename... Args>
+class ExternExpression
+    : public ExpressionFormula<ExternExpression<R, Args...>> {
+ public:
+  /// @param[in] extern_function  The library function.
+  /// @param[in] args  The argument expression for the function.
+  ///
+  /// @throws InvalidArgument  The number of arguments is invalid.
+  explicit ExternExpression(const ExternFunction<R, Args...>* extern_function,
+                            std::vector<Expression*> args)
+      : ExpressionFormula<ExternExpression>(std::move(args)),
+        extern_function_(*extern_function) {
+    if (Expression::args().size() != sizeof...(Args))
+      throw InvalidArgument("The number of function arguments does not match.");
+  }
+
+  /// Computes the extern function with the given evaluator for arguments.
+  template <typename F>
+  double Compute(F&& eval) noexcept {
+    return detail::Marshaller<sizeof...(Args)>()(
+        extern_function_, Expression::args(), std::forward<F>(eval));
+  }
+
+ private:
+  const ExternFunction<R, Args...>& extern_function_;  ///< The source function.
 };
 
 }  // namespace mef

@@ -22,4 +22,5 @@ extern "C" {
   int foo() { return 42; }
   double bar() { return 42; }
   float baz() { return 42; }
+  double identity(double arg) { return arg; }
 }
