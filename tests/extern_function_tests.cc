@@ -118,6 +118,22 @@ TEST(ExternTest, ExternExpression) {
             (ExternExpression<double, double>(&identity, {&arg_one})).value());
 }
 
+TEST(ExternTest, ExternFunctionApply) {
+  const std::string bin_dir = Env::install_dir() + "/bin";
+  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
+  ExternFunctionPtr foo(new ExternFunction<int>("dummy_foo", "foo", library));
+  ExternFunctionPtr identity(
+      new ExternFunction<double, double>("dummy_id", "identity", library));
+  ConstantExpression arg_one(12);
+
+  EXPECT_NO_THROW(foo->apply({}));
+  EXPECT_EQ(42, foo->apply({})->value());
+
+  EXPECT_THROW(identity->apply({}), InvalidArgument);
+  EXPECT_NO_THROW(identity->apply({&arg_one}));
+  EXPECT_EQ(arg_one.value(), identity->apply({&arg_one})->value());
+}
+
 }  // namespace test
 }  // namespace mef
 }  // namespace scram

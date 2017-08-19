@@ -90,6 +90,38 @@ class ExternLibrary : public Element, private boost::noncopyable {
   Pimpl* pimpl_;  ///< Provides basic implementation for function discovery.
 };
 
+template <typename R, typename... Args>
+class ExternFunction;  // Forward declaration to specialize abstract base.
+
+/// Abstract base class for ExternFunction concrete types.
+/// This interface hides the return and argument types
+/// of generic extern functions and expressions.
+///
+/// The base acts as a factory for generating expressions with given arguments.
+template <>
+class ExternFunction<void> : public Element, private boost::noncopyable {
+ public:
+  using Element::Element;
+
+  virtual ~ExternFunction() = default;
+
+  /// Applies the function to arguments.
+  /// This interface hides the complexity of concrete types of the function.
+  ///
+  /// @param[in] args  The argument expressions.
+  ///
+  /// @returns Newly constructed expression as a result of function application.
+  ///
+  /// @throws InvalidArgument  The number of arguments is invalid.
+  virtual std::unique_ptr<Expression> apply(
+      std::vector<Expression*> args) const = 0;
+};
+
+/// The concrete extern functions uniquely stored in a model.
+using ExternFunctionPtr = std::unique_ptr<ExternFunction<void>>;
+
+using ExternFunctionBase = ExternFunction<void>;  ///< To help Doxygen.
+
 /// Extern function abstraction to be referenced by expressions.
 ///
 /// @tparam R  Numeric return type.
@@ -97,10 +129,12 @@ class ExternLibrary : public Element, private boost::noncopyable {
 ///
 /// @pre The source dynamic library is loaded as long as this function lives.
 template <typename R, typename... Args>
-class ExternFunction : public Element, private boost::noncopyable {
- public:
+class ExternFunction : public ExternFunctionBase {
+  static_assert(std::is_arithmetic<R>::value, "Numeric type functions only.");
+
   using Pointer = R (*)(Args...);  ///< The function pointer type.
 
+ public:
   /// Loads a function from a library for further usage.
   ///
   /// @copydoc Element::Element
@@ -111,13 +145,18 @@ class ExternFunction : public Element, private boost::noncopyable {
   /// @throws UndefinedElement  There is no such symbol in the library.
   ExternFunction(std::string name, const std::string& symbol,
                  const ExternLibrary& library)
-      : Element(name), fptr_(library.get<Pointer>(symbol)) {}
+      : ExternFunctionBase(std::move(name)),
+        fptr_(library.get<Pointer>(symbol)) {}
 
   /// Calls the library function with the given numeric arguments.
   R operator()(Args... args) const noexcept { return fptr_(args...); }
 
+  /// @copydoc ExternFunction<void>::apply
+  std::unique_ptr<Expression> apply(
+      std::vector<Expression*> args) const override;
+
  private:
-  Pointer fptr_;  ///< The pointer to the extern function in a library.
+  const Pointer fptr_;  ///< The pointer to the extern function in a library.
 };
 
 namespace detail {  // Helpers for extern function call with Expression values.
@@ -184,6 +223,12 @@ class ExternExpression
  private:
   const ExternFunction<R, Args...>& extern_function_;  ///< The source function.
 };
+
+template <typename R, typename... Args>
+std::unique_ptr<Expression> ExternFunction<R, Args...>::apply(
+    std::vector<Expression*> args) const {
+  return std::make_unique<ExternExpression<R, Args...>>(this, std::move(args));
+}
 
 }  // namespace mef
 }  // namespace scram
