@@ -12,8 +12,6 @@ install:
     - git submodule update --init --recursive
     - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
     - pacman --noconfirm -Syu
-    - pacman --noconfirm -S mingw-w64-x86_64-cmake
-    - pacman --noconfirm -S mingw-w64-x86_64-extra-cmake-modules
     - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
     - pacman --noconfirm -S mingw-w64-x86_64-boost
     - pacman --noconfirm -S mingw-w64-x86_64-libxml++2.6
