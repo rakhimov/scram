@@ -33,6 +33,7 @@
 #include "expression/boolean.h"
 #include "expression/conditional.h"
 #include "expression/exponential.h"
+#include "expression/extern.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "expression/test_event.h"
@@ -409,6 +410,33 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   for (const xmlpp::Node* node : root->find("./model-data")) {
     ProcessModelData(XmlElement(node));
   }
+
+  for (const xmlpp::Node* node : root->find("./define-extern-library")) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    std::string name = GetAttributeValue(xml_node, "name");
+    std::string lib_path = GetAttributeValue(xml_node, "path");
+    bool system = [attribute = xml_node->get_attribute("system")] {
+      return attribute ? CastAttributeValue<bool>(attribute) : false;
+    }();
+    bool decorate = [attribute = xml_node->get_attribute("decorate")] {
+      return attribute ? CastAttributeValue<bool>(attribute) : false;
+    }();
+    auto library = [&] {
+      try {
+        return std::make_unique<ExternLibrary>(
+            std::move(name), std::move(lib_path),
+            boost::filesystem::path(xml_file).parent_path(), system, decorate);
+      } catch (const IOError& err) {
+        throw ValidationError(GetLine(xml_node) +
+                              "Cannot load external library:\n" + err.msg());
+      } catch (const InvalidArgument& err) {
+        throw ValidationError(GetLine(xml_node) + err.msg());
+      }
+    }();
+    AttachLabelAndAttributes(xml_node, library.get());
+    Register(std::move(library), xml_node);
+  }
+
   parsers_.emplace_back(std::move(parser));
 }
 

@@ -1046,7 +1046,7 @@
     </define>
 
     <define name="extern-library-definition">
-      <element name="extern-library">
+      <element name="define-extern-library">
         <ref name="name"/>
         <attribute name="path"> <data type="anyURI"/> </attribute>
         <optional>

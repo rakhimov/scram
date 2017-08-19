@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_EXPRESSION_EXTERN_H_
 #define SCRAM_SRC_EXPRESSION_EXTERN_H_
 
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>

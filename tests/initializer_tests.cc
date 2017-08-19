@@ -308,6 +308,7 @@ TEST(InitializerTest, NonOrphanTopEvent) {
 TEST(InitializerTest, CorrectModelInputs) {
   std::string dir = "./share/scram/input/model/";
   const char* correct_inputs[] = {
+      "extern_library.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
       "private_phases.xml"};
@@ -322,6 +323,9 @@ TEST(InitializerTest, IncorrectModelInputs) {
   std::string dir = "./share/scram/input/model/";
 
   const char* incorrect_inputs[] = {
+      "duplicate_extern_libraries.xml",
+      "extern_library_invalid_path_format.xml",
+      "extern_library_ioerror.xml",
       "duplicate_phases.xml",
       "invalid_phase_fraction.xml",
       "zero_phase_fraction.xml",
