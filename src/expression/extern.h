@@ -47,9 +47,8 @@ class ExternLibrary : public Element, private boost::noncopyable {
   /// @param[in] system  Search for the library in system paths.
   /// @param[in] decorate  Decorate the library name with prefix and suffix.
   ///
+  /// @throws InvalidArgument  The library path is invalid.
   /// @throws IOError  The library cannot be found.
-  ///
-  /// @pre The library path is canonical file path.
   ExternLibrary(std::string name, std::string lib_path,
                 const boost::filesystem::path& reference_dir, bool system,
                 bool decorate);

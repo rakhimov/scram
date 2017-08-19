@@ -51,6 +51,15 @@ TEST(ExternTest, ExternLibraryLoad) {
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, true));
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, true, true));
 
+  EXPECT_THROW(ExternLibrary("d", "", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", ".", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "/", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "//", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "..", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "./", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "lib/", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "lib:", "", false, false), InvalidArgument);
+
 #if BOOST_OS_LINUX
   EXPECT_NO_THROW(
       ExternLibrary("dummy", kLibRelPathLinux, bin_dir, false, false));

@@ -133,8 +133,20 @@ class ExternLibrary::Pimpl {
 ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
                              const fs::path& reference_dir, bool system,
                              bool decorate)
-    : Element(std::move(name)),
-      pimpl_(new Pimpl(std::move(lib_path), reference_dir, system, decorate)) {}
+    : Element(std::move(name)) {
+  fs::path fs_path(lib_path);
+  std::string filename = fs_path.filename().string();
+  if (fs_path.empty() ||
+      filename == "." ||
+      filename == ".." ||
+      lib_path.back() == ':' ||
+      lib_path.back() == '/' ||
+      lib_path.back() == '\\') {
+    throw InvalidArgument("Invalid library path: " + lib_path);
+  }
+
+  pimpl_ = new Pimpl(std::move(lib_path), reference_dir, system, decorate);
+}
 
 ExternLibrary::~ExternLibrary() { delete pimpl_; }
 
