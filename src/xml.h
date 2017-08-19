@@ -70,11 +70,16 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
 }
 
 /// Returns Normalized (trimmed) string value of an XML element attribute.
-inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute_name) {
-  std::string value = element->get_attribute_value(attribute_name);
+inline std::string GetAttributeValue(const xmlpp::Attribute* attribute) {
+  std::string value = attribute->get_value();
   boost::trim(value);
   return value;
+}
+/// Convenience function to retrieve element optional attribute values.
+inline std::string GetAttributeValue(const xmlpp::Element* element,
+                                     const std::string& attribute_name) {
+  const xmlpp::Attribute* attribute = element->get_attribute(attribute_name);
+  return attribute ? GetAttributeValue(attribute) : "";
 }
 
 /// Returns XML line number message.
@@ -86,8 +91,7 @@ inline std::string GetLine(const xmlpp::Node* xml_node) {
 ///
 /// @tparam T  Numerical type.
 ///
-/// @param[in] element  XML element with the attribute.
-/// @param[in] attribute  The name of the attribute.
+/// @param[in] attribute  The XML element attribute.
 ///
 /// @returns The interpreted value.
 ///
@@ -95,14 +99,31 @@ inline std::string GetLine(const xmlpp::Node* xml_node) {
 ///                          The error message will include the line number.
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-CastAttributeValue(const xmlpp::Element* element,
-                   const std::string& attribute) {
+CastAttributeValue(const xmlpp::Attribute* attribute) {
   try {
-    return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
+    return boost::lexical_cast<T>(GetAttributeValue(attribute));
   } catch (boost::bad_lexical_cast&) {
-    throw ValidationError(GetLine(element) + "Failed to interpret attribute '" +
-                          attribute + "' to a number.");
+    throw ValidationError(GetLine(attribute) +
+                          "Failed to interpret attribute '" +
+                          attribute->get_name() + "' to a number.");
   }
+}
+/// Specialization for Boolean values in XML attributes.
+template <>
+inline bool CastAttributeValue<bool>(const xmlpp::Attribute* attribute) {
+  std::string value = GetAttributeValue(attribute);
+  if (value == "true" || value == "1")
+    return true;
+  if (value == "false" || value == "0")
+    return false;
+  throw LogicError("Boolean types must be validated in schema.");
+}
+
+/// Convenience overload to cast XML element attribute value by name.
+template <typename T>
+T CastAttributeValue(const xmlpp::Element* element,
+                     const std::string& attribute) {
+    return CastAttributeValue<T>(element->get_attribute(attribute));
 }
 
 /// Returns Normalized content of an XML text node.
