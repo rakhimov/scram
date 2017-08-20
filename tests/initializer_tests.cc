@@ -310,6 +310,7 @@ TEST(InitializerTest, CorrectModelInputs) {
   const char* correct_inputs[] = {
       "extern_library.xml",
       "extern_function.xml",
+      "extern_expression.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
       "private_phases.xml"};
@@ -330,6 +331,8 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "undefined_symbol_extern_function.xml",
       "invalid_num_param_extern_function.xml",
       "empty_extern_function.xml",
+      "undefined_extern_function.xml",
+      "invalid_num_args_extern_expression.xml",
       "extern_library_invalid_path_format.xml",
       "extern_library_ioerror.xml",
       "duplicate_phases.xml",

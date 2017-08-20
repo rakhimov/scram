@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-extern-library name="dummy" path="../../../../lib/scram/test/scram_dummy_extern" decorate="true"/>
+  <define-extern-function name="fun1" symbol="foo" library="dummy">
+    <int/>
+  </define-extern-function>
+  <define-extern-function name="fun2" symbol="bar" library="dummy">
+    <double/>
+  </define-extern-function>
+  <define-extern-function name="fun3" symbol="identity" library="dummy">
+    <double/>
+    <double/>
+  </define-extern-function>
+  <model-data>
+    <define-parameter name="param1">
+      <extern-function name="fun3">
+        <float value="1"/>
+      </extern-function>
+    </define-parameter>
+    <define-parameter name="param2">
+      <extern-function name="fun2"/>
+    </define-parameter>
+    <define-parameter name="param">
+      <extern-function name="fun3">
+        <extern-function name="fun1"/>
+      </extern-function>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

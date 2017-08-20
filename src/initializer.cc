@@ -1184,6 +1184,27 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
         GetAttributeValue(expr_element, "state"), model_->context()));
   }
 
+  if (expr_type == "extern-function") {
+    const ExternFunction<void>* extern_function = [this, expr_element] {
+      std::string name = GetAttributeValue(expr_element, "name");
+      auto it = model_->extern_functions().find(name);
+      if (it == model_->extern_functions().end())
+        throw ValidationError(GetLine(expr_element) +
+                              "Undefined extern function: " + name);
+      return it->get();
+    }();
+
+    std::vector<Expression*> expr_args;
+    for (const xmlpp::Node* node : expr_element->find("./*"))
+      expr_args.push_back(GetExpression(XmlElement(node), base_path));
+
+    try {
+      return register_expression(extern_function->apply(std::move(expr_args)));
+    } catch (const InvalidArgument& err) {
+      throw ValidationError(GetLine(expr_element) + err.msg());
+    }
+  }
+
   if (auto* expression = GetParameter(expr_type, expr_element, base_path))
     return expression;
 
