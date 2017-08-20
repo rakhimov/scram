@@ -309,6 +309,7 @@ TEST(InitializerTest, CorrectModelInputs) {
   std::string dir = "./share/scram/input/model/";
   const char* correct_inputs[] = {
       "extern_library.xml",
+      "extern_function.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
       "private_phases.xml"};
@@ -324,6 +325,11 @@ TEST(InitializerTest, IncorrectModelInputs) {
 
   const char* incorrect_inputs[] = {
       "duplicate_extern_libraries.xml",
+      "duplicate_extern_functions.xml",
+      "undefined_extern_library.xml",
+      "undefined_symbol_extern_function.xml",
+      "invalid_num_param_extern_function.xml",
+      "empty_extern_function.xml",
       "extern_library_invalid_path_format.xml",
       "extern_library_ioerror.xml",
       "duplicate_phases.xml",

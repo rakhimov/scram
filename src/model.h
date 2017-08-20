@@ -99,6 +99,9 @@ class Model : public Element, private boost::noncopyable {
   const ElementTable<std::unique_ptr<ExternLibrary>>& libraries() const {
     return libraries_;
   }
+  const ElementTable<ExternFunctionPtr>& extern_functions() const {
+    return extern_functions_;
+  }
   /// @}
 
   /// Adds MEF constructs into the model container.
@@ -126,6 +129,7 @@ class Model : public Element, private boost::noncopyable {
     instructions_.emplace_back(std::move(element));
   }
   void Add(std::unique_ptr<ExternLibrary> element);
+  void Add(ExternFunctionPtr element);
   /// @}
 
   /// Convenience function to retrieve an event with its ID.
@@ -172,6 +176,7 @@ class Model : public Element, private boost::noncopyable {
   IdTable<BasicEventPtr> basic_events_;
   IdTable<ParameterPtr> parameters_;
   ElementTable<std::unique_ptr<ExternLibrary>> libraries_;
+  ElementTable<ExternFunctionPtr> extern_functions_;
   std::unique_ptr<MissionTime> mission_time_;
   IdTable<CcfGroupPtr> ccf_groups_;
   std::vector<std::unique_ptr<Expression>> expressions_;

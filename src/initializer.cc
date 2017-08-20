@@ -581,6 +581,18 @@ void Initializer::Define(const xmlpp::Element* xml_node, Alignment* alignment) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
+  for (const auto& entry : doc_to_file_) {
+    for (const xmlpp::Node* node :
+         entry.first->find("./define-extern-function")) {
+      try {
+        DefineExternFunction(XmlElement(node));
+      } catch (ValidationError& err) {
+        err.msg("In file '" + entry.second + "', " + err.msg());
+        throw;
+      }
+    }
+  }
+
   for (const auto& tbd_element : tbd_) {
     try {
         boost::apply_visitor(
@@ -1339,6 +1351,147 @@ Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
 }
 
 #undef GET_EVENT
+
+namespace {  // Extern function initialization helpers.
+
+/// All the allowed extern function parameter types.
+///
+/// @note Template code may be optimized for these types only.
+enum class ExternParamType { kInt = 1, kDouble };
+const int kExternTypeBase = 3;  ///< The information base for encoding.
+const int kMaxNumParam = 5;  ///< The max number of args (excludes the return).
+const int kNumInterfaces = 126;  ///< All possible interfaces.
+
+/// Encodes parameter types kExternTypeBase base number.
+///
+/// @param[in] args  The non-empty set XML elements encoding parameter types.
+///
+/// @returns Unique integer encoding parameter types.
+///
+/// @pre The number of parameters is less than log_base(max int).
+int Encode(const xmlpp::NodeSet& args) noexcept {
+  assert(!args.empty() && args.size() < 19);
+  auto to_digit = [](xmlpp::Node* node) -> int {
+    std::string name = node->get_name();
+    return static_cast<int>([&name] {
+      if (name == "int")
+        return ExternParamType::kInt;
+      assert(name == "double");
+      return ExternParamType::kDouble;
+    }());
+  };
+
+  int ret = 0;
+  int base_power = 1;  // Base ^ (pos - 1).
+  for (xmlpp::Node* node : args) {
+    ret += base_power * to_digit(node);
+    base_power *= kExternTypeBase;
+  }
+
+  return ret;
+}
+
+/// Encodes function parameter types at compile-time.
+/// @{
+template <typename T, typename... Ts>
+constexpr int Encode(int base_power = 1) noexcept {
+  return Encode<T>(base_power) + Encode<Ts...>(base_power * kExternTypeBase);
+}
+
+template <>
+constexpr int Encode<int>(int base_power) noexcept {
+  return base_power * static_cast<int>(ExternParamType::kInt);
+}
+
+template <>
+constexpr int Encode<double>(int base_power) noexcept {
+  return base_power * static_cast<int>(ExternParamType::kDouble);
+}
+/// @}
+
+using ExternFunctionExtractor = ExternFunctionPtr (*)(std::string,
+                                                      const std::string&,
+                                                      const ExternLibrary&);
+using ExternFunctionExtractorMap =
+    std::unordered_map<int, ExternFunctionExtractor>;
+
+/// @tparam N  The number of parameters.
+template <int N>
+struct ExternFunctionGenerator;
+
+template <>
+struct ExternFunctionGenerator<0> {
+  template <typename... Ts>
+  static void Generate(ExternFunctionExtractorMap* function_map) noexcept {
+    ///< @todo GCC 4.9, 5.4 segfaults on move for lambda arguments.
+    struct Extractor {  // Use instead of lambda!
+      static ExternFunctionPtr Extract(std::string name,
+                                       const std::string& symbol,
+                                       const ExternLibrary& library) {
+        return std::make_unique<ExternFunction<Ts...>>(std::move(name), symbol,
+                                                       library);
+      }
+    };
+    function_map->emplace(Encode<Ts...>(), &Extractor::Extract);
+  }
+};
+
+template <int N>
+struct ExternFunctionGenerator {
+  template <typename... Ts>
+  static void Generate(ExternFunctionExtractorMap* function_map) noexcept {
+    ExternFunctionGenerator<0>::template Generate<Ts...>(function_map);
+    ExternFunctionGenerator<N - 1>::template Generate<Ts..., int>(function_map);
+    ExternFunctionGenerator<N - 1>::template Generate<Ts..., double>(
+        function_map);
+  }
+};
+
+}  // namespace
+
+void Initializer::DefineExternFunction(const xmlpp::Element* xml_element) {
+  static const ExternFunctionExtractorMap function_extractors = [] {
+    ExternFunctionExtractorMap function_map;
+    function_map.reserve(kNumInterfaces);
+    ExternFunctionGenerator<kMaxNumParam>::Generate<int>(&function_map);
+    ExternFunctionGenerator<kMaxNumParam>::Generate<double>(&function_map);
+    assert(function_map.size() == kNumInterfaces);
+    return function_map;
+  }();
+
+  const ExternLibrary& library = [this, xml_element]() -> decltype(auto) {
+    std::string lib_name = GetAttributeValue(xml_element, "library");
+    auto it = model_->libraries().find(lib_name);
+    if (it == model_->libraries().end())
+      throw ValidationError(GetLine(xml_element) +
+                            "Undefined extern library: " + lib_name);
+    return **it;
+  }();
+
+  ExternFunctionPtr extern_function = [xml_element, &library] {
+    xmlpp::NodeSet args = GetNonAttributeElements(xml_element);
+    assert(!args.empty());
+    int num_args = args.size() - /*return*/ 1;
+    if (num_args > kMaxNumParam) {
+      throw ValidationError(GetLine(xml_element) +
+                            "The number of function parameters '" +
+                            std::to_string(num_args) +
+                            "' exceeds the number of allowed parameters '" +
+                            std::to_string(kMaxNumParam) + "'");
+    }
+    int encoding = Encode(args);
+    std::string symbol = GetAttributeValue(xml_element, "symbol");
+    std::string name = GetAttributeValue(xml_element, "name");
+    try {
+      return function_extractors.at(encoding)(std::move(name), symbol, library);
+    } catch (ValidationError& err) {
+      err.msg(GetLine(xml_element) + err.msg());
+      throw;
+    }
+  }();
+
+  Register(std::move(extern_function), xml_element);
+}
 
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.

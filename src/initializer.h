@@ -378,6 +378,15 @@ class Initializer : private boost::noncopyable {
                const std::string& base_path, const IdTable<P>& container,
                const PathTable<T>& path_container);
 
+  /// Defines extern function.
+  ///
+  /// @param[in] xml_element  The XML element with the data.
+  ///
+  /// @throws ValidationError  The initialization contains validity errors.
+  ///
+  /// @pre All libraries are defined.
+  void DefineExternFunction(const xmlpp::Element* xml_element);
+
   /// Validates if the initialization of the analysis is successful.
   ///
   /// @throws CycleError  Model contains cycles.
