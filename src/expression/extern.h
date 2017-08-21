@@ -39,7 +39,7 @@ namespace mef {
 /// The MEF construct to extend expressions with external libraries.
 /// This class dynamically loads and manages libraries.
 /// It supports only very basic interface for C function lookup with its symbol.
-class ExternLibrary : public Element, private boost::noncopyable {
+class ExternLibrary : public Element, public Usage, private boost::noncopyable {
  public:
   /// @copydoc Element::Element
   ///
@@ -99,7 +99,8 @@ class ExternFunction;  // Forward declaration to specialize abstract base.
 ///
 /// The base acts as a factory for generating expressions with given arguments.
 template <>
-class ExternFunction<void> : public Element, private boost::noncopyable {
+class ExternFunction<void>
+    : public Element, public Usage, private boost::noncopyable {
  public:
   using Element::Element;
 

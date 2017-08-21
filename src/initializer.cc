@@ -1191,6 +1191,7 @@ Expression* Initializer::GetExpression(const xmlpp::Element* expr_element,
       if (it == model_->extern_functions().end())
         throw ValidationError(GetLine(expr_element) +
                               "Undefined extern function: " + name);
+      (*it)->usage(true);
       return it->get();
     }();
 
@@ -1486,6 +1487,7 @@ void Initializer::DefineExternFunction(const xmlpp::Element* xml_element) {
     if (it == model_->libraries().end())
       throw ValidationError(GetLine(xml_element) +
                             "Undefined extern library: " + lib_name);
+    (*it)->usage(true);
     return **it;
   }();
 
