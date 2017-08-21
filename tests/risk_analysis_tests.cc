@@ -634,6 +634,18 @@ TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
   EXPECT_EQ(mcs, products());
 }
 
+// Extern function call check.
+TEST_P(RiskAnalysisTest, ExternFunctionProbability) {
+  std::string tree_input =
+      "./share/scram/input/model/extern_full_check.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  std::set<std::set<std::string>> mcs = {{"e1"}};
+  EXPECT_EQ(mcs, products());
+  EXPECT_DOUBLE_EQ(0.1, p_total());
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram
