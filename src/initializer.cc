@@ -157,8 +157,9 @@ PhasePtr ConstructElement<Phase>(const xmlpp::Element* xml_element) {
 }  // namespace
 
 Initializer::Initializer(const std::vector<std::string>& xml_files,
-                         core::Settings settings)
-    : settings_(std::move(settings)) {
+                         core::Settings settings, bool allow_extern)
+    : settings_(std::move(settings)), allow_extern_(allow_extern) {
+  BLOG(WARNING, allow_extern_) << "Enabling external dynamic libraries";
   ProcessInputFiles(xml_files);
 }
 
@@ -411,31 +412,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     ProcessModelData(XmlElement(node));
   }
 
-  for (const xmlpp::Node* node : root->find("./define-extern-library")) {
-    const xmlpp::Element* xml_node = XmlElement(node);
-    std::string name = GetAttributeValue(xml_node, "name");
-    std::string lib_path = GetAttributeValue(xml_node, "path");
-    bool system = [attribute = xml_node->get_attribute("system")] {
-      return attribute ? CastAttributeValue<bool>(attribute) : false;
-    }();
-    bool decorate = [attribute = xml_node->get_attribute("decorate")] {
-      return attribute ? CastAttributeValue<bool>(attribute) : false;
-    }();
-    auto library = [&] {
-      try {
-        return std::make_unique<ExternLibrary>(
-            std::move(name), std::move(lib_path),
-            boost::filesystem::path(xml_file).parent_path(), system, decorate);
-      } catch (const IOError& err) {
-        throw ValidationError(GetLine(xml_node) +
-                              "Cannot load external library:\n" + err.msg());
-      } catch (const InvalidArgument& err) {
-        throw ValidationError(GetLine(xml_node) + err.msg());
-      }
-    }();
-    AttachLabelAndAttributes(xml_node, library.get());
-    Register(std::move(library), xml_node);
-  }
+  DefineExternLibraries(root->find("./define-extern-library"), xml_file);
 
   parsers_.emplace_back(std::move(parser));
 }
@@ -1373,6 +1350,40 @@ Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
 }
 
 #undef GET_EVENT
+
+void Initializer::DefineExternLibraries(const xmlpp::NodeSet& xml_elements,
+                                        const std::string& xml_file) {
+  if (!allow_extern_ && !xml_elements.empty())
+    throw IllegalOperation("Loading external libraries is disallowed!\n"
+                           "In file '" + xml_file + "', line " +
+                           std::to_string(xml_elements.front()->get_line()));
+
+  for (const xmlpp::Node* node : xml_elements) {
+    const xmlpp::Element* xml_node = XmlElement(node);
+    std::string name = GetAttributeValue(xml_node, "name");
+    std::string lib_path = GetAttributeValue(xml_node, "path");
+    bool system = [attribute = xml_node->get_attribute("system")] {
+      return attribute ? CastAttributeValue<bool>(attribute) : false;
+    }();
+    bool decorate = [attribute = xml_node->get_attribute("decorate")] {
+      return attribute ? CastAttributeValue<bool>(attribute) : false;
+    }();
+    auto library = [&] {
+      try {
+        return std::make_unique<ExternLibrary>(
+            std::move(name), std::move(lib_path),
+            boost::filesystem::path(xml_file).parent_path(), system, decorate);
+      } catch (const IOError& err) {
+        throw ValidationError(GetLine(xml_node) +
+                              "Cannot load external library:\n" + err.msg());
+      } catch (const InvalidArgument& err) {
+        throw ValidationError(GetLine(xml_node) + err.msg());
+      }
+    }();
+    AttachLabelAndAttributes(xml_node, library.get());
+    Register(std::move(library), xml_node);
+  }
+}
 
 namespace {  // Extern function initialization helpers.
 

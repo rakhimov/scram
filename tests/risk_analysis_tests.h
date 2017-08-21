@@ -40,7 +40,8 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   void SetUp() override;
 
   // Parsing multiple input files.
-  void ProcessInputFiles(const std::vector<std::string>& input_files);
+  void ProcessInputFiles(const std::vector<std::string>& input_files,
+                         bool allow_extern = false);
 
   // Collection of assertions on the reporting after running analysis.
   // Note that the analysis is run by this function.

@@ -63,12 +63,17 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] xml_files  The MEF XML input files.
   /// @param[in] settings  Analysis settings.
+  /// @param[in] allow_extern  Allow external libraries in the input.
   ///
   /// @throws DuplicateArgumentError  Input contains duplicate files.
   /// @throws ValidationError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
+  ///
+  /// @warning Processing external libraries from XML input is **UNSAFE**.
+  ///          It allows loading and executing arbitrary code during analysis.
+  ///          Enable this feature for trusted input files and libraries only.
   Initializer(const std::vector<std::string>& xml_files,
-              core::Settings settings);
+              core::Settings settings, bool allow_extern = false);
 
   /// @returns The model built from the input files.
   std::shared_ptr<Model> model() const { return model_; }
@@ -378,6 +383,16 @@ class Initializer : private boost::noncopyable {
                const std::string& base_path, const IdTable<P>& container,
                const PathTable<T>& path_container);
 
+  /// Defines and loads extern libraries.
+  ///
+  /// @param[in] xml_elements  The XML elements with the data.
+  /// @param[in] xml_file  The XML file path.
+  ///
+  /// @throws ValidationError  The initialization contains validity errors.
+  /// @throws IllegalOperation  Loading external libraries is disallowed.
+  void DefineExternLibraries(const xmlpp::NodeSet& xml_elements,
+                             const std::string& xml_file);
+
   /// Defines extern function.
   ///
   /// @param[in] xml_element  The XML element with the data.
@@ -443,6 +458,7 @@ class Initializer : private boost::noncopyable {
 
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
+  bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
 
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;

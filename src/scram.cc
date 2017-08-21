@@ -52,6 +52,7 @@ po::options_description ConstructOptions() {
       ("help", "Display this help message")
       ("version", "Display version information")
       ("config-file", OPT_VALUE(path), "XML file with analysis configurations")
+      ("allow-extern", "**UNSAFE** Allow external libraries")
       ("validate", "Validate input files without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
       ("zbdd", "Perform qualitative analysis with ZBDD")
@@ -243,7 +244,8 @@ void RunScram(const po::variables_map& vm) {
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
   std::shared_ptr<scram::mef::Model> model =
-      scram::mef::Initializer(input_files, settings).model();
+      scram::mef::Initializer(input_files, settings, vm.count("allow-extern"))
+          .model();
 #ifndef NDEBUG
   if (vm.count("serialize"))
     return Serialize(*model, std::cout);

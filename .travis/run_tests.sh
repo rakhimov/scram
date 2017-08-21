@@ -20,4 +20,4 @@ scram --validate fault_tree.xml
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
 LD_LIBRARY_PATH=${PWD}/install/lib/scram/test/:${LD_LIBRARY_PATH} \
-  scram --validate install/share/scram/input/model/system_extern_library.xml
+  scram --validate --allow-extern install/share/scram/input/model/system_extern_library.xml

@@ -316,7 +316,7 @@ TEST(InitializerTest, CorrectModelInputs) {
       "private_phases.xml"};
 
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings(), true))
         << " Filename: " << input;
   }
 }
@@ -346,9 +346,17 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "incomplete_alignment.xml"};
 
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
+                 ValidationError)
         << " Filename:  " << input;
   }
+}
+
+// Tests that external libraries are disabled by default.
+TEST(InitializerTest, DefaultExternDisable) {
+  std::string input = "./share/scram/input/model/extern_library.xml";
+  EXPECT_NO_THROW(Initializer({input}, core::Settings(), true));
+  EXPECT_THROW(Initializer({input}, core::Settings()), IllegalOperation);
 }
 
 }  // namespace test
