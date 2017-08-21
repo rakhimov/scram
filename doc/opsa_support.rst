@@ -83,13 +83,15 @@ to identify the supported and unsupported features.
     * Boolean operations
     * Conditional operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential, GLM, Weibull, periodic-test)
+    * Built-in expressions (exponential, GLM, Weibull, periodic-test, extern-function)
     * Test event (test-initiating-event, test-functional-event)
 
 
 Deviations from the Open-PSA MEF
 ================================
 
+- Extern function and library are implemented following
+  `the new proposal <https://github.com/open-psa/mef/pull/53>`_.
 - Redefinition of constructs (e.g., containers, events, parameters) is an error.
 - Attributes are not inherited.
 - Recursive parameters are not allowed.
