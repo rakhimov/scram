@@ -364,7 +364,6 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   const xmlpp::Node* root = parser->get_document()->get_root_node();
   assert(root->get_name() == "opsa-mef");
-  doc_to_file_.emplace(root, xml_file);  // Save for later.
 
   if (!model_) {  // Create only one model for multiple files.
     model_ = ConstructElement<Model>(XmlElement(root));
@@ -558,13 +557,15 @@ void Initializer::Define(const xmlpp::Element* xml_node, Alignment* alignment) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
-  for (const auto& entry : doc_to_file_) {
+  for (const auto& parser : parsers_) {
     for (const xmlpp::Node* node :
-         entry.first->find("./define-extern-function")) {
+         parser->get_document()->get_root_node()->find(
+             "./define-extern-function")) {
       try {
         DefineExternFunction(XmlElement(node));
       } catch (ValidationError& err) {
-        err.msg("In file '" + entry.second + "', " + err.msg());
+        err.msg("In file '" + std::string(xml::GetFilename(node)) + "', " +
+                err.msg());
         throw;
       }
     }
@@ -578,8 +579,9 @@ void Initializer::ProcessTbdElements() {
             },
             tbd_element.first);
     } catch (ValidationError& err) {
-      const xmlpp::Node* root = tbd_element.second->find("/opsa-mef")[0];
-      err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
+      err.msg("In file '" +
+              std::string(xml::GetFilename(tbd_element.second)) + "', " +
+              err.msg());
       throw;
     }
   }
@@ -1724,9 +1726,9 @@ void Initializer::ValidateExpressions() {
     try {
       expression.first->Validate();
     } catch (InvalidArgument& err) {
-      const xmlpp::Node* root = expression.second->find("/opsa-mef")[0];
-      throw ValidationError("In file '" + doc_to_file_.at(root) + "', " +
-                            GetLine(expression.second) + err.msg());
+      throw ValidationError(
+          "In file '" + std::string(xml::GetFilename(expression.second)) +
+          "', " + GetLine(expression.second) + err.msg());
     }
   }
 

@@ -18,6 +18,8 @@
 /// @file xml.h
 /// XML helper facilities to work with libxml++.
 /// Adaptors and helper functions provide read-only facilities.
+///
+/// @note All strings and characters are UTF-8 unless otherwise documented.
 
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
@@ -38,6 +40,11 @@
 namespace scram {
 
 namespace xml {
+
+/// Fetches the filename of the XML document.
+inline const char* GetFilename(const xmlpp::Node* xml_node) noexcept {
+  return reinterpret_cast<const char*>(xml_node->cobj()->doc->URL);
+}
 
 /// Returns XML line number message.
 inline std::string GetLine(const xmlpp::Node* xml_node) {

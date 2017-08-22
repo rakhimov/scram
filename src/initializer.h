@@ -463,9 +463,6 @@ class Initializer : private boost::noncopyable {
   /// Saved parsers to keep XML documents alive.
   std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
 
-  /// Map roots of documents to files for error reporting.
-  std::unordered_map<const xmlpp::Node*, std::string> doc_to_file_;
-
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
   ///
