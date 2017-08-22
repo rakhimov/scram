@@ -78,22 +78,18 @@ RoleSpecifier GetRole(const std::string& s, RoleSpecifier parent_role) {
 /// @throws ValidationError  Invalid attribute setting.
 void AttachLabelAndAttributes(const xmlpp::Element* xml_element,
                               Element* element) {
-  xmlpp::NodeSet labels = xml_element->find("./label");
-  if (!labels.empty()) {
-    assert(labels.size() == 1);
-    const xmlpp::Element* label = XmlElement(labels.front());
+  if (const xmlpp::Element* label =
+          XmlElement(xml_element->get_first_child("label"))) {
     const xmlpp::TextNode* text = label->get_child_text();
     assert(text);
     assert(element->label().empty() && "Resetting element label.");
     element->label(GetContent(text));
   }
 
-  xmlpp::NodeSet attributes = xml_element->find("./attributes");
-  if (attributes.empty())
+  const xmlpp::Node* attributes = xml_element->get_first_child("attributes");
+  if (!attributes)
     return;
-  assert(attributes.size() == 1);  // Only one big element 'attributes'.
-  for (const xmlpp::Node* node :
-       XmlElement(attributes.front())->find("./attribute")) {
+  for (const xmlpp::Node* node : attributes->get_children("attribute")) {
     const xmlpp::Element* attribute = XmlElement(node);
     Attribute attribute_struct = {GetAttributeValue(attribute, "name"),
                                   GetAttributeValue(attribute, "value"),
@@ -279,11 +275,9 @@ HouseEvent* Initializer::Register(const xmlpp::Element* event_node,
   Register(std::move(ptr), event_node);
   path_house_events_.insert(house_event);
 
-  // Only Boolean constant.
-  xmlpp::NodeSet expression = event_node->find("./constant");
-  if (!expression.empty()) {
-    assert(expression.size() == 1);
-    const xmlpp::Element* constant = XmlElement(expression.front());
+  // Only Boolean xml.
+  if (const xmlpp::Element* constant =
+          XmlElement(event_node->get_first_child("constant"))) {
     house_event->state(CastAttributeValue<bool>(constant, "value"));
   }
   return house_event;
@@ -331,9 +325,9 @@ CcfGroup* Initializer::Register(const xmlpp::Element* ccf_node,
   auto* ccf_group = ptr.get();
   Register(std::move(ptr), ccf_node);
 
-  xmlpp::NodeSet members = ccf_node->find("./members");
-  assert(members.size() == 1);
-  ProcessCcfMembers(XmlElement(members[0]), ccf_group);
+  const xmlpp::Node* members = ccf_node->get_first_child("members");
+  assert(members);
+  ProcessCcfMembers(XmlElement(members), ccf_group);
 
   tbd_.emplace_back(ccf_group, ccf_node);
   return ccf_group;
@@ -370,7 +364,8 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     model_->mission_time().value(settings_.mission_time());
   }
 
-  for (const xmlpp::Node* node : root->find("./define-initiating-event")) {
+  for (const xmlpp::Node* node :
+       root->get_children("define-initiating-event")) {
     const xmlpp::Element* xml_node = XmlElement(node);
     InitiatingEventPtr initiating_event =
         ConstructElement<InitiatingEvent>(xml_node);
@@ -379,7 +374,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     tbd_.emplace_back(ref_ptr, xml_node);
   }
 
-  for (const xmlpp::Node* node : root->find("./define-rule")) {
+  for (const xmlpp::Node* node : root->get_children("define-rule")) {
     const xmlpp::Element* xml_node = XmlElement(node);
     RulePtr rule = ConstructElement<Rule>(xml_node);
     auto* ref_ptr = rule.get();
@@ -387,19 +382,19 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     tbd_.emplace_back(ref_ptr, xml_node);
   }
 
-  for (const xmlpp::Node* node : root->find("./define-event-tree")) {
+  for (const xmlpp::Node* node : root->get_children("define-event-tree")) {
     DefineEventTree(XmlElement(node));
   }
 
-  for (const xmlpp::Node* node : root->find("./define-fault-tree")) {
+  for (const xmlpp::Node* node : root->get_children("define-fault-tree")) {
     DefineFaultTree(XmlElement(node));
   }
 
-  for (const xmlpp::Node* node : root->find("./define-CCF-group")) {
+  for (const xmlpp::Node* node : root->get_children("define-CCF-group")) {
     Register<CcfGroup>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 
-  for (const xmlpp::Node* node : root->find("./define-alignment")) {
+  for (const xmlpp::Node* node : root->get_children("define-alignment")) {
     const xmlpp::Element* xml_node = XmlElement(node);
     AlignmentPtr alignment = ConstructElement<Alignment>(xml_node);
     auto* address = alignment.get();
@@ -407,11 +402,11 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     tbd_.emplace_back(address, xml_node);
   }
 
-  for (const xmlpp::Node* node : root->find("./model-data")) {
+  for (const xmlpp::Node* node : root->get_children("model-data")) {
     ProcessModelData(XmlElement(node));
   }
 
-  DefineExternLibraries(root->find("./define-extern-library"), xml_file);
+  DefineExternLibraries(root->get_children("define-extern-library"), xml_file);
 
   parsers_.emplace_back(std::move(parser));
 }
@@ -490,17 +485,17 @@ void Initializer::Define(const xmlpp::Element* xml_node, Sequence* sequence) {
 template <>
 void Initializer::Define(const xmlpp::Element* et_node, EventTree* event_tree) {
   auto it = event_tree->branches().begin();
-  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+  for (const xmlpp::Node* node : et_node->get_children("define-branch")) {
     assert(it != event_tree->branches().end());
     assert((*it)->name() == GetAttributeValue(XmlElement(node), "name"));
     DefineBranch(GetNonAttributeElements(XmlElement(node)), event_tree,
                  it->get());
     ++it;
   }
-  xmlpp::NodeSet state_node = et_node->find("./initial-state");
-  assert(state_node.size() == 1);
+  const xmlpp::Node* state_node = et_node->get_first_child("initial-state");
+  assert(state_node);
   Branch initial_state;
-  DefineBranch(state_node.front()->find("./*"), event_tree, &initial_state);
+  DefineBranch(state_node->find("./*"), event_tree, &initial_state);
   event_tree->initial_state(std::move(initial_state));
 }
 
@@ -530,11 +525,11 @@ void Initializer::Define(const xmlpp::Element* rule_node, Rule* rule) {
 
 template <>
 void Initializer::Define(const xmlpp::Element* xml_node, Alignment* alignment) {
-  for (const xmlpp::Node* node : xml_node->find("./define-phase")) {
+  for (const xmlpp::Node* node : xml_node->get_children("define-phase")) {
     try {
       PhasePtr phase = ConstructElement<Phase>(XmlElement(node));
       std::vector<SetHouseEvent*> instructions;
-      for (const xmlpp::Node* arg : node->find("./set-house-event")) {
+      for (const xmlpp::Node* arg : node->get_children("set-house-event")) {
         instructions.push_back(
             static_cast<SetHouseEvent*>(GetInstruction(XmlElement(arg))));
       }
@@ -589,7 +584,8 @@ void Initializer::ProcessTbdElements() {
 
 void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
   EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
-  for (const xmlpp::Node* node : et_node->find("./define-functional-event")) {
+  for (const xmlpp::Node* node :
+       et_node->get_children("define-functional-event")) {
     try {
       event_tree->Add(ConstructElement<FunctionalEvent>(XmlElement(node)));
     } catch (ValidationError& err) {
@@ -597,11 +593,11 @@ void Initializer::DefineEventTree(const xmlpp::Element* et_node) {
       throw;
     }
   }
-  for (const xmlpp::Node* node : et_node->find("./define-sequence")) {
+  for (const xmlpp::Node* node : et_node->get_children("define-sequence")) {
     event_tree->Add(Register<Sequence>(XmlElement(node), event_tree->name(),
                                        RoleSpecifier::kPublic));
   }
-  for (const xmlpp::Node* node : et_node->find("./define-branch")) {
+  for (const xmlpp::Node* node : et_node->get_children("define-branch")) {
     try {
       event_tree->Add(ConstructElement<NamedBranch>(XmlElement(node)));
     } catch (ValidationError& err) {
@@ -633,32 +629,32 @@ ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
 void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
                                         const std::string& base_path,
                                         Component* component) {
-  for (const xmlpp::Node* node : ft_node->find("./define-house-event")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-house-event")) {
     component->Add(
         Register<HouseEvent>(XmlElement(node), base_path, component->role()));
   }
   CLOCK(basic_time);
-  for (const xmlpp::Node* node : ft_node->find("./define-basic-event")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-basic-event")) {
     component->Add(
         Register<BasicEvent>(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
-  for (const xmlpp::Node* node : ft_node->find("./define-parameter")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-parameter")) {
     component->Add(
         Register<Parameter>(XmlElement(node), base_path, component->role()));
   }
 
   CLOCK(gate_time);
-  for (const xmlpp::Node* node : ft_node->find("./define-gate")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-gate")) {
     component->Add(
         Register<Gate>(XmlElement(node), base_path, component->role()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
-  for (const xmlpp::Node* node : ft_node->find("./define-CCF-group")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-CCF-group")) {
     component->Add(
         Register<CcfGroup>(XmlElement(node), base_path, component->role()));
   }
-  for (const xmlpp::Node* node : ft_node->find("./define-component")) {
+  for (const xmlpp::Node* node : ft_node->get_children("define-component")) {
     ComponentPtr sub =
         DefineComponent(XmlElement(node), base_path, component->role());
     try {
@@ -671,15 +667,17 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
 }
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
-  for (const xmlpp::Node* node : model_data->find("./define-house-event")) {
+  for (const xmlpp::Node* node :
+       model_data->get_children("define-house-event")) {
     Register<HouseEvent>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   CLOCK(basic_time);
-  for (const xmlpp::Node* node : model_data->find("./define-basic-event")) {
+  for (const xmlpp::Node* node :
+       model_data->get_children("define-basic-event")) {
     Register<BasicEvent>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
-  for (const xmlpp::Node* node : model_data->find("./define-parameter")) {
+  for (const xmlpp::Node* node : model_data->get_children("define-parameter")) {
     Register<Parameter>(XmlElement(node), "", RoleSpecifier::kPublic);
   }
 }
@@ -768,7 +766,7 @@ void Initializer::DefineBranch(const xmlpp::NodeSet& xml_nodes,
     std::string name = GetAttributeValue(target_node, "functional-event");
     if (auto it = ext::find(event_tree->functional_events(), name)) {
       std::vector<Path> paths;
-      for (xmlpp::Node* node : target_node->find("./path")) {
+      for (xmlpp::Node* node : target_node->get_children("path")) {
         const xmlpp::Element* path_element = XmlElement(node);
         paths.emplace_back(GetAttributeValue(path_element, "state"));
         DefineBranch(path_element->find("./*"), event_tree, &paths.back());
@@ -1353,7 +1351,7 @@ Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
 
 #undef GET_EVENT
 
-void Initializer::DefineExternLibraries(const xmlpp::NodeSet& xml_elements,
+void Initializer::DefineExternLibraries(const xml::NodeList& xml_elements,
                                         const std::string& xml_file) {
   if (!allow_extern_ && !xml_elements.empty())
     throw IllegalOperation("Loading external libraries is disallowed!\n"

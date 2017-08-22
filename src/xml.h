@@ -41,6 +41,8 @@ namespace scram {
 
 namespace xml {
 
+using NodeList = xmlpp::Node::NodeList;  ///< Linked-list of nodes.
+
 /// Fetches the filename of the XML document.
 inline const char* GetFilename(const xmlpp::Node* xml_node) noexcept {
   return reinterpret_cast<const char*>(xml_node->cobj()->doc->URL);

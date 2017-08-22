@@ -390,7 +390,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  The initialization contains validity errors.
   /// @throws IllegalOperation  Loading external libraries is disallowed.
-  void DefineExternLibraries(const xmlpp::NodeSet& xml_elements,
+  void DefineExternLibraries(const xmlpp::Node::NodeList& xml_elements,
                              const std::string& xml_file);
 
   /// Defines extern function.
