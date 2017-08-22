@@ -43,8 +43,6 @@ namespace scram {
 
 namespace xml {
 
-using NodeList = xmlpp::Node::NodeList;  ///< Linked-list of nodes.
-
 /// Fetches the filename of the XML document.
 inline const char* GetFilename(const xmlpp::Node* xml_node) noexcept {
   return reinterpret_cast<const char*>(xml_node->cobj()->doc->URL);
@@ -244,6 +242,8 @@ class Element {
   const xmlpp::Element& element_;  ///< The main data location.
 };
 
+using NodeList = xmlpp::Node::NodeList;  ///< Linked-list of nodes.
+
 }  // namespace xml
 
 /// Initializes a DOM parser
@@ -294,9 +294,14 @@ inline std::string GetAttributeValue(const xmlpp::Element* element,
 }
 
 /// Returns XML line number message.
+/// @{
 inline std::string GetLine(const xmlpp::Node* xml_node) {
   return "Line " + std::to_string(xml_node->get_line()) + ":\n";
 }
+inline std::string GetLine(const xml::Element& xml_node) {
+  return "Line " + std::to_string(xml_node.line()) + ":\n";
+}
+/// @}
 
 /// Gets a number from an XML attribute.
 ///

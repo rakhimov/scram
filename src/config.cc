@@ -27,10 +27,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/predef.h>
 #include <boost/range/algorithm.hpp>
+#include <libxml++/libxml++.h>
 
 #include "env.h"
 #include "error.h"
-#include "xml.h"
 
 namespace fs = boost::filesystem;
 
@@ -64,11 +64,16 @@ Config::Config(const std::string& config_file) {
     throw ValidationError("Config XML failed schema validation:\n" +
                           xmlpp::format_xml_error());
   }
-  const xmlpp::Node* root = parser->get_document()->get_root_node();
-  assert(root->get_name() == "scram");
+  xml::Element root(static_cast<const xmlpp::Element*>(
+      parser->get_document()->get_root_node()));
+  assert(root.name() == "scram");
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);
-  GetOutputPath(root, base_path);
+
+  if (boost::optional<xml::Element> out = root.child("output-path")) {
+    output_path_ = normalize(out->text(), base_path);
+  }
+
   try {
     GatherOptions(root);
   } catch (Error& err) {
@@ -77,130 +82,97 @@ Config::Config(const std::string& config_file) {
   }
 }
 
-void Config::GatherInputFiles(const xmlpp::Node* root,
+void Config::GatherInputFiles(const xml::Element& root,
                               const fs::path& base_path) {
-  xmlpp::NodeSet input_files = root->find("./input-files");
-  if (input_files.empty())
+  boost::optional<xml::Element> input_files = root.child("input-files");
+  if (!input_files)
     return;
-  assert(input_files.size() == 1);
-  const xmlpp::Element* files = XmlElement(input_files.front());
-  xmlpp::NodeSet all_files = files->find("./*");
-  assert(!all_files.empty());
-  for (const xmlpp::Node* node : all_files) {
-    const xmlpp::Element* file = XmlElement(node);
-    assert(file->get_name() == "file");
-    input_files_.push_back(
-        normalize(GetContent(file->get_child_text()), base_path));
+  for (xml::Element input_file : input_files->children()) {
+    assert(input_file.name() == "file");
+    input_files_.push_back(normalize(input_file.text(), base_path));
   }
 }
 
-void Config::GatherOptions(const xmlpp::Node* root) {
-  xmlpp::NodeSet options = root->find("./options");
-  if (options.empty())
+void Config::GatherOptions(const xml::Element& root) {
+  boost::optional<xml::Element> options_element = root.child("options");
+  if (!options_element)
     return;
-  assert(options.size() == 1);
-  const xmlpp::Element* element = XmlElement(options.front());
-  const xmlpp::Element* option_group = nullptr;  // For error reporting.
-  try {
-    const xmlpp::Element* analysis_group = nullptr;  // Needs to be set last.
-    // The loop is used instead of query
-    // because the order of options matters,
-    // yet this function should not know what the order is.
-    for (const xmlpp::Node* node : element->find("./*")) {
-      option_group = XmlElement(node);
-      std::string name = option_group->get_name();
+  // The loop is used instead of query
+  // because the order of options matters,
+  // yet this function should not know what the order is.
+  for (xml::Element option_group : options_element->children()) {
+    try {
+      std::string name = option_group.name();
       if (name == "algorithm") {
-        SetAlgorithm(option_group);
-
-      } else if (name == "analysis") {
-        analysis_group = option_group;
+        settings_.algorithm(option_group.attribute("name"));
 
       } else if (name == "prime-implicants") {
         settings_.prime_implicants(true);
 
       } else if (name == "approximation") {
-        SetApproximation(option_group);
+        settings_.approximation(option_group.attribute("name"));
 
       } else if (name == "limits") {
         SetLimits(option_group);
       }
+    } catch (InvalidArgument& err) {
+      err.msg(GetLine(option_group) + err.msg());
+      throw;
     }
-    if (analysis_group) {
-      option_group = analysis_group;
-      SetAnalysis(analysis_group);
-    }
-  } catch (InvalidArgument& err) {
-    err.msg(GetLine(option_group) + err.msg());
-    throw;
   }
-}
-
-void Config::GetOutputPath(const xmlpp::Node* root, const fs::path& base_path) {
-  xmlpp::NodeSet out = root->find("./output-path");
-  if (out.empty())
-    return;
-  assert(out.size() == 1);
-  const xmlpp::Element* element = XmlElement(out.front());
-  output_path_ = normalize(GetContent(element->get_child_text()), base_path);
-}
-
-void Config::SetAlgorithm(const xmlpp::Element* analysis) {
-  settings_.algorithm(GetAttributeValue(analysis, "name"));
-}
-
-void Config::SetAnalysis(const xmlpp::Element* analysis) {
-  for (const xmlpp::Attribute* type : analysis->get_attributes()) {
-    std::string name = type->get_name();
-    bool flag = CastAttributeValue<bool>(type);
-    if (name == "probability") {
-      settings_.probability_analysis(flag);
-
-    } else if (name == "importance") {
-      settings_.importance_analysis(flag);
-
-    } else if (name == "uncertainty") {
-      settings_.uncertainty_analysis(flag);
-
-    } else if (name == "ccf") {
-      settings_.ccf_analysis(flag);
-
-    } else if (name == "sil") {
-      settings_.safety_integrity_levels(flag);
+  if (boost::optional<xml::Element> analysis_group =
+          options_element->child("analysis")) {
+    try {
+      SetAnalysis(*analysis_group);
+    } catch (InvalidArgument& err) {
+      err.msg(GetLine(*analysis_group) + err.msg());
+      throw;
     }
   }
 }
 
-void Config::SetApproximation(const xmlpp::Element* approx) {
-  settings_.approximation(GetAttributeValue(approx, "name"));
+void Config::SetAnalysis(const xml::Element& analysis) {
+  auto set_flag = [&analysis](const char* tag, auto setter) {
+    if (boost::optional<bool> flag = analysis.attribute<bool>(tag))
+      setter(*flag);
+  };
+  set_flag("probability",
+           [this](bool flag) { settings_.probability_analysis(flag); });
+  set_flag("importance",
+           [this](bool flag) { settings_.importance_analysis(flag); });
+  set_flag("uncertainty",
+           [this](bool flag) { settings_.uncertainty_analysis(flag); });
+  set_flag("ccf", [this](bool flag) { settings_.ccf_analysis(flag); });
+  set_flag("sil",
+           [this](bool flag) { settings_.safety_integrity_levels(flag); });
 }
 
-void Config::SetLimits(const xmlpp::Element* limits) {
-  for (const xmlpp::Node* node : limits->find("./*")) {
-    const xmlpp::Element* limit = XmlElement(node);
-    std::string name = limit->get_name();
+void Config::SetLimits(const xml::Element& limits) {
+  for (xml::Element limit : limits.children()) {
+    std::string name = limit.name();
     if (name == "product-order") {
-      settings_.limit_order(CastChildText<int>(limit));
+      settings_.limit_order(limit.text<int>());
 
     } else if (name == "cut-off") {
-      settings_.cut_off(CastChildText<double>(limit));
+      settings_.cut_off(limit.text<double>());
 
     } else if (name == "mission-time") {
-      settings_.mission_time(CastChildText<double>(limit));
+      settings_.mission_time(limit.text<double>());
 
     } else if (name == "time-step") {
-      settings_.time_step(CastChildText<double>(limit));
+      settings_.time_step(limit.text<double>());
 
     } else if (name == "number-of-trials") {
-      settings_.num_trials(CastChildText<int>(limit));
+      settings_.num_trials(limit.text<int>());
 
     } else if (name == "number-of-quantiles") {
-      settings_.num_quantiles(CastChildText<int>(limit));
+      settings_.num_quantiles(limit.text<int>());
 
     } else if (name == "number-of-bins") {
-      settings_.num_bins(CastChildText<int>(limit));
+      settings_.num_bins(limit.text<int>());
 
     } else if (name == "seed") {
-      settings_.seed(CastChildText<int>(limit));
+      settings_.seed(limit.text<int>());
     }
   }
 }
