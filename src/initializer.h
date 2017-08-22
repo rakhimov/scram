@@ -45,6 +45,7 @@
 #include "model.h"
 #include "parameter.h"
 #include "settings.h"
+#include "xml.h"
 
 namespace scram {
 namespace mef {
@@ -81,13 +82,13 @@ class Initializer : private boost::noncopyable {
  private:
   /// Convenience alias for expression extractor function types.
   using ExtractorFunction = std::unique_ptr<Expression> (*)(
-      const xmlpp::NodeSet&, const std::string&, Initializer*);
+      const xml::Element::Range&, const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
   using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
   /// Container for late defined constructs.
   template <class... Ts>
   using TbdContainer =
-      std::vector<std::pair<boost::variant<Ts*...>, const xmlpp::Element*>>;
+      std::vector<std::pair<boost::variant<Ts*...>, xml::Element>>;
   /// Container with full paths to elements.
   ///
   /// @tparam T  The element type.
@@ -112,13 +113,13 @@ class Initializer : private boost::noncopyable {
   ///
   /// @tparam T  Type of an expression.
   ///
-  /// @param[in] args  A vector of XML elements containing the arguments.
+  /// @param[in] args  XML elements containing the arguments.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   /// @param[in,out] init  The host Initializer.
   ///
   /// @returns The new extracted expression.
   template <class T>
-  static std::unique_ptr<Expression> Extract(const xmlpp::NodeSet& args,
+  static std::unique_ptr<Expression> Extract(const xml::Element::Range& args,
                                              const std::string& base_path,
                                              Initializer* init);
 
@@ -160,6 +161,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  The input contains errors.
   /// @throws IOError  The input file is not accessible.
+  /// @throws IllegalOperation  Loading external libraries is disallowed.
   void ProcessInputFile(const std::string& xml_file);
 
   /// Processes definitions of elements
@@ -178,7 +180,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  Issues with adding the element into the model.
   template <class T>
-  void Register(T&& element, const xmlpp::Element* xml_element);
+  void Register(T&& element, const xml::Element& xml_element);
 
   /// Constructs and registers an element in the model.
   ///
@@ -192,7 +194,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  Issues with the new element or registration.
   template <class T>
-  T* Register(const xmlpp::Element* xml_node, const std::string& base_path,
+  T* Register(const xml::Element& xml_node, const std::string& base_path,
               RoleSpecifier base_role);
 
   /// Adds additional data to element definition
@@ -205,7 +207,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  Issues with the additional data.
   template <class T>
-  void Define(const xmlpp::Element* xml_node, T* element);
+  void Define(const xml::Element& xml_node, T* element);
 
   /// Defines an event tree for the analysis.
   ///
@@ -213,7 +215,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  There are issues with registering and defining
   ///                          the event tree and its data.
-  void DefineEventTree(const xmlpp::Element* et_node);
+  void DefineEventTree(const xml::Element& et_node);
 
   /// Defines a fault tree for the analysis.
   ///
@@ -222,7 +224,7 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  There are issues with registering and defining
   ///                          the fault tree and its data
   ///                          like gates and events.
-  void DefineFaultTree(const xmlpp::Element* ft_node);
+  void DefineFaultTree(const xml::Element& ft_node);
 
   /// Defines a component container.
   ///
@@ -235,7 +237,7 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  There are issues with registering and defining
   ///                          the component and its data
   ///                          like gates and events.
-  ComponentPtr DefineComponent(const xmlpp::Element* component_node,
+  ComponentPtr DefineComponent(const xml::Element& component_node,
                                const std::string& base_path,
                                RoleSpecifier container_role);
 
@@ -249,14 +251,14 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  There are issues with registering and defining
   ///                          the component's data like gates and events.
-  void RegisterFaultTreeData(const xmlpp::Element* ft_node,
+  void RegisterFaultTreeData(const xml::Element& ft_node,
                              const std::string& base_path,
                              Component* component);
 
   /// Processes model data with definitions of events and analysis.
   ///
   /// @param[in] model_data  XML node with model data description.
-  void ProcessModelData(const xmlpp::Element* model_data);
+  void ProcessModelData(const xml::Element& model_data);
 
   /// Creates a Boolean formula from the XML elements
   /// describing the formula with events and other nested formulas.
@@ -267,7 +269,7 @@ class Initializer : private boost::noncopyable {
   /// @returns Boolean formula that is defined.
   ///
   /// @throws ValidationError  The defined formula is not valid.
-  FormulaPtr GetFormula(const xmlpp::Element* formula_node,
+  FormulaPtr GetFormula(const xml::Element& formula_node,
                         const std::string& base_path);
 
   /// Processes event tree branch instructions and target from XML data.
@@ -281,8 +283,13 @@ class Initializer : private boost::noncopyable {
   /// @post All forks in the event tree get registered.
   ///
   /// @throws ValidationError  Errors in instruction or target definitions.
-  void DefineBranch(const xmlpp::NodeSet& xml_nodes,
-                    EventTree* event_tree, Branch* branch);
+  template <class SinglePassRange>
+  void DefineBranch(const SinglePassRange& xml_nodes, EventTree* event_tree,
+                    Branch* branch);
+
+  /// Processes the last element of the branch node as target.
+  void DefineBranchTarget(const xml::Element& target_node,
+                          EventTree* event_tree, Branch* branch);
 
   /// Processes Instruction definitions.
   ///
@@ -293,7 +300,7 @@ class Initializer : private boost::noncopyable {
   /// @pre All files have been processed (element pointers are available).
   ///
   /// @throws ValidationError  Errors in instruction definitions.
-  Instruction* GetInstruction(const xmlpp::Element* xml_element);
+  Instruction* GetInstruction(const xml::Element& xml_element);
 
   /// Processes Expression definitions in input file.
   ///
@@ -303,7 +310,7 @@ class Initializer : private boost::noncopyable {
   /// @returns The newly defined or registered expression.
   ///
   /// @throws ValidationError  There are problems with getting the expression.
-  Expression* GetExpression(const xmlpp::Element* expr_element,
+  Expression* GetExpression(const xml::Element& expr_element,
                             const std::string& base_path);
 
   /// Processes Parameter Expression definitions in input file.
@@ -317,7 +324,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
   Expression* GetParameter(const std::string& expr_type,
-                           const xmlpp::Element* expr_element,
+                           const xml::Element& expr_element,
                            const std::string& base_path);
 
   /// Processes common cause failure group members as defined basic events.
@@ -328,8 +335,7 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  Members are redefined,
   ///                          or there are other setup issues
   ///                          with the CCF group.
-  void ProcessCcfMembers(const xmlpp::Element* members_node,
-                         CcfGroup* ccf_group);
+  void ProcessCcfMembers(const xml::Element& members_node, CcfGroup* ccf_group);
 
   /// Defines factor and adds it to CCF group.
   ///
@@ -338,7 +344,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws ValidationError  There are problems with level numbers
   ///                          or factors for specific CCF models.
-  void DefineCcfFactor(const xmlpp::Element* factor_node, CcfGroup* ccf_group);
+  void DefineCcfFactor(const xml::Element& factor_node, CcfGroup* ccf_group);
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
   /// The reference is case sensitive
@@ -385,12 +391,11 @@ class Initializer : private boost::noncopyable {
 
   /// Defines and loads extern libraries.
   ///
-  /// @param[in] xml_elements  The XML elements with the data.
+  /// @param[in] xml_node  The XML element with the data.
   /// @param[in] xml_file  The XML file path.
   ///
   /// @throws ValidationError  The initialization contains validity errors.
-  /// @throws IllegalOperation  Loading external libraries is disallowed.
-  void DefineExternLibraries(const xmlpp::Node::NodeList& xml_elements,
+  void DefineExternLibraries(const xml::Element& xml_node,
                              const std::string& xml_file);
 
   /// Defines extern function.
@@ -400,7 +405,7 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidationError  The initialization contains validity errors.
   ///
   /// @pre All libraries are defined.
-  void DefineExternFunction(const xmlpp::Element* xml_element);
+  void DefineExternFunction(const xml::Element& xml_element);
 
   /// Validates if the initialization of the analysis is successful.
   ///
@@ -480,7 +485,7 @@ class Initializer : private boost::noncopyable {
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.
-  std::vector<std::pair<Expression*, const xmlpp::Element*>> expressions_;
+  std::vector<std::pair<Expression*, xml::Element>> expressions_;
   /// Container for event tree links to check for cycles.
   std::vector<Link*> links_;
 

@@ -24,6 +24,7 @@
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -32,6 +33,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 
 #include <libxml++/libxml++.h>
 #include <libxml/parser.h>
@@ -43,15 +45,13 @@ namespace scram {
 
 namespace xml {
 
-/// Fetches the filename of the XML document.
-inline const char* GetFilename(const xmlpp::Node* xml_node) noexcept {
-  return reinterpret_cast<const char*>(xml_node->cobj()->doc->URL);
-}
+class Element;
 
-/// Returns XML line number message.
-inline std::string GetLine(const xmlpp::Node* xml_node) {
-  return "Line " + std::to_string(xml_node->get_line()) + ":\n";
-}
+}  // namespace xml
+
+std::string GetLine(const xml::Element& xml_node);  // For error reporting.
+
+namespace xml {
 
 /// Gets a number from an XML value.
 ///
@@ -91,10 +91,12 @@ class Element {
   /// to the linked list XML elements.
   class Range {
    public:
+    using value_type = Element;  ///< Minimal container for Element type.
+
     /// Iterator over range elements.
     class iterator
         : public boost::iterator_facade<iterator, Element,
-                                        boost::forward_traversal_tag, Element> {
+                                        std::forward_iterator_tag, Element> {
       friend class boost::iterator_core_access;
 
      public:
@@ -113,11 +115,13 @@ class Element {
       bool equal(const iterator& other) const {
         return element_ == other.element_;
       }
-      value_type dereference() const { return value_type(element_); }
+      Element dereference() const { return Element(element_); }
       /// @}
 
       const xmlpp::Element* element_;  ///< The current element.
     };
+
+    using const_iterator = iterator;  ///< The container is immutable.
 
     /// Constructs the range for the intrusive list of XML Element nodes.
     ///
@@ -132,6 +136,34 @@ class Element {
     iterator cbegin() const { return begin_; }
     iterator cend() const { return iterator(); }
     /// @}
+
+    /// @return true if the range contains no elements.
+    bool empty() const { return begin() == end(); }
+
+    /// @returns The number of Elements in the list.
+    ///
+    /// @note O(N) complexity.
+    std::size_t size() const { return std::distance(begin(), end()); }
+
+    /// Extracts the element by its position.
+    /// This is a temporary helper function to move from xmlpp::NodeSet.
+    /// Use iterators and loops instead.
+    ///
+    /// @param[in] pos  The position of the element.
+    ///
+    /// @returns The element on the position.
+    ///
+    /// @throws std::out_of_range  The position is invalid.
+    ///
+    /// @note O(N) complexity unlike xmlpp::NodeSet O(1).
+    ///
+    /// @todo Remove.
+    Element at(std::size_t pos) const {
+      auto it = std::next(begin(), pos);
+      if (it == end())
+        throw std::out_of_range("The position is out of range.");
+      return *it;
+    }
 
    private:
     /// Finds the first Element node in the list.
@@ -153,6 +185,13 @@ class Element {
   /// @param[in] element  The element in the XML document.
   explicit Element(const xmlpp::Element* element) : element_(*element) {}
 
+  /// @returns The URI of the file containing the element.
+  ///
+  /// @pre The document has been loaded from a file.
+  std::string filename() const {
+    return reinterpret_cast<const char*>(element_.cobj()->doc->URL);
+  }
+
   /// @returns The line number of the element.
   int line() const { return element_.get_line(); }
 
@@ -171,6 +210,18 @@ class Element {
     std::string value = element_.get_attribute_value(name);
     boost::trim(value);
     return value;
+  }
+
+  /// Queries if element attribute existence.
+  ///
+  /// @param[in] name  The non-empty attribute name.
+  ///
+  /// @returns true if the element has an attribute with the given name.
+  ///
+  /// @note This is an inefficient way to work with optional attributes.
+  ///       Use the ``attribute(name)`` member function directly for optionals.
+  bool has_attribute(const std::string& name) const {
+    return !attribute(name).empty();
   }
 
   /// @returns The XML element's text.
@@ -199,7 +250,7 @@ class Element {
     try {
       return CastValue<T>(value);
     } catch (ValidationError& err) {
-      err.msg(GetLine(&element_) + "Attribute '" + name + "': " + err.msg());
+      err.msg(GetLine(*this) + "Attribute '" + name + "': " + err.msg());
       throw;
     }
   }
@@ -218,7 +269,7 @@ class Element {
     try {
       return CastValue<T>(text());
     } catch (ValidationError& err) {
-      err.msg(GetLine(&element_) + "Text element: " + err.msg());
+      err.msg(GetLine(*this) + "Text element: " + err.msg());
       throw;
     }
   }
@@ -238,11 +289,19 @@ class Element {
   /// @returns All the Element children.
   Range children() const { return Range(element_.get_first_child()); }
 
+  /// @param[in] name  The name to filter children elements.
+  ///
+  /// @returns The range of Element children with the given name.
+  auto children(std::string name) const {
+    return children() |
+           boost::adaptors::filtered([name](const Element& element) {
+             return element.name() == name;
+           });
+  }
+
  private:
   const xmlpp::Element& element_;  ///< The main data location.
 };
-
-using NodeList = xmlpp::Node::NodeList;  ///< Linked-list of nodes.
 
 }  // namespace xml
 
@@ -269,106 +328,9 @@ inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
   }
 }
 
-/// Helper function to statically cast to XML element.
-///
-/// @param[in] node  XML node known to be XML element.
-///
-/// @returns XML element cast from the XML node.
-///
-/// @warning The node must be an XML element.
-inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
-  return static_cast<const xmlpp::Element*>(node);
-}
-
-/// Returns Normalized (trimmed) string value of an XML element attribute.
-inline std::string GetAttributeValue(const xmlpp::Attribute* attribute) {
-  std::string value = attribute->get_value();
-  boost::trim(value);
-  return value;
-}
-/// Convenience function to retrieve element optional attribute values.
-inline std::string GetAttributeValue(const xmlpp::Element* element,
-                                     const std::string& attribute_name) {
-  const xmlpp::Attribute* attribute = element->get_attribute(attribute_name);
-  return attribute ? GetAttributeValue(attribute) : "";
-}
-
 /// Returns XML line number message.
-/// @{
-inline std::string GetLine(const xmlpp::Node* xml_node) {
-  return "Line " + std::to_string(xml_node->get_line()) + ":\n";
-}
 inline std::string GetLine(const xml::Element& xml_node) {
   return "Line " + std::to_string(xml_node.line()) + ":\n";
-}
-/// @}
-
-/// Gets a number from an XML attribute.
-///
-/// @tparam T  Numerical type.
-///
-/// @param[in] attribute  The XML element attribute.
-///
-/// @returns The interpreted value.
-///
-/// @throws ValidationError  Casting is unsuccessful.
-///                          The error message will include the line number.
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-CastAttributeValue(const xmlpp::Attribute* attribute) {
-  try {
-    return boost::lexical_cast<T>(GetAttributeValue(attribute));
-  } catch (boost::bad_lexical_cast&) {
-    throw ValidationError(GetLine(attribute) +
-                          "Failed to interpret attribute '" +
-                          attribute->get_name() + "' to a number.");
-  }
-}
-/// Specialization for Boolean values in XML attributes.
-template <>
-inline bool CastAttributeValue<bool>(const xmlpp::Attribute* attribute) {
-  std::string value = GetAttributeValue(attribute);
-  if (value == "true" || value == "1")
-    return true;
-  if (value == "false" || value == "0")
-    return false;
-  throw LogicError("Boolean types must be validated in schema.");
-}
-
-/// Convenience overload to cast XML element attribute value by name.
-template <typename T>
-T CastAttributeValue(const xmlpp::Element* element,
-                     const std::string& attribute) {
-    return CastAttributeValue<T>(element->get_attribute(attribute));
-}
-
-/// Returns Normalized content of an XML text node.
-inline std::string GetContent(const xmlpp::TextNode* child_text) {
-  std::string content = child_text->get_content();
-  boost::trim(content);
-  return content;
-}
-
-/// Gets a number from an XML text.
-///
-/// @tparam T  Numerical type.
-///
-/// @param[in] element  XML element with the text.
-///
-/// @returns The interpreted value.
-///
-/// @throws ValidationError  Casting is unsuccessful.
-///                          The error message will include the line number.
-template <typename T>
-typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-CastChildText(const xmlpp::Element* element) {
-  std::string content = GetContent(element->get_child_text());
-  try {
-    return boost::lexical_cast<T>(content);
-  } catch (boost::bad_lexical_cast&) {
-    throw ValidationError(GetLine(element) + "Failed to interpret text '" +
-                          content + "' to a number.");
-  }
 }
 
 }  // namespace scram
