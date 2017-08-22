@@ -29,8 +29,10 @@
 #include <type_traits>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+
 #include <libxml++/libxml++.h>
 #include <libxml/parser.h>
 #include <libxml/xinclude.h>
@@ -86,8 +88,75 @@ inline bool CastValue<bool>(const std::string& value) {
 /// XML Element adaptor.
 class Element {
  public:
+  /// The range for elements.
+  /// This is a simple view adaptor
+  /// to the linked list XML elements.
+  class Range {
+   public:
+    /// Iterator over range elements.
+    class iterator
+        : public boost::iterator_facade<iterator, Element,
+                                        boost::forward_traversal_tag, Element> {
+      friend class boost::iterator_core_access;
+
+     public:
+      /// @param[in] element  The starting element in the list.
+      ///                     nullptr signifies the end.
+      explicit iterator(const xmlpp::Element* element = nullptr)
+          : element_(element) {}
+
+     private:
+      /// Standard iterator functionality required by the facade facilities.
+      /// @{
+      void increment() {
+        assert(element_ && "Incrementing end iterator!");
+        element_ = Range::findElement(element_->get_next_sibling());
+      }
+      bool equal(const iterator& other) const {
+        return element_ == other.element_;
+      }
+      value_type dereference() const { return value_type(element_); }
+      /// @}
+
+      const xmlpp::Element* element_;  ///< The current element.
+    };
+
+    /// Constructs the range for the intrusive list of XML Element nodes.
+    ///
+    /// @param[in] head  The head node of the list (may be non-Element node!).
+    ///                  nullptr if the list is empty.
+    explicit Range(const xmlpp::Node* head) : begin_(findElement(head)) {}
+
+    /// The range begin and end iterators.
+    /// @{
+    iterator begin() const { return begin_; }
+    iterator end() const { return iterator(); }
+    iterator cbegin() const { return begin_; }
+    iterator cend() const { return iterator(); }
+    /// @}
+
+   private:
+    /// Finds the first Element node in the list.
+    ///
+    /// @param[in] node  The starting node.
+    ///                  nullptr for the end node.
+    ///
+    /// @returns The first Element type node.
+    ///          nullptr if the list does not contain any Element nodes.
+    static const xmlpp::Element* findElement(const xmlpp::Node* node) noexcept {
+      while (node && node->cobj()->type != XML_ELEMENT_NODE)
+        node = node->get_next_sibling();
+      return static_cast<const xmlpp::Element*>(node);
+    }
+
+    iterator begin_;  ///< The first node with XML Element.
+  };
+
   /// @param[in] element  The element in the XML document.
   explicit Element(const xmlpp::Element* element) : element_(*element) {}
+
+  /// @returns The line number of the element.
+  int line() const { return element_.get_line(); }
 
   /// @returns The name of the XML element.
   std::string name() const { return element_.get_name(); }
@@ -155,6 +224,21 @@ class Element {
       throw;
     }
   }
+
+  /// @param[in] name  The name of the child element.
+  ///                  Empty string to request any first child element.
+  ///
+  /// @returns The first child element (with the given name).
+  boost::optional<Element> child(const std::string& name = "") const {
+    for (Element element : children()) {
+      if (name.empty() || name == element.name())
+        return element;
+    }
+    return {};
+  }
+
+  /// @returns All the Element children.
+  Range children() const { return Range(element_.get_first_child()); }
 
  private:
   const xmlpp::Element& element_;  ///< The main data location.
