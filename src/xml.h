@@ -17,6 +17,7 @@
 
 /// @file xml.h
 /// XML helper facilities to work with libxml++.
+/// Adaptors and helper functions provide read-only facilities.
 
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
@@ -27,6 +28,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <libxml++/libxml++.h>
 #include <libxml/parser.h>
 #include <libxml/xinclude.h>
@@ -34,6 +36,122 @@
 #include "error.h"
 
 namespace scram {
+
+namespace xml {
+
+/// Returns XML line number message.
+inline std::string GetLine(const xmlpp::Node* xml_node) {
+  return "Line " + std::to_string(xml_node->get_line()) + ":\n";
+}
+
+/// Gets a number from an XML value.
+///
+/// @tparam T  Numeric type.
+///
+/// @param[in] value  The non-empty value string.
+///
+/// @returns The interpreted value.
+///
+/// @throws ValidationError  Casting is unsuccessful.
+template <typename T>
+std::enable_if_t<std::is_arithmetic<T>::value, T>
+CastValue(const std::string& value) {
+  try {
+    return boost::lexical_cast<T>(value);
+  } catch (boost::bad_lexical_cast&) {
+    throw ValidationError("Failed to interpret value '" + value +
+                          "' to a number.");
+  }
+}
+
+/// Specialization for Boolean values.
+template <>
+inline bool CastValue<bool>(const std::string& value) {
+  if (value == "true" || value == "1")
+    return true;
+  if (value == "false" || value == "0")
+    return false;
+  throw LogicError("Boolean types must be validated in schema.");
+}
+
+/// XML Element adaptor.
+class Element {
+ public:
+  /// @param[in] element  The element in the XML document.
+  explicit Element(const xmlpp::Element* element) : element_(*element) {}
+
+  /// @returns The name of the XML element.
+  std::string name() const { return element_.get_name(); }
+
+  /// Retrieves the XML element's attribute values.
+  ///
+  /// @param[in] name  The name of the requested attribute.
+  ///
+  /// @returns The attribute value or
+  ///          empty string if no attribute (optional attribute).
+  ///
+  /// @pre XML attributes never contain empty strings.
+  std::string attribute(const std::string& name) const {
+    std::string value = element_.get_attribute_value(name);
+    boost::trim(value);
+    return value;
+  }
+
+  /// @returns The XML element's text.
+  std::string text() const {
+    std::string content = element_.get_child_text()->get_content();
+    boost::trim(content);
+    return content;
+  }
+
+  /// Generic attribute value extraction following XML data types.
+  ///
+  /// @tparam T  The attribute value type (numeric).
+  ///
+  /// @param[in] name  The name of the attribute.
+  ///
+  /// @returns The value of type T interpreted from attribute value.
+  ///          None if the attribute doesn't exists (optional).
+  ///
+  /// @throws ValidationError  Casting is unsuccessful.
+  template <typename T>
+  std::enable_if_t<std::is_arithmetic<T>::value, boost::optional<T>>
+  attribute(const std::string& name) const {
+    std::string value = attribute(name);
+    if (value.empty())
+      return {};
+    try {
+      return CastValue<T>(value);
+    } catch (ValidationError& err) {
+      err.msg(GetLine(&element_) + "Attribute '" + name + "': " + err.msg());
+      throw;
+    }
+  }
+
+  /// Generic text value extraction following XML data types.
+  ///
+  /// @tparam T  The attribute value type (numeric).
+  ///
+  /// @returns The value of type T interpreted from attribute value.
+  ///
+  /// @pre The text is not empty.
+  ///
+  /// @throws ValidationError  Casting is unsuccessful.
+  template <typename T>
+  std::enable_if_t<std::is_arithmetic<T>::value, T> text() const {
+    try {
+      return CastValue<T>(text());
+    } catch (ValidationError& err) {
+      err.msg(GetLine(&element_) + "Text element: " + err.msg());
+      throw;
+    }
+  }
+
+ private:
+  const xmlpp::Element& element_;  ///< The main data location.
+};
+
+}  // namespace xml
 
 /// Initializes a DOM parser
 /// and converts library exceptions into local errors.
