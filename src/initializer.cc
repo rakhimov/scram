@@ -210,11 +210,11 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   }
   CLOCK(def_time);
   ProcessTbdElements();
-  LOG(DEBUG2) << "Element definition time " << DUR(def_time);
+  LOG(DEBUG2) << "TBD Element definition time " << DUR(def_time);
   LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   CLOCK(valid_time);
-  LOG(DEBUG1) << "Validating the input files";
+  LOG(DEBUG1) << "Validating the initialization";
   // Check if the initialization is successful.
   ValidateInitialization();
   LOG(DEBUG1) << "Validation is finished in " << DUR(valid_time);
@@ -343,7 +343,11 @@ Sequence* Initializer::Register(const xml::Element& xml_node,
 void Initializer::ProcessInputFile(const std::string& xml_file) {
   static xml::Validator validator(Env::input_schema());
 
+  CLOCK(parse_time);
+  LOG(DEBUG3) << "Parsing " << xml_file << " ...";
   xml::Document document = xml::Parse(xml_file, &validator);
+  LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
+
   xml::Element root = document.root();
   assert(root.name() == "opsa-mef");
 
