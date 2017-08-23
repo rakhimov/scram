@@ -27,7 +27,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/predef.h>
 #include <boost/range/algorithm.hpp>
-#include <libxml++/libxml++.h>
 
 #include "env.h"
 #include "error.h"
@@ -52,20 +51,13 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 }  // namespace
 
 Config::Config(const std::string& config_file) {
-  static xmlpp::RelaxNGValidator validator(Env::config_schema());
+  static xml::Validator validator(Env::config_schema());
 
   if (fs::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
 
-  std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(config_file);
-  try {
-    validator.validate(parser->get_document());
-  } catch (const xmlpp::validity_error&) {
-    throw ValidationError("Config XML failed schema validation:\n" +
-                          xmlpp::format_xml_error());
-  }
-  xml::Element root(static_cast<const xmlpp::Element*>(
-      parser->get_document()->get_root_node()));
+  xml::Parser parser(config_file, &validator);
+  xml::Element root = parser.document().root();
   assert(root.name() == "scram");
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);
