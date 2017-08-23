@@ -464,8 +464,8 @@ class Initializer : private boost::noncopyable {
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
 
-  /// Saved parsers to keep XML documents alive.
-  std::vector<xml::Parser> parsers_;
+  /// Saved XML documents to keep elements alive.
+  std::vector<xml::Document> documents_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.

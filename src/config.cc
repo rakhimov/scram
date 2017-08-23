@@ -56,8 +56,8 @@ Config::Config(const std::string& config_file) {
   if (fs::exists(config_file) == false)
     throw IOError("The file '" + config_file + "' could not be loaded.");
 
-  xml::Parser parser(config_file, &validator);
-  xml::Element root = parser.document().root();
+  xml::Document document = xml::Parse(config_file, &validator);
+  xml::Element root = document.root();
   assert(root.name() == "scram");
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);

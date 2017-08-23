@@ -48,7 +48,8 @@ TEST(SerializationTest, InputOutput) {
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
     std::stringstream output;
     ASSERT_NO_THROW(Serialize(*model, output)) << input.front();
-    ASSERT_NO_THROW(xml::Parser(output, &validator)) << input.front();
+    ASSERT_NO_THROW(xml::ParseMemory(output.str(), &validator))
+        << input.front();
   }
 }
 

@@ -342,8 +342,8 @@ Sequence* Initializer::Register(const xml::Element& xml_node,
 void Initializer::ProcessInputFile(const std::string& xml_file) {
   static xml::Validator validator(Env::input_schema());
 
-  xml::Parser parser(xml_file, &validator);
-  xml::Element root = parser.document().root();
+  xml::Document document = xml::Parse(xml_file, &validator);
+  xml::Element root = document.root();
   assert(root.name() == "opsa-mef");
 
   if (!model_) {  // Create only one model for multiple files.
@@ -399,7 +399,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   for (const xml::Element& node : extern_libraries)
     DefineExternLibraries(node, xml_file);
 
-  parsers_.emplace_back(std::move(parser));
+  documents_.emplace_back(std::move(document));
 }
 
 /// Specializations for elements defined after registration.
@@ -533,8 +533,8 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
-  for (const xml::Parser& parser : parsers_) {
-    xml::Element root = parser.document().root();
+  for (const xml::Document& document : documents_) {
+    xml::Element root = document.root();
     for (const xml::Element& node : root.children("define-extern-function")) {
       try {
         DefineExternFunction(node);

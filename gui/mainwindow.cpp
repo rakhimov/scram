@@ -290,7 +290,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
             = mef::Initializer(allInput, m_settings).model();
 
         for (const std::string &inputFile : inputFiles)
-            xml::Parser(inputFile, &validator);
+            xml::Parse(inputFile, &validator);
 
         for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
             if (faultTree->top_events().size() != 1) {

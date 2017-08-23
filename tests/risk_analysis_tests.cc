@@ -60,7 +60,7 @@ void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
   ASSERT_NO_THROW(analysis->Analyze());
   std::stringstream output;
   ASSERT_NO_THROW(Reporter().Report(*analysis, output));
-  ASSERT_NO_THROW(xml::Parser(output, &validator));
+  ASSERT_NO_THROW(xml::ParseMemory(output.str(), &validator));
 }
 
 const std::set<std::set<std::string>>& RiskAnalysisTest::products() {

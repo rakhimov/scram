@@ -24,13 +24,14 @@
 /// @note The facilities are designed specifically for SCRAM use cases.
 ///       The XML assumed to be well formed and simple.
 ///
+/// @note libxml2 older versions are not const correct in API.
+///
 /// @warning Complex XML features are not handled or expected,
 ///          for example, DTD, namespaces, entries.
 
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
 
-#include <iosfwd>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -42,9 +43,9 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 
-#include <libxml++/libxml++.h>
-#include <libxml/tree.h>
 #include <libxml/parser.h>
+#include <libxml/relaxng.h>
+#include <libxml/tree.h>
 #include <libxml/xinclude.h>
 
 #include "error.h"
@@ -213,7 +214,9 @@ class Element {
   };
 
   /// @param[in] element  The element in the XML document.
-  explicit Element(const xmlElement* element) : element_(element) {}
+  explicit Element(const xmlElement* element) : element_(element) {
+    assert(element_);
+  }
 
   /// @returns The URI of the file containing the element.
   ///
@@ -221,9 +224,7 @@ class Element {
   std::string filename() const { return from_utf8(element_->doc->URL); }
 
   /// @returns The line number of the element.
-  int line() const {
-    return XML_GET_LINE(reinterpret_cast<const xmlNode*>(element_));
-  }
+  int line() const { return XML_GET_LINE(to_node()); }
 
   /// @returns The name of the XML element.
   ///
@@ -347,8 +348,8 @@ class Element {
 
  private:
   /// Converts the data to its base.
-  const xmlNode* to_node() const {
-    return reinterpret_cast<const xmlNode*>(element_);
+  xmlNode* to_node() const {
+    return reinterpret_cast<xmlNode*>(const_cast<xmlElement*>(element_));
   }
 
   const xmlElement* element_;  ///< The main data location.
@@ -358,21 +359,32 @@ class Element {
 class Document {
  public:
   /// @param[in] doc  Fully parsed document.
-  explicit Document(const xmlpp::Document* doc) : doc_(*doc) {}
+  explicit Document(const xmlDoc* doc) : doc_(doc) { assert(doc_); }
+
+  /// Move constructor to transfer the document ownership.
+  Document(Document&& other) noexcept : doc_(other.doc_) {
+    other.doc_ = nullptr;
+  }
+
+  /// Frees the underlying document.
+  ~Document() {
+    if (doc_)
+      xmlFreeDoc(const_cast<xmlDoc*>(doc_));
+  }
 
   /// @returns The root element of the document.
   ///
   /// @pre The document has a root node.
   Element root() const {
-    return Element(
-        reinterpret_cast<const xmlElement*>(doc_.get_root_node()->cobj()));
+    return Element(reinterpret_cast<const xmlElement*>(
+        xmlDocGetRootElement(const_cast<xmlDoc*>(doc_))));
   }
 
   /// @returns The underlying data document.
-  const xmlpp::Document* get() const { return &doc_; }
+  const xmlDoc* get() const { return doc_; }
 
  private:
-  const xmlpp::Document& doc_;  ///< The XML DOM document.
+  const xmlDoc* doc_;  ///< The XML DOM document.
 };
 
 /// RelaxNG validator.
@@ -383,7 +395,21 @@ class Validator {
   /// @throws The library provided error for invalid XML RNG schema file.
   ///
   /// @todo Properly wrap the exception for invalid schema files.
-  explicit Validator(const std::string& rng_file) : validator_(rng_file) {}
+  explicit Validator(const std::string& rng_file) {
+    struct ParserCtxtDeleter {
+      void operator()(xmlRelaxNGParserCtxt* ctxt) noexcept {
+        if (ctxt)
+          xmlRelaxNGFreeParserCtxt(ctxt);
+      }
+    };
+    std::unique_ptr<xmlRelaxNGParserCtxt, ParserCtxtDeleter> parser_ctxt(
+        xmlRelaxNGNewParserCtxt(rng_file.c_str()));
+    assert(parser_ctxt);  ///< @todo Provide rng parser errors.
+    schema_.reset(xmlRelaxNGParse(parser_ctxt.get()));
+    assert(schema_);  ///< @todo Provide schema parsing errors.
+    valid_ctxt_.reset(xmlRelaxNGNewValidCtxt(schema_.get()));
+    assert(valid_ctxt_);  ///< @todo Provide valid ctxt initialization error.
+  }
 
   /// Validates XML DOM documents against the schema.
   ///
@@ -391,71 +417,80 @@ class Validator {
   ///
   /// @throws ValidationError  The document failed schema validation.
   void validate(const Document& doc) {
-    try {
-      validator_.validate(doc.get());
-    } catch (const xmlpp::validity_error&) {
-      throw ValidationError("Document failed schema validation:\n" +
-                            xmlpp::format_xml_error());
-    }
+    int ret = xmlRelaxNGValidateDoc(valid_ctxt_.get(),
+                                    const_cast<xmlDoc*>(doc.get()));
+    /// @todo Provide validation error messages.
+    if (ret > 0)
+      throw ValidationError("Document failed schema validation:\n");
+    assert(ret == 0);  ///< Handle XML internal errors.
   }
 
  private:
-  xmlpp::RelaxNGValidator validator_;  ///< The validator from the XML library.
+  /// Deleter of the schema.
+  struct SchemaDeleter {
+    /// Frees schema with the library call.
+    void operator()(xmlRelaxNG* schema) noexcept {
+      if (schema)
+        xmlRelaxNGFree(schema);
+    }
+  };
+  /// Deleter of the validation context.
+  struct ValidCtxtDeleter {
+    /// Frees validation context with the library call.
+    void operator()(xmlRelaxNGValidCtxt* ctxt) noexcept {
+      if (ctxt)
+        xmlRelaxNGFreeValidCtxt(ctxt);
+    }
+  };
+  /// The schema used by the validation context.
+  std::unique_ptr<xmlRelaxNG, SchemaDeleter> schema_;
+  /// The validation context.
+  std::unique_ptr<xmlRelaxNGValidCtxt, ValidCtxtDeleter> valid_ctxt_;
 };
 
-/// DOM Parser.
+/// The parser options passed to the library parser.
+const int kParserOptions = XML_PARSE_XINCLUDE | XML_PARSE_NOBASEFIX |
+                           XML_PARSE_NONET | XML_PARSE_NOXINCNODE |
+                           XML_PARSE_COMPACT | XML_PARSE_HUGE;
+
+/// Parses XML input document.
+/// All XInclude directives are processed into the final document.
 ///
-/// @note The document lifetime is managed by the parser.
+/// @param[in] file_path  The path to the document file.
+/// @param[in] validator  Optional validator against the RNG schema.
 ///
-/// @todo Decouple the document lifetime from its parser.
-class Parser {
- public:
-  /// Initializes a DOM parser,
-  /// parses XML input document,
-  /// and converts library exceptions into local errors.
-  ///
-  /// All XInclude directives are processed into the final document.
-  ///
-  /// @param[in] file_path  The path to the document file.
-  /// @param[in] validator  Optional validator against the RNG schema.
-  ///
-  /// @throws ValidationError  There are problems loading the XML file.
-  explicit Parser(const std::string& file_path,
-                  Validator* validator = nullptr) {
-    try {
-      parser_ = std::make_unique<xmlpp::DomParser>(file_path);
-      xmlXIncludeProcessFlags(parser_->get_document()->cobj(),
-                              XML_PARSE_NOBASEFIX);
-      parser_->get_document()->process_xinclude();
-    } catch (const xmlpp::exception& ex) {
-      throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));
-    }
+/// @returns The initialized document.
+///
+/// @throws ValidationError  There are problems loading the XML file.
+///
+/// @todo Provide proper validation error messages.
+inline Document Parse(const std::string& file_path,
+                      Validator* validator = nullptr) {
+  xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
+  if (!doc)
+      throw ValidationError("XML file is invalid:\n");
+  if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
+    throw ValidationError("XML Xinclude substitutions are failed.");
+  Document manager(doc);
+  if (validator)
+    validator->validate(manager);
+  return manager;
+}
 
-    if (validator)
-      validator->validate(Document(parser_->get_document()));
-  }
-
-  /// Overload to parse stream.
-  explicit Parser(std::istream& input_stream, Validator* validator = nullptr) {
-    try {
-      parser_ = std::make_unique<xmlpp::DomParser>();
-      parser_->parse_stream(input_stream);
-      xmlXIncludeProcessFlags(parser_->get_document()->cobj(),
-                              XML_PARSE_NOBASEFIX);
-      parser_->get_document()->process_xinclude();
-    } catch (const xmlpp::exception& ex) {
-      throw ValidationError("XML input is invalid:\n" + std::string(ex.what()));
-    }
-    if (validator)
-      validator->validate(Document(parser_->get_document()));
-  }
-
-  /// @returns The parsed document.
-  Document document() const { return Document(parser_->get_document()); }
-
- private:
-  std::unique_ptr<xmlpp::DomParser> parser_;  ///< The XML library DOM parser.
-};
+/// Convenience overload to parse the XML in memory.
+inline Document ParseMemory(const std::string& raw,
+                            Validator* validator = nullptr) {
+  xmlDoc* doc =
+      xmlReadMemory(raw.c_str(), raw.size() + 1, "", nullptr, kParserOptions);
+  if (!doc)
+    throw ValidationError("XML in memory is invalid.");
+  if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
+    throw ValidationError("XML Xinclude substitutions are failed.");
+  Document manager(doc);
+  if (validator)
+    validator->validate(manager);
+  return manager;
+}
 
 }  // namespace xml
 
