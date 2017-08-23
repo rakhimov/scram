@@ -1,7 +1,6 @@
 FROM alpine:edge
-RUN apk add --update --no-cache g++ make cmake binutils boost-dev jemalloc-dev
-RUN apk add libxml++-2.6-dev --update --no-cache \
-    --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+RUN apk add --update --no-cache g++ make cmake binutils boost-dev jemalloc-dev \
+    libxml2-dev
 ADD . scram/
 WORKDIR scram
 RUN mkdir -p build

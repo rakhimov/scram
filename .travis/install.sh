@@ -5,7 +5,7 @@ set -ev
 if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   # brew update
   # brew outdated boost || brew upgrade boost
-  brew install libxml++
+  brew install libxml2
   brew install gperftools
   brew install qt5
   brew install ccache
@@ -27,18 +27,6 @@ fi
 # Boost
 sudo apt-get install \
   libboost-{program-options,math,random,filesystem,system,date-time}1.58-dev
-
-# Installing dependencies from source.
-PROJECT_DIR=$PWD
-cd /tmp
-
-# Libxml++
-LIBXMLPP='libxml++-2.38.1'
-wget http://ftp.gnome.org/pub/GNOME/sources/libxml++/2.38/${LIBXMLPP}.tar.xz
-tar -xf ${LIBXMLPP}.tar.xz
-(cd ${LIBXMLPP} && ./configure && make -j 2 && sudo make install)
-
-cd $PROJECT_DIR
 
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
 

@@ -14,7 +14,7 @@ install:
     - pacman --noconfirm -Syu
     - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
     - pacman --noconfirm -S mingw-w64-x86_64-boost
-    - pacman --noconfirm -S mingw-w64-x86_64-libxml++2.6
+    - pacman --noconfirm -S mingw-w64-x86_64-libxml2
     - pacman --noconfirm -S mingw-w64-x86_64-qt5
 
 before_build:
