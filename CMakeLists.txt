@@ -167,10 +167,9 @@ if(NOT WITH_PROFILE)
 endif()
 message(STATUS "The memory allocator: ${MALLOC}")
 
-# Find LibXML++ and dependencies.
-set(LIBXML++_MIN_VERSION "2.38.1")  # TODO: Fix the minimum version check.
-find_package(LibXML++ "${LIBXML++_MIN_VERSION}" REQUIRED)
-set(LIBS ${LIBS} ${LibXML++_LIBRARIES})
+# Find LibXML2 and dependencies.
+find_package(LibXml2 REQUIRED)
+set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
 
 message(STATUS ${LIBS})
 
@@ -222,9 +221,6 @@ message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 
 # Include all the discovered system directories.
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
-include_directories(SYSTEM "${LibXML++_INCLUDE_DIR}")
-include_directories(SYSTEM "${LibXML++Config_INCLUDE_DIR}")
-include_directories(SYSTEM ${Glibmm_INCLUDE_DIRS})
 include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
 
 include_directories("${PROJECT_SOURCE_DIR}")  # Include the core headers via "src".
