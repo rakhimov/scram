@@ -20,12 +20,11 @@
 #include <sstream>
 #include <utility>
 
-#include <libxml++/libxml++.h>
-
 #include "env.h"
 #include "error.h"
 #include "initializer.h"
 #include "reporter.h"
+#include "xml.h"
 
 namespace scram {
 namespace core {
@@ -55,16 +54,13 @@ void RiskAnalysisTest::ProcessInputFiles(
 }
 
 void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
-  static xmlpp::RelaxNGValidator validator(Env::report_schema());
+  static xml::Validator validator(Env::report_schema());
 
   ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
   std::stringstream output;
   ASSERT_NO_THROW(Reporter().Report(*analysis, output));
-
-  xmlpp::DomParser parser;
-  ASSERT_NO_THROW(parser.parse_stream(output));
-  ASSERT_NO_THROW(validator.validate(parser.get_document()));
+  ASSERT_NO_THROW(xml::Parser(output, &validator));
 }
 
 const std::set<std::set<std::string>>& RiskAnalysisTest::products() {

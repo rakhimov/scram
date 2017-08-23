@@ -20,18 +20,17 @@
 #include <sstream>
 
 #include <gtest/gtest.h>
-#include <libxml++/libxml++.h>
 
 #include "env.h"
 #include "initializer.h"
 #include "settings.h"
+#include "xml.h"
 
 namespace scram {
 namespace mef {
 
 TEST(SerializationTest, InputOutput) {
-  static xmlpp::RelaxNGValidator validator(Env::install_dir() +
-                                           "/share/scram/gui.rng");
+  static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
       {"./share/scram/input/fta/correct_tree_input.xml"},
@@ -49,10 +48,7 @@ TEST(SerializationTest, InputOutput) {
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
     std::stringstream output;
     ASSERT_NO_THROW(Serialize(*model, output)) << input.front();
-
-    xmlpp::DomParser parser;
-    ASSERT_NO_THROW(parser.parse_stream(output)) << input.front();
-    ASSERT_NO_THROW(validator.validate(parser.get_document())) << input.front();
+    ASSERT_NO_THROW(xml::Parser(output, &validator)) << input.front();
   }
 }
 
