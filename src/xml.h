@@ -24,6 +24,7 @@
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
 
+#include <iosfwd>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -377,6 +378,21 @@ class Parser {
       throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));
     }
 
+    if (validator)
+      validator->validate(Document(parser_->get_document()));
+  }
+
+  /// Overload to parse stream.
+  explicit Parser(std::istream& input_stream, Validator* validator = nullptr) {
+    try {
+      parser_ = std::make_unique<xmlpp::DomParser>();
+      parser_->parse_stream(input_stream);
+      xmlXIncludeProcessFlags(parser_->get_document()->cobj(),
+                              XML_PARSE_NOBASEFIX);
+      parser_->get_document()->process_xinclude();
+    } catch (const xmlpp::exception& ex) {
+      throw ValidationError("XML input is invalid:\n" + std::string(ex.what()));
+    }
     if (validator)
       validator->validate(Document(parser_->get_document()));
   }
