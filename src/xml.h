@@ -32,13 +32,17 @@
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
 
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/utility/string_ref.hpp>
@@ -77,13 +81,31 @@ namespace detail {  // Internal XML helper functions.
 /// @throws ValidationError  Casting is unsuccessful.
 template <typename T>
 std::enable_if_t<std::is_arithmetic<T>::value, T>
-CastValue(const xml::string_view& value) {
-  try {
-    return boost::lexical_cast<T>(value.to_string());
-  } catch (boost::bad_lexical_cast&) {
-    throw ValidationError("Failed to interpret value '" + value.to_string() +
-                          "' to a number.");
-  }
+CastValue(const xml::string_view& value);
+
+/// Specialization for integer values.
+template <>
+inline int CastValue<int>(const xml::string_view& value) {
+  char* end_char = nullptr;
+  std::int64_t ret = std::strtoll(value.data(), &end_char, 10);
+  int len = end_char - value.data();
+  if (len != value.size() || ret > std::numeric_limits<int>::max() ||
+      ret < std::numeric_limits<int>::min())
+    throw ValidationError("Failed to interpret '" + value.to_string() +
+                          "' to 'int'.");
+  return ret;
+}
+
+/// Specialization for floating point numbers.
+template <>
+inline double CastValue<double>(const xml::string_view& value) {
+  char* end_char = nullptr;
+  double ret = std::strtod(value.data(), &end_char);
+  int len = end_char - value.data();
+  if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
+    throw ValidationError("Failed to interpret '" + value.to_string() +
+                          "' to 'double'.");
+  return ret;
 }
 
 /// Specialization for Boolean values.
@@ -93,7 +115,8 @@ inline bool CastValue<bool>(const xml::string_view& value) {
     return true;
   if (value == "false" || value == "0")
     return false;
-  throw LogicError("Boolean types must be validated in schema.");
+  throw ValidationError("Failed to interpret '" + value.to_string() +
+                        "' to 'bool'.");
 }
 
 /// Reinterprets the XML library UTF-8 string into C string.
