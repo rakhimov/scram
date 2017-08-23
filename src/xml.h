@@ -303,6 +303,91 @@ class Element {
   const xmlpp::Element& element_;  ///< The main data location.
 };
 
+/// XML DOM tree document.
+class Document {
+ public:
+  /// @param[in] doc  Fully parsed document.
+  explicit Document(const xmlpp::Document* doc) : doc_(*doc) {}
+
+  /// @returns The root element of the document.
+  Element root() const {
+    return Element(static_cast<xmlpp::Element*>(doc_.get_root_node()));
+  }
+
+  /// @returns The underlying data document.
+  const xmlpp::Document* get() const { return &doc_; }
+
+ private:
+  const xmlpp::Document& doc_;  ///< The XML DOM document.
+};
+
+/// RelaxNG validator.
+class Validator {
+ public:
+  /// @param[in] rng_file  The path to the schema file.
+  ///
+  /// @throws The library provided error for invalid XML RNG schema file.
+  ///
+  /// @todo Properly wrap the exception for invalid schema files.
+  explicit Validator(const std::string& rng_file) : validator_(rng_file) {}
+
+  /// Validates XML DOM documents against the schema.
+  ///
+  /// @param[in] doc  The initialized XML DOM document.
+  ///
+  /// @throws ValidationError  The document failed schema validation.
+  void validate(const Document& doc) {
+    try {
+      validator_.validate(doc.get());
+    } catch (const xmlpp::validity_error&) {
+      throw ValidationError("Document failed schema validation:\n" +
+                            xmlpp::format_xml_error());
+    }
+  }
+
+ private:
+  xmlpp::RelaxNGValidator validator_;  ///< The validator from the XML library.
+};
+
+/// DOM Parser.
+///
+/// @note The document lifetime is managed by the parser.
+///
+/// @todo Decouple the document lifetime from its parser.
+class Parser {
+ public:
+  /// Initializes a DOM parser,
+  /// parses XML input document,
+  /// and converts library exceptions into local errors.
+  ///
+  /// All XInclude directives are processed into the final document.
+  ///
+  /// @param[in] file_path  The path to the document file.
+  /// @param[in] validator  Optional validator against the RNG schema.
+  ///
+  /// @throws ValidationError  There are problems loading the XML file.
+  explicit Parser(const std::string& file_path,
+                  Validator* validator = nullptr) {
+    try {
+      parser_ = std::make_unique<xmlpp::DomParser>(file_path);
+      xmlXIncludeProcessFlags(parser_->get_document()->cobj(),
+                              XML_PARSE_NOBASEFIX);
+      parser_->get_document()->process_xinclude();
+    } catch (const xmlpp::exception& ex) {
+      throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));
+    }
+
+    if (validator)
+      validator->validate(Document(parser_->get_document()));
+  }
+
+  /// @returns The parsed document.
+  Document document() const { return Document(parser_->get_document()); }
+
+ private:
+  std::unique_ptr<xmlpp::DomParser> parser_;  ///< The XML library DOM parser.
+};
+
 }  // namespace xml
 
 /// Initializes a DOM parser
