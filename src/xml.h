@@ -37,11 +37,11 @@
 #include <string>
 #include <type_traits>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
+#include <boost/utility/string_ref.hpp>
 
 #include <libxml/parser.h>
 #include <libxml/relaxng.h>
@@ -62,6 +62,8 @@ std::string GetLine(const xml::Element& xml_node);  // For error reporting.
 
 namespace xml {
 
+using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
+
 /// Gets a number from an XML value.
 ///
 /// @tparam T  Numeric type.
@@ -73,18 +75,18 @@ namespace xml {
 /// @throws ValidationError  Casting is unsuccessful.
 template <typename T>
 std::enable_if_t<std::is_arithmetic<T>::value, T>
-CastValue(const std::string& value) {
+CastValue(const xml::string_view& value) {
   try {
-    return boost::lexical_cast<T>(value);
+    return boost::lexical_cast<T>(value.to_string());
   } catch (boost::bad_lexical_cast&) {
-    throw ValidationError("Failed to interpret value '" + value +
+    throw ValidationError("Failed to interpret value '" + value.to_string() +
                           "' to a number.");
   }
 }
 
 /// Specialization for Boolean values.
 template <>
-inline bool CastValue<bool>(const std::string& value) {
+inline bool CastValue<bool>(const xml::string_view& value) {
   if (value == "true" || value == "1")
     return true;
   if (value == "false" || value == "0")
@@ -112,6 +114,24 @@ inline const char* from_utf8(const xmlChar* xml_string) noexcept {
 inline const xmlChar* to_utf8(const char* c_string) noexcept {
   assert(c_string);
   return reinterpret_cast<const xmlChar*>(c_string);
+}
+
+/// Removes leading and trailing space characters from XML value string.
+///
+/// @param[in] text  The text in XML attribute or text nodes.
+///
+/// @returns View to the trimmed substring.
+///
+/// @pre The string is normalized by the XML parser.
+inline xml::string_view trim(const xml::string_view& text) noexcept {
+  auto pos_first = text.find_first_not_of(" ");
+  if (pos_first == xml::string_view::npos)
+    return {};
+
+  auto pos_last = text.find_last_not_of(" ");
+  auto len = pos_last - pos_first + 1;
+
+  return xml::string_view(text.data() + pos_first, len);
 }
 
 /// XML Element adaptor.
@@ -221,7 +241,7 @@ class Element {
   /// @returns The URI of the file containing the element.
   ///
   /// @pre The document has been loaded from a file.
-  std::string filename() const { return from_utf8(element_->doc->URL); }
+  xml::string_view filename() const { return from_utf8(element_->doc->URL); }
 
   /// @returns The line number of the element.
   int line() const { return XML_GET_LINE(to_node()); }
@@ -229,7 +249,7 @@ class Element {
   /// @returns The name of the XML element.
   ///
   /// @pre The element has a name.
-  std::string name() const { return from_utf8(element_->name); }
+  xml::string_view name() const { return from_utf8(element_->name); }
 
   /// Retrieves the XML element's attribute values.
   ///
@@ -240,16 +260,14 @@ class Element {
   ///
   /// @pre XML attributes never contain empty strings.
   /// @pre XML attribute values are simple texts w/o DTD processing.
-  std::string attribute(const std::string& name) const {
-    const xmlAttr* property = xmlHasProp(to_node(), to_utf8(name.c_str()));
+  xml::string_view attribute(const char* name) const {
+    const xmlAttr* property = xmlHasProp(to_node(), to_utf8(name));
     if (!property)
-      return "";
+      return {};
     const xmlNode* text_node = property->children;
     assert(text_node && text_node->type == XML_TEXT_NODE);
     assert(text_node->content);
-    std::string value = from_utf8(text_node->content);
-    boost::trim(value);
-    return value;
+    return xml::trim(from_utf8(text_node->content));
   }
 
   /// Queries element attribute existence.
@@ -260,22 +278,20 @@ class Element {
   ///
   /// @note This is an inefficient way to work with optional attributes.
   ///       Use the ``attribute(name)`` member function directly for optionals.
-  bool has_attribute(const std::string& name) const {
-    return xmlHasProp(to_node(), to_utf8(name.c_str())) != nullptr;
+  bool has_attribute(const char* name) const {
+    return xmlHasProp(to_node(), to_utf8(name)) != nullptr;
   }
 
   /// @returns The XML element's text.
   ///
   /// @pre The Element has text.
-  std::string text() const {
+  xml::string_view text() const {
     const xmlNode* text_node = element_->children;
     while (text_node && text_node->type != XML_TEXT_NODE)
       text_node = text_node->next;
     assert(text_node && "Element does not have text.");
     assert(text_node->content && "Missing text in Element.");
-    std::string content = from_utf8(text_node->content);
-    boost::trim(content);
-    return content;
+    return xml::trim(from_utf8(text_node->content));
   }
 
   /// Generic attribute value extraction following XML data types.
@@ -290,8 +306,8 @@ class Element {
   /// @throws ValidationError  Casting is unsuccessful.
   template <typename T>
   std::enable_if_t<std::is_arithmetic<T>::value, boost::optional<T>>
-  attribute(const std::string& name) const {
-    std::string value = attribute(name);
+  attribute(const char* name) const {
+    xml::string_view value = attribute(name);
     if (value.empty())
       return {};
     try {
@@ -325,7 +341,7 @@ class Element {
   ///                  Empty string to request any first child element.
   ///
   /// @returns The first child element (with the given name).
-  boost::optional<Element> child(const std::string& name = "") const {
+  boost::optional<Element> child(xml::string_view name = "") const {
     for (Element element : children()) {
       if (name.empty() || name == element.name())
         return element;
@@ -339,7 +355,9 @@ class Element {
   /// @param[in] name  The name to filter children elements.
   ///
   /// @returns The range of Element children with the given name.
-  auto children(std::string name) const {
+  ///
+  /// @pre The name must live at least as long as the returned range lives.
+  auto children(xml::string_view name) const {
     return children() |
            boost::adaptors::filtered([name](const Element& element) {
              return element.name() == name;

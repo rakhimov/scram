@@ -42,11 +42,11 @@ Settings& Settings::algorithm(Algorithm value) noexcept {
   return *this;
 }
 
-Settings& Settings::algorithm(const std::string& value) {
+Settings& Settings::algorithm(boost::string_ref value) {
   auto it = boost::find(kAlgorithmToString, value);
   if (it == std::end(kAlgorithmToString))
-    throw InvalidArgument("The qualitative analysis algorithm '" + value +
-                          "' is not recognized.");
+    throw InvalidArgument("The qualitative analysis algorithm '" +
+                          value.to_string() + "' is not recognized.");
   return algorithm(
       static_cast<Algorithm>(std::distance(kAlgorithmToString, it)));
 }
@@ -59,11 +59,11 @@ Settings& Settings::approximation(Approximation value) {
   return *this;
 }
 
-Settings& Settings::approximation(const std::string& value) {
+Settings& Settings::approximation(boost::string_ref value) {
   auto it = boost::find(kApproximationToString, value);
   if (it == std::end(kApproximationToString))
-    throw InvalidArgument("The probability approximation '" + value +
-                          "'is not recognized.");
+    throw InvalidArgument("The probability approximation '" +
+                          value.to_string() + "'is not recognized.");
   return approximation(
       static_cast<Approximation>(std::distance(kApproximationToString, it)));
 }

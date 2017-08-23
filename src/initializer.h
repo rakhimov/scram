@@ -322,7 +322,7 @@ class Initializer : private boost::noncopyable {
   /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidationError  The parameter variable is not reachable.
-  Expression* GetParameter(const std::string& expr_type,
+  Expression* GetParameter(const xml::string_view& expr_type,
                            const xml::Element& expr_element,
                            const std::string& base_path);
 

@@ -63,7 +63,7 @@ Config::Config(const std::string& config_file) {
   GatherInputFiles(root, base_path);
 
   if (boost::optional<xml::Element> out = root.child("output-path")) {
-    output_path_ = normalize(out->text(), base_path);
+    output_path_ = normalize(out->text().to_string(), base_path);
   }
 
   try {
@@ -81,7 +81,7 @@ void Config::GatherInputFiles(const xml::Element& root,
     return;
   for (xml::Element input_file : input_files->children()) {
     assert(input_file.name() == "file");
-    input_files_.push_back(normalize(input_file.text(), base_path));
+    input_files_.push_back(normalize(input_file.text().to_string(), base_path));
   }
 }
 
@@ -94,7 +94,7 @@ void Config::GatherOptions(const xml::Element& root) {
   // yet this function should not know what the order is.
   for (xml::Element option_group : options_element->children()) {
     try {
-      std::string name = option_group.name();
+      xml::string_view name = option_group.name();
       if (name == "algorithm") {
         settings_.algorithm(option_group.attribute("name"));
 
@@ -141,7 +141,7 @@ void Config::SetAnalysis(const xml::Element& analysis) {
 
 void Config::SetLimits(const xml::Element& limits) {
   for (xml::Element limit : limits.children()) {
-    std::string name = limit.name();
+    xml::string_view name = limit.name();
     if (name == "product-order") {
       settings_.limit_order(limit.text<int>());
 
