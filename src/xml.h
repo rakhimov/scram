@@ -16,10 +16,16 @@
  */
 
 /// @file xml.h
-/// XML helper facilities to work with libxml++.
+/// XML helper facilities to work with libxml2.
 /// Adaptors and helper functions provide read-only facilities.
 ///
 /// @note All strings and characters are UTF-8 unless otherwise documented.
+///
+/// @note The facilities are designed specifically for SCRAM use cases.
+///       The XML assumed to be well formed and simple.
+///
+/// @warning Complex XML features are not handled or expected,
+///          for example, DTD, namespaces, entries.
 
 #ifndef SCRAM_SRC_XML_H_
 #define SCRAM_SRC_XML_H_
@@ -37,6 +43,7 @@
 #include <boost/range/adaptor/filtered.hpp>
 
 #include <libxml++/libxml++.h>
+#include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/xinclude.h>
 
@@ -84,6 +91,28 @@ inline bool CastValue<bool>(const std::string& value) {
   throw LogicError("Boolean types must be validated in schema.");
 }
 
+/// Reinterprets the XML library UTF-8 string into C string.
+///
+/// @param[in] xml_string  The string provided by the XML library.
+///
+/// @returns The same string adapted for use as C string.
+inline const char* from_utf8(const xmlChar* xml_string) noexcept {
+  assert(xml_string);
+  return reinterpret_cast<const char*>(xml_string);
+}
+
+/// Reinterprets C string as XML library UTF-8 string.
+///
+/// @param[in] c_string  The C byte-array encoding the XML string.
+///
+/// @returns The same string adapted for use in XML library functions.
+///
+/// @pre The C string has UTF-8 encoding.
+inline const xmlChar* to_utf8(const char* c_string) noexcept {
+  assert(c_string);
+  return reinterpret_cast<const xmlChar*>(c_string);
+}
+
 /// XML Element adaptor.
 class Element {
  public:
@@ -103,7 +132,7 @@ class Element {
      public:
       /// @param[in] element  The starting element in the list.
       ///                     nullptr signifies the end.
-      explicit iterator(const xmlpp::Element* element = nullptr)
+      explicit iterator(const xmlElement* element = nullptr)
           : element_(element) {}
 
      private:
@@ -111,7 +140,7 @@ class Element {
       /// @{
       void increment() {
         assert(element_ && "Incrementing end iterator!");
-        element_ = Range::findElement(element_->get_next_sibling());
+        element_ = Range::findElement(element_->next);
       }
       bool equal(const iterator& other) const {
         return element_ == other.element_;
@@ -119,7 +148,7 @@ class Element {
       Element dereference() const { return Element(element_); }
       /// @}
 
-      const xmlpp::Element* element_;  ///< The current element.
+      const xmlElement* element_;  ///< The current element.
     };
 
     using const_iterator = iterator;  ///< The container is immutable.
@@ -128,7 +157,7 @@ class Element {
     ///
     /// @param[in] head  The head node of the list (may be non-Element node!).
     ///                  nullptr if the list is empty.
-    explicit Range(const xmlpp::Node* head) : begin_(findElement(head)) {}
+    explicit Range(const xmlNode* head) : begin_(findElement(head)) {}
 
     /// The range begin and end iterators.
     /// @{
@@ -174,30 +203,32 @@ class Element {
     ///
     /// @returns The first Element type node.
     ///          nullptr if the list does not contain any Element nodes.
-    static const xmlpp::Element* findElement(const xmlpp::Node* node) noexcept {
-      while (node && node->cobj()->type != XML_ELEMENT_NODE)
-        node = node->get_next_sibling();
-      return static_cast<const xmlpp::Element*>(node);
+    static const xmlElement* findElement(const xmlNode* node) noexcept {
+      while (node && node->type != XML_ELEMENT_NODE)
+        node = node->next;
+      return reinterpret_cast<const xmlElement*>(node);
     }
 
     iterator begin_;  ///< The first node with XML Element.
   };
 
   /// @param[in] element  The element in the XML document.
-  explicit Element(const xmlpp::Element* element) : element_(*element) {}
+  explicit Element(const xmlElement* element) : element_(element) {}
 
   /// @returns The URI of the file containing the element.
   ///
   /// @pre The document has been loaded from a file.
-  std::string filename() const {
-    return reinterpret_cast<const char*>(element_.cobj()->doc->URL);
-  }
+  std::string filename() const { return from_utf8(element_->doc->URL); }
 
   /// @returns The line number of the element.
-  int line() const { return element_.get_line(); }
+  int line() const {
+    return XML_GET_LINE(reinterpret_cast<const xmlNode*>(element_));
+  }
 
   /// @returns The name of the XML element.
-  std::string name() const { return element_.get_name(); }
+  ///
+  /// @pre The element has a name.
+  std::string name() const { return from_utf8(element_->name); }
 
   /// Retrieves the XML element's attribute values.
   ///
@@ -207,13 +238,20 @@ class Element {
   ///          empty string if no attribute (optional attribute).
   ///
   /// @pre XML attributes never contain empty strings.
+  /// @pre XML attribute values are simple texts w/o DTD processing.
   std::string attribute(const std::string& name) const {
-    std::string value = element_.get_attribute_value(name);
+    const xmlAttr* property = xmlHasProp(to_node(), to_utf8(name.c_str()));
+    if (!property)
+      return "";
+    const xmlNode* text_node = property->children;
+    assert(text_node && text_node->type == XML_TEXT_NODE);
+    assert(text_node->content);
+    std::string value = from_utf8(text_node->content);
     boost::trim(value);
     return value;
   }
 
-  /// Queries if element attribute existence.
+  /// Queries element attribute existence.
   ///
   /// @param[in] name  The non-empty attribute name.
   ///
@@ -222,12 +260,19 @@ class Element {
   /// @note This is an inefficient way to work with optional attributes.
   ///       Use the ``attribute(name)`` member function directly for optionals.
   bool has_attribute(const std::string& name) const {
-    return !attribute(name).empty();
+    return xmlHasProp(to_node(), to_utf8(name.c_str())) != nullptr;
   }
 
   /// @returns The XML element's text.
+  ///
+  /// @pre The Element has text.
   std::string text() const {
-    std::string content = element_.get_child_text()->get_content();
+    const xmlNode* text_node = element_->children;
+    while (text_node && text_node->type != XML_TEXT_NODE)
+      text_node = text_node->next;
+    assert(text_node && "Element does not have text.");
+    assert(text_node->content && "Missing text in Element.");
+    std::string content = from_utf8(text_node->content);
     boost::trim(content);
     return content;
   }
@@ -288,7 +333,7 @@ class Element {
   }
 
   /// @returns All the Element children.
-  Range children() const { return Range(element_.get_first_child()); }
+  Range children() const { return Range(element_->children); }
 
   /// @param[in] name  The name to filter children elements.
   ///
@@ -301,7 +346,12 @@ class Element {
   }
 
  private:
-  const xmlpp::Element& element_;  ///< The main data location.
+  /// Converts the data to its base.
+  const xmlNode* to_node() const {
+    return reinterpret_cast<const xmlNode*>(element_);
+  }
+
+  const xmlElement* element_;  ///< The main data location.
 };
 
 /// XML DOM tree document.
@@ -311,8 +361,11 @@ class Document {
   explicit Document(const xmlpp::Document* doc) : doc_(*doc) {}
 
   /// @returns The root element of the document.
+  ///
+  /// @pre The document has a root node.
   Element root() const {
-    return Element(static_cast<xmlpp::Element*>(doc_.get_root_node()));
+    return Element(
+        reinterpret_cast<const xmlElement*>(doc_.get_root_node()->cobj()));
   }
 
   /// @returns The underlying data document.
