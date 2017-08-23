@@ -406,29 +406,6 @@ class Parser {
 
 }  // namespace xml
 
-/// Initializes a DOM parser
-/// and converts library exceptions into local errors.
-///
-/// All XInclude directives are processed into the final document.
-///
-/// @param[in] file_path  Path to the xml file.
-///
-/// @returns A parser with a well-formed, initialized document.
-///
-/// @throws ValidationError  There are problems loading the XML file.
-inline std::unique_ptr<xmlpp::DomParser> ConstructDomParser(
-    const std::string& file_path) {
-  try {
-    auto dom_parser = std::make_unique<xmlpp::DomParser>(file_path);
-    xmlXIncludeProcessFlags(dom_parser->get_document()->cobj(),
-                            XML_PARSE_NOBASEFIX);
-    dom_parser->get_document()->process_xinclude();
-    return dom_parser;
-  } catch (const xmlpp::exception& ex) {
-    throw ValidationError("XML file is invalid:\n" + std::string(ex.what()));
-  }
-}
-
 /// Returns XML line number message.
 inline std::string GetLine(const xml::Element& xml_node) {
   return "Line " + std::to_string(xml_node.line()) + ":\n";
