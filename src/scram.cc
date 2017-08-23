@@ -131,7 +131,6 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << " (" << scram::version::describe() << ")"
               << "\n\nDependencies:\n"
               << "   Boost       " << scram::version::boost() << "\n"
-              << "   libxml++    " << scram::version::libxmlpp() << "\n"
               << "   libxml2     " << scram::version::libxml() << std::endl;
     return -1;
   }
