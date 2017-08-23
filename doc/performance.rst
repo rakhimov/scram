@@ -236,9 +236,10 @@ Fault tree generator flags to get the model.
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    16 | 17.5
+- XML parsing & schema validation: (5, 5.5)
+- Initialization and Validation: (1.6, 2)
 
-- Memory:   1000
+- Memory:   900
 
 
 Fault Tree Generator Script
