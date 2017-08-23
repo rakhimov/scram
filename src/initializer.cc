@@ -340,18 +340,10 @@ Sequence* Initializer::Register(const xml::Element& xml_node,
 /// @}
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
-  static xmlpp::RelaxNGValidator validator(Env::input_schema());
+  static xml::Validator validator(Env::input_schema());
 
-  std::unique_ptr<xmlpp::DomParser> parser = ConstructDomParser(xml_file);
-  try {
-    validator.validate(parser->get_document());
-  } catch (const xmlpp::validity_error&) {
-    throw ValidationError("Document failed schema validation:\n" +
-                          xmlpp::format_xml_error());
-  }
-
-  xml::Element root(
-      static_cast<xmlpp::Element*>(parser->get_document()->get_root_node()));
+  xml::Parser parser(xml_file, &validator);
+  xml::Element root = parser.document().root();
   assert(root.name() == "opsa-mef");
 
   if (!model_) {  // Create only one model for multiple files.
@@ -541,9 +533,8 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
 /// @}
 
 void Initializer::ProcessTbdElements() {
-  for (const auto& parser : parsers_) {
-    xml::Element root(static_cast<const xmlpp::Element*>(
-        parser->get_document()->get_root_node()));
+  for (const xml::Parser& parser : parsers_) {
+    xml::Element root = parser.document().root();
     for (const xml::Element& node : root.children("define-extern-function")) {
       try {
         DefineExternFunction(node);

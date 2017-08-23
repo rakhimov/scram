@@ -32,7 +32,6 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/variant.hpp>
-#include <libxml++/libxml++.h>
 
 #include "ccf_group.h"
 #include "element.h"
@@ -466,7 +465,7 @@ class Initializer : private boost::noncopyable {
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
 
   /// Saved parsers to keep XML documents alive.
-  std::vector<std::unique_ptr<xmlpp::DomParser>> parsers_;
+  std::vector<xml::Parser> parsers_;
 
   /// Collection of elements that are defined late
   /// because of unordered registration and definition of their dependencies.
