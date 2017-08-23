@@ -64,6 +64,8 @@ namespace xml {
 
 using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
 
+namespace detail {  // Internal XML helper functions.
+
 /// Gets a number from an XML value.
 ///
 /// @tparam T  Numeric type.
@@ -133,6 +135,8 @@ inline xml::string_view trim(const xml::string_view& text) noexcept {
 
   return xml::string_view(text.data() + pos_first, len);
 }
+
+}  // namespace detail
 
 /// XML Element adaptor.
 class Element {
@@ -241,7 +245,9 @@ class Element {
   /// @returns The URI of the file containing the element.
   ///
   /// @pre The document has been loaded from a file.
-  xml::string_view filename() const { return from_utf8(element_->doc->URL); }
+  xml::string_view filename() const {
+    return detail::from_utf8(element_->doc->URL);
+  }
 
   /// @returns The line number of the element.
   int line() const { return XML_GET_LINE(to_node()); }
@@ -249,7 +255,7 @@ class Element {
   /// @returns The name of the XML element.
   ///
   /// @pre The element has a name.
-  xml::string_view name() const { return from_utf8(element_->name); }
+  xml::string_view name() const { return detail::from_utf8(element_->name); }
 
   /// Retrieves the XML element's attribute values.
   ///
@@ -261,13 +267,13 @@ class Element {
   /// @pre XML attributes never contain empty strings.
   /// @pre XML attribute values are simple texts w/o DTD processing.
   xml::string_view attribute(const char* name) const {
-    const xmlAttr* property = xmlHasProp(to_node(), to_utf8(name));
+    const xmlAttr* property = xmlHasProp(to_node(), detail::to_utf8(name));
     if (!property)
       return {};
     const xmlNode* text_node = property->children;
     assert(text_node && text_node->type == XML_TEXT_NODE);
     assert(text_node->content);
-    return xml::trim(from_utf8(text_node->content));
+    return detail::trim(detail::from_utf8(text_node->content));
   }
 
   /// Queries element attribute existence.
@@ -279,7 +285,7 @@ class Element {
   /// @note This is an inefficient way to work with optional attributes.
   ///       Use the ``attribute(name)`` member function directly for optionals.
   bool has_attribute(const char* name) const {
-    return xmlHasProp(to_node(), to_utf8(name)) != nullptr;
+    return xmlHasProp(to_node(), detail::to_utf8(name)) != nullptr;
   }
 
   /// @returns The XML element's text.
@@ -291,7 +297,7 @@ class Element {
       text_node = text_node->next;
     assert(text_node && "Element does not have text.");
     assert(text_node->content && "Missing text in Element.");
-    return xml::trim(from_utf8(text_node->content));
+    return detail::trim(detail::from_utf8(text_node->content));
   }
 
   /// Generic attribute value extraction following XML data types.
@@ -311,7 +317,7 @@ class Element {
     if (value.empty())
       return {};
     try {
-      return CastValue<T>(value);
+      return detail::CastValue<T>(value);
     } catch (ValidationError& err) {
       err.msg(GetLine(*this) + "Attribute '" + name + "': " + err.msg());
       throw;
@@ -330,7 +336,7 @@ class Element {
   template <typename T>
   std::enable_if_t<std::is_arithmetic<T>::value, T> text() const {
     try {
-      return CastValue<T>(text());
+      return detail::CastValue<T>(text());
     } catch (ValidationError& err) {
       err.msg(GetLine(*this) + "Text element: " + err.msg());
       throw;
