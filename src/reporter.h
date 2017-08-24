@@ -65,12 +65,12 @@ class Reporter {
   /// @param[in] risk_an  Risk analysis with all the information.
   /// @param[in,out] report  The root element of the document.
   void ReportInformation(const core::RiskAnalysis& risk_an,
-                         XmlStreamElement* report);
+                         xml::StreamElement* report);
 
   /// Reports software information and relevant run identifiers.
   ///
   /// @param[in,out] information  The XML element to append the results.
-  void ReportSoftwareInformation(XmlStreamElement* information);
+  void ReportSoftwareInformation(xml::StreamElement* information);
 
   /// Reports information about calculated quantities.
   /// The default call reports everything about the analysis
@@ -82,21 +82,21 @@ class Reporter {
   /// @param[in,out] information  The XML element to append the results.
   template<class T = core::RiskAnalysis>
   void ReportCalculatedQuantity(const core::Settings& settings,
-                                XmlStreamElement* information);
+                                xml::StreamElement* information);
 
   /// Reports summary of the model and its constructs.
   ///
   /// @param[in] model  The container of all the analysis constructs.
   /// @param[in,out] information  The XML element to append the results.
   void ReportModelFeatures(const mef::Model& model,
-                           XmlStreamElement* information);
+                           xml::StreamElement* information);
 
   /// Reports performance metrics of all conducted analyses.
   ///
   /// @param[in] risk_an  Risk analysis with all the performance information.
   /// @param[in,out] information  The XML element to append the results.
   void ReportPerformance(const core::RiskAnalysis& risk_an,
-                         XmlStreamElement* information);
+                         xml::StreamElement* information);
 
   /// Reports unused elements
   /// as warnings of the top information level.
@@ -109,7 +109,7 @@ class Reporter {
   /// @param[in,out] information  The XML element to append the results.
   template <class T>
   void ReportUnusedElements(const T& container, const std::string& header,
-                            XmlStreamElement* information);
+                            xml::StreamElement* information);
 
   /// Reports the results of event tree analysis
   /// to a specified output destination.
@@ -119,7 +119,7 @@ class Reporter {
   ///
   /// @pre The probability analysis has been performed.
   void ReportResults(const core::RiskAnalysis::EtaResult& eta_result,
-                     XmlStreamElement* results);
+                     xml::StreamElement* results);
 
   /// Reports the results of fault tree analysis
   /// to a specified output destination.
@@ -132,7 +132,7 @@ class Reporter {
   void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::FaultTreeAnalysis& fta,
                      const core::ProbabilityAnalysis* prob_analysis,
-                     XmlStreamElement* results);
+                     xml::StreamElement* results);
 
   /// Reports results of probability analysis.
   ///
@@ -141,7 +141,7 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::ProbabilityAnalysis& prob_analysis,
-                     XmlStreamElement* results);
+                     xml::StreamElement* results);
 
   /// Reports results of importance analysis.
   ///
@@ -150,7 +150,7 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::ImportanceAnalysis& importance_analysis,
-                     XmlStreamElement* results);
+                     xml::StreamElement* results);
 
   /// Reports the results of uncertainty analysis.
   ///
@@ -159,18 +159,18 @@ class Reporter {
   /// @param[in,out] results  XML element to for all results.
   void ReportResults(const core::RiskAnalysis::Result::Id& id,
                      const core::UncertaintyAnalysis& uncert_analysis,
-                     XmlStreamElement* results);
+                     xml::StreamElement* results);
 
   /// Reports literal in products.
   ///
   /// @param[in] literal  A literal to be reported.
   /// @param[in,out] parent  A parent element node to have this literal.
-  void ReportLiteral(const core::Literal& literal, XmlStreamElement* parent);
+  void ReportLiteral(const core::Literal& literal, xml::StreamElement* parent);
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
   ///
-  /// @tparam T  Function pointer or functor type with XmlStreamElement* param.
+  /// @tparam T  Function object type with xml::StreamElement* param.
   ///
   /// @param[in] basic_event  A basic event to be reported.
   /// @param[in,out] parent  A parent element node to have this basic event.
@@ -182,7 +182,7 @@ class Reporter {
   ///       The callback function puts the extra information in-between.
   template <class T>
   void ReportBasicEvent(const mef::BasicEvent& basic_event,
-                        XmlStreamElement* parent, const T& add_data);
+                        xml::StreamElement* parent, const T& add_data);
 };
 
 }  // namespace scram

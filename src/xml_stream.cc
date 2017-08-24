@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,13 @@
 #include <string>
 
 namespace scram {
+namespace xml {
 
-XmlStreamElement::XmlStreamElement(const char* name, std::ostream& out)
-    : XmlStreamElement(name, 0, nullptr, out) {}
+StreamElement::StreamElement(const char* name, std::ostream& out)
+    : StreamElement(name, 0, nullptr, out) {}
 
-XmlStreamElement::XmlStreamElement(const char* name, int indent,
-                                   XmlStreamElement* parent, std::ostream& out)
+StreamElement::StreamElement(const char* name, int indent,
+                             StreamElement* parent, std::ostream& out)
     : kName_(name),
       kIndent_(indent),
       accept_attributes_(true),
@@ -40,19 +41,19 @@ XmlStreamElement::XmlStreamElement(const char* name, int indent,
       parent_(parent),
       out_(out) {
   if (*kName_ == '\0')
-    throw XmlStreamError("The element name can't be empty.");
+    throw StreamError("The element name can't be empty.");
   if (kIndent_ < 0)
-    throw XmlStreamError("Negative indentation.");
+    throw StreamError("Negative indentation.");
 
   if (parent_) {
     if (!parent_->active_)
-      throw XmlStreamError("The parent is inactive.");
+      throw StreamError("The parent is inactive.");
     parent_->active_ = false;
   }
   out_ << std::string(kIndent_, ' ') << "<" << kName_;
 }
 
-XmlStreamElement::~XmlStreamElement() noexcept {
+StreamElement::~StreamElement() noexcept {
   assert(active_ && "The child element may still be alive.");
   assert(!(parent_ && parent_->active_) && "The parent must be inactive.");
   if (parent_)
@@ -69,13 +70,13 @@ closing_tag:
   }
 }
 
-XmlStreamElement XmlStreamElement::AddChild(const char* name) {
+StreamElement StreamElement::AddChild(const char* name) {
   if (!active_)
-    throw XmlStreamError("The element is inactive.");
+    throw StreamError("The element is inactive.");
   if (!accept_elements_)
-    throw XmlStreamError("Too late to add elements.");
+    throw StreamError("Too late to add elements.");
   if (*name == '\0')
-    throw XmlStreamError("Element name can't be empty.");
+    throw StreamError("Element name can't be empty.");
 
   if (accept_text_)
     accept_text_ = false;
@@ -83,7 +84,8 @@ XmlStreamElement XmlStreamElement::AddChild(const char* name) {
     accept_attributes_ = false;
     out_ << ">\n";
   }
-  return XmlStreamElement(name, kIndent_ + 2, this, out_);
+  return StreamElement(name, kIndent_ + 2, this, out_);
 }
 
+}  // namespace xml
 }  // namespace scram

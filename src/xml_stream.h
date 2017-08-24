@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,10 @@
 #include "error.h"
 
 namespace scram {
+namespace xml {
 
 /// Errors in using XML streaming facilities.
-struct XmlStreamError : public Error {
+struct StreamError : public Error {
   using Error::Error;
 };
 
@@ -62,7 +63,7 @@ struct XmlStreamError : public Error {
 ///          the lifetime of the string is long enough for streaming.
 ///          It is the most common case that strings are literals,
 ///          so there's no need to worry about dynamic lifetime.
-class XmlStreamElement {
+class StreamElement {
  public:
   /// Constructs a root streamer for the XML element data
   /// ready to accept attributes, elements, text.
@@ -70,8 +71,8 @@ class XmlStreamElement {
   /// @param[in] name  Non-empty string name for the element.
   /// @param[in,out] out  The destination stream.
   ///
-  /// @throws XmlStreamError  Invalid setup for the element.
-  XmlStreamElement(const char* name, std::ostream& out);
+  /// @throws StreamError  Invalid setup for the element.
+  StreamElement(const char* name, std::ostream& out);
 
   /// Move constructor is only declared
   /// to make the compiler happy.
@@ -80,7 +81,7 @@ class XmlStreamElement {
   ///
   /// The constructor is not defined,
   /// so the use of this constructor will produce a linker error.
-  XmlStreamElement(XmlStreamElement&&);
+  StreamElement(StreamElement&&);
 
   /// Puts the closing tag.
   ///
@@ -91,7 +92,7 @@ class XmlStreamElement {
   ///          It can happen if the destructor is called explicitly,
   ///          or if the objects are allocated on the heap
   ///          with different lifetimes.
-  ~XmlStreamElement() noexcept;
+  ~StreamElement() noexcept;
 
   /// Sets the attributes for the element.
   ///
@@ -102,15 +103,15 @@ class XmlStreamElement {
   ///
   /// @returns The reference to this element.
   ///
-  /// @throws XmlStreamError  Invalid setup for the attribute.
+  /// @throws StreamError  Invalid setup for the attribute.
   template <typename T>
-  XmlStreamElement& SetAttribute(const char* name, T&& value) {
+  StreamElement& SetAttribute(const char* name, T&& value) {
     if (!active_)
-      throw XmlStreamError("The element is inactive.");
+      throw StreamError("The element is inactive.");
     if (!accept_attributes_)
-      throw XmlStreamError("Too late for attributes.");
+      throw StreamError("Too late for attributes.");
     if (*name == '\0')
-      throw XmlStreamError("Attribute name can't be empty.");
+      throw StreamError("Attribute name can't be empty.");
 
     out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
     return *this;
@@ -125,13 +126,13 @@ class XmlStreamElement {
   /// @post No more elements or attributes can be added.
   /// @post More text can be added.
   ///
-  /// @throws XmlStreamError  Invalid setup or state for text addition.
+  /// @throws StreamError  Invalid setup or state for text addition.
   template <typename T>
   void AddText(T&& text) {
     if (!active_)
-      throw XmlStreamError("The element is inactive.");
+      throw StreamError("The element is inactive.");
     if (!accept_text_)
-      throw XmlStreamError("Too late to put text.");
+      throw StreamError("Too late to put text.");
 
     if (accept_elements_)
       accept_elements_ = false;
@@ -153,8 +154,8 @@ class XmlStreamElement {
   /// @post The parent element is inactive
   ///       while the child element is alive.
   ///
-  /// @throws XmlStreamError  Invalid setup or state for element addition.
-  XmlStreamElement AddChild(const char* name);
+  /// @throws StreamError  Invalid setup or state for element addition.
+  StreamElement AddChild(const char* name);
 
  private:
   /// Private constructor for a streamer
@@ -166,9 +167,9 @@ class XmlStreamElement {
   ///                        Null pointer for root streamers.
   /// @param[in,out] out  The destination stream.
   ///
-  /// @throws XmlStreamError  Invalid setup for the element.
-  XmlStreamElement(const char* name, int indent, XmlStreamElement* parent,
-                   std::ostream& out);
+  /// @throws StreamError  Invalid setup for the element.
+  StreamElement(const char* name, int indent, StreamElement* parent,
+                std::ostream& out);
 
   const char* kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.
@@ -176,10 +177,11 @@ class XmlStreamElement {
   bool accept_elements_;  ///< Flag for preventing late elements.
   bool accept_text_;  ///< Flag for preventing late text additions.
   bool active_;  ///< Active in streaming.
-  XmlStreamElement* parent_;  ///< Parent element.
+  StreamElement* parent_;  ///< Parent element.
   std::ostream& out_;  ///< The output destination.
 };
 
+}  // namespace xml
 }  // namespace scram
 
 #endif  // SCRAM_SRC_XML_STREAM_H_
