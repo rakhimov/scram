@@ -178,6 +178,7 @@ message(STATUS ${LIBS})
 # Capitalization matters on some platforms.
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(BOOST_MIN_VERSION "1.58.0")
+  set(LIBS ${LIBS} ${CMAKE_DL_LIBS})
 else()
   set(BOOST_MIN_VERSION "1.61.0")
 endif()
