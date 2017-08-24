@@ -170,8 +170,8 @@ void Serialize(const HouseEvent& house_event, xml::StreamElement* parent) {
 }  // namespace
 
 void Serialize(const Model& model, std::ostream& out) {
-  out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  xml::StreamElement root("opsa-mef", out);
+  xml::Stream xml_stream(out);
+  xml::StreamElement root = xml_stream.root("opsa-mef");
   if (!model.HasDefaultName())
     root.SetAttribute("name", model.name());
   SerializeLabelAndAttributes(model, &root);

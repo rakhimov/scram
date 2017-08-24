@@ -66,8 +66,8 @@ void PutId(const core::RiskAnalysis::Result::Id& id,
 }  // namespace
 
 void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
-  out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  xml::StreamElement report("report", out);
+  xml::Stream xml_stream(out);
+  xml::StreamElement report = xml_stream.root("report");
   ReportInformation(risk_an, &report);
 
   if (risk_an.results().empty() && risk_an.event_tree_results().empty())
