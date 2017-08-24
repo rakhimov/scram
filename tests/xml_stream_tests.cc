@@ -23,9 +23,16 @@ namespace scram {
 namespace xml {
 namespace test {
 
-TEST(XmlStreamTest, Constructor) {
+TEST(XmlStreamTest, ElementConstructor) {
   EXPECT_THROW(StreamElement("", std::cerr), StreamError);
   EXPECT_NO_THROW(StreamElement("element", std::cerr));
+}
+
+TEST(XmlStreamTest, StreamConstructor) {
+  EXPECT_NO_THROW(Stream{std::cerr});
+  Stream xml_stream(std::cerr);
+  EXPECT_NO_THROW(xml_stream.root("root"));
+  EXPECT_THROW(xml_stream.root("root"), StreamError);
 }
 
 TEST(XmlStreamTest, SetAttribute) {

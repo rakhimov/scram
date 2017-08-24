@@ -44,6 +44,8 @@ struct StreamError : public Error {
 /// the parent element is put into an inactive state
 /// while its child element is alive.
 ///
+/// @pre All strings are UTF-8 encoded.
+///
 /// @note The stream is designed to prevent mixing XML text and elements
 ///       due to the absence of the use case or need.
 ///       However, there's no fundamental design or technical issue
@@ -54,7 +56,7 @@ struct StreamError : public Error {
 /// @warning The names of elements and contents of XML data
 ///          are NOT fully validated to be proper XML.
 ///          It is up to the caller
-///          to sanitize the input text.
+///          to sanitize the input text (<, >, &, ", ').
 ///
 /// @warning The API works with C strings,
 ///          but this class does not manage the string lifetime.
@@ -179,6 +181,39 @@ class StreamElement {
   bool active_;  ///< Active in streaming.
   StreamElement* parent_;  ///< Parent element.
   std::ostream& out_;  ///< The output destination.
+};
+
+/// XML Stream document.
+class Stream {
+ public:
+  /// Constructs a document with XML header.
+  ///
+  /// @param[in] out  The stream destination.
+  explicit Stream(std::ostream& out) : has_root_(false), out_(out) {
+    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  }
+
+  /// Creates a root element for the document.
+  ///
+  /// @param[in] name  The name for the root element.
+  ///
+  /// @returns XML stream element representing the document root.
+  ///
+  /// @pre The document is alive at least as long as the created root.
+  ///
+  /// @throws StreamError  The document already has a root element,
+  ///                      or root element construction has failed.
+  StreamElement root(const char* name) {
+    if (has_root_)
+      throw StreamError("The XML stream document already has a root.");
+    StreamElement element(name, out_);
+    has_root_ = true;
+    return element;
+  }
+
+ private:
+  bool has_root_;  ///< The document has constructed its root.
+  std::ostream& out_;  ///< The output stream.
 };
 
 }  // namespace xml
