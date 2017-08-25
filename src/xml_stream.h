@@ -106,11 +106,28 @@ class FileStream {
 
   /// Writes a value into file.
   /// @{
-  void write(const std::string& value) { std::fputs(value.c_str(), file_); }
+  void write(const std::string& value) { write(value.c_str()); }
   void write(const char* value) { std::fputs(value, file_); }
-  void write(int value) { std::fprintf(file_, "%d", value); }
+  void write(int value) {
+    if (value < 0) {
+      std::fputc('-', file_);
+      value = -value;
+    }
+    write(static_cast<std::size_t>(value));
+  }
+  void write(std::size_t value) {
+    char temp[20];
+    char* p = temp;
+    do {
+      *p++ = value % 10 + '0';
+      value /= 10;
+    } while (value > 0);
+
+    do {
+      std::fputc(*--p, file_);
+    } while (p != temp);
+  }
   void write(double value) { std::fprintf(file_, "%g", value); }
-  void write(std::size_t value) { std::fprintf(file_, "%zu", value); }
   /// @}
 
  private:
