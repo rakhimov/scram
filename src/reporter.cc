@@ -63,8 +63,9 @@ void PutId(const core::RiskAnalysis::Result::Id& id,
 
 }  // namespace
 
-void Reporter::Report(const core::RiskAnalysis& risk_an, std::FILE* out) {
-  xml::Stream xml_stream(out);
+void Reporter::Report(const core::RiskAnalysis& risk_an, std::FILE* out,
+                      bool indent) {
+  xml::Stream xml_stream(out, indent);
   xml::StreamElement report = xml_stream.root("report");
   ReportInformation(risk_an, &report);
 
@@ -96,7 +97,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::FILE* out) {
 }
 
 void Reporter::Report(const core::RiskAnalysis& risk_an,
-                      const std::string& file) {
+                      const std::string& file, bool indent) {
   struct FileGuard {
     ~FileGuard() {
       if (of)
@@ -107,7 +108,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an,
 
   if (!guard.of)
     throw IOError(file + " : Cannot write the output file.");
-  Report(risk_an, guard.of);
+  Report(risk_an, guard.of, indent);
 }
 
 /// Describes the fault tree analysis and techniques.

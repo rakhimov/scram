@@ -45,19 +45,23 @@ class Reporter {
   ///
   /// @param[in] risk_an  Risk analysis with results.
   /// @param[out] out  The report destination stream.
+  /// @param[in] indent  The flag to indent output for readability.
   ///
   /// @pre The output destination is used only by this reporter.
   ///      There is going to be no appending to the stream after the report.
-  void Report(const core::RiskAnalysis& risk_an, std::FILE* out);
+  void Report(const core::RiskAnalysis& risk_an, std::FILE* out,
+              bool indent = true);
 
   /// A convenience function to generate the report into a file.
   /// This function overwrites the file.
   ///
   /// @param[in] risk_an  Risk analysis with results.
   /// @param[out] file  The output destination.
+  /// @param[in] indent  The flag to indent output for readability.
   ///
   /// @throws IOError  The output file is not accessible.
-  void Report(const core::RiskAnalysis& risk_an, const std::string& file);
+  void Report(const core::RiskAnalysis& risk_an, const std::string& file,
+              bool indent = true);
 
  private:
   /// This function populates information

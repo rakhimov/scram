@@ -80,14 +80,21 @@ class Indenter {
   };
 
   /// Initializes the buffer with enough space characters.
-  Indenter() { std::fill_n(spaces, kMaxIndent, kIndentChar); }
+  ///
+  /// @param[in] indent  Enable/disable indentation.
+  explicit Indenter(bool indent = true) : indent_(indent) {
+    std::fill_n(spaces, kMaxIndent, kIndentChar);
+  }
 
   /// @param[in] num_chars  The number of indentation characters.
   ///
   /// @returns Indentation to produce the representative string.
-  Indentation operator()(int num_chars) { return Indentation(num_chars, this); }
+  Indentation operator()(int num_chars) {
+    return indent_ ? Indentation(num_chars, this) : Indentation(0, this);
+  }
 
  private:
+  bool indent_;  ///< Option to enable/disable indentation.
   char spaces[kMaxIndent + 1];  ///< The indentation and terminator.
 };
 
@@ -336,7 +343,9 @@ class Stream {
   /// Constructs a document with XML header.
   ///
   /// @param[in] out  The stream destination.
-  explicit Stream(std::FILE* out) : has_root_(false), out_(out) {
+  /// @param[in] indent  Option to indent output for readability.
+  explicit Stream(std::FILE* out, bool indent = true)
+      : indenter_(indent), has_root_(false), out_(out) {
     out_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   }
 

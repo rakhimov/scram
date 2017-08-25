@@ -77,6 +77,7 @@ po::options_description ConstructOptions() {
       ("num-bins", OPT_VALUE(int), "Number of bins for histograms")
       ("seed", OPT_VALUE(int), "Seed for the pseudo-random number generator")
       ("output-path,o", OPT_VALUE(path), "Output path for reports")
+      ("no-indent", "Omit indentation whitespace in output XML")
       ("verbosity", OPT_VALUE(int), "Set log verbosity");
 #ifndef NDEBUG
   po::options_description debug("Debug Options");
@@ -260,10 +261,11 @@ void RunScram(const po::variables_map& vm) {
     return;
 #endif
   scram::Reporter reporter;
+  bool indent = vm.count("no-indent") ? false : true;
   if (output_path.empty()) {
-    reporter.Report(analysis, stdout);
+    reporter.Report(analysis, stdout, indent);
   } else {
-    reporter.Report(analysis, output_path);
+    reporter.Report(analysis, output_path, indent);
   }
 }
 
