@@ -21,8 +21,11 @@
 #ifndef SCRAM_SRC_XML_STREAM_H_
 #define SCRAM_SRC_XML_STREAM_H_
 
+#include <cassert>
+#include <cstdio>
+
 #include <algorithm>
-#include <ostream>
+#include <string>
 
 #include "error.h"
 
@@ -88,6 +91,32 @@ class Indenter {
   char spaces[kMaxIndent + 1];  ///< The indentation and terminator.
 };
 
+/// Adaptor for stdio FILE stream with write generic interface.
+class FileStream {
+ public:
+  /// @param[in] file  The output file stream.
+  explicit FileStream(std::FILE* file) : file_(file) {}
+
+  /// Writes a value into file.
+  /// @{
+  void write(const std::string& value) { std::fputs(value.c_str(), file_); }
+  void write(const char* value) { std::fputs(value, file_); }
+  void write(int value) { std::fprintf(file_, "%d", value); }
+  void write(double value) { std::fprintf(file_, "%g", value); }
+  void write(std::size_t value) { std::fprintf(file_, "%zu", value); }
+  /// @}
+
+ private:
+  std::FILE* file_;  ///< The destination file.
+};
+
+/// Convenience wrapper to provide C++ stream-like interface.
+template <typename T>
+FileStream& operator<<(FileStream& file, T&& value) {
+  file.write(std::forward<T>(value));
+  return file;
+}
+
 }  // namespace detail
 
 /// Writer of data formed as an XML element to a stream.
@@ -133,7 +162,8 @@ class StreamElement {
   ///
   /// @throws StreamError  Invalid setup for the element.
   StreamElement(const char* name, detail::Indenter* indenter,
-                std::ostream& out);
+                detail::FileStream* out)
+      : StreamElement(name, 0, nullptr, indenter, out) {}
 
   /// Move constructor is only declared
   /// to make the compiler happy.
@@ -153,7 +183,22 @@ class StreamElement {
   ///          It can happen if the destructor is called explicitly,
   ///          or if the objects are allocated on the heap
   ///          with different lifetimes.
-  ~StreamElement() noexcept;
+  ~StreamElement() noexcept {
+    assert(active_ && "The child element may still be alive.");
+    assert(!(parent_ && parent_->active_) && "The parent must be inactive.");
+    if (parent_)
+      parent_->active_ = true;
+    if (accept_attributes_) {
+      out_ << "/>\n";
+    } else if (accept_elements_) {
+      out_ << indenter_(kIndent_);
+    closing_tag:
+      out_ << "</" << kName_ << ">\n";
+    } else {
+      assert(accept_text_ && "The element is in unspecified state.");
+      goto closing_tag;
+    }
+  }
 
   /// Sets the attributes for the element.
   ///
@@ -216,7 +261,23 @@ class StreamElement {
   ///       while the child element is alive.
   ///
   /// @throws StreamError  Invalid setup or state for element addition.
-  StreamElement AddChild(const char* name);
+  StreamElement AddChild(const char* name) {
+    if (!active_)
+      throw StreamError("The element is inactive.");
+    if (!accept_elements_)
+      throw StreamError("Too late to add elements.");
+    if (*name == '\0')
+      throw StreamError("Element name can't be empty.");
+
+    if (accept_text_)
+      accept_text_ = false;
+    if (accept_attributes_) {
+      accept_attributes_ = false;
+      out_ << ">\n";
+    }
+    return StreamElement(name, kIndent_ + kIndentIncrement, this, &indenter_,
+                         &out_);
+  }
 
  private:
   static const int kIndentIncrement = 2;  ///< The number of chars per indent.
@@ -233,7 +294,27 @@ class StreamElement {
   ///
   /// @throws StreamError  Invalid setup for the element.
   StreamElement(const char* name, int indent, StreamElement* parent,
-                detail::Indenter* indenter, std::ostream& out);
+                detail::Indenter* indenter, detail::FileStream* out)
+      : kName_(name),
+        kIndent_(indent),
+        accept_attributes_(true),
+        accept_elements_(true),
+        accept_text_(true),
+        active_(true),
+        parent_(parent),
+        indenter_(*indenter),
+        out_(*out) {
+    if (*kName_ == '\0')
+      throw StreamError("The element name can't be empty.");
+
+    if (parent_) {
+      if (!parent_->active_)
+        throw StreamError("The parent is inactive.");
+      parent_->active_ = false;
+    }
+    assert(kIndent_ >= 0 && "Negative XML indentation.");
+    out_ << indenter_(kIndent_) << "<" << kName_;
+  }
 
   const char* kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.
@@ -243,7 +324,7 @@ class StreamElement {
   bool active_;  ///< Active in streaming.
   StreamElement* parent_;  ///< Parent element.
   detail::Indenter& indenter_;  ///< The indentation string producer.
-  std::ostream& out_;  ///< The output destination.
+  detail::FileStream& out_;  ///< The output destination.
 };
 
 /// XML Stream document.
@@ -255,8 +336,8 @@ class Stream {
   /// Constructs a document with XML header.
   ///
   /// @param[in] out  The stream destination.
-  explicit Stream(std::ostream& out) : has_root_(false), out_(out) {
-    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  explicit Stream(std::FILE* out) : has_root_(false), out_(out) {
+    out_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   }
 
   /// Creates a root element for the document.
@@ -272,7 +353,7 @@ class Stream {
   StreamElement root(const char* name) {
     if (has_root_)
       throw StreamError("The XML stream document already has a root.");
-    StreamElement element(name, &indenter_, out_);
+    StreamElement element(name, &indenter_, &out_);
     has_root_ = true;
     return element;
   }
@@ -280,7 +361,7 @@ class Stream {
  private:
   detail::Indenter indenter_;  ///< The indentation manager for the document.
   bool has_root_;  ///< The document has constructed its root.
-  std::ostream& out_;  ///< The output stream.
+  detail::FileStream out_;  ///< The output stream.
 };
 
 }  // namespace xml

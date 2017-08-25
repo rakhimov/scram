@@ -24,7 +24,8 @@
 #ifndef SCRAM_SRC_SERIALIZATION_H_
 #define SCRAM_SRC_SERIALIZATION_H_
 
-#include <iosfwd>
+#include <cstdio>
+
 #include <string>
 
 #include "model.h"
@@ -36,7 +37,7 @@ namespace mef {
 ///
 /// @param[in] model  Fully initialized and valid model.
 /// @param[in,out] out  The stream for XML data.
-void Serialize(const Model& model, std::ostream& out);
+void Serialize(const Model& model, std::FILE* out);
 
 /// Convenience function for serialization into a file.
 ///

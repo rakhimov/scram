@@ -247,7 +247,7 @@ void RunScram(const po::variables_map& vm) {
           .model();
 #ifndef NDEBUG
   if (vm.count("serialize"))
-    return Serialize(*model, std::cout);
+    return Serialize(*model, stdout);
 #endif
   if (vm.count("validate"))
     return;  // Stop if only validation is requested.
@@ -261,7 +261,7 @@ void RunScram(const po::variables_map& vm) {
 #endif
   scram::Reporter reporter;
   if (output_path.empty()) {
-    reporter.Report(analysis, std::cout);
+    reporter.Report(analysis, stdout);
   } else {
     reporter.Report(analysis, output_path);
   }

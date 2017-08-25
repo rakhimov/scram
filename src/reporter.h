@@ -21,7 +21,8 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <iosfwd>
+#include <cstdio>
+
 #include <string>
 
 #include "event.h"
@@ -47,7 +48,7 @@ class Reporter {
   ///
   /// @pre The output destination is used only by this reporter.
   ///      There is going to be no appending to the stream after the report.
-  void Report(const core::RiskAnalysis& risk_an, std::ostream& out);
+  void Report(const core::RiskAnalysis& risk_an, std::FILE* out);
 
   /// A convenience function to generate the report into a file.
   /// This function overwrites the file.

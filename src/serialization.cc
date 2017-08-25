@@ -19,9 +19,6 @@
 
 #include "serialization.h"
 
-#include <fstream>
-#include <ostream>
-
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -34,11 +31,18 @@ namespace scram {
 namespace mef {
 
 void Serialize(const Model& model, const std::string& file) {
-  std::ofstream of(file.c_str());
-  if (!of.good())
+  struct FileGuard {
+    ~FileGuard() {
+      if (of)
+        std::fclose(of);
+    }
+    std::FILE* of;
+  } guard{std::fopen(file.c_str(), "w")};
+
+  if (!guard.of)
     throw IOError(file + " : Cannot write the output file for serialization.");
 
-  Serialize(model, of);
+  Serialize(model, guard.of);
 }
 
 namespace {  // The serialization helper functions for each model construct.
@@ -169,7 +173,7 @@ void Serialize(const HouseEvent& house_event, xml::StreamElement* parent) {
 
 }  // namespace
 
-void Serialize(const Model& model, std::ostream& out) {
+void Serialize(const Model& model, std::FILE* out) {
   xml::Stream xml_stream(out);
   xml::StreamElement root = xml_stream.root("opsa-mef");
   if (!model.HasDefaultName())

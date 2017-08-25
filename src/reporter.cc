@@ -20,8 +20,6 @@
 
 #include "reporter.h"
 
-#include <fstream>
-#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -65,7 +63,7 @@ void PutId(const core::RiskAnalysis::Result::Id& id,
 
 }  // namespace
 
-void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
+void Reporter::Report(const core::RiskAnalysis& risk_an, std::FILE* out) {
   xml::Stream xml_stream(out);
   xml::StreamElement report = xml_stream.root("report");
   ReportInformation(risk_an, &report);
@@ -99,11 +97,17 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::ostream& out) {
 
 void Reporter::Report(const core::RiskAnalysis& risk_an,
                       const std::string& file) {
-  std::ofstream of(file.c_str());
-  if (!of.good())
-    throw IOError(file + " : Cannot write the output file.");
+  struct FileGuard {
+    ~FileGuard() {
+      if (of)
+        std::fclose(of);
+    }
+    std::FILE* of;
+  } guard{std::fopen(file.c_str(), "w")};
 
-  Report(risk_an, of);
+  if (!guard.of)
+    throw IOError(file + " : Cannot write the output file.");
+  Report(risk_an, guard.of);
 }
 
 /// Describes the fault tree analysis and techniques.
