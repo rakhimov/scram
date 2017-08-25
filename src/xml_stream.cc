@@ -22,16 +22,16 @@
 
 #include <cassert>
 
-#include <string>
-
 namespace scram {
 namespace xml {
 
-StreamElement::StreamElement(const char* name, std::ostream& out)
-    : StreamElement(name, 0, nullptr, out) {}
+StreamElement::StreamElement(const char* name, detail::Indenter* indenter,
+                             std::ostream& out)
+    : StreamElement(name, 0, nullptr, indenter, out) {}
 
 StreamElement::StreamElement(const char* name, int indent,
-                             StreamElement* parent, std::ostream& out)
+                             StreamElement* parent, detail::Indenter* indenter,
+                             std::ostream& out)
     : kName_(name),
       kIndent_(indent),
       accept_attributes_(true),
@@ -39,18 +39,18 @@ StreamElement::StreamElement(const char* name, int indent,
       accept_text_(true),
       active_(true),
       parent_(parent),
+      indenter_(*indenter),
       out_(out) {
   if (*kName_ == '\0')
     throw StreamError("The element name can't be empty.");
-  if (kIndent_ < 0)
-    throw StreamError("Negative indentation.");
 
   if (parent_) {
     if (!parent_->active_)
       throw StreamError("The parent is inactive.");
     parent_->active_ = false;
   }
-  out_ << std::string(kIndent_, ' ') << "<" << kName_;
+  assert(kIndent_ >= 0 && "Negative XML indentation.");
+  out_ << indenter_(kIndent_) << "<" << kName_;
 }
 
 StreamElement::~StreamElement() noexcept {
@@ -61,7 +61,7 @@ StreamElement::~StreamElement() noexcept {
   if (accept_attributes_) {
     out_ << "/>\n";
   } else if (accept_elements_) {
-    out_ << std::string(kIndent_, ' ');
+    out_ << indenter_(kIndent_);
 closing_tag:
     out_ << "</" << kName_ << ">\n";
   } else {
@@ -84,7 +84,8 @@ StreamElement StreamElement::AddChild(const char* name) {
     accept_attributes_ = false;
     out_ << ">\n";
   }
-  return StreamElement(name, kIndent_ + 2, this, out_);
+  return StreamElement(name, kIndent_ + kIndentIncrement, this, &indenter_,
+                       out_);
 }
 
 }  // namespace xml
