@@ -17,8 +17,9 @@
 
 #include "risk_analysis_tests.h"
 
-#include <sstream>
 #include <utility>
+
+#include "utility.h"
 
 #include "env.h"
 #include "error.h"
@@ -58,9 +59,12 @@ void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
 
   ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  std::stringstream output;
-  ASSERT_NO_THROW(Reporter().Report(*analysis, output));
-  ASSERT_NO_THROW(xml::ParseMemory(output.str(), &validator));
+  fs::path temp_file = utility::GenerateFilePath();
+  ASSERT_NO_THROW(Reporter().Report(*analysis, temp_file.string()))
+      << tree_input.front() << " => " << temp_file;
+  ASSERT_NO_THROW(xml::Parse(temp_file.string(), &validator))
+      << tree_input.front() << " => " << temp_file;
+  fs::remove(temp_file);
 }
 
 const std::set<std::set<std::string>>& RiskAnalysisTest::products() {

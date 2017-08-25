@@ -524,21 +524,6 @@ inline Document Parse(const std::string& file_path,
   return manager;
 }
 
-/// Convenience overload to parse the XML in memory.
-inline Document ParseMemory(const std::string& raw,
-                            Validator* validator = nullptr) {
-  xmlDoc* doc =
-      xmlReadMemory(raw.c_str(), raw.size() + 1, "", nullptr, kParserOptions);
-  if (!doc)
-    throw ValidationError("XML in memory is invalid.");
-  if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
-    throw ValidationError("XML Xinclude substitutions are failed.");
-  Document manager(doc);
-  if (validator)
-    validator->validate(manager);
-  return manager;
-}
-
 }  // namespace xml
 
 /// Returns XML line number message.

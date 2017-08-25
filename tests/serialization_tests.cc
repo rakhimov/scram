@@ -17,9 +17,9 @@
 
 #include "serialization.h"
 
-#include <sstream>
-
 #include <gtest/gtest.h>
+
+#include "utility.h"
 
 #include "env.h"
 #include "initializer.h"
@@ -28,6 +28,7 @@
 
 namespace scram {
 namespace mef {
+namespace test {
 
 TEST(SerializationTest, InputOutput) {
   static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
@@ -46,12 +47,15 @@ TEST(SerializationTest, InputOutput) {
   for (const auto& input : inputs) {
     std::shared_ptr<Model> model;
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
-    std::stringstream output;
-    ASSERT_NO_THROW(Serialize(*model, output)) << input.front();
-    ASSERT_NO_THROW(xml::ParseMemory(output.str(), &validator))
-        << input.front();
+    fs::path temp_file = utility::GenerateFilePath();
+    ASSERT_NO_THROW(Serialize(*model, temp_file.string())) << input.front()
+        << input.front() << " => " << temp_file;
+    ASSERT_NO_THROW(xml::Parse(temp_file.string(), &validator))
+        << input.front() << " => " << temp_file;
+    fs::remove(temp_file);
   }
 }
 
+}  // namespace test
 }  // namespace mef
 }  // namespace scram
