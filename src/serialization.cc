@@ -19,6 +19,8 @@
 
 #include "serialization.h"
 
+#include <memory>
+
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -31,18 +33,12 @@ namespace scram {
 namespace mef {
 
 void Serialize(const Model& model, const std::string& file) {
-  struct FileGuard {
-    ~FileGuard() {
-      if (of)
-        std::fclose(of);
-    }
-    std::FILE* of;
-  } guard{std::fopen(file.c_str(), "w")};
-
-  if (!guard.of)
+  std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
+      std::fopen(file.c_str(), "w"), &std::fclose);
+  if (!fp)
     throw IOError(file + " : Cannot write the output file for serialization.");
 
-  Serialize(model, guard.of);
+  Serialize(model, fp.get());
 }
 
 namespace {  // The serialization helper functions for each model construct.

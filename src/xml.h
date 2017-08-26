@@ -442,15 +442,12 @@ class Validator {
   /// @throws The library provided error for invalid XML RNG schema file.
   ///
   /// @todo Properly wrap the exception for invalid schema files.
-  explicit Validator(const std::string& rng_file) {
-    struct ParserCtxtDeleter {
-      void operator()(xmlRelaxNGParserCtxt* ctxt) noexcept {
-        if (ctxt)
-          xmlRelaxNGFreeParserCtxt(ctxt);
-      }
-    };
-    std::unique_ptr<xmlRelaxNGParserCtxt, ParserCtxtDeleter> parser_ctxt(
-        xmlRelaxNGNewParserCtxt(rng_file.c_str()));
+  explicit Validator(const std::string& rng_file)
+      : schema_(nullptr, &xmlRelaxNGFree),
+        valid_ctxt_(nullptr, &xmlRelaxNGFreeValidCtxt) {
+    std::unique_ptr<xmlRelaxNGParserCtxt, decltype(&xmlRelaxNGFreeParserCtxt)>
+        parser_ctxt(xmlRelaxNGNewParserCtxt(rng_file.c_str()),
+                    &xmlRelaxNGFreeParserCtxt);
     assert(parser_ctxt);  ///< @todo Provide rng parser errors.
     schema_.reset(xmlRelaxNGParse(parser_ctxt.get()));
     assert(schema_);  ///< @todo Provide schema parsing errors.
@@ -473,26 +470,11 @@ class Validator {
   }
 
  private:
-  /// Deleter of the schema.
-  struct SchemaDeleter {
-    /// Frees schema with the library call.
-    void operator()(xmlRelaxNG* schema) noexcept {
-      if (schema)
-        xmlRelaxNGFree(schema);
-    }
-  };
-  /// Deleter of the validation context.
-  struct ValidCtxtDeleter {
-    /// Frees validation context with the library call.
-    void operator()(xmlRelaxNGValidCtxt* ctxt) noexcept {
-      if (ctxt)
-        xmlRelaxNGFreeValidCtxt(ctxt);
-    }
-  };
   /// The schema used by the validation context.
-  std::unique_ptr<xmlRelaxNG, SchemaDeleter> schema_;
+  std::unique_ptr<xmlRelaxNG, decltype(&xmlRelaxNGFree)> schema_;
   /// The validation context.
-  std::unique_ptr<xmlRelaxNGValidCtxt, ValidCtxtDeleter> valid_ctxt_;
+  std::unique_ptr<xmlRelaxNGValidCtxt, decltype(&xmlRelaxNGFreeValidCtxt)>
+      valid_ctxt_;
 };
 
 /// The parser options passed to the library parser.
@@ -516,9 +498,9 @@ inline Document Parse(const std::string& file_path,
   xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
   if (!doc)
       throw ValidationError("XML file is invalid:\n");
+  Document manager(doc);
   if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
     throw ValidationError("XML Xinclude substitutions are failed.");
-  Document manager(doc);
   if (validator)
     validator->validate(manager);
   return manager;

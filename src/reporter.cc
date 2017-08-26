@@ -20,6 +20,7 @@
 
 #include "reporter.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -98,17 +99,11 @@ void Reporter::Report(const core::RiskAnalysis& risk_an, std::FILE* out,
 
 void Reporter::Report(const core::RiskAnalysis& risk_an,
                       const std::string& file, bool indent) {
-  struct FileGuard {
-    ~FileGuard() {
-      if (of)
-        std::fclose(of);
-    }
-    std::FILE* of;
-  } guard{std::fopen(file.c_str(), "w")};
-
-  if (!guard.of)
+  std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
+      std::fopen(file.c_str(), "w"), &std::fclose);
+  if (!fp)
     throw IOError(file + " : Cannot write the output file.");
-  Report(risk_an, guard.of, indent);
+  Report(risk_an, fp.get(), indent);
 }
 
 /// Describes the fault tree analysis and techniques.
