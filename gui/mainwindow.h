@@ -30,7 +30,6 @@
 #include <QDir>
 #include <QLineEdit>
 #include <QMainWindow>
-#include <QRegularExpressionValidator>
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
@@ -197,7 +196,6 @@ private:
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
-    QRegularExpressionValidator m_percentValidator;  ///< Zoom percent input.
     QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>

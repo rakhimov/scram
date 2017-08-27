@@ -48,6 +48,7 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
 endif()
 
 set(SCRAM_GUI_SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"

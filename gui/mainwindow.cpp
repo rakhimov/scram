@@ -29,7 +29,6 @@
 #include <QMessageBox>
 #include <QPrinter>
 #include <QProgressDialog>
-#include <QRegularExpression>
 #include <QSvgGenerator>
 #include <QTableView>
 #include <QTableWidget>
@@ -55,6 +54,7 @@
 #include "modeltree.h"
 #include "printable.h"
 #include "settingsdialog.h"
+#include "validator.h"
 
 namespace scram {
 namespace gui {
@@ -65,11 +65,7 @@ public:
     explicit NameDialog(QWidget *parent) : QDialog(parent)
     {
         setupUi(this);
-        /// @todo Provide validators from a central location.
-        static QRegularExpressionValidator nameValidator(
-            QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"),
-                               QRegularExpression::UseUnicodePropertiesOption));
-        nameLine->setValidator(&nameValidator);
+        nameLine->setValidator(Validator::name());
     }
 };
 
@@ -154,7 +150,6 @@ QTableWidgetItem *constructTableItem(QVariant data)
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_undoStack(new QUndoStack(this)),
-      m_percentValidator(QRegularExpression(QStringLiteral(R"([1-9]\d+%?)"))),
       m_zoomBox(new QComboBox)
 {
     ui->setupUi(this);
@@ -162,7 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_zoomBox->setEditable(true);
     m_zoomBox->setEnabled(false);
     m_zoomBox->setInsertPolicy(QComboBox::NoInsert);
-    m_zoomBox->setValidator(&m_percentValidator);
+    m_zoomBox->setValidator(Validator::percent());
     for (QAction *action : ui->menuZoom->actions()) {
         m_zoomBox->addItem(action->text());
         connect(action, &QAction::triggered, m_zoomBox, [action, this] {

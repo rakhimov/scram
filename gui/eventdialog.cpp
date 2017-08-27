@@ -17,14 +17,10 @@
 
 #include "eventdialog.h"
 
-#include <limits>
-
 #include <QCompleter>
-#include <QDoubleValidator>
 #include <QListView>
 #include <QObject>
 #include <QPushButton>
-#include <QRegularExpressionValidator>
 #include <QShortcut>
 #include <QStatusBar>
 
@@ -39,6 +35,7 @@
 
 #include "guiassert.h"
 #include "overload.h"
+#include "validator.h"
 
 namespace scram {
 namespace gui {
@@ -49,22 +46,15 @@ QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
 EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     : QDialog(parent), m_model(model), m_errorBar(new QStatusBar(this))
 {
-    static QRegularExpressionValidator nameValidator(QRegularExpression(
-        QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"),
-                       QRegularExpression::UseUnicodePropertiesOption));
-    static QDoubleValidator nonNegativeValidator(
-        0, std::numeric_limits<double>::max(), 1000);
-    static QDoubleValidator probabilityValidator(0, 1, 1000);
-
     setupUi(this);
     gridLayout->addWidget(m_errorBar, gridLayout->rowCount(), 0,
                           gridLayout->rowCount(), gridLayout->columnCount());
 
-    nameLine->setValidator(&nameValidator);
-    constantValue->setValidator(&probabilityValidator);
-    exponentialRate->setValidator(&nonNegativeValidator);
-    addArgLine->setValidator(&nameValidator);
-    containerFaultTreeName->setValidator(&nameValidator);
+    nameLine->setValidator(Validator::name());
+    constantValue->setValidator(Validator::probability());
+    exponentialRate->setValidator(Validator::nonNegative());
+    addArgLine->setValidator(Validator::name());
+    containerFaultTreeName->setValidator(Validator::name());
 
     connect(typeBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
