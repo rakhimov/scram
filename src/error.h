@@ -24,9 +24,21 @@
 #include <exception>
 #include <string>
 
+#include <boost/exception/error_info.hpp>
 #include <boost/exception/exception.hpp>
 
 namespace scram {
+
+namespace error {
+
+/// 'what' identifier for errors deriving from std::exception.
+///
+/// @note This should not be the error message to be printed for users.
+///       It is the optional *identifier* string.
+///       By default, boost::diagnostic_information_what is used.
+using what = boost::error_info<struct tag_what, const char*>;
+
+}  // namespace error
 
 /// The Error class is the base class
 /// for common exceptions specific to the SCRAM code.
