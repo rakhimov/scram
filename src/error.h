@@ -24,11 +24,13 @@
 #include <exception>
 #include <string>
 
+#include <boost/exception/exception.hpp>
+
 namespace scram {
 
 /// The Error class is the base class
 /// for common exceptions specific to the SCRAM code.
-class Error : public std::exception {
+class Error : virtual public std::exception, virtual public boost::exception {
  public:
   /// Constructs a new error with a provided message.
   ///
