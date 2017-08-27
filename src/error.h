@@ -24,8 +24,19 @@
 #include <exception>
 #include <string>
 
-#include <boost/exception/error_info.hpp>
+#include <boost/current_function.hpp>
+#include <boost/exception/info.hpp>
 #include <boost/exception/exception.hpp>
+
+/// Convenience macro to throw SCRAM exceptions.
+/// This is similar to BOOST_THROW_EXCEPTION;
+/// however, it doesn't obfuscate
+/// the resultant exception type to conform to boost::exception.
+///
+/// @param[in] err  The error type deriving from boost::exception.
+#define SCRAM_THROW(err)                                                       \
+  throw err << ::boost::throw_function(BOOST_THROW_EXCEPTION_CURRENT_FUNCTION) \
+            << ::boost::throw_file(__FILE__) << ::boost::throw_line(__LINE__)
 
 namespace scram {
 
