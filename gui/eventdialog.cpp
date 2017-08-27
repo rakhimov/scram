@@ -49,8 +49,9 @@ QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
 EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     : QDialog(parent), m_model(model), m_errorBar(new QStatusBar(this))
 {
-    static QRegularExpressionValidator nameValidator(
-        QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)")));
+    static QRegularExpressionValidator nameValidator(QRegularExpression(
+        QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"),
+                       QRegularExpression::UseUnicodePropertiesOption));
     static QDoubleValidator nonNegativeValidator(
         0, std::numeric_limits<double>::max(), 1000);
     static QDoubleValidator probabilityValidator(0, 1, 1000);

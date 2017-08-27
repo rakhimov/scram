@@ -67,7 +67,8 @@ public:
         setupUi(this);
         /// @todo Provide validators from a central location.
         static QRegularExpressionValidator nameValidator(
-            QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)")));
+            QRegularExpression(QStringLiteral(R"([[:alpha:]]\w*(-\w+)*)"),
+                               QRegularExpression::UseUnicodePropertiesOption));
         nameLine->setValidator(&nameValidator);
     }
 };
