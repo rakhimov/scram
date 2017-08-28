@@ -23,6 +23,8 @@
 #include <sstream>
 #include <type_traits>
 
+#include <boost/exception/errinfo_at_line.hpp>
+#include <boost/exception/errinfo_file_name.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm.hpp>
@@ -93,7 +95,7 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
                              attribute.attribute("value").to_string(),
                              attribute.attribute("type").to_string()});
     } catch (ValidationError& err) {
-      err.msg(GetLine(attribute) + err.msg());
+      err << boost::errinfo_at_line(attribute.line());
       throw;
     }
   }
@@ -141,7 +143,7 @@ PhasePtr ConstructElement<Phase>(const xml::Element& xml_element) {
         xml_element.attribute("name").to_string(),
         *xml_element.attribute<double>("time-fraction"));
   } catch (InvalidArgument& err) {
-    err.msg(GetLine(xml_element) + err.msg());
+    err << boost::errinfo_at_line(xml_element.line());
     throw;
   }
   AttachLabelAndAttributes(xml_element, element.get());
@@ -204,7 +206,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
     try {
       ProcessInputFile(xml_file);
     } catch (ValidationError& err) {
-      err.msg("In file '" + xml_file + "', " + err.msg());
+      err << boost::errinfo_file_name(xml_file);
       throw;
     }
   }
@@ -231,7 +233,7 @@ void Initializer::Register(T&& element, const xml::Element& xml_element) {
   try {
     model_->Add(std::forward<T>(element));
   } catch (ValidationError& err) {
-    err.msg(GetLine(xml_element) + err.msg());
+    err << boost::errinfo_at_line(xml_element.line());
     throw;
   }
 }
@@ -396,10 +398,9 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   auto extern_libraries = root.children("define-extern-library");
   if (!allow_extern_ && !extern_libraries.empty()) {
-    throw IllegalOperation(
-        "Loading external libraries is disallowed!\n"
-        "In file '" + xml_file + "', line " +
-        std::to_string(extern_libraries.begin()->line()));
+    throw IllegalOperation("Loading external libraries is disallowed!")
+        << boost::errinfo_file_name(xml_file)
+        << boost::errinfo_at_line(extern_libraries.begin()->line());
   }
   for (const xml::Element& node : extern_libraries)
     DefineExternLibraries(node, xml_file);
@@ -419,7 +420,7 @@ void Initializer::Define(const xml::Element& gate_node, Gate* gate) {
   try {
     gate->Validate();
   } catch (ValidationError& err) {
-    err.msg(GetLine(gate_node) + err.msg());
+    err << boost::errinfo_at_line(gate_node.line());
     throw;
   }
 }
@@ -495,8 +496,9 @@ void Initializer::Define(const xml::Element& xml_node,
       initiating_event->usage(true);
       (*it)->usage(true);
     } else {
-      throw ValidationError(GetLine(xml_node) + "Event tree " +
-                            event_tree_name + " is not defined in model.");
+      throw ValidationError("Event tree " + event_tree_name +
+                            " is not defined in model.")
+          << boost::errinfo_at_line(xml_node.line());
     }
   }
 }
@@ -524,14 +526,14 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
     } catch (InvalidArgument& err) {
       throw ValidationError(err.msg());
     } catch (DuplicateArgumentError& err) {
-      err.msg(GetLine(node) + err.msg());
+      err << boost::errinfo_at_line(node.line());
       throw;
     }
   }
   try {
     alignment->Validate();
   } catch (ValidationError& err) {
-    err.msg(GetLine(xml_node) + err.msg());
+    err << boost::errinfo_at_line(xml_node.line());
     throw;
   }
 }
@@ -544,7 +546,7 @@ void Initializer::ProcessTbdElements() {
       try {
         DefineExternFunction(node);
       } catch (ValidationError& err) {
-        err.msg("In file '" + root.filename().to_string() + "', " + err.msg());
+        err << boost::errinfo_file_name(root.filename().to_string());
         throw;
       }
     }
@@ -558,8 +560,8 @@ void Initializer::ProcessTbdElements() {
             },
             tbd_element.first);
     } catch (ValidationError& err) {
-      err.msg("In file '" + tbd_element.second.filename().to_string() + "', " +
-              err.msg());
+      err << boost::errinfo_file_name(
+          tbd_element.second.filename().to_string());
       throw;
     }
   }
@@ -571,7 +573,7 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
     try {
       event_tree->Add(ConstructElement<FunctionalEvent>(node));
     } catch (ValidationError& err) {
-      err.msg(GetLine(node) + err.msg());
+      err << boost::errinfo_at_line(node.line());
       throw;
     }
   }
@@ -583,7 +585,7 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
     try {
       event_tree->Add(ConstructElement<NamedBranch>(node));
     } catch (ValidationError& err) {
-      err.msg(GetLine(node) + err.msg());
+      err << boost::errinfo_at_line(node.line());
       throw;
     }
   }
@@ -637,7 +639,7 @@ void Initializer::RegisterFaultTreeData(const xml::Element& ft_node,
     try {
       component->Add(std::move(sub));
     } catch (ValidationError& err) {
-      err.msg(GetLine(node) + err.msg());
+      err << boost::errinfo_at_line(node.line());
       throw;
     }
   }
@@ -706,8 +708,9 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
       }
     } catch (std::out_of_range&) {
       throw ValidationError(
-          GetLine(element) + "Undefined " + element_type.to_string() + " " +
-          name + (base_path.empty() ? "" : " with base path " + base_path));
+          "Undefined " + element_type.to_string() + " " + name +
+          (base_path.empty() ? "" : " with base path " + base_path))
+          << boost::errinfo_at_line(element.line());
     }
   };
 
@@ -725,7 +728,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
   try {
     formula->Validate();
   } catch (ValidationError& err) {
-    err.msg(GetLine(formula_node) + err.msg());
+    err << boost::errinfo_at_line(formula_node.line());
     throw;
   }
   return formula;
@@ -752,8 +755,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
         throw;
       }
     } else {
-      throw ValidationError(GetLine(target_node) + "Functional event " +
-                            name + " is not defined in " + event_tree->name());
+      throw ValidationError("Functional event " + name + " is not defined in " +
+                            event_tree->name())
+          << boost::errinfo_at_line(target_node.line());
     }
   } else if (target_node.name() == "sequence") {
     std::string name = target_node.attribute("name").to_string();
@@ -761,8 +765,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(it->get());
       (*it)->usage(true);
     } else {
-      throw ValidationError(GetLine(target_node) + "Sequence " + name +
-                            " is not defined in the model.");
+      throw ValidationError("Sequence " + name +
+                            " is not defined in the model.")
+          << boost::errinfo_at_line(target_node.line());
     }
   } else {
     assert(target_node.name() == "branch");
@@ -771,8 +776,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(it->get());
       (*it)->usage(true);
     } else {
-      throw ValidationError(GetLine(target_node) + "Branch " + name +
-                            " is not defined in " + event_tree->name());
+      throw ValidationError("Branch " + name + " is not defined in " +
+                            event_tree->name())
+          << boost::errinfo_at_line(target_node.line());
     }
   }
 }
@@ -802,8 +808,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
       (*it)->usage(true);
       return it->get();
     } else {
-      throw ValidationError(GetLine(xml_element) + "Rule " + name +
-                            " is not defined in the model.");
+      throw ValidationError("Rule " + name + " is not defined in the model.")
+          << boost::errinfo_at_line(xml_element.line());
     }
   }
 
@@ -821,8 +827,9 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
           register_instruction(std::make_unique<Link>(**it))));
       return links_.back();
     } else {
-      throw ValidationError(GetLine(xml_element) + "Event tree " + name +
-                            " is not defined in the model.");
+      throw ValidationError("Event tree " + name +
+                            " is not defined in the model.")
+          << boost::errinfo_at_line(xml_element.line());
     }
   }
 
@@ -859,8 +866,9 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   if (node_name == "set-house-event") {
     std::string name = xml_element.attribute("name").to_string();
     if (!model_->house_events().count(name)) {
-      throw ValidationError(GetLine(xml_element) + "House event " + name +
-                            " is not defined in the model.");
+      throw ValidationError("House event " + name +
+                            " is not defined in the model.")
+          << boost::errinfo_at_line(xml_element.line());
     }
     return register_instruction(std::make_unique<SetHouseEvent>(
         std::move(name), *xml_element.child()->attribute<bool>("value")));
@@ -1145,9 +1153,10 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     const ExternFunction<void>* extern_function = [this, &expr_element] {
       std::string name = expr_element.attribute("name").to_string();
       auto it = model_->extern_functions().find(name);
-      if (it == model_->extern_functions().end())
-        throw ValidationError(GetLine(expr_element) +
-                              "Undefined extern function: " + name);
+      if (it == model_->extern_functions().end()) {
+        throw ValidationError("Undefined extern function: " + name)
+            << boost::errinfo_at_line(expr_element.line());
+      }
       (*it)->usage(true);
       return it->get();
     }();
@@ -1159,7 +1168,8 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     try {
       return register_expression(extern_function->apply(std::move(expr_args)));
     } catch (const InvalidArgument& err) {
-      throw ValidationError(GetLine(expr_element) + err.msg());
+      throw ValidationError(err.msg())
+          << boost::errinfo_at_line(expr_element.line());
     }
   }
 
@@ -1173,7 +1183,8 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     expressions_.emplace_back(expression, expr_element);
     return expression;
   } catch (InvalidArgument& err) {
-    throw ValidationError(GetLine(expr_element) + err.msg());
+    throw ValidationError(err.msg())
+        << boost::errinfo_at_line(expr_element.line());
   }
 }
 
@@ -1185,10 +1196,10 @@ Expression* Initializer::GetParameter(const xml::string_view& expr_type,
     const char* param_unit = scram::mef::kUnitsToString[parameter.unit()];
     if (!unit.empty() && unit != param_unit) {
       std::stringstream msg;
-      msg << GetLine(expr_element)
-          << "Parameter unit mismatch.\nExpected: " << param_unit
+      msg << "Parameter unit mismatch.\nExpected: " << param_unit
           << "\nGiven: " << unit;
-      throw scram::ValidationError(msg.str());
+      throw ValidationError(msg.str())
+          << boost::errinfo_at_line(expr_element.line());
     }
   };
 
@@ -1201,8 +1212,9 @@ Expression* Initializer::GetParameter(const xml::string_view& expr_type,
       return param;
     } catch (std::out_of_range&) {
       throw ValidationError(
-          GetLine(expr_element) + "Undefined parameter " + name +
-          (base_path.empty() ? "" : " with base path " + base_path));
+          "Undefined parameter " + name +
+          (base_path.empty() ? "" : " with base path " + base_path))
+          << boost::errinfo_at_line(expr_element.line());
     }
   } else if (expr_type == "system-mission-time") {
     check_units(model_->mission_time());
@@ -1221,7 +1233,7 @@ void Initializer::ProcessCcfMembers(const xml::Element& members_node,
     try {
       ccf_group->AddMember(basic_event.get());
     } catch (DuplicateArgumentError& err) {
-      err.msg(GetLine(event_node) + err.msg());
+      err << boost::errinfo_at_line(event_node.line());
       throw;
     }
     Register(std::move(basic_event), event_node);
@@ -1236,7 +1248,7 @@ void Initializer::DefineCcfFactor(const xml::Element& factor_node,
   try {
     ccf_group->AddFactor(expression, factor_node.attribute<int>("level"));
   } catch (ValidationError& err) {
-    err.msg(GetLine(factor_node) + err.msg());
+    err << boost::errinfo_at_line(factor_node.line());
     throw;
   }
 }
@@ -1336,10 +1348,11 @@ void Initializer::DefineExternLibraries(const xml::Element& xml_node,
           boost::filesystem::path(xml_file).parent_path(),
           optional_bool("system"), optional_bool("decorate"));
     } catch (const IOError& err) {
-      throw ValidationError(GetLine(xml_node) +
-                            "Cannot load external library:\n" + err.msg());
+      throw ValidationError("Cannot load external library:\n" + err.msg())
+          << boost::errinfo_at_line(xml_node.line());
     } catch (const InvalidArgument& err) {
-      throw ValidationError(GetLine(xml_node) + err.msg());
+      throw ValidationError(err.msg())
+          << boost::errinfo_at_line(xml_node.line());
     }
   }();
   AttachLabelAndAttributes(xml_node, library.get());
@@ -1460,8 +1473,8 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
     std::string lib_name = xml_element.attribute("library").to_string();
     auto it = model_->libraries().find(lib_name);
     if (it == model_->libraries().end())
-      throw ValidationError(GetLine(xml_element) +
-                            "Undefined extern library: " + lib_name);
+      throw ValidationError("Undefined extern library: " + lib_name)
+          << boost::errinfo_at_line(xml_element.line());
     (*it)->usage(true);
     return **it;
   }();
@@ -1472,11 +1485,11 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
     /// @todo Optimize extern-function num args violation detection.
     int num_args = std::distance(args.begin(), args.end()) - /*return*/ 1;
     if (num_args > kMaxNumParam) {
-      throw ValidationError(GetLine(xml_element) +
-                            "The number of function parameters '" +
+      throw ValidationError("The number of function parameters '" +
                             std::to_string(num_args) +
                             "' exceeds the number of allowed parameters '" +
-                            std::to_string(kMaxNumParam) + "'");
+                            std::to_string(kMaxNumParam) + "'")
+          << boost::errinfo_at_line(xml_element.line());
     }
     int encoding = Encode(args);
     try {
@@ -1484,7 +1497,7 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
           xml_element.attribute("name").to_string(),
           xml_element.attribute("symbol").to_string(), library);
     } catch (ValidationError& err) {
-      err.msg(GetLine(xml_element) + err.msg());
+      err << boost::errinfo_at_line(xml_element.line());
       throw;
     }
   }();
@@ -1688,9 +1701,9 @@ void Initializer::ValidateExpressions() {
     try {
       expression.first->Validate();
     } catch (InvalidArgument& err) {
-      throw ValidationError("In file '" +
-                            expression.second.filename().to_string() + "', " +
-                            GetLine(expression.second) + err.msg());
+      throw ValidationError(err.msg())
+          << boost::errinfo_file_name(expression.second.filename().to_string())
+          << boost::errinfo_at_line(expression.second.line());
     }
   }
 

@@ -24,6 +24,8 @@
 
 #include <memory>
 
+#include <boost/exception/errinfo_at_line.hpp>
+#include <boost/exception/errinfo_file_name.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/predef.h>
 #include <boost/range/algorithm.hpp>
@@ -69,7 +71,7 @@ Config::Config(const std::string& config_file) {
   try {
     GatherOptions(root);
   } catch (Error& err) {
-    err.msg("In file '" + config_file + "', " + err.msg());
+    err << boost::errinfo_file_name(config_file);
     throw;
   }
 }
@@ -108,7 +110,7 @@ void Config::GatherOptions(const xml::Element& root) {
         SetLimits(option_group);
       }
     } catch (InvalidArgument& err) {
-      err.msg(GetLine(option_group) + err.msg());
+      err << boost::errinfo_at_line(option_group.line());
       throw;
     }
   }
@@ -117,7 +119,7 @@ void Config::GatherOptions(const xml::Element& root) {
     try {
       SetAnalysis(*analysis_group);
     } catch (InvalidArgument& err) {
-      err.msg(GetLine(*analysis_group) + err.msg());
+      err << boost::errinfo_at_line(analysis_group->line());
       throw;
     }
   }

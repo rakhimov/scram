@@ -42,6 +42,7 @@
 #include <string>
 #include <type_traits>
 
+#include <boost/exception/errinfo_at_line.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -61,8 +62,6 @@ namespace xml {
 class Element;
 
 }  // namespace xml
-
-std::string GetLine(const xml::Element& xml_node);  // For error reporting.
 
 namespace xml {
 
@@ -342,7 +341,8 @@ class Element {
     try {
       return detail::CastValue<T>(value);
     } catch (ValidationError& err) {
-      err.msg(GetLine(*this) + "Attribute '" + name + "': " + err.msg());
+      err.msg("Attribute '" + std::string(name) + "': " + err.msg());
+      err << boost::errinfo_at_line(line());
       throw;
     }
   }
@@ -361,7 +361,8 @@ class Element {
     try {
       return detail::CastValue<T>(text());
     } catch (ValidationError& err) {
-      err.msg(GetLine(*this) + "Text element: " + err.msg());
+      err.msg("Text element: " + err.msg());
+      err << boost::errinfo_at_line(line());
       throw;
     }
   }
@@ -507,11 +508,6 @@ inline Document Parse(const std::string& file_path,
 }
 
 }  // namespace xml
-
-/// Returns XML line number message.
-inline std::string GetLine(const xml::Element& xml_node) {
-  return "Line " + std::to_string(xml_node.line()) + ":\n";
-}
 
 }  // namespace scram
 

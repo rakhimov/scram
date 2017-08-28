@@ -294,8 +294,14 @@ int main(int argc, char* argv[]) {
 
 #ifdef NDEBUG
   } catch (const scram::Error& err) {
-    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n"
-              << err.what() << std::endl;
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n";
+    if (const std::string* filename =
+            boost::get_error_info<boost::errinfo_file_name>(err)) {
+      std::cerr << "\nFile: " << *filename << "\n";
+      if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
+        std::cerr << "Line: " << *line << "\n";
+    }
+    std::cerr << "\n" << err.what() << std::endl;
     return 1;
   } catch (const boost::exception& boost_err) {
     LOG(scram::ERROR) << "Unexpected Boost Exception:\n"
