@@ -42,7 +42,9 @@ addons:
             - g++-4.9
             - libxml2-dev
             - libgoogle-perftools-dev
-            - qt5-default
+            - qtbase5-dev
+            - qtbase5-dev-tools
+            - qttools5-dev
             - libqt5svg5-dev
             - libqt5opengl5-dev
         sources:
