@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/core/typeinfo.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 
@@ -271,15 +272,6 @@ void RunScram(const po::variables_map& vm) {
 
 }  // namespace
 
-/// Catches an exception,
-/// prints its message to the standard error,
-/// and returns error code of 1 to exit from the main function.
-#define CATCH(exception_type)                                         \
-  catch (const exception_type& err) {                                 \
-    std::cerr << #exception_type << ":\n" << err.what() << std::endl; \
-    return 1;                                                         \
-  }
-
 /// Command-line SCRAM entrance.
 ///
 /// @param[in] argc  Argument count.
@@ -301,20 +293,19 @@ int main(int argc, char* argv[]) {
       RunScram(vm);
 
 #ifdef NDEBUG
-  }
-  CATCH(scram::IOError)
-  CATCH(scram::ValidationError)
-  CATCH(scram::ValueError)
-  CATCH(scram::LogicError)
-  CATCH(scram::IllegalOperation)
-  CATCH(scram::InvalidArgument)
-  CATCH(scram::Error)
-  catch (boost::exception& boost_err) {
-    std::cerr << "Boost Exception:\n"
-              << boost::diagnostic_information(boost_err) << std::endl;
+  } catch (const scram::Error& err) {
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n"
+              << err.what() << std::endl;
+    return 1;
+  } catch (const boost::exception& boost_err) {
+    LOG(scram::ERROR) << "Unexpected Boost Exception:\n"
+                      << boost::diagnostic_information(boost_err);
+    return 1;
+  } catch (const std::exception& err) {
+    LOG(scram::ERROR) << "Unexpected Exception: "
+                      << boost::core::demangled_name(typeid(err)) << ": "
+                      << err.what();
     return 1;
   }
-  CATCH(std::exception)
 #endif
 }  // End of main.
-#undef CATCH
