@@ -494,3 +494,6 @@ Please follow the instructions in `CONTRIBUTING.md`_.
 .. image:: https://www.openhub.net/p/scram/widgets/project_thin_badge.gif
     :target: https://www.openhub.net/p/scram
     :alt: Open HUB Metrics
+.. image:: https://d322cqt584bo4o.cloudfront.net/scram/localized.svg
+    :target: https://crowdin.com/project/scram
+    :alt: Crowdin
