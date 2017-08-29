@@ -1,6 +1,10 @@
 sudo: required
 dist: trusty
 
+branches:
+    except:
+        - l10n_develop
+
 language: cpp
 
 cache:

@@ -3,6 +3,10 @@ clone_depth: 50
 platform:
     - x64
 
+branches:
+    except:
+        - l10n_develop
+
 configuration:
     # - Debug
     # - Release
