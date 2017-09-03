@@ -5,19 +5,19 @@
     <name>EventDialog</name>
     <message>
       <source>Event Editor</source>
-      <translation type="unfinished">Event Editor</translation>
+      <translation>Händelseeditor</translation>
     </message>
     <message>
       <source>Label:</source>
-      <translation type="unfinished">Label:</translation>
+      <translation>Etikett:</translation>
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Namn:</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation type="unfinished">Type:</translation>
+      <translation>Typ:</translation>
     </message>
     <message>
       <source>House event</source>
@@ -29,47 +29,47 @@
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Inte utvecklat</translation>
     </message>
     <message>
       <source>Conditional</source>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Villkorlig</translation>
     </message>
     <message>
       <source>Gate</source>
-      <translation type="unfinished">Gate</translation>
+      <translation>Grind</translation>
     </message>
     <message>
       <source>State:</source>
-      <translation type="unfinished">State:</translation>
+      <translation>Tillstånd:</translation>
     </message>
     <message>
       <source>State combo</source>
-      <translation type="unfinished">State combo</translation>
+      <translation>Tillståndskombo</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Falskt</translation>
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Sant</translation>
     </message>
     <message>
       <source>Expression</source>
-      <translation type="unfinished">Expression</translation>
+      <translation>Uttryck</translation>
     </message>
     <message>
       <source>Constant</source>
-      <translation type="unfinished">Constant</translation>
+      <translation>Konstant</translation>
     </message>
     <message>
       <source>Exponential</source>
-      <translation type="unfinished">Exponential</translation>
+      <translation>Exponentiell</translation>
     </message>
     <message>
       <source>Value:</source>
-      <translation type="unfinished">Value:</translation>
+      <translation>Värde:</translation>
     </message>
     <message>
       <source>Rate:</source>
@@ -81,35 +81,35 @@
     </message>
     <message>
       <source>AND</source>
-      <translation type="unfinished">AND</translation>
+      <translation>AND</translation>
     </message>
     <message>
       <source>OR</source>
-      <translation type="unfinished">OR</translation>
+      <translation>OR</translation>
     </message>
     <message>
       <source>ATLEAST</source>
-      <translation type="unfinished">ATLEAST</translation>
+      <translation>ATLEAST</translation>
     </message>
     <message>
       <source>XOR</source>
-      <translation type="unfinished">XOR</translation>
+      <translation>XOR</translation>
     </message>
     <message>
       <source>NOT</source>
-      <translation type="unfinished">NOT</translation>
+      <translation>NOT</translation>
     </message>
     <message>
       <source>NAND</source>
-      <translation type="unfinished">NAND</translation>
+      <translation>NAND</translation>
     </message>
     <message>
       <source>NOR</source>
-      <translation type="unfinished">NOR</translation>
+      <translation>NOR</translation>
     </message>
     <message>
       <source>NULL</source>
-      <translation type="unfinished">NULL</translation>
+      <translation>NULL</translation>
     </message>
     <message>
       <source>Min:</source>
@@ -129,7 +129,7 @@
     </message>
     <message>
       <source>Container</source>
-      <translation type="unfinished">Container</translation>
+      <translation>Behållare</translation>
     </message>
     <message>
       <source>Fault tree:</source>
@@ -137,41 +137,41 @@
     </message>
     <message>
       <source>Model</source>
-      <translation type="unfinished">Model</translation>
+      <translation>Modell</translation>
     </message>
   </context>
   <context>
     <name>GuardedApplication</name>
     <message>
       <source>Internal SCRAM Error</source>
-      <translation type="unfinished">Internal SCRAM Error</translation>
+      <translation>Internt fel i SCRAM</translation>
     </message>
     <message>
       <source>Internal Exception Error</source>
-      <translation type="unfinished">Internal Exception Error</translation>
+      <translation>Internt undantagsfel</translation>
     </message>
     <message>
       <source>Unknown exception type.</source>
-      <translation type="unfinished">Unknown exception type.</translation>
+      <translation>Okänt undantagsfel.</translation>
     </message>
   </context>
   <context>
     <name>MainWindow</name>
     <message>
       <source>&amp;Help</source>
-      <translation type="unfinished">&amp;Help</translation>
+      <translation>&amp;Hjälp</translation>
     </message>
     <message>
       <source>&amp;File</source>
-      <translation type="unfinished">&amp;File</translation>
+      <translation>&amp;Fil</translation>
     </message>
     <message>
       <source>&amp;View</source>
-      <translation type="unfinished">&amp;View</translation>
+      <translation>&amp;Visa</translation>
     </message>
     <message>
       <source>&amp;Zoom</source>
-      <translation type="unfinished">&amp;Zoom</translation>
+      <translation>&amp;Zoom</translation>
     </message>
     <message>
       <source>&amp;Toolbars</source>
@@ -179,11 +179,11 @@
     </message>
     <message>
       <source>&amp;Analysis</source>
-      <translation type="unfinished">&amp;Analysis</translation>
+      <translation>&amp;Analys</translation>
     </message>
     <message>
       <source>&amp;Edit</source>
-      <translation type="unfinished">&amp;Edit</translation>
+      <translation>&amp;Redigera</translation>
     </message>
     <message>
       <source>Model Tool Bar</source>
@@ -203,11 +203,11 @@
     </message>
     <message>
       <source>Data</source>
-      <translation type="unfinished">Data</translation>
+      <translation>Data</translation>
     </message>
     <message>
       <source>Reports</source>
-      <translation type="unfinished">Reports</translation>
+      <translation>Rapporter</translation>
     </message>
     <message>
       <source>About &amp;Qt</source>
