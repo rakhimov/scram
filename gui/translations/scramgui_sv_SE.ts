@@ -338,7 +338,7 @@
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Namn:</translation>
     </message>
   </context>
   <context>
@@ -377,11 +377,11 @@
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Sant</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Falskt</translation>
     </message>
     <message>
       <source>Add event &apos;%1&apos;</source>
@@ -765,12 +765,12 @@
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Inte utvecklat</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Villkorlig</translation>
     </message>
   </context>
   <context>
