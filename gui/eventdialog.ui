@@ -169,9 +169,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="statusTip">
-            <string>State combo</string>
-           </property>
            <item>
             <property name="text">
              <string>False</string>
