@@ -21,31 +21,32 @@
     </message>
     <message>
       <source>House event</source>
+      <extracomment>Constant event w/ Boolean state value</extracomment>
       <translation>Постоянное событие</translation>
     </message>
     <message>
       <source>Basic event</source>
+      <extracomment>The main analysis event (e.g., component failure)</extracomment>
       <translation>Основное событие</translation>
     </message>
     <message>
       <source>Undeveloped</source>
+      <extracomment>The basic event flavor that indicates the further developement into a gate is possible.</extracomment>
       <translation>Неразвивающееся</translation>
     </message>
     <message>
       <source>Conditional</source>
+      <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
       <translation>Условие</translation>
     </message>
     <message>
       <source>Gate</source>
+      <extracomment>The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.</extracomment>
       <translation>Вентиль</translation>
     </message>
     <message>
       <source>State:</source>
       <translation>Состояние:</translation>
-    </message>
-    <message>
-      <source>State combo</source>
-      <translation type="unfinished">State combo</translation>
     </message>
     <message>
       <source>False</source>
@@ -58,14 +59,6 @@
     <message>
       <source>Expression</source>
       <translation>Выражение</translation>
-    </message>
-    <message>
-      <source>Constant</source>
-      <translation>Константа</translation>
-    </message>
-    <message>
-      <source>Exponential</source>
-      <translation>Экспоненциальная</translation>
     </message>
     <message>
       <source>Value:</source>
@@ -89,10 +82,12 @@
     </message>
     <message>
       <source>ATLEAST</source>
+      <extracomment>VOTE, Voting OR, Combo, Combination, K/N gate</extracomment>
       <translation>Выборка</translation>
     </message>
     <message>
       <source>XOR</source>
+      <extracomment>Exclusive OR</extracomment>
       <translation>ИЛИ-ИСКЛ</translation>
     </message>
     <message>
@@ -101,15 +96,13 @@
     </message>
     <message>
       <source>NAND</source>
+      <extracomment>NOT AND</extracomment>
       <translation>И-НЕ</translation>
     </message>
     <message>
       <source>NOR</source>
+      <extracomment>NOT OR</extracomment>
       <translation>ИЛИ-НЕ</translation>
-    </message>
-    <message>
-      <source>NULL</source>
-      <translation>Пропуск</translation>
     </message>
     <message>
       <source>Min:</source>
@@ -139,20 +132,21 @@
       <source>Model</source>
       <translation>Модель</translation>
     </message>
-  </context>
-  <context>
-    <name>GuardedApplication</name>
     <message>
-      <source>Internal SCRAM Error</source>
-      <translation>Внутренняя ошибка SCRAM</translation>
+      <source>Constant</source>
+      <comment>constant probability value</comment>
+      <translation>Константа</translation>
     </message>
     <message>
-      <source>Internal Exception Error</source>
-      <translation>Внутренняя ошибка исключения</translation>
+      <source>Exponential</source>
+      <comment>probability type defined w/ negative exponential formula</comment>
+      <translation>Экспоненциальная</translation>
     </message>
     <message>
-      <source>Unknown exception type.</source>
-      <translation>Неизвестный тип исключения.</translation>
+      <source>NULL</source>
+      <comment>Not a null value.</comment>
+      <extracomment>Pass-through, NO-OP type</extracomment>
+      <translation>Пропуск</translation>
     </message>
   </context>
   <context>
@@ -274,44 +268,8 @@
       <translation>У&amp;меньшить</translation>
     </message>
     <message>
-      <source>400%</source>
-      <translation>400%</translation>
-    </message>
-    <message>
-      <source>200%</source>
-      <translation>200%</translation>
-    </message>
-    <message>
-      <source>150%</source>
-      <translation>150%</translation>
-    </message>
-    <message>
-      <source>125%</source>
-      <translation>125%</translation>
-    </message>
-    <message>
-      <source>100%</source>
-      <translation>100%</translation>
-    </message>
-    <message>
-      <source>85%</source>
-      <translation>85%</translation>
-    </message>
-    <message>
-      <source>50%</source>
-      <translation>50%</translation>
-    </message>
-    <message>
-      <source>70%</source>
-      <translation>70%</translation>
-    </message>
-    <message>
       <source>Best &amp;Fit</source>
       <translation>Подог&amp;нать</translation>
-    </message>
-    <message>
-      <source>&amp;Run</source>
-      <translation>&amp;Запуск</translation>
     </message>
     <message>
       <source>Run Analysis</source>
@@ -320,10 +278,6 @@
     <message>
       <source>Alt+R</source>
       <translation type="unfinished">Alt+R</translation>
-    </message>
-    <message>
-      <source>&amp;Settings...</source>
-      <translation>&amp;Настройки...</translation>
     </message>
     <message>
       <source>Analysis Settings</source>
@@ -365,6 +319,16 @@
       <source>Re&amp;name Model</source>
       <translation>&amp;Переименовать модель</translation>
     </message>
+    <message>
+      <source>&amp;Run</source>
+      <comment>execute analysis</comment>
+      <translation>&amp;Запуск</translation>
+    </message>
+    <message>
+      <source>&amp;Settings...</source>
+      <comment>analysis configuration</comment>
+      <translation>&amp;Настройки...</translation>
+    </message>
   </context>
   <context>
     <name>NameDialog</name>
@@ -379,42 +343,6 @@
   </context>
   <context>
     <name>QObject</name>
-    <message>
-      <source>Unrecoverable Internal Error</source>
-      <translation>Неисправимая внутренняя ошибка</translation>
-    </message>
-    <message>
-      <source>SIGSEGV: Invalid memory access.</source>
-      <translation type="unfinished">SIGSEGV: Invalid memory access.</translation>
-    </message>
-    <message>
-      <source>SIGFPE: Erroneous arithmetic operation.</source>
-      <translation type="unfinished">SIGFPE: Erroneous arithmetic operation.</translation>
-    </message>
-    <message>
-      <source>SIGILL: Illegal instruction.</source>
-      <translation type="unfinished">SIGILL: Illegal instruction.</translation>
-    </message>
-    <message>
-      <source>SCRAM exception: %1</source>
-      <translation type="unfinished">SCRAM exception: %1</translation>
-    </message>
-    <message>
-      <source>Standard exception: %1</source>
-      <translation type="unfinished">Standard exception: %1</translation>
-    </message>
-    <message>
-      <source>Exception of unknown type: no message available.</source>
-      <translation type="unfinished">Exception of unknown type: no message available.</translation>
-    </message>
-    <message>
-      <source>Exception no-throw contract violation:
-
-%1</source>
-      <translation type="unfinished">Exception no-throw contract violation:
-
-%1</translation>
-    </message>
     <message>
       <source>Set element &apos;%1&apos; label to &apos;%2&apos;</source>
       <translation>Установить ярлык элемента «%1» на «%2»</translation>
@@ -483,10 +411,6 @@
       <translation>Редкое событие</translation>
     </message>
     <message>
-      <source>MCUB</source>
-      <translation>MCUB</translation>
-    </message>
-    <message>
       <source>Analyses</source>
       <translation>Анализы</translation>
     </message>
@@ -505,18 +429,6 @@
     <message>
       <source>Algorithms</source>
       <translation>Алгоритмы</translation>
-    </message>
-    <message>
-      <source>MOCUS</source>
-      <translation>MOCUS</translation>
-    </message>
-    <message>
-      <source>BDD</source>
-      <translation>BDD</translation>
-    </message>
-    <message>
-      <source>ZBDD</source>
-      <translation>ZBDD</translation>
     </message>
     <message>
       <source>Limits</source>
@@ -569,18 +481,22 @@
     </message>
     <message>
       <source>The argument &apos;%1&apos; is already in formula.</source>
+      <extracomment>Duplicate arguments are not allowed in a formula.</extracomment>
       <translation>Аргумент «%1» уже в формуле.</translation>
     </message>
     <message>
       <source>The argument &apos;%1&apos; would introduce a self-cycle.</source>
+      <extracomment>Self-cycle is also called a loop in a graph.</extracomment>
       <translation>Аргумент «%1» ввел бы петлю.</translation>
     </message>
     <message>
       <source>The argument &apos;%1&apos; would introduce a cycle.</source>
+      <extracomment>Fault trees are acyclic graphs.</extracomment>
       <translation>Аргумент «%1» ввел бы цикл.</translation>
     </message>
     <message>
       <source>The event with name &apos;%1&apos; already exists.</source>
+      <extracomment>Duplicate event definition in the model.</extracomment>
       <translation>Событие с названием «%1» уже существует.</translation>
     </message>
     <message>
@@ -600,12 +516,18 @@
       <translation>%1 операция требует 2 обязательных аргументы.</translation>
     </message>
     <message>
-      <source>%1 connective requires at-least %2 arguments.</source>
-      <translation>%1 операция требует по крайней мере %2 аргументы.</translation>
-    </message>
-    <message>
       <source>Fault tree &apos;%1&apos; is already defined with a top gate.</source>
+      <extracomment>Fault tree redefinition.</extracomment>
       <translation>Дерево отказов «%1» уже определен с главным событием.</translation>
+    </message>
+    <message numerus="yes">
+      <source>%1 connective requires at-least %n arguments.</source>
+      <extracomment>The number of required arguments is always more than 2.</extracomment>
+      <translation>
+        <numerusform>%1 операция требует по крайней мере %n аргумент.</numerusform>
+        <numerusform>%1 операция требует по крайней мере %n аргументы.</numerusform>
+        <numerusform>%1 операция требует по крайней мере %n аргументы.</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -620,6 +542,7 @@
     </message>
     <message>
       <source>Running analysis...</source>
+      <extracomment>This is a message shown during the analysis run.</extracomment>
       <translation>Выполнение анализа...</translation>
     </message>
     <message>
@@ -628,23 +551,22 @@
     </message>
     <message>
       <source>Initialization Error</source>
+      <extracomment>The error upon initialization from a file.</extracomment>
       <translation>Ошибка инициализации</translation>
     </message>
     <message>
       <source>Fault tree &apos;%1&apos; must have a single top-gate.</source>
+      <extracomment>Single top/root event fault tree are expected by GUI.</extracomment>
       <translation>Дерево отказов «%1» должно иметь единственное главное событие.</translation>
     </message>
     <message>
       <source>Find/Filter (Perl Regex)</source>
+      <extracomment>The search bar.</extracomment>
       <translation>Поиск/фильтр (Perl регулярное выражение)</translation>
     </message>
     <message>
       <source>About SCRAM</source>
       <translation>О SCRAM</translation>
-    </message>
-    <message>
-      <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</source>
-      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Графический интерфейс для SCRAM,&lt;br/&gt; мулти инструмент командной строки для анализа рисков.&lt;br/&gt;&lt;br/&gt;Лицензия: GPLv3+&lt;br/&gt;Домашняя страница: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Техническая поддержка: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Баг-трекер: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</translation>
     </message>
     <message>
       <source>Undo:</source>
@@ -679,10 +601,6 @@
       <translation>Сохранить модель как</translation>
     </message>
     <message>
-      <source>Save Error</source>
-      <translation>Ошибка сохранения</translation>
-    </message>
-    <message>
       <source>Export Report As</source>
       <translation>Экспортировать отчеты</translation>
     </message>
@@ -692,6 +610,7 @@
     </message>
     <message>
       <source>Dependency Container Removal</source>
+      <extracomment>The container w/ dependents still in the model.</extracomment>
       <translation>Удаление контейнера c иждивенцами</translation>
     </message>
     <message>
@@ -704,6 +623,7 @@
     </message>
     <message>
       <source>Dependency Event Removal</source>
+      <extracomment>The event w/ dependents in the model.</extracomment>
       <translation>Удаление события c иждивенцами</translation>
     </message>
     <message>
@@ -712,26 +632,32 @@
     </message>
     <message>
       <source>Add fault tree &apos;%1&apos; with gate &apos;%2&apos;</source>
+      <extracomment>Addition of a fault by defining its root event first.</extracomment>
       <translation>Добавить дерево отказов «%1» с главным событием «%2»</translation>
     </message>
     <message>
       <source>Gates</source>
+      <extracomment>The tab for the table of gates.</extracomment>
       <translation>Вентили</translation>
     </message>
     <message>
       <source>Basic Events</source>
+      <extracomment>The tab for the table of basic events.</extracomment>
       <translation>Основные события</translation>
     </message>
     <message>
       <source>House Events</source>
+      <extracomment>The tab for the table of house events.</extracomment>
       <translation>Постоянные события</translation>
     </message>
     <message>
       <source>Fault Tree: %1</source>
+      <extracomment>The tab for a fault tree diagram.</extracomment>
       <translation>Дерево отказов: %1</translation>
     </message>
     <message>
       <source>Products: %L1</source>
+      <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
       <translation>Произведения: %L1</translation>
     </message>
     <message>
@@ -760,6 +686,7 @@
     </message>
     <message>
       <source>Importance Factors: %L1</source>
+      <extracomment>The number of important events w/ factors defined.</extracomment>
       <translation>Факторы важности: % L1</translation>
     </message>
     <message>
@@ -794,23 +721,36 @@
       <source>Importance: %1</source>
       <translation>Важность: %1</translation>
     </message>
+    <message>
+      <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
+      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Графический интерфейс для SCRAM,&lt;br/&gt; мулти инструмент командной строки для анализа рисков.&lt;br/&gt;&lt;br/&gt;Лицензия: GPLv3+&lt;br/&gt;Домашняя страница: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Техническая поддержка: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Баг-трекер: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
+    </message>
+    <message>
+      <source>Save Error</source>
+      <comment>error on saving to file</comment>
+      <translation>Ошибка сохранения</translation>
+    </message>
   </context>
   <context>
     <name>scram::gui::ModelTree</name>
     <message>
       <source>Fault Trees</source>
+      <extracomment>The parent item for collections of fault trees in the model.</extracomment>
       <translation>Деревья отказов</translation>
     </message>
     <message>
       <source>Gates</source>
+      <extracomment>The table of gates.</extracomment>
       <translation>Вентили</translation>
     </message>
     <message>
       <source>Basic Events</source>
+      <extracomment>The table of basic events.</extracomment>
       <translation>Основные события</translation>
     </message>
     <message>
       <source>House Events</source>
+      <extracomment>The table of house events.</extracomment>
       <translation>Постоянные события</translation>
     </message>
   </context>
@@ -830,6 +770,7 @@
     </message>
     <message>
       <source>Conditional</source>
+      <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
       <translation>Условие</translation>
     </message>
   </context>
@@ -841,10 +782,12 @@
     </message>
     <message>
       <source>Flavor</source>
+      <extracomment>The flavor type of a basic event.</extracomment>
       <translation>Вариант</translation>
     </message>
     <message>
       <source>Probability</source>
+      <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
       <translation>Вероятность</translation>
     </message>
     <message>
@@ -864,6 +807,7 @@
     </message>
     <message>
       <source>at-least %1</source>
+      <extracomment>Also named as &apos;vote&apos;, &apos;voting or&apos;, &apos;combination&apos;, &apos;combo&apos;.</extracomment>
       <translation>выборка %1</translation>
     </message>
     <message>
@@ -876,14 +820,17 @@
     </message>
     <message>
       <source>null</source>
+      <extracomment>This is &apos;pass-through&apos; or &apos;no-action&apos; gate type.</extracomment>
       <translation>пропуск</translation>
     </message>
     <message>
       <source>nand</source>
+      <extracomment>not and.</extracomment>
       <translation>и-не</translation>
     </message>
     <message>
       <source>nor</source>
+      <extracomment>not or.</extracomment>
       <translation>или-не</translation>
     </message>
   </context>
@@ -895,10 +842,12 @@
     </message>
     <message>
       <source>Connective</source>
+      <extracomment>Boolean operator of the Boolean formula.</extracomment>
       <translation>Операция</translation>
     </message>
     <message>
       <source>Args</source>
+      <extracomment>The number of arguments in the Boolean formula.</extracomment>
       <translation>Аргументы</translation>
     </message>
     <message>
@@ -914,6 +863,7 @@
     </message>
     <message>
       <source>State</source>
+      <extracomment>House event Boolean state.</extracomment>
       <translation>Состояние</translation>
     </message>
     <message>
