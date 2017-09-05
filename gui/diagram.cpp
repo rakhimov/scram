@@ -284,7 +284,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
                                                                 {-a / 2, h},
                                                                 {-a, h / 2}}});
         auto *gate = static_cast<model::Gate *>(m_event);
-        auto *text = new QGraphicsTextItem(QString::fromLatin1("%1/%2")
+        auto *text = new QGraphicsTextItem(QStringLiteral("%1/%2")
                                                .arg(gate->voteNumber())
                                                .arg(gate->numArgs()),
                                            polygon.get());

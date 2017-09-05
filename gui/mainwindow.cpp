@@ -237,7 +237,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::configChanged, [this] {
         m_undoStack->clear();
-        setWindowTitle(QString::fromLatin1("%1[*]").arg(
+        setWindowTitle(QStringLiteral("%1[*]").arg(
             QString::fromStdString(m_model->name())));
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
@@ -341,9 +341,9 @@ void MainWindow::setupActions()
                " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
                "GNU General Public License for more details.")
                 .arg(QCoreApplication::applicationVersion(),
-                     QString::fromLatin1("https://scram-pra.org"),
-                     QString::fromLatin1("scram-users@googlegroups.com"),
-                     QString::fromLatin1(
+                     QStringLiteral("https://scram-pra.org"),
+                     QStringLiteral("scram-users@googlegroups.com"),
+                     QStringLiteral(
                          "https://github.com/rakhimov/scram/issues")));
     });
 
@@ -452,7 +452,7 @@ void MainWindow::openFiles(QString directory)
 {
     QStringList filenames = QFileDialog::getOpenFileNames(
         this, tr("Open Model Files"), directory,
-        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+        QStringLiteral("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filenames.empty())
         return;
@@ -473,7 +473,7 @@ void MainWindow::saveModelAs()
 {
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Model As"), QDir::homePath(),
-        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+        QStringLiteral("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
         return;
@@ -522,7 +522,7 @@ void MainWindow::exportReportAs()
     GUI_ASSERT(m_analysis, );
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Export Report As"), QDir::homePath(),
-        QString::fromLatin1("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
+        QStringLiteral("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
         return;
@@ -555,12 +555,12 @@ void MainWindow::setupZoomableView(ZoomableView *view)
             if (event->type() == QEvent::Show) {
                 setEnabled(true);
                 m_window->m_zoomBox->setCurrentText(
-                    QString::fromLatin1("%1%").arg(m_zoomable->getZoom()));
+                    QStringLiteral("%1%").arg(m_zoomable->getZoom()));
 
                 connect(m_zoomable, &ZoomableView::zoomChanged,
                         m_window->m_zoomBox, [this](int level) {
                             m_window->m_zoomBox->setCurrentText(
-                                QString::fromLatin1("%1%").arg(level));
+                                QStringLiteral("%1%").arg(level));
                         });
                 connect(m_window->m_zoomBox, &QComboBox::currentTextChanged,
                         m_zoomable, [this](QString text) {
@@ -1161,7 +1161,7 @@ void MainWindow::resetModelTree()
     delete oldModel;
 
     connect(m_guiModel.get(), &model::Model::modelNameChanged, this, [this] {
-        setWindowTitle(QString::fromLatin1("%1[*]").arg(
+        setWindowTitle(QStringLiteral("%1[*]").arg(
             QString::fromStdString(m_model->name())));
     });
 }

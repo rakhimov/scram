@@ -35,7 +35,7 @@
                   __LINE__);                                                   \
         QMessageBox::critical(nullptr, QStringLiteral("Assertion Failure"),    \
                               QStringLiteral("%1 in %2 line %3")               \
-                                  .arg(QString::fromLatin1(#cond),             \
+                                  .arg(QStringLiteral(#cond),                  \
                                        QString::fromUtf8(__FILE__),            \
                                        QString::number(__LINE__)));            \
         return ret;                                                            \

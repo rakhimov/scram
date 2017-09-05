@@ -194,10 +194,9 @@ int main(int argc, char *argv[])
 
     installCrashHandlers();
 
-    QCoreApplication::setOrganizationName(QString::fromLatin1("scram"));
-    QCoreApplication::setOrganizationDomain(
-        QString::fromLatin1("scram-pra.org"));
-    QCoreApplication::setApplicationName(QString::fromLatin1("scram"));
+    QCoreApplication::setOrganizationName(QStringLiteral("scram"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("scram-pra.org"));
+    QCoreApplication::setApplicationName(QStringLiteral("scram"));
     QCoreApplication::setApplicationVersion(
         QString::fromLatin1(scram::version::core()));
 
