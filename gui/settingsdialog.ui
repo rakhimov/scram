@@ -131,6 +131,9 @@
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="labelMissionTime">
+        <property name="statusTip">
+         <string extracomment="The duration time value for analysis (aka, exposure time)."/>
+        </property>
         <property name="text">
          <string>Mission time:</string>
         </property>
@@ -151,6 +154,9 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="labelProductOrder">
+        <property name="statusTip">
+         <string extracomment="The number of literals in a product (i.e., set cardinality)."/>
+        </property>
         <property name="text">
          <string>Product order:</string>
         </property>

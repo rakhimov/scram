@@ -101,12 +101,16 @@ QVariant ModelTree::data(const QModelIndex &index, int role) const
             static_cast<mef::FaultTree *>(index.internalPointer())->name());
     switch (static_cast<Row>(index.row())) {
     case Row::FaultTrees:
+        //: The parent item for collections of fault trees in the model.
         return tr("Fault Trees");
     case Row::Gates:
+        //: The table of gates.
         return tr("Gates");
     case Row::BasicEvents:
+        //: The table of basic events.
         return tr("Basic Events");
     case Row::HouseEvents:
+        //: The table of house events.
         return tr("House Events");
     }
     GUI_ASSERT(false, {});

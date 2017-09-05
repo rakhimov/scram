@@ -174,6 +174,8 @@ public:
         case Undeveloped:
             return tr("Undeveloped");
         case Conditional:
+            //: Actually, this is 'conditioning'
+            //: since the event is the condition for some sub-tree.
             return tr("Conditional");
         }
         assert(false);
@@ -341,16 +343,20 @@ inline QString Gate::type() const
     case mef::kOr:
         return tr("or");
     case mef::kVote:
+        //: Also named as 'vote', 'voting or', 'combination', 'combo'.
         return tr("at-least %1").arg(voteNumber());
     case mef::kXor:
         return tr("xor");
     case mef::kNot:
         return tr("not");
     case mef::kNull:
+        //: This is 'pass-through' or 'no-action' gate type.
         return tr("null");
     case mef::kNand:
+        //: not and.
         return tr("nand");
     case mef::kNor:
+        //: not or.
         return tr("nor");
     }
     assert(false);

@@ -223,6 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
             return;
         }
         WaitDialog progress(this);
+        //: This is a message shown during the analysis run.
         progress.setLabelText(tr("Running analysis..."));
         auto analysis
             = std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
@@ -293,6 +294,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
             if (faultTree->top_events().size() != 1) {
                 QMessageBox::critical(
                     this, tr("Initialization Error"),
+                    //: Single top/root event fault tree are expected by GUI.
                     tr("Fault tree '%1' must have a single top-gate.")
                         .arg(QString::fromStdString(faultTree->name())));
                 return;
@@ -302,7 +304,9 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
         m_model = std::move(newModel);
         m_inputFiles = std::move(allInput);
     } catch (scram::Error &err) {
-        QMessageBox::critical(this, tr("Initialization Error"),
+        QMessageBox::critical(this,
+                              //: The error upon initialization from a file.
+                              tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
         return;
     }
@@ -318,6 +322,7 @@ void MainWindow::setupStatusBar()
     m_searchBar->setMaximumHeight(m_searchBar->fontMetrics().height());
     m_searchBar->setSizePolicy(QSizePolicy::MinimumExpanding,
                                QSizePolicy::Fixed);
+    //: The search bar.
     m_searchBar->setPlaceholderText(tr("Find/Filter (Perl Regex)"));
     ui->statusBar->addPermanentWidget(m_searchBar);
 }
@@ -327,6 +332,11 @@ void MainWindow::setupActions()
     connect(ui->actionAboutQt, &QAction::triggered, qApp,
             &QApplication::aboutQt);
     connect(ui->actionAboutScram, &QAction::triggered, this, [this] {
+        QString legal = QStringLiteral(
+            "This program is distributed in the hope that it will be useful, "
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
+            "GNU General Public License for more details.");
         QMessageBox::about(
             this, tr("About SCRAM"),
             tr("<h1>SCRAM %1</h1>"
@@ -335,16 +345,12 @@ void MainWindow::setupActions()
                "License: GPLv3+<br/>"
                "Homepage: <a href=\"%2\">%2</a><br/>"
                "Technical Support: <a href=\"%3\">%3</a><br/>"
-               "Bug Tracker: <a href=\"%4\">%4</a><br/><br/>"
-               "This program is distributed in the hope that it will be useful,"
-               " but WITHOUT ANY WARRANTY; without even the implied warranty of"
-               " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
-               "GNU General Public License for more details.")
+               "Bug Tracker: <a href=\"%4\">%4</a><br/><br/>%5")
                 .arg(QCoreApplication::applicationVersion(),
                      QStringLiteral("https://scram-pra.org"),
                      QStringLiteral("scram-users@googlegroups.com"),
-                     QStringLiteral(
-                         "https://github.com/rakhimov/scram/issues")));
+                     QStringLiteral("https://github.com/rakhimov/scram/issues"),
+                     legal));
     });
 
     // File menu actions.
@@ -487,7 +493,7 @@ void MainWindow::saveToFile(std::string destination)
     try {
         mef::Serialize(*m_model, destination);
     } catch (Error &err) {
-        QMessageBox::critical(this, tr("Save Error"),
+        QMessageBox::critical(this, tr("Save Error", "error on saving to file"),
                               QString::fromUtf8(err.what()));
         return;
     }
@@ -719,7 +725,9 @@ void MainWindow::removeEvent(model::Gate *event, mef::FaultTree *faultTree)
     QString faultTreeName = QString::fromStdString(faultTree->name());
     if (faultTree->gates().size() > 1) {
         QMessageBox::information(
-            this, tr("Dependency Container Removal"),
+            this,
+            //: The container w/ dependents still in the model.
+            tr("Dependency Container Removal"),
             tr("Fault tree '%1' with root '%2' is not removable because"
                " it has dependent non-root gates."
                " Remove the gates from the fault tree"
@@ -776,7 +784,9 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                             = m_window->m_guiModel->parents(element->data());
                         if (!parents.empty()) {
                             QMessageBox::information(
-                                m_window, tr("Dependency Event Removal"),
+                                m_window,
+                                //: The event w/ dependents in the model.
+                                tr("Dependency Event Removal"),
                                 tr("Event '%1' is not removable because"
                                    " it has dependents."
                                    " Remove the event from the dependents"
@@ -889,6 +899,7 @@ void MainWindow::addElement()
         break;
     case EventDialog::Gate: {
         m_undoStack->beginMacro(
+            //: Addition of a fault by defining its root event first.
             tr("Add fault tree '%1' with gate '%2'")
                 .arg(QString::fromStdString(dialog.faultTree()),
                      dialog.name()));
@@ -1174,6 +1185,7 @@ void MainWindow::activateModelTree(const QModelIndex &index)
         case ModelTree::Row::Gates: {
             auto *table = constructElementTable<model::GateContainerModel>(
                 m_guiModel.get(), this);
+            //: The tab for the table of gates.
             ui->tabWidget->addTab(table, tr("Gates"));
             ui->tabWidget->setCurrentWidget(table);
             return;
@@ -1182,6 +1194,7 @@ void MainWindow::activateModelTree(const QModelIndex &index)
             auto *table
                 = constructElementTable<model::BasicEventContainerModel>(
                     m_guiModel.get(), this);
+            //: The tab for the table of basic events.
             ui->tabWidget->addTab(table, tr("Basic Events"));
             ui->tabWidget->setCurrentWidget(table);
             return;
@@ -1190,6 +1203,7 @@ void MainWindow::activateModelTree(const QModelIndex &index)
             auto *table
                 = constructElementTable<model::HouseEventContainerModel>(
                     m_guiModel.get(), this);
+            //: The tab for the table of house events.
             ui->tabWidget->addTab(table, tr("House Events"));
             ui->tabWidget->setCurrentWidget(table);
             return;
@@ -1226,6 +1240,7 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
     setupExportableView(view);
     ui->tabWidget->addTab(
         view,
+        //: The tab for a fault tree diagram.
         tr("Fault Tree: %1").arg(QString::fromStdString(faultTree->name())));
     ui->tabWidget->setCurrentWidget(view);
 
@@ -1280,6 +1295,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
 
         GUI_ASSERT(result.fault_tree_analysis,);
         auto *productItem = new QTreeWidgetItem(
+            //: Cut-sets or prime-implicants (depending on the settings).
             {tr("Products: %L1")
                  .arg(result.fault_tree_analysis->products().size())});
         widgetItem->addChild(productItem);
@@ -1332,6 +1348,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
 
         if (result.importance_analysis) {
             auto *importanceItem = new QTreeWidgetItem(
+                //: The number of important events w/ factors defined.
                 {tr("Importance Factors: %L1")
                      .arg(result.importance_analysis->importance().size())});
             widgetItem->addChild(importanceItem);

@@ -502,7 +502,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Run</string>
+    <string comment="execute analysis">&amp;Run</string>
    </property>
    <property name="iconText">
     <string>Run Analysis</string>
@@ -520,7 +520,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Settings...</string>
+    <string comment="analysis configuration">&amp;Settings...</string>
    </property>
    <property name="iconText">
     <string>Analysis Settings</string>

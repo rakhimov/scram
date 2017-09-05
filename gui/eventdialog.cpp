@@ -113,12 +113,14 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 addArgLine->setStyleSheet(yellowBackground);
                 if (hasFormulaArg(name)) {
                     m_errorBar->showMessage(
+                        //: Duplicate arguments are not allowed in a formula.
                         tr("The argument '%1' is already in formula.")
                             .arg(name));
                     return;
                 }
                 if (name == nameLine->text()) {
                     m_errorBar->showMessage(
+                        //: Self-cycle is also called a loop in a graph.
                         tr("The argument '%1' would introduce a self-cycle.")
                             .arg(name));
                     return;
@@ -126,6 +128,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                     auto it = m_model->gates().find(name.toStdString());
                     if (it != m_model->gates().end() && checkCycle(it->get())) {
                         m_errorBar->showMessage(
+                            //: Fault trees are acyclic graphs.
                             tr("The argument '%1' would introduce a cycle.")
                                 .arg(name));
                         return;
@@ -351,6 +354,7 @@ void EventDialog::validate()
         if (name != m_initName) {
             m_model->GetEvent(name.toStdString());
             m_errorBar->showMessage(
+                //: Duplicate event definition in the model.
                 tr("The event with name '%1' already exists.").arg(name));
             return;
         }
@@ -411,10 +415,12 @@ void EventDialog::validate()
             break;
         case mef::kVote:
             if (numArgs <= voteNumberBox->value()) {
+                int numReqArgs = voteNumberBox->value() + 1;
                 m_errorBar->showMessage(
-                    tr("%1 connective requires at-least %2 arguments.")
-                        .arg(connectiveBox->currentText(),
-                             QString::number(voteNumberBox->value() + 1)));
+                    //: The number of required arguments is always more than 2.
+                    tr("%1 connective requires at-least %n arguments.", "",
+                       numReqArgs)
+                        .arg(connectiveBox->currentText()));
                 return;
             }
             break;
@@ -432,6 +438,7 @@ void EventDialog::validate()
             = ext::find(m_model->fault_trees(), faultTreeName.toStdString())) {
             GUI_ASSERT((*it)->top_events().empty() == false, );
             m_errorBar->showMessage(
+                //: Fault tree redefinition.
                 tr("Fault tree '%1' is already defined with a top gate.")
                     .arg(faultTreeName));
             containerFaultTreeName->setStyleSheet(yellowBackground);

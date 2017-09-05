@@ -140,8 +140,10 @@ QVariant BasicEventContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: The flavor type of a basic event.
         return tr("Flavor");
     case 2:
+        //: In PRA context, probability may be unavailability or unreliability.
         return tr("Probability");
     case 3:
         return tr("Label");
@@ -210,6 +212,7 @@ QVariant HouseEventContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: House event Boolean state.
         return tr("State");
     case 2:
         return tr("Label");
@@ -326,8 +329,10 @@ QVariant GateContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: Boolean operator of the Boolean formula.
         return tr("Connective");
     case 2:
+        //: The number of arguments in the Boolean formula.
         return tr("Args");
     case 3:
         return tr("Label");
