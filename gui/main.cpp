@@ -99,16 +99,19 @@ public:
             return QApplication::notify(receiver, event);
         } catch (const scram::Error &err) {
             qCritical("%s", err.what());
-            QMessageBox::critical(nullptr, tr("Internal SCRAM Error"),
+            QMessageBox::critical(nullptr,
+                                  QStringLiteral("Internal SCRAM Error"),
                                   QString::fromUtf8(err.what()));
         } catch (const std::exception &err) {
             qCritical("%s", err.what());
-            QMessageBox::critical(nullptr, tr("Internal Exception Error"),
+            QMessageBox::critical(nullptr,
+                                  QStringLiteral("Internal Exception Error"),
                                   QString::fromUtf8(err.what()));
         } catch (...) {
             qCritical("Unknown exception type.");
-            QMessageBox::critical(nullptr, tr("Internal Exception Error"),
-                                  tr("Unknown exception type."));
+            QMessageBox::critical(nullptr,
+                                  QStringLiteral("Internal Exception Error"),
+                                  QStringLiteral("Unknown exception type."));
         }
         return false;
     }
@@ -120,7 +123,7 @@ public:
 void crashDialog(const QString &text) noexcept
 {
     QMessageBox message(QMessageBox::Critical,
-                        QObject::tr("Unrecoverable Internal Error"), text,
+                        QStringLiteral("Unrecoverable Internal Error"), text,
                         QMessageBox::Ok);
     message.setWindowModality(Qt::WindowModal);
     message.exec();
@@ -131,13 +134,13 @@ void crashHandler(int signum) noexcept
 {
     switch (signum) {
     case SIGSEGV:
-        crashDialog(QObject::tr("SIGSEGV: Invalid memory access."));
+        crashDialog(QStringLiteral("SIGSEGV: Invalid memory access."));
         break;
     case SIGFPE:
-        crashDialog(QObject::tr("SIGFPE: Erroneous arithmetic operation."));
+        crashDialog(QStringLiteral("SIGFPE: Erroneous arithmetic operation."));
         break;
     case SIGILL:
-        crashDialog(QObject::tr("SIGILL: Illegal instruction."));
+        crashDialog(QStringLiteral("SIGILL: Illegal instruction."));
         break;
     }
     std::signal(signum, SIG_DFL);
@@ -155,16 +158,16 @@ void terminateHandler() noexcept
     try {
         std::rethrow_exception(std::current_exception());
     } catch (const scram::Error &err) {
-        error = QObject::tr("SCRAM exception: %1")
+        error = QStringLiteral("SCRAM exception: %1")
                     .arg(QString::fromUtf8(err.what()));
     } catch (const std::exception &err) {
-        error = QObject::tr("Standard exception: %1")
+        error = QStringLiteral("Standard exception: %1")
                     .arg(QString::fromUtf8(err.what()));
     } catch (...) {
-        error = QObject::tr("Exception of unknown type: no message available.");
+        error = QStringLiteral("Exception of unknown type without a message.");
     }
-    crashDialog(
-        QObject::tr("Exception no-throw contract violation:\n\n%1").arg(error));
+    crashDialog(QStringLiteral("Exception no-throw contract violation:\n\n%1")
+                    .arg(error));
     gDefaultTerminateHandler();
 }
 
