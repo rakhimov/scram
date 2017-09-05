@@ -443,42 +443,90 @@
   </action>
   <action name="action400">
    <property name="text">
-    <string>400%</string>
+    <string notr="true">400%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">400%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">400%</string>
    </property>
   </action>
   <action name="action200">
    <property name="text">
-    <string>200%</string>
+    <string notr="true">200%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">200%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">200%</string>
    </property>
   </action>
   <action name="action150">
    <property name="text">
-    <string>150%</string>
+    <string notr="true">150%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">150%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">150%</string>
    </property>
   </action>
   <action name="action125">
    <property name="text">
-    <string>125%</string>
+    <string notr="true">125%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">125%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">125%</string>
    </property>
   </action>
   <action name="action100">
    <property name="text">
-    <string>100%</string>
+    <string notr="true">100%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">100%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">100%</string>
    </property>
   </action>
   <action name="action85">
    <property name="text">
-    <string>85%</string>
+    <string notr="true">85%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">85%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">85%</string>
    </property>
   </action>
   <action name="action50">
    <property name="text">
-    <string>50%</string>
+    <string notr="true">50%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">50%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">50%</string>
    </property>
   </action>
   <action name="action70">
    <property name="text">
-    <string>70%</string>
+    <string notr="true">70%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">70%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">70%</string>
    </property>
   </action>
   <action name="actionBestFit">
