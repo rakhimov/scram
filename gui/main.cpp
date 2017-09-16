@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     // However, the most distributions are expected to be shared builds,
     // so the explicit load should not be used, but it is kept for debugging.
     /* Q_INIT_RESOURCE(res); */
-    GuardedApplication a(argc, argv);
+    GuardedApplication app(argc, argv);
 
     installCrashHandlers();
 
@@ -224,5 +224,5 @@ int main(int argc, char *argv[])
             }
         } catch (boost::exception &) { assert(false); }
     }
-    return a.exec();
+    return app.exec();
 }
