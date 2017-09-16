@@ -20,7 +20,7 @@ compiler:
 
 env:
     global:
-        - PATH=$PATH:`pwd`/install/bin
+        - PATH=$PATH:$PWD/install/bin
         - CLANG_VERSION="3.6"
         # Intel Parallel Studio
         - secure: "AY6adQXVk/3J43z6PHbqVxq3Bn5HZ5Qrf8fvPeF+BR56Oa4+9YryfDDJyiDRISuyh7PoDUw+PERJiZpAL3rkFefxUkYTB3hdU4lsMIAgl37MuT4/kP5CW9TC+gsPJl41y4i8XKFtJXF1K4PW2oDRZCbDDB9oUWPZjNPPe0jg4e8="
