@@ -9,7 +9,7 @@
     </message>
     <message>
       <source>Label:</source>
-      <translation>Ярлык:</translation>
+      <translation>Метка:</translation>
     </message>
     <message>
       <source>Name:</source>
@@ -37,7 +37,7 @@
     <message>
       <source>Conditional</source>
       <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
-      <translation>Условие</translation>
+      <translation>Событие условие</translation>
     </message>
     <message>
       <source>Gate</source>
@@ -140,7 +140,7 @@
     <message>
       <source>Exponential</source>
       <comment>probability type defined w/ negative exponential formula</comment>
-      <translation>Экспоненциальная</translation>
+      <translation>Экспоненциал</translation>
     </message>
     <message>
       <source>NULL</source>
@@ -313,7 +313,7 @@
     </message>
     <message>
       <source>Export &amp;Report As...</source>
-      <translation>Экспорт &amp;отчет как...</translation>
+      <translation>Экспортировать &amp;отчет...</translation>
     </message>
     <message>
       <source>Re&amp;name Model</source>
@@ -322,7 +322,7 @@
     <message>
       <source>&amp;Run</source>
       <comment>execute analysis</comment>
-      <translation>&amp;Запуск</translation>
+      <translation>&amp;Запустить</translation>
     </message>
     <message>
       <source>&amp;Settings...</source>
@@ -345,7 +345,7 @@
     <name>QObject</name>
     <message>
       <source>Set element &apos;%1&apos; label to &apos;%2&apos;</source>
-      <translation>Установить ярлык элемента «%1» на «%2»</translation>
+      <translation>Установить метку элемента «%1» на «%2»</translation>
     </message>
     <message>
       <source>Modify basic event &apos;%1&apos; expression</source>
@@ -758,7 +758,7 @@
     <name>scram::gui::model::BasicEvent</name>
     <message>
       <source>Set basic event &apos;%1&apos; flavor to &apos;%2&apos;</source>
-      <translation>Установить вариант основного события «%1» на «%2»</translation>
+      <translation>Установить вид основного события «%1» на «%2»</translation>
     </message>
     <message>
       <source>Basic</source>
@@ -783,7 +783,7 @@
     <message>
       <source>Flavor</source>
       <extracomment>The flavor type of a basic event.</extracomment>
-      <translation>Вариант</translation>
+      <translation>Вид</translation>
     </message>
     <message>
       <source>Probability</source>
@@ -792,7 +792,7 @@
     </message>
     <message>
       <source>Label</source>
-      <translation>Ярлык</translation>
+      <translation>Метка</translation>
     </message>
   </context>
   <context>
@@ -852,7 +852,7 @@
     </message>
     <message>
       <source>Label</source>
-      <translation>Ярлык</translation>
+      <translation>Метка</translation>
     </message>
   </context>
   <context>
@@ -868,7 +868,7 @@
     </message>
     <message>
       <source>Label</source>
-      <translation>Ярлык</translation>
+      <translation>Метка</translation>
     </message>
   </context>
 </TS>
