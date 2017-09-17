@@ -174,10 +174,10 @@ void terminateHandler() noexcept
 /// Installs crash handlers for system signals.
 void installCrashHandlers() noexcept
 {
-    std::signal(SIGSEGV, crashHandler);
-    std::signal(SIGFPE, crashHandler);
-    std::signal(SIGILL, crashHandler);
-    std::set_terminate(terminateHandler);
+    std::signal(SIGSEGV, &crashHandler);
+    std::signal(SIGFPE, &crashHandler);
+    std::signal(SIGILL, &crashHandler);
+    std::set_terminate(&terminateHandler);
 }
 
 } // namespace
