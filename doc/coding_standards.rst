@@ -128,6 +128,11 @@ Additional Coding Conventions
 
     3. Avoid inverted or negated logic if possible.
 
+- Prefer explicit function to pointer conversion with operator ``&``
+  instead of implicit decay.
+
+- Prefer implicit dereference in a function call through a pointer.
+
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
 
