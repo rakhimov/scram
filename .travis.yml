@@ -22,8 +22,6 @@ env:
     global:
         - PATH=$PATH:$PWD/install/bin
         - CLANG_VERSION="3.6"
-        # Intel Parallel Studio
-        - secure: "AY6adQXVk/3J43z6PHbqVxq3Bn5HZ5Qrf8fvPeF+BR56Oa4+9YryfDDJyiDRISuyh7PoDUw+PERJiZpAL3rkFefxUkYTB3hdU4lsMIAgl37MuT4/kP5CW9TC+gsPJl41y4i8XKFtJXF1K4PW2oDRZCbDDB9oUWPZjNPPe0jg4e8="
     matrix:
         - RELEASE=
         - RELEASE=true
@@ -33,11 +31,6 @@ matrix:
         - os: osx
           compiler: clang
           env: RELEASE=true  # OS X builds are slow and limited.
-        - os: linux
-          compiler: icc
-          env: INTEL_COMPILER=true RELEASE=true
-    allow_failures:
-        - compiler: icc  # TODO: C++14 compiler front-end bug
 
 addons:
     apt:
@@ -65,11 +58,6 @@ before_install:
 
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
-    - if [[ -n "${INTEL_COMPILER}" ]]; then
-          export CC=icc;
-          export CXX=icpc;
-          export RELEASE=true;
-      fi
     - if [[ "$CXX" == "clang++" ]] && [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
           export CC=clang-${CLANG_VERSION};
           export CXX=clang++-${CLANG_VERSION};

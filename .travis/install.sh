@@ -16,11 +16,6 @@ sudo -H pip install nose  # Testing main() requires nosetests!
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
-if [[ -n "${INTEL_COMPILER}" ]]; then
-  git clone --branch icc17 https://github.com/rakhimov/icc-travis.git
-  ./icc-travis/install-icc.sh
-fi
-
 if [[ "$CXX" = "clang++" ]]; then
   sudo apt-get install -qq clang-${CLANG_VERSION}
 fi
