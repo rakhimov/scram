@@ -63,7 +63,7 @@ function(CHECK_COMPILER_VERSION MIN_VERSION)
 endfunction()
 
 set(CMAKE_CXX_FLAGS_DEBUG
-  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers")
+  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers -Wold-style-cast")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   CHECK_COMPILER_VERSION("4.9")  # TODO: Wpedantic with gcc 4.9 errors with default arg lambdas.
