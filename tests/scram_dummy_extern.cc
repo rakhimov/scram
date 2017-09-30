@@ -18,6 +18,8 @@
 /// @file scram_dummy_extern.cc
 /// Dummy library with extern functions to test dynamic loading in MEF extern.
 
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+
 extern "C" {
   int foo() { return 42; }
   double bar() { return 42; }

@@ -67,8 +67,11 @@ set(CMAKE_CXX_FLAGS_DEBUG
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   CHECK_COMPILER_VERSION("4.9")  # TODO: Wpedantic with gcc 4.9 errors with default arg lambdas.
+  set(CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} -Wredundant-decls -Wcast-align -Wlogical-op -Wvla -Wuseless-cast -Wunreachable-code")
+
   if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic -Wmissing-declarations")
   endif()
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -176,7 +179,7 @@ message(STATUS ${LIBS})
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(BOOST_MIN_VERSION "1.58.0")
   set(LIBS ${LIBS} ${CMAKE_DL_LIBS})
 else()

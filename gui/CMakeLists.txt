@@ -15,7 +15,10 @@ message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # TODO: MOC generated code has some useless casts.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-useless-cast")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # TODO: Qt moc offsetof applied to non-POD types is nonstandard.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
