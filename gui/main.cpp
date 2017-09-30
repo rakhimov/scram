@@ -143,7 +143,10 @@ void crashHandler(int signum) noexcept
         crashDialog(QStringLiteral("SIGILL: Illegal instruction."));
         break;
     }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
     std::signal(signum, SIG_DFL);
+#pragma GCC diagnostic pop
     std::raise(signum);
 }
 
