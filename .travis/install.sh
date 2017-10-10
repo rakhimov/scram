@@ -3,7 +3,7 @@
 set -ev
 
 if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-  # brew update
+  brew update
   # brew outdated boost || brew upgrade boost
   brew install libxml2
   brew install gperftools
