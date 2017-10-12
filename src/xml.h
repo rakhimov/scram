@@ -148,11 +148,11 @@ inline const xmlChar* to_utf8(const char* c_string) noexcept {
 ///
 /// @pre The string is normalized by the XML parser.
 inline xml::string_view trim(const xml::string_view& text) noexcept {
-  auto pos_first = text.find_first_not_of(" ");
+  auto pos_first = text.find_first_not_of(' ');
   if (pos_first == xml::string_view::npos)
     return {};
 
-  auto pos_last = text.find_last_not_of(" ");
+  auto pos_last = text.find_last_not_of(' ');
   auto len = pos_last - pos_first + 1;
 
   return xml::string_view(text.data() + pos_first, len);
