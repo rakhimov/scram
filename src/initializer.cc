@@ -879,28 +879,46 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
 
 template <class T, int N>
 struct Initializer::Extractor {
+  /// Extracts expressions
+  /// to be passed to the constructor of expression T.
+  ///
+  /// @param[in] args  XML elements containing the arguments.
+  /// @param[in] base_path  Series of ancestor containers in the path with dots.
+  /// @param[in,out] init  The host Initializer.
+  ///
+  /// @returns The extracted expression.
+  ///
+  /// @pre The XML args container size equals N.
+  std::unique_ptr<T> operator()(const xml::Element::Range& args,
+                                const std::string& base_path,
+                                Initializer* init) {
+    static_assert(N > 0, "The number of arguments can't be fewer than 1.");
+    return (*this)(args.begin(), args.end(), base_path, init);
+  }
+
   /// Extracts and accumulates expressions
   /// to be passed to the constructor of expression T.
   ///
   /// @tparam Ts  Expression types.
   ///
-  /// @param[in] args  XML elements containing the arguments.
+  /// @param[in] it  The iterator in the argument container.
+  /// @param[in] it_end  The end sentinel iterator of the argument container.
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   /// @param[in,out] init  The host Initializer.
   /// @param[in] expressions  Accumulated argument expressions.
   ///
   /// @returns The extracted expression.
   ///
-  /// @throws std::out_of_range  Not enough arguments in the args container.
+  /// @pre The XML container has enough arguments.
   template <class... Ts>
-  std::unique_ptr<T> operator()(const xml::Element::Range& args,
-                                const std::string& base_path,
-                                Initializer* init,
+  std::unique_ptr<T> operator()(xml::Element::Range::iterator it,
+                                xml::Element::Range::iterator it_end,
+                                const std::string& base_path, Initializer* init,
                                 Ts&&... expressions) {
-    static_assert(N > 0, "The number of arguments can't be fewer than 1.");
-    return Extractor<T, N - 1>()(args, base_path, init,
-                                 init->GetExpression(args.at(N - 1), base_path),
-                                 std::forward<Ts>(expressions)...);
+    assert(it != it_end && "Not enough arguments in the args container.");
+    return Extractor<T, N - 1>()(std::next(it), it_end, base_path, init,
+                                 std::forward<Ts>(expressions)...,
+                                 init->GetExpression(*it, base_path));
   }
 };
 
@@ -912,15 +930,21 @@ struct Initializer::Extractor<T, 0> {
   ///
   /// @tparam Ts  Expression types.
   ///
+  /// @param[in] it  The iterator in the argument container.
+  /// @param[in] it_end  The end sentinel iterator of the argument container.
   /// @param[in] expressions  All argument expressions for constructing T.
   ///
   /// @returns The constructed expression.
+  ///
+  /// @pre All the elements in the argument container has been processed.
   template <class... Ts>
-  std::unique_ptr<T> operator()(const xml::Element::Range& /*args*/,
+  std::unique_ptr<T> operator()(xml::Element::Range::iterator it,
+                                xml::Element::Range::iterator it_end,
                                 const std::string& /*base_path*/,
                                 Initializer* /*init*/,
                                 Ts&&... expressions) {
     static_assert(sizeof...(Ts), "Unintended use case.");
+    assert(it == it_end && "Too many arguments in the args container.");
     return std::make_unique<T>(std::forward<Ts>(expressions)...);
   }
 };

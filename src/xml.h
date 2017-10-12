@@ -222,26 +222,6 @@ class Element {
     /// @note O(N) complexity.
     std::size_t size() const { return std::distance(begin(), end()); }
 
-    /// Extracts the element by its position.
-    /// This is a temporary helper function to move from xmlpp::NodeSet.
-    /// Use iterators and loops instead.
-    ///
-    /// @param[in] pos  The position of the element.
-    ///
-    /// @returns The element on the position.
-    ///
-    /// @throws std::out_of_range  The position is invalid.
-    ///
-    /// @note O(N) complexity unlike xmlpp::NodeSet O(1).
-    ///
-    /// @todo Remove.
-    Element at(std::size_t pos) const {
-      auto it = std::next(begin(), pos);
-      if (it == end())
-        throw std::out_of_range("The position is out of range.");
-      return *it;
-    }
-
    private:
     /// Finds the first Element node in the list.
     ///
