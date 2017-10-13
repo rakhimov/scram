@@ -48,7 +48,7 @@ class ExternLibrary : public Element, public Usage, private boost::noncopyable {
   /// @param[in] system  Search for the library in system paths.
   /// @param[in] decorate  Decorate the library name with prefix and suffix.
   ///
-  /// @throws InvalidArgument  The library path is invalid.
+  /// @throws ValidityError  The library path is invalid.
   /// @throws IOError  The library cannot be found.
   ExternLibrary(std::string name, std::string lib_path,
                 const boost::filesystem::path& reference_dir, bool system,
@@ -113,7 +113,7 @@ class ExternFunction<void>
   ///
   /// @returns Newly constructed expression as a result of function application.
   ///
-  /// @throws InvalidArgument  The number of arguments is invalid.
+  /// @throws ValidityError  The number of arguments is invalid.
   virtual std::unique_ptr<Expression> apply(
       std::vector<Expression*> args) const = 0;
 };
@@ -205,13 +205,13 @@ class ExternExpression
   /// @param[in] extern_function  The library function.
   /// @param[in] args  The argument expression for the function.
   ///
-  /// @throws InvalidArgument  The number of arguments is invalid.
+  /// @throws ValidityError  The number of arguments is invalid.
   explicit ExternExpression(const ExternFunction<R, Args...>* extern_function,
                             std::vector<Expression*> args)
       : ExpressionFormula<ExternExpression>(std::move(args)),
         extern_function_(*extern_function) {
     if (Expression::args().size() != sizeof...(Args))
-      throw InvalidArgument("The number of function arguments does not match.");
+      throw ValidityError("The number of function arguments does not match.");
   }
 
   /// Computes the extern function with the given evaluator for arguments.

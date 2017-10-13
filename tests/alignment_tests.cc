@@ -30,9 +30,9 @@ TEST(PhaseTest, TimeFraction) {
   EXPECT_NO_THROW(Phase("phase", 0.1));
   EXPECT_NO_THROW(Phase("phase", 1));
 
-  EXPECT_THROW(Phase("phase", 0), InvalidArgument);
-  EXPECT_THROW(Phase("phase", 1.1), InvalidArgument);
-  EXPECT_THROW(Phase("phase", -0.1), InvalidArgument);
+  EXPECT_THROW(Phase("phase", 0), DomainError);
+  EXPECT_THROW(Phase("phase", 1.1), DomainError);
+  EXPECT_THROW(Phase("phase", -0.1), DomainError);
 }
 
 TEST(AlignmentTest, AddPhase) {

@@ -39,7 +39,7 @@ class Exponential : public ExpressionFormula<Exponential> {
   /// @param[in] t  Mission time in hours.
   Exponential(Expression* lambda, Expression* t);
 
-  /// @throws InvalidArgument  The failure rate or time is negative.
+  /// @throws DomainError  The failure rate or time is negative.
   void Validate() const override;
   Interval interval() noexcept override { return Interval::closed(0, 1); }
 

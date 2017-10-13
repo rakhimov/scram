@@ -51,14 +51,14 @@ TEST(ExternTest, ExternLibraryLoad) {
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, true));
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, true, true));
 
-  EXPECT_THROW(ExternLibrary("d", "", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", ".", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "/", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "//", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "..", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "./", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "lib/", "", false, false), InvalidArgument);
-  EXPECT_THROW(ExternLibrary("d", "lib:", "", false, false), InvalidArgument);
+  EXPECT_THROW(ExternLibrary("d", "", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", ".", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "/", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "//", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "..", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "./", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "lib/", "", false, false), ValidityError);
+  EXPECT_THROW(ExternLibrary("d", "lib:", "", false, false), ValidityError);
 
 #if BOOST_OS_LINUX
   EXPECT_NO_THROW(
@@ -105,7 +105,7 @@ TEST(ExternTest, ExternExpression) {
   ConstantExpression arg_one(12);
 
   EXPECT_NO_THROW(ExternExpression<int>(&foo, {}));
-  EXPECT_THROW(ExternExpression<int>(&foo, {&arg_one}), InvalidArgument);
+  EXPECT_THROW(ExternExpression<int>(&foo, {&arg_one}), ValidityError);
 
   EXPECT_EQ(42, ExternExpression<int>(&foo, {}).value());
   EXPECT_EQ(42, ExternExpression<int>(&foo, {}).Sample());
@@ -113,7 +113,7 @@ TEST(ExternTest, ExternExpression) {
 
   EXPECT_NO_THROW((ExternExpression<double, double>(&identity, {&arg_one})));
   EXPECT_THROW((ExternExpression<double, double>(&identity, {})),
-               InvalidArgument);
+               ValidityError);
   EXPECT_EQ(arg_one.value(),
             (ExternExpression<double, double>(&identity, {&arg_one})).value());
 }
@@ -129,7 +129,7 @@ TEST(ExternTest, ExternFunctionApply) {
   EXPECT_NO_THROW(foo->apply({}));
   EXPECT_EQ(42, foo->apply({})->value());
 
-  EXPECT_THROW(identity->apply({}), InvalidArgument);
+  EXPECT_THROW(identity->apply({}), ValidityError);
   EXPECT_NO_THROW(identity->apply({&arg_one}));
   EXPECT_EQ(arg_one.value(), identity->apply({&arg_one})->value());
 }

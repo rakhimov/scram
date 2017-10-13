@@ -40,7 +40,7 @@ HouseEvent HouseEvent::kFalse("__false__");
 
 void BasicEvent::Validate() const {
   assert(expression_ && "The basic event's expression is not set.");
-  EnsureProbability<ValidityError>(expression_, Event::name());
+  EnsureProbability(expression_, Event::name());
 }
 
 void Gate::Validate() const {
@@ -83,7 +83,7 @@ void Formula::vote_number(int number) {
         std::string(kOperatorToString[type_]) + "'.");
   }
   if (number < 2)
-    throw InvalidArgument("Vote number cannot be less than 2.");
+    throw ValidityError("Vote number cannot be less than 2.");
   if (vote_number_)
     throw LogicError("Trying to re-assign a vote number");
 

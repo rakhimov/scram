@@ -52,7 +52,7 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @param[in] role  The default role for container members.
   ///
   /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name or reference paths are malformed.
+  /// @throws ValidityError  The name or reference paths are malformed.
   explicit Component(std::string name, std::string base_path = "",
                      RoleSpecifier role = RoleSpecifier::kPublic);
 

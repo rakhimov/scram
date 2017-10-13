@@ -20,6 +20,8 @@
 
 #include "numerical.h"
 
+#include "src/error.h"
+
 namespace scram {
 namespace mef {
 
@@ -31,7 +33,7 @@ void Div::Validate() const {
     const auto& expr = *it;
     Interval arg_interval = expr->interval();
     if (expr->value() == 0 || Contains(arg_interval, 0))
-      throw InvalidArgument("Division by 0.");
+      throw DomainError("Division by 0.");
   }
 }
 
@@ -41,12 +43,12 @@ void Mod::Validate() const {
   auto* arg_two = args().back();
   int arg_value = arg_two->value();
   if (arg_value == 0)
-    throw InvalidArgument("Modulo second operand must not be 0.");
+    throw DomainError("Modulo second operand must not be 0.");
   Interval interval = arg_two->interval();
   int high = interval.upper();
   int low = interval.lower();
   if (high == 0 || low == 0 || (low < 0 && 0 < high))
-    throw InvalidArgument("Modulo second operand sample must not contain 0.");
+    throw DomainError("Modulo second operand sample must not contain 0.");
 }
 
 template <>
@@ -55,16 +57,16 @@ void Pow::Validate() const {
   auto* arg_one = args().front();
   auto* arg_two = args().back();
   if (arg_one->value() == 0 && arg_two->value() <= 0)
-    throw InvalidArgument("0 to power 0 or less is undefined.");
+    throw DomainError("0 to power 0 or less is undefined.");
   if (Contains(arg_one->interval(), 0) && !IsPositive(arg_two->interval()))
-    throw InvalidArgument("Power expression 'base' sample range contains 0;"
-                          "positive exponent is required.");
+    throw DomainError("Power expression 'base' sample range contains 0;"
+                      "positive exponent is required.");
 }
 /// @endcond
 
 Mean::Mean(std::vector<Expression*> args) : ExpressionFormula(std::move(args)) {
   if (Expression::args().size() < 2)
-    throw InvalidArgument("Expression requires 2 or more arguments.");
+    throw ValidityError("Expression requires 2 or more arguments.");
 }
 
 }  // namespace mef

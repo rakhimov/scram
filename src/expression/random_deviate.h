@@ -50,7 +50,7 @@ class UniformDeviate : public RandomDeviate {
   /// @param[in] max  Maximum value of the distribution.
   UniformDeviate(Expression* min, Expression* max);
 
-  /// @throws InvalidArgument  The min value is more or equal to max value.
+  /// @throws ValidityError  The min value is more or equal to max value.
   void Validate() const override;
 
   double value() noexcept override { return (min_.value() + max_.value()) / 2; }
@@ -74,7 +74,7 @@ class NormalDeviate : public RandomDeviate {
   /// @param[in] sigma  The standard deviation of the distribution.
   NormalDeviate(Expression* mean, Expression* sigma);
 
-  /// @throws InvalidArgument  The sigma is negative or zero.
+  /// @throws DomainError  The sigma is negative or zero.
   void Validate() const override;
 
   double value() noexcept override { return mean_.value(); }
@@ -145,7 +145,7 @@ class LognormalDeviate : public RandomDeviate {
     double scale() noexcept override;
     double location() noexcept override;
     double mean() noexcept override { return mean_.value(); }
-    /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level.
+    /// @throws DomainError  (mean <= 0) or (ef <= 0) or invalid level.
     void Validate() const override;
 
    private:
@@ -163,7 +163,7 @@ class LognormalDeviate : public RandomDeviate {
     double scale() noexcept override { return sigma_.value(); }
     double location() noexcept override { return mu_.value(); }
     double mean() noexcept override;
-    /// @throws InvalidArgument  (sigma <= 0).
+    /// @throws DomainError  (sigma <= 0).
     void Validate() const override;
 
    private:
@@ -183,7 +183,7 @@ class GammaDeviate : public RandomDeviate {
   /// @param[in] theta  Scale parameter of Gamma distribution.
   GammaDeviate(Expression* k, Expression* theta);
 
-  /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
+  /// @throws DomainError  (k <= 0) or (theta <= 0)
   void Validate() const override;
 
   double value() noexcept override { return k_.value() * theta_.value(); }
@@ -206,7 +206,7 @@ class BetaDeviate : public RandomDeviate {
   /// @param[in] beta  Beta shape parameter of Gamma distribution.
   BetaDeviate(Expression* alpha, Expression* beta);
 
-  /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
+  /// @throws DomainError  (alpha <= 0) or (beta <= 0)
   void Validate() const override;
 
   double value() noexcept override {
@@ -235,13 +235,13 @@ class Histogram : public RandomDeviate {
   ///                     Therefore, the number of weights must be
   ///                     equal to the number of intervals.
   ///
-  /// @throws InvalidArgument  The boundaries container size is not equal to
-  ///                          weights container size + 1.
+  /// @throws ValidityError  The boundaries container size is not equal to
+  ///                        weights container size + 1.
   Histogram(std::vector<Expression*> boundaries,
             std::vector<Expression*> weights);
 
-  /// @throws InvalidArgument  The boundaries are not strictly increasing,
-  ///                          or weights are negative.
+  /// @throws ValidityError  The boundaries are not strictly increasing,
+  ///                        or weights are negative.
   void Validate() const override;
 
   double value() noexcept override;

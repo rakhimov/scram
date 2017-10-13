@@ -29,7 +29,7 @@ namespace mef {
 Phase::Phase(std::string name, double time_fraction)
     : Element(std::move(name)), time_fraction_(time_fraction) {
   if (time_fraction_ <= 0 || time_fraction_ > 1)
-    throw InvalidArgument("The phase fraction must be in (0, 1].");
+    throw DomainError("The phase fraction must be in (0, 1].");
 }
 
 void Alignment::Add(PhasePtr phase) {

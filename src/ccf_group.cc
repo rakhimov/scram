@@ -102,16 +102,16 @@ void CcfGroup::Validate() const {
   if (!distribution_ || members_.empty() || factors_.empty())
     throw LogicError("CCF group " + Element::name() + " is not initialized.");
 
-  EnsureProbability<ValidityError>(
-      distribution_, Element::name() + " CCF group distribution.");
+  EnsureProbability(distribution_,
+                    Element::name() + " CCF group distribution.");
 
   for (const std::pair<int, Expression*>& f : factors_) {
     if (!f.second) {
       throw ValidityError("Missing some CCF factors for " + Element::name() +
                           " CCF group.");
     }
-    EnsureProbability<ValidityError>(
-        f.second, Element::name() + " CCF group factors.", "fraction");
+    EnsureProbability(f.second, Element::name() + " CCF group factors.",
+                      "fraction");
   }
   this->DoValidate();
 }

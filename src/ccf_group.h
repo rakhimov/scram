@@ -140,6 +140,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// that are members of this CCF group
   /// to give more precise error messages.
   ///
+  /// @throws DomainError  The numeric values are invalid.
   /// @throws ValidityError  There is an issue with the setup.
   /// @throws LogicError  The primary distribution, event, factors are not set.
   void Validate() const;

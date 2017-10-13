@@ -77,7 +77,7 @@ TEST(FormulaTest, VoteNumber) {
   // No vote number.
   EXPECT_THROW(top->vote_number(), LogicError);
   // Illegal vote number.
-  EXPECT_THROW(top->vote_number(-2), InvalidArgument);
+  EXPECT_THROW(top->vote_number(-2), ValidityError);
   // Legal vote number.
   EXPECT_NO_THROW(top->vote_number(2));
   // Trying to reset the vote number.

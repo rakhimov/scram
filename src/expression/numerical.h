@@ -28,7 +28,6 @@
 #include <vector>
 
 #include "constant.h"
-#include "src/error.h"
 #include "src/expression.h"
 
 namespace scram {
@@ -91,7 +90,7 @@ class Mean : public ExpressionFormula<Mean> {
   ///
   /// @param[in] args  Arguments of this expression.
   ///
-  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  /// @throws ValidityError  The number of arguments is fewer than 2.
   explicit Mean(std::vector<Expression*> args);
 
   Interval interval() noexcept override {
@@ -126,27 +125,25 @@ void Div::Validate() const;
 template <>
 inline void Acos::Validate() const {
   assert(args().size() == 1);
-  EnsureWithin<InvalidArgument>(args().front(), Interval::closed(-1, 1),
-                                "Arc cos");
+  EnsureWithin(args().front(), Interval::closed(-1, 1), "Arc cos");
 }
 
 template <>
 inline void Asin::Validate() const {
   assert(args().size() == 1);
-  EnsureWithin<InvalidArgument>(args().front(), Interval::closed(-1, 1),
-                                "Arc sin");
+  EnsureWithin(args().front(), Interval::closed(-1, 1), "Arc sin");
 }
 
 template <>
 inline void Log::Validate() const {
   assert(args().size() == 1);
-  EnsurePositive<InvalidArgument>(args().front(), "Natural Logarithm");
+  EnsurePositive(args().front(), "Natural Logarithm");
 }
 
 template <>
 inline void Log10::Validate() const {
   assert(args().size() == 1);
-  EnsurePositive<InvalidArgument>(args().front(), "Decimal Logarithm");
+  EnsurePositive(args().front(), "Decimal Logarithm");
 }
 
 template <>
@@ -158,7 +155,7 @@ void Pow::Validate() const;
 template <>
 inline void Sqrt::Validate() const {
   assert(args().size() == 1);
-  EnsureNonNegative<InvalidArgument>(args().front(), "Square root");
+  EnsureNonNegative(args().front(), "Square root");
 }
 /// @}
 

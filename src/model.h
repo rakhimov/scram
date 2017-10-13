@@ -55,7 +55,7 @@ class Model : public Element, private boost::noncopyable {
   ///
   /// @param[in] name  The optional name for the model.
   ///
-  /// @throws InvalidArgument  The name is malformed.
+  /// @throws ValidityError  The name is malformed.
   explicit Model(std::string name = "");
 
   /// @returns true if the model name has not been set.

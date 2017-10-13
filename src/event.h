@@ -111,7 +111,7 @@ class BasicEvent : public Event {
   ///
   /// @pre The probability expression is set.
   ///
-  /// @throws ValidityError  The expression for the basic event is invalid.
+  /// @throws DomainError  The expression for the basic event is invalid.
   void Validate() const;
 
   /// Indicates if this basic event has been set to be in a CCF group.
@@ -247,7 +247,7 @@ class Formula : private boost::noncopyable {
   ///
   /// @param[in] number  The vote number.
   ///
-  /// @throws InvalidArgument  The vote number is invalid.
+  /// @throws ValidityError  The vote number is invalid.
   /// @throws LogicError  The vote number is assigned illegally.
   ///
   /// @note (Children number > vote number) should be checked

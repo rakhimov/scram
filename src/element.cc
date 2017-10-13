@@ -34,7 +34,7 @@ void Element::name(std::string name) {
   if (name.empty())
     throw LogicError("The element name cannot be empty");
   if (name.find('.') != std::string::npos)
-    throw InvalidArgument("The element name is malformed.");
+    throw ValidityError("The element name is malformed.");
   name_ = std::move(name);
 }
 
@@ -90,7 +90,7 @@ Role::Role(RoleSpecifier role, std::string base_path)
       kRole_(role) {
   if (!kBasePath_.empty() &&
       (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
-    throw InvalidArgument("Element reference base path is malformed.");
+    throw ValidityError("Element reference base path is malformed.");
   }
   if (kRole_ == RoleSpecifier::kPrivate && kBasePath_.empty())
     throw ValidityError("Elements cannot be private at model scope.");

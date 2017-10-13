@@ -142,7 +142,7 @@ PhasePtr ConstructElement<Phase>(const xml::Element& xml_element) {
     element = std::make_unique<Phase>(
         xml_element.attribute("name").to_string(),
         *xml_element.attribute<double>("time-fraction"));
-  } catch (InvalidArgument& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_element.line());
     throw;
   }
@@ -523,9 +523,7 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
       }
       phase->instructions(std::move(instructions));
       alignment->Add(std::move(phase));
-    } catch (InvalidArgument& err) {
-      throw ValidityError(err.msg());
-    } catch (DuplicateArgumentError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(node.line());
       throw;
     }
@@ -714,9 +712,6 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     }
   };
 
-  if (formula_type == kVote) {
-    formula->vote_number(*formula_node.attribute<int>("min"));
-  }
   // Process arguments of this formula.
   if (formula_type == kNull) {  // Special case of pass-through.
     add_arg(formula_node);
@@ -726,6 +721,9 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
   }
 
   try {
+    if (formula_type == kVote)
+      formula->vote_number(*formula_node.attribute<int>("min"));
+
     formula->Validate();
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(formula_node.line());
@@ -1061,7 +1059,7 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
     case 11:
       return Extractor<PeriodicTest, 11>()(args, base_path, init);
     default:
-      throw InvalidArgument("Invalid number of arguments for Periodic Test.");
+      throw ValidityError("Invalid number of arguments for Periodic Test.");
   }
 }
 
@@ -1190,9 +1188,9 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
 
     try {
       return register_expression(extern_function->apply(std::move(expr_args)));
-    } catch (const InvalidArgument& err) {
-      throw ValidityError(err.msg())
-          << boost::errinfo_at_line(expr_element.line());
+    } catch (ValidityError& err) {
+      err << boost::errinfo_at_line(expr_element.line());
+      throw;
     }
   }
 
@@ -1205,9 +1203,9 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     // Register for late validation after ensuring no cycles.
     expressions_.emplace_back(expression, expr_element);
     return expression;
-  } catch (InvalidArgument& err) {
-    throw ValidityError(err.msg())
-        << boost::errinfo_at_line(expr_element.line());
+  } catch (ValidityError& err) {
+    err << boost::errinfo_at_line(expr_element.line());
+    throw;
   }
 }
 
@@ -1373,8 +1371,9 @@ void Initializer::DefineExternLibraries(const xml::Element& xml_node,
     } catch (const IOError& err) {
       throw ValidityError("Cannot load external library:\n" + err.msg())
           << boost::errinfo_at_line(xml_node.line());
-    } catch (const InvalidArgument& err) {
-      throw ValidityError(err.msg()) << boost::errinfo_at_line(xml_node.line());
+    } catch (ValidityError& err) {
+      err << boost::errinfo_at_line(xml_node.line());
+      throw;
     }
   }();
   AttachLabelAndAttributes(xml_node, library.get());
@@ -1722,10 +1721,10 @@ void Initializer::ValidateExpressions() {
   for (const std::pair<Expression*, xml::Element>& expression : expressions_) {
     try {
       expression.first->Validate();
-    } catch (InvalidArgument& err) {
-      throw ValidityError(err.msg())
-          << boost::errinfo_file_name(expression.second.filename().to_string())
+    } catch (ValidityError& err) {
+      err << boost::errinfo_file_name(expression.second.filename().to_string())
           << boost::errinfo_at_line(expression.second.line());
+      throw;
     }
   }
 

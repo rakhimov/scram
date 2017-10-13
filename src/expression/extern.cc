@@ -142,7 +142,7 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
       lib_path.back() == ':' ||
       lib_path.back() == '/' ||
       lib_path.back() == '\\') {
-    throw InvalidArgument("Invalid library path: " + lib_path);
+    throw ValidityError("Invalid library path: " + lib_path);
   }
 
   pimpl_ = new Pimpl(std::move(lib_path), reference_dir, system, decorate);

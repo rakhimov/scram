@@ -142,6 +142,11 @@ struct CycleError : public ValidityError {
   using ValidityError::ValidityError;
 };
 
+/// Invalid domain for values or arguments.
+struct DomainError : public ValidityError {
+  using ValidityError::ValidityError;
+};
+
 }  // namespace mef
 
 }  // namespace scram

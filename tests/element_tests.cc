@@ -37,9 +37,9 @@ class NamedElement : public Element {
 TEST(ElementTest, Name) {
   EXPECT_THROW(NamedElement(""), LogicError);
 
-  EXPECT_THROW(NamedElement(".name"), InvalidArgument);
-  EXPECT_THROW(NamedElement("na.me"), InvalidArgument);
-  EXPECT_THROW(NamedElement("name."), InvalidArgument);
+  EXPECT_THROW(NamedElement(".name"), ValidityError);
+  EXPECT_THROW(NamedElement("na.me"), ValidityError);
+  EXPECT_THROW(NamedElement("name."), ValidityError);
 
   EXPECT_NO_THROW(NamedElement("name"));
   NamedElement el("name");
@@ -126,8 +126,8 @@ class TestRole : public Role {
 }  // namespace
 
 TEST(ElementTest, Role) {
-  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), InvalidArgument);
-  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), InvalidArgument);
+  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), ValidityError);
+  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), ValidityError);
   EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
 
   EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidityError);
