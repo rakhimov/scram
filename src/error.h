@@ -84,6 +84,11 @@ class Error : virtual public std::exception, virtual public boost::exception {
   std::string thrown_;  ///< The message to throw with the prefix.
 };
 
+/// The error in analysis settings.
+struct SettingsError : public Error {
+  using Error::Error;
+};
+
 /// For validating input parameters or user arguments.
 struct ValidationError : public Error {
   using Error::Error;

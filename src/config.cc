@@ -109,7 +109,7 @@ void Config::GatherOptions(const xml::Element& root) {
       } else if (name == "limits") {
         SetLimits(option_group);
       }
-    } catch (InvalidArgument& err) {
+    } catch (SettingsError& err) {
       err << boost::errinfo_at_line(option_group.line());
       throw;
     }
@@ -118,7 +118,7 @@ void Config::GatherOptions(const xml::Element& root) {
           options_element->child("analysis")) {
     try {
       SetAnalysis(*analysis_group);
-    } catch (InvalidArgument& err) {
+    } catch (SettingsError& err) {
       err << boost::errinfo_at_line(analysis_group->line());
       throw;
     }

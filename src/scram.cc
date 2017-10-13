@@ -167,7 +167,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @param[in] vm  Variables map of program options.
 /// @param[in,out] settings  Pre-configured or default settings.
 ///
-/// @throws InvalidArgument  The indication of an error in arguments.
+/// @throws SettingsError  The indication of an error in arguments.
 /// @throws std::exception  vm does not contain a required option.
 ///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm,
