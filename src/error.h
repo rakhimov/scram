@@ -98,8 +98,6 @@ struct LogicError : public Error {
 
 /// This error can be used to indicate
 /// that call for a function or operation is not legal.
-/// For example, a derived class can make illegal
-/// the call of the virtual function of the base class.
 struct IllegalOperation : public Error {
   using Error::Error;
 };

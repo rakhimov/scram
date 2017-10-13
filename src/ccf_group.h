@@ -102,9 +102,9 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @param[in] basic_event  A member basic event.
   ///
   /// @throws DuplicateArgumentError  The basic event is already in the group.
-  /// @throws IllegalOperation  The probability distribution or factors
-  ///                           for this CCF group are already defined.
-  ///                           No more members are accepted.
+  /// @throws LogicError  The probability distribution or factors
+  ///                     for this CCF group are already defined.
+  ///                     No more members are accepted.
   void AddMember(BasicEvent* basic_event);
 
   /// Adds the distribution that describes the probability of

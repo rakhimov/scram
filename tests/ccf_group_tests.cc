@@ -45,7 +45,7 @@ TEST(CcfGroupTest, AddMemberAfterDistribution) {
   ASSERT_NO_THROW(ccf_group.AddDistribution(&ConstantExpression::kOne));
 
   BasicEvent member_three("three");
-  EXPECT_THROW(ccf_group.AddMember(&member_three), IllegalOperation);
+  EXPECT_THROW(ccf_group.AddMember(&member_three), LogicError);
 }
 
 }  // namespace test

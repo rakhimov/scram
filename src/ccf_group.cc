@@ -38,9 +38,8 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
 
 void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
-    throw IllegalOperation("No more members accepted. The distribution for " +
-                           Element::name() +
-                           " CCF group has already been defined.");
+    throw LogicError("No more members accepted. The distribution for " +
+                     Element::name() + " CCF group has already been defined.");
   }
   if (ext::any_of(members_, [&basic_event](BasicEvent* member) {
         return member->name() == basic_event->name();
