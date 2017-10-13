@@ -167,7 +167,7 @@ class Role {
   /// @param[in] base_path  The series of containers to get this event.
   ///
   /// @throws InvalidArgument  The base path string is malformed.
-  /// @throws ValidationError  Private element at model/global scope.
+  /// @throws ValidityError  Private element at model/global scope.
   explicit Role(RoleSpecifier role = RoleSpecifier::kPublic,
                 std::string base_path = "");
 

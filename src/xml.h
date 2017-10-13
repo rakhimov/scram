@@ -59,7 +59,7 @@ namespace scram {
 
 namespace xml {
 
-using mef::ValidationError;  ///< @todo Create XML specific exception classes.
+using mef::ValidityError;  ///< @todo Create XML specific exception classes.
 
 using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
 
@@ -73,7 +73,7 @@ namespace detail {  // Internal XML helper functions.
 ///
 /// @returns The interpreted value.
 ///
-/// @throws ValidationError  Casting is unsuccessful.
+/// @throws ValidityError  Casting is unsuccessful.
 template <typename T>
 std::enable_if_t<std::is_arithmetic<T>::value, T>
 CastValue(const xml::string_view& value);
@@ -86,7 +86,7 @@ inline int CastValue<int>(const xml::string_view& value) {
   int len = end_char - value.data();
   if (len != value.size() || ret > std::numeric_limits<int>::max() ||
       ret < std::numeric_limits<int>::min())
-    throw ValidationError("Failed to interpret '" + value.to_string() +
+    throw ValidityError("Failed to interpret '" + value.to_string() +
                           "' to 'int'.");
   return ret;
 }
@@ -98,7 +98,7 @@ inline double CastValue<double>(const xml::string_view& value) {
   double ret = std::strtod(value.data(), &end_char);
   int len = end_char - value.data();
   if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
-    throw ValidationError("Failed to interpret '" + value.to_string() +
+    throw ValidityError("Failed to interpret '" + value.to_string() +
                           "' to 'double'.");
   return ret;
 }
@@ -110,7 +110,7 @@ inline bool CastValue<bool>(const xml::string_view& value) {
     return true;
   if (value == "false" || value == "0")
     return false;
-  throw ValidationError("Failed to interpret '" + value.to_string() +
+  throw ValidityError("Failed to interpret '" + value.to_string() +
                         "' to 'bool'.");
 }
 
@@ -307,7 +307,7 @@ class Element {
   /// @returns The value of type T interpreted from attribute value.
   ///          None if the attribute doesn't exists (optional).
   ///
-  /// @throws ValidationError  Casting is unsuccessful.
+  /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
   std::enable_if_t<std::is_arithmetic<T>::value, boost::optional<T>>
   attribute(const char* name) const {
@@ -316,7 +316,7 @@ class Element {
       return {};
     try {
       return detail::CastValue<T>(value);
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err.msg("Attribute '" + std::string(name) + "': " + err.msg());
       err << boost::errinfo_at_line(line());
       throw;
@@ -331,12 +331,12 @@ class Element {
   ///
   /// @pre The text is not empty.
   ///
-  /// @throws ValidationError  Casting is unsuccessful.
+  /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
   std::enable_if_t<std::is_arithmetic<T>::value, T> text() const {
     try {
       return detail::CastValue<T>(text());
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err.msg("Text element: " + err.msg());
       err << boost::errinfo_at_line(line());
       throw;
@@ -436,13 +436,13 @@ class Validator {
   ///
   /// @param[in] doc  The initialized XML DOM document.
   ///
-  /// @throws ValidationError  The document failed schema validation.
+  /// @throws ValidityError  The document failed schema validation.
   void validate(const Document& doc) {
     int ret = xmlRelaxNGValidateDoc(valid_ctxt_.get(),
                                     const_cast<xmlDoc*>(doc.get()));
     /// @todo Provide validation error messages.
     if (ret > 0)
-      throw ValidationError("Document failed schema validation:\n");
+      throw ValidityError("Document failed schema validation:\n");
     assert(ret == 0);  ///< Handle XML internal errors.
   }
 
@@ -467,17 +467,17 @@ const int kParserOptions = XML_PARSE_XINCLUDE | XML_PARSE_NOBASEFIX |
 ///
 /// @returns The initialized document.
 ///
-/// @throws ValidationError  There are problems loading the XML file.
+/// @throws ValidityError  There are problems loading the XML file.
 ///
 /// @todo Provide proper validation error messages.
 inline Document Parse(const std::string& file_path,
                       Validator* validator = nullptr) {
   xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
   if (!doc)
-      throw ValidationError("XML file is invalid:\n");
+      throw ValidityError("XML file is invalid:\n");
   Document manager(doc);
   if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
-    throw ValidationError("XML Xinclude substitutions are failed.");
+    throw ValidityError("XML Xinclude substitutions are failed.");
   if (validator)
     validator->validate(manager);
   return manager;

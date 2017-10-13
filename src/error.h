@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,28 +118,28 @@ struct SettingsError : public Error {
 namespace mef {  // MEF specific errors.
 
 /// For validating input parameters or user arguments.
-struct ValidationError : public Error {
+struct ValidityError : public Error {
   using Error::Error;
 };
 
 /// For cases when events or practically anything is redefined.
-struct RedefinitionError : public ValidationError {
-  using ValidationError::ValidationError;
+struct RedefinitionError : public ValidityError {
+  using ValidityError::ValidityError;
 };
 
 /// This error indicates that arguments must be unique.
-struct DuplicateArgumentError : public ValidationError {
-  using ValidationError::ValidationError;
+struct DuplicateArgumentError : public ValidityError {
+  using ValidityError::ValidityError;
 };
 
 /// The error for undefined elements in a model.
-struct UndefinedElement : public ValidationError {
-  using ValidationError::ValidationError;
+struct UndefinedElement : public ValidityError {
+  using ValidityError::ValidityError;
 };
 
 /// Signals unacceptable cycles in invalid structures.
-struct CycleError : public ValidationError {
-  using ValidationError::ValidationError;
+struct CycleError : public ValidityError {
+  using ValidityError::ValidityError;
 };
 
 }  // namespace mef

@@ -80,7 +80,7 @@ class Alignment : public Element, private boost::noncopyable {
 
   /// Ensures that all phases add up to be valid for the alignment.
   ///
-  /// @throws ValidationError  Phases are incomplete (e.g., don't sum to 1).
+  /// @throws ValidityError  Phases are incomplete (e.g., don't sum to 1).
   void Validate();
 
  private:

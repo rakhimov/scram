@@ -77,7 +77,7 @@ RoleSpecifier GetRole(const xml::string_view& s, RoleSpecifier parent_role) {
 /// @param[in] xml_element  XML element.
 /// @param[out] element  The object that needs attributes and label.
 ///
-/// @throws ValidationError  Invalid attribute setting.
+/// @throws ValidityError  Invalid attribute setting.
 void AttachLabelAndAttributes(const xml::Element& xml_element,
                               Element* element) {
   if (boost::optional<xml::Element> label = xml_element.child("label")) {
@@ -94,7 +94,7 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
       element->AddAttribute({attribute.attribute("name").to_string(),
                              attribute.attribute("value").to_string(),
                              attribute.attribute("type").to_string()});
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(attribute.line());
       throw;
     }
@@ -205,7 +205,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   for (const auto& xml_file : xml_files) {
     try {
       ProcessInputFile(xml_file);
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_file_name(xml_file);
       throw;
     }
@@ -232,7 +232,7 @@ template <class T>
 void Initializer::Register(T&& element, const xml::Element& xml_element) {
   try {
     model_->Add(std::forward<T>(element));
-  } catch (ValidationError& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_element.line());
     throw;
   }
@@ -419,7 +419,7 @@ void Initializer::Define(const xml::Element& gate_node, Gate* gate) {
   gate->formula(GetFormula(*formulas.begin(), gate->base_path()));
   try {
     gate->Validate();
-  } catch (ValidationError& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(gate_node.line());
     throw;
   }
@@ -496,8 +496,8 @@ void Initializer::Define(const xml::Element& xml_node,
       initiating_event->usage(true);
       (*it)->usage(true);
     } else {
-      throw ValidationError("Event tree " + event_tree_name +
-                            " is not defined in model.")
+      throw ValidityError("Event tree " + event_tree_name +
+                          " is not defined in model.")
           << boost::errinfo_at_line(xml_node.line());
     }
   }
@@ -524,7 +524,7 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
       phase->instructions(std::move(instructions));
       alignment->Add(std::move(phase));
     } catch (InvalidArgument& err) {
-      throw ValidationError(err.msg());
+      throw ValidityError(err.msg());
     } catch (DuplicateArgumentError& err) {
       err << boost::errinfo_at_line(node.line());
       throw;
@@ -532,7 +532,7 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
   }
   try {
     alignment->Validate();
-  } catch (ValidationError& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_node.line());
     throw;
   }
@@ -545,7 +545,7 @@ void Initializer::ProcessTbdElements() {
     for (const xml::Element& node : root.children("define-extern-function")) {
       try {
         DefineExternFunction(node);
-      } catch (ValidationError& err) {
+      } catch (ValidityError& err) {
         err << boost::errinfo_file_name(root.filename().to_string());
         throw;
       }
@@ -559,7 +559,7 @@ void Initializer::ProcessTbdElements() {
               this->Define(tbd_element.second, tbd_construct);
             },
             tbd_element.first);
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_file_name(
           tbd_element.second.filename().to_string());
       throw;
@@ -572,7 +572,7 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
   for (const xml::Element& node : et_node.children("define-functional-event")) {
     try {
       event_tree->Add(ConstructElement<FunctionalEvent>(node));
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(node.line());
       throw;
     }
@@ -584,7 +584,7 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
   for (const xml::Element& node : et_node.children("define-branch")) {
     try {
       event_tree->Add(ConstructElement<NamedBranch>(node));
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(node.line());
       throw;
     }
@@ -638,7 +638,7 @@ void Initializer::RegisterFaultTreeData(const xml::Element& ft_node,
     ComponentPtr sub = DefineComponent(node, base_path, component->role());
     try {
       component->Add(std::move(sub));
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(node.line());
       throw;
     }
@@ -707,7 +707,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
         formula->AddArgument(GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
-      throw ValidationError(
+      throw ValidityError(
           "Undefined " + element_type.to_string() + " " + name +
           (base_path.empty() ? "" : " with base path " + base_path))
           << boost::errinfo_at_line(element.line());
@@ -727,7 +727,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
   try {
     formula->Validate();
-  } catch (ValidationError& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(formula_node.line());
     throw;
   }
@@ -750,13 +750,13 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
         branch->target(fork.get());
         event_tree->Add(std::move(fork));
         (*it)->usage(true);
-      } catch (ValidationError& err) {
+      } catch (ValidityError& err) {
         err.msg("In event tree " + event_tree->name() + ", " + err.msg());
         throw;
       }
     } else {
-      throw ValidationError("Functional event " + name + " is not defined in " +
-                            event_tree->name())
+      throw ValidityError("Functional event " + name + " is not defined in " +
+                          event_tree->name())
           << boost::errinfo_at_line(target_node.line());
     }
   } else if (target_node.name() == "sequence") {
@@ -765,8 +765,7 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(it->get());
       (*it)->usage(true);
     } else {
-      throw ValidationError("Sequence " + name +
-                            " is not defined in the model.")
+      throw ValidityError("Sequence " + name + " is not defined in the model.")
           << boost::errinfo_at_line(target_node.line());
     }
   } else {
@@ -776,8 +775,8 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(it->get());
       (*it)->usage(true);
     } else {
-      throw ValidationError("Branch " + name + " is not defined in " +
-                            event_tree->name())
+      throw ValidityError("Branch " + name + " is not defined in " +
+                          event_tree->name())
           << boost::errinfo_at_line(target_node.line());
     }
   }
@@ -808,7 +807,7 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
       (*it)->usage(true);
       return it->get();
     } else {
-      throw ValidationError("Rule " + name + " is not defined in the model.")
+      throw ValidityError("Rule " + name + " is not defined in the model.")
           << boost::errinfo_at_line(xml_element.line());
     }
   }
@@ -827,8 +826,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
           register_instruction(std::make_unique<Link>(**it))));
       return links_.back();
     } else {
-      throw ValidationError("Event tree " + name +
-                            " is not defined in the model.")
+      throw ValidityError("Event tree " + name +
+                          " is not defined in the model.")
           << boost::errinfo_at_line(xml_element.line());
     }
   }
@@ -866,8 +865,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   if (node_name == "set-house-event") {
     std::string name = xml_element.attribute("name").to_string();
     if (!model_->house_events().count(name)) {
-      throw ValidationError("House event " + name +
-                            " is not defined in the model.")
+      throw ValidityError("House event " + name +
+                          " is not defined in the model.")
           << boost::errinfo_at_line(xml_element.line());
     }
     return register_instruction(std::make_unique<SetHouseEvent>(
@@ -1178,7 +1177,7 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
       std::string name = expr_element.attribute("name").to_string();
       auto it = model_->extern_functions().find(name);
       if (it == model_->extern_functions().end()) {
-        throw ValidationError("Undefined extern function: " + name)
+        throw ValidityError("Undefined extern function: " + name)
             << boost::errinfo_at_line(expr_element.line());
       }
       (*it)->usage(true);
@@ -1192,7 +1191,7 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     try {
       return register_expression(extern_function->apply(std::move(expr_args)));
     } catch (const InvalidArgument& err) {
-      throw ValidationError(err.msg())
+      throw ValidityError(err.msg())
           << boost::errinfo_at_line(expr_element.line());
     }
   }
@@ -1207,7 +1206,7 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
     expressions_.emplace_back(expression, expr_element);
     return expression;
   } catch (InvalidArgument& err) {
-    throw ValidationError(err.msg())
+    throw ValidityError(err.msg())
         << boost::errinfo_at_line(expr_element.line());
   }
 }
@@ -1222,7 +1221,7 @@ Expression* Initializer::GetParameter(const xml::string_view& expr_type,
       std::stringstream msg;
       msg << "Parameter unit mismatch.\nExpected: " << param_unit
           << "\nGiven: " << unit;
-      throw ValidationError(msg.str())
+      throw ValidityError(msg.str())
           << boost::errinfo_at_line(expr_element.line());
     }
   };
@@ -1235,7 +1234,7 @@ Expression* Initializer::GetParameter(const xml::string_view& expr_type,
       check_units(*param);
       return param;
     } catch (std::out_of_range&) {
-      throw ValidationError(
+      throw ValidityError(
           "Undefined parameter " + name +
           (base_path.empty() ? "" : " with base path " + base_path))
           << boost::errinfo_at_line(expr_element.line());
@@ -1271,7 +1270,7 @@ void Initializer::DefineCcfFactor(const xml::Element& factor_node,
 
   try {
     ccf_group->AddFactor(expression, factor_node.attribute<int>("level"));
-  } catch (ValidationError& err) {
+  } catch (ValidityError& err) {
     err << boost::errinfo_at_line(factor_node.line());
     throw;
   }
@@ -1372,11 +1371,10 @@ void Initializer::DefineExternLibraries(const xml::Element& xml_node,
           boost::filesystem::path(xml_file).parent_path(),
           optional_bool("system"), optional_bool("decorate"));
     } catch (const IOError& err) {
-      throw ValidationError("Cannot load external library:\n" + err.msg())
+      throw ValidityError("Cannot load external library:\n" + err.msg())
           << boost::errinfo_at_line(xml_node.line());
     } catch (const InvalidArgument& err) {
-      throw ValidationError(err.msg())
-          << boost::errinfo_at_line(xml_node.line());
+      throw ValidityError(err.msg()) << boost::errinfo_at_line(xml_node.line());
     }
   }();
   AttachLabelAndAttributes(xml_node, library.get());
@@ -1497,7 +1495,7 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
     std::string lib_name = xml_element.attribute("library").to_string();
     auto it = model_->libraries().find(lib_name);
     if (it == model_->libraries().end())
-      throw ValidationError("Undefined extern library: " + lib_name)
+      throw ValidityError("Undefined extern library: " + lib_name)
           << boost::errinfo_at_line(xml_element.line());
     (*it)->usage(true);
     return **it;
@@ -1509,10 +1507,10 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
     /// @todo Optimize extern-function num args violation detection.
     int num_args = std::distance(args.begin(), args.end()) - /*return*/ 1;
     if (num_args > kMaxNumParam) {
-      throw ValidationError("The number of function parameters '" +
-                            std::to_string(num_args) +
-                            "' exceeds the number of allowed parameters '" +
-                            std::to_string(kMaxNumParam) + "'")
+      throw ValidityError("The number of function parameters '" +
+                          std::to_string(num_args) +
+                          "' exceeds the number of allowed parameters '" +
+                          std::to_string(kMaxNumParam) + "'")
           << boost::errinfo_at_line(xml_element.line());
     }
     int encoding = Encode(args);
@@ -1520,7 +1518,7 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
       return function_extractors.at(encoding)(
           xml_element.attribute("name").to_string(),
           xml_element.attribute("symbol").to_string(), library);
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(xml_element.line());
       throw;
     }
@@ -1555,7 +1553,7 @@ void Initializer::ValidateInitialization() {
       }
       CheckFunctionalEventOrder(event_tree->initial_state());
       EnsureLinksOnlyInSequences(event_tree->initial_state());
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err.msg("In event tree " + event_tree->name() + ", " + err.msg());
       throw;
     }
@@ -1571,7 +1569,7 @@ void Initializer::ValidateInitialization() {
         EnsureHomogeneousEventTree(*branch);  // No mixed instructions.
       }
       EnsureHomogeneousEventTree(event_tree->initial_state());
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       err.msg("In event tree " + event_tree->name() + ", " + err.msg());
       throw;
     }
@@ -1586,8 +1584,8 @@ void Initializer::ValidateInitialization() {
     }
 
     if (!msg.empty())
-      throw ValidationError("These basic events do not have expressions:\n" +
-                            msg);
+      throw ValidityError("These basic events do not have expressions:\n" +
+                          msg);
   }
 
   ValidateExpressions();
@@ -1604,15 +1602,15 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
     void operator()(Fork* fork) const {
       if (functional_event.order() == fork->functional_event().order()) {
         assert(&functional_event == &fork->functional_event());
-        throw ValidationError("Functional event " + functional_event.name() +
-                              " is duplicated in event tree fork paths.");
+        throw ValidityError("Functional event " + functional_event.name() +
+                            " is duplicated in event tree fork paths.");
       }
 
       if (functional_event.order() > fork->functional_event().order())
-        throw ValidationError("Functional event " + functional_event.name() +
-                              " must appear after functional event " +
-                              fork->functional_event().name() +
-                              " in event tree fork paths.");
+        throw ValidityError("Functional event " + functional_event.name() +
+                            " must appear after functional event " +
+                            fork->functional_event().name() +
+                            " in event tree fork paths.");
     }
 
     const FunctionalEvent& functional_event;
@@ -1637,8 +1635,8 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
 void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
   struct Validator : public NullVisitor {
     void Visit(const Link* link) override {
-      throw ValidationError("Link " + link->event_tree().name() +
-                            " can only be used in end-state sequences.");
+      throw ValidityError("Link " + link->event_tree().name() +
+                          " can only be used in end-state sequences.");
     }
   };
 
@@ -1669,7 +1667,7 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
     void Visit(const CollectExpression*) override {
       switch (type) {
         case kFormula:
-          throw ValidationError("Mixed collect-expression and collect-formula");
+          throw ValidityError("Mixed collect-expression and collect-formula");
         case kUnknown:
           type = kExpression;
         case kExpression:
@@ -1680,7 +1678,7 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
     void Visit(const CollectFormula*) override {
       switch (type) {
         case kExpression:
-          throw ValidationError("Mixed collect-expression and collect-formula");
+          throw ValidityError("Mixed collect-expression and collect-formula");
         case kUnknown:
           type = kFormula;
         case kFormula:
@@ -1725,7 +1723,7 @@ void Initializer::ValidateExpressions() {
     try {
       expression.first->Validate();
     } catch (InvalidArgument& err) {
-      throw ValidationError(err.msg())
+      throw ValidityError(err.msg())
           << boost::errinfo_file_name(expression.second.filename().to_string())
           << boost::errinfo_at_line(expression.second.line());
     }
@@ -1736,13 +1734,13 @@ void Initializer::ValidateExpressions() {
   for (const CcfGroupPtr& group : model_->ccf_groups()) {
     try {
       group->Validate();
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       msg << err.msg() << "\n";
     }
   }
   if (!msg.str().empty()) {
-    throw ValidationError("Invalid distributions for CCF groups detected:\n" +
-                          msg.str());
+    throw ValidityError("Invalid distributions for CCF groups detected:\n" +
+                        msg.str());
   }
 
   // Check probability values for primary events.
@@ -1751,13 +1749,13 @@ void Initializer::ValidateExpressions() {
       continue;
     try {
       event->Validate();
-    } catch (ValidationError& err) {
+    } catch (ValidityError& err) {
       msg << err.msg() << "\n";
     }
   }
   if (!msg.str().empty()) {
-    throw ValidationError("Invalid basic event probabilities detected:\n" +
-                          msg.str());
+    throw ValidityError("Invalid basic event probabilities detected:\n" +
+                        msg.str());
   }
 }
 

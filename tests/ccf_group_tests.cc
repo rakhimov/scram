@@ -30,7 +30,7 @@ TEST(CcfGroupTest, AddMemberRepeated) {
   BetaFactorModel ccf_group("general");
   BasicEvent member("id");
   ASSERT_NO_THROW(ccf_group.AddMember(&member));
-  EXPECT_THROW(ccf_group.AddMember(&member), ValidationError);
+  EXPECT_THROW(ccf_group.AddMember(&member), ValidityError);
 }
 
 TEST(CcfGroupTest, AddMemberAfterDistribution) {

@@ -130,7 +130,7 @@ TEST(ElementTest, Role) {
   EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), InvalidArgument);
   EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
 
-  EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidationError);
+  EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidityError);
   EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, ""));
 }
 
@@ -146,7 +146,7 @@ class NameId : public Id {
 TEST(ElementTest, Id) {
   EXPECT_THROW(NameId(""), LogicError);
   EXPECT_NO_THROW(NameId("name"));
-  EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidationError);
+  EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidityError);
 
   NameId id_public("name");
   EXPECT_EQ(id_public.id(), id_public.name());

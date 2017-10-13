@@ -41,20 +41,20 @@ void Component::Add(HouseEvent* house_event) {
 }
 
 void Component::Add(Parameter* parameter) {
-  mef::AddElement<ValidationError>(parameter, &parameters_,
-                                   "Duplicate parameter: ");
+  mef::AddElement<ValidityError>(parameter, &parameters_,
+                                 "Duplicate parameter: ");
 }
 
 void Component::Add(CcfGroup* ccf_group) {
   if (ccf_groups_.count(ccf_group->name())) {
-    throw ValidationError("Duplicate CCF group " + ccf_group->name());
+    throw ValidityError("Duplicate CCF group " + ccf_group->name());
   }
   for (BasicEvent* member : ccf_group->members()) {
     const std::string& name = member->name();
     if (gates_.count(name) || basic_events_.count(name) ||
         house_events_.count(name)) {
-      throw ValidationError("Duplicate event " + name +
-                            " from CCF group " + ccf_group->name());
+      throw ValidityError("Duplicate event " + name + " from CCF group " +
+                          ccf_group->name());
     }
   }
   for (const auto& member : ccf_group->members())
@@ -64,7 +64,7 @@ void Component::Add(CcfGroup* ccf_group) {
 
 void Component::Add(std::unique_ptr<Component> component) {
   if (components_.count(component->name())) {
-    throw ValidationError("Duplicate component " + component->name());
+    throw ValidityError("Duplicate component " + component->name());
   }
   components_.insert(std::move(component));
 }
@@ -107,7 +107,7 @@ void Component::AddEvent(T* event, Container* container) {
   const std::string& name = event->name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + name);
+    throw ValidityError("Duplicate event " + name);
   }
   container->insert(event);
 }

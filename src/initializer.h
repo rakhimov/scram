@@ -66,7 +66,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] allow_extern  Allow external libraries in the input.
   ///
   /// @throws DuplicateArgumentError  Input contains duplicate files.
-  /// @throws ValidationError  The input contains errors.
+  /// @throws ValidityError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
   ///
   /// @warning Processing external libraries from XML input is **UNSAFE**.
@@ -147,7 +147,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_files  The formatted XML input files.
   ///
   /// @throws DuplicateArgumentError  Input contains duplicate files.
-  /// @throws ValidationError  The input contains errors.
+  /// @throws ValidityError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
@@ -162,7 +162,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @pre The input file has not been passed before.
   ///
-  /// @throws ValidationError  The input contains errors.
+  /// @throws ValidityError  The input contains errors.
   /// @throws IOError  The input file is not accessible.
   /// @throws IllegalOperation  Loading external libraries is disallowed.
   void ProcessInputFile(const std::string& xml_file);
@@ -171,7 +171,7 @@ class Initializer : private boost::noncopyable {
   /// that are left to be determined later.
   /// This late definition happens primarily due to unregistered dependencies.
   ///
-  /// @throws ValidationError  The elements contain undefined dependencies.
+  /// @throws ValidityError  The elements contain undefined dependencies.
   void ProcessTbdElements();
 
   /// Registers an element into the model.
@@ -181,7 +181,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] element  The initialized element ready to be added into models.
   /// @param[in] xml_element  The related XML element for error messages.
   ///
-  /// @throws ValidationError  Issues with adding the element into the model.
+  /// @throws ValidityError  Issues with adding the element into the model.
   template <class T>
   void Register(T&& element, const xml::Element& xml_element);
 
@@ -195,7 +195,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Pointer to the registered element.
   ///
-  /// @throws ValidationError  Issues with the new element or registration.
+  /// @throws ValidityError  Issues with the new element or registration.
   template <class T>
   T* Register(const xml::Element& xml_node, const std::string& base_path,
               RoleSpecifier base_role);
@@ -208,7 +208,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_node  XML element defining the element.
   /// @param[in,out] element  Registered element ready to be defined.
   ///
-  /// @throws ValidationError  Issues with the additional data.
+  /// @throws ValidityError  Issues with the additional data.
   template <class T>
   void Define(const xml::Element& xml_node, T* element);
 
@@ -216,17 +216,17 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] et_node  XML element defining the event tree.
   ///
-  /// @throws ValidationError  There are issues with registering and defining
-  ///                          the event tree and its data.
+  /// @throws ValidityError  There are issues with registering and defining
+  ///                        the event tree and its data.
   void DefineEventTree(const xml::Element& et_node);
 
   /// Defines a fault tree for the analysis.
   ///
   /// @param[in] ft_node  XML element defining the fault tree.
   ///
-  /// @throws ValidationError  There are issues with registering and defining
-  ///                          the fault tree and its data
-  ///                          like gates and events.
+  /// @throws ValidityError  There are issues with registering and defining
+  ///                        the fault tree and its data
+  ///                        like gates and events.
   void DefineFaultTree(const xml::Element& ft_node);
 
   /// Defines a component container.
@@ -237,9 +237,9 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Component that is ready for registration.
   ///
-  /// @throws ValidationError  There are issues with registering and defining
-  ///                          the component and its data
-  ///                          like gates and events.
+  /// @throws ValidityError  There are issues with registering and defining
+  ///                        the component and its data
+  ///                        like gates and events.
   ComponentPtr DefineComponent(const xml::Element& component_node,
                                const std::string& base_path,
                                RoleSpecifier container_role);
@@ -252,8 +252,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in,out] component  The component or fault tree container
   ///                          that is the owner of the data.
   ///
-  /// @throws ValidationError  There are issues with registering and defining
-  ///                          the component's data like gates and events.
+  /// @throws ValidityError  There are issues with registering and defining
+  ///                        the component's data like gates and events.
   void RegisterFaultTreeData(const xml::Element& ft_node,
                              const std::string& base_path,
                              Component* component);
@@ -271,7 +271,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Boolean formula that is defined.
   ///
-  /// @throws ValidationError  The defined formula is not valid.
+  /// @throws ValidityError  The defined formula is not valid.
   FormulaPtr GetFormula(const xml::Element& formula_node,
                         const std::string& base_path);
 
@@ -285,7 +285,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @post All forks in the event tree get registered.
   ///
-  /// @throws ValidationError  Errors in instruction or target definitions.
+  /// @throws ValidityError  Errors in instruction or target definitions.
   template <class SinglePassRange>
   void DefineBranch(const SinglePassRange& xml_nodes, EventTree* event_tree,
                     Branch* branch);
@@ -302,7 +302,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @pre All files have been processed (element pointers are available).
   ///
-  /// @throws ValidationError  Errors in instruction definitions.
+  /// @throws ValidityError  Errors in instruction definitions.
   Instruction* GetInstruction(const xml::Element& xml_element);
 
   /// Processes Expression definitions in input file.
@@ -312,7 +312,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns The newly defined or registered expression.
   ///
-  /// @throws ValidationError  There are problems with getting the expression.
+  /// @throws ValidityError  There are problems with getting the expression.
   Expression* GetExpression(const xml::Element& expr_element,
                             const std::string& base_path);
 
@@ -325,7 +325,7 @@ class Initializer : private boost::noncopyable {
   /// @returns Parameter expression described in XML input expression node.
   /// @returns nullptr if the expression type is not a parameter.
   ///
-  /// @throws ValidationError  The parameter variable is not reachable.
+  /// @throws ValidityError  The parameter variable is not reachable.
   Expression* GetParameter(const xml::string_view& expr_type,
                            const xml::Element& expr_element,
                            const std::string& base_path);
@@ -335,9 +335,9 @@ class Initializer : private boost::noncopyable {
   /// @param[in] members_node  XML element containing all members.
   /// @param[in,out] ccf_group  CCF group of the given members.
   ///
-  /// @throws ValidationError  Members are redefined,
-  ///                          or there are other setup issues
-  ///                          with the CCF group.
+  /// @throws ValidityError  Members are redefined,
+  ///                        or there are other setup issues
+  ///                        with the CCF group.
   void ProcessCcfMembers(const xml::Element& members_node, CcfGroup* ccf_group);
 
   /// Defines factor and adds it to CCF group.
@@ -345,8 +345,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in] factor_node  XML element containing one factor.
   /// @param[in,out] ccf_group  CCF group to be defined by the given factors.
   ///
-  /// @throws ValidationError  There are problems with level numbers
-  ///                          or factors for specific CCF models.
+  /// @throws ValidityError  There are problems with level numbers
+  ///                        or factors for specific CCF models.
   void DefineCcfFactor(const xml::Element& factor_node, CcfGroup* ccf_group);
 
   /// Finds an entity (parameter, basic and house event, gate) from a reference.
@@ -397,7 +397,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_node  The XML element with the data.
   /// @param[in] xml_file  The XML file path.
   ///
-  /// @throws ValidationError  The initialization contains validity errors.
+  /// @throws ValidityError  The initialization contains validity errors.
   void DefineExternLibraries(const xml::Element& xml_node,
                              const std::string& xml_file);
 
@@ -405,7 +405,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] xml_element  The XML element with the data.
   ///
-  /// @throws ValidationError  The initialization contains validity errors.
+  /// @throws ValidityError  The initialization contains validity errors.
   ///
   /// @pre All libraries are defined.
   void DefineExternFunction(const xml::Element& xml_element);
@@ -413,7 +413,7 @@ class Initializer : private boost::noncopyable {
   /// Validates if the initialization of the analysis is successful.
   ///
   /// @throws CycleError  Model contains cycles.
-  /// @throws ValidationError  The initialization contains mistakes.
+  /// @throws ValidityError  The initialization contains mistakes.
   ///
   /// @note Cyclic structures need to be broken up by other methods
   ///       if this error condition may lead resource leaks.
@@ -423,7 +423,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] branch  The event tree branch to start the check.
   ///
-  /// @throws ValidationError  The order of forks is invalid.
+  /// @throws ValidityError  The order of forks is invalid.
   ///
   /// @pre All named branches are fed separately from initial states.
   void CheckFunctionalEventOrder(const Branch& branch);
@@ -432,7 +432,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] branch  The event tree branch to start the check.
   ///
-  /// @throws ValidationError  The Link instruction is misused.
+  /// @throws ValidityError  The Link instruction is misused.
   ///
   /// @pre All named branches are fed separately from initial states.
   void EnsureLinksOnlyInSequences(const Branch& branch);
@@ -442,7 +442,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] branch  The event tree branch to start the check.
   ///
-  /// @throws ValidationError  The Link instruction is misused.
+  /// @throws ValidityError  The Link instruction is misused.
   ///
   /// @pre All named branches are fed separately from initial states.
   void EnsureHomogeneousEventTree(const Branch& branch);
@@ -452,7 +452,7 @@ class Initializer : private boost::noncopyable {
   /// such as parameters and basic events.
   ///
   /// @throws CycleError  Cyclic parameters are detected.
-  /// @throws ValidationError  There are problems detected with expressions.
+  /// @throws ValidityError  There are problems detected with expressions.
   void ValidateExpressions();
 
   /// Applies the input information to set up for future analysis.

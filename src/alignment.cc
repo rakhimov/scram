@@ -42,8 +42,8 @@ void Alignment::Validate() {
   for (const PhasePtr& phase : phases_)
     sum += phase->time_fraction();
   if (!ext::is_close(1, sum, 1e-4))
-    throw ValidationError("The phases of alignment '" + Element::name() +
-                          "' do not sum to 1.");
+    throw ValidityError("The phases of alignment '" + Element::name() +
+                        "' do not sum to 1.");
 }
 
 }  // namespace mef

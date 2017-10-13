@@ -40,7 +40,7 @@ HouseEvent HouseEvent::kFalse("__false__");
 
 void BasicEvent::Validate() const {
   assert(expression_ && "The basic event's expression is not set.");
-  EnsureProbability<ValidationError>(expression_, Event::name());
+  EnsureProbability<ValidityError>(expression_, Event::name());
 }
 
 void Gate::Validate() const {
@@ -51,8 +51,8 @@ void Gate::Validate() const {
     return;
   }
   if (formula_->num_args() != 2) {
-    throw ValidationError(Element::name() +
-                          "INHIBIT gate must have only 2 children");
+    throw ValidityError(Element::name() +
+                        "INHIBIT gate must have only 2 children");
   }
   int num_conditional = boost::count_if(
       formula_->event_args(), [](const Formula::EventArg& event) {
@@ -63,8 +63,8 @@ void Gate::Validate() const {
                basic_event->GetAttribute("flavor").value == "conditional";
       });
   if (num_conditional != 1)
-    throw ValidationError(Element::name() + " : INHIBIT gate must have" +
-                          " exactly one conditional event.");
+    throw ValidityError(Element::name() + " : INHIBIT gate must have" +
+                        " exactly one conditional event.");
 }
 
 Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
@@ -116,24 +116,24 @@ void Formula::Validate() const {
     case kNand:
     case kNor:
       if (num_args() < 2)
-        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
-                              "\" formula must have 2 or more arguments.");
+        throw ValidityError("\"" + std::string(kOperatorToString[type_]) +
+                            "\" formula must have 2 or more arguments.");
       break;
     case kNot:
     case kNull:
       if (num_args() != 1)
-        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
-                              "\" formula must have only one argument.");
+        throw ValidityError("\"" + std::string(kOperatorToString[type_]) +
+                            "\" formula must have only one argument.");
       break;
     case kXor:
       if (num_args() != 2)
-        throw ValidationError("\"xor\" formula must have exactly 2 arguments.");
+        throw ValidityError("\"xor\" formula must have exactly 2 arguments.");
       break;
     case kVote:
       if (num_args() <= vote_number_)
-        throw ValidationError("\"atleast\" formula must have more arguments "
-                              "than its vote number " +
-                              std::to_string(vote_number_) + ".");
+        throw ValidityError("\"atleast\" formula must have more arguments "
+                            "than its vote number " +
+                            std::to_string(vote_number_) + ".");
   }
 }
 

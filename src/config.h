@@ -45,7 +45,7 @@ class Config {
   ///
   /// @param[in] config_file  The path to an XML file with configurations.
   ///
-  /// @throws ValidationError  The configurations have problems.
+  /// @throws ValidityError  The configurations have problems.
   /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
   explicit Config(const std::string& config_file);
