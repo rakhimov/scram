@@ -89,12 +89,6 @@ struct IOError : public Error {
   using Error::Error;
 };
 
-/// This error class can be used
-/// to indicate unacceptable arguments.
-struct InvalidArgument : public Error {
-  using Error::Error;
-};
-
 /// Signals internal logic errors,
 /// for example, pre-condition failure
 /// or use of functionality in ways not designed to.
