@@ -1729,32 +1729,14 @@ void Initializer::ValidateExpressions() {
   }
 
   // Validate CCF groups.
-  std::stringstream msg;
   for (const CcfGroupPtr& group : model_->ccf_groups()) {
-    try {
-      group->Validate();
-    } catch (ValidityError& err) {
-      msg << err.msg() << "\n";
-    }
-  }
-  if (!msg.str().empty()) {
-    throw ValidityError("Invalid distributions for CCF groups detected:\n" +
-                        msg.str());
+    group->Validate();
   }
 
   // Check probability values for primary events.
   for (const BasicEventPtr& event : model_->basic_events()) {
-    if (event->HasExpression() == false)
-      continue;
-    try {
+    if (event->HasExpression())
       event->Validate();
-    } catch (ValidityError& err) {
-      msg << err.msg() << "\n";
-    }
-  }
-  if (!msg.str().empty()) {
-    throw ValidityError("Invalid basic event probabilities detected:\n" +
-                        msg.str());
   }
 }
 
