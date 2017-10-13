@@ -136,9 +136,20 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << "   libxml2     " << scram::version::libxml() << std::endl;
     return -1;
   }
+
+  if (vm->count("verbosity")) {
+    int level = (*vm)["verbosity"].as<int>();
+    if (level < 0 || level > scram::kMaxVerbosity) {
+      std::cerr << "Log verbosity must be between 0 and "
+                << scram::kMaxVerbosity << ".\n\n"
+                << usage << "\n\n" << desc << std::endl;
+      return 1;
+    }
+  }
+
   if (!vm->count("input-files") && !vm->count("config-file")) {
-    std::cerr << "No input or configuration file is given.\n" << std::endl;
-    std::cerr << usage << "\n\n" << desc << std::endl;
+    std::cerr << "No input or configuration file is given.\n\n"
+              << usage << "\n\n" << desc << std::endl;
     return 1;
   }
   if ((vm->count("bdd") + vm->count("zbdd") + vm->count("mocus")) > 1) {
@@ -216,9 +227,6 @@ void ConstructSettings(const po::variables_map& vm,
 /// @throws boost::exception  Boost errors with the variables map.
 /// @throws std::exception  All other problems.
 void RunScram(const po::variables_map& vm) {
-  if (vm.count("verbosity")) {
-    scram::Logger::SetVerbosity(vm["verbosity"].as<int>());
-  }
   scram::core::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
   std::string output_path;
@@ -289,6 +297,12 @@ int main(int argc, char* argv[]) {
     int ret = ParseArguments(argc, argv, &vm);
     if (ret == 1)
       return 1;
+
+    if (vm.count("verbosity")) {
+      scram::Logger::report_level(
+          static_cast<scram::LogLevel>(vm["verbosity"].as<int>()));
+    }
+
     if (ret == 0)
       RunScram(vm);
 
