@@ -84,12 +84,6 @@ class Error : virtual public std::exception, virtual public boost::exception {
   std::string thrown_;  ///< The message to throw with the prefix.
 };
 
-/// For values that are not acceptable.
-/// For example, negative probability.
-struct ValueError : public Error {
-  using Error::Error;
-};
-
 /// For validating input parameters or user arguments.
 struct ValidationError : public Error {
   using Error::Error;
