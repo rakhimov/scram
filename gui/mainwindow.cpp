@@ -823,7 +823,7 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
     for (const std::string &arg : dialog.arguments()) {
         try {
             formula->AddArgument(m_model->GetEvent(arg));
-        } catch (UndefinedElement &) {
+        } catch (mef::UndefinedElement &) {
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
             formula->AddArgument(argEvent.get());

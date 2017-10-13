@@ -59,11 +59,7 @@ namespace scram {
 
 namespace xml {
 
-class Element;
-
-}  // namespace xml
-
-namespace xml {
+using mef::ValidationError;  ///< @todo Create XML specific exception classes.
 
 using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
 

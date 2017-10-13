@@ -84,10 +84,38 @@ class Error : virtual public std::exception, virtual public boost::exception {
   std::string thrown_;  ///< The message to throw with the prefix.
 };
 
+/// For input/output related errors.
+struct IOError : public Error {
+  using Error::Error;
+};
+
+/// This error class can be used
+/// to indicate unacceptable arguments.
+struct InvalidArgument : public Error {
+  using Error::Error;
+};
+
+/// Signals internal logic errors,
+/// for example, pre-condition failure
+/// or use of functionality in ways not designed to.
+struct LogicError : public Error {
+  using Error::Error;
+};
+
+/// This error can be used to indicate
+/// that call for a function or operation is not legal.
+/// For example, a derived class can make illegal
+/// the call of the virtual function of the base class.
+struct IllegalOperation : public Error {
+  using Error::Error;
+};
+
 /// The error in analysis settings.
 struct SettingsError : public Error {
   using Error::Error;
 };
+
+namespace mef {  // MEF specific errors.
 
 /// For validating input parameters or user arguments.
 struct ValidationError : public Error {
@@ -114,31 +142,7 @@ struct CycleError : public ValidationError {
   using ValidationError::ValidationError;
 };
 
-/// For input/output related errors.
-struct IOError : public Error {
-  using Error::Error;
-};
-
-/// This error class can be used
-/// to indicate unacceptable arguments.
-struct InvalidArgument : public Error {
-  using Error::Error;
-};
-
-/// Signals internal logic errors,
-/// for example, pre-condition failure
-/// or use of functionality in ways not designed to.
-struct LogicError : public Error {
-  using Error::Error;
-};
-
-/// This error can be used to indicate
-/// that call for a function or operation is not legal.
-/// For example, a derived class can make illegal
-/// the call of the virtual function of the base class.
-struct IllegalOperation : public Error {
-  using Error::Error;
-};
+}  // namespace mef
 
 }  // namespace scram
 

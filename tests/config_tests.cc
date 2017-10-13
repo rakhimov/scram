@@ -34,13 +34,13 @@ TEST(ConfigTest, IOError) {
 // Test with XML content validation issues.
 TEST(ConfigTest, ValidationError) {
   std::string config_file = "./share/scram/input/fta/invalid_configuration.xml";
-  ASSERT_THROW(Config config(config_file), ValidationError);
+  ASSERT_THROW(Config config(config_file), xml::ValidationError);
 }
 
 // Test with XML content numerical issues.
 TEST(ConfigTest, NumericalErrors) {
   std::string config_file = "./share/scram/input/fta/int_overflow_config.xml";
-  ASSERT_THROW(Config config(config_file), ValidationError);
+  ASSERT_THROW(Config config(config_file), xml::ValidationError);
 }
 
 // Tests all settings with one file.
