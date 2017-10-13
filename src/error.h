@@ -89,6 +89,11 @@ struct IOError : public Error {
   using Error::Error;
 };
 
+/// Dynamic library errors.
+struct DLError : public Error {
+  using Error::Error;
+};
+
 /// Signals internal logic errors,
 /// for example, pre-condition failure
 /// or use of functionality in ways not designed to.

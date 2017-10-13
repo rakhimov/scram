@@ -1368,9 +1368,10 @@ void Initializer::DefineExternLibraries(const xml::Element& xml_node,
           xml_node.attribute("path").to_string(),
           boost::filesystem::path(xml_file).parent_path(),
           optional_bool("system"), optional_bool("decorate"));
-    } catch (const IOError& err) {
-      throw ValidityError("Cannot load external library:\n" + err.msg())
+    } catch (DLError& err) {
+      err << boost::errinfo_file_name(xml_file)
           << boost::errinfo_at_line(xml_node.line());
+      throw;
     } catch (ValidityError& err) {
       err << boost::errinfo_at_line(xml_node.line());
       throw;

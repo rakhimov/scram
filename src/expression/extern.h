@@ -49,7 +49,7 @@ class ExternLibrary : public Element, public Usage, private boost::noncopyable {
   /// @param[in] decorate  Decorate the library name with prefix and suffix.
   ///
   /// @throws ValidityError  The library path is invalid.
-  /// @throws IOError  The library cannot be found.
+  /// @throws DLError  The library cannot be found.
   ExternLibrary(std::string name, std::string lib_path,
                 const boost::filesystem::path& reference_dir, bool system,
                 bool decorate);

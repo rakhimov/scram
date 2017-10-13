@@ -38,6 +38,8 @@
 #else
 
 #include <boost/dll/shared_library.hpp>
+#include <boost/exception/errinfo_nested_exception.hpp>
+#include <boost/exception_ptr.hpp>
 #include <boost/system/system_error.hpp>
 
 #endif
@@ -69,7 +71,7 @@ class ExternLibrary::Pimpl {
     }
 
     if (!lib_handle_)
-      throw IOError(dlerror());
+      throw DLError(dlerror());
   }
 
   /// @copydoc ExternLibrary::~ExternLibrary
@@ -112,7 +114,8 @@ class ExternLibrary::Pimpl {
     try {
       lib_handle_.load(ref_path, load_type);
     } catch (const boost::system::system_error& err) {
-      throw IOError(err.what());
+      throw DLError(err.what())
+          << boost::errinfo_nested_exception(boost::current_exception());
     }
   }
 
@@ -121,7 +124,8 @@ class ExternLibrary::Pimpl {
     try {
       return reinterpret_cast<void*>(lib_handle_.get<void()>(symbol));
     } catch (const boost::system::system_error& err) {
-      throw UndefinedElement(err.what());
+      throw UndefinedElement(err.what())
+          << boost::errinfo_nested_exception(boost::current_exception());
     }
   }
 

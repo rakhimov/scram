@@ -334,7 +334,6 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "undefined_extern_function.xml",
       "invalid_num_args_extern_expression.xml",
       "extern_library_invalid_path_format.xml",
-      "extern_library_ioerror.xml",
       "duplicate_phases.xml",
       "invalid_phase_fraction.xml",
       "zero_phase_fraction.xml",
@@ -350,6 +349,11 @@ TEST(InitializerTest, IncorrectModelInputs) {
                  ValidityError)
         << " Filename:  " << input;
   }
+}
+
+TEST(InitializerTest, ExternDLError) {
+  std::string input = "./share/scram/input/model/extern_library_ioerror.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings(), true), DLError);
 }
 
 // Tests that external libraries are disabled by default.

@@ -43,11 +43,11 @@ const char kLibRelPathLinux[] = "../lib/scram/test/libscram_dummy_extern.so";
 
 TEST(ExternTest, ExternLibraryLoad) {
   const std::string bin_dir = Env::install_dir() + "/bin";
-  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, false), IOError);
-  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, true), IOError);
-  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", true, true), IOError);
+  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, false), DLError);
+  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, true), DLError);
+  EXPECT_THROW(ExternLibrary("dummy", kLibName, "", true, true), DLError);
   EXPECT_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, false),
-               IOError);
+               DLError);
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, true));
   EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, true, true));
 
