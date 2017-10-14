@@ -18,6 +18,8 @@
 /// @file scram.cc
 /// Main entrance.
 
+#include <cstring>  // strerror
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -307,6 +309,23 @@ int main(int argc, char* argv[]) {
       RunScram(vm);
 
 #ifdef NDEBUG
+  } catch (const scram::IOError& err) {
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n";
+    const std::string* filename =
+        boost::get_error_info<boost::errinfo_file_name>(err);
+    assert(filename);
+    std::cerr << "\nFile: " << *filename << "\n";
+    if (const std::string* mode =
+            boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
+      std::cerr << "Open mode: " << *mode << "\n";
+    }
+
+    if (const int* errnum = boost::get_error_info<boost::errinfo_errno>(err)) {
+      std::cerr << "Error code: " << *errnum << "\n";
+      std::cerr << "Error string: " << std::strerror(*errnum) << "\n";
+    }
+    std::cerr << "\n" << err.what() << std::endl;
+    return 1;
   } catch (const scram::Error& err) {
     std::cerr << boost::core::demangled_name(typeid(err)) << "\n";
     if (const std::string* filename =

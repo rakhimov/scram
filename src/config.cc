@@ -55,8 +55,10 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 Config::Config(const std::string& config_file) {
   static xml::Validator validator(Env::config_schema());
 
-  if (fs::exists(config_file) == false)
-    throw IOError("The file '" + config_file + "' could not be loaded.");
+  if (fs::exists(config_file) == false) {
+    throw IOError("The configuration file does not exist.")
+        << boost::errinfo_file_name(config_file);
+  }
 
   xml::Document document = xml::Parse(config_file, &validator);
   xml::Element root = document.root();

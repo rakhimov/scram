@@ -21,6 +21,10 @@
 
 #include <memory>
 
+#include <boost/exception/errinfo_errno.hpp>
+#include <boost/exception/errinfo_file_name.hpp>
+#include <boost/exception/errinfo_file_open_mode.hpp>
+
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -35,8 +39,11 @@ namespace mef {
 void Serialize(const Model& model, const std::string& file) {
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
       std::fopen(file.c_str(), "w"), &std::fclose);
-  if (!fp)
-    throw IOError(file + " : Cannot write the output file for serialization.");
+  if (!fp) {
+    throw IOError("Cannot write the output file for serialization.")
+        << boost::errinfo_file_name(file) << boost::errinfo_errno(errno)
+        << boost::errinfo_file_open_mode("w");
+  }
 
   Serialize(model, fp.get());
 }

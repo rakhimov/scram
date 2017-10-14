@@ -162,8 +162,10 @@ Initializer::Initializer(const std::vector<std::string>& xml_files,
 void Initializer::CheckFileExistence(
     const std::vector<std::string>& xml_files) {
   for (auto& xml_file : xml_files) {
-    if (boost::filesystem::exists(xml_file) == false)
-      throw IOError("File doesn't exist: " + xml_file);
+    if (boost::filesystem::exists(xml_file) == false) {
+      throw IOError("Input file doesn't exist.")
+          << boost::errinfo_file_name(xml_file);
+    }
   }
 }
 

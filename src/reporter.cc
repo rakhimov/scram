@@ -26,6 +26,9 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/date_time.hpp>
+#include <boost/exception/errinfo_errno.hpp>
+#include <boost/exception/errinfo_file_name.hpp>
+#include <boost/exception/errinfo_file_open_mode.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
@@ -101,8 +104,11 @@ void Reporter::Report(const core::RiskAnalysis& risk_an,
                       const std::string& file, bool indent) {
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
       std::fopen(file.c_str(), "w"), &std::fclose);
-  if (!fp)
-    throw IOError(file + " : Cannot write the output file.");
+  if (!fp) {
+    throw IOError("Cannot write the output file for report.")
+        << boost::errinfo_file_name(file) << boost::errinfo_errno(errno)
+        << boost::errinfo_file_open_mode("w");
+  }
   Report(risk_an, fp.get(), indent);
 }
 
