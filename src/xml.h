@@ -43,6 +43,7 @@
 #include <type_traits>
 
 #include <boost/exception/errinfo_at_line.hpp>
+#include <boost/exception/errinfo_file_name.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -58,8 +59,6 @@
 namespace scram {
 
 namespace xml {
-
-using mef::ValidityError;  ///< @todo Create XML specific exception classes.
 
 using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
 
@@ -87,7 +86,7 @@ inline int CastValue<int>(const xml::string_view& value) {
   if (len != value.size() || ret > std::numeric_limits<int>::max() ||
       ret < std::numeric_limits<int>::min())
     throw ValidityError("Failed to interpret '" + value.to_string() +
-                          "' to 'int'.");
+                        "' to 'int'.");
   return ret;
 }
 
@@ -99,7 +98,7 @@ inline double CastValue<double>(const xml::string_view& value) {
   int len = end_char - value.data();
   if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
     throw ValidityError("Failed to interpret '" + value.to_string() +
-                          "' to 'double'.");
+                        "' to 'double'.");
   return ret;
 }
 
@@ -111,7 +110,7 @@ inline bool CastValue<bool>(const xml::string_view& value) {
   if (value == "false" || value == "0")
     return false;
   throw ValidityError("Failed to interpret '" + value.to_string() +
-                        "' to 'bool'.");
+                      "' to 'bool'.");
 }
 
 /// Reinterprets the XML library UTF-8 string into C string.
@@ -317,8 +316,9 @@ class Element {
     try {
       return detail::CastValue<T>(value);
     } catch (ValidityError& err) {
-      err.msg("Attribute '" + std::string(name) + "': " + err.msg());
-      err << boost::errinfo_at_line(line());
+      err << errinfo_element(Element::name().to_string())
+          << errinfo_attribute(name) << boost::errinfo_at_line(line())
+          << boost::errinfo_file_name(filename().to_string());
       throw;
     }
   }
@@ -337,8 +337,9 @@ class Element {
     try {
       return detail::CastValue<T>(text());
     } catch (ValidityError& err) {
-      err.msg("Text element: " + err.msg());
-      err << boost::errinfo_at_line(line());
+      err << errinfo_element(name().to_string())
+          << boost::errinfo_at_line(line())
+          << boost::errinfo_file_name(filename().to_string());
       throw;
     }
   }

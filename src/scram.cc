@@ -343,6 +343,14 @@ int main(int argc, char* argv[]) {
             boost::get_error_info<scram::mef::errinfo_container>(err)) {
       std::cerr << "MEF Container: " << *container << "\n";
     }
+    if (const std::string* xml_element =
+            boost::get_error_info<scram::xml::errinfo_element>(err)) {
+      std::cerr << "XML element: " << *xml_element << "\n";
+    }
+    if (const std::string* xml_attribute =
+            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+      std::cerr << "XML attribute: " << *xml_attribute << "\n";
+    }
     std::cerr << "\n" << err.what() << std::endl;
     return 1;
   } catch (const boost::exception& boost_err) {

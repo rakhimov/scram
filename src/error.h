@@ -133,6 +133,22 @@ struct DomainError : public ValidityError {
 
 }  // namespace mef
 
+namespace xml {
+
+/// XML document validity errors.
+struct ValidityError : public Error {
+  using Error::Error;
+};
+
+/// The XML attribute name.
+using errinfo_attribute =
+    boost::error_info<struct tag_xml_attribute, std::string>;
+
+/// The XML element name.
+using errinfo_element = boost::error_info<struct tag_xml_element, std::string>;
+
+}  // namespace xml
+
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ERROR_H_

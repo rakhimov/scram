@@ -30,7 +30,7 @@ namespace test {
 TEST(InitializerTest, XMLFormatting) {
   EXPECT_THROW(Initializer({"./share/scram/input/xml_formatting_error.xml"},
                            core::Settings()),
-               ValidityError);
+               xml::ValidityError);
 }
 
 // Test the response for non-existent file.
@@ -57,7 +57,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
 TEST(InitializerTest, FailSchemaValidation) {
   EXPECT_THROW(
       Initializer({"./share/scram/input/schema_fail.xml"}, core::Settings()),
-      ValidityError);
+      xml::ValidityError);
 }
 
 // Unsupported operations.
@@ -67,7 +67,8 @@ TEST(InitializerTest, UnsupportedFeature) {
                                     "../unsupported_gate.xml",
                                     "../unsupported_expression.xml"};
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidityError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -77,7 +78,8 @@ TEST(InitializerTest, EmptyAttributeElementText) {
   const char* incorrect_inputs[] = {"../empty_element.xml",
                                     "../empty_attribute.xml"};
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidityError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -201,7 +203,8 @@ TEST(InitializerTest, IncorrectInclude) {
   std::string dir = "./share/scram/input/";
   const char* correct_inputs[] = {"xinclude_no_file.xml", "xinclude_cycle.xml"};
   for (const auto& input : correct_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidityError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::ValidityError)
         << " Filename: " << input;
   }
 }
@@ -230,7 +233,6 @@ TEST(InitializerTest, IncorrectFtaInputs) {
   std::string dir = "./share/scram/input/fta/";
 
   const char* incorrect_inputs[] = {
-      "int_overflow.xml",
       "invalid_probability.xml",
       "private_at_model_scope.xml",
       "doubly_defined_gate.xml",
@@ -282,6 +284,11 @@ TEST(InitializerTest, IncorrectFtaInputs) {
   }
 }
 
+TEST(InitializerTest, IncorrectXMLOverflow) {
+  std::string input = "./share/scram/input/fta/int_overflow.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings()), xml::ValidityError);
+}
+
 // Test failures triggered only in with probability analysis.
 TEST(InitializerTest, IncorrectProbabilityInputs) {
   std::string dir = "./share/scram/input/fta/";
@@ -330,7 +337,6 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "undefined_extern_library.xml",
       "undefined_symbol_extern_function.xml",
       "invalid_num_param_extern_function.xml",
-      "empty_extern_function.xml",
       "undefined_extern_function.xml",
       "invalid_num_args_extern_expression.xml",
       "extern_library_invalid_path_format.xml",
@@ -340,13 +346,24 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "negative_phase_fraction.xml",
       "undefined_target_set_house_event.xml",
       "duplicate_alignment.xml",
-      "empty_alignment.xml",
       "excess_alignment.xml",
       "incomplete_alignment.xml"};
 
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
                  ValidityError)
+        << " Filename:  " << input;
+  }
+}
+
+TEST(InitializerTest, IncorrectModelEmptyInputs) {
+  std::string dir = "./share/scram/input/model/";
+  const char* incorrect_inputs[] = {"empty_extern_function.xml",
+                                    "empty_alignment.xml"};
+
+  for (const auto& input : incorrect_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
+                 xml::ValidityError)
         << " Filename:  " << input;
   }
 }
