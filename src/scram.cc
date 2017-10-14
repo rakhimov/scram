@@ -309,6 +309,9 @@ int main(int argc, char* argv[]) {
       RunScram(vm);
 
 #ifdef NDEBUG
+  } catch (const scram::LogicError& err) {
+    LOG(scram::ERROR) << "Logic Error:\n" << boost::diagnostic_information(err);
+    return 1;
   } catch (const scram::IOError& err) {
     LOG(scram::DEBUG1) << boost::diagnostic_information(err);
     std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
