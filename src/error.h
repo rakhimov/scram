@@ -40,17 +40,6 @@
 
 namespace scram {
 
-namespace error {
-
-/// 'what' identifier for errors deriving from std::exception.
-///
-/// @note This should not be the error message to be printed for users.
-///       It is the optional *identifier* string.
-///       By default, boost::diagnostic_information_what is used.
-using what = boost::error_info<struct tag_what, const char*>;
-
-}  // namespace error
-
 /// The Error class is the base class
 /// for common exceptions specific to the SCRAM code.
 class Error : virtual public std::exception, virtual public boost::exception {
@@ -58,14 +47,14 @@ class Error : virtual public std::exception, virtual public boost::exception {
   /// Constructs a new error with a provided message.
   ///
   /// @param[in] msg  The message to be passed with this error.
-  explicit Error(std::string msg);
+  explicit Error(std::string msg) : msg_(std::move(msg)) {}
 
   Error(const Error&) = default;  ///< Explicit declaration.
 
   virtual ~Error() noexcept = default;
 
   /// @returns The formatted error message to be printed.
-  const char* what() const noexcept override;
+  const char* what() const noexcept final { return msg_.c_str(); }
 
   /// @returns The core message describing the error.
   const std::string& msg() const { return msg_; }
