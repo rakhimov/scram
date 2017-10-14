@@ -73,15 +73,10 @@ class Error : virtual public std::exception, virtual public boost::exception {
   /// Sets the error messages.
   ///
   /// @param[in] msg  The error message.
-  void msg(std::string msg) {
-    msg_ = std::move(msg);
-    thrown_ = kPrefix_ + msg_;
-  }
+  void msg(std::string msg) { msg_ = std::move(msg); }
 
  private:
-  static const char kPrefix_[];  ///< Prefix specific to SCRAM.
   std::string msg_;  ///< The error message.
-  std::string thrown_;  ///< The message to throw with the prefix.
 };
 
 /// For input/output related errors.

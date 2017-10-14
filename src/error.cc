@@ -24,16 +24,12 @@
 
 namespace scram {
 
-const char Error::kPrefix_[] = "scram error: ";
-
-Error::Error(std::string msg)
-    : msg_(std::move(msg)),
-      thrown_(kPrefix_ + msg_) {}
+Error::Error(std::string msg) : msg_(std::move(msg)) {}
 
 const char* Error::what() const noexcept {
   if (const char* const* msg = boost::get_error_info<error::what>(*this))
     return *msg;
-  return thrown_.c_str();
+  return msg_.c_str();
 }
 
 }  // namespace scram
