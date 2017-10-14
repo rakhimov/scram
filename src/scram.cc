@@ -290,10 +290,7 @@ void RunScram(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
-#ifdef NDEBUG
-  try {  // Catch exceptions only for non-debug builds.
-#endif
-
+  try {
     // Parse command-line options.
     po::variables_map vm;
     int ret = ParseArguments(argc, argv, &vm);
@@ -307,8 +304,6 @@ int main(int argc, char* argv[]) {
 
     if (ret == 0)
       RunScram(vm);
-
-#ifdef NDEBUG
   } catch (const scram::LogicError& err) {
     LOG(scram::ERROR) << "Logic Error:\n" << boost::diagnostic_information(err);
     return 1;
@@ -363,5 +358,4 @@ int main(int argc, char* argv[]) {
                       << err.what();
     return 1;
   }
-#endif
 }  // End of main.
