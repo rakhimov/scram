@@ -56,14 +56,6 @@ class Error : virtual public std::exception, virtual public boost::exception {
   /// @returns The formatted error message to be printed.
   const char* what() const noexcept final { return msg_.c_str(); }
 
-  /// @returns The core message describing the error.
-  const std::string& msg() const { return msg_; }
-
-  /// Sets the error messages.
-  ///
-  /// @param[in] msg  The error message.
-  void msg(std::string msg) { msg_ = std::move(msg); }
-
  private:
   std::string msg_;  ///< The error message.
 };
