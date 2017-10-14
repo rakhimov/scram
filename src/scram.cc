@@ -29,6 +29,8 @@
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 
+#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
+
 #include "config.h"
 #include "error.h"
 #include "initializer.h"
@@ -290,6 +292,8 @@ void RunScram(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
+  LIBXML_TEST_VERSION
+
   try {
     // Parse command-line options.
     po::variables_map vm;
