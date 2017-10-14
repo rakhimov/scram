@@ -331,8 +331,9 @@ void CheckCycle(const SinglePassRange& container, const char* type) {
   std::vector<T*> cycle;
   for (const auto& node : container) {
     if (DetectCycle(&*node, &cycle)) {
-      throw CycleError("Detected a cycle in " + GetUniqueName(&*node) + " " +
-                       std::string(type) + ":\n" + PrintCycle(cycle));
+      SCRAM_THROW(CycleError("Detected a cycle in " + GetUniqueName(&*node) +
+                             " " + std::string(type) + ":\n" +
+                             PrintCycle(cycle)));
     }
   }
 }

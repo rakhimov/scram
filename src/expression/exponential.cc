@@ -156,11 +156,11 @@ void PeriodicTest::Complete::Validate() const {
   EnsureProbability(&omega_, "failure at restart");
 
   if (test_duration_.value() > tau_.value())
-    throw ValidityError(
-        "The test duration must be less than the time between tests.");
+    SCRAM_THROW(ValidityError(
+        "The test duration must be less than the time between tests."));
   if (test_duration_.interval().upper() > tau_.interval().lower())
-    throw ValidityError(
-        "The sampled test duration must be less than the time between tests.");
+    SCRAM_THROW(ValidityError(
+        "The sampled test duration must be less than the time between tests."));
 }
 
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,

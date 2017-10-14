@@ -105,7 +105,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an,
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
       std::fopen(file.c_str(), "w"), &std::fclose);
   if (!fp) {
-    throw IOError("Cannot write the output file for report.")
+    SCRAM_THROW(IOError("Cannot write the output file for report."))
         << boost::errinfo_file_name(file) << boost::errinfo_errno(errno)
         << boost::errinfo_file_open_mode("w");
   }

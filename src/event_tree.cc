@@ -29,7 +29,8 @@ namespace mef {
 
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
-    throw LogicError("The state string for functional events cannot be empty");
+    SCRAM_THROW(
+        LogicError("The state string for functional events cannot be empty"));
 }
 
 Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
@@ -42,8 +43,8 @@ Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
           return fork_path.state() == it->state();
         });
     if (it_find != paths_.end())
-      throw ValidityError("Duplicate state '" + it->state() +
-                          "' path in fork " + functional_event_.name());
+      SCRAM_THROW(ValidityError("Duplicate state '" + it->state() +
+                                "' path in fork " + functional_event_.name()));
   }
 }
 

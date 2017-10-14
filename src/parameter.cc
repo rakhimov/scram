@@ -33,13 +33,13 @@ MissionTime::MissionTime(double time, Units unit)
 
 void MissionTime::value(double time) {
   if (time < 0)
-    throw LogicError("Mission time cannot be negative.");
+    SCRAM_THROW(LogicError("Mission time cannot be negative."));
   value_ = time;
 }
 
 void Parameter::expression(Expression* expression) {
   if (expression_)
-    throw LogicError("Parameter expression is already set.");
+    SCRAM_THROW(LogicError("Parameter expression is already set."));
   expression_ = expression;
   Expression::AddArg(expression);
 }

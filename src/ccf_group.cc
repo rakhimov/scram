@@ -38,24 +38,26 @@ CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
 
 void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
-    throw LogicError("No more members accepted. The distribution for " +
-                     Element::name() + " CCF group has already been defined.");
+    SCRAM_THROW(LogicError("No more members accepted. The distribution for " +
+                           Element::name() +
+                           " CCF group has already been defined."));
   }
   if (ext::any_of(members_, [&basic_event](BasicEvent* member) {
         return member->name() == basic_event->name();
       })) {
-    throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
-                                 " in " + Element::name() + " CCF group.");
+    SCRAM_THROW(DuplicateArgumentError("Duplicate member " +
+                                       basic_event->name() + " in " +
+                                       Element::name() + " CCF group."));
   }
   members_.push_back(basic_event);
 }
 
 void CcfGroup::AddDistribution(Expression* distr) {
   if (distribution_)
-    throw LogicError("CCF distribution is already defined.");
+    SCRAM_THROW(LogicError("CCF distribution is already defined."));
   if (members_.size() < 2) {
-    throw ValidityError(Element::name() +
-                        " CCF group must have at least 2 members.");
+    SCRAM_THROW(ValidityError(Element::name() +
+                              " CCF group must have at least 2 members."));
   }
   distribution_ = distr;
   // Define probabilities of all basic events.
@@ -69,26 +71,26 @@ void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
     level = prev_level_ ? (prev_level_ + 1) : min_level;
 
   if (*level <= 0 || members_.empty())
-    throw LogicError("Invalid CCF group factor setup.");
+    SCRAM_THROW(LogicError("Invalid CCF group factor setup."));
 
   if (*level < min_level) {
-    throw ValidityError("The CCF factor level (" + std::to_string(*level) +
-                        ") is less than the minimum level (" +
-                        std::to_string(min_level) + ") required by " +
-                        Element::name() + " CCF group.");
+    SCRAM_THROW(ValidityError(
+        "The CCF factor level (" + std::to_string(*level) +
+        ") is less than the minimum level (" + std::to_string(min_level) +
+        ") required by " + Element::name() + " CCF group."));
   }
   if (members_.size() < *level) {
-    throw ValidityError("The CCF factor level " + std::to_string(*level) +
-                        " is more than the number of members (" +
-                        std::to_string(members_.size()) + ") in " +
-                        Element::name() + " CCF group.");
+    SCRAM_THROW(ValidityError("The CCF factor level " + std::to_string(*level) +
+                              " is more than the number of members (" +
+                              std::to_string(members_.size()) + ") in " +
+                              Element::name() + " CCF group."));
   }
 
   int index = *level - min_level;
   if (index < factors_.size() && factors_[index].second != nullptr) {
-    throw RedefinitionError("Redefinition of CCF factor for level " +
-                            std::to_string(*level) + " in " + Element::name() +
-                            " CCF group.");
+    SCRAM_THROW(RedefinitionError("Redefinition of CCF factor for level " +
+                                  std::to_string(*level) + " in " +
+                                  Element::name() + " CCF group."));
   }
   if (index >= factors_.size())
     factors_.resize(index + 1);
@@ -99,15 +101,16 @@ void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
 
 void CcfGroup::Validate() const {
   if (!distribution_ || members_.empty() || factors_.empty())
-    throw LogicError("CCF group " + Element::name() + " is not initialized.");
+    SCRAM_THROW(
+        LogicError("CCF group " + Element::name() + " is not initialized."));
 
   EnsureProbability(distribution_,
                     Element::name() + " CCF group distribution.");
 
   for (const std::pair<int, Expression*>& f : factors_) {
     if (!f.second) {
-      throw ValidityError("Missing some CCF factors for " + Element::name() +
-                          " CCF group.");
+      SCRAM_THROW(ValidityError("Missing some CCF factors for " +
+                                Element::name() + " CCF group."));
     }
     EnsureProbability(f.second, Element::name() + " CCF group factors.",
                       "fraction");
@@ -271,8 +274,8 @@ void PhiFactorModel::DoValidate() const {
   }
   if (!ext::is_close(1, sum, 1e-4) || !ext::is_close(1, sum_min, 1e-4) ||
       !ext::is_close(1, sum_max, 1e-4)) {
-    throw ValidityError("The factors for Phi model " + CcfGroup::name() +
-                        " CCF group must sum to 1.");
+    SCRAM_THROW(ValidityError("The factors for Phi model " + CcfGroup::name() +
+                              " CCF group must sum to 1."));
   }
 }
 

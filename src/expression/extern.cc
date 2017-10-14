@@ -71,7 +71,7 @@ class ExternLibrary::Pimpl {
     }
 
     if (!lib_handle_)
-      throw DLError(dlerror());
+      SCRAM_THROW(DLError(dlerror()));
   }
 
   /// @copydoc ExternLibrary::~ExternLibrary
@@ -86,7 +86,7 @@ class ExternLibrary::Pimpl {
     void* fptr = dlsym(lib_handle_, symbol);
     const char* err = dlerror();
     if (!fptr && err)
-      throw UndefinedElement(err);
+      SCRAM_THROW(UndefinedElement(err));
 
     return fptr;
   }
@@ -114,7 +114,7 @@ class ExternLibrary::Pimpl {
     try {
       lib_handle_.load(ref_path, load_type);
     } catch (const boost::system::system_error& err) {
-      throw DLError(err.what())
+      SCRAM_THROW(DLError(err.what()))
           << boost::errinfo_nested_exception(boost::current_exception());
     }
   }
@@ -124,7 +124,7 @@ class ExternLibrary::Pimpl {
     try {
       return reinterpret_cast<void*>(lib_handle_.get<void()>(symbol));
     } catch (const boost::system::system_error& err) {
-      throw UndefinedElement(err.what())
+      SCRAM_THROW(UndefinedElement(err.what()))
           << boost::errinfo_nested_exception(boost::current_exception());
     }
   }
@@ -146,7 +146,7 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
       lib_path.back() == ':' ||
       lib_path.back() == '/' ||
       lib_path.back() == '\\') {
-    throw ValidityError("Invalid library path: " + lib_path);
+    SCRAM_THROW(ValidityError("Invalid library path: " + lib_path));
   }
 
   pimpl_ = new Pimpl(std::move(lib_path), reference_dir, system, decorate);

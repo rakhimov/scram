@@ -43,8 +43,10 @@ UniformDeviate::UniformDeviate(Expression* min, Expression* max)
       max_(*max) {}
 
 void UniformDeviate::Validate() const {
-  if (min_.value() >= max_.value())
-    throw ValidityError("Min value is more than max for Uniform distribution.");
+  if (min_.value() >= max_.value()) {
+    SCRAM_THROW(
+        ValidityError("Min value is more than max for Uniform distribution."));
+  }
 }
 
 double UniformDeviate::DoSample() noexcept {
@@ -58,7 +60,7 @@ NormalDeviate::NormalDeviate(Expression* mean, Expression* sigma)
 
 void NormalDeviate::Validate() const {
   if (sigma_.value() <= 0) {
-    throw DomainError("Standard deviation cannot be negative or zero.");
+    SCRAM_THROW(DomainError("Standard deviation cannot be negative or zero."));
   }
 }
 
@@ -77,13 +79,13 @@ LognormalDeviate::LognormalDeviate(Expression* mu, Expression* sigma)
 
 void LognormalDeviate::Logarithmic::Validate() const {
   if (level_.value() <= 0 || level_.value() >= 1) {
-    throw DomainError("The confidence level is not within (0, 1).");
+    SCRAM_THROW(DomainError("The confidence level is not within (0, 1)."));
   } else if (ef_.value() <= 1) {
-    throw DomainError("The Error Factor for Log-Normal distribution"
-                      " cannot be less than 1.");
+    SCRAM_THROW(DomainError("The Error Factor for Log-Normal distribution"
+                            " cannot be less than 1."));
   } else if (mean_.value() <= 0) {
-    throw DomainError("The mean of Log-Normal distribution cannot be"
-                      " negative or zero.");
+    SCRAM_THROW(DomainError("The mean of Log-Normal distribution cannot be"
+                            " negative or zero."));
   }
 }
 
@@ -107,7 +109,7 @@ double LognormalDeviate::Logarithmic::location() noexcept {
 
 void LognormalDeviate::Normal::Validate() const {
   if (sigma_.value() <= 0)
-    throw DomainError("Standard deviation cannot be negative or zero.");
+    SCRAM_THROW(DomainError("Standard deviation cannot be negative or zero."));
 }
 
 double LognormalDeviate::Normal::mean() noexcept {
@@ -121,11 +123,11 @@ GammaDeviate::GammaDeviate(Expression* k, Expression* theta)
 
 void GammaDeviate::Validate() const {
   if (k_.value() <= 0) {
-    throw DomainError("The k shape parameter for Gamma distribution"
-                      " cannot be negative or zero.");
+    SCRAM_THROW(DomainError("The k shape parameter for Gamma distribution"
+                            " cannot be negative or zero."));
   } else if (theta_.value() <= 0) {
-    throw DomainError("The theta scale parameter for Gamma distribution"
-                      " cannot be negative or zero.");
+    SCRAM_THROW(DomainError("The theta scale parameter for Gamma distribution"
+                            " cannot be negative or zero."));
   }
 }
 
@@ -148,11 +150,11 @@ BetaDeviate::BetaDeviate(Expression* alpha, Expression* beta)
 
 void BetaDeviate::Validate() const {
   if (alpha_.value() <= 0) {
-    throw DomainError("The alpha shape parameter for Beta distribution"
-                      " cannot be negative or zero.");
+    SCRAM_THROW(DomainError("The alpha shape parameter for Beta distribution"
+                            " cannot be negative or zero."));
   } else if (beta_.value() <= 0) {
-    throw DomainError("The beta shape parameter for Beta distribution"
-                      " cannot be negative or zero.");
+    SCRAM_THROW(DomainError("The beta shape parameter for Beta distribution"
+                            " cannot be negative or zero."));
   }
 }
 
@@ -171,8 +173,8 @@ Histogram::Histogram(std::vector<Expression*> boundaries,
     : RandomDeviate(std::move(boundaries)) {  // Partial registration!
   int num_intervals = Expression::args().size() - 1;
   if (weights.size() != num_intervals) {
-    throw ValidityError("The number of weights is not equal to the number"
-                        " of intervals.");
+    SCRAM_THROW(ValidityError("The number of weights is not equal to the number"
+                              " of intervals."));
   }
 
   // Complete the argument registration.
@@ -186,13 +188,13 @@ Histogram::Histogram(std::vector<Expression*> boundaries,
 
 void Histogram::Validate() const {
   if (ext::any_of(weights_, [](const auto& expr) { return expr->value() < 0; }))
-    throw ValidityError("Histogram weights cannot be negative.");
+    SCRAM_THROW(ValidityError("Histogram weights cannot be negative."));
 
   if (!boost::is_sorted(boundaries_, [](const auto& lhs, const auto& rhs) {
         return lhs->value() <= rhs->value();
       })) {
-    throw ValidityError("Histogram upper boundaries are not strictly"
-                        " increasing.");
+    SCRAM_THROW(ValidityError("Histogram upper boundaries are not strictly"
+                              " increasing."));
   }
 }
 

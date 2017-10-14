@@ -56,7 +56,7 @@ Config::Config(const std::string& config_file) {
   static xml::Validator validator(Env::config_schema());
 
   if (fs::exists(config_file) == false) {
-    throw IOError("The configuration file does not exist.")
+    SCRAM_THROW(IOError("The configuration file does not exist."))
         << boost::errinfo_file_name(config_file);
   }
 

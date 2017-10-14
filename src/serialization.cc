@@ -40,7 +40,7 @@ void Serialize(const Model& model, const std::string& file) {
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
       std::fopen(file.c_str(), "w"), &std::fclose);
   if (!fp) {
-    throw IOError("Cannot write the output file for serialization.")
+    SCRAM_THROW(IOError("Cannot write the output file for serialization."))
         << boost::errinfo_file_name(file) << boost::errinfo_errno(errno)
         << boost::errinfo_file_open_mode("w");
   }

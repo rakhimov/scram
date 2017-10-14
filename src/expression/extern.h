@@ -211,7 +211,8 @@ class ExternExpression
       : ExpressionFormula<ExternExpression>(std::move(args)),
         extern_function_(*extern_function) {
     if (Expression::args().size() != sizeof...(Args))
-      throw ValidityError("The number of function arguments does not match.");
+      SCRAM_THROW(
+          ValidityError("The number of function arguments does not match."));
   }
 
   /// Computes the extern function with the given evaluator for arguments.

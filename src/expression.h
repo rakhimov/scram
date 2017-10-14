@@ -238,7 +238,7 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
   explicit NaryExpression(std::vector<Expression*> args)
       : ExpressionFormula<NaryExpression<T, -1>>(std::move(args)) {
     if (Expression::args().size() < 2)
-      throw ValidityError("Expression requires 2 or more arguments.");
+      SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."));
   }
 
   void Validate() const override {}
@@ -287,12 +287,12 @@ inline void EnsureProbability(Expression* expression,
                               const char* type = "probability") {
   double value = expression->value();
   if (value < 0 || value > 1)
-    throw DomainError("Invalid " + std::string(type) + " value for " +
-                      description);
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " value for " +
+                            description));
 
   if (IsProbability(expression->interval()) == false)
-    throw DomainError("Invalid " + std::string(type) + " sample domain for " +
-                      description);
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) +
+                            " sample domain for " + description));
 }
 
 /// Ensures that expression yields positive (> 0) values.
@@ -304,10 +304,10 @@ inline void EnsureProbability(Expression* expression,
 inline void EnsurePositive(Expression* expression,
                            const std::string& description) {
   if (expression->value() <= 0)
-    throw DomainError(description + " argument value must be positive.");
+    SCRAM_THROW(DomainError(description + " argument value must be positive."));
   if (IsPositive(expression->interval()) == false)
-    throw DomainError(description +
-                      " argument sample domain must be positive.");
+    SCRAM_THROW(
+        DomainError(description + " argument sample domain must be positive."));
 }
 
 /// Ensures that expression yields non-negative (>= 0) values.
@@ -319,10 +319,11 @@ inline void EnsurePositive(Expression* expression,
 inline void EnsureNonNegative(Expression* expression,
                               const std::string& description) {
   if (expression->value() < 0)
-    throw DomainError(description + " argument value cannot be negative.");
+    SCRAM_THROW(
+        DomainError(description + " argument value cannot be negative."));
   if (IsNonNegative(expression->interval()) == false)
-    throw DomainError(description +
-                      " argument sample cannot have negative values.");
+    SCRAM_THROW(DomainError(description +
+                            " argument sample cannot have negative values."));
 }
 
 /// Ensures that expression values are within the interval.
@@ -339,14 +340,14 @@ inline void EnsureWithin(Expression* expression, const Interval& interval,
     std::stringstream ss;
     ss << type << " argument value [" << arg_value << "] must be in "
        << interval << ".";
-    throw DomainError(ss.str());
+    SCRAM_THROW(DomainError(ss.str()));
   }
   Interval arg_interval = expression->interval();
   if (!boost::icl::within(arg_interval, interval)) {
     std::stringstream ss;
     ss << type << " argument sample domain " << arg_interval << " must be in "
        << interval << ".";
-    throw DomainError(ss.str());
+    SCRAM_THROW(DomainError(ss.str()));
   }
 }
 

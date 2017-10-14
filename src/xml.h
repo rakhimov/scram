@@ -85,8 +85,8 @@ inline int CastValue<int>(const xml::string_view& value) {
   int len = end_char - value.data();
   if (len != value.size() || ret > std::numeric_limits<int>::max() ||
       ret < std::numeric_limits<int>::min())
-    throw ValidityError("Failed to interpret '" + value.to_string() +
-                        "' to 'int'.");
+    SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+                              "' to 'int'."));
   return ret;
 }
 
@@ -97,8 +97,8 @@ inline double CastValue<double>(const xml::string_view& value) {
   double ret = std::strtod(value.data(), &end_char);
   int len = end_char - value.data();
   if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
-    throw ValidityError("Failed to interpret '" + value.to_string() +
-                        "' to 'double'.");
+    SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+                              "' to 'double'."));
   return ret;
 }
 
@@ -109,8 +109,8 @@ inline bool CastValue<bool>(const xml::string_view& value) {
     return true;
   if (value == "false" || value == "0")
     return false;
-  throw ValidityError("Failed to interpret '" + value.to_string() +
-                      "' to 'bool'.");
+  SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+                            "' to 'bool'."));
 }
 
 /// Reinterprets the XML library UTF-8 string into C string.
@@ -443,7 +443,7 @@ class Validator {
                                     const_cast<xmlDoc*>(doc.get()));
     /// @todo Provide validation error messages.
     if (ret > 0)
-      throw ValidityError("Document failed schema validation:\n");
+      SCRAM_THROW(ValidityError("Document failed schema validation:\n"));
     assert(ret == 0);  ///< Handle XML internal errors.
   }
 
@@ -475,10 +475,10 @@ inline Document Parse(const std::string& file_path,
                       Validator* validator = nullptr) {
   xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
   if (!doc)
-      throw ValidityError("XML file is invalid:\n");
+    SCRAM_THROW(ValidityError("XML file is invalid:\n"));
   Document manager(doc);
   if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0)
-    throw ValidityError("XML Xinclude substitutions are failed.");
+    SCRAM_THROW(ValidityError("XML Xinclude substitutions are failed."));
   if (validator)
     validator->validate(manager);
   return manager;
