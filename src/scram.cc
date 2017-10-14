@@ -29,6 +29,7 @@
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 
+#include <libxml/parser.h>  // xmlInitParser, xmlCleanupParser
 #include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
 
 #include "config.h"
@@ -293,6 +294,11 @@ void RunScram(const po::variables_map& vm) {
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
   LIBXML_TEST_VERSION
+
+  struct XmlInit {
+    XmlInit() { xmlInitParser(); }
+    ~XmlInit() { xmlCleanupParser(); }
+  } xml_memory_guard;
 
   try {
     // Parse command-line options.
