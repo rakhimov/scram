@@ -114,6 +114,9 @@ struct SettingsError : public Error {
 
 namespace mef {  // MEF specific errors.
 
+/// The MEF container element as namespace.
+using errinfo_container = boost::error_info<struct tag_contianer, std::string>;
+
 /// For validating input parameters or user arguments.
 struct ValidityError : public Error {
   using Error::Error;

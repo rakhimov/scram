@@ -310,11 +310,12 @@ int main(int argc, char* argv[]) {
 
 #ifdef NDEBUG
   } catch (const scram::IOError& err) {
-    std::cerr << boost::core::demangled_name(typeid(err)) << "\n";
+    LOG(scram::DEBUG1) << boost::diagnostic_information(err);
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
     const std::string* filename =
         boost::get_error_info<boost::errinfo_file_name>(err);
     assert(filename);
-    std::cerr << "\nFile: " << *filename << "\n";
+    std::cerr << "File: " << *filename << "\n";
     if (const std::string* mode =
             boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
       std::cerr << "Open mode: " << *mode << "\n";
@@ -327,12 +328,17 @@ int main(int argc, char* argv[]) {
     std::cerr << "\n" << err.what() << std::endl;
     return 1;
   } catch (const scram::Error& err) {
-    std::cerr << boost::core::demangled_name(typeid(err)) << "\n";
+    LOG(scram::DEBUG1) << boost::diagnostic_information(err);
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
     if (const std::string* filename =
             boost::get_error_info<boost::errinfo_file_name>(err)) {
-      std::cerr << "\nFile: " << *filename << "\n";
+      std::cerr << "File: " << *filename << "\n";
       if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
         std::cerr << "Line: " << *line << "\n";
+    }
+    if (const std::string* container =
+            boost::get_error_info<scram::mef::errinfo_container>(err)) {
+      std::cerr << "MEF Container: " << *container << "\n";
     }
     std::cerr << "\n" << err.what() << std::endl;
     return 1;
