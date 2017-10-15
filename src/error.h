@@ -127,6 +127,16 @@ struct DomainError : public ValidityError {
 
 namespace xml {
 
+/// XML parsing errors.
+struct ParseError : public Error {
+  using Error::Error;
+};
+
+/// XInclude resolution issues.
+struct XIncludeError : public Error {
+  using Error::Error;
+};
+
 /// XML document validity errors.
 struct ValidityError : public Error {
   using Error::Error;

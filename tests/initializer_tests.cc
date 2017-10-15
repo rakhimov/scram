@@ -30,7 +30,7 @@ namespace test {
 TEST(InitializerTest, XMLFormatting) {
   EXPECT_THROW(Initializer({"./share/scram/input/xml_formatting_error.xml"},
                            core::Settings()),
-               xml::ValidityError);
+               xml::ParseError);
 }
 
 // Test the response for non-existent file.
@@ -204,7 +204,7 @@ TEST(InitializerTest, IncorrectInclude) {
   const char* correct_inputs[] = {"xinclude_no_file.xml", "xinclude_cycle.xml"};
   for (const auto& input : correct_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings()),
-                 xml::ValidityError)
+                 xml::XIncludeError)
         << " Filename: " << input;
   }
 }
