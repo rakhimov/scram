@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QString>
 
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
 
 #include "mainwindow.h"
@@ -98,10 +99,11 @@ public:
         try {
             return QApplication::notify(receiver, event);
         } catch (const scram::Error &err) {
-            qCritical("%s", err.what());
+            std::string message = boost::diagnostic_information(err);
+            qCritical("%s", message.c_str());
             QMessageBox::critical(nullptr,
                                   QStringLiteral("Internal SCRAM Error"),
-                                  QString::fromUtf8(err.what()));
+                                  QString::fromStdString(message));
         } catch (const std::exception &err) {
             qCritical("%s", err.what());
             QMessageBox::critical(nullptr,
@@ -161,10 +163,12 @@ void terminateHandler() noexcept
     try {
         std::rethrow_exception(std::current_exception());
     } catch (const scram::Error &err) {
-        error = QStringLiteral("SCRAM exception: %1")
-                    .arg(QString::fromUtf8(err.what()));
+        std::string message = boost::diagnostic_information(err);
+        qCritical("%s", message.c_str());
+        error = QStringLiteral("SCRAM exception:\n%1")
+                    .arg(QString::fromStdString(message));
     } catch (const std::exception &err) {
-        error = QStringLiteral("Standard exception: %1")
+        error = QStringLiteral("Standard exception:\n%1")
                     .arg(QString::fromUtf8(err.what()));
     } catch (...) {
         error = QStringLiteral("Exception of unknown type without a message.");
