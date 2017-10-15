@@ -18,6 +18,8 @@
 /// @file scram.cc
 /// Main entrance.
 
+#include <cstdarg>
+#include <cstdio>  // vsnprintf
 #include <cstring>  // strerror
 
 #include <iostream>
@@ -30,6 +32,7 @@
 #include <boost/program_options.hpp>
 
 #include <libxml/parser.h>  // xmlInitParser, xmlCleanupParser
+#include <libxml/xmlerror.h>  // initGenericErrorDefaultFunc
 #include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
 
 #include "config.h"
@@ -283,6 +286,36 @@ void RunScram(const po::variables_map& vm) {
   }
 }
 
+/// Callback function to redirect XML library error/warning messages to logging.
+/// Otherwise, the messages are printed to the standard error.
+///
+/// @param[in] msg  The printf-style format string.
+/// @param[in] ...  The variadic arguments for the format string.
+///
+/// @pre The library strictly follows validity conditions of printf.
+void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
+  std::va_list args;
+  va_start(args, msg);
+
+  struct VAListCloser {
+    ~VAListCloser() { va_end(args_); }
+    std::va_list& args_;
+  } args_closer{args};
+
+  std::va_list args_for_nchar;  // Only used to determine the string length.
+  va_copy(args_for_nchar, args);
+  int nchar = std::vsnprintf(nullptr, 0, msg, args_for_nchar);
+  va_end(args_for_nchar);
+  if (nchar < 0) {
+    LOG(scram::ERROR) << "String formatting failure: " << std::strerror(errno);
+    return;
+  }
+
+  std::vector<char> buffer(nchar + /*null terminator*/ 1);
+  std::vsnprintf(buffer.data(), buffer.size(), msg, args);
+  LOG(scram::WARNING) << buffer.data();
+}
+
 }  // namespace
 
 /// Command-line SCRAM entrance.
@@ -299,6 +332,9 @@ int main(int argc, char* argv[]) {
     XmlInit() { xmlInitParser(); }
     ~XmlInit() { xmlCleanupParser(); }
   } xml_memory_guard;
+
+  xmlGenericErrorFunc xml_error_printer = LogXmlError;
+  initGenericErrorDefaultFunc(&xml_error_printer);
 
   try {
     // Parse command-line options.
