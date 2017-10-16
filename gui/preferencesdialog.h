@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QTimer>
 #include <QUndoStack>
 
 namespace Ui {
@@ -37,6 +38,7 @@ class PreferencesDialog : public QDialog
 
 public:
     explicit PreferencesDialog(QSettings *preferences, QUndoStack *undoStack,
+                               QTimer *autoSaveTimer,
                                QWidget *parent = nullptr);
     ~PreferencesDialog();
 

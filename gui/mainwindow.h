@@ -31,6 +31,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QSettings>
+#include <QTimer>
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
@@ -76,6 +77,12 @@ private slots:
      * @brief Opens model files.
      */
     void openFiles(QString directory = QDir::homePath());
+
+    /**
+     * @brief Implicitly saves the modified model
+     *        only if the destination is available.
+     */
+    void autoSaveModel();
 
     /**
      * @brief Saves the project to a file.
@@ -195,14 +202,15 @@ private:
     QAction *m_undoAction;
     QAction *m_redoAction;
     QUndoStack *m_undoStack;
+    QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     QLineEdit *m_searchBar;
+    QTimer *m_autoSaveTimer;
     QSettings m_preferences;
 
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
-    QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
     std::unordered_map<QTreeWidgetItem *, std::function<void()>>
         m_reportActions; ///< Actions on elements of the report tree widget.

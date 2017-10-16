@@ -151,7 +151,8 @@ QTableWidgetItem *constructTableItem(QVariant data)
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_undoStack(new QUndoStack(this)),
-      m_zoomBox(new QComboBox)
+      m_zoomBox(new QComboBox),  // Will be owned by the tool bar later.
+      m_autoSaveTimer(new QTimer(this))
 {
     ui->setupUi(this);
 
@@ -253,6 +254,8 @@ MainWindow::MainWindow(QWidget *parent)
                 if (m_analysis)
                     resetReportWidget(nullptr);
             });
+    connect(m_autoSaveTimer, &QTimer::timeout, this,
+            &MainWindow::autoSaveModel);
 
     loadPreferences();
 }
@@ -400,7 +403,8 @@ void MainWindow::setupActions()
         }
     });
     connect(ui->actionPreferences, &QAction::triggered, this, [this] {
-        PreferencesDialog dialog(&m_preferences, m_undoStack, this);
+        PreferencesDialog dialog(&m_preferences, m_undoStack, m_autoSaveTimer,
+                                 this);
         dialog.exec();
     });
 
@@ -447,6 +451,11 @@ void MainWindow::loadPreferences()
 
     m_undoStack->setUndoLimit(
         m_preferences.value(QStringLiteral("undoLimit"), 0).toInt());
+
+    GUI_ASSERT(m_autoSaveTimer->isActive() == false, );
+    int interval = m_preferences.value(QStringLiteral("autoSave")).toInt();
+    if (interval)
+        m_autoSaveTimer->start(interval);
 }
 
 void MainWindow::savePreferences()
@@ -494,6 +503,13 @@ void MainWindow::openFiles(QString directory)
     for (const auto &filename : filenames)
         inputFiles.push_back(filename.toStdString());
     addInputFiles(inputFiles);
+}
+
+void MainWindow::autoSaveModel()
+{
+    if (!isWindowModified() || m_inputFiles.empty() || m_inputFiles.size() > 1)
+        return;
+    saveToFile(m_inputFiles.front());
 }
 
 void MainWindow::saveModel()

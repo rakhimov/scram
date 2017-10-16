@@ -24,7 +24,9 @@ namespace scram {
 namespace gui {
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
-                                     QUndoStack *undoStack, QWidget *parent)
+                                     QUndoStack *undoStack,
+                                     QTimer *autoSaveTimer,
+                                     QWidget *parent)
     : QDialog(parent), ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
@@ -33,7 +35,6 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
         ui->checkUndoLimit->setChecked(true);
         ui->undoLimitBox->setValue(undoStack->undoLimit());
     }
-
     auto setUndoLimit = [preferences, undoStack](int undoLimit) {
         undoStack->setUndoLimit(undoLimit);
         preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
@@ -43,6 +44,27 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
     connect(ui->checkUndoLimit, &QCheckBox::toggled, undoStack,
             [this, setUndoLimit](bool checked) {
                 setUndoLimit(checked ? ui->undoLimitBox->value() : 0);
+            });
+
+    if (autoSaveTimer->isActive()) {
+        ui->checkAutoSave->setChecked(true);
+        ui->autoSaveBox->setValue(autoSaveTimer->interval() / 60000);
+    }
+    auto setAutoSave = [preferences, autoSaveTimer](int intervalMin) {
+        if (!intervalMin) {
+            autoSaveTimer->stop();
+            preferences->remove(QStringLiteral("autoSave"));
+        } else {
+            int intervalMs = intervalMin * 60000;
+            autoSaveTimer->start(intervalMs);
+            preferences->setValue(QStringLiteral("autoSave"), intervalMs);
+        }
+    };
+    connect(ui->autoSaveBox, OVERLOAD(QSpinBox, valueChanged, int),
+            autoSaveTimer, setAutoSave);
+    connect(ui->checkAutoSave, &QCheckBox::toggled, autoSaveTimer,
+            [this, setAutoSave](bool checked) {
+                setAutoSave(checked ? ui->autoSaveBox->value() : 0);
             });
 }
 
