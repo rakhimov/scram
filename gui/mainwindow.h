@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QSettings>
 #include <QTreeWidgetItem>
 #include <QUndoStack>
 
@@ -99,8 +100,12 @@ private slots:
     void addElement();
 
 private:
+    static const int LAYOUT_VERSION = 0; ///< Layout compatibility version.
+
     void setupStatusBar(); ///< Setup widgets in the status bar.
     void setupActions(); ///< Setup all the actions with connections.
+    void loadPreferences(); ///< Loads the persistent application preferences.
+    void savePreferences(); ///< Writes the 'unsaved' application preferences.
 
     void setupZoomableView(ZoomableView *view); ///< Connect to actions.
 
@@ -191,6 +196,7 @@ private:
     QAction *m_redoAction;
     QUndoStack *m_undoStack;
     QLineEdit *m_searchBar;
+    QSettings m_preferences;
 
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.

@@ -253,6 +253,8 @@ MainWindow::MainWindow(QWidget *parent)
                 if (m_analysis)
                     resetReportWidget(nullptr);
             });
+
+    loadPreferences();
 }
 
 MainWindow::~MainWindow() = default;
@@ -434,6 +436,24 @@ void MainWindow::setupActions()
     });
 }
 
+void MainWindow::loadPreferences()
+{
+    m_preferences.beginGroup(QStringLiteral("MainWindow"));
+    restoreGeometry(
+        m_preferences.value(QStringLiteral("geometry")).toByteArray());
+    restoreState(m_preferences.value(QStringLiteral("state")).toByteArray(),
+                 LAYOUT_VERSION);
+    m_preferences.endGroup();
+}
+
+void MainWindow::savePreferences()
+{
+    m_preferences.beginGroup(QStringLiteral("MainWindow"));
+    m_preferences.setValue(QStringLiteral("geometry"), saveGeometry());
+    m_preferences.setValue(QStringLiteral("state"), saveState(LAYOUT_VERSION));
+    m_preferences.endGroup();
+}
+
 void MainWindow::createNewModel()
 {
     if (isWindowModified()) {
@@ -509,6 +529,8 @@ void MainWindow::saveToFile(std::string destination)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    savePreferences();
+
     if (!isWindowModified())
         return event->accept();
 
