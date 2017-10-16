@@ -154,6 +154,8 @@
     <addaction name="actionRemoveElement"/>
     <addaction name="separator"/>
     <addaction name="actionRenameModel"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -700,6 +702,14 @@
    </property>
    <property name="text">
     <string>Re&amp;name Model</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="icon">
+    <iconset theme="preferences-system"/>
+   </property>
+   <property name="text">
+    <string>&amp;Preferences...</string>
    </property>
   </action>
  </widget>
