@@ -400,7 +400,7 @@ void MainWindow::setupActions()
         }
     });
     connect(ui->actionPreferences, &QAction::triggered, this, [this] {
-        PreferencesDialog dialog(this);
+        PreferencesDialog dialog(&m_preferences, m_undoStack, this);
         dialog.exec();
     });
 
@@ -444,6 +444,9 @@ void MainWindow::loadPreferences()
     restoreState(m_preferences.value(QStringLiteral("state")).toByteArray(),
                  LAYOUT_VERSION);
     m_preferences.endGroup();
+
+    m_undoStack->setUndoLimit(
+        m_preferences.value(QStringLiteral("undoLimit"), 0).toInt());
 }
 
 void MainWindow::savePreferences()

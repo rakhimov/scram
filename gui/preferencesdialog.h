@@ -21,6 +21,8 @@
 #include <memory>
 
 #include <QDialog>
+#include <QSettings>
+#include <QUndoStack>
 
 namespace Ui {
 class PreferencesDialog;
@@ -34,7 +36,8 @@ class PreferencesDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreferencesDialog(QWidget *parent = nullptr);
+    explicit PreferencesDialog(QSettings *preferences, QUndoStack *undoStack,
+                               QWidget *parent = nullptr);
     ~PreferencesDialog();
 
 private:

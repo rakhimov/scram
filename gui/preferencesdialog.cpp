@@ -18,13 +18,32 @@
 #include "preferencesdialog.h"
 #include "ui_preferencesdialog.h"
 
+#include "overload.h"
+
 namespace scram {
 namespace gui {
 
-PreferencesDialog::PreferencesDialog(QWidget *parent)
+PreferencesDialog::PreferencesDialog(QSettings *preferences,
+                                     QUndoStack *undoStack, QWidget *parent)
     : QDialog(parent), ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
+
+    if (undoStack->undoLimit()) {
+        ui->checkUndoLimit->setChecked(true);
+        ui->undoLimitBox->setValue(undoStack->undoLimit());
+    }
+
+    auto setUndoLimit = [preferences, undoStack](int undoLimit) {
+        undoStack->setUndoLimit(undoLimit);
+        preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
+    };
+    connect(ui->undoLimitBox, OVERLOAD(QSpinBox, valueChanged, int), undoStack,
+            setUndoLimit);
+    connect(ui->checkUndoLimit, &QCheckBox::toggled, undoStack,
+            [this, setUndoLimit](bool checked) {
+                setUndoLimit(checked ? ui->undoLimitBox->value() : 0);
+            });
 }
 
 PreferencesDialog::~PreferencesDialog() = default;
