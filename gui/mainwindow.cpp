@@ -52,6 +52,7 @@
 #include "diagram.h"
 #include "guiassert.h"
 #include "modeltree.h"
+#include "preferencesdialog.h"
 #include "printable.h"
 #include "settingsdialog.h"
 #include "validator.h"
@@ -395,6 +396,10 @@ void MainWindow::setupActions()
                                                             m_guiModel.get()));
             }
         }
+    });
+    connect(ui->actionPreferences, &QAction::triggered, this, [this] {
+        PreferencesDialog dialog(this);
+        dialog.exec();
     });
 
     // Undo/Redo actions
