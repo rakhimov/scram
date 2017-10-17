@@ -18,6 +18,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <string>
@@ -195,6 +196,18 @@ private:
      */
     void saveToFile(std::string destination);
 
+    /**
+     * Updates the recent file tracking.
+     *
+     * @param filePaths  The list to append to the recent file list.
+     *                   An empty list to clear the recent file list.
+     *
+     * @pre The list contains valid absolute input file paths.
+     *
+     * @note This does not store the result path list into persistent settings.
+     */
+    void updateRecentFiles(QStringList filePaths);
+
     /// Override to save the model before closing the application.
     void closeEvent(QCloseEvent *event) override;
 
@@ -206,6 +219,7 @@ private:
     QLineEdit *m_searchBar;
     QTimer *m_autoSaveTimer;
     QSettings m_preferences;
+    std::array<QAction *, 5> m_recentFileActions;
 
     std::vector<std::string> m_inputFiles;  ///< The project model files.
     core::Settings m_settings; ///< The analysis settings.

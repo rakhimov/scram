@@ -368,7 +368,7 @@ void MainWindow::setupActions()
 
     ui->actionOpenFiles->setShortcut(QKeySequence::Open);
     connect(ui->actionOpenFiles, &QAction::triggered, this,
-            [this]() { openFiles(); });
+            [this] { openFiles(); });
 
     ui->actionSave->setShortcut(QKeySequence::Save);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveModel);
@@ -381,6 +381,21 @@ void MainWindow::setupActions()
 
     connect(ui->actionExportReportAs, &QAction::triggered, this,
             &MainWindow::exportReportAs);
+
+    QAction *menuRecentFilesStart = ui->menuRecentFiles->actions().front();
+    for (QAction *&fileAction : m_recentFileActions) {
+        fileAction = new QAction(this);
+        fileAction->setVisible(false);
+        ui->menuRecentFiles->insertAction(menuRecentFilesStart, fileAction);
+        connect(fileAction, &QAction::triggered, this, [this, fileAction] {
+            auto filePath = fileAction->text();
+            GUI_ASSERT(!filePath.isEmpty(), );
+            addInputFiles({filePath.toStdString()});
+            updateRecentFiles({filePath});
+        });
+    }
+    connect(ui->actionClearList, &QAction::triggered, this,
+            [this] { updateRecentFiles({}); });
 
     // View menu actions.
     ui->actionZoomIn->setShortcut(QKeySequence::ZoomIn);
@@ -456,6 +471,9 @@ void MainWindow::loadPreferences()
     int interval = m_preferences.value(QStringLiteral("autoSave")).toInt();
     if (interval)
         m_autoSaveTimer->start(interval);
+
+    updateRecentFiles(
+        m_preferences.value(QStringLiteral("recentFiles")).toStringList());
 }
 
 void MainWindow::savePreferences()
@@ -464,6 +482,14 @@ void MainWindow::savePreferences()
     m_preferences.setValue(QStringLiteral("geometry"), saveGeometry());
     m_preferences.setValue(QStringLiteral("state"), saveState(LAYOUT_VERSION));
     m_preferences.endGroup();
+
+    QStringList fileList;
+    for (QAction* fileAction : m_recentFileActions) {
+        if (!fileAction->isVisible())
+            break;
+        fileList.push_back(fileAction->text());
+    }
+    m_preferences.setValue(QStringLiteral("recentFiles"), fileList);
 }
 
 void MainWindow::createNewModel()
@@ -503,6 +529,7 @@ void MainWindow::openFiles(QString directory)
     for (const auto &filename : filenames)
         inputFiles.push_back(filename.toStdString());
     addInputFiles(inputFiles);
+    updateRecentFiles(filenames);
 }
 
 void MainWindow::autoSaveModel()
@@ -544,6 +571,39 @@ void MainWindow::saveToFile(std::string destination)
     m_undoStack->setClean();
     m_inputFiles.clear();
     m_inputFiles.push_back(std::move(destination));
+}
+
+void MainWindow::updateRecentFiles(QStringList filePaths)
+{
+    ui->menuRecentFiles->setEnabled(!filePaths.empty());
+    if (filePaths.empty()) {
+        for (QAction *fileAction : m_recentFileActions)
+            fileAction->setVisible(false);
+        return;
+    }
+
+    int remainingCapacity = m_recentFileActions.size() - filePaths.size();
+    for (QAction *fileAction : m_recentFileActions) {
+        if (remainingCapacity <= 0)
+            break;
+        if (!fileAction->isVisible())
+            break;
+        if (filePaths.contains(fileAction->text()))
+            continue;
+        filePaths.push_back(fileAction->text());
+        --remainingCapacity;
+    }
+    auto it = m_recentFileActions.begin();
+    const auto &constFilePaths = filePaths; // Detach prevention w/ for-each.
+    for (const QString &filePath : constFilePaths) {
+        if (it == m_recentFileActions.end())
+            break;
+        (*it)->setText(filePath);
+        (*it)->setVisible(true);
+        ++it;
+    }
+    for (; it != m_recentFileActions.end(); ++it)
+        (*it)->setVisible(false);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
