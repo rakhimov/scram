@@ -1406,7 +1406,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         GUI_ASSERT(result.fault_tree_analysis,);
         auto *productItem = new QTreeWidgetItem(
             //: Cut-sets or prime-implicants (depending on the settings).
-            {tr("Products: %L1")
+            {tr("Products (%L1)")
                  .arg(result.fault_tree_analysis->products().size())});
         widgetItem->addChild(productItem);
         m_reportActions.emplace(productItem, [this, &result, name] {
@@ -1452,14 +1452,14 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
 
         if (result.probability_analysis) {
             widgetItem->addChild(new QTreeWidgetItem(
-                {tr("Probability: %1")
+                {tr("Probability (%1)")
                      .arg(result.probability_analysis->p_total())}));
         }
 
         if (result.importance_analysis) {
             auto *importanceItem = new QTreeWidgetItem(
                 //: The number of important events w/ factors defined.
-                {tr("Importance Factors: %L1")
+                {tr("Importance Factors (%L1)")
                      .arg(result.importance_analysis->importance().size())});
             widgetItem->addChild(importanceItem);
             m_reportActions.emplace(importanceItem, [this, &result, name] {
