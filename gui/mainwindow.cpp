@@ -172,16 +172,16 @@ MainWindow::MainWindow(QWidget *parent)
     setupStatusBar();
     setupActions();
 
-    auto *startPage = new StartPage;
+    auto *startPage = new StartPage(this);
+    QString examplesDir
+        = QString::fromStdString(Env::install_dir() + "/share/scram/input");
+    startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
     connect(startPage->newModelButton, &QAbstractButton::clicked,
             ui->actionNewModel, &QAction::trigger);
     connect(startPage->openModelButton, &QAbstractButton::clicked,
             ui->actionOpenFiles, &QAction::trigger);
     connect(startPage->exampleModelsButton, &QAbstractButton::clicked, this,
-            [this]() {
-                openFiles(QString::fromStdString(Env::install_dir()
-                                                 + "/share/scram/input"));
-            });
+            [this, examplesDir] { openFiles(examplesDir); });
     ui->tabWidget->addTab(startPage, startPage->windowIcon(),
                           startPage->windowTitle());
 
