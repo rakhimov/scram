@@ -50,6 +50,22 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
                 m_faultTrees.erase(it);
                 endRemoveRows();
             });
+
+    setupElementCountConnections<mef::FaultTree, Row::FaultTrees>();
+    setupElementCountConnections<model::Gate, Row::Gates>();
+    setupElementCountConnections<model::BasicEvent, Row::BasicEvents>();
+    setupElementCountConnections<model::HouseEvent, Row::HouseEvents>();
+}
+
+template <class T, ModelTree::Row R>
+void ModelTree::setupElementCountConnections()
+{
+    auto tracker = [this] {
+        QModelIndex index = createIndex(static_cast<int>(R), 0, nullptr);
+        emit dataChanged(index, index);
+    };
+    connect(m_model, OVERLOAD(model::Model, added, T *), this, tracker);
+    connect(m_model, OVERLOAD(model::Model, removed, T *), this, tracker);
 }
 
 int ModelTree::rowCount(const QModelIndex &parent) const
@@ -102,16 +118,16 @@ QVariant ModelTree::data(const QModelIndex &index, int role) const
     switch (static_cast<Row>(index.row())) {
     case Row::FaultTrees:
         //: The parent item for collections of fault trees in the model.
-        return tr("Fault Trees");
+        return tr("Fault Trees (%L1)").arg(m_model->faultTrees().size());
     case Row::Gates:
         //: The table of gates.
-        return tr("Gates");
+        return tr("Gates (%L1)").arg(m_model->gates().size());
     case Row::BasicEvents:
         //: The table of basic events.
-        return tr("Basic Events");
+        return tr("Basic Events (%L1)").arg(m_model->basicEvents().size());
     case Row::HouseEvents:
         //: The table of house events.
-        return tr("House Events");
+        return tr("House Events (%L1)").arg(m_model->houseEvents().size());
     }
     GUI_ASSERT(false, {});
 }

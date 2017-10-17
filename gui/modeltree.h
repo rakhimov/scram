@@ -63,6 +63,13 @@ private:
         }
     };
 
+    /// Sets up count tracking connections for model element table changes.
+    ///
+    /// @tparam T  The element type in Model::added and Model::removed signals.
+    /// @tparam Row  The corresponding top row for the count data.
+    template <class T, Row R>
+    void setupElementCountConnections();
+
     model::Model *m_model;
     boost::container::flat_set<mef::FaultTree *, NameComparator> m_faultTrees;
 };
