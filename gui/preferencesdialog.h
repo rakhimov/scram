@@ -43,6 +43,9 @@ public:
     ~PreferencesDialog();
 
 private:
+    /// Language to locale mapping in the same order as presented in the dialog.
+    static const char* const m_languageToLocale[];
+
     std::unique_ptr<Ui::PreferencesDialog> ui;
 };
 

@@ -18,10 +18,19 @@
 #include "preferencesdialog.h"
 #include "ui_preferencesdialog.h"
 
+#include <string>
+
+#include <QMessageBox>
+
+#include <boost/range/algorithm.hpp>
+
+#include "guiassert.h"
 #include "overload.h"
 
 namespace scram {
 namespace gui {
+
+const char *const PreferencesDialog::m_languageToLocale[] = {"en", "ru_RU"};
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
@@ -30,6 +39,27 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
     : QDialog(parent), ui(new Ui::PreferencesDialog)
 {
     ui->setupUi(this);
+
+    GUI_ASSERT(std::distance(std::begin(m_languageToLocale),
+                             std::end(m_languageToLocale))
+                   == ui->languageBox->count(), );
+    auto it = boost::find(m_languageToLocale,
+                          preferences->value(QStringLiteral("language"))
+                              .toString()
+                              .toStdString());
+    auto it_end = std::end(m_languageToLocale);
+    if (it != it_end)
+        ui->languageBox->setCurrentIndex(std::distance(m_languageToLocale, it));
+    connect(ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+            preferences, [this, preferences](int index) {
+                QMessageBox::information(
+                    this, tr("Restart Required"),
+                    tr("The language change will take effect after an "
+                       "application restart."));
+                preferences->setValue(
+                    QStringLiteral("language"),
+                    QString::fromLatin1(m_languageToLocale[index]));
+            });
 
     if (undoStack->undoLimit()) {
         ui->checkUndoLimit->setChecked(true);
