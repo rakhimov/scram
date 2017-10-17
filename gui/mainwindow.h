@@ -115,6 +115,9 @@ private:
     void loadPreferences(); ///< Loads the persistent application preferences.
     void savePreferences(); ///< Writes the 'unsaved' application preferences.
 
+    /// @returns The model name to be used for a title (e.g., main window).
+    QString getModelNameForTitle();
+
     void setupZoomableView(ZoomableView *view); ///< Connect to actions.
 
     /// Connects print actions.

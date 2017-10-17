@@ -240,8 +240,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::configChanged, [this] {
         m_undoStack->clear();
-        setWindowTitle(QStringLiteral("%1[*]").arg(
-            QString::fromStdString(m_model->name())));
+        setWindowTitle(QStringLiteral("%1[*]").arg(getModelNameForTitle()));
         ui->actionSaveAs->setEnabled(true);
         ui->actionAddElement->setEnabled(true);
         ui->actionRenameModel->setEnabled(true);
@@ -492,13 +491,19 @@ void MainWindow::savePreferences()
     m_preferences.setValue(QStringLiteral("recentFiles"), fileList);
 }
 
+QString MainWindow::getModelNameForTitle()
+{
+    return m_model->HasDefaultName() ? tr("Unnamed Model")
+                                     : QString::fromStdString(m_model->name());
+}
+
 void MainWindow::createNewModel()
 {
     if (isWindowModified()) {
         QMessageBox::StandardButton answer = QMessageBox::question(
             this, tr("Save Model?"),
             tr("Save changes to model '%1' before closing?")
-                .arg(QString::fromStdString(m_model->name())),
+                .arg(getModelNameForTitle()),
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save);
 
@@ -616,7 +621,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QMessageBox::StandardButton answer = QMessageBox::question(
         this, tr("Save Model?"),
         tr("Save changes to model '%1' before closing?")
-            .arg(QString::fromStdString(m_model->name())),
+            .arg(getModelNameForTitle()),
         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
         QMessageBox::Save);
 
@@ -1278,8 +1283,7 @@ void MainWindow::resetModelTree()
     delete oldModel;
 
     connect(m_guiModel.get(), &model::Model::modelNameChanged, this, [this] {
-        setWindowTitle(QStringLiteral("%1[*]").arg(
-            QString::fromStdString(m_model->name())));
+        setWindowTitle(QStringLiteral("%1[*]").arg(getModelNameForTitle()));
     });
 }
 
