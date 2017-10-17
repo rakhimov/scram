@@ -84,8 +84,19 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuRecentFiles">
+     <property name="title">
+      <string>Recent &amp;Files</string>
+     </property>
+     <property name="icon">
+      <iconset theme="document-open-recent"/>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionClearList"/>
+    </widget>
     <addaction name="actionNewModel"/>
     <addaction name="actionOpenFiles"/>
+    <addaction name="menuRecentFiles"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -692,6 +703,11 @@
    </property>
    <property name="text">
     <string>&amp;Preferences...</string>
+   </property>
+  </action>
+  <action name="actionClearList">
+   <property name="text">
+    <string>&amp;Clear List</string>
    </property>
   </action>
  </widget>
