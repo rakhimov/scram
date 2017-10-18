@@ -92,7 +92,8 @@
       <string>Recent &amp;Files</string>
      </property>
      <property name="icon">
-      <iconset theme="document-open-recent"/>
+      <iconset theme="document-open-recent">
+       <normaloff>.</normaloff>.</iconset>
      </property>
      <addaction name="separator"/>
      <addaction name="actionClearList"/>
@@ -575,7 +576,7 @@
     <string>Run Analysis</string>
    </property>
    <property name="shortcut">
-    <string>Alt+R</string>
+    <string notr="true">Alt+R</string>
    </property>
   </action>
   <action name="actionSettings">
@@ -593,7 +594,7 @@
     <string>Analysis Settings</string>
    </property>
    <property name="shortcut">
-    <string>Alt+S</string>
+    <string notr="true">Alt+S</string>
    </property>
   </action>
   <action name="actionModelToolBar">
@@ -702,7 +703,8 @@
   </action>
   <action name="actionPreferences">
    <property name="icon">
-    <iconset theme="preferences-system"/>
+    <iconset theme="preferences-system">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Preferences...</string>
