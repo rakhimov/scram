@@ -89,6 +89,16 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
     return 0;
 }
 
+/// Produces critical notification dialog
+/// for errors that are not expected to crash the application.
+void notifyError(const QString &title, const QString &text,
+                 const QString &detail = {}) noexcept
+{
+    QMessageBox message(QMessageBox::Critical, title, text, QMessageBox::Ok);
+    message.setDetailedText(detail);
+    message.exec();
+}
+
 /// Guards the application from crashes on escaped internal exceptions.
 class GuardedApplication : public QApplication {
 public:
@@ -101,19 +111,18 @@ public:
         } catch (const scram::Error &err) {
             std::string message = boost::diagnostic_information(err);
             qCritical("%s", message.c_str());
-            QMessageBox::critical(nullptr,
-                                  QStringLiteral("Internal SCRAM Error"),
-                                  QString::fromStdString(message));
+            notifyError(QStringLiteral("Internal SCRAM Error"),
+                        QStringLiteral("Uncaught exception."),
+                        QString::fromStdString(message));
         } catch (const std::exception &err) {
             qCritical("%s", err.what());
-            QMessageBox::critical(nullptr,
-                                  QStringLiteral("Internal Exception Error"),
-                                  QString::fromUtf8(err.what()));
+            notifyError(QStringLiteral("Internal Exception Error"),
+                        QStringLiteral("Uncaught foreign exception."),
+                        QString::fromUtf8(err.what()));
         } catch (...) {
             qCritical("Unknown exception type.");
-            QMessageBox::critical(nullptr,
-                                  QStringLiteral("Internal Exception Error"),
-                                  QStringLiteral("Unknown exception type."));
+            notifyError(QStringLiteral("Internal Exception Error"),
+                        QStringLiteral("Unknown exception type."));
         }
         return false;
     }
@@ -122,11 +131,12 @@ public:
 /// Produces the crash dialog with a given reasoning.
 /// The dialog allows access to other windows
 /// so that users may try saving the model before the crash.
-void crashDialog(const QString &text) noexcept
+void crashDialog(const QString &text, const QString &detail = {}) noexcept
 {
     QMessageBox message(QMessageBox::Critical,
                         QStringLiteral("Unrecoverable Internal Error"), text,
                         QMessageBox::Ok);
+    message.setDetailedText(detail);
     message.setWindowModality(Qt::WindowModal);
     message.exec();
 }
@@ -160,21 +170,22 @@ static const std::terminate_handler gDefaultTerminateHandler
 void terminateHandler() noexcept
 {
     QString error;
+    QString detail;
     try {
         std::rethrow_exception(std::current_exception());
     } catch (const scram::Error &err) {
         std::string message = boost::diagnostic_information(err);
         qCritical("%s", message.c_str());
-        error = QStringLiteral("SCRAM exception:\n%1")
-                    .arg(QString::fromStdString(message));
+        error = QStringLiteral("SCRAM exception.");
+        detail = QString::fromStdString(message);
     } catch (const std::exception &err) {
-        error = QStringLiteral("Standard exception:\n%1")
-                    .arg(QString::fromUtf8(err.what()));
+        error = QStringLiteral("Standard exception.");
+        detail = QString::fromUtf8(err.what());
     } catch (...) {
         error = QStringLiteral("Exception of unknown type without a message.");
     }
-    crashDialog(QStringLiteral("Exception no-throw contract violation:\n\n%1")
-                    .arg(error));
+    crashDialog(QStringLiteral("No-throw contract violation:\n%1").arg(error),
+                detail);
     gDefaultTerminateHandler();
 }
 
