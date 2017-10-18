@@ -28,11 +28,15 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QIcon>
+#include <QLibraryInfo>
 #include <QMessageBox>
+#include <QSettings>
 #include <QString>
+#include <QTranslator>
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include "mainwindow.h"
 
@@ -198,6 +202,23 @@ void installCrashHandlers() noexcept
     std::set_terminate(&terminateHandler);
 }
 
+/// @returns The UI language for the translator setup.
+QString getUiLanguage()
+{
+    /// @todo Discover available translations programmatically.
+    static const char *const availableLanguages[] = {"en", "ru_RU"};
+
+    QSettings preferences;
+    QString language = preferences.value(QStringLiteral("language")).toString();
+    if (!language.isEmpty())
+        return language;
+    QString system = QLocale::system().name();
+    auto it = boost::find(availableLanguages, system.toStdString());
+    if (it != std::end(availableLanguages))
+        return system;
+    return QStringLiteral("en");
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -220,6 +241,13 @@ int main(int argc, char *argv[])
 
     if (QIcon::themeName().isEmpty())
         QIcon::setThemeName(QStringLiteral("tango"));
+
+    QSettings preferences;
+    QString language = getUiLanguage();
+    QTranslator translator;
+    translator.load(QStringLiteral("qt_%1").arg(language),
+                    QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    app.installTranslator(&translator);
 
     scram::gui::MainWindow w;
     w.show();
