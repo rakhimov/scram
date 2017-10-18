@@ -40,6 +40,7 @@
 
 #include "mainwindow.h"
 
+#include "src/env.h"
 #include "src/error.h"
 #include "src/version.h"
 
@@ -247,6 +248,9 @@ int main(int argc, char *argv[])
     QTranslator translator;
     translator.load(QStringLiteral("qt_%1").arg(language),
                     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    translator.load(QStringLiteral("scramgui_%1").arg(language),
+                    QString::fromStdString(scram::Env::install_dir()
+                                           + "/share/scram/translations"));
     app.installTranslator(&translator);
 
     scram::gui::MainWindow w;
