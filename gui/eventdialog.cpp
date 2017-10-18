@@ -358,7 +358,7 @@ void EventDialog::validate()
                 tr("The event with name '%1' already exists.").arg(name));
             return;
         }
-    } catch (mef::UndefinedElement &) {}
+    } catch (const mef::UndefinedElement &) {}
 
     if (!tabFormula->isHidden() && hasFormulaArg(name)) {
         m_errorBar->showMessage(

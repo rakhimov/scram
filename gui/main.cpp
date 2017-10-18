@@ -64,7 +64,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
              "Project configuration file");
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
-    } catch (std::exception &err) {
+    } catch (const std::exception &err) {
         std::cerr << "Option error: " << err.what() << "\n\n"
                   << usage << "\n\n"
                   << desc << "\n";
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
             } else {
                 w.addInputFiles(inputFiles);
             }
-        } catch (boost::exception &) { assert(false); }
+        } catch (const boost::exception &) { assert(false); }
     }
     return app.exec();
 }

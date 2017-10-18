@@ -21,6 +21,7 @@
 #include "ui_startpage.h"
 
 #include <algorithm>
+#include <sstream>
 #include <type_traits>
 
 #include <QApplication>
@@ -34,6 +35,8 @@
 #include <QTableWidget>
 #include <QtConcurrent>
 #include <QtOpenGL>
+
+#include <boost/exception/get_error_info.hpp>
 
 #include "src/config.h"
 #include "src/env.h"
@@ -249,6 +252,76 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() = default;
 
+namespace { // Error message dialog for SCRAM exceptions.
+
+void displayError(const scram::IOError &err, const QString &text,
+                  QWidget *parent = nullptr)
+{
+    QMessageBox message(QMessageBox::Critical, QObject::tr("IO Error"), text,
+                        QMessageBox::Ok, parent);
+
+    const std::string *filename
+        = boost::get_error_info<boost::errinfo_file_name>(err);
+    GUI_ASSERT(filename, );
+    message.setInformativeText(
+        QObject::tr("File: %1").arg(QString::fromStdString(*filename)));
+
+    std::stringstream detail;
+    if (const std::string *mode
+            = boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
+        detail << "Open mode: " << *mode << "\n";
+    }
+    if (const int *errnum = boost::get_error_info<boost::errinfo_errno>(err)) {
+        detail << "Error code: " << *errnum << "\n";
+        detail << "Error string: " << std::strerror(*errnum) << "\n";
+    }
+    detail << "\n" << err.what() << std::endl;
+    message.setDetailedText(QString::fromStdString(detail.str()));
+
+    message.exec();
+}
+
+void displayError(const scram::Error &err, const QString &title,
+                  const QString &text, QWidget *parent = nullptr)
+{
+    QMessageBox message(QMessageBox::Critical, title, text, QMessageBox::Ok,
+                        parent);
+    QString info;
+    if (const std::string *filename
+            = boost::get_error_info<boost::errinfo_file_name>(err)) {
+        info.append(
+            QObject::tr("File: %1\n").arg(QString::fromStdString(*filename)));
+        if (const int *line
+                = boost::get_error_info<boost::errinfo_at_line>(err))
+            info.append(QObject::tr("Line: %1\n").arg(*line));
+    }
+    if (const std::string *container
+            = boost::get_error_info<scram::mef::errinfo_container>(err)) {
+        info.append(QObject::tr("MEF Container: %1\n")
+                        .arg(QString::fromStdString(*container)));
+    }
+    if (const std::string *xml_element
+            = boost::get_error_info<scram::xml::errinfo_element>(err)) {
+        info.append(QObject::tr("XML element: %1\n")
+                        .arg(QString::fromStdString(*xml_element)));
+    }
+    if (const std::string *xml_attribute
+        = boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+        info.append(QObject::tr("XML attribute: %1\n")
+                        .arg(QString::fromStdString(*xml_attribute)));
+    }
+    message.setInformativeText(info);
+
+    std::stringstream detail;
+    detail << boost::core::demangled_name(typeid(err)) << "\n\n";
+    detail << err.what() << std::endl;
+    message.setDetailedText(QString::fromStdString(detail.str()));
+
+    message.exec();
+}
+
+} // namespace
+
 bool MainWindow::setConfig(const std::string &configPath,
                            std::vector<std::string> inputFiles)
 {
@@ -260,9 +333,16 @@ bool MainWindow::setConfig(const std::string &configPath,
         if (!addInputFiles(inputFiles))
             return false;
         m_settings = config.settings();
-    } catch (scram::Error &err) {
-        QMessageBox::critical(this, tr("Configuration Error"),
-                              QString::fromUtf8(err.what()));
+    } catch (const scram::IOError &err) {
+        displayError(err, tr("Configuration file error"), this);
+        return false;
+    } catch (const scram::xml::Error &err) {
+        displayError(err, tr("XML Validity Error"),
+                     tr("Invalid configuration file"), this);
+        return false;
+    } catch (const scram::SettingsError &err) {
+        displayError(err, tr("Configuration Error"),
+                     tr("Invalid configurations"), this);
         return false;
     }
     return true;
@@ -299,11 +379,18 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 
         m_model = std::move(newModel);
         m_inputFiles = std::move(allInput);
-    } catch (scram::Error &err) {
-        QMessageBox::critical(this,
-                              //: The error upon initialization from a file.
-                              tr("Initialization Error"),
-                              QString::fromUtf8(err.what()));
+    } catch (const scram::IOError &err) {
+        displayError(err, tr("Input file error"), this);
+        return false;
+    } catch (const scram::xml::Error &err) {
+        displayError(err, tr("XML Validity Error"), tr("Invalid input file"),
+                     this);
+        return false;
+    } catch (const scram::mef::ValidityError &err) {
+        displayError(err,
+                     //: The error upon initialization from a file.
+                     tr("Initialization Error"),
+                     tr("Invalid input model"), this);
         return false;
     }
 
@@ -589,9 +676,8 @@ void MainWindow::saveToFile(std::string destination)
     GUI_ASSERT(m_model, );
     try {
         mef::Serialize(*m_model, destination);
-    } catch (Error &err) {
-        QMessageBox::critical(this, tr("Save Error", "error on saving to file"),
-                              QString::fromUtf8(err.what()));
+    } catch (const IOError &err) {
+        displayError(err, tr("Save error", "error on saving to file"), this);
         return;
     }
     m_undoStack->setClean();
@@ -666,9 +752,8 @@ void MainWindow::exportReportAs()
         return;
     try {
         Reporter().Report(*m_analysis, filename.toStdString());
-    } catch (Error &err) {
-        QMessageBox::critical(this, tr("Reporting Error"),
-                              QString::fromUtf8(err.what()));
+    } catch (const IOError &err) {
+        displayError(err, tr("Reporting error"), this);
     }
 }
 
@@ -955,7 +1040,7 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
     for (const std::string &arg : dialog.arguments()) {
         try {
             formula->AddArgument(m_model->GetEvent(arg));
-        } catch (mef::UndefinedElement &) {
+        } catch (const mef::UndefinedElement &) {
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
             formula->AddArgument(argEvent.get());
