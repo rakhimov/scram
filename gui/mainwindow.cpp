@@ -172,19 +172,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupStatusBar();
     setupActions();
 
-    auto *startPage = new StartPage(this);
-    QString examplesDir
-        = QString::fromStdString(Env::install_dir() + "/share/scram/input");
-    startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
-    connect(startPage->newModelButton, &QAbstractButton::clicked,
-            ui->actionNewModel, &QAction::trigger);
-    connect(startPage->openModelButton, &QAbstractButton::clicked,
-            ui->actionOpenFiles, &QAction::trigger);
-    connect(startPage->exampleModelsButton, &QAbstractButton::clicked, this,
-            [this, examplesDir] { openFiles(examplesDir); });
-    ui->tabWidget->addTab(startPage, startPage->windowIcon(),
-                          startPage->windowTitle());
-
     connect(ui->modelTree, &QTreeView::activated, this,
             &MainWindow::activateModelTree);
     connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
@@ -257,6 +244,7 @@ MainWindow::MainWindow(QWidget *parent)
             &MainWindow::autoSaveModel);
 
     loadPreferences();
+    setupStartPage();
 }
 
 MainWindow::~MainWindow() = default;
@@ -489,6 +477,35 @@ void MainWindow::savePreferences()
         fileList.push_back(fileAction->text());
     }
     m_preferences.setValue(QStringLiteral("recentFiles"), fileList);
+}
+
+void MainWindow::setupStartPage()
+{
+    auto *startPage = new StartPage(this);
+    QString examplesDir
+        = QString::fromStdString(Env::install_dir() + "/share/scram/input");
+    startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
+    connect(startPage->newModelButton, &QAbstractButton::clicked,
+            ui->actionNewModel, &QAction::trigger);
+    connect(startPage->openModelButton, &QAbstractButton::clicked,
+            ui->actionOpenFiles, &QAction::trigger);
+    connect(startPage->exampleModelsButton, &QAbstractButton::clicked, this,
+            [this, examplesDir] { openFiles(examplesDir); });
+    ui->tabWidget->addTab(startPage, startPage->windowIcon(),
+                          startPage->windowTitle());
+
+    startPage->recentFilesBox->setVisible(
+        m_recentFileActions.front()->isVisible());
+    for (QAction *fileAction : m_recentFileActions) {
+        if (!fileAction->isVisible())
+            break;
+        auto *button
+            = new QCommandLinkButton(QFileInfo(fileAction->text()).fileName());
+        button->setToolTip(fileAction->text());
+        startPage->recentFilesBox->layout()->addWidget(button);
+        connect(button, &QAbstractButton::clicked, fileAction,
+                &QAction::trigger);
+    }
 }
 
 QString MainWindow::getModelNameForTitle()

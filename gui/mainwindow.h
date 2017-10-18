@@ -114,6 +114,7 @@ private:
     void setupActions(); ///< Setup all the actions with connections.
     void loadPreferences(); ///< Loads the persistent application preferences.
     void savePreferences(); ///< Writes the 'unsaved' application preferences.
+    void setupStartPage();  ///< Sets up a new start page.
 
     /// @returns The model name to be used for a title (e.g., main window).
     QString getModelNameForTitle();
