@@ -127,6 +127,11 @@ struct DomainError : public ValidityError {
 
 namespace xml {
 
+/// The base for all XML related errors.
+struct Error : public scram::Error {
+  using scram::Error::Error;
+};
+
 /// XML parsing errors.
 struct ParseError : public Error {
   using Error::Error;
