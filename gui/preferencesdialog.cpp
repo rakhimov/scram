@@ -30,7 +30,8 @@
 namespace scram {
 namespace gui {
 
-const char *const PreferencesDialog::m_languageToLocale[] = {"en", "ru_RU"};
+const char *const PreferencesDialog::m_languageToLocale[]
+    = {"en", "ru_RU", "de_DE"};
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
