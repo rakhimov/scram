@@ -59,9 +59,28 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setConfig(const std::string &configPath,
+    /// Loads a model and analysis configuration from a file.
+    ///
+    /// @param[in] configPath  The path to the configuration file.
+    /// @param[in] inputFiles  Additional input files for model initialization.
+    ///
+    /// @returns true if the initialization is successful.
+    ///
+    /// @post No side effects are left-over
+    ///       if the initialization is not successful.
+    bool setConfig(const std::string &configPath,
                    std::vector<std::string> inputFiles = {});
-    void addInputFiles(const std::vector<std::string> &inputFiles);
+
+    /// Adds a new set of model elements from input files.
+    ///
+    /// @param[in] inputFiles  Paths to input files.
+    ///
+    /// @returns true if the addition is successful.
+    ///
+    /// @post If the addition of any file is not successful,
+    ///       the model is left in its original state
+    ///       as if this function had not been called (i.e., transactional).
+    bool addInputFiles(const std::vector<std::string> &inputFiles);
 
 signals:
     void configChanged();

@@ -249,7 +249,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() = default;
 
-void MainWindow::setConfig(const std::string &configPath,
+bool MainWindow::setConfig(const std::string &configPath,
                            std::vector<std::string> inputFiles)
 {
     try {
@@ -257,21 +257,24 @@ void MainWindow::setConfig(const std::string &configPath,
         inputFiles.insert(inputFiles.begin(), config.input_files().begin(),
                           config.input_files().end());
         mef::Initializer(inputFiles, config.settings());
-        addInputFiles(inputFiles);
+        if (!addInputFiles(inputFiles))
+            return false;
         m_settings = config.settings();
     } catch (scram::Error &err) {
         QMessageBox::critical(this, tr("Configuration Error"),
                               QString::fromUtf8(err.what()));
+        return false;
     }
+    return true;
 }
 
-void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
+bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 {
     static xml::Validator validator(Env::install_dir()
                                     + "/share/scram/gui.rng");
 
     if (inputFiles.empty())
-        return;
+        return true;
 
     try {
         std::vector<std::string> allInput = m_inputFiles;
@@ -290,7 +293,7 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
                     //: Single top/root event fault tree are expected by GUI.
                     tr("Fault tree '%1' must have a single top-gate.")
                         .arg(QString::fromStdString(faultTree->name())));
-                return;
+                return false;
             }
         }
 
@@ -301,10 +304,11 @@ void MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
                               //: The error upon initialization from a file.
                               tr("Initialization Error"),
                               QString::fromUtf8(err.what()));
-        return;
+        return false;
     }
 
     emit configChanged();
+    return true;
 }
 
 void MainWindow::setupStatusBar()
@@ -377,8 +381,8 @@ void MainWindow::setupActions()
         connect(fileAction, &QAction::triggered, this, [this, fileAction] {
             auto filePath = fileAction->text();
             GUI_ASSERT(!filePath.isEmpty(), );
-            addInputFiles({filePath.toStdString()});
-            updateRecentFiles({filePath});
+            if (addInputFiles({filePath.toStdString()}))
+                updateRecentFiles({filePath});
         });
     }
     connect(ui->actionClearList, &QAction::triggered, this,
@@ -550,8 +554,8 @@ void MainWindow::openFiles(QString directory)
     std::vector<std::string> inputFiles;
     for (const auto &filename : filenames)
         inputFiles.push_back(filename.toStdString());
-    addInputFiles(inputFiles);
-    updateRecentFiles(filenames);
+    if (addInputFiles(inputFiles))
+        updateRecentFiles(filenames);
 }
 
 void MainWindow::autoSaveModel()
