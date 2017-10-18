@@ -140,6 +140,7 @@ The minimal list of required library package names is:
 #. qtbase5-dev
 #. qtbase5-dev-tools
 #. qttools5-dev
+#. qttools5-dev-tools
 #. libqt5svg5-dev
 #. libqt5opengl5-dev
 
@@ -163,7 +164,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qtbase5-dev{,-tools} qttools5-dev
+    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qtbase5-dev{,-tools} qttools5-dev{,-tools}
 
 
 macOS
