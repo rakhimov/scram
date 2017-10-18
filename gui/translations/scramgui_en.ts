@@ -276,15 +276,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Alt+R</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Analysis Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Alt+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -329,6 +321,18 @@
         <comment>analysis configuration</comment>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Recent &amp;Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Preferences...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Clear List</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NameDialog</name>
@@ -338,6 +342,30 @@
     </message>
     <message>
         <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PreferencesDialog</name>
+    <message>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lanuage:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Undo limit:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto-save:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>min</source>
+        <extracomment>Shortened time unit for &apos;minutes&apos;</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -393,6 +421,39 @@
     </message>
     <message>
         <source>Change the type of event &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IO Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: %1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line: %1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MEF Container: %1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML element: %1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML attribute: %1
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -459,6 +520,10 @@
     </message>
     <message>
         <source>Example Models</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recent Files</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -603,10 +668,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Reporting Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Dependency Container Removal</source>
         <extracomment>The container w/ dependents still in the model.</extracomment>
         <translation type="unfinished"></translation>
@@ -654,11 +715,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Products: %L1</source>
-        <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Product</source>
         <translation type="unfinished"></translation>
     </message>
@@ -676,15 +732,6 @@
     </message>
     <message>
         <source>Products: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Probability: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Importance Factors: %L1</source>
-        <extracomment>The number of important events w/ factors defined.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -724,31 +771,92 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Error</source>
+        <source>Configuration file error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML Validity Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid configuration file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid configurations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Input file error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid input file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid input model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unnamed Model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save error</source>
         <comment>error on saving to file</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reporting error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Products (%L1)</source>
+        <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Probability (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Importance Factors (%L1)</source>
+        <extracomment>The number of important events w/ factors defined.</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>scram::gui::ModelTree</name>
     <message>
-        <source>Fault Trees</source>
+        <source>Fault Trees (%L1)</source>
         <extracomment>The parent item for collections of fault trees in the model.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Gates</source>
+        <source>Gates (%L1)</source>
         <extracomment>The table of gates.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Basic Events</source>
+        <source>Basic Events (%L1)</source>
         <extracomment>The table of basic events.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>House Events</source>
+        <source>House Events (%L1)</source>
         <extracomment>The table of house events.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>scram::gui::PreferencesDialog</name>
+    <message>
+        <source>Restart Required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The language change will take effect after an application restart.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
