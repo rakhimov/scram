@@ -228,6 +228,9 @@ QString getUiLanguage()
 void installTranslators(GuardedApplication *app)
 {
     QString language = getUiLanguage();
+    if (language == QStringLiteral("en"))
+        return;  // The default language.
+
     QString qtTsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
     QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
                                                  + "/share/scram/translations");
