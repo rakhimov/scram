@@ -237,7 +237,7 @@
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Modell-Dateien öffnen</translation>
     </message>
     <message>
       <source>&amp;Save Model</source>
@@ -342,7 +342,7 @@
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Name:</translation>
     </message>
   </context>
   <context>
@@ -405,11 +405,11 @@
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Wahr</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Falsch</translation>
     </message>
     <message>
       <source>Add event &apos;%1&apos;</source>
@@ -472,7 +472,7 @@
     </message>
     <message>
       <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
+      <translation>Wahrscheinlichkeit</translation>
     </message>
     <message>
       <source>Importance</source>
@@ -864,12 +864,12 @@
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Nicht weiter untersucht</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Bedingt</translation>
     </message>
   </context>
   <context>
@@ -886,7 +886,7 @@
     <message>
       <source>Probability</source>
       <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
-      <translation type="unfinished">Probability</translation>
+      <translation>Wahrscheinlichkeit</translation>
     </message>
     <message>
       <source>Label</source>
