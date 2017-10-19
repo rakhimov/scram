@@ -220,6 +220,34 @@ QString getUiLanguage()
     return QStringLiteral("en");
 }
 
+/// Installs translators to the main application.
+///
+/// @param[in,out] app  The application to register translators.
+///
+/// @pre No application window has been created.
+void installTranslators(GuardedApplication *app)
+{
+    QString language = getUiLanguage();
+    QString qtTsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
+                                                 + "/share/scram/translations");
+    std::pair<const char *, QString> domains[]
+        = {{"qtbase", qtTsPath}, {"qt", qtTsPath}, {"scramgui", scramTsPath}};
+
+    for (const auto &domain : domains) {
+        auto *translator = new QTranslator(app);
+        if (translator->load(QStringLiteral("%1_%2").arg(
+                                 QString::fromLatin1(domain.first), language),
+                             domain.second)) {
+            app->installTranslator(translator);
+        } else {
+            delete translator;
+            qCritical("Missing translations: %s_%s", domain.first,
+                      language.toStdString().data());
+        }
+    }
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -243,15 +271,7 @@ int main(int argc, char *argv[])
     if (QIcon::themeName().isEmpty())
         QIcon::setThemeName(QStringLiteral("tango"));
 
-    QSettings preferences;
-    QString language = getUiLanguage();
-    QTranslator translator;
-    translator.load(QStringLiteral("qt_%1").arg(language),
-                    QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    translator.load(QStringLiteral("scramgui_%1").arg(language),
-                    QString::fromStdString(scram::Env::install_dir()
-                                           + "/share/scram/translations"));
-    app.installTranslator(&translator);
+    installTranslators(&app);
 
     scram::gui::MainWindow w;
     w.show();
