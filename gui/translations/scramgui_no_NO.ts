@@ -342,7 +342,7 @@
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Navn:</translation>
     </message>
   </context>
   <context>
@@ -533,7 +533,7 @@
     <name>scram::gui::EventDialog</name>
     <message>
       <source>House event</source>
-      <translation type="unfinished">House event</translation>
+      <translation>Husbegivenhet</translation>
     </message>
     <message>
       <source>The argument &apos;%1&apos; is already in formula.</source>
@@ -728,7 +728,7 @@
     </message>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Occurrence</source>
@@ -864,7 +864,7 @@
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Uutviklet</translation>
     </message>
     <message>
       <source>Conditional</source>
@@ -876,7 +876,7 @@
     <name>scram::gui::model::BasicEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Flavor</source>
