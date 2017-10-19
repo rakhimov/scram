@@ -277,7 +277,7 @@
     </message>
     <message>
       <source>Analysis Settings</source>
-      <translation>Настройки анализа</translation>
+      <translation>Параметры анализа</translation>
     </message>
     <message>
       <source>&amp;Model</source>
@@ -323,15 +323,15 @@
     </message>
     <message>
       <source>Recent &amp;Files</source>
-      <translation type="unfinished">Recent &amp;Files</translation>
+      <translation>Последние &amp;файлы</translation>
     </message>
     <message>
       <source>&amp;Preferences...</source>
-      <translation type="unfinished">&amp;Preferences...</translation>
+      <translation>&amp; Предпочтения...</translation>
     </message>
     <message>
       <source>&amp;Clear List</source>
-      <translation type="unfinished">&amp;Clear List</translation>
+      <translation>&amp;Очистить список</translation>
     </message>
   </context>
   <context>
@@ -349,24 +349,24 @@
     <name>PreferencesDialog</name>
     <message>
       <source>Preferences</source>
-      <translation type="unfinished">Preferences</translation>
+      <translation>Предпочтения</translation>
     </message>
     <message>
       <source>Lanuage:</source>
-      <translation type="unfinished">Lanuage:</translation>
+      <translation>Язык:</translation>
     </message>
     <message>
       <source>Undo limit:</source>
-      <translation type="unfinished">Undo limit:</translation>
+      <translation>Лимит отмен:</translation>
     </message>
     <message>
       <source>Auto-save:</source>
-      <translation type="unfinished">Auto-save:</translation>
+      <translation>Автосохранение:</translation>
     </message>
     <message>
       <source>min</source>
       <extracomment>Shortened time unit for &apos;minutes&apos;</extracomment>
-      <translation type="unfinished">min</translation>
+      <translation>мин</translation>
     </message>
   </context>
   <context>
@@ -425,48 +425,34 @@
     </message>
     <message>
       <source>IO Error</source>
-      <translation type="unfinished">IO Error</translation>
+      <translation>Ошибка ввода-вывода</translation>
     </message>
     <message>
       <source>File: %1</source>
-      <translation type="unfinished">File: %1</translation>
+      <translation>Файл: %1</translation>
     </message>
     <message>
-      <source>File: %1
-</source>
-      <translation type="unfinished">File: %1
-</translation>
+      <source>Line: %1</source>
+      <translation>Строка: %1</translation>
     </message>
     <message>
-      <source>Line: %1
-</source>
-      <translation type="unfinished">Line: %1
-</translation>
+      <source>MEF Container: %1</source>
+      <translation>ФОМ контейнер: %1</translation>
     </message>
     <message>
-      <source>MEF Container: %1
-</source>
-      <translation type="unfinished">MEF Container: %1
-</translation>
+      <source>XML element: %1</source>
+      <translation>XML-элемент: %1</translation>
     </message>
     <message>
-      <source>XML element: %1
-</source>
-      <translation type="unfinished">XML element: %1
-</translation>
-    </message>
-    <message>
-      <source>XML attribute: %1
-</source>
-      <translation type="unfinished">XML attribute: %1
-</translation>
+      <source>XML attribute: %1</source>
+      <translation>Атрибут XML: %1</translation>
     </message>
   </context>
   <context>
     <name>SettingsDialog</name>
     <message>
       <source>Analysis Settings</source>
-      <translation>Параметры анализа</translation>
+      <translation>Настройки анализа</translation>
     </message>
     <message>
       <source>Approximations</source>
@@ -529,7 +515,7 @@
     </message>
     <message>
       <source>Recent Files</source>
-      <translation type="unfinished">Recent Files</translation>
+      <translation>Последние файлы</translation>
     </message>
   </context>
   <context>
@@ -775,62 +761,62 @@
     </message>
     <message>
       <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
-      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Графический интерфейс для SCRAM,&lt;br/&gt; мулти инструмент командной строки для анализа рисков.&lt;br/&gt;&lt;br/&gt;Лицензия: GPLv3+&lt;br/&gt;Домашняя страница: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Техническая поддержка: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Баг-трекер: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
+      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Графический интерфейс для SCRAM,&lt;br/&gt; мулти инструмент командной строки для анализа рисков.&lt;br/&gt;&lt;br/&gt;Лицензия: GPLv3+&lt;br/&gt;Домашняя страница: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Техподдержка: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Баг-трекер: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
     </message>
     <message>
       <source>Configuration file error</source>
-      <translation type="unfinished">Configuration file error</translation>
+      <translation>Ошибка файла конфигурации</translation>
     </message>
     <message>
       <source>XML Validity Error</source>
-      <translation type="unfinished">XML Validity Error</translation>
+      <translation>Ошибка XML</translation>
     </message>
     <message>
       <source>Invalid configuration file</source>
-      <translation type="unfinished">Invalid configuration file</translation>
+      <translation>Недопустимая конфигурация</translation>
     </message>
     <message>
       <source>Invalid configurations</source>
-      <translation type="unfinished">Invalid configurations</translation>
+      <translation>Недопустимая конфигурация</translation>
     </message>
     <message>
       <source>Input file error</source>
-      <translation type="unfinished">Input file error</translation>
+      <translation>Ошибка входного файла</translation>
     </message>
     <message>
       <source>Invalid input file</source>
-      <translation type="unfinished">Invalid input file</translation>
+      <translation>Недопустимый входной файл</translation>
     </message>
     <message>
       <source>Invalid input model</source>
-      <translation type="unfinished">Invalid input model</translation>
+      <translation>Недопустимая модель</translation>
     </message>
     <message>
       <source>Unnamed Model</source>
-      <translation type="unfinished">Unnamed Model</translation>
+      <translation>Безымянная модель</translation>
     </message>
     <message>
       <source>Save error</source>
       <comment>error on saving to file</comment>
-      <translation type="unfinished">Save error</translation>
+      <translation>Ошибка сохранения</translation>
     </message>
     <message>
       <source>Reporting error</source>
-      <translation type="unfinished">Reporting error</translation>
+      <translation>Ошибка при отчете</translation>
     </message>
     <message>
       <source>Products (%L1)</source>
       <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-      <translation type="unfinished">Products (%L1)</translation>
+      <translation>Произведения (%L1)</translation>
     </message>
     <message>
       <source>Probability (%1)</source>
-      <translation type="unfinished">Probability (%1)</translation>
+      <translation>Вероятность (%1)</translation>
     </message>
     <message>
       <source>Importance Factors (%L1)</source>
       <extracomment>The number of important events w/ factors defined.</extracomment>
-      <translation type="unfinished">Importance Factors (%L1)</translation>
+      <translation>Факторы важности (%L1)</translation>
     </message>
   </context>
   <context>
@@ -838,33 +824,33 @@
     <message>
       <source>Fault Trees (%L1)</source>
       <extracomment>The parent item for collections of fault trees in the model.</extracomment>
-      <translation type="unfinished">Fault Trees (%L1)</translation>
+      <translation>Деревья отказов (%L1)</translation>
     </message>
     <message>
       <source>Gates (%L1)</source>
       <extracomment>The table of gates.</extracomment>
-      <translation type="unfinished">Gates (%L1)</translation>
+      <translation>Вентили (%L1)</translation>
     </message>
     <message>
       <source>Basic Events (%L1)</source>
       <extracomment>The table of basic events.</extracomment>
-      <translation type="unfinished">Basic Events (%L1)</translation>
+      <translation>Основные события (%L1)</translation>
     </message>
     <message>
       <source>House Events (%L1)</source>
       <extracomment>The table of house events.</extracomment>
-      <translation type="unfinished">House Events (%L1)</translation>
+      <translation>Постоянные события (%L1)</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::PreferencesDialog</name>
     <message>
       <source>Restart Required</source>
-      <translation type="unfinished">Restart Required</translation>
+      <translation>Требуется перезапуск</translation>
     </message>
     <message>
       <source>The language change will take effect after an application restart.</source>
-      <translation type="unfinished">The language change will take effect after an application restart.</translation>
+      <translation>Языковые изменения вступят в силу после перезапуска приложения.</translation>
     </message>
   </context>
   <context>
