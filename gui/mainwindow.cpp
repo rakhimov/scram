@@ -287,28 +287,36 @@ void displayError(const scram::Error &err, const QString &title,
     QMessageBox message(QMessageBox::Critical, title, text, QMessageBox::Ok,
                         parent);
     QString info;
+    auto newLine = [&info] { info.append(QStringLiteral("\n")); };
+
     if (const std::string *filename
             = boost::get_error_info<boost::errinfo_file_name>(err)) {
         info.append(
-            QObject::tr("File: %1\n").arg(QString::fromStdString(*filename)));
+            QObject::tr("File: %1").arg(QString::fromStdString(*filename)));
+        newLine();
         if (const int *line
-                = boost::get_error_info<boost::errinfo_at_line>(err))
-            info.append(QObject::tr("Line: %1\n").arg(*line));
+                = boost::get_error_info<boost::errinfo_at_line>(err)) {
+            info.append(QObject::tr("Line: %1").arg(*line));
+            newLine();
+        }
     }
     if (const std::string *container
             = boost::get_error_info<scram::mef::errinfo_container>(err)) {
-        info.append(QObject::tr("MEF Container: %1\n")
+        info.append(QObject::tr("MEF Container: %1")
                         .arg(QString::fromStdString(*container)));
+        newLine();
     }
     if (const std::string *xml_element
             = boost::get_error_info<scram::xml::errinfo_element>(err)) {
-        info.append(QObject::tr("XML element: %1\n")
+        info.append(QObject::tr("XML element: %1")
                         .arg(QString::fromStdString(*xml_element)));
+        newLine();
     }
     if (const std::string *xml_attribute
         = boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
-        info.append(QObject::tr("XML attribute: %1\n")
+        info.append(QObject::tr("XML attribute: %1")
                         .arg(QString::fromStdString(*xml_attribute)));
+        newLine();
     }
     message.setInformativeText(info);
 

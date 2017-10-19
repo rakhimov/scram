@@ -432,28 +432,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>File: %1
-</source>
+        <source>Line: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Line: %1
-</source>
+        <source>MEF Container: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MEF Container: %1
-</source>
+        <source>XML element: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>XML element: %1
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XML attribute: %1
-</source>
+        <source>XML attribute: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
