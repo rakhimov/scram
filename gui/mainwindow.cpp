@@ -1011,11 +1011,12 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                             QMessageBox::information(
                                 m_window,
                                 //: The event w/ dependents in the model.
-                                tr("Dependency Event Removal"),
-                                tr("Event '%1' is not removable because"
-                                   " it has dependents."
-                                   " Remove the event from the dependents"
-                                   " before this operation.")
+                                MainWindow::tr("Dependency Event Removal"),
+                                MainWindow::tr(
+                                    "Event '%1' is not removable because"
+                                    " it has dependents."
+                                    " Remove the event from the dependents"
+                                    " before this operation.")
                                     .arg(element->id()));
                             return;
                         }
