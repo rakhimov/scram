@@ -154,7 +154,13 @@ QVariant BasicEventContainerModel::headerData(int section,
 QVariant BasicEventContainerModel::data(const QModelIndex &index,
                                         int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
+        return {};
+
+    if (role == Qt::TextAlignmentRole && index.column() == 2)
+        return Qt::AlignRight;
+
+    if (role != Qt::DisplayRole)
         return {};
     auto *basicEvent = static_cast<BasicEvent *>(index.internalPointer());
 

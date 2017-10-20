@@ -147,6 +147,8 @@ QTableWidgetItem *constructTableItem(QVariant data)
     auto *item = new QTableWidgetItem;
     item->setData(Qt::EditRole, std::move(data));
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    if (data.type() != QVariant::String)
+        item->setTextAlignment(Qt::AlignRight);
     return item;
 }
 
