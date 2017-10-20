@@ -52,9 +52,10 @@
 #include "src/serialization.h"
 #include "src/xml.h"
 
-#include "elementcontainermodel.h"
 #include "diagram.h"
+#include "elementcontainermodel.h"
 #include "guiassert.h"
+#include "importancetablemodel.h"
 #include "modeltree.h"
 #include "preferencesdialog.h"
 #include "printable.h"
@@ -1593,35 +1594,12 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                      .arg(result.importance_analysis->importance().size())});
             widgetItem->addChild(importanceItem);
             m_reportActions.emplace(importanceItem, [this, &result, name] {
-                auto *table = new QTableWidget(nullptr);
-                table->setColumnCount(8);
-                table->setHorizontalHeaderLabels(
-                    {tr("ID"), tr("Occurrence"), tr("Probability"), tr("MIF"),
-                     tr("CIF"), tr("DIF"), tr("RAW"), tr("RRW")});
-                auto &records = result.importance_analysis->importance();
-                table->setRowCount(records.size());
-                int row = 0;
-                for (const core::ImportanceRecord &record : records) {
-                    table->setItem(
-                        row, 0, constructTableItem(
-                                    QString::fromStdString(record.event.id())));
-                    table->setItem(
-                        row, 1, constructTableItem(record.factors.occurrence));
-                    table->setItem(row, 2,
-                                   constructTableItem(record.event.p()));
-                    table->setItem(row, 3,
-                                   constructTableItem(record.factors.mif));
-                    table->setItem(row, 4,
-                                   constructTableItem(record.factors.cif));
-                    table->setItem(row, 5,
-                                   constructTableItem(record.factors.dif));
-                    table->setItem(row, 6,
-                                   constructTableItem(record.factors.raw));
-                    table->setItem(row, 7,
-                                   constructTableItem(record.factors.rrw));
-                    ++row;
-                }
-
+                auto *table = new QTableView(this);
+                auto *tableModel = new model::ImportanceTableModel(
+                    &result.importance_analysis->importance(), table);
+                auto *proxyModel = new model::SortFilterProxyModel(table);
+                proxyModel->setSourceModel(tableModel);
+                table->setModel(proxyModel);
                 table->setWordWrap(false);
                 table->resizeColumnsToContents();
                 table->setSortingEnabled(true);
