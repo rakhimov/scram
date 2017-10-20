@@ -45,6 +45,8 @@ QVariant ImportanceTableModel::headerData(int section,
                                           Qt::Orientation orientation,
                                           int role) const
 {
+    if (role == Qt::InitialSortOrderRole && section != 0)
+        return Qt::DescendingOrder;
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return QAbstractTableModel::headerData(section, orientation, role);
 
