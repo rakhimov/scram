@@ -82,14 +82,13 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
         ui->autoSaveBox->setValue(autoSaveTimer->interval() / 60000);
     }
     auto setAutoSave = [preferences, autoSaveTimer](int intervalMin) {
-        if (!intervalMin) {
-            autoSaveTimer->stop();
-            preferences->remove(QStringLiteral("autoSave"));
-        } else {
-            int intervalMs = intervalMin * 60000;
+        int intervalMs = intervalMin * 60000;
+        preferences->setValue(QStringLiteral("autoSave"), intervalMs);
+        if (intervalMin)
             autoSaveTimer->start(intervalMs);
-            preferences->setValue(QStringLiteral("autoSave"), intervalMs);
-        }
+        else
+            autoSaveTimer->stop();
+
     };
     connect(ui->autoSaveBox, OVERLOAD(QSpinBox, valueChanged, int),
             autoSaveTimer, setAutoSave);

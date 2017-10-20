@@ -555,7 +555,8 @@ void MainWindow::loadPreferences()
         m_preferences.value(QStringLiteral("undoLimit"), 0).toInt());
 
     GUI_ASSERT(m_autoSaveTimer->isActive() == false, );
-    int interval = m_preferences.value(QStringLiteral("autoSave")).toInt();
+    int interval
+        = m_preferences.value(QStringLiteral("autoSave"), 300000).toInt();
     if (interval)
         m_autoSaveTimer->start(interval);
 
