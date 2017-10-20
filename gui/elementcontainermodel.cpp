@@ -133,6 +133,8 @@ QVariant BasicEventContainerModel::headerData(int section,
                                               Qt::Orientation orientation,
                                               int role) const
 {
+    if (role == Qt::InitialSortOrderRole && section == 2)
+        return Qt::DescendingOrder;
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return ElementContainerModel::headerData(section, orientation, role);
 
