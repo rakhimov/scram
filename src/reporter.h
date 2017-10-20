@@ -49,6 +49,8 @@ class Reporter {
   ///
   /// @pre The output destination is used only by this reporter.
   ///      There is going to be no appending to the stream after the report.
+  ///
+  /// @throws IOError  The write operation has failed.
   void Report(const core::RiskAnalysis& risk_an, std::FILE* out,
               bool indent = true);
 
@@ -59,7 +61,8 @@ class Reporter {
   /// @param[out] file  The output destination.
   /// @param[in] indent  The flag to indent output for readability.
   ///
-  /// @throws IOError  The output file is not accessible.
+  /// @throws IOError  The output file is not accessible,
+  ///                  or the write operation has failed.
   void Report(const core::RiskAnalysis& risk_an, const std::string& file,
               bool indent = true);
 

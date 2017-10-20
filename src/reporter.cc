@@ -104,12 +104,16 @@ void Reporter::Report(const core::RiskAnalysis& risk_an,
                       const std::string& file, bool indent) {
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
       std::fopen(file.c_str(), "w"), &std::fclose);
-  if (!fp) {
-    SCRAM_THROW(IOError("Cannot write the output file for report."))
-        << boost::errinfo_file_name(file) << boost::errinfo_errno(errno)
-        << boost::errinfo_file_open_mode("w");
+  try {
+    if (!fp) {
+      SCRAM_THROW(IOError("Cannot open the output file for report."))
+          << boost::errinfo_errno(errno) << boost::errinfo_file_open_mode("w");
+    }
+    Report(risk_an, fp.get(), indent);
+  } catch (IOError& err) {
+    err << boost::errinfo_file_name(file);
+    throw;
   }
-  Report(risk_an, fp.get(), indent);
 }
 
 /// Describes the fault tree analysis and techniques.

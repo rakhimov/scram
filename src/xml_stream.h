@@ -25,7 +25,10 @@
 #include <cstdio>
 
 #include <algorithm>
+#include <exception>
 #include <string>
+
+#include <boost/exception/errinfo_errno.hpp>
 
 #include "error.h"
 
@@ -99,10 +102,17 @@ class Indenter {
 };
 
 /// Adaptor for stdio FILE stream with write generic interface.
+///
+/// @note Write operations do not return any error code or throw exceptions.
+///       If any IO errors happen,
+///       the FILE handler contains the error information.
 class FileStream {
  public:
   /// @param[in] file  The output file stream.
   explicit FileStream(std::FILE* file) : file_(file) {}
+
+  /// @returns The destination file stream.
+  std::FILE* file() { return file_; }
 
   /// Writes a value into file.
   /// @{
@@ -353,6 +363,9 @@ class StreamElement {
 
 /// XML Stream document.
 ///
+/// @pre Only this stream and its elements write to the output destination.
+///      No other writes happen while this stream is alive.
+///
 /// @note The document elements are indented up to 10 levels for readability.
 ///       The XML tree depth beyond 10 elements is printed at level 10.
 class Stream {
@@ -361,9 +374,21 @@ class Stream {
   ///
   /// @param[in] out  The stream destination.
   /// @param[in] indent  Option to indent output for readability.
+  ///
+  /// @note This output file has clean error state.
   explicit Stream(std::FILE* out, bool indent = true)
       : indenter_(indent), has_root_(false), out_(out) {
+    assert(!std::ferror(out) && "Unclean error state in output destination.");
     out_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  }
+
+  /// @throws IOError  The file write operation has failed.
+  ///
+  /// @post The exception is thrown only if no other exception is on flight.
+  ~Stream() noexcept(false) {
+    int err = std::ferror(out_.file());
+    if (err && !std::uncaught_exception())
+      SCRAM_THROW(IOError("FILE error on write")) << boost::errinfo_errno(err);
   }
 
   /// Creates a root element for the document.

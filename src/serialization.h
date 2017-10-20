@@ -37,6 +37,8 @@ namespace mef {
 ///
 /// @param[in] model  Fully initialized and valid model.
 /// @param[in,out] out  The stream for XML data.
+///
+/// @throws IOError  The write operation has failed.
 void Serialize(const Model& model, std::FILE* out);
 
 /// Convenience function for serialization into a file.
@@ -44,7 +46,8 @@ void Serialize(const Model& model, std::FILE* out);
 /// @param[in] model  Fully initialized and valid model.
 /// @param[out] file  The output destination.
 ///
-/// @throws IOError  The output file is not accessible.
+/// @throws IOError  The output file is not accessible,
+///                  or the write operation has failed.
 void Serialize(const Model& model, const std::string& file);
 
 }  // namespace mef
