@@ -37,6 +37,7 @@
 #include <QtOpenGL>
 
 #include <boost/exception/get_error_info.hpp>
+#include <boost/filesystem.hpp>
 
 #include "src/config.h"
 #include "src/env.h"
@@ -682,8 +683,19 @@ void MainWindow::saveToFile(std::string destination)
 {
     GUI_ASSERT(!destination.empty(), );
     GUI_ASSERT(m_model, );
+
+    namespace fs = boost::filesystem;
+    fs::path temp_file = destination + "." + fs::unique_path().string();
+
     try {
-        mef::Serialize(*m_model, destination);
+        mef::Serialize(*m_model, temp_file.string());
+        try {
+            fs::rename(temp_file, destination);
+        } catch (const fs::filesystem_error& err) {
+            SCRAM_THROW(IOError(err.what()))
+                << boost::errinfo_file_name(destination)
+                << boost::errinfo_errno(err.code().value());
+        }
     } catch (const IOError &err) {
         displayError(err, tr("Save error", "error on saving to file"), this);
         return;
