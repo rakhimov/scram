@@ -1603,6 +1603,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                 table->setWordWrap(false);
                 table->resizeColumnsToContents();
                 table->setSortingEnabled(true);
+                setupSearchable(table, proxyModel);
                 ui->tabWidget->addTab(table, tr("Importance: %1").arg(name));
                 ui->tabWidget->setCurrentWidget(table);
             });
