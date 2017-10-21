@@ -187,19 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
                     it->second();
             });
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
-            [this](int index) {
-                // Ensure show/hide order.
-                if (index == ui->tabWidget->currentIndex()) {
-                    int num_tabs = ui->tabWidget->count();
-                    if (num_tabs > 1) {
-                        ui->tabWidget->setCurrentIndex(
-                            index == (num_tabs - 1) ? index - 1 : index + 1);
-                    }
-                }
-                auto *widget = ui->tabWidget->widget(index);
-                ui->tabWidget->removeTab(index);
-                delete widget;
-            });
+            &MainWindow::closeTab);
 
     connect(ui->actionSettings, &QAction::triggered, this, [this] {
         SettingsDialog dialog(m_settings, this);
@@ -543,6 +531,43 @@ void MainWindow::setupActions()
         m_searchBar->setFocus();
         m_searchBar->selectAll();
     });
+
+    // Providing shortcuts for the tab widget manipulations.
+    auto *closeCurrentTab = new QAction(this);
+    auto *nextTab = new QAction(this);
+    auto *prevTab = new QAction(this);
+
+    closeCurrentTab->setShortcut(QKeySequence::Close);
+    nextTab->setShortcut(QKeySequence::NextChild);
+    // QTBUG-15746: QKeySequence::PreviousChild does not work.
+    prevTab->setShortcut(Qt::CTRL | Qt::Key_Backtab);
+
+    ui->tabWidget->addAction(closeCurrentTab);
+    ui->tabWidget->addAction(nextTab);
+    ui->tabWidget->addAction(prevTab);
+
+    auto switchTab = [this](bool toNext) {
+        int numTabs = ui->tabWidget->count();
+        if (!numTabs)
+            return;
+        int currentIndex = ui->tabWidget->currentIndex();
+        int nextIndex = [currentIndex, numTabs, toNext] {
+            int ret = currentIndex + (toNext ? 1 : -1);
+            if (ret < 0)
+                return numTabs - 1;
+            if (ret >= numTabs)
+                return 0;
+            return ret;
+        }();
+        ui->tabWidget->setCurrentIndex(nextIndex);
+    };
+
+    connect(closeCurrentTab, &QAction::triggered, ui->tabWidget,
+            [this] { MainWindow::closeTab(ui->tabWidget->currentIndex()); });
+    connect(nextTab, &QAction::triggered, ui->tabWidget,
+            [switchTab] { switchTab(true); });
+    connect(prevTab, &QAction::triggered, ui->tabWidget,
+            [switchTab] { switchTab(false); });
 }
 
 void MainWindow::loadPreferences()
@@ -763,6 +788,23 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     saveModel();
     return isWindowModified() ? event->ignore() : event->accept();
+}
+
+void MainWindow::closeTab(int index)
+{
+    if (index < 0)
+        return;
+    // Ensure show/hide order.
+    if (index == ui->tabWidget->currentIndex()) {
+        int num_tabs = ui->tabWidget->count();
+        if (num_tabs > 1) {
+            ui->tabWidget->setCurrentIndex(index == (num_tabs - 1) ? index - 1
+                                                                   : index + 1);
+        }
+    }
+    auto *widget = ui->tabWidget->widget(index);
+    ui->tabWidget->removeTab(index);
+    delete widget;
 }
 
 void MainWindow::exportReportAs()

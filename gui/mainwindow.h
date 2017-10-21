@@ -234,6 +234,14 @@ private:
     /// Override to save the model before closing the application.
     void closeEvent(QCloseEvent *event) override;
 
+    /// Safely closes the tab with the given index in the widget.
+    ///
+    /// @param[in] index  The index of the tab to be removed.
+    ///
+    /// @post Show/hide order is respected for safe delete.
+    /// @post The closed tab is deleted.
+    void closeTab(int index);
+
     std::unique_ptr<Ui::MainWindow> ui;
     QAction *m_undoAction;
     QAction *m_redoAction;
