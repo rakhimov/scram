@@ -31,6 +31,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QSettings>
+#include <QTableView>
 #include <QTimer>
 #include <QUndoStack>
 
@@ -176,6 +177,16 @@ private:
     /// @tparam T  The model proxy type.
     template <class T>
     void removeEvent(T *event, mef::FaultTree *faultTree);
+
+    /// @tparam ContainerModel  The container model type.
+    /// @tparam Ts  The argument types for the container model.
+    ///
+    /// @param[in,out] parent  The parent to own the table view.
+    /// @param[in] modelArgs  The arguments for container model constructor.
+    ///
+    /// @returns Table view ready for inclusion to tabs.
+    template <class ContainerModel, typename... Ts>
+    QTableView *constructTableView(QWidget *parent, Ts&&... modelArgs);
 
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
