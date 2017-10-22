@@ -56,6 +56,7 @@
 #include "guiassert.h"
 #include "importancetablemodel.h"
 #include "modeltree.h"
+#include "overload.h"
 #include "preferencesdialog.h"
 #include "printable.h"
 #include "producttablemodel.h"
@@ -1528,6 +1529,8 @@ void MainWindow::activateReportTree(const QModelIndex &index)
                                                          ? Qt::DescendingOrder
                                                          : Qt::AscendingOrder);
         table->setSortingEnabled(true);
+        connect(ui->reportTree->model(), &QObject::destroyed, table,
+                [this, table] { closeTab(ui->tabWidget->indexOf(table)); });
         return;
     }
     case ReportTree::Row::Probability:
@@ -1546,6 +1549,8 @@ void MainWindow::activateReportTree(const QModelIndex &index)
         setupSearchable(table, proxyModel);
         ui->tabWidget->addTab(table, tr("Importance: %1").arg(name));
         ui->tabWidget->setCurrentWidget(table);
+        connect(ui->reportTree->model(), &QObject::destroyed, table,
+                [this, table] { closeTab(ui->tabWidget->indexOf(table)); });
         return;
     }
     }
@@ -1594,6 +1599,11 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
                     GUI_ASSERT(house, );
                     action(house);
                 }
+            });
+    connect(m_guiModel.get(), OVERLOAD(model::Model, removed, mef::FaultTree *),
+            view, [this, faultTree, view](mef::FaultTree *removedTree) {
+                if (removedTree == faultTree)
+                    closeTab(ui->tabWidget->indexOf(view));
             });
 }
 
