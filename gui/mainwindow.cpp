@@ -1575,18 +1575,21 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
         widgetItem->addChild(productItem);
         m_reportActions.emplace(productItem, [this, &result, name] {
             auto *table = new QTableView(this);
+            bool withProbability = result.probability_analysis != nullptr;
             auto *tableModel = new model::ProductTableModel(
-                result.fault_tree_analysis->products(),
-                result.probability_analysis != nullptr, table);
+                result.fault_tree_analysis->products(), withProbability, table);
             auto *proxyModel = new model::SortFilterProxyModel(table);
             proxyModel->setSourceModel(tableModel);
             table->setModel(proxyModel);
             table->setWordWrap(false);
             table->resizeColumnsToContents();
-            table->setSortingEnabled(true);
             setupSearchable(table, proxyModel);
             ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
             ui->tabWidget->setCurrentWidget(table);
+            table->sortByColumn(withProbability ? 2 : 1,
+                                withProbability ? Qt::DescendingOrder
+                                                : Qt::AscendingOrder);
+            table->setSortingEnabled(true);
         });
 
         if (result.probability_analysis) {
