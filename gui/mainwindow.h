@@ -129,11 +129,12 @@ private slots:
 private:
     static const int LAYOUT_VERSION = 0; ///< Layout compatibility version.
 
-    void setupStatusBar(); ///< Setup widgets in the status bar.
-    void setupActions(); ///< Setup all the actions with connections.
-    void loadPreferences(); ///< Loads the persistent application preferences.
-    void savePreferences(); ///< Writes the 'unsaved' application preferences.
-    void setupStartPage();  ///< Sets up a new start page.
+    void setupStatusBar();   ///< Sets up widgets in the status bar.
+    void setupActions();     ///< Sets up all the actions with connections.
+    void setupConnections(); ///< Sets up all the remaining connections.
+    void loadPreferences();  ///< Loads the persistent application preferences.
+    void savePreferences();  ///< Writes the 'unsaved' application preferences.
+    void setupStartPage();   ///< Sets up a new start page.
 
     /// @returns The model name to be used for a title (e.g., main window).
     QString getModelNameForTitle();
@@ -241,6 +242,9 @@ private:
     /// @post Show/hide order is respected for safe delete.
     /// @post The closed tab is deleted.
     void closeTab(int index);
+
+    /// Runs the analysis with the current model.
+    void runAnalysis();
 
     std::unique_ptr<Ui::MainWindow> ui;
     QAction *m_undoAction;

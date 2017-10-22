@@ -178,66 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupStatusBar();
     setupActions();
-
-    connect(ui->modelTree, &QTreeView::activated, this,
-            &MainWindow::activateModelTree);
-    connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
-            [this](QTreeWidgetItem *item) {
-                if (auto it = ext::find(m_reportActions, item))
-                    it->second();
-            });
-    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
-            &MainWindow::closeTab);
-
-    connect(ui->actionSettings, &QAction::triggered, this, [this] {
-        SettingsDialog dialog(m_settings, this);
-        if (dialog.exec() == QDialog::Accepted)
-            m_settings = dialog.settings();
-    });
-    connect(ui->actionRun, &QAction::triggered, this, [this] {
-        GUI_ASSERT(m_model, );
-        if (m_settings.probability_analysis()
-            && ext::any_of(m_model->basic_events(),
-                           [](const mef::BasicEventPtr &basicEvent) {
-                               return !basicEvent->HasExpression();
-                           })) {
-            QMessageBox::critical(this, tr("Validation Error"),
-                                  tr("Not all basic events have expressions "
-                                     "for probability analysis."));
-            return;
-        }
-        WaitDialog progress(this);
-        //: This is a message shown during the analysis run.
-        progress.setLabelText(tr("Running analysis..."));
-        auto analysis
-            = std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
-        QFutureWatcher<void> futureWatcher;
-        connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
-        futureWatcher.setFuture(
-            QtConcurrent::run([&analysis] { analysis->Analyze(); }));
-        progress.exec();
-        futureWatcher.waitForFinished();
-        resetReportWidget(std::move(analysis));
-    });
-
-    connect(this, &MainWindow::configChanged, [this] {
-        m_undoStack->clear();
-        setWindowTitle(QStringLiteral("%1[*]").arg(getModelNameForTitle()));
-        ui->actionSaveAs->setEnabled(true);
-        ui->actionAddElement->setEnabled(true);
-        ui->actionRenameModel->setEnabled(true);
-        ui->actionRun->setEnabled(true);
-        resetModelTree();
-        resetReportWidget(nullptr);
-    });
-    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTreeWidget,
-            [this] {
-                if (m_analysis)
-                    resetReportWidget(nullptr);
-            });
-    connect(m_autoSaveTimer, &QTimer::timeout, this,
-            &MainWindow::autoSaveModel);
-
+    setupConnections();
     loadPreferences();
     setupStartPage();
 }
@@ -570,6 +511,44 @@ void MainWindow::setupActions()
             [switchTab] { switchTab(false); });
 }
 
+void MainWindow::setupConnections()
+{
+    connect(ui->modelTree, &QTreeView::activated, this,
+            &MainWindow::activateModelTree);
+    connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
+            [this](QTreeWidgetItem *item) {
+                if (auto it = ext::find(m_reportActions, item))
+                    it->second();
+            });
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
+            &MainWindow::closeTab);
+
+    connect(ui->actionSettings, &QAction::triggered, this, [this] {
+        SettingsDialog dialog(m_settings, this);
+        if (dialog.exec() == QDialog::Accepted)
+            m_settings = dialog.settings();
+    });
+    connect(ui->actionRun, &QAction::triggered, this, &MainWindow::runAnalysis);
+
+    connect(this, &MainWindow::configChanged, [this] {
+        m_undoStack->clear();
+        setWindowTitle(QStringLiteral("%1[*]").arg(getModelNameForTitle()));
+        ui->actionSaveAs->setEnabled(true);
+        ui->actionAddElement->setEnabled(true);
+        ui->actionRenameModel->setEnabled(true);
+        ui->actionRun->setEnabled(true);
+        resetModelTree();
+        resetReportWidget(nullptr);
+    });
+    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTreeWidget,
+            [this] {
+                if (m_analysis)
+                    resetReportWidget(nullptr);
+            });
+    connect(m_autoSaveTimer, &QTimer::timeout, this,
+            &MainWindow::autoSaveModel);
+}
+
 void MainWindow::loadPreferences()
 {
     m_preferences.beginGroup(QStringLiteral("MainWindow"));
@@ -805,6 +784,33 @@ void MainWindow::closeTab(int index)
     auto *widget = ui->tabWidget->widget(index);
     ui->tabWidget->removeTab(index);
     delete widget;
+}
+
+void MainWindow::runAnalysis()
+{
+    GUI_ASSERT(m_model, );
+    if (m_settings.probability_analysis()
+        && ext::any_of(m_model->basic_events(),
+                       [](const mef::BasicEventPtr &basicEvent) {
+                           return !basicEvent->HasExpression();
+                       })) {
+        QMessageBox::critical(this, tr("Validation Error"),
+                              tr("Not all basic events have expressions "
+                                 "for probability analysis."));
+        return;
+    }
+    WaitDialog progress(this);
+    //: This is a message shown during the analysis run.
+    progress.setLabelText(tr("Running analysis..."));
+    auto analysis
+        = std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
+    QFutureWatcher<void> futureWatcher;
+    connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
+    futureWatcher.setFuture(
+        QtConcurrent::run([&analysis] { analysis->Analyze(); }));
+    progress.exec();
+    futureWatcher.waitForFinished();
+    resetReportWidget(std::move(analysis));
 }
 
 void MainWindow::exportReportAs()
