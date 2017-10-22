@@ -1414,6 +1414,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
     tree->setSelectionMode(QAbstractItemView::SingleSelection);
     tree->setWordWrap(false);
     tree->header()->setSortIndicatorShown(true);
+    tree->header()->setDefaultAlignment(Qt::AlignCenter);
     tree->resizeColumnToContents(0);
     tree->setColumnWidth(0, 2 * tree->columnWidth(0));
     tree->setAlternatingRowColors(true);
