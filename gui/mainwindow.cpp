@@ -59,6 +59,7 @@
 #include "preferencesdialog.h"
 #include "printable.h"
 #include "producttablemodel.h"
+#include "reporttree.h"
 #include "settingsdialog.h"
 #include "validator.h"
 
@@ -500,11 +501,8 @@ void MainWindow::setupConnections()
 {
     connect(ui->modelTree, &QTreeView::activated, this,
             &MainWindow::activateModelTree);
-    connect(ui->reportTreeWidget, &QTreeWidget::itemActivated, this,
-            [this](QTreeWidgetItem *item) {
-                if (auto it = ext::find(m_reportActions, item))
-                    it->second();
-            });
+    connect(ui->reportTree, &QTreeView::activated, this,
+            &MainWindow::activateReportTree);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this,
             &MainWindow::closeTab);
 
@@ -523,12 +521,12 @@ void MainWindow::setupConnections()
         ui->actionRenameModel->setEnabled(true);
         ui->actionRun->setEnabled(true);
         resetModelTree();
-        resetReportWidget(nullptr);
+        resetReportTree(nullptr);
     });
-    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTreeWidget,
+    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTree,
             [this] {
                 if (m_analysis)
-                    resetReportWidget(nullptr);
+                    resetReportTree(nullptr);
             });
     connect(m_autoSaveTimer, &QTimer::timeout, this,
             &MainWindow::autoSaveModel);
@@ -795,7 +793,7 @@ void MainWindow::runAnalysis()
         QtConcurrent::run([&analysis] { analysis->Analyze(); }));
     progress.exec();
     futureWatcher.waitForFinished();
-    resetReportWidget(std::move(analysis));
+    resetReportTree(std::move(analysis));
 }
 
 void MainWindow::exportReportAs()
@@ -1498,6 +1496,62 @@ void MainWindow::activateModelTree(const QModelIndex &index)
     activateFaultTreeDiagram(faultTree);
 }
 
+void MainWindow::activateReportTree(const QModelIndex &index)
+{
+    GUI_ASSERT(m_analysis, );
+    GUI_ASSERT(index.isValid(), );
+    QModelIndex parentIndex = index.parent();
+    if (!parentIndex.isValid())
+        return;
+    GUI_ASSERT(parentIndex.parent().isValid() == false, );
+    QString name = parentIndex.data(Qt::DisplayRole).toString();
+    GUI_ASSERT(parentIndex.row() < m_analysis->results().size(), );
+    const core::RiskAnalysis::Result &result
+        = m_analysis->results()[parentIndex.row()];
+
+    switch (static_cast<ReportTree::Row>(index.row())) {
+    case ReportTree::Row::Products: {
+        auto *table = new QTableView(this);
+        bool withProbability = result.probability_analysis != nullptr;
+        auto *tableModel = new model::ProductTableModel(
+            result.fault_tree_analysis->products(), withProbability, table);
+        auto *proxyModel = new model::SortFilterProxyModel(table);
+        proxyModel->setSourceModel(tableModel);
+        table->setModel(proxyModel);
+        table->setWordWrap(false);
+        table->horizontalHeader()->setSortIndicatorShown(true);
+        table->resizeColumnsToContents();
+        setupSearchable(table, proxyModel);
+        ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
+        ui->tabWidget->setCurrentWidget(table);
+        table->sortByColumn(withProbability ? 2 : 1, withProbability
+                                                         ? Qt::DescendingOrder
+                                                         : Qt::AscendingOrder);
+        table->setSortingEnabled(true);
+        return;
+    }
+    case ReportTree::Row::Probability:
+        return;
+    case ReportTree::Row::Importance: {
+        auto *table = new QTableView(this);
+        auto *tableModel = new model::ImportanceTableModel(
+            &result.importance_analysis->importance(), table);
+        auto *proxyModel = new model::SortFilterProxyModel(table);
+        proxyModel->setSourceModel(tableModel);
+        table->setModel(proxyModel);
+        table->setWordWrap(false);
+        table->horizontalHeader()->setSortIndicatorShown(true);
+        table->resizeColumnsToContents();
+        table->setSortingEnabled(true);
+        setupSearchable(table, proxyModel);
+        ui->tabWidget->addTab(table, tr("Importance: %1").arg(name));
+        ui->tabWidget->setCurrentWidget(table);
+        return;
+    }
+    }
+    GUI_ASSERT(false && "Unexpected analysis report data", );
+}
+
 void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
 {
     GUI_ASSERT(faultTree, );
@@ -1543,88 +1597,15 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
             });
 }
 
-void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
+void MainWindow::resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis)
 {
-    ui->reportTreeWidget->clear();
-    m_reportActions.clear();
     m_analysis = std::move(analysis);
     ui->actionExportReportAs->setEnabled(static_cast<bool>(m_analysis));
-    if (!m_analysis)
-        return;
 
-    struct {
-        QString operator()(const mef::Gate *gate)
-        {
-            return QString::fromStdString(gate->id());
-        }
-
-        QString operator()(const std::pair<const mef::InitiatingEvent &,
-                                           const mef::Sequence &> &)
-        {
-            GUI_ASSERT(false && "unexpected analysis target", {});
-            return {};
-        }
-    } nameExtractor;
-    for (const core::RiskAnalysis::Result &result : m_analysis->results()) {
-        QString name = boost::apply_visitor(nameExtractor, result.id.target);
-        auto *widgetItem = new QTreeWidgetItem({name});
-        ui->reportTreeWidget->addTopLevelItem(widgetItem);
-
-        GUI_ASSERT(result.fault_tree_analysis,);
-        auto *productItem = new QTreeWidgetItem(
-            //: Cut-sets or prime-implicants (depending on the settings).
-            {tr("Products (%L1)")
-                 .arg(result.fault_tree_analysis->products().size())});
-        widgetItem->addChild(productItem);
-        m_reportActions.emplace(productItem, [this, &result, name] {
-            auto *table = new QTableView(this);
-            bool withProbability = result.probability_analysis != nullptr;
-            auto *tableModel = new model::ProductTableModel(
-                result.fault_tree_analysis->products(), withProbability, table);
-            auto *proxyModel = new model::SortFilterProxyModel(table);
-            proxyModel->setSourceModel(tableModel);
-            table->setModel(proxyModel);
-            table->setWordWrap(false);
-            table->horizontalHeader()->setSortIndicatorShown(true);
-            table->resizeColumnsToContents();
-            setupSearchable(table, proxyModel);
-            ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
-            ui->tabWidget->setCurrentWidget(table);
-            table->sortByColumn(withProbability ? 2 : 1,
-                                withProbability ? Qt::DescendingOrder
-                                                : Qt::AscendingOrder);
-            table->setSortingEnabled(true);
-        });
-
-        if (result.probability_analysis) {
-            widgetItem->addChild(new QTreeWidgetItem(
-                {tr("Probability (%1)")
-                     .arg(result.probability_analysis->p_total())}));
-        }
-
-        if (result.importance_analysis) {
-            auto *importanceItem = new QTreeWidgetItem(
-                //: The number of important events w/ factors defined.
-                {tr("Importance Factors (%L1)")
-                     .arg(result.importance_analysis->importance().size())});
-            widgetItem->addChild(importanceItem);
-            m_reportActions.emplace(importanceItem, [this, &result, name] {
-                auto *table = new QTableView(this);
-                auto *tableModel = new model::ImportanceTableModel(
-                    &result.importance_analysis->importance(), table);
-                auto *proxyModel = new model::SortFilterProxyModel(table);
-                proxyModel->setSourceModel(tableModel);
-                table->setModel(proxyModel);
-                table->setWordWrap(false);
-                table->horizontalHeader()->setSortIndicatorShown(true);
-                table->resizeColumnsToContents();
-                table->setSortingEnabled(true);
-                setupSearchable(table, proxyModel);
-                ui->tabWidget->addTab(table, tr("Importance: %1").arg(name));
-                ui->tabWidget->setCurrentWidget(table);
-            });
-        }
-    }
+    auto *oldModel = ui->reportTree->model();
+    ui->reportTree->setModel(
+        m_analysis ? new ReportTree(&m_analysis->results(), this) : nullptr);
+    delete oldModel;
 }
 
 } // namespace gui

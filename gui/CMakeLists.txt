@@ -54,6 +54,7 @@ set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/reporttree.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/importancetablemodel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/producttablemodel.cpp"

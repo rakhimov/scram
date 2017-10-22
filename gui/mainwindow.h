@@ -22,7 +22,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <QAbstractItemView>
@@ -33,7 +32,6 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QTimer>
-#include <QTreeWidgetItem>
 #include <QUndoStack>
 
 #include "src/model.h"
@@ -204,6 +202,8 @@ private:
     void activateModelTree(const QModelIndex &index);
     /// Activates the fault tree view.
     void activateFaultTreeDiagram(mef::FaultTree *faultTree);
+    /// Activates the report tree elements.
+    void activateReportTree(const QModelIndex &index);
 
     /**
      * @brief Resets the report view.
@@ -211,7 +211,7 @@ private:
      * @param analysis  The analysis with results.
      *                  nullptr to clear the report widget.
      */
-    void resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis);
+    void resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis);
 
     /**
      * Saves the model and sets the model file.
@@ -261,8 +261,6 @@ private:
     std::shared_ptr<mef::Model> m_model; ///< The analysis model.
     std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
-    std::unordered_map<QTreeWidgetItem *, std::function<void()>>
-        m_reportActions; ///< Actions on elements of the report tree widget.
 };
 
 } // namespace gui
