@@ -1048,10 +1048,8 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                         GUI_ASSERT(currentIndexes.empty() == false, );
                         auto index = currentIndexes.front();
                         GUI_ASSERT(index.parent().isValid() == false, );
-                        auto *proxyModel = static_cast<QSortFilterProxyModel *>(
-                            m_removable->model());
                         auto *element = static_cast<T *>(
-                            proxyModel->mapToSource(index).internalPointer());
+                            index.data(Qt::UserRole).value<void *>());
                         GUI_ASSERT(element, );
                         auto parents
                             = m_window->m_guiModel->parents(element->data());
@@ -1386,12 +1384,13 @@ QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
     table->setSortingEnabled(true);
     setupSearchable(table, proxyModel);
     setupRemovable<typename ContainerModel::ItemModel>(table);
-    connect(table, &QAbstractItemView::activated,
-            [this, proxyModel](const QModelIndex &index) {
+    connect(table, &QAbstractItemView::activated, this,
+            [this](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
                 EventDialog dialog(m_model.get(), this);
                 auto *item = static_cast<typename ContainerModel::ItemModel *>(
-                    proxyModel->mapToSource(index).internalPointer());
+                    index.data(Qt::UserRole).value<void *>());
+                GUI_ASSERT(item, );
                 dialog.setupData(*item);
                 if (dialog.exec() == QDialog::Accepted)
                     editElement(&dialog, item);
@@ -1421,14 +1420,15 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
 
     setupSearchable(tree, proxyModel);
     setupRemovable<model::Gate>(tree);
-    connect(tree, &QAbstractItemView::activated,
-            [this, proxyModel](const QModelIndex &index) {
+    connect(tree, &QAbstractItemView::activated, this,
+            [this](const QModelIndex &index) {
                 GUI_ASSERT(index.isValid(), );
                 if (index.parent().isValid())
                     return;
                 EventDialog dialog(m_model.get(), this);
                 auto *item = static_cast<model::Gate *>(
-                    proxyModel->mapToSource(index).internalPointer());
+                    index.data(Qt::UserRole).value<void *>());
+                GUI_ASSERT(item, );
                 dialog.setupData(*item);
                 if (dialog.exec() == QDialog::Accepted)
                     editElement(&dialog, item);
@@ -1492,7 +1492,8 @@ void MainWindow::activateModelTree(const QModelIndex &index)
     GUI_ASSERT(index.parent().parent().isValid() == false, );
     GUI_ASSERT(index.parent().row()
                    == static_cast<int>(ModelTree::Row::FaultTrees), );
-    auto faultTree = static_cast<mef::FaultTree *>(index.internalPointer());
+    auto faultTree = static_cast<mef::FaultTree *>(
+        index.data(Qt::UserRole).value<void *>());
     GUI_ASSERT(faultTree, );
     activateFaultTreeDiagram(faultTree);
 }

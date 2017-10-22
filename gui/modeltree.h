@@ -53,6 +53,9 @@ public:
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &index) const override;
+
+    /// @note The Qt::UserRole provides the pointer
+    ///       to the original model element if applicable.
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:

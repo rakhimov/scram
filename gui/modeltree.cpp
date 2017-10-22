@@ -110,8 +110,13 @@ QModelIndex ModelTree::parent(const QModelIndex &index) const
 
 QVariant ModelTree::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
+    if (role == Qt::UserRole)
+        return QVariant::fromValue(index.internalPointer());
+    if (role != Qt::DisplayRole)
+        return {};
+
     if (index.parent().isValid())
         return QString::fromStdString(
             static_cast<mef::FaultTree *>(index.internalPointer())->name());
