@@ -1382,6 +1382,7 @@ QAbstractItemView *MainWindow::constructElementTable(model::Model *guiModel,
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     table->setSelectionMode(QAbstractItemView::SingleSelection);
     table->setWordWrap(false);
+    table->horizontalHeader()->setSortIndicatorShown(true);
     table->resizeColumnsToContents();
     table->setSortingEnabled(true);
     setupSearchable(table, proxyModel);
@@ -1412,6 +1413,7 @@ QAbstractItemView *MainWindow::constructElementTable<model::GateContainerModel>(
     tree->setSelectionBehavior(QAbstractItemView::SelectRows);
     tree->setSelectionMode(QAbstractItemView::SingleSelection);
     tree->setWordWrap(false);
+    tree->header()->setSortIndicatorShown(true);
     tree->resizeColumnToContents(0);
     tree->setColumnWidth(0, 2 * tree->columnWidth(0));
     tree->setAlternatingRowColors(true);
@@ -1582,6 +1584,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
             proxyModel->setSourceModel(tableModel);
             table->setModel(proxyModel);
             table->setWordWrap(false);
+            table->horizontalHeader()->setSortIndicatorShown(true);
             table->resizeColumnsToContents();
             setupSearchable(table, proxyModel);
             ui->tabWidget->addTab(table, tr("Products: %1").arg(name));
@@ -1612,6 +1615,7 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                 proxyModel->setSourceModel(tableModel);
                 table->setModel(proxyModel);
                 table->setWordWrap(false);
+                table->horizontalHeader()->setSortIndicatorShown(true);
                 table->resizeColumnsToContents();
                 table->setSortingEnabled(true);
                 setupSearchable(table, proxyModel);
