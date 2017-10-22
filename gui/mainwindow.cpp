@@ -32,7 +32,6 @@
 #include <QProgressDialog>
 #include <QSvgGenerator>
 #include <QTableView>
-#include <QTableWidget>
 #include <QtConcurrent>
 #include <QtOpenGL>
 
@@ -59,6 +58,7 @@
 #include "modeltree.h"
 #include "preferencesdialog.h"
 #include "printable.h"
+#include "producttablemodel.h"
 #include "settingsdialog.h"
 #include "validator.h"
 
@@ -139,21 +139,6 @@ private:
         scene()->render(&painter);
     }
 };
-
-namespace {
-
-/// @returns A new table item for data tables.
-QTableWidgetItem *constructTableItem(QVariant data)
-{
-    auto *item = new QTableWidgetItem;
-    item->setData(Qt::EditRole, std::move(data));
-    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-    if (data.type() != QVariant::String)
-        item->setTextAlignment(Qt::AlignRight);
-    return item;
-}
-
-} // namespace
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
@@ -1589,39 +1574,13 @@ void MainWindow::resetReportWidget(std::unique_ptr<core::RiskAnalysis> analysis)
                  .arg(result.fault_tree_analysis->products().size())});
         widgetItem->addChild(productItem);
         m_reportActions.emplace(productItem, [this, &result, name] {
-            auto *table = new QTableWidget(nullptr);
-            const auto &products = result.fault_tree_analysis->products();
-            double sum = 0;
-            if (result.probability_analysis) {
-                table->setColumnCount(4);
-                table->setHorizontalHeaderLabels({tr("Product"), tr("Order"),
-                                                  tr("Probability"),
-                                                  tr("Contribution")});
-                for (const core::Product& product : products)
-                    sum += product.p();
-            } else {
-                table->setColumnCount(2);
-                table->setHorizontalHeaderLabels({tr("Product"), tr("Order")});
-            }
-            table->setRowCount(products.size());
-            int row = 0;
-            for (const core::Product &product : products) {
-                QStringList members;
-                for (const core::Literal &literal : product) {
-                    members.push_back(QString::fromStdString(
-                        (literal.complement ? "\u00AC" : "")
-                        + literal.event.id()));
-                }
-                table->setItem(row, 0, constructTableItem(members.join(
-                                           QStringLiteral(" \u22C5 "))));
-                table->setItem(row, 1, constructTableItem(product.order()));
-                if (result.probability_analysis) {
-                    table->setItem(row, 2, constructTableItem(product.p()));
-                    table->setItem(row, 3,
-                                   constructTableItem(product.p() / sum));
-                }
-                ++row;
-            }
+            auto *table = new QTableView(this);
+            auto *tableModel = new model::ProductTableModel(
+                result.fault_tree_analysis->products(),
+                result.probability_analysis != nullptr, table);
+            auto *proxyModel = new model::SortFilterProxyModel(table);
+            proxyModel->setSourceModel(tableModel);
+            table->setModel(proxyModel);
             table->setWordWrap(false);
             table->resizeColumnsToContents();
             table->setSortingEnabled(true);

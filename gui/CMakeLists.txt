@@ -56,6 +56,7 @@ set(SCRAM_GUI_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/importancetablemodel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/producttablemodel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/preferencesdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
