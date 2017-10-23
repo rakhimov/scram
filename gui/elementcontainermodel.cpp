@@ -358,8 +358,6 @@ QVariant GateContainerModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
-    if (role == Qt::UserRole)
-        return QVariant::fromValue(index.internalPointer());
 
     auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
     if (role == Qt::UserRole) {
