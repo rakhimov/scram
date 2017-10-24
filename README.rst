@@ -164,7 +164,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qtbase5-dev{,-tools} qttools5-dev{,-tools}
+    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qt{base,tools}5-dev{,-tools}
 
 
 macOS
