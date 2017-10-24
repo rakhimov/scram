@@ -11,12 +11,12 @@ Coding Styles
 
 This project adheres to the following coding styles:
 
-    #. `Google C++ Style Guide (GCSG)`_
-    #. `Google Python Style Guide (GPSG)`_
-    #. `PEP 8 -- Style Guide for Python Code (PEP8)`_
-    #. `KDE CMake Coding Style`_
-    #. `Qt Coding Style`_, `Qt Creator Coding Rules`_ for the GUI Development
-    #. `Google Shell Style Guide`_
+#. `Google C++ Style Guide (GCSG)`_
+#. `Google Python Style Guide (GPSG)`_
+#. `PEP 8 -- Style Guide for Python Code (PEP8)`_
+#. `KDE CMake Coding Style`_
+#. `Qt Coding Style`_, `Qt Creator Coding Rules`_ for the GUI Development
+#. `Google Shell Style Guide`_
 
 .. _Google C++ Style Guide (GCSG): https://google.github.io/styleguide/cppguide.html
 .. _Google Python Style Guide (GPSG): https://google.github.io/styleguide/pyguide.html
@@ -127,6 +127,11 @@ Additional Coding Conventions
        if (var.getter().data().empty() == false);
 
     3. Avoid inverted or negated logic if possible.
+
+- Prefer explicit function to pointer conversion with operator ``&``
+  instead of implicit decay.
+
+- Prefer implicit dereference in a function call through a pointer.
 
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
@@ -330,8 +335,8 @@ full test coverage is attempted
 through unit, integration, regression, and benchmarking tests.
 The following tools are used for this purpose:
 
-    - GoogleTest_
-    - Nose_
+- GoogleTest_
+- Nose_
 
 These tests are automated,
 and continuous integration is provided by `Travis CI`_ and AppVeyor_.
@@ -441,8 +446,8 @@ reST Documentation Style
 - No excessive blank lines at the end of files
 
 
-Core Code Documentation Style
------------------------------
+C++ Code Documentation Style
+----------------------------
 
 - Semantic Linefeeds
 - Doxygen comments with ``///`` and ``///<``
@@ -469,15 +474,6 @@ Core Code Documentation Style
 - The two-space formatting for ``@throws Error  Description``
 - In-code TODOs with Doxygen ``/// @todo``
   so that Doxygen picks them up.
-
-
-GUI Code Documentation Style
-----------------------------
-
-- Semantic Linefeeds
-- Leverage Qt Creator for auto-documentation with Doxygen
-  (Javadoc style and ``///<`` for one-liners)
-- The same organization of Doxygen sections as in the core code.
 
 
 ********************

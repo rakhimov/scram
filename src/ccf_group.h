@@ -102,9 +102,9 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @param[in] basic_event  A member basic event.
   ///
   /// @throws DuplicateArgumentError  The basic event is already in the group.
-  /// @throws IllegalOperation  The probability distribution or factors
-  ///                           for this CCF group are already defined.
-  ///                           No more members are accepted.
+  /// @throws LogicError  The probability distribution or factors
+  ///                     for this CCF group are already defined.
+  ///                     No more members are accepted.
   void AddMember(BasicEvent* basic_event);
 
   /// Adds the distribution that describes the probability of
@@ -115,7 +115,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   ///
   /// @param[in] distr  The probability distribution of this group.
   ///
-  /// @throws ValidationError  Not enough members.
+  /// @throws ValidityError  Not enough members.
   /// @throws LogicError  The distribution has already been defined.
   void AddDistribution(Expression* distr);
 
@@ -127,7 +127,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError  The level is invalid.
+  /// @throws ValidityError  The level is invalid.
   /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
@@ -140,7 +140,8 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// that are members of this CCF group
   /// to give more precise error messages.
   ///
-  /// @throws ValidationError  There is an issue with the setup.
+  /// @throws DomainError  The numeric values are invalid.
+  /// @throws ValidityError  There is an issue with the setup.
   /// @throws LogicError  The primary distribution, event, factors are not set.
   void Validate() const;
 
@@ -183,7 +184,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// All the general validation is done in the base class Validate function.
   /// The derived classes should only provided additional logic if any.
   ///
-  /// @throws ValidationError  The model is invalid.
+  /// @throws ValidityError  The model is invalid.
   virtual void DoValidate() const {}
 
   /// Calculates probabilities for new basic events
@@ -259,7 +260,7 @@ class PhiFactorModel : public CcfGroup {
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.
   ///
-  /// @throws ValidationError  There is an issue with the setup.
+  /// @throws ValidityError  There is an issue with the setup.
   void DoValidate() const override;
 
   ExpressionMap CalculateProbabilities() override;

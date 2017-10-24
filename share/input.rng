@@ -29,6 +29,8 @@
           <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
           <ref name="CCF-group-definition"/>
+          <ref name="extern-library-definition"/>
+          <ref name="extern-function-definition"/>
         </choice>
       </zeroOrMore>
     </element>
@@ -655,17 +657,8 @@
 
   <define name="Boolean-constant">
     <element name="constant">
-      <attribute name="value">
-        <ref name="Boolean-value"/>
-      </attribute>
+      <attribute name="value"> <data type="boolean"/> </attribute>
     </element>
-  </define>
-
-  <define name="Boolean-value">
-    <choice>
-      <value>true</value>
-      <value>false</value>
-    </choice>
   </define>
 
 
@@ -773,6 +766,7 @@
       <ref name="GLM"/>
       <ref name="Weibull"/>
       <ref name="periodic-test"/>
+      <ref name="extern-function"/>
     </choice>
   </define>
 
@@ -800,9 +794,7 @@
 
     <define name="bool">
       <element name="bool">
-        <attribute name="value">
-          <ref name="Boolean-value"/>
-        </attribute>
+        <attribute name="value"> <data type="boolean"/> </attribute>
       </element>
     </define>
 
@@ -1043,6 +1035,64 @@
         </oneOrMore>
       </element>
     </define>
+
+    <define name="extern-function">
+      <element name="extern-function">
+        <ref name="name"/>
+        <zeroOrMore>
+          <ref name="expression"/>
+        </zeroOrMore>
+      </element>
+    </define>
+
+    <define name="extern-library-definition">
+      <element name="define-extern-library">
+        <ref name="name"/>
+        <attribute name="path"> <data type="anyURI"/> </attribute>
+        <optional>
+          <attribute name="system"> <data type="boolean"/> </attribute>
+        </optional>
+        <optional>
+          <attribute name="decorate"> <data type="boolean"/> </attribute>
+        </optional>
+        <optional>
+          <ref name="label"/>
+        </optional>
+        <optional>
+          <ref name="attributes"/>
+        </optional>
+      </element>
+    </define>
+
+    <define name="extern-function-definition">
+      <element name="define-extern-function">
+        <ref name="name"/>
+        <attribute name="symbol"> <ref name="Identifier"/> </attribute>
+        <attribute name="library"> <ref name="Identifier"/> </attribute>
+        <optional>
+          <ref name="label"/>
+        </optional>
+        <optional>
+          <ref name="attributes"/>
+        </optional>
+        <ref name="extern-function-return-type"/>
+        <zeroOrMore>
+          <ref name="extern-function-parameter-type"/>
+        </zeroOrMore>
+      </element>
+    </define>
+
+    <define name="extern-function-return-type">
+      <ref name="extern-function-parameter-type"/>
+    </define>
+
+    <define name="extern-function-parameter-type">
+      <choice>
+        <element name="int"> <empty/> </element>
+        <element name="double"> <empty/> </element>
+      </choice>
+    </define>
+
 
     <!-- *********************************************************** -->
     <!-- V.2.7. Random-Deviates -->

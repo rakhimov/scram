@@ -149,19 +149,19 @@ def main():
     # Run correct inputs
     run_inputs("running correct inputs with output", PRINT_INPUTS, [])
     run_inputs("validating correct inputs w/o probability calculation",
-               PASS_INPUTS, ["--validate"])
+               PASS_INPUTS, ["--validate", "--verbosity", "1"])
     run_inputs("validating correct probability inputs", PASS_PROBS,
-               ["--probability", "1", "--validate"])
+               ["--probability", "1", "--validate", "--verbosity", "1"])
 
     # Run incorrect inputs
     run_inputs("validating incorrect inputs w/o probability calculation",
-               BAD_INPUTS, ["--validate"])
+               BAD_INPUTS, ["--validate", "--verbosity", "1"])
     run_inputs("validating incorrect probability inputs", BAD_PROBS,
-               ["--probability", "1", "--validate"])
+               ["--probability", "1", "--validate", "--verbosity", "1"])
 
     # Incorrect configurations
     run_inputs("validating incorrect configuration files", BAD_CONFIG,
-               ["--validate", "--config-file"])
+               ["--validate", "--verbosity", "1", "--config-file"])
 
 if __name__ == "__main__":
     main()

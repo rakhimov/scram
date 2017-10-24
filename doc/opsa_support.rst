@@ -10,16 +10,16 @@ for the benefit of the community [OPSA]_ [MEF]_.
 
 The initiative deals with the following issues in the current PSA:
 
-    - Quality assurance of calculations
-    - Unfounded reliance on numerical approximations and truncation
-    - Portability of the models between different software
-    - Clarity of the models
-    - Completeness of the models
-    - Modeling of human actions
-    - Better visualization of PSA results
-    - Difficulty of different software working with the same PSA model
-    - Lack of data and software backward and forward compatibility
-    - No universal format for industry data
+- Quality assurance of calculations
+- Unfounded reliance on numerical approximations and truncation
+- Portability of the models between different software
+- Clarity of the models
+- Completeness of the models
+- Modeling of human actions
+- Better visualization of PSA results
+- Difficulty of different software working with the same PSA model
+- Lack of data and software backward and forward compatibility
+- No universal format for industry data
 
 In order to facilitate information exchange and quality assurance,
 The Open-PSA community has developed a model exchange format([MEF]_) for PSA
@@ -27,11 +27,11 @@ that covers most needs to describe the analysis input for PSA tools.
 Moreover, the MEF defines the following requirements
 for its development and use:
 
-    - Soundness
-    - Completeness
-    - Clarity
-    - Generality
-    - Extensibility
+- Soundness
+- Completeness
+- Clarity
+- Generality
+- Extensibility
 
 The MEF is designed with the "declarative modeling" criterion
 "to present a more informative view of the actual systems, components,
@@ -83,14 +83,16 @@ to identify the supported and unsupported features.
     * Boolean operations
     * Conditional operations
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential, GLM, Weibull, periodic-test)
+    * Built-in expressions (exponential, GLM, Weibull, periodic-test, extern-function)
     * Test event (test-initiating-event, test-functional-event)
 
 
 Deviations from the Open-PSA MEF
 ================================
 
-- Redefinition of constructs (e.g., containers, events, parameters) is an error.
+- Extern function and library are implemented following
+  `the new proposal <https://github.com/open-psa/mef/pull/53>`_.
+- Redefinition of fault tree variables (e.g., basic-events, parameters) is an error.
 - Attributes are not inherited.
 - Recursive parameters are not allowed.
 - Recursive event-tree rules (instructions) are not allowed.

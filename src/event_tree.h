@@ -148,7 +148,7 @@ class Fork {
   /// @param[in] functional_event  The source functional event.
   /// @param[in] paths  The fork paths with functional event states.
   ///
-  /// @throws ValidationError  The path states are duplicated.
+  /// @throws ValidityError  The path states are duplicated.
   Fork(const FunctionalEvent& functional_event, std::vector<Path> paths);
 
   /// @returns The functional event of the fork.
@@ -189,7 +189,7 @@ class EventTree : public Element, public Usage, private boost::noncopyable {
   ///
   /// @param[in] element  A unique element defined in this event tree.
   ///
-  /// @throws ValidationError  The element is already in this container.
+  /// @throws ValidityError  The element is already in this container.
   ///
   /// @{
   void Add(Sequence* element);

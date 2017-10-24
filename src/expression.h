@@ -86,7 +86,8 @@ class Expression : private boost::noncopyable {
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
   ///
-  /// @throws InvalidArgument  The arguments are invalid for setup.
+  /// @throws DomainError  The argument value domains are invalid.
+  /// @throws ValidityError  The arguments are invalid for setup.
   virtual void Validate() const {}
 
   /// @returns The mean value of this expression.
@@ -233,11 +234,11 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
   ///
   /// @param[in] args  Arguments of this expression.
   ///
-  /// @throws InvalidArgument  The number of arguments is fewer than 2.
+  /// @throws ValidityError  The number of arguments is fewer than 2.
   explicit NaryExpression(std::vector<Expression*> args)
       : ExpressionFormula<NaryExpression<T, -1>>(std::move(args)) {
     if (Expression::args().size() < 2)
-      throw InvalidArgument("Expression requires 2 or more arguments.");
+      SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."));
   }
 
   void Validate() const override {}
@@ -276,81 +277,77 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
 
 /// Ensures that expression can be used for probability ([0, 1]).
 ///
-/// @tparam T  The exception type to throw for invalid probability values.
-///
 /// @param[in] expression  The expression to be validated.
 /// @param[in] description  The addition information for error messages.
 /// @param[in] type  The type of probability or fraction for error messages.
 ///
-/// @throws T  The expression is not suited for probability.
-template <typename T>
-void EnsureProbability(Expression* expression, const std::string& description,
-                       const char* type = "probability") {
+/// @throws DomainError  The expression is not suited for probability.
+inline void EnsureProbability(Expression* expression,
+                              const std::string& description,
+                              const char* type = "probability") {
   double value = expression->value();
   if (value < 0 || value > 1)
-    throw T("Invalid " + std::string(type) + " value for " + description);
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " value for " +
+                            description));
+
   if (IsProbability(expression->interval()) == false)
-    throw T("Invalid " + std::string(type) + " sample domain for " +
-            description);
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) +
+                            " sample domain for " + description));
 }
 
 /// Ensures that expression yields positive (> 0) values.
 ///
-/// @tparam T  The exception type to throw for invalid values.
-///
 /// @param[in] expression  The expression to be validated.
 /// @param[in] description  The addition information for error messages.
 ///
-/// @throws T  The expression is not suited for positive values.
-template <typename T>
-void EnsurePositive(Expression* expression, const std::string& description) {
+/// @throws DomainError  The expression is not suited for positive values.
+inline void EnsurePositive(Expression* expression,
+                           const std::string& description) {
   if (expression->value() <= 0)
-    throw T(description + " argument value must be positive.");
+    SCRAM_THROW(DomainError(description + " argument value must be positive."));
   if (IsPositive(expression->interval()) == false)
-    throw T(description + " argument sample domain must be positive.");
+    SCRAM_THROW(
+        DomainError(description + " argument sample domain must be positive."));
 }
 
 /// Ensures that expression yields non-negative (>= 0) values.
 ///
-/// @tparam T  The exception type to throw for invalid values.
-///
 /// @param[in] expression  The expression to be validated.
 /// @param[in] description  The addition information for error messages.
 ///
-/// @throws T  The expression is not suited for non-negative values.
-template <typename T>
-void EnsureNonNegative(Expression* expression, const std::string& description) {
+/// @throws DomainError  The expression is not suited for non-negative values.
+inline void EnsureNonNegative(Expression* expression,
+                              const std::string& description) {
   if (expression->value() < 0)
-    throw T(description + " argument value cannot be negative.");
+    SCRAM_THROW(
+        DomainError(description + " argument value cannot be negative."));
   if (IsNonNegative(expression->interval()) == false)
-    throw T(description + " argument sample cannot have negative values.");
+    SCRAM_THROW(DomainError(description +
+                            " argument sample cannot have negative values."));
 }
 
 /// Ensures that expression values are within the interval.
-///
-/// @tparam T  The exception type to throw for invalid values.
 ///
 /// @param[in] expression  The expression to be validated.
 /// @param[in] interval  The allowed interval.
 /// @param[in] type  The type of expression for error messages.
 ///
-/// @throws T  The expression is not suited for non-negative values.
-template <typename T>
-void EnsureWithin(Expression* expression, const Interval& interval,
-                  const char* type) {
+/// @throws DomainError  The expression is not suited for non-negative values.
+inline void EnsureWithin(Expression* expression, const Interval& interval,
+                         const char* type) {
   double arg_value = expression->value();
   if (!Contains(interval, arg_value)) {
     std::stringstream ss;
     ss << type << " argument value [" << arg_value << "] must be in "
        << interval << ".";
-    throw T(ss.str());
+    SCRAM_THROW(DomainError(ss.str()));
   }
   Interval arg_interval = expression->interval();
   if (!boost::icl::within(arg_interval, interval)) {
     std::stringstream ss;
     ss << type << " argument sample domain " << arg_interval << " must be in "
        << interval << ".";
-    throw T(ss.str());
+    SCRAM_THROW(DomainError(ss.str()));
   }
 }
 

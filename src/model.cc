@@ -72,7 +72,7 @@ void Model::Add(ParameterPtr parameter) {
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
   if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
-    throw RedefinitionError("Redefinition of event: " + id);
+    SCRAM_THROW(RedefinitionError("Redefinition of event: " + id));
 }
 
 void Model::Add(HouseEventPtr house_event) {
@@ -95,6 +95,17 @@ void Model::Add(CcfGroupPtr ccf_group) {
                                      "Redefinition of CCF group: ");
 }
 
+void Model::Add(std::unique_ptr<ExternLibrary> library) {
+  mef::AddElement<RedefinitionError>(std::move(library), &libraries_,
+                                     "Redefinition of extern library: ");
+}
+
+void Model::Add(ExternFunctionPtr extern_function) {
+  mef::AddElement<RedefinitionError>(std::move(extern_function),
+                                     &extern_functions_,
+                                     "Redefinition of extern function: ");
+}
+
 Formula::EventArg Model::GetEvent(const std::string& id) {
   if (auto it = ext::find(basic_events(), id))
     return it->get();
@@ -102,7 +113,7 @@ Formula::EventArg Model::GetEvent(const std::string& id) {
     return it->get();
   if (auto it = ext::find(house_events(), id))
     return it->get();
-  throw UndefinedElement("The event " + id + " is not in the model.");
+  SCRAM_THROW(UndefinedElement("The event " + id + " is not in the model."));
 }
 
 namespace {
@@ -112,10 +123,12 @@ template <class T, class Table>
 std::unique_ptr<T> RemoveEvent(T* event, Table* table) {
   auto it = table->find(event->id());
   if (it == table->end())
-    throw UndefinedElement("Event " + event->id() + " is not in the model.");
+    SCRAM_THROW(
+        UndefinedElement("Event " + event->id() + " is not in the model."));
+
   if (it->get() != event)
-    throw UndefinedElement("Duplicate event " + event->id() +
-                           " does not belong to the model.");
+    SCRAM_THROW(UndefinedElement("Duplicate event " + event->id() +
+                                 " does not belong to the model."));
   return ext::extract(it, table);
 }
 
@@ -136,11 +149,11 @@ GatePtr Model::Remove(Gate* gate) {
 FaultTreePtr Model::Remove(FaultTree* fault_tree) {
   auto it = fault_trees_.find(fault_tree->name());
   if (it == fault_trees_.end())
-    throw UndefinedElement("Fault tree " + fault_tree->name() +
-                           " is not in the model.");
+    SCRAM_THROW(UndefinedElement("Fault tree " + fault_tree->name() +
+                                 " is not in the model."));
   if (it->get() != fault_tree)
-    throw UndefinedElement("Duplicate fault tree " + fault_tree->name() +
-                           " does not belong to the model.");
+    SCRAM_THROW(UndefinedElement("Duplicate fault tree " + fault_tree->name() +
+                                 " does not belong to the model."));
   return ext::extract(it, &fault_trees_);
 }
 

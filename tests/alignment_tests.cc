@@ -30,9 +30,9 @@ TEST(PhaseTest, TimeFraction) {
   EXPECT_NO_THROW(Phase("phase", 0.1));
   EXPECT_NO_THROW(Phase("phase", 1));
 
-  EXPECT_THROW(Phase("phase", 0), InvalidArgument);
-  EXPECT_THROW(Phase("phase", 1.1), InvalidArgument);
-  EXPECT_THROW(Phase("phase", -0.1), InvalidArgument);
+  EXPECT_THROW(Phase("phase", 0), DomainError);
+  EXPECT_THROW(Phase("phase", 1.1), DomainError);
+  EXPECT_THROW(Phase("phase", -0.1), DomainError);
 }
 
 TEST(AlignmentTest, AddPhase) {
@@ -61,16 +61,16 @@ TEST(AlignmentTest, Validation) {
   auto phase_two = std::make_unique<Phase>("two", 0.5);
   auto phase_three = std::make_unique<Phase>("three", 0.1);
 
-  EXPECT_THROW(alignment.Validate(), ValidationError);
+  EXPECT_THROW(alignment.Validate(), ValidityError);
 
   ASSERT_NO_THROW(alignment.Add(std::move(phase_one)));
-  EXPECT_THROW(alignment.Validate(), ValidationError);
+  EXPECT_THROW(alignment.Validate(), ValidityError);
 
   ASSERT_NO_THROW(alignment.Add(std::move(phase_two)));
   EXPECT_NO_THROW(alignment.Validate());
 
   ASSERT_NO_THROW(alignment.Add(std::move(phase_three)));
-  EXPECT_THROW(alignment.Validate(), ValidationError);
+  EXPECT_THROW(alignment.Validate(), ValidityError);
 }
 
 }  // namespace test

@@ -17,21 +17,21 @@
 
 #include "serialization.h"
 
-#include <sstream>
-
 #include <gtest/gtest.h>
-#include <libxml++/libxml++.h>
+
+#include "utility.h"
 
 #include "env.h"
 #include "initializer.h"
 #include "settings.h"
+#include "xml.h"
 
 namespace scram {
 namespace mef {
+namespace test {
 
 TEST(SerializationTest, InputOutput) {
-  static xmlpp::RelaxNGValidator validator(Env::install_dir() +
-                                           "/share/scram/gui.rng");
+  static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
       {"./share/scram/input/fta/correct_tree_input.xml"},
@@ -47,14 +47,15 @@ TEST(SerializationTest, InputOutput) {
   for (const auto& input : inputs) {
     std::shared_ptr<Model> model;
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
-    std::stringstream output;
-    ASSERT_NO_THROW(Serialize(*model, output)) << input.front();
-
-    xmlpp::DomParser parser;
-    ASSERT_NO_THROW(parser.parse_stream(output)) << input.front();
-    ASSERT_NO_THROW(validator.validate(parser.get_document())) << input.front();
+    fs::path temp_file = utility::GenerateFilePath();
+    ASSERT_NO_THROW(Serialize(*model, temp_file.string())) << input.front()
+        << input.front() << " => " << temp_file;
+    ASSERT_NO_THROW(xml::Parse(temp_file.string(), &validator))
+        << input.front() << " => " << temp_file;
+    fs::remove(temp_file);
   }
 }
 
+}  // namespace test
 }  // namespace mef
 }  // namespace scram

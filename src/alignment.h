@@ -40,7 +40,7 @@ class Phase : public Element, private boost::noncopyable {
   ///
   /// @param[in] time_fraction  The fraction of mission-time spent in the phase.
   ///
-  /// @throws InvalidArgument  The fraction is not a valid value in (0, 1].
+  /// @throws DomainError  The fraction is not a valid value in (0, 1].
   Phase(std::string name, double time_fraction);
 
   /// @returns The positive fraction of mission-time spent in this phase.
@@ -80,7 +80,7 @@ class Alignment : public Element, private boost::noncopyable {
 
   /// Ensures that all phases add up to be valid for the alignment.
   ///
-  /// @throws ValidationError  Phases are incomplete (e.g., don't sum to 1).
+  /// @throws ValidityError  Phases are incomplete (e.g., don't sum to 1).
   void Validate();
 
  private:

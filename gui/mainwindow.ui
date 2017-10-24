@@ -84,8 +84,23 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuRecentFiles">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Recent &amp;Files</string>
+     </property>
+     <property name="icon">
+      <iconset theme="document-open-recent">
+       <normaloff>.</normaloff>.</iconset>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionClearList"/>
+    </widget>
     <addaction name="actionNewModel"/>
     <addaction name="actionOpenFiles"/>
+    <addaction name="menuRecentFiles"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -154,6 +169,8 @@
     <addaction name="actionRemoveElement"/>
     <addaction name="separator"/>
     <addaction name="actionRenameModel"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -292,18 +309,16 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTreeWidget" name="reportTreeWidget">
+      <widget class="QTreeView" name="reportTree">
        <property name="animated">
         <bool>true</bool>
        </property>
        <attribute name="headerVisible">
         <bool>false</bool>
        </attribute>
-       <column>
-        <property name="text">
-         <string notr="true">1</string>
-        </property>
-       </column>
+       <attribute name="headerDefaultSectionSize">
+        <number>0</number>
+       </attribute>
       </widget>
      </item>
     </layout>
@@ -443,42 +458,90 @@
   </action>
   <action name="action400">
    <property name="text">
-    <string>400%</string>
+    <string notr="true">400%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">400%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">400%</string>
    </property>
   </action>
   <action name="action200">
    <property name="text">
-    <string>200%</string>
+    <string notr="true">200%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">200%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">200%</string>
    </property>
   </action>
   <action name="action150">
    <property name="text">
-    <string>150%</string>
+    <string notr="true">150%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">150%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">150%</string>
    </property>
   </action>
   <action name="action125">
    <property name="text">
-    <string>125%</string>
+    <string notr="true">125%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">125%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">125%</string>
    </property>
   </action>
   <action name="action100">
    <property name="text">
-    <string>100%</string>
+    <string notr="true">100%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">100%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">100%</string>
    </property>
   </action>
   <action name="action85">
    <property name="text">
-    <string>85%</string>
+    <string notr="true">85%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">85%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">85%</string>
    </property>
   </action>
   <action name="action50">
    <property name="text">
-    <string>50%</string>
+    <string notr="true">50%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">50%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">50%</string>
    </property>
   </action>
   <action name="action70">
    <property name="text">
-    <string>70%</string>
+    <string notr="true">70%</string>
+   </property>
+   <property name="iconText">
+    <string notr="true">70%</string>
+   </property>
+   <property name="toolTip">
+    <string notr="true">70%</string>
    </property>
   </action>
   <action name="actionBestFit">
@@ -502,7 +565,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Run</string>
+    <string comment="execute analysis">&amp;Run</string>
    </property>
    <property name="iconText">
     <string>Run Analysis</string>
@@ -511,7 +574,7 @@
     <string>Run Analysis</string>
    </property>
    <property name="shortcut">
-    <string>Alt+R</string>
+    <string notr="true">Alt+R</string>
    </property>
   </action>
   <action name="actionSettings">
@@ -520,7 +583,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Settings...</string>
+    <string comment="analysis configuration">&amp;Settings...</string>
    </property>
    <property name="iconText">
     <string>Analysis Settings</string>
@@ -529,14 +592,11 @@
     <string>Analysis Settings</string>
    </property>
    <property name="shortcut">
-    <string>Alt+S</string>
+    <string notr="true">Alt+S</string>
    </property>
   </action>
   <action name="actionModelToolBar">
    <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -547,18 +607,12 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>&amp;Zoom</string>
    </property>
   </action>
   <action name="actionAnalysisToolBar">
    <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -569,18 +623,12 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>&amp;Data</string>
    </property>
   </action>
   <action name="actionReports">
    <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -627,9 +675,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
    <property name="text">
     <string>&amp;Edit</string>
    </property>
@@ -652,6 +697,20 @@
    </property>
    <property name="text">
     <string>Re&amp;name Model</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="icon">
+    <iconset theme="preferences-system">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Preferences...</string>
+   </property>
+  </action>
+  <action name="actionClearList">
+   <property name="text">
+    <string>&amp;Clear List</string>
    </property>
   </action>
  </widget>

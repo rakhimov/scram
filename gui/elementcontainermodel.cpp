@@ -133,6 +133,8 @@ QVariant BasicEventContainerModel::headerData(int section,
                                               Qt::Orientation orientation,
                                               int role) const
 {
+    if (role == Qt::InitialSortOrderRole && section == 2)
+        return Qt::DescendingOrder;
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return ElementContainerModel::headerData(section, orientation, role);
 
@@ -140,8 +142,10 @@ QVariant BasicEventContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: The flavor type of a basic event.
         return tr("Flavor");
     case 2:
+        //: In PRA context, probability may be unavailability or unreliability.
         return tr("Probability");
     case 3:
         return tr("Label");
@@ -152,8 +156,15 @@ QVariant BasicEventContainerModel::headerData(int section,
 QVariant BasicEventContainerModel::data(const QModelIndex &index,
                                         int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
+    if (role == Qt::TextAlignmentRole && index.column() == 2)
+        return Qt::AlignRight;
+    if (role == Qt::UserRole)
+        return QVariant::fromValue(index.internalPointer());
+    if (role != Qt::DisplayRole)
+        return {};
+
     auto *basicEvent = static_cast<BasicEvent *>(index.internalPointer());
 
     switch (index.column()) {
@@ -210,6 +221,7 @@ QVariant HouseEventContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: House event Boolean state.
         return tr("State");
     case 2:
         return tr("Label");
@@ -220,8 +232,13 @@ QVariant HouseEventContainerModel::headerData(int section,
 QVariant HouseEventContainerModel::data(const QModelIndex &index,
                                         int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
+    if (role == Qt::UserRole)
+        return QVariant::fromValue(index.internalPointer());
+    if (role != Qt::DisplayRole)
+        return {};
+
     auto *houseEvent = static_cast<HouseEvent *>(index.internalPointer());
 
     switch (index.column()) {
@@ -326,8 +343,10 @@ QVariant GateContainerModel::headerData(int section,
     case 0:
         return tr("ID");
     case 1:
+        //: Boolean operator of the Boolean formula.
         return tr("Connective");
     case 2:
+        //: The number of arguments in the Boolean formula.
         return tr("Args");
     case 3:
         return tr("Label");
@@ -337,9 +356,17 @@ QVariant GateContainerModel::headerData(int section,
 
 QVariant GateContainerModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
+
     auto value = reinterpret_cast<std::uintptr_t>(index.internalPointer());
+    if (role == Qt::UserRole) {
+        return QVariant::fromValue(
+            value & m_parentMask ? nullptr : index.internalPointer());
+    }
+    if (role != Qt::DisplayRole)
+        return {};
+
     if (value & m_parentMask) {
         auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
         return QString::fromStdString(

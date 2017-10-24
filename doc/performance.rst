@@ -186,7 +186,7 @@ Release build:
 
 - ZBDD Time: 0.80
 
-- Reporting (/dev/null): 2.6 | 2.8
+- Reporting (/dev/null): 2.0
 
 - # of ZBDD vertices created: 42580
 - # of Nodes in ZBDD: 10621
@@ -205,8 +205,8 @@ Release build:
 
 - ZBDD Time: 2.0
 
-- Reporting (/dev/null): 17.5 |  18.5
-- Reporting with probability: 28 | 31
+- Reporting (/dev/null): 12.6
+- Reporting with probability: 20.5
 
 - # of ZBDD vertices created: 213970
 - # of Nodes in ZBDD: 20426
@@ -236,9 +236,10 @@ Fault tree generator flags to get the model.
 Release build:
 ~~~~~~~~~~~~~~
 
-- Initialization and Validation    16 | 17.5
+- XML parsing & schema validation: (5, 5.5)
+- Initialization and Validation: (1.6, 2)
 
-- Memory:   1000
+- Memory:   900
 
 
 Fault Tree Generator Script

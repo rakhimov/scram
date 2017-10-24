@@ -58,12 +58,12 @@ TEST(BasicEventTest, Validate) {
   ConstantExpression p_negative(-0.1);
   event.expression(&p_negative);
   ASSERT_TRUE(event.HasExpression());
-  EXPECT_THROW(event.Validate(), ValidationError);
+  EXPECT_THROW(event.Validate(), ValidityError);
 
   ConstantExpression p_large(1.1);
   event.expression(&p_large);
   ASSERT_TRUE(event.HasExpression());
-  EXPECT_THROW(event.Validate(), ValidationError);
+  EXPECT_THROW(event.Validate(), ValidityError);
 }
 
 TEST(FormulaTest, VoteNumber) {
@@ -77,7 +77,7 @@ TEST(FormulaTest, VoteNumber) {
   // No vote number.
   EXPECT_THROW(top->vote_number(), LogicError);
   // Illegal vote number.
-  EXPECT_THROW(top->vote_number(-2), InvalidArgument);
+  EXPECT_THROW(top->vote_number(-2), ValidityError);
   // Legal vote number.
   EXPECT_NO_THROW(top->vote_number(2));
   // Trying to reset the vote number.
@@ -95,7 +95,7 @@ TEST(FormulaTest, EventArguments) {
   // Adding first child.
   EXPECT_NO_THROW(top->AddArgument(&first_child));
   // Re-adding a child must cause an error.
-  EXPECT_THROW(top->AddArgument(&first_child), ValidationError);
+  EXPECT_THROW(top->AddArgument(&first_child), ValidityError);
   // Check the contents of the children container.
   EXPECT_EQ(&first_child, boost::get<BasicEvent*>(top->event_args().front()));
   // Adding another child.
@@ -154,9 +154,9 @@ TEST(FormulaTest, Validate) {
   BasicEvent arg_three("c");
 
   // AND Formula tests.
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_three);
@@ -164,9 +164,9 @@ TEST(FormulaTest, Validate) {
 
   // OR Formula tests.
   top = FormulaPtr(new Formula(kOr));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_three);
@@ -174,25 +174,25 @@ TEST(FormulaTest, Validate) {
 
   // NOT Formula tests.
   top = FormulaPtr(new Formula(kNot));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 
   // NULL Formula tests.
   top = FormulaPtr(new Formula(kNull));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 
   // NOR Formula tests.
   top = FormulaPtr(new Formula(kNor));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_three);
@@ -200,9 +200,9 @@ TEST(FormulaTest, Validate) {
 
   // NAND Formula tests.
   top = FormulaPtr(new Formula(kNand));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_three);
@@ -210,22 +210,22 @@ TEST(FormulaTest, Validate) {
 
   // XOR Formula tests.
   top = FormulaPtr(new Formula(kXor));
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
   EXPECT_NO_THROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 
   // VOTE/ATLEAST formula tests.
   top = FormulaPtr(new Formula(kVote));
   top->vote_number(2);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->AddArgument(&arg_three);
   EXPECT_NO_THROW(top->Validate());
 }
@@ -241,14 +241,14 @@ TEST(MEFGateTest, Inhibit) {
   GatePtr top(new Gate("top"));
   top->formula(FormulaPtr(new Formula(kAnd)));
   top->AddAttribute(inh_attr);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->formula().AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
   top->formula().AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 
   top->formula().AddArgument(&arg_three);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 
   top = GatePtr(new Gate("top"));
   top->formula(FormulaPtr(new Formula(kAnd)));
@@ -262,7 +262,7 @@ TEST(MEFGateTest, Inhibit) {
   top->formula().AddArgument(&arg_three);  // Conditional event.
   EXPECT_NO_THROW(top->Validate());
   arg_one.AddAttribute(cond);
-  EXPECT_THROW(top->Validate(), ValidationError);
+  EXPECT_THROW(top->Validate(), ValidityError);
 }
 
 TEST(PrimaryEventTest, HouseProbability) {

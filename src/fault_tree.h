@@ -52,7 +52,7 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @param[in] role  The default role for container members.
   ///
   /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name or reference paths are malformed.
+  /// @throws ValidityError  The name or reference paths are malformed.
   explicit Component(std::string name, std::string base_path = "",
                      RoleSpecifier role = RoleSpecifier::kPublic);
 
@@ -79,7 +79,7 @@ class Component : public Element, public Role, private boost::noncopyable {
   ///
   /// @param[in] element  The element to be added to the container.
   ///
-  /// @throws ValidationError  The element is already in this container.
+  /// @throws ValidityError  The element is already in this container.
   ///
   /// @{
   void Add(Gate* element);
@@ -119,7 +119,7 @@ class Component : public Element, public Role, private boost::noncopyable {
   /// @param[in] event  The event to be added to this component.
   /// @param[in,out] container  The destination container.
   ///
-  /// @throws ValidationError  The event is already in this container.
+  /// @throws ValidityError  The event is already in this container.
   template <class T, class Container>
   void AddEvent(T* event, Container* container);
 

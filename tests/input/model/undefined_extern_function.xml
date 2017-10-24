@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <model-data>
+    <define-parameter name="param1">
+      <extern-function name="fun3">
+        <float value="1"/>
+      </extern-function>
+    </define-parameter>
+  </model-data>
+</opsa-mef>

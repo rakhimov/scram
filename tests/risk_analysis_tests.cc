@@ -17,15 +17,15 @@
 
 #include "risk_analysis_tests.h"
 
-#include <sstream>
 #include <utility>
 
-#include <libxml++/libxml++.h>
+#include "utility.h"
 
 #include "env.h"
 #include "error.h"
 #include "initializer.h"
 #include "reporter.h"
+#include "xml.h"
 
 namespace scram {
 namespace core {
@@ -47,24 +47,24 @@ void RiskAnalysisTest::SetUp() {
 }
 
 void RiskAnalysisTest::ProcessInputFiles(
-    const std::vector<std::string>& input_files) {
-  mef::Initializer init(input_files, settings);
+    const std::vector<std::string>& input_files, bool allow_extern) {
+  mef::Initializer init(input_files, settings, allow_extern);
   model = init.model();
   analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
   result_ = Result();
 }
 
 void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
-  static xmlpp::RelaxNGValidator validator(Env::report_schema());
+  static xml::Validator validator(Env::report_schema());
 
   ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
-  std::stringstream output;
-  ASSERT_NO_THROW(Reporter().Report(*analysis, output));
-
-  xmlpp::DomParser parser;
-  ASSERT_NO_THROW(parser.parse_stream(output));
-  ASSERT_NO_THROW(validator.validate(parser.get_document()));
+  fs::path temp_file = utility::GenerateFilePath();
+  ASSERT_NO_THROW(Reporter().Report(*analysis, temp_file.string()))
+      << tree_input.front() << " => " << temp_file;
+  ASSERT_NO_THROW(xml::Parse(temp_file.string(), &validator))
+      << tree_input.front() << " => " << temp_file;
+  fs::remove(temp_file);
 }
 
 const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
@@ -632,6 +632,18 @@ TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
       {"C", "Ambiguous.Private.A", "Ambiguous.Private.B"},
       {"G", "Ambiguous.Private.A", "Ambiguous.Private.B"}};
   EXPECT_EQ(mcs, products());
+}
+
+// Extern function call check.
+TEST_P(RiskAnalysisTest, ExternFunctionProbability) {
+  std::string tree_input =
+      "./share/scram/input/model/extern_full_check.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}, true));
+  ASSERT_NO_THROW(analysis->Analyze());
+  std::set<std::set<std::string>> mcs = {{"e1"}};
+  EXPECT_EQ(mcs, products());
+  EXPECT_DOUBLE_EQ(0.1, p_total());
 }
 
 }  // namespace test

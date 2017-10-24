@@ -74,6 +74,7 @@ Steps in XML Input Validation
         * Event trees
         * Initiating events or event groups
         * Functional events, branches, sequences, rules
+        * Extern functions and libraries
 
 
 .. _schema:

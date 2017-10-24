@@ -32,17 +32,17 @@ Element::Element(std::string name) { Element::name(std::move(name)); }
 
 void Element::name(std::string name) {
   if (name.empty())
-    throw LogicError("The element name cannot be empty");
+    SCRAM_THROW(LogicError("The element name cannot be empty"));
   if (name.find('.') != std::string::npos)
-    throw InvalidArgument("The element name is malformed.");
+    SCRAM_THROW(ValidityError("The element name is malformed."));
   name_ = std::move(name);
 }
 
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
-    throw DuplicateArgumentError(
+    SCRAM_THROW(DuplicateArgumentError(
         "Trying to overwrite an existing attribute {event: " + name_ +
-        ", attr: " + attr.name + "} ");
+        ", attr: " + attr.name + "} "));
   }
   attributes_.emplace_back(std::move(attr));
 }
@@ -70,7 +70,7 @@ const Attribute& Element::GetAttribute(const std::string& name) const {
     return attr.name == name;
   });
   if (it == attributes_.end())
-    throw LogicError("Element does not have attribute: " + name);
+    SCRAM_THROW(LogicError("Element does not have attribute: " + name));
 
   return *it;
 }
@@ -90,10 +90,10 @@ Role::Role(RoleSpecifier role, std::string base_path)
       kRole_(role) {
   if (!kBasePath_.empty() &&
       (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
-    throw InvalidArgument("Element reference base path is malformed.");
+    SCRAM_THROW(ValidityError("Element reference base path is malformed."));
   }
   if (kRole_ == RoleSpecifier::kPrivate && kBasePath_.empty())
-    throw ValidationError("Elements cannot be private at model scope.");
+    SCRAM_THROW(ValidityError("Elements cannot be private at model scope."));
 }
 
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)

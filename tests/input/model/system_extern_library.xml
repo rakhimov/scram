@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!--
+  This input requires modification of the linker lookup paths,
+  which cannot be done by unit tests.
+-->
+<opsa-mef>
+  <define-extern-library name="dummy" path="scram_dummy_extern" decorate="true" system="true"/>
+</opsa-mef>

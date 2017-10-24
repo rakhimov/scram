@@ -42,35 +42,36 @@ Settings& Settings::algorithm(Algorithm value) noexcept {
   return *this;
 }
 
-Settings& Settings::algorithm(const std::string& value) {
+Settings& Settings::algorithm(boost::string_ref value) {
   auto it = boost::find(kAlgorithmToString, value);
   if (it == std::end(kAlgorithmToString))
-    throw InvalidArgument("The qualitative analysis algorithm '" + value +
-                          "' is not recognized.");
+    SCRAM_THROW(SettingsError("The qualitative analysis algorithm '" +
+                              value.to_string() + "' is not recognized."));
   return algorithm(
       static_cast<Algorithm>(std::distance(kAlgorithmToString, it)));
 }
 
 Settings& Settings::approximation(Approximation value) {
   if (value != Approximation::kNone && prime_implicants_)
-    throw InvalidArgument(
-        "Prime implicants require no quantitative approximation.");
+    SCRAM_THROW(SettingsError(
+        "Prime implicants require no quantitative approximation."));
   approximation_ = value;
   return *this;
 }
 
-Settings& Settings::approximation(const std::string& value) {
+Settings& Settings::approximation(boost::string_ref value) {
   auto it = boost::find(kApproximationToString, value);
   if (it == std::end(kApproximationToString))
-    throw InvalidArgument("The probability approximation '" + value +
-                          "'is not recognized.");
+    SCRAM_THROW(SettingsError("The probability approximation '" +
+                              value.to_string() + "'is not recognized."));
   return approximation(
       static_cast<Approximation>(std::distance(kApproximationToString, it)));
 }
 
 Settings& Settings::prime_implicants(bool flag) {
   if (flag && algorithm_ != Algorithm::kBdd)
-    throw InvalidArgument("Prime implicants can only be calculated with BDD");
+    SCRAM_THROW(
+        SettingsError("Prime implicants can only be calculated with BDD"));
 
   prime_implicants_ = flag;
   if (prime_implicants_)
@@ -79,24 +80,25 @@ Settings& Settings::prime_implicants(bool flag) {
 }
 
 Settings& Settings::limit_order(int order) {
-  if (order < 0)
-    throw InvalidArgument("The limit on the order of products "
-                          "cannot be less than 0.");
+  if (order < 0) {
+    SCRAM_THROW(SettingsError("The limit on the order of products "
+                              "cannot be less than 0."));
+  }
   limit_order_ = order;
   return *this;
 }
 
 Settings& Settings::cut_off(double prob) {
   if (prob < 0 || prob > 1)
-    throw InvalidArgument("The cut-off probability cannot be negative or"
-                          " more than 1.");
+    SCRAM_THROW(SettingsError("The cut-off probability cannot be negative or"
+                              " more than 1."));
   cut_off_ = prob;
   return *this;
 }
 
 Settings& Settings::num_trials(int n) {
   if (n < 1)
-    throw InvalidArgument("The number of trials cannot be less than 1.");
+    SCRAM_THROW(SettingsError("The number of trials cannot be less than 1."));
 
   num_trials_ = n;
   return *this;
@@ -104,7 +106,8 @@ Settings& Settings::num_trials(int n) {
 
 Settings& Settings::num_quantiles(int n) {
   if (n < 1)
-    throw InvalidArgument("The number of quantiles cannot be less than 1.");
+    SCRAM_THROW(
+        SettingsError("The number of quantiles cannot be less than 1."));
 
   num_quantiles_ = n;
   return *this;
@@ -112,7 +115,7 @@ Settings& Settings::num_quantiles(int n) {
 
 Settings& Settings::num_bins(int n) {
   if (n < 1)
-    throw InvalidArgument("The number of bins cannot be less than 1.");
+    SCRAM_THROW(SettingsError("The number of bins cannot be less than 1."));
 
   num_bins_ = n;
   return *this;
@@ -120,7 +123,7 @@ Settings& Settings::num_bins(int n) {
 
 Settings& Settings::seed(int s) {
   if (s < 0)
-    throw InvalidArgument("The seed for PRNG cannot be negative.");
+    SCRAM_THROW(SettingsError("The seed for PRNG cannot be negative."));
 
   seed_ = s;
   return *this;
@@ -128,7 +131,7 @@ Settings& Settings::seed(int s) {
 
 Settings& Settings::mission_time(double time) {
   if (time < 0)
-    throw InvalidArgument("The mission time cannot be negative.");
+    SCRAM_THROW(SettingsError("The mission time cannot be negative."));
 
   mission_time_ = time;
   return *this;
@@ -136,9 +139,9 @@ Settings& Settings::mission_time(double time) {
 
 Settings& Settings::time_step(double time) {
   if (time < 0)
-    throw InvalidArgument("The time step cannot be negative.");
+    SCRAM_THROW(SettingsError("The time step cannot be negative."));
   if (!time && safety_integrity_levels_)
-    throw InvalidArgument("The time step cannot be disabled for the SIL");
+    SCRAM_THROW(SettingsError("The time step cannot be disabled for the SIL"));
 
   time_step_ = time;
   return *this;
@@ -146,7 +149,8 @@ Settings& Settings::time_step(double time) {
 
 Settings& Settings::safety_integrity_levels(bool flag) {
   if (flag && !time_step_)
-    throw InvalidArgument("The time step is not set for the SIL calculations.");
+    SCRAM_THROW(
+        SettingsError("The time step is not set for the SIL calculations."));
 
   safety_integrity_levels_ = flag;
   if (safety_integrity_levels_)

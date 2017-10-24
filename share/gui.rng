@@ -291,17 +291,8 @@
 
   <define name="Boolean-constant">
     <element name="constant">
-      <attribute name="value">
-        <ref name="Boolean-value"/>
-      </attribute>
+      <attribute name="value"> <data type="boolean"/> </attribute>
     </element>
-  </define>
-
-  <define name="Boolean-value">
-    <choice>
-      <value>true</value>
-      <value>false</value>
-    </choice>
   </define>
 
 
@@ -348,9 +339,7 @@
 
     <define name="bool">
       <element name="bool">
-        <attribute name="value">
-          <ref name="Boolean-value"/>
-        </attribute>
+        <attribute name="value"> <data type="boolean"/> </attribute>
       </element>
     </define>
 

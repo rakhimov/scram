@@ -69,6 +69,14 @@
      </property>
     </spacer>
    </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="recentFilesBox">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

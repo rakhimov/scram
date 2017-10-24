@@ -1,0 +1,5 @@
+project_identifier: scram
+
+files:
+  - source: /gui/translations/scramgui_en.ts
+    translation: /gui/translations/scramgui_%locale_with_underscore%.ts

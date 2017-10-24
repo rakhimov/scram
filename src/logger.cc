@@ -24,8 +24,6 @@
 
 #include <string>
 
-#include "error.h"
-
 namespace scram {
 
 const char* const Logger::kLevelToString_[] = {"ERROR", "WARNING", "INFO",
@@ -37,14 +35,6 @@ Logger::~Logger() noexcept {
   os_ << "\n";
   std::fputs(os_.str().c_str(), stderr);  // stdio is used for thread safety.
   std::fflush(stderr);  // Should be no-op for the unbuffered stderr.
-}
-
-void Logger::SetVerbosity(int level) {
-  if (level < 0 || level > kMaxVerbosity) {
-    throw InvalidArgument("Log verbosity must be between 0 and " +
-                          std::to_string(kMaxVerbosity));
-  }
-  report_level_ = static_cast<LogLevel>(level);
 }
 
 std::ostringstream& Logger::Get(LogLevel level) {

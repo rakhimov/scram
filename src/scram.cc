@@ -18,13 +18,22 @@
 /// @file scram.cc
 /// Main entrance.
 
+#include <cstdarg>
+#include <cstdio>  // vsnprintf
+#include <cstring>  // strerror
+
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include <boost/core/typeinfo.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
+
+#include <libxml/parser.h>  // xmlInitParser, xmlCleanupParser
+#include <libxml/xmlerror.h>  // initGenericErrorDefaultFunc
+#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
 
 #include "config.h"
 #include "error.h"
@@ -52,6 +61,7 @@ po::options_description ConstructOptions() {
       ("help", "Display this help message")
       ("version", "Display version information")
       ("config-file", OPT_VALUE(path), "XML file with analysis configurations")
+      ("allow-extern", "**UNSAFE** Allow external libraries")
       ("validate", "Validate input files without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
       ("zbdd", "Perform qualitative analysis with ZBDD")
@@ -76,6 +86,7 @@ po::options_description ConstructOptions() {
       ("num-bins", OPT_VALUE(int), "Number of bins for histograms")
       ("seed", OPT_VALUE(int), "Seed for the pseudo-random number generator")
       ("output-path,o", OPT_VALUE(path), "Output path for reports")
+      ("no-indent", "Omit indentation whitespace in output XML")
       ("verbosity", OPT_VALUE(int), "Set log verbosity");
 #ifndef NDEBUG
   po::options_description debug("Debug Options");
@@ -130,13 +141,23 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << " (" << scram::version::describe() << ")"
               << "\n\nDependencies:\n"
               << "   Boost       " << scram::version::boost() << "\n"
-              << "   libxml++    " << scram::version::libxmlpp() << "\n"
               << "   libxml2     " << scram::version::libxml() << std::endl;
     return -1;
   }
+
+  if (vm->count("verbosity")) {
+    int level = (*vm)["verbosity"].as<int>();
+    if (level < 0 || level > scram::kMaxVerbosity) {
+      std::cerr << "Log verbosity must be between 0 and "
+                << scram::kMaxVerbosity << ".\n\n"
+                << usage << "\n\n" << desc << std::endl;
+      return 1;
+    }
+  }
+
   if (!vm->count("input-files") && !vm->count("config-file")) {
-    std::cerr << "No input or configuration file is given.\n" << std::endl;
-    std::cerr << usage << "\n\n" << desc << std::endl;
+    std::cerr << "No input or configuration file is given.\n\n"
+              << usage << "\n\n" << desc << std::endl;
     return 1;
   }
   if ((vm->count("bdd") + vm->count("zbdd") + vm->count("mocus")) > 1) {
@@ -165,7 +186,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @param[in] vm  Variables map of program options.
 /// @param[in,out] settings  Pre-configured or default settings.
 ///
-/// @throws InvalidArgument  The indication of an error in arguments.
+/// @throws SettingsError  The indication of an error in arguments.
 /// @throws std::exception  vm does not contain a required option.
 ///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm,
@@ -214,9 +235,6 @@ void ConstructSettings(const po::variables_map& vm,
 /// @throws boost::exception  Boost errors with the variables map.
 /// @throws std::exception  All other problems.
 void RunScram(const po::variables_map& vm) {
-  if (vm.count("verbosity")) {
-    scram::Logger::SetVerbosity(vm["verbosity"].as<int>());
-  }
   scram::core::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
   std::string output_path;
@@ -243,10 +261,11 @@ void RunScram(const po::variables_map& vm) {
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
   std::shared_ptr<scram::mef::Model> model =
-      scram::mef::Initializer(input_files, settings).model();
+      scram::mef::Initializer(input_files, settings, vm.count("allow-extern"))
+          .model();
 #ifndef NDEBUG
   if (vm.count("serialize"))
-    return Serialize(*model, std::cout);
+    return Serialize(*model, stdout);
 #endif
   if (vm.count("validate"))
     return;  // Stop if only validation is requested.
@@ -259,23 +278,45 @@ void RunScram(const po::variables_map& vm) {
     return;
 #endif
   scram::Reporter reporter;
+  bool indent = vm.count("no-indent") ? false : true;
   if (output_path.empty()) {
-    reporter.Report(analysis, std::cout);
+    reporter.Report(analysis, stdout, indent);
   } else {
-    reporter.Report(analysis, output_path);
+    reporter.Report(analysis, output_path, indent);
   }
 }
 
-}  // namespace
+/// Callback function to redirect XML library error/warning messages to logging.
+/// Otherwise, the messages are printed to the standard error.
+///
+/// @param[in] msg  The printf-style format string.
+/// @param[in] ...  The variadic arguments for the format string.
+///
+/// @pre The library strictly follows validity conditions of printf.
+void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
+  std::va_list args;
+  va_start(args, msg);
 
-/// Catches an exception,
-/// prints its message to the standard error,
-/// and returns error code of 1 to exit from the main function.
-#define CATCH(exception_type)                                         \
-  catch (const exception_type& err) {                                 \
-    std::cerr << #exception_type << ":\n" << err.what() << std::endl; \
-    return 1;                                                         \
+  struct VAListCloser {
+    ~VAListCloser() { va_end(args_); }
+    std::va_list& args_;
+  } args_closer{args};
+
+  std::va_list args_for_nchar;  // Only used to determine the string length.
+  va_copy(args_for_nchar, args);
+  int nchar = std::vsnprintf(nullptr, 0, msg, args_for_nchar);
+  va_end(args_for_nchar);
+  if (nchar < 0) {
+    LOG(scram::ERROR) << "String formatting failure: " << std::strerror(errno);
+    return;
   }
+
+  std::vector<char> buffer(nchar + /*null terminator*/ 1);
+  std::vsnprintf(buffer.data(), buffer.size(), msg, args);
+  LOG(scram::WARNING) << buffer.data();
+}
+
+}  // namespace
 
 /// Command-line SCRAM entrance.
 ///
@@ -285,33 +326,82 @@ void RunScram(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
-#ifdef NDEBUG
-  try {  // Catch exceptions only for non-debug builds.
-#endif
+  LIBXML_TEST_VERSION
 
+  struct XmlInit {
+    XmlInit() { xmlInitParser(); }
+    ~XmlInit() { xmlCleanupParser(); }
+  } xml_memory_guard;
+
+  xmlGenericErrorFunc xml_error_printer = LogXmlError;
+  initGenericErrorDefaultFunc(&xml_error_printer);
+
+  try {
     // Parse command-line options.
     po::variables_map vm;
     int ret = ParseArguments(argc, argv, &vm);
     if (ret == 1)
       return 1;
+
+    if (vm.count("verbosity")) {
+      scram::Logger::report_level(
+          static_cast<scram::LogLevel>(vm["verbosity"].as<int>()));
+    }
+
     if (ret == 0)
       RunScram(vm);
+  } catch (const scram::LogicError& err) {
+    LOG(scram::ERROR) << "Logic Error:\n" << boost::diagnostic_information(err);
+    return 1;
+  } catch (const scram::IOError& err) {
+    LOG(scram::DEBUG1) << boost::diagnostic_information(err);
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
+    const std::string* filename =
+        boost::get_error_info<boost::errinfo_file_name>(err);
+    assert(filename);
+    std::cerr << "File: " << *filename << "\n";
+    if (const std::string* mode =
+            boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
+      std::cerr << "Open mode: " << *mode << "\n";
+    }
 
-#ifdef NDEBUG
-  }
-  CATCH(scram::IOError)
-  CATCH(scram::ValidationError)
-  CATCH(scram::ValueError)
-  CATCH(scram::LogicError)
-  CATCH(scram::IllegalOperation)
-  CATCH(scram::InvalidArgument)
-  CATCH(scram::Error)
-  catch (boost::exception& boost_err) {
-    std::cerr << "Boost Exception:\n"
-              << boost::diagnostic_information(boost_err) << std::endl;
+    if (const int* errnum = boost::get_error_info<boost::errinfo_errno>(err)) {
+      std::cerr << "Error code: " << *errnum << "\n";
+      std::cerr << "Error string: " << std::strerror(*errnum) << "\n";
+    }
+    std::cerr << "\n" << err.what() << std::endl;
+    return 1;
+  } catch (const scram::Error& err) {
+    LOG(scram::DEBUG1) << boost::diagnostic_information(err);
+    std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
+    if (const std::string* filename =
+            boost::get_error_info<boost::errinfo_file_name>(err)) {
+      std::cerr << "File: " << *filename << "\n";
+      if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
+        std::cerr << "Line: " << *line << "\n";
+    }
+    if (const std::string* container =
+            boost::get_error_info<scram::mef::errinfo_container>(err)) {
+      std::cerr << "MEF Container: " << *container << "\n";
+    }
+    if (const std::string* xml_element =
+            boost::get_error_info<scram::xml::errinfo_element>(err)) {
+      std::cerr << "XML element: " << *xml_element << "\n";
+    }
+    if (const std::string* xml_attribute =
+            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+      std::cerr << "XML attribute: " << *xml_attribute << "\n";
+    }
+    std::cerr << "\n" << err.what() << std::endl;
+    return 1;
+  } catch (const boost::exception& boost_err) {
+    LOG(scram::ERROR) << "Unexpected Boost Exception:\n"
+                      << boost::diagnostic_information(boost_err);
+    return 1;
+  } catch (const std::exception& err) {
+    LOG(scram::ERROR) << "Unexpected Exception: "
+                      << boost::core::demangled_name(typeid(err)) << ": "
+                      << err.what();
     return 1;
   }
-  CATCH(std::exception)
-#endif
 }  // End of main.
-#undef CATCH

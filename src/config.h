@@ -26,9 +26,9 @@
 #include <vector>
 
 #include <boost/filesystem/path.hpp>
-#include <libxml++/libxml++.h>
 
 #include "settings.h"
+#include "xml.h"
 
 namespace scram {
 
@@ -45,8 +45,8 @@ class Config {
   ///
   /// @param[in] config_file  The path to an XML file with configurations.
   ///
-  /// @throws ValidationError  The configurations have problems.
-  /// @throws InvalidArgument  Settings values contain errors.
+  /// @throws ValidityError  The configurations have problems.
+  /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
   explicit Config(const std::string& config_file);
 
@@ -65,47 +65,23 @@ class Config {
   ///
   /// @param[in] root  The root XML element.
   /// @param[in] base_path  The base path for relative path resolution.
-  void GatherInputFiles(const xmlpp::Node* root,
+  void GatherInputFiles(const xml::Element& root,
                         const boost::filesystem::path& base_path);
 
   /// Gathers options for analysis.
   ///
   /// @param[in] root  The root XML element.
-  void GatherOptions(const xmlpp::Node* root);
-
-  /// Gets the output path for reports.
-  ///
-  /// @param[in] root  The root XML element.
-  /// @param[in] base_path  The base path for relative path resolution.
-  void GetOutputPath(const xmlpp::Node* root,
-                     const boost::filesystem::path& base_path);
-
-  /// Extracts Qualitative analysis algorithm.
-  ///
-  /// @param[in] analysis  Analysis element node.
-  void SetAlgorithm(const xmlpp::Element* analysis);
+  void GatherOptions(const xml::Element& root);
 
   /// Extracts analysis types to be performed from analysis element.
   ///
   /// @param[in] analysis  Analysis element node.
-  void SetAnalysis(const xmlpp::Element* analysis);
-
-  /// Extracts the approximation from the configurations.
-  ///
-  /// @param[in] approx  Approximation element node.
-  void SetApproximation(const xmlpp::Element* approx);
+  void SetAnalysis(const xml::Element& analysis);
 
   /// Extracts limits for analysis.
   ///
   /// @param[in] limits  An XML element containing various limits.
-  void SetLimits(const xmlpp::Element* limits);
-
-  /// Interprets the given string into a boolean value.
-  ///
-  /// @param[in] flag  A flag that can be 0, 1, true, or false.
-  ///
-  /// @returns The interpreted boolean.
-  bool GetBoolFromString(const std::string& flag);
+  void SetLimits(const xml::Element& limits);
 
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.

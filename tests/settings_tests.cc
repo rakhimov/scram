@@ -28,35 +28,35 @@ namespace test {
 TEST(SettingsTest, IncorrectSetup) {
   Settings s;
   // Incorrect algorithm.
-  EXPECT_THROW(s.algorithm("the-best"), InvalidArgument);
+  EXPECT_THROW(s.algorithm("the-best"), SettingsError);
   // Incorrect approximation argument.
-  EXPECT_THROW(s.approximation("approx"), InvalidArgument);
+  EXPECT_THROW(s.approximation("approx"), SettingsError);
   // Incorrect limit order for products.
-  EXPECT_THROW(s.limit_order(-1), InvalidArgument);
+  EXPECT_THROW(s.limit_order(-1), SettingsError);
   // Incorrect cut-off probability.
-  EXPECT_THROW(s.cut_off(-1), InvalidArgument);
-  EXPECT_THROW(s.cut_off(10), InvalidArgument);
+  EXPECT_THROW(s.cut_off(-1), SettingsError);
+  EXPECT_THROW(s.cut_off(10), SettingsError);
   // Incorrect number of trials.
-  EXPECT_THROW(s.num_trials(-10), InvalidArgument);
-  EXPECT_THROW(s.num_trials(0), InvalidArgument);
+  EXPECT_THROW(s.num_trials(-10), SettingsError);
+  EXPECT_THROW(s.num_trials(0), SettingsError);
   // Incorrect number of quantiles.
-  EXPECT_THROW(s.num_quantiles(-10), InvalidArgument);
-  EXPECT_THROW(s.num_quantiles(0), InvalidArgument);
+  EXPECT_THROW(s.num_quantiles(-10), SettingsError);
+  EXPECT_THROW(s.num_quantiles(0), SettingsError);
   // Incorrect number of bins.
-  EXPECT_THROW(s.num_bins(-10), InvalidArgument);
-  EXPECT_THROW(s.num_bins(0), InvalidArgument);
+  EXPECT_THROW(s.num_bins(-10), SettingsError);
+  EXPECT_THROW(s.num_bins(0), SettingsError);
   // Incorrect seed.
-  EXPECT_THROW(s.seed(-1), InvalidArgument);
+  EXPECT_THROW(s.seed(-1), SettingsError);
   // Incorrect mission time.
-  EXPECT_THROW(s.mission_time(-10), InvalidArgument);
+  EXPECT_THROW(s.mission_time(-10), SettingsError);
   // Incorrect time step.
-  EXPECT_THROW(s.time_step(-1), InvalidArgument);
+  EXPECT_THROW(s.time_step(-1), SettingsError);
   // The time step is not set for the SIL calculations.
-  EXPECT_THROW(s.safety_integrity_levels(true), InvalidArgument);
+  EXPECT_THROW(s.safety_integrity_levels(true), SettingsError);
   // Disable time step while the SIL is requested.
   EXPECT_NO_THROW(s.time_step(1));
   EXPECT_NO_THROW(s.safety_integrity_levels(true));
-  EXPECT_THROW(s.time_step(0), InvalidArgument);
+  EXPECT_THROW(s.time_step(0), SettingsError);
 }
 
 TEST(SettingsTest, CorrectSetup) {
@@ -114,14 +114,14 @@ TEST(SettingsTest, SetupForPrimeImplicants) {
   Settings s;
   // Incorrect request for prime implicants.
   EXPECT_NO_THROW(s.algorithm("mocus"));
-  EXPECT_THROW(s.prime_implicants(true), InvalidArgument);
+  EXPECT_THROW(s.prime_implicants(true), SettingsError);
   // Correct request for prime implicants.
   ASSERT_NO_THROW(s.algorithm("bdd"));
   ASSERT_NO_THROW(s.prime_implicants(true));
   // Prime implicants with quantitative approximations.
   EXPECT_NO_THROW(s.approximation("none"));
-  EXPECT_THROW(s.approximation("rare-event"), InvalidArgument);
-  EXPECT_THROW(s.approximation("mcub"), InvalidArgument);
+  EXPECT_THROW(s.approximation("rare-event"), SettingsError);
+  EXPECT_THROW(s.approximation("mcub"), SettingsError);
 }
 
 }  // namespace test

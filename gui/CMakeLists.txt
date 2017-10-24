@@ -15,7 +15,10 @@ message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # TODO: MOC generated code has some useless casts.
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-useless-cast")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # TODO: Qt moc offsetof applied to non-POD types is nonstandard.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -48,9 +51,14 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
 endif()
 
 set(SCRAM_GUI_SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/reporttree.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/importancetablemodel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/producttablemodel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/preferencesdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/printable.cpp"
@@ -123,8 +131,12 @@ if(PACKAGE)
       endif()
     endmacro()
     install_qt5_plugin("Qt5::QWindowsIntegrationPlugin" QT_PLUGINS)
+    set(QT_TRANSLATION_DIR ${Qt5Core_DIR}/../../../translations)
+    execute_process(COMMAND qmake -query QT_INSTALL_TRANSLATIONS
+      OUTPUT_VARIABLE QT_TRANSLATIONS_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+    install(DIRECTORY "${QT_TRANSLATIONS_DIR}" DESTINATION . COMPONENT gui)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
-      "[Paths]\nPlugins = ../${_qt_plugin_dir}\n")
+      "[Paths]\nPlugins = ../${_qt_plugin_dir}\nTranslations = ../translations\n")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       DESTINATION bin
       COMPONENT gui)

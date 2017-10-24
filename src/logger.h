@@ -109,13 +109,6 @@ class Logger : private boost::noncopyable {
   /// @param[in] level  The maximum level of logging.
   static void report_level(LogLevel level) { report_level_ = level; }
 
-  /// Sets the reporting level cut-off from an integer.
-  ///
-  /// @param[in] level  Integer representation of the log level.
-  ///
-  /// @throws InvalidArgument  The level is out of range.
-  static void SetVerbosity(int level);
-
   /// Returns a string stream by reference
   /// that is flushed to stderr by the Logger class destructor.
   ///

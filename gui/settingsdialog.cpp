@@ -64,7 +64,7 @@ core::Settings SettingsDialog::settings() const
 
         result.limit_order(ui->productOrder->value());
         result.mission_time(ui->missionTime->value());
-    } catch (Error& err) {
+    } catch (const Error &err) {
         GUI_ASSERT(false && err.what(), result);
     }
     return result;

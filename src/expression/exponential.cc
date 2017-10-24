@@ -65,8 +65,8 @@ Exponential::Exponential(Expression* lambda, Expression* t)
       time_(*t) {}
 
 void Exponential::Validate() const {
-  EnsureNonNegative<InvalidArgument>(&lambda_, "rate of failure");
-  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
+  EnsureNonNegative(&lambda_, "rate of failure");
+  EnsureNonNegative(&time_, "mission time");
 }
 
 double Exponential::Compute(double lambda, double time) noexcept {
@@ -81,10 +81,10 @@ Glm::Glm(Expression* gamma, Expression* lambda, Expression* mu, Expression* t)
       time_(*t) {}
 
 void Glm::Validate() const {
-  EnsurePositive<InvalidArgument>(&lambda_, "rate of failure");
-  EnsureNonNegative<InvalidArgument>(&mu_, "rate of repair");
-  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
-  EnsureProbability<InvalidArgument>(&gamma_, "failure on demand");
+  EnsurePositive(&lambda_, "rate of failure");
+  EnsureNonNegative(&mu_, "rate of repair");
+  EnsureNonNegative(&time_, "mission time");
+  EnsureProbability(&gamma_, "failure on demand");
 }
 
 double Glm::Compute(double gamma, double lambda, double mu,
@@ -102,12 +102,10 @@ Weibull::Weibull(Expression* alpha, Expression* beta, Expression* t0,
       time_(*time) {}
 
 void Weibull::Validate() const {
-  EnsurePositive<InvalidArgument>(&alpha_,
-                                  "scale parameter for Weibull distribution");
-  EnsurePositive<InvalidArgument>(&beta_,
-                                  "shape parameter for Weibull distribution");
-  EnsureNonNegative<InvalidArgument>(&t0_, "time shift");
-  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
+  EnsurePositive(&alpha_, "scale parameter for Weibull distribution");
+  EnsurePositive(&beta_, "shape parameter for Weibull distribution");
+  EnsureNonNegative(&t0_, "time shift");
+  EnsureNonNegative(&time_, "mission time");
 }
 
 double Weibull::Compute(double alpha, double beta, double t0,
@@ -138,33 +136,31 @@ PeriodicTest::PeriodicTest(Expression* lambda, Expression* lambda_test,
           available_at_test, sigma, omega, time)) {}
 
 void PeriodicTest::InstantRepair::Validate() const {
-  EnsurePositive<InvalidArgument>(&lambda_, "rate of failure");
-  EnsurePositive<InvalidArgument>(&tau_, "time between tests");
-  EnsureNonNegative<InvalidArgument>(&theta_, "time before tests");
-  EnsureNonNegative<InvalidArgument>(&time_, "mission time");
+  EnsurePositive(&lambda_, "rate of failure");
+  EnsurePositive(&tau_, "time between tests");
+  EnsureNonNegative(&theta_, "time before tests");
+  EnsureNonNegative(&time_, "mission time");
 }
 
 void PeriodicTest::InstantTest::Validate() const {
   InstantRepair::Validate();
-  EnsureNonNegative<InvalidArgument>(&mu_, "rate of repair");
+  EnsureNonNegative(&mu_, "rate of repair");
 }
 
 void PeriodicTest::Complete::Validate() const {
   InstantTest::Validate();
-  EnsureNonNegative<InvalidArgument>(&lambda_test_,
-                                     "rate of failure while under test");
-  EnsurePositive<InvalidArgument>(&test_duration_,
-                                  "duration of the test phase");
-  EnsureProbability<InvalidArgument>(&gamma_, "failure at test start");
-  EnsureProbability<InvalidArgument>(&sigma_, "failure detection upon test");
-  EnsureProbability<InvalidArgument>(&omega_, "failure at restart");
+  EnsureNonNegative(&lambda_test_, "rate of failure while under test");
+  EnsurePositive(&test_duration_, "duration of the test phase");
+  EnsureProbability(&gamma_, "failure at test start");
+  EnsureProbability(&sigma_, "failure detection upon test");
+  EnsureProbability(&omega_, "failure at restart");
 
   if (test_duration_.value() > tau_.value())
-    throw InvalidArgument(
-        "The test duration must be less than the time between tests.");
+    SCRAM_THROW(ValidityError(
+        "The test duration must be less than the time between tests."));
   if (test_duration_.interval().upper() > tau_.interval().lower())
-    throw InvalidArgument(
-        "The sampled test duration must be less than the time between tests.");
+    SCRAM_THROW(ValidityError(
+        "The sampled test duration must be less than the time between tests."));
 }
 
 double PeriodicTest::InstantRepair::Compute(double lambda, double tau,

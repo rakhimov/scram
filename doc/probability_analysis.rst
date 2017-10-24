@@ -105,11 +105,11 @@ The same configurations are used as for probability analysis.
 The analysis is performed by request with probability data.
 The following importance factors are calculated:
 
-    - Fussel-Vesely Diagnosis Importance Factor (DIF)
-    - Birnbaum Marginal Importance Factor (MIF)
-    - Critical Importance Factor (CIF)
-    - Risk Reduction Worth (RRW)
-    - Risk Achievement Worth (RAW)
+- Fussel-Vesely Diagnosis Importance Factor (DIF)
+- Birnbaum Marginal Importance Factor (MIF)
+- Critical Importance Factor (CIF)
+- Risk Reduction Worth (RRW)
+- Risk Achievement Worth (RAW)
 
 The short description and interpretation of the factors
 can be found in :ref:`theory`.

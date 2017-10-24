@@ -24,6 +24,9 @@
     <layout class="QFormLayout" name="formLayout_3">
      <item row="0" column="0">
       <widget class="QLabel" name="label">
+       <property name="statusTip">
+        <string comment="short description string"/>
+       </property>
        <property name="text">
         <string>Label:</string>
        </property>
@@ -90,6 +93,9 @@
     <layout class="QFormLayout" name="formLayout_2">
      <item row="0" column="0">
       <widget class="QLabel" name="nameLabel">
+       <property name="statusTip">
+        <string extracomment="A unique identifier string name"/>
+       </property>
        <property name="text">
         <string>Name:</string>
        </property>
@@ -100,6 +106,9 @@
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="typeLabel">
+       <property name="statusTip">
+        <string comment="the element type in the model"/>
+       </property>
        <property name="text">
         <string>Type:</string>
        </property>
@@ -115,27 +124,27 @@
        </property>
        <item>
         <property name="text">
-         <string>House event</string>
+         <string extracomment="Constant event w/ Boolean state value">House event</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Basic event</string>
+         <string extracomment="The main analysis event (e.g., component failure)">Basic event</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Undeveloped</string>
+         <string extracomment="The basic event flavor that indicates the further developement into a gate is possible.">Undeveloped</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Conditional</string>
+         <string extracomment="Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)">Conditional</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Gate</string>
+         <string extracomment="The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.">Gate</string>
         </property>
        </item>
       </widget>
@@ -168,9 +177,6 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
-           </property>
-           <property name="statusTip">
-            <string>State combo</string>
            </property>
            <item>
             <property name="text">
@@ -209,12 +215,12 @@
             </property>
             <item>
              <property name="text">
-              <string>Constant</string>
+              <string comment="constant probability value">Constant</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Exponential</string>
+              <string comment="probability type defined w/ negative exponential formula">Exponential</string>
              </property>
             </item>
            </widget>
@@ -242,6 +248,9 @@
              <layout class="QFormLayout" name="formLayout_5">
               <item row="0" column="0">
                <widget class="QLabel" name="label_4">
+                <property name="statusTip">
+                 <string comment="per hour occurence rate for probability calculations"/>
+                </property>
                 <property name="text">
                  <string>Rate:</string>
                 </property>
@@ -290,12 +299,12 @@
            </item>
            <item>
             <property name="text">
-             <string>ATLEAST</string>
+             <string extracomment="VOTE, Voting OR, Combo, Combination, K/N gate">ATLEAST</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>XOR</string>
+             <string extracomment="Exclusive OR">XOR</string>
             </property>
            </item>
            <item>
@@ -305,23 +314,26 @@
            </item>
            <item>
             <property name="text">
-             <string>NAND</string>
+             <string extracomment="NOT AND">NAND</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>NOR</string>
+             <string extracomment="NOT OR">NOR</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>NULL</string>
+             <string comment="Not a null value." extracomment="Pass-through, NO-OP type">NULL</string>
             </property>
            </item>
           </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="labelMin">
+           <property name="statusTip">
+            <string comment="The minimum value for at-least connective (voting number)"/>
+           </property>
            <property name="text">
             <string>Min:</string>
            </property>

@@ -23,7 +23,7 @@
 
 #include <cstdint>
 
-#include <string>
+#include <boost/utility/string_ref.hpp>
 
 namespace scram {
 namespace core {
@@ -78,10 +78,10 @@ class Settings {
   ///
   /// @param[in] value  The string representation of the algorithm.
   ///
-  /// @throws InvalidArgument  The algorithm is not recognized.
+  /// @throws SettingsError  The algorithm is not recognized.
   ///
   /// @returns Reference to this object.
-  Settings& algorithm(const std::string& value);
+  Settings& algorithm(boost::string_ref value);
 
   /// @returns The quantitative analysis approximation.
   Approximation approximation() const { return approximation_; }
@@ -92,11 +92,11 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The approximation is not recognized
+  /// @throws SettingsError  The approximation is not recognized
   ///                          or inappropriate for analysis.
   /// @{
   Settings& approximation(Approximation value);
-  Settings& approximation(const std::string& value);
+  Settings& approximation(boost::string_ref value);
   /// @}
 
   /// @returns true if prime implicants are to be calculated
@@ -113,7 +113,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The request is not relevant to the algorithm.
+  /// @throws SettingsError  The request is not relevant to the algorithm.
   Settings& prime_implicants(bool flag);
 
   /// @returns The limit on the size of products.
@@ -125,7 +125,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 0.
+  /// @throws SettingsError  The number is less than 0.
   Settings& limit_order(int order);
 
   /// @returns The minimum required probability for products.
@@ -138,7 +138,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The probability is not in the [0, 1] range.
+  /// @throws SettingsError  The probability is not in the [0, 1] range.
   Settings& cut_off(double prob);
 
   /// @returns The number of trials for Monte-Carlo simulations.
@@ -150,7 +150,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 1.
+  /// @throws SettingsError  The number is less than 1.
   Settings& num_trials(int n);
 
   /// @returns The number of quantiles for distributions.
@@ -162,7 +162,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 1.
+  /// @throws SettingsError  The number is less than 1.
   Settings& num_quantiles(int n);
 
   /// @returns The number of bins for histograms.
@@ -174,7 +174,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is less than 1.
+  /// @throws SettingsError  The number is less than 1.
   Settings& num_bins(int n);
 
   /// @returns The seed of the pseudo-random number generator.
@@ -186,7 +186,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The number is negative.
+  /// @throws SettingsError  The number is negative.
   Settings& seed(int s);
 
   /// @returns The length time of the system under risk.
@@ -198,7 +198,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The time value is negative.
+  /// @throws SettingsError  The time value is negative.
   Settings& mission_time(double time);
 
   /// @returns The time step in hours for probability analyses.
@@ -212,8 +212,8 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The time value is negative.
-  /// @throws InvalidArgument  The time step is being disabled (value 0)
+  /// @throws SettingsError  The time value is negative.
+  /// @throws SettingsError  The time step is being disabled (value 0)
   ///                          while the SIL metrics are requested.
   Settings& time_step(double time);
 
@@ -246,7 +246,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The flag is True, but no time-step is set.
+  /// @throws SettingsError  The flag is True, but no time-step is set.
   Settings& safety_integrity_levels(bool flag);
 
   /// @returns true if importance analysis is requested.

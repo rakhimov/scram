@@ -23,9 +23,7 @@ endif()
 set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/version.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/logger.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml_stream.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/random.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/config.cc"
@@ -38,6 +36,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/exponential.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/random_deviate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/test_event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/expression/extern.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"

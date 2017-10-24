@@ -39,6 +39,9 @@ namespace gui {
 namespace model {
 
 /// The model to list elements in a table.
+///
+/// The model contains the original element pointer for Qt::UserRole.
+/// This only applies to top-level indices.
 class ElementContainerModel : public QAbstractItemModel
 {
     Q_OBJECT

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="CheckTree">
+    <define-gate name="top">
+      <basic-event name="e1"/>
+    </define-gate>
+    <define-basic-event name="e1">
+      <extern-function name="id">
+        <float value="0.1"/>
+      </extern-function>
+    </define-basic-event>
+  </define-fault-tree>
+  <define-extern-library name="dummy" path="../../../../lib/scram/test/scram_dummy_extern" decorate="true"/>
+  <define-extern-function name="id" symbol="identity" library="dummy">
+    <double/>
+    <double/>
+  </define-extern-function>
+</opsa-mef>

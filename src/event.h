@@ -111,7 +111,7 @@ class BasicEvent : public Event {
   ///
   /// @pre The probability expression is set.
   ///
-  /// @throws ValidationError  The expression for the basic event is invalid.
+  /// @throws DomainError  The expression for the basic event is invalid.
   void Validate() const;
 
   /// Indicates if this basic event has been set to be in a CCF group.
@@ -195,7 +195,7 @@ class Gate : public Event, public NodeMark {
   ///
   /// @pre The gate formula is set.
   ///
-  /// @throws ValidationError  Errors in the gate's logic or setup.
+  /// @throws ValidityError  Errors in the gate's logic or setup.
   void Validate() const;
 
  private:
@@ -247,7 +247,7 @@ class Formula : private boost::noncopyable {
   ///
   /// @param[in] number  The vote number.
   ///
-  /// @throws InvalidArgument  The vote number is invalid.
+  /// @throws ValidityError  The vote number is invalid.
   /// @throws LogicError  The vote number is assigned illegally.
   ///
   /// @note (Children number > vote number) should be checked
@@ -287,7 +287,7 @@ class Formula : private boost::noncopyable {
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
-  /// @throws ValidationError  Problems with the operator or arguments.
+  /// @throws ValidityError  Problems with the operator or arguments.
   void Validate() const;
 
  private:

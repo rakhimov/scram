@@ -29,7 +29,7 @@ namespace mef {
 Phase::Phase(std::string name, double time_fraction)
     : Element(std::move(name)), time_fraction_(time_fraction) {
   if (time_fraction_ <= 0 || time_fraction_ > 1)
-    throw InvalidArgument("The phase fraction must be in (0, 1].");
+    SCRAM_THROW(DomainError("The phase fraction must be in (0, 1]."));
 }
 
 void Alignment::Add(PhasePtr phase) {
@@ -42,8 +42,8 @@ void Alignment::Validate() {
   for (const PhasePtr& phase : phases_)
     sum += phase->time_fraction();
   if (!ext::is_close(1, sum, 1e-4))
-    throw ValidationError("The phases of alignment '" + Element::name() +
-                          "' do not sum to 1.");
+    SCRAM_THROW(ValidityError("The phases of alignment '" + Element::name() +
+                              "' do not sum to 1."));
 }
 
 }  // namespace mef

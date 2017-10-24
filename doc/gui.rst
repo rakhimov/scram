@@ -13,6 +13,10 @@ The GUI front-end is developed with `Qt5 and Qt Creator`_.
 The front-end can be launched from the command-line with ``scram-gui``.
 Run ``scram-gui --help`` to get more information.
 
+Translation and localization status can be found at `Crowdin`_.
+
+.. _Crowdin: https://crowdin.com/project/scram
+
 
 GUI Concerns
 ============

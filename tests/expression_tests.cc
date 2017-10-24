@@ -66,11 +66,11 @@ void TestProbability(Expression* expr, OpenExpression* arg,
   ASSERT_NO_THROW(expr->Validate());
   double value = arg->mean;
   arg->mean = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->mean = 0.0;
   EXPECT_NO_THROW(expr->Validate());
   arg->mean = 2;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->mean = value;
   ASSERT_NO_THROW(expr->Validate());
 
@@ -79,11 +79,11 @@ void TestProbability(Expression* expr, OpenExpression* arg,
 
   double sample_value = arg->sample;
   arg->sample = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->sample = 0.0;
   EXPECT_NO_THROW(expr->Validate());
   arg->sample = 2;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->sample = sample_value;
   ASSERT_NO_THROW(expr->Validate());
 }
@@ -92,7 +92,7 @@ void TestNegative(Expression* expr, OpenExpression* arg, bool sample = true) {
   ASSERT_NO_THROW(expr->Validate());
   double value = arg->mean;
   arg->mean = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->mean = 0.0;
   EXPECT_NO_THROW(expr->Validate());
   arg->mean = 100;
@@ -105,7 +105,7 @@ void TestNegative(Expression* expr, OpenExpression* arg, bool sample = true) {
 
   double sample_value = arg->sample;
   arg->sample = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->sample = 0.0;
   EXPECT_NO_THROW(expr->Validate());
   arg->sample = 100;
@@ -119,9 +119,9 @@ void TestNonPositive(Expression* expr, OpenExpression* arg,
   ASSERT_NO_THROW(expr->Validate());
   double value = arg->mean;
   arg->mean = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->mean = 0.0;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->mean = 100;
   EXPECT_NO_THROW(expr->Validate());
   arg->mean = value;
@@ -132,9 +132,9 @@ void TestNonPositive(Expression* expr, OpenExpression* arg,
 
   double sample_value = arg->sample;
   arg->sample = -1;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->sample = 0.0;
-  EXPECT_THROW(expr->Validate(), InvalidArgument);
+  EXPECT_THROW(expr->Validate(), DomainError);
   arg->sample = 100;
   EXPECT_NO_THROW(expr->Validate());
   arg->sample = sample_value;
@@ -331,7 +331,7 @@ TEST(ExpressionTest, UniformDeviate) {
   EXPECT_DOUBLE_EQ(3, dev->value());
 
   min.mean = 10;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   min.mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -387,17 +387,17 @@ TEST(ExpressionTest, LognormalDeviateLogarithmic) {
   EXPECT_EQ(IntervalBounds::left_open(), dev->interval().bounds());
 
   level.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   level.mean = 2;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   level.mean = 0.95;
 
   TestNonPositive(dev.get(), &mean, /*sample=*/false);
 
   ef.mean = -1;  // ef < 0
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   ef.mean = 1;  // ef = 0
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   ef.mean = 2;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -533,7 +533,7 @@ TEST(ExpressionTest, Histogram) {
 
   // Size mismatch.
   weights.push_back(&w3);
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
+  EXPECT_THROW(Histogram(boundaries, weights), ValidityError);
   weights.pop_back();
   ASSERT_NO_THROW(Histogram(boundaries, weights));
 
@@ -545,18 +545,18 @@ TEST(ExpressionTest, Histogram) {
   EXPECT_DOUBLE_EQ(1.5, dev->value());
 
   b1.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   b1.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   b1.mean = b2.mean;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   b1.mean = b2.mean + 1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   b1.mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
   w1.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), ValidityError);
   w1.mean = 2;
   ASSERT_NO_THROW(dev->Validate());
 
@@ -600,10 +600,10 @@ TEST(ExpressionTest, Neg) {
 // Test expression initialization with 2 or more arguments.
 TEST(ExpressionTest, BinaryExpression) {
   std::vector<Expression*> arguments;
-  EXPECT_THROW(Add{arguments}, InvalidArgument);
+  EXPECT_THROW(Add{arguments}, ValidityError);
   OpenExpression arg_one(10, 20);
   arguments.push_back(&arg_one);
-  EXPECT_THROW(Add{arguments}, InvalidArgument);
+  EXPECT_THROW(Add{arguments}, ValidityError);
 
   OpenExpression arg_two(30, 40);
   arguments.push_back(&arg_two);
@@ -676,7 +676,7 @@ TEST(ExpressionTest, Div) {
       << dev->interval();
 
   arg_two.mean = 0;  // Division by 0.
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
 }
 
 // Test for the special case of finding maximum and minimum division.
@@ -716,16 +716,16 @@ TEST(ExpressionTest, Acos) {
   EXPECT_DOUBLE_EQ(ConstantExpression::kPi.value(), dev->value());
 
   arg_one.mean = -1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 100;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_one.max = 1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.max = 1;
   EXPECT_NO_THROW(dev->Validate());
 
@@ -745,16 +745,16 @@ TEST(ExpressionTest, Asin) {
   EXPECT_DOUBLE_EQ(-half_pi, dev->value());
 
   arg_one.mean = -1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 100;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_one.max = 1.001;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.max = 1;
   EXPECT_NO_THROW(dev->Validate());
 
@@ -844,15 +844,15 @@ TEST(ExpressionTest, Log) {
   EXPECT_DOUBLE_EQ(0, dev->value());
 
   arg_one.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_one.sample = arg_one.min = 0;
   arg_one.max = 1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.min = 0.5;
   arg_one.max = 1;
   EXPECT_NO_THROW(dev->Validate());
@@ -867,15 +867,15 @@ TEST(ExpressionTest, Log10) {
   EXPECT_DOUBLE_EQ(1, dev->value());
 
   arg_one.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 1;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_one.sample = arg_one.min = 0;
   arg_one.max = 1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.min = 0.5;
   arg_one.max = 1;
   EXPECT_NO_THROW(dev->Validate());
@@ -902,32 +902,32 @@ TEST(ExpressionTest, Modulo) {
   arg_two.mean = 2;
   EXPECT_NO_THROW(dev->Validate());
   arg_two.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.mean = 0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.mean = -0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.mean = 2;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_two.sample = arg_two.min = 0;
   arg_two.max = 10;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.min = 0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.min = -0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.min = 1;
   EXPECT_NO_THROW(dev->Validate());
   arg_two.min = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.min = -5;
   arg_two.max = -1;
   EXPECT_NO_THROW(dev->Validate());
   arg_two.max = -0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.max = 0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
 }
 
 TEST(ExpressionTest, Power) {
@@ -953,9 +953,9 @@ TEST(ExpressionTest, Power) {
   arg_one.mean = 0;
   EXPECT_NO_THROW(dev->Validate());
   arg_two.mean = 0;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_two.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 2;
   EXPECT_NO_THROW(dev->Validate());
 
@@ -963,11 +963,11 @@ TEST(ExpressionTest, Power) {
   arg_two.max = 1;
   arg_one.sample = arg_one.min = 0;
   arg_one.max = 10;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.min = 0.9;
   EXPECT_NO_THROW(dev->Validate());
   arg_one.min = -0.9;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.min = -5;
   arg_one.max = -1;
   EXPECT_NO_THROW(dev->Validate());
@@ -985,13 +985,13 @@ TEST(ExpressionTest, Sqrt) {
 
   EXPECT_NO_THROW(dev->Validate());
   arg_one.mean = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
   arg_one.mean = 4;
   EXPECT_NO_THROW(dev->Validate());
 
   arg_one.min = -1;
   arg_one.max = -1;
-  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), DomainError);
 }
 
 TEST(ExpressionTest, Ceil) {

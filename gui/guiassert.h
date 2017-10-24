@@ -33,11 +33,11 @@
             break;                                                             \
         qCritical("Assertion failure: %s in %s line %d", #cond, __FILE__,      \
                   __LINE__);                                                   \
-        QMessageBox::critical(                                                 \
-            nullptr, QString::fromLatin1("Assertion Failure"),                 \
-            QString::fromLatin1("%1 in %2 line %3")                            \
-                .arg(QString::fromLatin1(#cond), QString::fromUtf8(__FILE__),  \
-                     QString::number(__LINE__)));                              \
+        QMessageBox::critical(nullptr, QStringLiteral("Assertion Failure"),    \
+                              QStringLiteral("%1 in %2 line %3")               \
+                                  .arg(QStringLiteral(#cond),                  \
+                                       QString::fromUtf8(__FILE__),            \
+                                       QString::number(__LINE__)));            \
         return ret;                                                            \
     } while (false)
 

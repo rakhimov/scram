@@ -42,8 +42,11 @@
       </item>
       <item>
        <widget class="QRadioButton" name="mcub">
+        <property name="statusTip">
+         <string notr="true"/>
+        </property>
         <property name="text">
-         <string>MCUB</string>
+         <string notr="true">MCUB</string>
         </property>
        </widget>
       </item>
@@ -99,14 +102,14 @@
       <item>
        <widget class="QRadioButton" name="mocus">
         <property name="text">
-         <string>MOCUS</string>
+         <string notr="true">MOCUS</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="bdd">
         <property name="text">
-         <string>BDD</string>
+         <string notr="true">BDD</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -116,7 +119,7 @@
       <item>
        <widget class="QRadioButton" name="zbdd">
         <property name="text">
-         <string>ZBDD</string>
+         <string notr="true">ZBDD</string>
         </property>
        </widget>
       </item>
@@ -131,6 +134,9 @@
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="labelMissionTime">
+        <property name="statusTip">
+         <string extracomment="The duration time value for analysis (aka, exposure time)."/>
+        </property>
         <property name="text">
          <string>Mission time:</string>
         </property>
@@ -151,6 +157,9 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="labelProductOrder">
+        <property name="statusTip">
+         <string extracomment="The number of literals in a product (i.e., set cardinality)."/>
+        </property>
         <property name="text">
          <string>Product order:</string>
         </property>

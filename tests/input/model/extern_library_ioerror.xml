@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-extern-library name="dummy" path="scram_dummy_extern" decorate="true"/>
+</opsa-mef>

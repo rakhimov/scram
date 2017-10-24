@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file error.cc
-/// Implementation of the exceptions for use in SCRAM.
+/// @file scram_dummy_extern.cc
+/// Dummy library with extern functions to test dynamic loading in MEF extern.
 
-#include "error.h"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 
-namespace scram {
-
-const char Error::kPrefix_[] = "scram error: ";
-
-Error::Error(std::string msg)
-    : msg_(std::move(msg)),
-      thrown_(kPrefix_ + msg_) {}
-
-const char* Error::what() const noexcept { return thrown_.c_str(); }
-
-}  // namespace scram
+extern "C" {
+  int foo() { return 42; }
+  double bar() { return 42; }
+  float baz() { return 42; }
+  double identity(double arg) { return arg; }
+}

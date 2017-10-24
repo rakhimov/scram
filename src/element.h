@@ -54,7 +54,7 @@ class Element {
   /// @param[in] name  The local identifier name.
   ///
   /// @throws LogicError  The name is required and empty.
-  /// @throws InvalidArgument  The name is malformed.
+  /// @throws ValidityError  The name is malformed.
   explicit Element(std::string name);
 
   /// @returns The original name.
@@ -122,7 +122,7 @@ class Element {
   /// @param[in] name  The local identifier name.
   ///
   /// @throws LogicError  The name is required and empty.
-  /// @throws InvalidArgument  The name is malformed.
+  /// @throws ValidityError  The name is malformed.
   void name(std::string name);
 
  private:
@@ -166,8 +166,8 @@ class Role {
   /// @param[in] role  A role specifier of the element.
   /// @param[in] base_path  The series of containers to get this event.
   ///
-  /// @throws InvalidArgument  The base path string is malformed.
-  /// @throws ValidationError  Private element at model/global scope.
+  /// @throws ValidityError  The base path string is malformed.
+  /// @throws ValidityError  Private element at model/global scope.
   explicit Role(RoleSpecifier role = RoleSpecifier::kPublic,
                 std::string base_path = "");
 
@@ -219,7 +219,7 @@ class Id : public Element, public Role {
   /// @pre The element is not in any container keyed by its ID or name.
   ///
   /// @throws LogicError  The name is empty.
-  /// @throws InvalidArgument  The name is malformed.
+  /// @throws ValidityError  The name is malformed.
   void id(std::string name);
 
   /// Produces unique name for the model element within the same type.

@@ -53,6 +53,9 @@ public:
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &index) const override;
+
+    /// @note The Qt::UserRole provides the pointer
+    ///       to the original model element if applicable.
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
@@ -62,6 +65,13 @@ private:
             return lhs->name() < rhs->name();
         }
     };
+
+    /// Sets up count tracking connections for model element table changes.
+    ///
+    /// @tparam T  The element type in Model::added and Model::removed signals.
+    /// @tparam Row  The corresponding top row for the count data.
+    template <class T, Row R>
+    void setupElementCountConnections();
 
     model::Model *m_model;
     boost::container::flat_set<mef::FaultTree *, NameComparator> m_faultTrees;

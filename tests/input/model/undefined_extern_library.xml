@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-extern-function name="fun1" symbol="foo" library="dummy">
+    <int/>
+  </define-extern-function>
+</opsa-mef>

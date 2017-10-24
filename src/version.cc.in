@@ -23,9 +23,7 @@
 
 #include "version.h"
 
-#include <boost/preprocessor/stringize.hpp>
 #include <boost/version.hpp>
-#include <libxml++config.h>
 #include <libxml/xmlversion.h>
 
 namespace scram {
@@ -40,11 +38,6 @@ const char* core() {
 }
 
 const char* boost() { return BOOST_LIB_VERSION; }
-
-const char* libxmlpp() {
-  return BOOST_PP_STRINGIZE(LIBXMLXX_MAJOR_VERSION) "." BOOST_PP_STRINGIZE(
-      LIBXMLXX_MINOR_VERSION) "." BOOST_PP_STRINGIZE(LIBXMLXX_MICRO_VERSION);
-}
 
 const char* libxml() { return LIBXML_DOTTED_VERSION; }
 

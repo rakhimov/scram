@@ -40,7 +40,7 @@ HouseEvent HouseEvent::kFalse("__false__");
 
 void BasicEvent::Validate() const {
   assert(expression_ && "The basic event's expression is not set.");
-  EnsureProbability<ValidationError>(expression_, Event::name());
+  EnsureProbability(expression_, Event::name());
 }
 
 void Gate::Validate() const {
@@ -51,8 +51,8 @@ void Gate::Validate() const {
     return;
   }
   if (formula_->num_args() != 2) {
-    throw ValidationError(Element::name() +
-                          "INHIBIT gate must have only 2 children");
+    SCRAM_THROW(ValidityError(Element::name() +
+                              "INHIBIT gate must have only 2 children"));
   }
   int num_conditional = boost::count_if(
       formula_->event_args(), [](const Formula::EventArg& event) {
@@ -63,29 +63,29 @@ void Gate::Validate() const {
                basic_event->GetAttribute("flavor").value == "conditional";
       });
   if (num_conditional != 1)
-    throw ValidationError(Element::name() + " : INHIBIT gate must have" +
-                          " exactly one conditional event.");
+    SCRAM_THROW(ValidityError(Element::name() + " : INHIBIT gate must have" +
+                              " exactly one conditional event."));
 }
 
 Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_)
-    throw LogicError("Vote number is not set.");
+    SCRAM_THROW(LogicError("Vote number is not set."));
   return vote_number_;
 }
 
 void Formula::vote_number(int number) {
   if (type_ != kVote) {
-    throw LogicError(
+    SCRAM_THROW(LogicError(
         "The vote number can only be defined for 'atleast' formulas. "
         "The operator of this formula is '" +
-        std::string(kOperatorToString[type_]) + "'.");
+        std::string(kOperatorToString[type_]) + "'."));
   }
   if (number < 2)
-    throw InvalidArgument("Vote number cannot be less than 2.");
+    SCRAM_THROW(ValidityError("Vote number cannot be less than 2."));
   if (vote_number_)
-    throw LogicError("Trying to re-assign a vote number");
+    SCRAM_THROW(LogicError("Trying to re-assign a vote number"));
 
   vote_number_ = number;
 }
@@ -95,7 +95,7 @@ void Formula::AddArgument(EventArg event_arg) {
   if (ext::any_of(event_args_, [&event](const EventArg& arg) {
         return ext::as<Event*>(arg)->id() == event->id();
       })) {
-    throw DuplicateArgumentError("Duplicate argument " + event->name());
+    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + event->name()));
   }
   event_args_.push_back(event_arg);
   if (!event->usage())
@@ -105,7 +105,7 @@ void Formula::AddArgument(EventArg event_arg) {
 void Formula::RemoveArgument(EventArg event_arg) {
   auto it = boost::find(event_args_, event_arg);
   if (it == event_args_.end())
-    throw LogicError("The argument doesn't belong to this formula.");
+    SCRAM_THROW(LogicError("The argument doesn't belong to this formula."));
   event_args_.erase(it);
 }
 
@@ -116,24 +116,26 @@ void Formula::Validate() const {
     case kNand:
     case kNor:
       if (num_args() < 2)
-        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
-                              "\" formula must have 2 or more arguments.");
+        SCRAM_THROW(ValidityError("\"" + std::string(kOperatorToString[type_]) +
+                                  "\" formula must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
       if (num_args() != 1)
-        throw ValidationError("\"" + std::string(kOperatorToString[type_]) +
-                              "\" formula must have only one argument.");
+        SCRAM_THROW(ValidityError("\"" + std::string(kOperatorToString[type_]) +
+                                  "\" formula must have only one argument."));
       break;
     case kXor:
       if (num_args() != 2)
-        throw ValidationError("\"xor\" formula must have exactly 2 arguments.");
+        SCRAM_THROW(
+            ValidityError("\"xor\" formula must have exactly 2 arguments."));
       break;
     case kVote:
       if (num_args() <= vote_number_)
-        throw ValidationError("\"atleast\" formula must have more arguments "
-                              "than its vote number " +
-                              std::to_string(vote_number_) + ".");
+        SCRAM_THROW(
+            ValidityError("\"atleast\" formula must have more arguments "
+                          "than its vote number " +
+                          std::to_string(vote_number_) + "."));
   }
 }
 

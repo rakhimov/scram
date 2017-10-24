@@ -30,7 +30,7 @@ namespace test {
 TEST(InitializerTest, XMLFormatting) {
   EXPECT_THROW(Initializer({"./share/scram/input/xml_formatting_error.xml"},
                            core::Settings()),
-               ValidationError);
+               xml::ParseError);
 }
 
 // Test the response for non-existent file.
@@ -48,7 +48,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
   std::string the_same_path = "./share/.."  // Path obfuscation.
                               "/share/scram/input/fta/correct_tree_input.xml";
   EXPECT_THROW(Initializer({input_correct, the_same_path}, core::Settings()),
-               ValidationError);
+               ValidityError);
 }
 
 // Test if the schema catches errors.
@@ -57,7 +57,7 @@ TEST(InitializerTest, PassTheSameFileTwice) {
 TEST(InitializerTest, FailSchemaValidation) {
   EXPECT_THROW(
       Initializer({"./share/scram/input/schema_fail.xml"}, core::Settings()),
-      ValidationError);
+      xml::ValidityError);
 }
 
 // Unsupported operations.
@@ -67,7 +67,8 @@ TEST(InitializerTest, UnsupportedFeature) {
                                     "../unsupported_gate.xml",
                                     "../unsupported_expression.xml"};
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -77,7 +78,8 @@ TEST(InitializerTest, EmptyAttributeElementText) {
   const char* incorrect_inputs[] = {"../empty_element.xml",
                                     "../empty_attribute.xml"};
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -144,7 +146,7 @@ TEST(InitializerTest, IncorrectEtaInputs) {
       "mixing_collect_instructions_link.xml",
       "mixing_collect_instructions_fork.xml"};
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidityError)
         << " Filename: " << input;
   }
 }
@@ -201,7 +203,8 @@ TEST(InitializerTest, IncorrectInclude) {
   std::string dir = "./share/scram/input/";
   const char* correct_inputs[] = {"xinclude_no_file.xml", "xinclude_cycle.xml"};
   for (const auto& input : correct_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()),
+                 xml::XIncludeError)
         << " Filename: " << input;
   }
 }
@@ -230,7 +233,6 @@ TEST(InitializerTest, IncorrectFtaInputs) {
   std::string dir = "./share/scram/input/fta/";
 
   const char* incorrect_inputs[] = {
-      "int_overflow.xml",
       "invalid_probability.xml",
       "private_at_model_scope.xml",
       "doubly_defined_gate.xml",
@@ -277,9 +279,14 @@ TEST(InitializerTest, IncorrectFtaInputs) {
       "repeated_ccf_members.xml"};
 
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidityError)
         << " Filename:  " << input;
   }
+}
+
+TEST(InitializerTest, IncorrectXMLOverflow) {
+  std::string input = "./share/scram/input/fta/int_overflow.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings()), xml::ValidityError);
 }
 
 // Test failures triggered only in with probability analysis.
@@ -290,7 +297,7 @@ TEST(InitializerTest, IncorrectProbabilityInputs) {
   core::Settings settings;
   settings.probability_analysis(true);
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, settings), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, settings), ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -308,12 +315,15 @@ TEST(InitializerTest, NonOrphanTopEvent) {
 TEST(InitializerTest, CorrectModelInputs) {
   std::string dir = "./share/scram/input/model/";
   const char* correct_inputs[] = {
+      "extern_library.xml",
+      "extern_function.xml",
+      "extern_expression.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
       "private_phases.xml"};
 
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings()))
+    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings(), true))
         << " Filename: " << input;
   }
 }
@@ -322,20 +332,52 @@ TEST(InitializerTest, IncorrectModelInputs) {
   std::string dir = "./share/scram/input/model/";
 
   const char* incorrect_inputs[] = {
+      "duplicate_extern_libraries.xml",
+      "duplicate_extern_functions.xml",
+      "undefined_extern_library.xml",
+      "undefined_symbol_extern_function.xml",
+      "invalid_num_param_extern_function.xml",
+      "undefined_extern_function.xml",
+      "invalid_num_args_extern_expression.xml",
+      "extern_library_invalid_path_format.xml",
       "duplicate_phases.xml",
       "invalid_phase_fraction.xml",
       "zero_phase_fraction.xml",
       "negative_phase_fraction.xml",
       "undefined_target_set_house_event.xml",
       "duplicate_alignment.xml",
-      "empty_alignment.xml",
       "excess_alignment.xml",
       "incomplete_alignment.xml"};
 
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings()), ValidationError)
+    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
+                 ValidityError)
         << " Filename:  " << input;
   }
+}
+
+TEST(InitializerTest, IncorrectModelEmptyInputs) {
+  std::string dir = "./share/scram/input/model/";
+  const char* incorrect_inputs[] = {"empty_extern_function.xml",
+                                    "empty_alignment.xml"};
+
+  for (const auto& input : incorrect_inputs) {
+    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
+                 xml::ValidityError)
+        << " Filename:  " << input;
+  }
+}
+
+TEST(InitializerTest, ExternDLError) {
+  std::string input = "./share/scram/input/model/extern_library_ioerror.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings(), true), DLError);
+}
+
+// Tests that external libraries are disabled by default.
+TEST(InitializerTest, DefaultExternDisable) {
+  std::string input = "./share/scram/input/model/extern_library.xml";
+  EXPECT_NO_THROW(Initializer({input}, core::Settings(), true));
+  EXPECT_THROW(Initializer({input}, core::Settings()), IllegalOperation);
 }
 
 }  // namespace test

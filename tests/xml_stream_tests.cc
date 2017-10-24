@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Olzhas Rakhimov
+ * Copyright (C) 2016-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,69 +20,86 @@
 #include <gtest/gtest.h>
 
 namespace scram {
+namespace xml {
 namespace test {
 
-TEST(XmlStreamTest, Constructor) {
-  EXPECT_THROW(XmlStreamElement("", std::cerr), XmlStreamError);
-  EXPECT_NO_THROW(XmlStreamElement("element", std::cerr));
+/// This fixture provides document stream for tests.
+class XmlStreamTest : public ::testing::Test {
+ public:
+  ~XmlStreamTest() noexcept {}
+
+ protected:
+  XmlStreamTest() : xml_stream_(stderr) {}
+  Stream xml_stream_;  ///< The stream to add elements into per test case.
+};
+
+TEST_F(XmlStreamTest, ElementConstructor) {
+  EXPECT_THROW(xml_stream_.root(""), StreamError);
+  EXPECT_NO_THROW(xml_stream_.root("element"));
 }
 
-TEST(XmlStreamTest, SetAttribute) {
-  XmlStreamElement el("element", std::cerr);
-  EXPECT_THROW(el.SetAttribute("", "value"), XmlStreamError);
+TEST_F(XmlStreamTest, StreamConstructor) {
+  EXPECT_NO_THROW(xml_stream_.root("root"));
+  EXPECT_THROW(xml_stream_.root("root"), StreamError);
+}
+
+TEST_F(XmlStreamTest, SetAttribute) {
+  StreamElement el = xml_stream_.root("element");
+  EXPECT_THROW(el.SetAttribute("", "value"), StreamError);
   EXPECT_NO_THROW(el.SetAttribute("attr1", "value"));
   EXPECT_NO_THROW(el.SetAttribute("attr2", ""));
   EXPECT_NO_THROW(el.SetAttribute("attr3", 7));
 }
 
-TEST(XmlStreamTest, AddText) {
-  XmlStreamElement el("element", std::cerr);
+TEST_F(XmlStreamTest, AddText) {
+  StreamElement el = xml_stream_.root("element");
   EXPECT_NO_THROW(el.AddText("text"));
   EXPECT_NO_THROW(el.AddText(7));
 }
 
-TEST(XmlStreamTest, AddChild) {
-  XmlStreamElement el("element", std::cerr);
-  EXPECT_THROW(el.AddChild(""), XmlStreamError);
+TEST_F(XmlStreamTest, AddChild) {
+  StreamElement el = xml_stream_.root("element");
+  EXPECT_THROW(el.AddChild(""), StreamError);
   EXPECT_NO_THROW(el.AddChild("child"));
 }
 
-TEST(XmlStreamTest, StateAfterSetAttribute) {
+TEST_F(XmlStreamTest, StateAfterSetAttribute) {
+  StreamElement root = xml_stream_.root("root");
   {
-    XmlStreamElement el("element", std::cerr);
+    StreamElement el = root.AddChild("element");
     EXPECT_NO_THROW(el.SetAttribute("attr", "value"));
     EXPECT_NO_THROW(el.AddText("text"));
   }
   {
-    XmlStreamElement el("element", std::cerr);
+    StreamElement el = root.AddChild("element");
     EXPECT_NO_THROW(el.SetAttribute("attr", "value"));
     EXPECT_NO_THROW(el.AddChild("child"));
   }
 }
 
-TEST(XmlStreamTest, StateAfterAddText) {
-  XmlStreamElement el("element", std::cerr);
+TEST_F(XmlStreamTest, StateAfterAddText) {
+  StreamElement el = xml_stream_.root("element");
   EXPECT_NO_THROW(el.AddText("text"));  // Locks on text.
-  EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-  EXPECT_THROW(el.AddChild("another_child"), XmlStreamError);
+  EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
+  EXPECT_THROW(el.AddChild("another_child"), StreamError);
   EXPECT_NO_THROW(el.AddText(" and continuation..."));
 }
 
-TEST(XmlStreamTest, StateAfterAddChild) {
-  XmlStreamElement el("element", std::cerr);
+TEST_F(XmlStreamTest, StateAfterAddChild) {
+  StreamElement el = xml_stream_.root("element");
   EXPECT_NO_THROW(el.AddChild("child"));  // Locks on elements.
-  EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-  EXPECT_THROW(el.AddText("text"), XmlStreamError);
+  EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
+  EXPECT_THROW(el.AddText("text"), StreamError);
   EXPECT_NO_THROW(el.AddChild("another_child"));
 }
 
-TEST(XmlStreamTest, InactiveParent) {
-  XmlStreamElement el("element", std::cerr);
+TEST_F(XmlStreamTest, InactiveParent) {
+  StreamElement el = xml_stream_.root("element");
   {
-    XmlStreamElement child = el.AddChild("child");  // Make the parent inactive.
-    EXPECT_THROW(el.SetAttribute("attr", "value"), XmlStreamError);
-    EXPECT_THROW(el.AddText("text"), XmlStreamError);
-    EXPECT_THROW(el.AddChild("another_child"), XmlStreamError);
+    StreamElement child = el.AddChild("child");  // Make the parent inactive.
+    EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
+    EXPECT_THROW(el.AddText("text"), StreamError);
+    EXPECT_THROW(el.AddChild("another_child"), StreamError);
     // Child must be active without problems.
     EXPECT_NO_THROW(child.SetAttribute("sub_attr", "value"));
     EXPECT_NO_THROW(child.AddChild("sub_child"));
@@ -91,4 +108,5 @@ TEST(XmlStreamTest, InactiveParent) {
 }
 
 }  // namespace test
+}  // namespace xml
 }  // namespace scram

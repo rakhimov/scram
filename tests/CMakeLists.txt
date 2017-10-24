@@ -23,6 +23,7 @@ set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/element_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern_function_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/alignment_tests.cc"
@@ -76,5 +77,16 @@ install(
 install(DIRECTORY
   "${CMAKE_CURRENT_SOURCE_DIR}/input"
   DESTINATION share/scram
+  COMPONENT testing
+  )
+
+# Create dummy library to test dynamic loading and extern function.
+add_library(scram_dummy_extern SHARED "${CMAKE_CURRENT_SOURCE_DIR}/scram_dummy_extern.cc")
+if(WIN32)
+  set(CMAKE_SHARED_LIBRARY_PREFIX "")
+endif()
+install(
+  TARGETS scram_dummy_extern
+  DESTINATION lib/scram/test
   COMPONENT testing
   )
