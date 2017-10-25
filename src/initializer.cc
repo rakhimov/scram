@@ -349,7 +349,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   CLOCK(parse_time);
   LOG(DEBUG3) << "Parsing " << xml_file << " ...";
-  xml::Document document = xml::Parse(xml_file, &validator);
+  xml::Document document(xml_file, &validator);
   LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
 
   xml::Element root = document.root();

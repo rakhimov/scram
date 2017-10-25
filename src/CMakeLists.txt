@@ -26,6 +26,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/logger.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/random.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/xml.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/config.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/element.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression.cc"
