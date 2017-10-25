@@ -503,8 +503,8 @@ inline Document Parse(const std::string& file_path,
                       Validator* validator = nullptr) {
   xmlResetLastError();
   xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
-  if (!doc) {
-    xmlErrorPtr xml_error = xmlGetLastError();
+  xmlErrorPtr xml_error = xmlGetLastError();
+  if (!doc || xml_error) {
     if (xml_error->domain == xmlErrorDomain::XML_FROM_IO) {
       SCRAM_THROW(IOError(xml_error->message))
           << boost::errinfo_file_name(file_path) << boost::errinfo_errno(errno)
@@ -512,7 +512,6 @@ inline Document Parse(const std::string& file_path,
     }
     SCRAM_THROW(detail::GetError<ParseError>(xml_error));
   }
-  assert(!xmlGetLastError());
   Document manager(doc);
   if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0 || xmlGetLastError())
     SCRAM_THROW(detail::GetError<XIncludeError>());

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<opsa-mef name="XmlNameSpace">
+  <define-fault-tree name="Tree">
+    <define-gate name="root">
+      <and scram:flavor="inhibit">
+        <event name="A"/>
+        <event name="B"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.7"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

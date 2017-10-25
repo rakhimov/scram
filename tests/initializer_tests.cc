@@ -33,6 +33,16 @@ TEST(InitializerTest, XMLFormatting) {
                xml::ParseError);
 }
 
+// XML custom namespace errors.
+TEST(InitializerTest, XMLNameSpace) {
+  EXPECT_THROW(Initializer({"./share/scram/input/undefined_xmlns.xml"},
+                           core::Settings()),
+               xml::ParseError);
+  EXPECT_THROW(Initializer({"./share/scram/input/custom_xmlns.xml"},
+                           core::Settings()),
+               xml::ValidityError);
+}
+
 // Test the response for non-existent file.
 TEST(InitializerTest, NonExistentFile) {
   // Access issues. IOErrors
