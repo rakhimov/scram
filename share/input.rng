@@ -28,6 +28,7 @@
           <ref name="rule-definition"/>
           <ref name="initiating-event-definition"/>
           <ref name="fault-tree-definition"/>
+          <ref name="substitution-definition"/>
           <ref name="CCF-group-definition"/>
           <ref name="extern-library-definition"/>
           <ref name="extern-function-definition"/>
@@ -429,6 +430,37 @@
   <!-- ============================================================= -->
   <!-- III.2. Substitutions -->
   <!-- ============================================================= -->
+
+  <define name="substitution-definition">
+    <element name="define-substitution">
+      <ref name="name"/>
+      <optional>
+        <attribute name="type"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <element name="hypothesis">
+        <ref name="formula"/>
+      </element>
+      <optional>
+        <element name="source">
+          <oneOrMore>
+            <ref name="basic-event"/>
+          </oneOrMore>
+        </element>
+      </optional>
+      <element name="target">
+        <choice>
+          <ref name="basic-event"/>
+          <ref name="Boolean-constant"/>
+        </choice>
+      </element>
+    </element>
+  </define>
 
 
 <!-- ############################################################### -->

@@ -4,7 +4,7 @@ This input contains unsupported feature by SCRAM.
 However, this feature is valid in the Open-PSA MEF.
 -->
 <opsa-mef>
-  <define-substitution name="Backup">
+  <define-substitution>
     <hypothesis>
       <and>
         <gate name="TrainOne"/>
