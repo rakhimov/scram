@@ -39,6 +39,7 @@ set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/test_event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression/extern.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/substitution.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tree.cc"
