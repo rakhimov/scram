@@ -29,7 +29,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm.hpp>
 
-#include "alignment.h"
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
@@ -394,6 +393,13 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     tbd_.emplace_back(address, child);
   }
 
+  for (const xml::Element& child : root.children("define-substitution")) {
+    SubstitutionPtr substitution = ConstructElement<Substitution>(child);
+    auto* address = substitution.get();
+    Register(std::move(substitution), child);
+    tbd_.emplace_back(address, child);
+  }
+
   for (const xml::Element& node : root.children("model-data")) {
     ProcessModelData(node);
   }
@@ -535,6 +541,48 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_node.line());
     throw;
+  }
+}
+
+template <>
+void Initializer::Define(const xml::Element& xml_node,
+                         Substitution* substitution) {
+  substitution->hypothesis(
+      GetFormula(xml_node.child("hypothesis")->child().value(), ""));
+
+  if (boost::optional<xml::Element> source = xml_node.child("source")) {
+    for (const xml::Element& basic_event : source->children()) {
+      assert(basic_event.name() == "basic-event");
+      std::string name = basic_event.attribute("name").to_string();
+      try {
+        BasicEvent* event = GetBasicEvent(name, "");
+        substitution->Add(event);
+        event->usage(true);
+      } catch (std::out_of_range&) {
+        SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
+            << boost::errinfo_at_line(basic_event.line());
+      } catch (DuplicateArgumentError& err) {
+        err << boost::errinfo_at_line(basic_event.line());
+        throw;
+      }
+    }
+    assert(substitution->source().empty() == false);
+  }
+
+  xml::Element target = xml_node.child("target")->child().value();
+  if (target.name() == "basic-event") {
+    std::string name = target.attribute("name").to_string();
+    try {
+      BasicEvent* event = GetBasicEvent(name, "");
+      substitution->target(event);
+      event->usage(true);
+    } catch (std::out_of_range&) {
+      SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
+          << boost::errinfo_at_line(target.line());
+    }
+  } else {
+    assert(target.name() == "constant");
+    substitution->target(target.attribute<bool>("value").value());
   }
 }
 /// @}

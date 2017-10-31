@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_SUBSTITUTION_H_
 #define SCRAM_SRC_SUBSTITUTION_H_
 
+#include <memory>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -88,6 +89,8 @@ class Substitution : public Element, private boost::noncopyable {
   std::vector<BasicEvent*> source_;  ///< The source events to be replaced.
   Target target_;  ///< The target event to replace the source events.
 };
+
+using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
 
 }  // namespace mef
 }  // namespace scram

@@ -330,7 +330,10 @@ TEST(InitializerTest, CorrectModelInputs) {
       "extern_expression.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
-      "private_phases.xml"};
+      "private_phases.xml",
+      "substitution.xml",
+      "substitution_optional_source.xml"
+  };
 
   for (const auto& input : correct_inputs) {
     EXPECT_NO_THROW(Initializer({dir + input}, core::Settings(), true))
@@ -357,7 +360,14 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "undefined_target_set_house_event.xml",
       "duplicate_alignment.xml",
       "excess_alignment.xml",
-      "incomplete_alignment.xml"};
+      "incomplete_alignment.xml",
+      "duplicate_substitution.xml",
+      "substitution_undefined_hypothesis_event.xml",
+      "substitution_undefined_source_event.xml",
+      "substitution_undefined_target_event.xml",
+      "substitution_duplicate_source_event.xml",
+      "substitution_duplicate_hypothesis_event.xml"
+  };
 
   for (const auto& input : incorrect_inputs) {
     EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),

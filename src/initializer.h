@@ -33,6 +33,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/variant.hpp>
 
+#include "alignment.h"
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -44,6 +45,7 @@
 #include "model.h"
 #include "parameter.h"
 #include "settings.h"
+#include "substitution.h"
 #include "xml.h"
 
 namespace scram {
@@ -481,10 +483,11 @@ class Initializer : private boost::noncopyable {
   /// Event tree branches and instructions have complex interdependencies.
   /// Initiating events may reference their associated event trees.
   /// Alignments depend on instructions.
+  /// Substitutions depend on basic events.
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent, Rule, Alignment>
+               InitiatingEvent, Rule, Alignment, Substitution>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.
