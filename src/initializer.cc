@@ -759,6 +759,9 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
           "Undefined " + element_type.to_string() + " " + name +
           (base_path.empty() ? "" : " with base path " + base_path)))
           << boost::errinfo_at_line(element.line());
+    } catch (DuplicateArgumentError& err) {
+      err << boost::errinfo_at_line(element.line());
+      throw;
     }
   };
 
