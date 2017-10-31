@@ -435,7 +435,13 @@
     <element name="define-substitution">
       <ref name="name"/>
       <optional>
-        <attribute name="type"> <data type="string"/> </attribute>
+        <attribute name="type">
+          <choice>
+            <value>delete-terms</value>
+            <value>recovery-rule</value>
+            <value>exchange-event</value>
+          </choice>
+        </attribute>
       </optional>
       <optional>
         <ref name="label"/>
