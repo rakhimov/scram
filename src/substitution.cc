@@ -20,6 +20,7 @@
 
 #include "substitution.h"
 
+#include "error.h"
 #include "ext/algorithm.h"
 
 namespace scram {
@@ -29,10 +30,24 @@ void Substitution::Add(BasicEvent* source_event) {
   if (ext::any_of(source_, [source_event](BasicEvent* arg) {
         return arg->id() == source_event->id();
       })) {
-    throw DuplicateArgumentError("Duplicate source event: " +
-                                 source_event->id());
+    SCRAM_THROW(DuplicateArgumentError("Duplicate source event: " +
+                                       source_event->id()));
   }
   source_.push_back(source_event);
+}
+
+void Substitution::Validate() const {
+  assert(hypothesis_ && "Missing substitution hypothesis.");
+  if (ext::any_of(hypothesis_->event_args(), [](const Formula::EventArg& arg) {
+        return !boost::get<BasicEvent*>(&arg);
+      })) {
+    SCRAM_THROW(ValidityError(
+        "Substitution hypothesis must be built over basic events only."));
+  }
+  if (hypothesis_->formula_args().empty() == false) {
+    SCRAM_THROW(
+        ValidityError("Substitution hypothesis formula cannot be nested."));
+  }
 }
 
 }  // namespace mef

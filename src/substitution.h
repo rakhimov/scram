@@ -84,6 +84,13 @@ class Substitution : public Element, private boost::noncopyable {
   /// @throws DuplicateArgumentError  The source event is duplicate.
   void Add(BasicEvent* source_event);
 
+  /// Checks if the substitution is setup correctly.
+  ///
+  /// @pre The substitution has its hypothesis and target.
+  ///
+  /// @throws ValidityError  Problems with the substitution setup.
+  void Validate() const;
+
  private:
   FormulaPtr hypothesis_;  ///< The formula to be satisfied.
   std::vector<BasicEvent*> source_;  ///< The source events to be replaced.

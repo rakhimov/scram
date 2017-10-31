@@ -584,6 +584,13 @@ void Initializer::Define(const xml::Element& xml_node,
     assert(target.name() == "constant");
     substitution->target(target.attribute<bool>("value").value());
   }
+
+  try {
+    substitution->Validate();
+  } catch (ValidityError& err) {
+    err << boost::errinfo_at_line(xml_node.line());
+    throw;
+  }
 }
 /// @}
 

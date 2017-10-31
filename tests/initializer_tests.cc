@@ -366,7 +366,9 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_undefined_source_event.xml",
       "substitution_undefined_target_event.xml",
       "substitution_duplicate_source_event.xml",
-      "substitution_duplicate_hypothesis_event.xml"
+      "substitution_duplicate_hypothesis_event.xml",
+      "substitution_nested_formula.xml",
+      "substitution_non_basic_event_formula.xml"
   };
 
   for (const auto& input : incorrect_inputs) {
