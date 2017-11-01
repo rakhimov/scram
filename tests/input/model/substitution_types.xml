@@ -46,7 +46,7 @@
       <basic-event name="B"/>
     </source>
     <target>
-      <basic-event name="C"/>
+      <basic-event name="D"/>
     </target>
   </define-substitution>
   <define-substitution name="RecoverySingle" type="recovery-rule">
@@ -57,7 +57,7 @@
       <basic-event name="A"/>
     </source>
     <target>
-      <basic-event name="C"/>
+      <basic-event name="D"/>
     </target>
   </define-substitution>
   <define-substitution name="ExchangeEvent" type="exchange-event">

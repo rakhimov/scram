@@ -333,7 +333,8 @@ TEST(InitializerTest, CorrectModelInputs) {
       "private_phases.xml",
       "substitution.xml",
       "substitution_optional_source.xml",
-      "substitution_types.xml"
+      "substitution_types.xml",
+      "substitution_declarative_target_is_another_source.xml"
   };
 
   for (const auto& input : correct_inputs) {
@@ -372,7 +373,9 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_non_basic_event_formula.xml",
       "substitution_type_mismatch.xml",
       "substitution_no_effect.xml",
-      "substitution_nondeclarative_complex.xml"
+      "substitution_nondeclarative_complex.xml",
+      "substitution_source_equal_target.xml",
+      "substitution_target_is_another_source.xml"
   };
 
   for (const auto& input : incorrect_inputs) {

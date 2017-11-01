@@ -39,6 +39,7 @@
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "expression/test_event.h"
+#include "ext/algorithm.h"
 #include "ext/find_iterator.h"
 #include "logger.h"
 
@@ -1649,6 +1650,8 @@ void Initializer::ValidateInitialization() {
     }
   }
 
+  EnsureNoSubstitutionConflicts();
+
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -1788,6 +1791,26 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
   } homogeneous_checker;
 
   homogeneous_checker(&branch);
+}
+
+void Initializer::EnsureNoSubstitutionConflicts() {
+  std::unordered_set<const BasicEvent*> source_events;
+  auto substitutions = model_->substitutions() |
+                       boost::adaptors::filtered([](const auto& substitution) {
+                         return !substitution->declarative();
+                       });
+  for (const SubstitutionPtr& substitution : substitutions) {
+    source_events.insert(substitution->source().begin(),
+                         substitution->source().end());
+  }
+
+  for (const SubstitutionPtr& substitution : substitutions) {
+    const auto* target_ptr = boost::get<BasicEvent*>(&substitution->target());
+    if (target_ptr && source_events.count(*target_ptr))
+      SCRAM_THROW(ValidityError(
+          "Non-declarative substitution '" + substitution->name() +
+          "' target event should not appear in any substitution source."));
+  }
 }
 
 void Initializer::ValidateExpressions() {

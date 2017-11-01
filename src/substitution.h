@@ -78,6 +78,9 @@ class Substitution : public Element, private boost::noncopyable {
   /// @returns The source events of the substitution.
   const std::vector<BasicEvent*>& source() const { return source_; }
 
+  /// @returns true if the substitution is declarative.
+  bool declarative() const { return source_.empty(); }
+
   /// Adds a source event to the substitution container.
   ///
   /// @param[in] source_event  The event to be replaced by the target event.
@@ -90,6 +93,9 @@ class Substitution : public Element, private boost::noncopyable {
   /// @pre The substitution has its hypothesis and target.
   ///
   /// @throws ValidityError  Problems with the substitution setup.
+  ///
+  /// @note Non-declarative substitutions need to be validated further
+  ///       for idempotency across substitutions before analysis.
   void Validate() const;
 
   /// @returns The equivalent "traditional" substitution type if any.

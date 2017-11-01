@@ -48,7 +48,7 @@ void Substitution::Validate() const {
     SCRAM_THROW(
         ValidityError("Substitution hypothesis formula cannot be nested."));
   }
-  if (source_.empty()) {  // Declarative.
+  if (declarative()) {
     const bool* constant = boost::get<bool>(&target_);
     if (constant && *constant)
       SCRAM_THROW(ValidityError("Substitution has no effect."));

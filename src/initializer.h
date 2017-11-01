@@ -449,6 +449,13 @@ class Initializer : private boost::noncopyable {
   /// @pre All named branches are fed separately from initial states.
   void EnsureHomogeneousEventTree(const Branch& branch);
 
+  /// Ensures that non-declarative substitutions do not have mutual conflicts.
+  ///
+  /// @throws ValidityError  Conflicts in model substitutions.
+  ///
+  /// @pre All substitutions are fully defined and valid.
+  void EnsureNoSubstitutionConflicts();
+
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.
