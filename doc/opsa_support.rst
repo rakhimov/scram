@@ -54,6 +54,7 @@ to identify the supported and unsupported features.
 - Attributes
 - Public and Private Roles
 - Alignment and Phases
+- Substitutions (delete terms, recovery rules, exchange events)
 - Event Tree Layer
 
     * Initiating events
@@ -93,6 +94,7 @@ Deviations from the Open-PSA MEF
 - Extern function and library are implemented following
   `the new proposal <https://github.com/open-psa/mef/pull/53>`_.
 - Redefinition of fault tree variables (e.g., basic-events, parameters) is an error.
+- Substitution names are required.
 - Attributes are not inherited.
 - Recursive parameters are not allowed.
 - Recursive event-tree rules (instructions) are not allowed.
