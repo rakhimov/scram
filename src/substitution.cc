@@ -48,10 +48,21 @@ void Substitution::Validate() const {
     SCRAM_THROW(
         ValidityError("Substitution hypothesis formula cannot be nested."));
   }
-  if (source_.empty()) {
+  if (source_.empty()) {  // Declarative.
     const bool* constant = boost::get<bool>(&target_);
     if (constant && *constant)
       SCRAM_THROW(ValidityError("Substitution has no effect."));
+  } else {  // Non-declarative.
+    switch (hypothesis_->type()) {
+      case kNull:
+      case kAnd:
+      case kOr:
+        break;
+      default:
+        SCRAM_THROW(
+            ValidityError("Non-declarative substitution hypotheses only allow "
+                          "AND/OR/NULL connectives."));
+    }
   }
 }
 

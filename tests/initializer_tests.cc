@@ -371,7 +371,8 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_nested_formula.xml",
       "substitution_non_basic_event_formula.xml",
       "substitution_type_mismatch.xml",
-      "substitution_no_effect.xml"
+      "substitution_no_effect.xml",
+      "substitution_nondeclarative_complex.xml"
   };
 
   for (const auto& input : incorrect_inputs) {

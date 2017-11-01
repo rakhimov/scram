@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-substitution name="S">
+    <hypothesis>
+      <atleast min="2">
+        <event name="A"/>
+        <event name="B"/>
+        <event name="C"/>
+      </atleast>
+    </hypothesis>
+    <source>
+      <basic-event name="C"/>
+    </source>
+    <target>
+      <basic-event name="D"/>
+    </target>
+  </define-substitution>
+  <model-data>
+    <define-basic-event name="A"/>
+    <define-basic-event name="B"/>
+    <define-basic-event name="C"/>
+    <define-basic-event name="D"/>
+  </model-data>
+</opsa-mef>
