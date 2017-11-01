@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-substitution name="StrangeTarget">
+    <hypothesis>
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+        <event name="C"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="A"/>
+      <basic-event name="B"/>
+      <!-- Note: Source is hypothesis is for Exchange Events. -->
+    </source>
+    <target>
+      <basic-event name="C"/> <!-- The target is in hypothesis -->
+    </target>
+  </define-substitution>
+  <model-data>
+    <define-basic-event name="A"/>
+    <define-basic-event name="B"/>
+    <define-basic-event name="C"/>
+    <define-basic-event name="D"/>
+  </model-data>
+</opsa-mef>

@@ -1794,22 +1794,36 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
 }
 
 void Initializer::EnsureNoSubstitutionConflicts() {
-  std::unordered_set<const BasicEvent*> source_events;
   auto substitutions = model_->substitutions() |
                        boost::adaptors::filtered([](const auto& substitution) {
                          return !substitution->declarative();
                        });
-  for (const SubstitutionPtr& substitution : substitutions) {
-    source_events.insert(substitution->source().begin(),
-                         substitution->source().end());
-  }
-
-  for (const SubstitutionPtr& substitution : substitutions) {
-    const auto* target_ptr = boost::get<BasicEvent*>(&substitution->target());
-    if (target_ptr && source_events.count(*target_ptr))
-      SCRAM_THROW(ValidityError(
-          "Non-declarative substitution '" + substitution->name() +
-          "' target event should not appear in any substitution source."));
+  for (const SubstitutionPtr& origin : substitutions) {
+    const auto* target_ptr = boost::get<BasicEvent*>(&origin->target());
+    for (const SubstitutionPtr& substitution : substitutions) {
+      if (target_ptr && boost::count(substitution->source(), *target_ptr))
+        SCRAM_THROW(ValidityError(
+            "Non-declarative substitution '" + origin->name() +
+            "' target event should not appear in any substitution source."));
+      if (origin == substitution)
+        continue;
+      auto in_hypothesis = [&substitution](const BasicEvent* source) {
+        return ext::any_of(substitution->hypothesis().event_args(),
+                           [source](const Formula::EventArg& arg) {
+                             return boost::get<BasicEvent*>(arg) == source;
+                           });
+      };
+      if (target_ptr && in_hypothesis(*target_ptr))
+        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                  origin->name() + "' target event should not "
+                                                   "appear in another "
+                                                   "substitution hypothesis."));
+      if (ext::any_of(origin->source(), in_hypothesis))
+        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                  origin->name() + "' source event should not "
+                                                   "appear in another "
+                                                   "substitution hypothesis."));
+    }
   }
 }
 

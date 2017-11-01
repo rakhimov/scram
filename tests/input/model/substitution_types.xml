@@ -51,10 +51,10 @@
   </define-substitution>
   <define-substitution name="RecoverySingle" type="recovery-rule">
     <hypothesis>
-      <event name="A"/>
+      <event name="E"/>
     </hypothesis>
     <source>
-      <basic-event name="A"/>
+      <basic-event name="E"/>
     </source>
     <target>
       <basic-event name="D"/>
@@ -63,8 +63,8 @@
   <define-substitution name="ExchangeEvent" type="exchange-event">
     <hypothesis>
       <and>
-        <event name="A"/>
-        <event name="B"/>
+        <event name="F"/>
+        <event name="G"/>
         <event name="C"/>
       </and>
     </hypothesis>
@@ -80,5 +80,8 @@
     <define-basic-event name="B"/>
     <define-basic-event name="C"/>
     <define-basic-event name="D"/>
+    <define-basic-event name="E"/>
+    <define-basic-event name="F"/>
+    <define-basic-event name="G"/>
   </model-data>
 </opsa-mef>
