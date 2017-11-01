@@ -50,5 +50,50 @@ void Substitution::Validate() const {
   }
 }
 
+boost::optional<Substitution::Type> Substitution::type() const {
+  auto in_hypothesis = [this](const BasicEvent* source_arg) {
+    return ext::any_of(hypothesis_->event_args(),
+                       [source_arg](const Formula::EventArg& arg) {
+                         return boost::get<BasicEvent*>(arg) == source_arg;
+                       });
+  };
+
+  auto is_mutually_exclusive = [](const Formula& formula) {
+    switch (formula.type()) {
+      case kVote:
+        return formula.vote_number() == 2;
+      case kAnd:
+        return formula.event_args().size() == 2;
+      default:
+        return false;
+    }
+  };
+
+  if (source_.empty()) {
+    if (const bool* constant = boost::get<bool>(&target_)) {
+      assert(!*constant && "Substitution has no effect.");
+      if (is_mutually_exclusive(*hypothesis_))
+        return kDeleteTerms;
+    } else if (boost::get<BasicEvent*>(&target_)) {
+      if (hypothesis_->type() == kAnd)
+        return kRecoveryRule;
+    }
+    return {};
+  }
+  if (!boost::get<BasicEvent*>(&target_))
+    return {};
+  if (hypothesis_->type() != kAnd && hypothesis_->type() != kNull)
+    return {};
+
+  if (source_.size() == hypothesis_->event_args().size()) {
+    if (ext::all_of(source_, in_hypothesis))
+      return kRecoveryRule;
+  } else if (source_.size() == 1) {
+    if (in_hypothesis(source_.front()))
+      return kExchangeEvent;
+  }
+  return {};
+}
+
 }  // namespace mef
 }  // namespace scram

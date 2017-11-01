@@ -25,6 +25,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 #include "element.h"
@@ -39,11 +40,11 @@ class Substitution : public Element, private boost::noncopyable {
  public:
   using Target = boost::variant<BasicEvent*, bool>;  ///< The target type.
 
-  /// The substitution types.
+  /// The "traditional" substitution types.
   enum Type {
-    kDelete,
-    kRecovery,
-    kExchange
+    kDeleteTerms,
+    kRecoveryRule,
+    kExchangeEvent
   };
 
   using Element::Element;
@@ -91,6 +92,11 @@ class Substitution : public Element, private boost::noncopyable {
   /// @throws ValidityError  Problems with the substitution setup.
   void Validate() const;
 
+  /// @returns The equivalent "traditional" substitution type if any.
+  ///
+  /// @pre The hypothesis, target, and source are all defined and valid.
+  boost::optional<Type> type() const;
+
  private:
   FormulaPtr hypothesis_;  ///< The formula to be satisfied.
   std::vector<BasicEvent*> source_;  ///< The source events to be replaced.
@@ -98,6 +104,10 @@ class Substitution : public Element, private boost::noncopyable {
 };
 
 using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
+
+/// String representations of the "traditional" substitution types in the MEF.
+const char* const kSubstitutionTypeToString[] = {
+    "delete-terms", "recovery-rule", "exchange-event"};
 
 }  // namespace mef
 }  // namespace scram

@@ -332,7 +332,8 @@ TEST(InitializerTest, CorrectModelInputs) {
       "valid_sum_alignment.xml",
       "private_phases.xml",
       "substitution.xml",
-      "substitution_optional_source.xml"
+      "substitution_optional_source.xml",
+      "substitution_types.xml"
   };
 
   for (const auto& input : correct_inputs) {
@@ -368,7 +369,8 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_duplicate_source_event.xml",
       "substitution_duplicate_hypothesis_event.xml",
       "substitution_nested_formula.xml",
-      "substitution_non_basic_event_formula.xml"
+      "substitution_non_basic_event_formula.xml",
+      "substitution_type_mismatch.xml"
   };
 
   for (const auto& input : incorrect_inputs) {

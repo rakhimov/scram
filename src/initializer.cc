@@ -587,6 +587,17 @@ void Initializer::Define(const xml::Element& xml_node,
 
   try {
     substitution->Validate();
+    xml::string_view type = xml_node.attribute("type");
+    if (!type.empty()) {
+      boost::optional<Substitution::Type> deduced_type = substitution->type();
+      int pos = std::distance(kSubstitutionTypeToString,
+                              boost::find(kSubstitutionTypeToString, type));
+      assert(pos < 3 && "Unexpected substitution type string.");
+      if (!deduced_type ||
+          static_cast<Substitution::Type>(pos) != deduced_type.value())
+        SCRAM_THROW(ValidityError(
+            "The declared substitution type does not match the deduced one."));
+    }
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_node.line());
     throw;
