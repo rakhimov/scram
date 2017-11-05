@@ -19,6 +19,7 @@ Validation
 
 - Hypothesis and source events must be unique (no duplicates allowed).
 - Hypothesis formulas must be built-over basic events only (e.g., no gates or nested formulas).
+- Hypothesis formulas must be coherent.
 - If a substitution is non-declarative (i.e., the source is not empty),
   its hypothesis can only be defined with OR/AND/NULL connectives.
 - The optional "traditional" type is helpful and declared for validation purposes only.

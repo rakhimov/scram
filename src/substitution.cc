@@ -49,6 +49,15 @@ void Substitution::Validate() const {
         ValidityError("Substitution hypothesis formula cannot be nested."));
   }
   if (declarative()) {
+    switch (hypothesis_->type()) {
+      case kNull:
+      case kAnd:
+      case kVote:
+      case kOr:
+        break;
+      default:
+        SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."));
+    }
     const bool* constant = boost::get<bool>(&target_);
     if (constant && *constant)
       SCRAM_THROW(ValidityError("Substitution has no effect."));
