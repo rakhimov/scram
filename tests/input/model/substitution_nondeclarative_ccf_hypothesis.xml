@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-CCF-group name="CCF" model="beta-factor">
+    <members>
+      <basic-event name="A"/>
+      <basic-event name="B"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factors>
+      <factor>
+        <float value="0.1"/>
+      </factor>
+    </factors>
+  </define-CCF-group>
+  <define-substitution name="S">
+    <hypothesis>
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="C"/>
+    </source>
+    <target>
+      <basic-event name="D"/>
+    </target>
+  </define-substitution>
+  <model-data>
+    <define-basic-event name="C"/>
+    <define-basic-event name="D"/>
+  </model-data>
+</opsa-mef>

@@ -473,6 +473,14 @@ class Initializer : private boost::noncopyable {
   /// is applied to analysis.
   void SetupForAnalysis();
 
+  /// Ensures that non-declarative substitutions do not contain CCF events.
+  ///
+  /// @throws ValidityError  Hypothesis, source, or target event is in CCF.
+  ///
+  /// @pre All substitutions are fully defined and valid.
+  /// @pre All CCF groups are applied.
+  void EnsureNoCcfSubstitutions();
+
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.

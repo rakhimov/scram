@@ -20,6 +20,7 @@
 
 #include "initializer.h"
 
+#include <functional>  // std::mem_fn
 #include <sstream>
 #include <type_traits>
 
@@ -227,6 +228,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   LOG(DEBUG1) << "Setting up for the analysis";
   // Perform setup for analysis using configurations from the input files.
   SetupForAnalysis();
+  EnsureNoCcfSubstitutions();
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
@@ -1824,6 +1826,36 @@ void Initializer::EnsureNoSubstitutionConflicts() {
                                                    "appear in another "
                                                    "substitution hypothesis."));
     }
+  }
+}
+
+void Initializer::EnsureNoCcfSubstitutions() {
+  auto substitutions = model_->substitutions() |
+                       boost::adaptors::filtered([](const auto& substitution) {
+                         return !substitution->declarative();
+                       });
+  auto is_ccf = [](const Substitution& substitution) {
+    if (ext::any_of(substitution.hypothesis().event_args(),
+                    [](const Formula::EventArg& arg) {
+                      return boost::get<BasicEvent*>(arg)->HasCcf();
+                    }))
+      return true;
+
+    const auto* target_ptr = boost::get<BasicEvent*>(&substitution.target());
+    if (target_ptr && (*target_ptr)->HasCcf())
+      return true;
+
+    if (ext::any_of(substitution.source(), std::mem_fn(&BasicEvent::HasCcf)))
+      return true;
+
+    return false;
+  };
+
+  for (const SubstitutionPtr& substitution : substitutions) {
+    if (is_ccf(*substitution))
+      SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                substitution->name() +
+                                "' events cannot be in a CCF group."));
   }
 }
 

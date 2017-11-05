@@ -335,7 +335,8 @@ TEST(InitializerTest, CorrectModelInputs) {
       "substitution_optional_source.xml",
       "substitution_types.xml",
       "substitution_declarative_target_is_another_source.xml",
-      "substitution_target_is_hypothesis.xml"
+      "substitution_target_is_hypothesis.xml",
+      "substitution_declarative_ccf.xml",
   };
 
   for (const auto& input : correct_inputs) {
@@ -381,6 +382,9 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_source_is_another_hypothesis.xml",
       "substitution_source_false_target.xml",
       "substitution_declarative_noncoherent.xml",
+      "substitution_nondeclarative_ccf_hypothesis.xml",
+      "substitution_nondeclarative_ccf_source.xml",
+      "substitution_nondeclarative_ccf_target.xml",
   };
 
   for (const auto& input : incorrect_inputs) {

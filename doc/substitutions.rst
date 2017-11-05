@@ -29,6 +29,7 @@ Validation
 - If a non-declarative substitution has constant target ``false``,
   the substitution is malformed since the source set is irrelevant
   (it should have been declarative delete-terms).
+- Non-declarative substitution hypothesis, source, and target events cannot be in CCF groups.
 - Since the order of *non-declarative* substitutions is unspecified,
   the application of *all* substitutions must be idempotent regardless of their order.
   The following requirements apply only to *non-declarative* substitutions:
