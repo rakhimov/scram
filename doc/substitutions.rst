@@ -25,6 +25,9 @@ Validation
   The validity error is detected if the declared type does not match the deduced one.
 - If a declarative substitution (i.e., empty source) has constant target ``true``,
   the substitution has no effect and is considered invalid.
+- If a non-declarative substitution has constant target ``false``,
+  the substitution is malformed since the source set is irrelevant
+  (it should have been declarative delete-terms).
 - Since the order of *non-declarative* substitutions is unspecified,
   the application of *all* substitutions must be idempotent regardless of their order.
   The following requirements apply only to *non-declarative* substitutions:

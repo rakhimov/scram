@@ -379,6 +379,7 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_target_is_another_source.xml",
       "substitution_target_is_another_hypothesis.xml",
       "substitution_source_is_another_hypothesis.xml",
+      "substitution_source_false_target.xml",
   };
 
   for (const auto& input : incorrect_inputs) {

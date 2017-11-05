@@ -63,6 +63,9 @@ void Substitution::Validate() const {
             ValidityError("Non-declarative substitution hypotheses only allow "
                           "AND/OR/NULL connectives."));
     }
+    const bool* constant = boost::get<bool>(&target_);
+    if (constant && !*constant)
+      SCRAM_THROW(ValidityError("Substitution source set is irrelevant."));
   }
 }
 
