@@ -141,7 +141,7 @@ template <class Algorithm>
 void RiskAnalysis::RunAnalysis(const mef::Gate& target,
                                Result* result) noexcept {
   auto fta = std::make_unique<FaultTreeAnalyzer<Algorithm>>(
-      target, Analysis::settings());
+      target, Analysis::settings(), model_);
   fta->Analyze();
   if (Analysis::settings().probability_analysis()) {
     switch (Analysis::settings().approximation()) {

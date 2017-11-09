@@ -51,6 +51,8 @@
 namespace scram {
 
 namespace mef {  // Declarations to decouple from the initialization code.
+class Model;  // Provider of substitutions.
+class Substitution;
 class Gate;
 class BasicEvent;
 class HouseEvent;
@@ -828,6 +830,7 @@ class Pdag : private boost::noncopyable {
   ///
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
+  /// @param[in] model  The Model containing substitutions if any.
   ///
   /// @pre No new Variable nodes are introduced after the construction.
   ///
@@ -843,7 +846,8 @@ class Pdag : private boost::noncopyable {
   ///       optimize their work with basic events.
   ///
   /// @post All Gate indices >= (num of vars + kVariableStartIndex).
-  explicit Pdag(const mef::Gate& root, bool ccf = false) noexcept;
+  explicit Pdag(const mef::Gate& root, bool ccf = false,
+                const mef::Model* model = nullptr) noexcept;
 
   /// @returns true if the fault tree is coherent.
   bool coherent() const { return coherent_; }
@@ -1009,6 +1013,14 @@ class Pdag : private boost::noncopyable {
   void GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
                        ProcessedNodes* nodes) noexcept;
 
+  /// Gathers Variables from substitutions.
+  ///
+  /// @param[in] substitution  The substitution rule.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::Substitution& substitution, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
+
   /// Processes a Boolean formula of a gate into a PDAG.
   ///
   /// @param[in] formula  The Boolean formula to be processed.
@@ -1020,6 +1032,19 @@ class Pdag : private boost::noncopyable {
   /// @pre The Operator enum in the MEF is the same as in PDAG.
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
+
+  /// Processes declarative substitutions into corresponding implication gates.
+  ///
+  /// @param[in] substitution  The declarative substitution.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  ///
+  /// @returns The gate to represent the substitution logic.
+  ///
+  /// @pre The substitution is declarative.
+  /// @pre All the substitution variables have been gathered.
+  GatePtr ConstructSubstitution(const mef::Substitution& substitution,
+                                bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's argument events
   /// into arguments of an indexed gate in the PDAG.
