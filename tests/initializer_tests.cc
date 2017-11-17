@@ -339,9 +339,11 @@ TEST(InitializerTest, CorrectModelInputs) {
       "substitution_declarative_ccf.xml",
   };
 
+  core::Settings settings;
+  settings.approximation(core::Approximation::kRareEvent);
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings(), true))
-        << " Filename: " << input;
+    EXPECT_NO_THROW(Initializer({dir + input}, settings, true)) << " Filename: "
+                                                                << input;
   }
 }
 
@@ -387,9 +389,10 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "substitution_nondeclarative_ccf_target.xml",
   };
 
+  core::Settings settings;
+  settings.approximation(core::Approximation::kRareEvent);
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
-                 ValidityError)
+    EXPECT_THROW(Initializer({dir + input}, settings, true), ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -416,6 +419,22 @@ TEST(InitializerTest, DefaultExternDisable) {
   std::string input = "./share/scram/input/model/extern_library.xml";
   EXPECT_NO_THROW(Initializer({input}, core::Settings(), true));
   EXPECT_THROW(Initializer({input}, core::Settings()), IllegalOperation);
+}
+
+// Non-declarative substitutions with approximations only.
+TEST(InitializerTest, NonDeclarativeSubstitutionsWithAppproximations) {
+  std::string input = "./share/scram/input/model/substitution_types.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings()), ValidityError);
+
+  core::Settings settings;
+
+  settings.approximation(core::Approximation::kRareEvent);
+  EXPECT_NO_THROW(Initializer({input}, settings));
+  settings.approximation(core::Approximation::kMcub);
+  EXPECT_NO_THROW(Initializer({input}, settings));
+
+  settings.prime_implicants(true);
+  EXPECT_THROW(Initializer({input}, core::Settings()), ValidityError);
 }
 
 }  // namespace test

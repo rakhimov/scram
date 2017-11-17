@@ -481,6 +481,14 @@ class Initializer : private boost::noncopyable {
   /// @pre All CCF groups are applied.
   void EnsureNoCcfSubstitutions();
 
+  /// Ensures that non-declarative substitutions
+  /// are applied only to algorithms with approximations.
+  ///
+  /// @throws ValidityError  Exact analysis is requested.
+  ///
+  /// @todo Research non-declarative substitutions with exact algorithms.
+  void EnsureSubstitutionsWithApproximations();
+
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.

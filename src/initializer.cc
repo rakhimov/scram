@@ -229,6 +229,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   // Perform setup for analysis using configurations from the input files.
   SetupForAnalysis();
   EnsureNoCcfSubstitutions();
+  EnsureSubstitutionsWithApproximations();
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
@@ -1857,6 +1858,18 @@ void Initializer::EnsureNoCcfSubstitutions() {
                                 substitution->name() +
                                 "' events cannot be in a CCF group."));
   }
+}
+
+void Initializer::EnsureSubstitutionsWithApproximations() {
+  if (settings_.approximation() != core::Approximation::kNone)
+    return;
+
+  if (ext::any_of(model_->substitutions(),
+                  [](const SubstitutionPtr& substitution) {
+                    return !substitution->declarative();
+                  }))
+    SCRAM_THROW(ValidityError(
+        "Non-declarative substitutions do not apply to exact analyses."));
 }
 
 void Initializer::ValidateExpressions() {

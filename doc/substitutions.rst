@@ -13,6 +13,9 @@ since this approach forces set manipulations at post-analysis
 and may require analysis re-evaluation
 (e.g., the application of truncations at analysis time may become corrupted).
 
+.. note:: Non-declarative substitutions are applied only to minimal cut sets
+          (i.e., no exact-probability BDD or prime implicants).
+
 
 Validation
 ==========
@@ -31,7 +34,8 @@ Validation
   (it should have been declarative delete-terms).
 - Non-declarative substitution hypothesis, source, and target events cannot be in CCF groups.
 - Since the order of *non-declarative* substitutions is unspecified,
-  the application of *all* substitutions must be idempotent regardless of their order.
+  the application of *all* substitutions must be idempotent regardless of their order
+  (i.e., the composition of substitutions must be commutative).
   The following requirements apply only to *non-declarative* substitutions:
 
     #. No target event can be a source event of any substitution.
