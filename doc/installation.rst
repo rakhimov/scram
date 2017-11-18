@@ -7,6 +7,12 @@ Installation Instructions
     Also, the package version may be older than the latest release.
 
 
+Arch
+====
+
+SCRAM is available from `AUR <https://aur.archlinux.org/packages/scram/>`_.
+
+
 Debian
 ======
 
@@ -76,7 +82,11 @@ Download and run the installer_.
 Docker Containers
 =================
 
-Available from Docker Hub: https://hub.docker.com/r/rakhimov/scram/
+Available from `Docker Hub <https://hub.docker.com/r/rakhimov/scram/>`_:
+
+.. code-block:: bash
+
+    docker pull rakhimov/scram
 
 
 Other Platforms

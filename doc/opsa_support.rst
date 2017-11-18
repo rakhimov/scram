@@ -93,13 +93,16 @@ Deviations from the Open-PSA MEF
 
 - Extern function and library are implemented following
   `the new proposal <https://github.com/open-psa/mef/pull/53>`_.
-- Redefinition of fault tree variables (e.g., basic-events, parameters) is an error.
+- `XInclude instead of the 'include' directive <https://github.com/open-psa/mef/pull/47>`_.
+- Redefinition of fault tree variables (e.g., basic-events, parameters) is an
+  `error <https://github.com/open-psa/mef/issues/50>`_.
 - Substitution names are required.
 - Attributes are not inherited.
+  `Issue #231 <https://github.com/rakhimov/scram/issues/231>`_
 - Recursive parameters are not allowed.
-- Recursive event-tree rules (instructions) are not allowed.
-- Recursive event-tree links (instructions) are not allowed.
+- Recursive event-tree rules and links (instructions) are not allowed.
 - Mixing collect-expression and collect-formula is not allowed.
+  `Issue #183 <https://github.com/rakhimov/scram/issues/183>`_
 - An empty text in XML attributes or elements is considered an error.
 
 

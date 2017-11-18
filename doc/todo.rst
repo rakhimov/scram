@@ -43,7 +43,6 @@ Minor
   Multi-rooted graph analysis. *Low*
 - Importance factor calculation for gates (formulas). *Low*
 - Uncertainty analysis for importance factors. *Moderate*
-- Cardinality/Imply/IFF gates. *Low*
 - Generalization of parameter units and dimensional analysis. *Low*
 
 
