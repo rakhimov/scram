@@ -91,14 +91,16 @@ std::vector<int> ProductContainer::Distribution() const {
 }
 
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
-                                     const Settings& settings)
+                                     const Settings& settings,
+                                     const mef::Model* model)
     : Analysis(settings),
-      top_event_(root) {}
+      top_event_(root),
+      model_(model) {}
 
 void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);
   graph_ = std::make_unique<Pdag>(top_event_,
-                                  Analysis::settings().ccf_analysis());
+                                  Analysis::settings().ccf_analysis(), model_);
   this->Preprocess(graph_.get());
 #ifndef NDEBUG
   if (Analysis::settings().preprocessor)

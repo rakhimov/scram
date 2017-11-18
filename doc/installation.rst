@@ -7,6 +7,12 @@ Installation Instructions
     Also, the package version may be older than the latest release.
 
 
+Arch
+====
+
+SCRAM is available from `AUR <https://aur.archlinux.org/packages/scram/>`_.
+
+
 Debian
 ======
 
@@ -28,6 +34,8 @@ SCRAM is available in Ubuntu's *universe* repository since Ubuntu 17.04.
 
     sudo apt-get install scram
 
+    sudo apt-get install scram-gui  # The GUI front-end since 17.10.
+
 Alternatively, run the following commands to get SCRAM from its PPA_.
 
 .. code-block:: bash
@@ -38,7 +46,7 @@ Alternatively, run the following commands to get SCRAM from its PPA_.
 
     sudo apt-get install scram
 
-    sudo apt-get install scram-gui  # The GUI front-end in PPA.
+    sudo apt-get install scram-gui
 
 .. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
 
@@ -76,7 +84,11 @@ Download and run the installer_.
 Docker Containers
 =================
 
-Available from Docker Hub: https://hub.docker.com/r/rakhimov/scram/
+Available from `Docker Hub <https://hub.docker.com/r/rakhimov/scram/>`_:
+
+.. code-block:: bash
+
+    docker pull rakhimov/scram
 
 
 Other Platforms

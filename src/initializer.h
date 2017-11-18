@@ -33,6 +33,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/variant.hpp>
 
+#include "alignment.h"
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -44,6 +45,7 @@
 #include "model.h"
 #include "parameter.h"
 #include "settings.h"
+#include "substitution.h"
 #include "xml.h"
 
 namespace scram {
@@ -447,6 +449,13 @@ class Initializer : private boost::noncopyable {
   /// @pre All named branches are fed separately from initial states.
   void EnsureHomogeneousEventTree(const Branch& branch);
 
+  /// Ensures that non-declarative substitutions do not have mutual conflicts.
+  ///
+  /// @throws ValidityError  Conflicts in model substitutions.
+  ///
+  /// @pre All substitutions are fully defined and valid.
+  void EnsureNoSubstitutionConflicts();
+
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.
@@ -463,6 +472,22 @@ class Initializer : private boost::noncopyable {
   /// such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
+
+  /// Ensures that non-declarative substitutions do not contain CCF events.
+  ///
+  /// @throws ValidityError  Hypothesis, source, or target event is in CCF.
+  ///
+  /// @pre All substitutions are fully defined and valid.
+  /// @pre All CCF groups are applied.
+  void EnsureNoCcfSubstitutions();
+
+  /// Ensures that non-declarative substitutions
+  /// are applied only to algorithms with approximations.
+  ///
+  /// @throws ValidityError  Exact analysis is requested.
+  ///
+  /// @todo Research non-declarative substitutions with exact algorithms.
+  void EnsureSubstitutionsWithApproximations();
 
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
@@ -481,10 +506,11 @@ class Initializer : private boost::noncopyable {
   /// Event tree branches and instructions have complex interdependencies.
   /// Initiating events may reference their associated event trees.
   /// Alignments depend on instructions.
+  /// Substitutions depend on basic events.
   ///
   /// Elements are assumed to be unique.
   TbdContainer<Parameter, BasicEvent, Gate, CcfGroup, Sequence, EventTree,
-               InitiatingEvent, Rule, Alignment>
+               InitiatingEvent, Rule, Alignment, Substitution>
       tbd_;
 
   /// Container of defined expressions for later validation due to cycles.

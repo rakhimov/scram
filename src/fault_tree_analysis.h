@@ -39,6 +39,7 @@
 namespace scram {
 
 namespace mef {  // Decouple from the analysis code.
+class Model;  // Provider of substitutions.
 class Gate;
 class BasicEvent;
 }  // namespace mef
@@ -214,13 +215,15 @@ class FaultTreeAnalysis : public Analysis {
   ///
   /// @param[in] root  The top event of the fault tree to analyze.
   /// @param[in] settings  Analysis settings for all calculations.
+  /// @param[in] model  The Model containing substitutions if any.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
   /// @warning If the fault tree structure is changed,
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
-  FaultTreeAnalysis(const mef::Gate& root, const Settings& settings);
+  FaultTreeAnalysis(const mef::Gate& root, const Settings& settings,
+                    const mef::Model* model = nullptr);
 
   virtual ~FaultTreeAnalysis() = default;
 
@@ -280,6 +283,7 @@ class FaultTreeAnalysis : public Analysis {
   void Store(const Zbdd& products, const Pdag& graph) noexcept;
 
   const mef::Gate& top_event_;  ///< The root of the graph under analysis.
+  const mef::Model* model_;  ///< The optional Model with substitutions.
   std::unique_ptr<Pdag> graph_;  ///< PDAG of the fault tree.
   std::unique_ptr<const ProductContainer> products_;  ///< Container of results.
 };
@@ -307,7 +311,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
 
   const Zbdd& GenerateProducts(const Pdag* graph) noexcept override {
     algorithm_ = std::make_unique<Algorithm>(graph, Analysis::settings());
-    algorithm_->Analyze();
+    algorithm_->Analyze(graph);
     return algorithm_->products();
   }
 

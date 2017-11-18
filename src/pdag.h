@@ -51,6 +51,8 @@
 namespace scram {
 
 namespace mef {  // Declarations to decouple from the initialization code.
+class Model;  // Provider of substitutions.
+class Substitution;
 class Gate;
 class BasicEvent;
 class HouseEvent;
@@ -805,6 +807,17 @@ class Pdag : private boost::noncopyable {
     }
   };
 
+  /// Non-declarative substitutions.
+  struct Substitution {
+    /// The non-empty unique hypothesis set event IDs.
+    const std::vector<int> hypothesis;
+    /// The non-empty unique source event IDs to remove.
+    const std::vector<int> source;
+    /// The target event ID.
+    /// 0 indicates absence of a target (i.e., constant True).
+    const int target;
+  };
+
   /// Various kinds of marks applied to the nodes.
   enum NodeMark {
     kGateMark,  ///< General graph traversal (dirty upon traversal end!).
@@ -828,8 +841,12 @@ class Pdag : private boost::noncopyable {
   ///
   /// @param[in] root  The top gate of the fault tree.
   /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
+  /// @param[in] model  The Model containing substitutions if any.
   ///
   /// @pre No new Variable nodes are introduced after the construction.
+  ///
+  /// @post All declarative substitutions are applied,
+  ///       and all non-declarative substitutions are collected for application.
   ///
   /// @post The PDAG is stable as long as
   ///       the argument fault tree and its underlying containers are stable.
@@ -843,7 +860,13 @@ class Pdag : private boost::noncopyable {
   ///       optimize their work with basic events.
   ///
   /// @post All Gate indices >= (num of vars + kVariableStartIndex).
-  explicit Pdag(const mef::Gate& root, bool ccf = false) noexcept;
+  explicit Pdag(const mef::Gate& root, bool ccf = false,
+                const mef::Model* model = nullptr) noexcept;
+
+  /// @returns Non-declarative substitutions to be applied by analysis.
+  const std::vector<Substitution>& substitutions() const {
+    return substitutions_;
+  }
 
   /// @returns true if the fault tree is coherent.
   bool coherent() const { return coherent_; }
@@ -1009,6 +1032,14 @@ class Pdag : private boost::noncopyable {
   void GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
                        ProcessedNodes* nodes) noexcept;
 
+  /// Gathers Variables from substitutions.
+  ///
+  /// @param[in] substitution  The substitution rule.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  void GatherVariables(const mef::Substitution& substitution, bool ccf,
+                       ProcessedNodes* nodes) noexcept;
+
   /// Processes a Boolean formula of a gate into a PDAG.
   ///
   /// @param[in] formula  The Boolean formula to be processed.
@@ -1020,6 +1051,30 @@ class Pdag : private boost::noncopyable {
   /// @pre The Operator enum in the MEF is the same as in PDAG.
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
+
+  /// Processes declarative substitutions into corresponding implication gates.
+  ///
+  /// @param[in] substitution  The declarative substitution.
+  /// @param[in] ccf  A flag to gather CCF basic events and gates.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  ///
+  /// @returns The gate to represent the substitution logic.
+  ///
+  /// @pre The substitution is declarative.
+  /// @pre All the substitution variables have been gathered.
+  GatePtr ConstructSubstitution(const mef::Substitution& substitution,
+                                bool ccf, ProcessedNodes* nodes) noexcept;
+
+  /// Collects non-declarative substitutions for later analysis.
+  ///
+  /// @param[in] substitution  The non-declarative substitution.
+  /// @param[in,out] nodes  The mapping of gathered Variables.
+  ///
+  /// @pre The substitution is non-declarative.
+  /// @pre Non-declarative substitution events are not in CCF groups.
+  /// @pre All the substitution variables have been gathered.
+  void CollectSubstitution(const mef::Substitution& substitution,
+                           ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's argument events
   /// into arguments of an indexed gate in the PDAG.
@@ -1056,6 +1111,7 @@ class Pdag : private boost::noncopyable {
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
   /// NULL type gates are created by gates with only one argument.
   std::vector<GateWeakPtr> null_gates_;
+  std::vector<Substitution> substitutions_;  ///< Non-declarative substitutions.
 };
 
 /// Traverses and visits gates and nodes in the graph.

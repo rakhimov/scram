@@ -13,7 +13,7 @@ endif()
 
 project(SCRAM)
 set(SCRAM_VERSION_MAJOR 0)  # Indicate major API change after 1.0.0
-set(SCRAM_VERSION_MINOR 15)  # New features and improvements.
+set(SCRAM_VERSION_MINOR 16)  # New features and improvements.
 set(SCRAM_VERSION_MICRO 0)  # Bug fixes.
 
 ####################### Begin Options ###################

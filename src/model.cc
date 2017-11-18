@@ -64,6 +64,11 @@ void Model::Add(AlignmentPtr alignment) {
                                      "Redefinition of alignment: ");
 }
 
+void Model::Add(SubstitutionPtr substitution) {
+  mef::AddElement<RedefinitionError>(std::move(substitution), &substitutions_,
+                                     "Redefinition of substitution: ");
+}
+
 void Model::Add(ParameterPtr parameter) {
   mef::AddElement<RedefinitionError>(std::move(parameter), &parameters_,
                                      "Redefinition of parameter: ");

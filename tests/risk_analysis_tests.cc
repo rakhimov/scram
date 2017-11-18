@@ -62,7 +62,7 @@ void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
   fs::path temp_file = utility::GenerateFilePath();
   ASSERT_NO_THROW(Reporter().Report(*analysis, temp_file.string()))
       << tree_input.front() << " => " << temp_file;
-  ASSERT_NO_THROW(xml::Parse(temp_file.string(), &validator))
+  ASSERT_NO_THROW(xml::Document(temp_file.string(), &validator))
       << tree_input.front() << " => " << temp_file;
   fs::remove(temp_file);
 }

@@ -55,6 +55,46 @@ TEST_P(RiskAnalysisTest, TwoTrainUnityEventTree) {
   EXPECT_EQ((std::map<std::string, double>{{"S", 1}}), results);
 }
 
+TEST_P(RiskAnalysisTest, TwoTrainSubstitutions) {
+  if (settings.prime_implicants())
+    return;  /// @todo Solve the test for prime implicants.
+
+  std::string dir = "./share/scram/input/TwoTrain/";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({dir + "substitutions.xml"}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  if (settings.approximation() == Approximation::kRareEvent) {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.329175, p_total());
+  }
+  std::set<std::set<std::string>> mcs = {
+      {"ValveOne", "PumpTwo"},
+      {"ValveTwo", "PumpOne"},
+      {"PumpOne", "PumpTwo", "HotBackupPump", "ColdBackupPump"}};
+  EXPECT_EQ(3, products().size());
+  EXPECT_EQ(mcs, products());
+}
+
+TEST_P(RiskAnalysisTest, TwoTrainNonDeclarativeSubstitutions) {
+  if (settings.prime_implicants())
+    return;  /// @todo Solve the test for prime implicants.
+
+  std::string dir = "./share/scram/input/TwoTrain/";
+  settings.probability_analysis(true);
+  settings.approximation(core::Approximation::kRareEvent);
+  ASSERT_NO_THROW(
+      ProcessInputFiles({dir + "nondeclarative_substitutions.xml"}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  EXPECT_DOUBLE_EQ(1, p_total());
+  std::set<std::set<std::string>> mcs = {{"ValveOne", "PumpTwo"},
+                                         {"ValveTwo", "PumpOne"},
+                                         {"ValveOne", "ValveThree"},
+                                         {"HotBackupPump"}};
+  EXPECT_EQ(4, products().size());
+  EXPECT_EQ(mcs, products());
+}
+
 }  // namespace test
 }  // namespace core
 }  // namespace scram

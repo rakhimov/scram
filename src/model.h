@@ -38,6 +38,7 @@
 #include "fault_tree.h"
 #include "instruction.h"
 #include "parameter.h"
+#include "substitution.h"
 
 namespace scram {
 namespace mef {
@@ -89,6 +90,9 @@ class Model : public Element, private boost::noncopyable {
   const ElementTable<RulePtr>& rules() const { return rules_; }
   const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
   const ElementTable<AlignmentPtr>& alignments() const { return alignments_; }
+  const ElementTable<SubstitutionPtr>& substitutions() const {
+    return substitutions_;
+  }
   const IdTable<ParameterPtr>& parameters() const { return parameters_; }
   const MissionTime& mission_time() const { return *mission_time_; }
   MissionTime& mission_time() { return *mission_time_; }
@@ -117,6 +121,7 @@ class Model : public Element, private boost::noncopyable {
   void Add(RulePtr element);
   void Add(FaultTreePtr element);
   void Add(AlignmentPtr element);
+  void Add(SubstitutionPtr element);
   void Add(ParameterPtr element);
   void Add(HouseEventPtr element);
   void Add(BasicEventPtr element);
@@ -171,6 +176,7 @@ class Model : public Element, private boost::noncopyable {
   ElementTable<RulePtr> rules_;
   ElementTable<FaultTreePtr> fault_trees_;
   ElementTable<AlignmentPtr> alignments_;
+  ElementTable<SubstitutionPtr> substitutions_;
   IdTable<GatePtr> gates_;
   IdTable<HouseEventPtr> house_events_;
   IdTable<BasicEventPtr> basic_events_;

@@ -307,6 +307,7 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("sequences", model.sequences());
   feature("rules", model.rules());
   feature("initiating-events", model.initiating_events());
+  feature("substitutions", model.substitutions());
 }
 
 void Reporter::ReportPerformance(const core::RiskAnalysis& risk_an,

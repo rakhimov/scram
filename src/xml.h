@@ -54,12 +54,10 @@
 #include <libxml/parser.h>
 #include <libxml/relaxng.h>
 #include <libxml/tree.h>
-#include <libxml/xinclude.h>
 
 #include "error.h"
 
 namespace scram {
-
 namespace xml {
 
 using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
@@ -403,36 +401,47 @@ class Element {
   const xmlElement* element_;  ///< The main data location.
 };
 
+/// The parser options passed to the library parser.
+const int kParserOptions = XML_PARSE_XINCLUDE | XML_PARSE_NOBASEFIX |
+                           XML_PARSE_NONET | XML_PARSE_NOXINCNODE |
+                           XML_PARSE_COMPACT | XML_PARSE_HUGE;
+
+class Validator;  // Forward declaration for validation upon DOM constructions.
+
 /// XML DOM tree document.
 class Document {
  public:
-  /// @param[in] doc  Fully parsed document.
-  explicit Document(const xmlDoc* doc) : doc_(doc) { assert(doc_); }
-
-  /// Move constructor to transfer the document ownership.
-  Document(Document&& other) noexcept : doc_(other.doc_) {
-    other.doc_ = nullptr;
-  }
-
-  /// Frees the underlying document.
-  ~Document() {
-    if (doc_)
-      xmlFreeDoc(const_cast<xmlDoc*>(doc_));
-  }
+  /// Parses XML input document.
+  /// All XInclude directives are processed into the final document.
+  ///
+  /// @param[in] file_path  The path to the document file.
+  /// @param[in] validator  Optional validator against the RNG schema.
+  ///
+  /// @returns The initialized document.
+  ///
+  /// @throws IOError  The file is not available.
+  /// @throws ParseError  There are XML parsing failures.
+  /// @throws XIncludeError  XInclude resolution has failed.
+  /// @throws ValidityError  The XML file is not valid.
+  explicit Document(const std::string& file_path,
+                    Validator* validator = nullptr);
 
   /// @returns The root element of the document.
   ///
   /// @pre The document has a root node.
   Element root() const {
-    return Element(reinterpret_cast<const xmlElement*>(
-        xmlDocGetRootElement(const_cast<xmlDoc*>(doc_))));
+    return Element(
+        reinterpret_cast<const xmlElement*>(xmlDocGetRootElement(doc_.get())));
   }
 
   /// @returns The underlying data document.
-  const xmlDoc* get() const { return doc_; }
+  /// @{
+  const xmlDoc* get() const { return doc_.get(); }
+  xmlDoc* get() { return doc_.get(); }
+  /// @}
 
  private:
-  const xmlDoc* doc_;  ///< The XML DOM document.
+  std::unique_ptr<xmlDoc, decltype(&xmlFreeDoc)> doc_;  ///< The DOM document.
 };
 
 /// RelaxNG validator.
@@ -442,24 +451,7 @@ class Validator {
   ///
   /// @throws ParseError  RNG file parsing has failed.
   /// @throws LogicError  The XML library functions have failed internally.
-  explicit Validator(const std::string& rng_file)
-      : schema_(nullptr, &xmlRelaxNGFree),
-        valid_ctxt_(nullptr, &xmlRelaxNGFreeValidCtxt) {
-    xmlResetLastError();
-    std::unique_ptr<xmlRelaxNGParserCtxt, decltype(&xmlRelaxNGFreeParserCtxt)>
-        parser_ctxt(xmlRelaxNGNewParserCtxt(rng_file.c_str()),
-                    &xmlRelaxNGFreeParserCtxt);
-    if (!parser_ctxt)
-      SCRAM_THROW(detail::GetError<LogicError>());
-
-    schema_.reset(xmlRelaxNGParse(parser_ctxt.get()));
-    if (!schema_)
-      SCRAM_THROW(detail::GetError<ParseError>());
-
-    valid_ctxt_.reset(xmlRelaxNGNewValidCtxt(schema_.get()));
-    if (!valid_ctxt_)
-      SCRAM_THROW(detail::GetError<LogicError>());
-  }
+  explicit Validator(const std::string& rng_file);
 
   /// Validates XML DOM documents against the schema.
   ///
@@ -482,47 +474,7 @@ class Validator {
       valid_ctxt_;
 };
 
-/// The parser options passed to the library parser.
-const int kParserOptions = XML_PARSE_XINCLUDE | XML_PARSE_NOBASEFIX |
-                           XML_PARSE_NONET | XML_PARSE_NOXINCNODE |
-                           XML_PARSE_COMPACT | XML_PARSE_HUGE;
-
-/// Parses XML input document.
-/// All XInclude directives are processed into the final document.
-///
-/// @param[in] file_path  The path to the document file.
-/// @param[in] validator  Optional validator against the RNG schema.
-///
-/// @returns The initialized document.
-///
-/// @throws IOError  The file is not available.
-/// @throws ParseError  There are XML parsing failures.
-/// @throws XIncludeError  XInclude resolution has failed.
-/// @throws ValidityError  The XML file is not valid.
-inline Document Parse(const std::string& file_path,
-                      Validator* validator = nullptr) {
-  xmlResetLastError();
-  xmlDoc* doc = xmlReadFile(file_path.c_str(), nullptr, kParserOptions);
-  if (!doc) {
-    xmlErrorPtr xml_error = xmlGetLastError();
-    if (xml_error->domain == xmlErrorDomain::XML_FROM_IO) {
-      SCRAM_THROW(IOError(xml_error->message))
-          << boost::errinfo_file_name(file_path) << boost::errinfo_errno(errno)
-          << boost::errinfo_file_open_mode("r");
-    }
-    SCRAM_THROW(detail::GetError<ParseError>(xml_error));
-  }
-  assert(!xmlGetLastError());
-  Document manager(doc);
-  if (xmlXIncludeProcessFlags(doc, kParserOptions) < 0 || xmlGetLastError())
-    SCRAM_THROW(detail::GetError<XIncludeError>());
-  if (validator)
-    validator->validate(manager);
-  return manager;
-}
-
 }  // namespace xml
-
 }  // namespace scram
 
 #endif  // SCRAM_SRC_XML_H_

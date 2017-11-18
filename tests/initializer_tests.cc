@@ -33,6 +33,16 @@ TEST(InitializerTest, XMLFormatting) {
                xml::ParseError);
 }
 
+// XML custom namespace errors.
+TEST(InitializerTest, XMLNameSpace) {
+  EXPECT_THROW(Initializer({"./share/scram/input/undefined_xmlns.xml"},
+                           core::Settings()),
+               xml::ParseError);
+  EXPECT_THROW(Initializer({"./share/scram/input/custom_xmlns.xml"},
+                           core::Settings()),
+               xml::ValidityError);
+}
+
 // Test the response for non-existent file.
 TEST(InitializerTest, NonExistentFile) {
   // Access issues. IOErrors
@@ -320,11 +330,20 @@ TEST(InitializerTest, CorrectModelInputs) {
       "extern_expression.xml",
       "valid_alignment.xml",
       "valid_sum_alignment.xml",
-      "private_phases.xml"};
+      "private_phases.xml",
+      "substitution.xml",
+      "substitution_optional_source.xml",
+      "substitution_types.xml",
+      "substitution_declarative_target_is_another_source.xml",
+      "substitution_target_is_hypothesis.xml",
+      "substitution_declarative_ccf.xml",
+  };
 
+  core::Settings settings;
+  settings.approximation(core::Approximation::kRareEvent);
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, core::Settings(), true))
-        << " Filename: " << input;
+    EXPECT_NO_THROW(Initializer({dir + input}, settings, true)) << " Filename: "
+                                                                << input;
   }
 }
 
@@ -347,11 +366,33 @@ TEST(InitializerTest, IncorrectModelInputs) {
       "undefined_target_set_house_event.xml",
       "duplicate_alignment.xml",
       "excess_alignment.xml",
-      "incomplete_alignment.xml"};
+      "incomplete_alignment.xml",
+      "duplicate_substitution.xml",
+      "substitution_undefined_hypothesis_event.xml",
+      "substitution_undefined_source_event.xml",
+      "substitution_undefined_target_event.xml",
+      "substitution_duplicate_source_event.xml",
+      "substitution_duplicate_hypothesis_event.xml",
+      "substitution_nested_formula.xml",
+      "substitution_non_basic_event_formula.xml",
+      "substitution_type_mismatch.xml",
+      "substitution_no_effect.xml",
+      "substitution_nondeclarative_complex.xml",
+      "substitution_source_equal_target.xml",
+      "substitution_target_is_another_source.xml",
+      "substitution_target_is_another_hypothesis.xml",
+      "substitution_source_is_another_hypothesis.xml",
+      "substitution_source_false_target.xml",
+      "substitution_declarative_noncoherent.xml",
+      "substitution_nondeclarative_ccf_hypothesis.xml",
+      "substitution_nondeclarative_ccf_source.xml",
+      "substitution_nondeclarative_ccf_target.xml",
+  };
 
+  core::Settings settings;
+  settings.approximation(core::Approximation::kRareEvent);
   for (const auto& input : incorrect_inputs) {
-    EXPECT_THROW(Initializer({dir + input}, core::Settings(), true),
-                 ValidityError)
+    EXPECT_THROW(Initializer({dir + input}, settings, true), ValidityError)
         << " Filename:  " << input;
   }
 }
@@ -378,6 +419,22 @@ TEST(InitializerTest, DefaultExternDisable) {
   std::string input = "./share/scram/input/model/extern_library.xml";
   EXPECT_NO_THROW(Initializer({input}, core::Settings(), true));
   EXPECT_THROW(Initializer({input}, core::Settings()), IllegalOperation);
+}
+
+// Non-declarative substitutions with approximations only.
+TEST(InitializerTest, NonDeclarativeSubstitutionsWithAppproximations) {
+  std::string input = "./share/scram/input/model/substitution_types.xml";
+  EXPECT_THROW(Initializer({input}, core::Settings()), ValidityError);
+
+  core::Settings settings;
+
+  settings.approximation(core::Approximation::kRareEvent);
+  EXPECT_NO_THROW(Initializer({input}, settings));
+  settings.approximation(core::Approximation::kMcub);
+  EXPECT_NO_THROW(Initializer({input}, settings));
+
+  settings.prime_implicants(true);
+  EXPECT_THROW(Initializer({input}, core::Settings()), ValidityError);
 }
 
 }  // namespace test

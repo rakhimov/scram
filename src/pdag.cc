@@ -33,7 +33,10 @@
 #include <boost/range/algorithm.hpp>
 
 #include "event.h"
+#include "ext/algorithm.h"
 #include "logger.h"
+#include "model.h"
+#include "substitution.h"
 
 namespace scram {
 namespace core {
@@ -452,11 +455,33 @@ Pdag::Pdag() noexcept
       register_null_gates_(true),
       constant_(new Constant(this)) {}
 
-Pdag::Pdag(const mef::Gate& root, bool ccf) noexcept : Pdag() {
+Pdag::Pdag(const mef::Gate& root, bool ccf, const mef::Model* model) noexcept
+    : Pdag() {
   TIMER(DEBUG2, "PDAG Construction");
   ProcessedNodes nodes;
   GatherVariables(root.formula(), ccf, &nodes);
+  if (model) {  // Process substitution variables.
+    for (const mef::SubstitutionPtr& substitution : model->substitutions())
+      GatherVariables(*substitution, ccf, &nodes);
+  }
+
   root_ = ConstructGate(root.formula(), ccf, &nodes);
+
+  if (model) {  // Process substitution application.
+    auto application = std::make_shared<Gate>(kAnd, this);
+    for (const mef::SubstitutionPtr& substitution : model->substitutions()) {
+      if (substitution->declarative()) {  // Apply declarative substitutions.
+        application->AddArg(ConstructSubstitution(*substitution, ccf, &nodes));
+      } else {  // Gather non-declarative substitutions for analysis.
+        CollectSubstitution(*substitution, &nodes);
+      }
+    }
+    if (!application->args().empty()) {
+      application->AddArg(root_);
+      root_ = application;
+      coherent_ = false;
+    }
+  }
 }
 
 void Pdag::Print() {
@@ -517,6 +542,19 @@ void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
       assert((kVariableStartIndex + basic_events_.size() - 1) == var->index());
     }
   }
+}
+
+void Pdag::GatherVariables(const mef::Substitution& substitution, bool ccf,
+                           ProcessedNodes* nodes) noexcept {
+  GatherVariables(substitution.hypothesis(), ccf, nodes);
+
+  for (const mef::BasicEvent* event : substitution.source()) {
+    assert(!event->HasCcf() && "Non declarative substitutions w/ CCF groups.");
+    GatherVariables(*event, ccf, nodes);
+  }
+
+  if (auto* target = boost::get<mef::BasicEvent*>(&substitution.target()))
+    GatherVariables(**target, ccf, nodes);
 }
 
 /// Specialization for HouseEvent arguments.
@@ -593,6 +631,64 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     parent->AddArg(new_gate);
   }
   return parent;
+}
+
+GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,
+                                    bool ccf, ProcessedNodes* nodes) noexcept {
+  assert(substitution.declarative() && "Only declarative substitutions.");
+  auto implication = std::make_shared<Gate>(kOr, this);
+  implication->AddArg(ConstructGate(substitution.hypothesis(), ccf, nodes),
+                      /*complement=*/true);
+  if (auto* target = boost::get<mef::BasicEvent*>(&substitution.target())) {
+    AddArg(implication, **target, ccf, nodes);
+  } else {
+    assert(!*boost::get<bool>(&substitution.target()) && "Invalid delete term");
+    implication->type(kNull);
+  }
+  return implication;
+}
+
+void Pdag::CollectSubstitution(const mef::Substitution& substitution,
+                               ProcessedNodes* nodes) noexcept {
+  assert(!substitution.declarative() && "Only non-declarative substitutions.");
+  int target = [&substitution, &nodes] {
+    if (auto* event = boost::get<mef::BasicEvent*>(&substitution.target()))
+      return nodes->variables.find(*event)->second->index();
+
+    assert(*boost::get<bool>(&substitution.target()) && "Invalid delete term");
+    return 0;
+  }();
+
+  std::vector<int> source;
+  for (const mef::BasicEvent* event : substitution.source())
+    source.push_back(nodes->variables.find(event)->second->index());
+
+  switch (substitution.hypothesis().type()) {
+    case mef::kNull:
+    case mef::kAnd: {
+      std::vector<int> args;
+      for (const mef::Formula::EventArg& arg :
+           substitution.hypothesis().event_args()) {
+        auto* event = boost::get<mef::BasicEvent*>(&arg);
+        assert(event);
+        args.push_back(nodes->variables.find(*event)->second->index());
+      }
+      substitutions_.push_back({std::move(args), std::move(source), target});
+      break;
+    }
+    case mef::kOr: {
+      for (const mef::Formula::EventArg& arg :
+           substitution.hypothesis().event_args()) {
+        auto* event = boost::get<mef::BasicEvent*>(&arg);
+        assert(event);
+        substitutions_.push_back(
+            {{nodes->variables.find(*event)->second->index()}, source, target});
+      }
+      break;
+    }
+    default:
+      assert(false && "Only simple formulas for non-declarative substitutions");
+  }
 }
 
 bool Pdag::IsTrivial() noexcept {

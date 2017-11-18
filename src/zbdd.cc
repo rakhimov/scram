@@ -85,7 +85,7 @@ Zbdd::Zbdd(const Pdag* graph, const Settings& settings) noexcept
   CHECK_ZBDD(true);
 }
 
-void Zbdd::Analyze() noexcept {
+void Zbdd::Analyze(const Pdag* graph) noexcept {
   CLOCK(zbdd_time);
   assert(root_->terminal() ||
          SetNode::Ref(root_).max_set_order() <= kSettings_.limit_order());
@@ -95,6 +95,9 @@ void Zbdd::Analyze() noexcept {
     entry.second->Analyze();
 
   Prune(root_, kSettings_.limit_order());
+  if (graph)
+    ApplySubstitutions(graph->substitutions());
+
   Freeze();  // Complete cleanup of the memory.
   LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(zbdd_time);
 }
@@ -745,6 +748,46 @@ int Zbdd::GatherModules(const VertexPtr& vertex,
   if (min_low == -1)
     return min_high + contribution;
   return std::min(min_high + contribution, min_low);
+}
+
+void Zbdd::ApplySubstitutions(
+    const std::vector<Pdag::Substitution>& substitutions) noexcept {
+  if (substitutions.empty())
+    return;
+  ClearTables();
+  unique_table_.clear();  // New ordering for nodes.
+
+  VertexPtr new_root = kEmpty_;
+  for (const std::vector<int>& product : *this) {
+    std::vector<int> to_add;
+    std::vector<int> to_remove;
+    for (const Pdag::Substitution& substitution : substitutions) {
+      if (ext::all_of(substitution.hypothesis, [&product](int id) {
+            return boost::find(product, id) != product.end();
+          })) {
+        to_remove.insert(to_remove.end(), substitution.source.begin(),
+                         substitution.source.end());
+        if (substitution.target)
+          to_add.push_back(substitution.target);
+      }
+    }
+    VertexPtr new_product = kBase_;
+    for (int id : product) {
+      if (boost::find(to_remove, id) != to_remove.end())
+        continue;
+      new_product = Apply<kAnd>(
+          new_product, FindOrAddVertex(id, kBase_, kEmpty_, std::abs(id)),
+          kSettings_.limit_order());
+    }
+    for (int id : to_add) {
+      new_product = Apply<kAnd>(
+          new_product, FindOrAddVertex(id, kBase_, kEmpty_, std::abs(id)),
+          kSettings_.limit_order());
+    }
+    new_root = Apply<kOr>(new_root, new_product, kSettings_.limit_order());
+  }
+  root_ = std::move(new_root);
+  root_ = Minimize(root_);
 }
 
 int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {

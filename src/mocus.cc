@@ -38,7 +38,7 @@ Mocus::Mocus(const Pdag* graph, const Settings& settings)
   assert(!graph->complement() && "Complements must be propagated.");
 }
 
-void Mocus::Analyze() {
+void Mocus::Analyze(const Pdag*) noexcept {
   if (graph_->IsTrivial()) {
     LOG(DEBUG2) << "The PDAG is trivial!";
     zbdd_ = std::make_unique<Zbdd>(graph_, kSettings_);
@@ -48,7 +48,7 @@ void Mocus::Analyze() {
   TIMER(DEBUG2, "Minimal cut set generation");
   zbdd_ = AnalyzeModule(graph_->root(), kSettings_);
   LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
-  zbdd_->Analyze();
+  zbdd_->Analyze(graph_);
 }
 
 std::unique_ptr<zbdd::CutSetContainer>

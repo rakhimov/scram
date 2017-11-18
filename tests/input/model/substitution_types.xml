@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-substitution name="DeleteTwoExclusive" type="delete-terms">
+    <hypothesis>
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+      </and>
+    </hypothesis>
+    <target>
+      <constant value="false"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="DeleteGeneral" type="delete-terms">
+    <hypothesis>
+      <atleast min="2">
+        <event name="A"/>
+        <event name="B"/>
+        <event name="C"/>
+      </atleast>
+    </hypothesis>
+    <target>
+      <constant value="false"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="RecoveryDeclarative" type="recovery-rule">
+    <hypothesis>
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+      </and>
+    </hypothesis>
+    <target>
+      <basic-event name="C"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="RecoveryNonDeclarative" type="recovery-rule">
+    <hypothesis>
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="A"/>
+      <basic-event name="B"/>
+    </source>
+    <target>
+      <basic-event name="D"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="RecoverySingle" type="recovery-rule">
+    <hypothesis>
+      <event name="E"/>
+    </hypothesis>
+    <source>
+      <basic-event name="E"/>
+    </source>
+    <target>
+      <basic-event name="D"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="ExchangeEvent" type="exchange-event">
+    <hypothesis>
+      <and>
+        <event name="F"/>
+        <event name="G"/>
+        <event name="C"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="C"/>
+    </source>
+    <target>
+      <basic-event name="D"/>
+    </target>
+  </define-substitution>
+  <model-data>
+    <define-basic-event name="A"/>
+    <define-basic-event name="B"/>
+    <define-basic-event name="C"/>
+    <define-basic-event name="D"/>
+    <define-basic-event name="E"/>
+    <define-basic-event name="F"/>
+    <define-basic-event name="G"/>
+  </model-data>
+</opsa-mef>

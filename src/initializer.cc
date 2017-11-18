@@ -20,6 +20,7 @@
 
 #include "initializer.h"
 
+#include <functional>  // std::mem_fn
 #include <sstream>
 #include <type_traits>
 
@@ -29,7 +30,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm.hpp>
 
-#include "alignment.h"
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
@@ -40,6 +40,7 @@
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "expression/test_event.h"
+#include "ext/algorithm.h"
 #include "ext/find_iterator.h"
 #include "logger.h"
 
@@ -227,6 +228,8 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   LOG(DEBUG1) << "Setting up for the analysis";
   // Perform setup for analysis using configurations from the input files.
   SetupForAnalysis();
+  EnsureNoCcfSubstitutions();
+  EnsureSubstitutionsWithApproximations();
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
@@ -349,7 +352,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   CLOCK(parse_time);
   LOG(DEBUG3) << "Parsing " << xml_file << " ...";
-  xml::Document document = xml::Parse(xml_file, &validator);
+  xml::Document document(xml_file, &validator);
   LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
 
   xml::Element root = document.root();
@@ -391,6 +394,13 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     AlignmentPtr alignment = ConstructElement<Alignment>(child);
     auto* address = alignment.get();
     Register(std::move(alignment), child);
+    tbd_.emplace_back(address, child);
+  }
+
+  for (const xml::Element& child : root.children("define-substitution")) {
+    SubstitutionPtr substitution = ConstructElement<Substitution>(child);
+    auto* address = substitution.get();
+    Register(std::move(substitution), child);
     tbd_.emplace_back(address, child);
   }
 
@@ -532,6 +542,66 @@ void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
   }
   try {
     alignment->Validate();
+  } catch (ValidityError& err) {
+    err << boost::errinfo_at_line(xml_node.line());
+    throw;
+  }
+}
+
+template <>
+void Initializer::Define(const xml::Element& xml_node,
+                         Substitution* substitution) {
+  substitution->hypothesis(
+      GetFormula(xml_node.child("hypothesis")->child().value(), ""));
+
+  if (boost::optional<xml::Element> source = xml_node.child("source")) {
+    for (const xml::Element& basic_event : source->children()) {
+      assert(basic_event.name() == "basic-event");
+      std::string name = basic_event.attribute("name").to_string();
+      try {
+        BasicEvent* event = GetBasicEvent(name, "");
+        substitution->Add(event);
+        event->usage(true);
+      } catch (std::out_of_range&) {
+        SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
+            << boost::errinfo_at_line(basic_event.line());
+      } catch (DuplicateArgumentError& err) {
+        err << boost::errinfo_at_line(basic_event.line());
+        throw;
+      }
+    }
+    assert(substitution->source().empty() == false);
+  }
+
+  xml::Element target = xml_node.child("target")->child().value();
+  if (target.name() == "basic-event") {
+    std::string name = target.attribute("name").to_string();
+    try {
+      BasicEvent* event = GetBasicEvent(name, "");
+      substitution->target(event);
+      event->usage(true);
+    } catch (std::out_of_range&) {
+      SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
+          << boost::errinfo_at_line(target.line());
+    }
+  } else {
+    assert(target.name() == "constant");
+    substitution->target(target.attribute<bool>("value").value());
+  }
+
+  try {
+    substitution->Validate();
+    xml::string_view type = xml_node.attribute("type");
+    if (!type.empty()) {
+      boost::optional<Substitution::Type> deduced_type = substitution->type();
+      int pos = std::distance(kSubstitutionTypeToString,
+                              boost::find(kSubstitutionTypeToString, type));
+      assert(pos < 3 && "Unexpected substitution type string.");
+      if (!deduced_type ||
+          static_cast<Substitution::Type>(pos) != deduced_type.value())
+        SCRAM_THROW(ValidityError(
+            "The declared substitution type does not match the deduced one."));
+    }
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_node.line());
     throw;
@@ -711,6 +781,9 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
           "Undefined " + element_type.to_string() + " " + name +
           (base_path.empty() ? "" : " with base path " + base_path)))
           << boost::errinfo_at_line(element.line());
+    } catch (DuplicateArgumentError& err) {
+      err << boost::errinfo_at_line(element.line());
+      throw;
     }
   };
 
@@ -1580,6 +1653,8 @@ void Initializer::ValidateInitialization() {
     }
   }
 
+  EnsureNoSubstitutionConflicts();
+
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
@@ -1719,6 +1794,82 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
   } homogeneous_checker;
 
   homogeneous_checker(&branch);
+}
+
+void Initializer::EnsureNoSubstitutionConflicts() {
+  auto substitutions = model_->substitutions() |
+                       boost::adaptors::filtered([](const auto& substitution) {
+                         return !substitution->declarative();
+                       });
+  for (const SubstitutionPtr& origin : substitutions) {
+    const auto* target_ptr = boost::get<BasicEvent*>(&origin->target());
+    for (const SubstitutionPtr& substitution : substitutions) {
+      if (target_ptr && boost::count(substitution->source(), *target_ptr))
+        SCRAM_THROW(ValidityError(
+            "Non-declarative substitution '" + origin->name() +
+            "' target event should not appear in any substitution source."));
+      if (origin == substitution)
+        continue;
+      auto in_hypothesis = [&substitution](const BasicEvent* source) {
+        return ext::any_of(substitution->hypothesis().event_args(),
+                           [source](const Formula::EventArg& arg) {
+                             return boost::get<BasicEvent*>(arg) == source;
+                           });
+      };
+      if (target_ptr && in_hypothesis(*target_ptr))
+        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                  origin->name() + "' target event should not "
+                                                   "appear in another "
+                                                   "substitution hypothesis."));
+      if (ext::any_of(origin->source(), in_hypothesis))
+        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                  origin->name() + "' source event should not "
+                                                   "appear in another "
+                                                   "substitution hypothesis."));
+    }
+  }
+}
+
+void Initializer::EnsureNoCcfSubstitutions() {
+  auto substitutions = model_->substitutions() |
+                       boost::adaptors::filtered([](const auto& substitution) {
+                         return !substitution->declarative();
+                       });
+  auto is_ccf = [](const Substitution& substitution) {
+    if (ext::any_of(substitution.hypothesis().event_args(),
+                    [](const Formula::EventArg& arg) {
+                      return boost::get<BasicEvent*>(arg)->HasCcf();
+                    }))
+      return true;
+
+    const auto* target_ptr = boost::get<BasicEvent*>(&substitution.target());
+    if (target_ptr && (*target_ptr)->HasCcf())
+      return true;
+
+    if (ext::any_of(substitution.source(), std::mem_fn(&BasicEvent::HasCcf)))
+      return true;
+
+    return false;
+  };
+
+  for (const SubstitutionPtr& substitution : substitutions) {
+    if (is_ccf(*substitution))
+      SCRAM_THROW(ValidityError("Non-declarative substitution '" +
+                                substitution->name() +
+                                "' events cannot be in a CCF group."));
+  }
+}
+
+void Initializer::EnsureSubstitutionsWithApproximations() {
+  if (settings_.approximation() != core::Approximation::kNone)
+    return;
+
+  if (ext::any_of(model_->substitutions(),
+                  [](const SubstitutionPtr& substitution) {
+                    return !substitution->declarative();
+                  }))
+    SCRAM_THROW(ValidityError(
+        "Non-declarative substitutions do not apply to exact analyses."));
 }
 
 void Initializer::ValidateExpressions() {

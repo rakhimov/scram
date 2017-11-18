@@ -16,8 +16,8 @@ The programming nature of event trees is achieved with a set of Instructions and
 that control the interpretation of paths leading to sequences.
 
 
-Event Tree Validation
-=====================
+Validation
+==========
 
 - The sequences defined in event trees are public (i.e., global).
   In other words, two different event trees cannot define sequences with the same name,
