@@ -82,9 +82,9 @@ Bdd::Bdd(const Pdag* graph, const Settings& settings)
 
 Bdd::~Bdd() noexcept = default;
 
-void Bdd::Analyze() noexcept {
+void Bdd::Analyze(const Pdag* graph) noexcept {
   zbdd_ = std::make_unique<Zbdd>(this, kSettings_);
-  zbdd_->Analyze();
+  zbdd_->Analyze(graph);
   if (!coherent_)  // The BDD has been used by the ZBDD.
     Freeze();
 }

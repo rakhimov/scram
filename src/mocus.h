@@ -53,7 +53,9 @@ class Mocus : private boost::noncopyable {
   Mocus(const Pdag* graph, const Settings& settings);
 
   /// Finds minimal cut sets from the PDAG.
-  void Analyze();
+  ///
+  /// @param[in] graph  The optional PDAG with non-declarative substitutions.
+  void Analyze(const Pdag* graph = nullptr) noexcept;
 
   /// @returns Generated minimal cut sets with basic event indices.
   const Zbdd& products() const {

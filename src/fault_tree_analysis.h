@@ -311,7 +311,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
 
   const Zbdd& GenerateProducts(const Pdag* graph) noexcept override {
     algorithm_ = std::make_unique<Algorithm>(graph, Analysis::settings());
-    algorithm_->Analyze();
+    algorithm_->Analyze(graph);
     return algorithm_->products();
   }
 

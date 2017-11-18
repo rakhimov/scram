@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<opsa-mef name="TwoTrains">
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="ValveOne">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOne">
+      <float value="0.7"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+  <define-substitution name="ExchangeValves" type="exchange-event">
+    <hypothesis>
+      <and>
+        <basic-event name="ValveOne"/>
+        <basic-event name="ValveTwo"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="ValveTwo"/>
+    </source>
+    <target>
+      <basic-event name="ValveThree"/>
+    </target>
+  </define-substitution>
+  <define-substitution name="RecoverPumps" type="recovery-rule">
+    <hypothesis>
+      <and>
+        <basic-event name="PumpOne"/>
+        <basic-event name="PumpTwo"/>
+      </and>
+    </hypothesis>
+    <source>
+      <basic-event name="PumpOne"/>
+      <basic-event name="PumpTwo"/>
+    </source>
+    <target>
+      <basic-event name="HotBackupPump"/>
+    </target>
+  </define-substitution>
+  <model-data>
+    <define-basic-event name="HotBackupPump">
+      <float value="0.7"/>
+    </define-basic-event>
+    <define-basic-event name="ValveThree">
+      <float value="0.55"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>
