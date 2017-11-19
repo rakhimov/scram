@@ -33,6 +33,7 @@ Implemented Features
 - Probability analysis (Importance factors, IEC 61508 Safety Integrity Levels)
 - Uncertainty analysis with Monte Carlo simulations
 - Alignment (Mission, Phases)
+- Substitutions (Delete Terms, Recovery Rules, Exchange Events)
 - Fault tree generator
 - GUI front-end
 
@@ -71,6 +72,7 @@ Documentation
     doc/probability_analysis
     doc/uncertainty_analysis
     doc/common_cause_analysis
+    doc/substitutions
 
 
 .. toctree::
