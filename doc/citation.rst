@@ -2,21 +2,8 @@
 Citation
 ########
 
-To cite SCRAM in publications
-=============================
+Follow the Zenodo DOI badge for more instructions:
 
-| Olzhas Rakhimov (|year|).
-| SCRAM version |release| documentation: Command-line Risk Analysis Multi-tool.
-| URL https://scram-pra.org/
-
-|
-
-A BibTex entry for LaTeX users
-==============================
-
-| @book{,
-|   author = {Olzhas Rakhimov},
-|   title  = {{SCRAM} version |release| documentation: Command-line Risk Analysis Multi-tool},
-|   year   = {|year|},
-|   url    = {https://scram-pra.org/},
-| }
+.. image:: https://zenodo.org/badge/17964226.svg
+    :target: https://zenodo.org/badge/latestdoi/17964226
+    :alt: Zenodo DOI
