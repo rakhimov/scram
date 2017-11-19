@@ -498,3 +498,6 @@ Please follow the instructions in `CONTRIBUTING.md`_.
 .. image:: https://d322cqt584bo4o.cloudfront.net/scram/localized.svg
     :target: https://crowdin.com/project/scram
     :alt: Crowdin
+.. image:: https://zenodo.org/badge/17964226.svg
+    :target: https://zenodo.org/badge/latestdoi/17964226
+    :alt: Zenodo DOI
