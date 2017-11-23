@@ -31,7 +31,10 @@ namespace scram {
 namespace gui {
 namespace model {
 
-class ProductTableModel : public QAbstractTableModel {
+class ProductTableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
 public:
     /// @param[in] products  The analysis results.
     /// @param[in] withProbability  The analysis includes the probability data.
