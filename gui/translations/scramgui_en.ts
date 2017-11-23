@@ -706,51 +706,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Product</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Order</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Probability</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Contribution</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Products: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Occurrence</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MIF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>CIF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>DIF</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RAW</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RRW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -802,20 +758,6 @@
         <source>Reporting error</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Products (%L1)</source>
-        <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Probability (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Importance Factors (%L1)</source>
-        <extracomment>The number of important events w/ factors defined.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>scram::gui::ModelTree</name>
@@ -848,6 +790,21 @@
     </message>
     <message>
         <source>The language change will take effect after an application restart.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>scram::gui::ReportTree</name>
+    <message>
+        <source>Products (%L1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Probability (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Importance Factors (%L1)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -965,6 +922,60 @@
     </message>
     <message>
         <source>Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>scram::gui::model::ImportanceTableModel</name>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Occurrence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Probability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DIF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RAW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RRW</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>scram::gui::model::ProductTableModel</name>
+    <message>
+        <source>Product</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Probability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Contribution</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
