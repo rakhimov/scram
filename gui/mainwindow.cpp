@@ -1603,13 +1603,13 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
 
 void MainWindow::resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis)
 {
-    m_analysis = std::move(analysis);
-    ui->actionExportReportAs->setEnabled(static_cast<bool>(m_analysis));
+    ui->actionExportReportAs->setEnabled(static_cast<bool>(analysis));
 
     auto *oldModel = ui->reportTree->model();
     ui->reportTree->setModel(
-        m_analysis ? new ReportTree(&m_analysis->results(), this) : nullptr);
+        analysis ? new ReportTree(&analysis->results(), this) : nullptr);
     delete oldModel;
+    m_analysis = std::move(analysis);
 }
 
 } // namespace gui
