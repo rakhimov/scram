@@ -33,8 +33,7 @@ namespace scram {
 namespace core {
 
 Mocus::Mocus(const Pdag* graph, const Settings& settings)
-    : graph_(graph),
-      kSettings_(settings) {
+    : graph_(graph), kSettings_(settings) {
   assert(!graph->complement() && "Complements must be propagated.");
 }
 

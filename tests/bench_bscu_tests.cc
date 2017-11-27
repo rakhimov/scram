@@ -57,7 +57,6 @@ TEST_P(RiskAnalysisTest, BSCU) {
   }
 }
 
-
 }  // namespace test
 }  // namespace core
 }  // namespace scram

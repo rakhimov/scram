@@ -197,8 +197,8 @@ Zbdd::Zbdd(const Gate& gate, const Settings& settings) noexcept
 #undef CHECK_ZBDD
 
 SetNodePtr Zbdd::FindOrAddVertex(int index, const VertexPtr& high,
-                                 const VertexPtr& low, int order,
-                                 bool module, bool coherent) noexcept {
+                                 const VertexPtr& low, int order, bool module,
+                                 bool coherent) noexcept {
   assert(high->id() != low->id() && "Reduction failure.");
 
   SetNodeWeakPtr& in_table =
@@ -220,8 +220,8 @@ SetNodePtr Zbdd::FindOrAddVertex(int index, const VertexPtr& high,
 
 SetNodePtr Zbdd::FindOrAddVertex(const SetNodePtr& node, const VertexPtr& high,
                                  const VertexPtr& low) noexcept {
-  if (node->high()->id() == high->id() &&
-      node->low()->id() == low->id()) return node;
+  if (node->high()->id() == high->id() && node->low()->id() == low->id())
+    return node;
   return FindOrAddVertex(node->index(), high, low, node->order(),
                          node->module(), node->coherent());
 }
@@ -242,9 +242,8 @@ Zbdd::VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
   if (low->terminal() && Terminal<SetNode>::Ref(low).value())
     return low;
   assert(ite->index() > 0 && "BDD indices are never negative.");
-  return FindOrAddVertex(complement ? -ite->index() : ite->index(),
-                         high, low, ite->order(), ite->module(),
-                         ite->coherent());
+  return FindOrAddVertex(complement ? -ite->index() : ite->index(), high, low,
+                         ite->order(), ite->module(), ite->coherent());
 }
 
 Zbdd::VertexPtr Zbdd::GetReducedVertex(const SetNodePtr& node,
@@ -300,10 +299,9 @@ Zbdd::VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
   return GetReducedVertex(ite, false, high, low);
 }
 
-Zbdd::VertexPtr
-Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
-                                Bdd* bdd_graph, int limit_order,
-                                PairTable<VertexPtr>* ites) noexcept {
+Zbdd::VertexPtr Zbdd::ConvertBddPrimeImplicants(
+    const ItePtr& ite, bool complement, Bdd* bdd_graph, int limit_order,
+    PairTable<VertexPtr>* ites) noexcept {
   Bdd::Function common = Bdd::Consensus()(bdd_graph, ite, complement);
   VertexPtr consensus = ConvertBdd(common.vertex, common.complement, bdd_graph,
                                    limit_order, ites);
@@ -326,8 +324,7 @@ Zbdd::ConvertBddPrimeImplicants(const ItePtr& ite, bool complement,
 }
 
 Zbdd::VertexPtr Zbdd::ConvertGraph(
-    const Gate& gate,
-    std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
+    const Gate& gate, std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
     std::unordered_map<int, const Gate*>* module_gates) noexcept {
   assert(!gate.constant() && "Unexpected constant gate!");
   VertexPtr result;
@@ -452,8 +449,7 @@ Zbdd::VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one,
   if (arg_one->id() == arg_two->id())
     return Prune(arg_one, limit_order);
 
-  VertexPtr& result =
-      and_table_[GetResultKey(arg_one, arg_two, limit_order)];
+  VertexPtr& result = and_table_[GetResultKey(arg_one, arg_two, limit_order)];
   if (result)
     return result;  // Already computed.
 
@@ -521,8 +517,7 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
   if (arg_one->id() == arg_two->id())
     return Prune(arg_one, limit_order);
 
-  VertexPtr& result =
-      or_table_[GetResultKey(arg_one, arg_two, limit_order)];
+  VertexPtr& result = or_table_[GetResultKey(arg_one, arg_two, limit_order)];
   if (result)
     return result;  // Already computed.
 
@@ -558,10 +553,9 @@ Zbdd::VertexPtr Zbdd::EliminateComplements(
   if (result)
     return result;
   SetNodePtr node = SetNode::Ptr(vertex);
-  result = EliminateComplement(
-      node,
-      EliminateComplements(node->high(), wide_results),
-      EliminateComplements(node->low(), wide_results));
+  result = EliminateComplement(node,
+                               EliminateComplements(node->high(), wide_results),
+                               EliminateComplements(node->low(), wide_results));
   return result;
 }
 
@@ -598,8 +592,7 @@ Zbdd::VertexPtr Zbdd::EliminateConstantModules(
     return result;
   SetNodePtr node = SetNode::Ptr(vertex);
   result = EliminateConstantModule(
-      node,
-      EliminateConstantModules(node->high(), results),
+      node, EliminateConstantModules(node->high(), results),
       EliminateConstantModules(node->low(), results));
   return result;
 }
@@ -721,8 +714,7 @@ bool Zbdd::MayBeUnity(const SetNode& node) noexcept {
   return false;  // Positive non-gate variable.
 }
 
-int Zbdd::GatherModules(const VertexPtr& vertex,
-                        int current_order,
+int Zbdd::GatherModules(const VertexPtr& vertex, int current_order,
                         std::map<int, std::pair<bool, int>>* modules) noexcept {
   assert(current_order >= 0);
   if (vertex->terminal())
@@ -921,11 +913,10 @@ Zbdd::VertexPtr CutSetContainer::ConvertGate(const Gate& gate) noexcept {
   return result;
 }
 
-Zbdd::VertexPtr CutSetContainer::ExtractIntermediateCutSets(
-    int index) noexcept {
+Zbdd::VertexPtr
+CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
   assert(index && index > gate_index_bound_);
-  assert(!root()->terminal() &&
-         "Impossible to have intermediate cut sets.");
+  assert(!root()->terminal() && "Impossible to have intermediate cut sets.");
   assert(index == SetNode::Ref(root()).index() && "Broken ordering!");
   assert(SetNode::Ref(root()).max_set_order() <= settings().limit_order());
   LOG(DEBUG5) << "Extracting cut sets for G" << index;
@@ -934,9 +925,8 @@ Zbdd::VertexPtr CutSetContainer::ExtractIntermediateCutSets(
   return node->high();
 }
 
-Zbdd::VertexPtr
-CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
-                            const VertexPtr& cut_sets) noexcept {
+Zbdd::VertexPtr CutSetContainer::ExpandGate(
+    const VertexPtr& gate_zbdd, const VertexPtr& cut_sets) noexcept {
   assert(gate_zbdd->terminal() ||
          SetNode::Ref(gate_zbdd).max_set_order() <= settings().limit_order());
   assert(cut_sets->terminal() ||

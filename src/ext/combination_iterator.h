@@ -80,7 +80,7 @@ class combination_iterator
     return combination;
   }
   /// @}
-  Iterator first1_;           ///< The first element in the collection.
+  Iterator first1_;  ///< The first element in the collection.
   std::vector<bool> bitmask_;  ///< bit-mask for N elements.
 };
 

@@ -29,21 +29,13 @@ namespace scram {
 namespace core {
 
 /// Qualitative analysis algorithms.
-enum class Algorithm : std::uint8_t {
-  kBdd = 0,
-  kZbdd,
-  kMocus
-};
+enum class Algorithm : std::uint8_t { kBdd = 0, kZbdd, kMocus };
 
 /// String representations for algorithms.
 const char* const kAlgorithmToString[] = {"bdd", "zbdd", "mocus"};
 
 /// Quantitative analysis approximations.
-enum class Approximation : std::uint8_t {
-  kNone = 0,
-  kRareEvent,
-  kMcub
-};
+enum class Approximation : std::uint8_t { kNone = 0, kRareEvent, kMcub };
 
 /// String representations for approximations.
 const char* const kApproximationToString[] = {"none", "rare-event", "mcub"};
@@ -326,4 +318,4 @@ class Settings {
 }  // namespace core
 }  // namespace scram
 
-#endif   // SCRAM_SRC_SETTINGS_H_
+#endif  // SCRAM_SRC_SETTINGS_H_

@@ -24,6 +24,7 @@
 #include "version.h"
 
 #include <boost/version.hpp>
+
 #include <libxml/xmlversion.h>
 
 namespace scram {
@@ -33,9 +34,11 @@ const char* describe() { return "@core_version@"; }
 
 const char* build() { return "@CMAKE_BUILD_TYPE@"; }
 
+// clang-format off
 const char* core() {
   return "@SCRAM_VERSION_MAJOR@.@SCRAM_VERSION_MINOR@.@SCRAM_VERSION_MICRO@";
 }
+// clang-format on
 
 const char* boost() { return BOOST_LIB_VERSION; }
 

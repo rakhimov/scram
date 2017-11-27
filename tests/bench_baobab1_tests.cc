@@ -73,8 +73,7 @@ TEST_P(RiskAnalysisTest, Baobab1L4Importance) {
                     .product_events()
                     .size());
   EXPECT_EQ(
-      40,
-      analysis->results().front().importance_analysis->importance().size());
+      40, analysis->results().front().importance_analysis->importance().size());
 }
 
 }  // namespace test

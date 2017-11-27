@@ -516,8 +516,7 @@ class Zbdd : private boost::noncopyable {
   /// @returns -1 if the vertex is terminal Empty on low branch only.
   ///
   /// @pre The ZBDD is minimal.
-  int GatherModules(const VertexPtr& vertex,
-                    int current_order,
+  int GatherModules(const VertexPtr& vertex, int current_order,
                     std::map<int, std::pair<bool, int>>* modules) noexcept;
 
   /// Applies non-declarative substitutions at the end of analysis.
@@ -642,8 +641,7 @@ class Zbdd : private boost::noncopyable {
   /// @param[in] low  The new low vertex.
   ///
   /// @returns Set node for a replacement.
-  VertexPtr GetReducedVertex(const SetNodePtr& node,
-                             const VertexPtr& high,
+  VertexPtr GetReducedVertex(const SetNodePtr& node, const VertexPtr& high,
                              const VertexPtr& low) noexcept;
 
   /// Computes the key for computation results.
@@ -690,9 +688,8 @@ class Zbdd : private boost::noncopyable {
   /// @param[in,out] ites  Processed function graphs with ids and limit order.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
-  VertexPtr ConvertBdd(const ItePtr& ite, bool complement,
-                       Bdd* bdd_graph, int limit_order,
-                       PairTable<VertexPtr>* ites) noexcept;
+  VertexPtr ConvertBdd(const ItePtr& ite, bool complement, Bdd* bdd_graph,
+                       int limit_order, PairTable<VertexPtr>* ites) noexcept;
 
   /// Converts BDD if-then-else vertex into ZBDD graph for prime implicants.
   /// This is used by the BDD vertex to ZBDD converter,
@@ -720,10 +717,10 @@ class Zbdd : private boost::noncopyable {
   /// @pre The memoization container is not used outside of this function.
   ///
   /// @post Sub-module gates are not processed.
-  VertexPtr ConvertGraph(
-      const Gate& gate,
-      std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
-      std::unordered_map<int, const Gate*>* module_gates) noexcept;
+  VertexPtr
+  ConvertGraph(const Gate& gate,
+               std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
+               std::unordered_map<int, const Gate*>* module_gates) noexcept;
 
   /// Processes complements in a SetNode with processed high/low edges.
   ///
@@ -792,9 +789,7 @@ class Zbdd : private boost::noncopyable {
   /// @param[in] node  A node to be tested.
   ///
   /// @returns true for modules by default.
-  virtual bool IsGate(const SetNode& node) noexcept {
-    return node.module();
-  }
+  virtual bool IsGate(const SetNode& node) noexcept { return node.module(); }
 
   /// Checks if a node have a possibility to represent Unity.
   ///

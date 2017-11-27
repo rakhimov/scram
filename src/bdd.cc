@@ -93,9 +93,8 @@ ItePtr Bdd::FindOrAddVertex(int index, const VertexPtr& high,
                             const VertexPtr& low, bool complement_edge,
                             int order) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
-  IteWeakPtr& in_table =
-      unique_table_.FindOrAdd(index, high->id(),
-                              complement_edge ? -low->id() : low->id());
+  IteWeakPtr& in_table = unique_table_.FindOrAdd(
+      index, high->id(), complement_edge ? -low->id() : low->id());
   if (!in_table.expired())
     return in_table.lock();
   assert(order > 0 && "Improper order.");
@@ -263,8 +262,7 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
 }
 
 template <Operator Type>
-Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
-                         bool complement_one,
+Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
                          bool complement_two) noexcept {
   if (ite_one->order() > ite_two->order()) {
     ite_one.swap(ite_two);
@@ -298,9 +296,9 @@ Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two,
   return high;
 }
 
-Bdd::Function Bdd::Apply(Operator type,
-                         const VertexPtr& arg_one, const VertexPtr& arg_two,
-                         bool complement_one, bool complement_two) noexcept {
+Bdd::Function Bdd::Apply(Operator type, const VertexPtr& arg_one,
+                         const VertexPtr& arg_two, bool complement_one,
+                         bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
   if (type == kAnd) {
     return Apply<kAnd>(arg_one, arg_two, complement_one, complement_two);
@@ -356,15 +354,14 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
   assert(ite.index() && "Illegal index for a node.");
   assert(ite.order() && "Improper order for nodes.");
   assert(ite.high() && ite.low() && "Malformed node high/low pointers.");
-  assert(
-      !(!ite.complement_edge() && ite.high()->id() == ite.low()->id()) &&
-      "Reduction rule failure.");
+  assert(!(!ite.complement_edge() && ite.high()->id() == ite.low()->id()) &&
+         "Reduction rule failure.");
   assert(!(!ite.high()->terminal() &&
            ite.order() >= Ite::Ref(ite.high()).order()) &&
          "Ordering of nodes failed.");
-  assert(!(!ite.low()->terminal() &&
-           ite.order() >= Ite::Ref(ite.low()).order()) &&
-         "Ordering of nodes failed.");
+  assert(
+      !(!ite.low()->terminal() && ite.order() >= Ite::Ref(ite.low()).order()) &&
+      "Ordering of nodes failed.");
   if (ite.module()) {
     const Function& res = modules_.find(ite.index())->second;
     assert(!res.vertex->terminal() && "Terminal modules must be removed.");

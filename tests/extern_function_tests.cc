@@ -61,9 +61,9 @@ TEST(ExternTest, ExternLibraryLoad) {
   EXPECT_THROW(ExternLibrary("d", "lib:", "", false, false), ValidityError);
 
 #if BOOST_OS_LINUX
+  // The system search with LD_LIBRARY_PATH must be tested outside.
   EXPECT_NO_THROW(
       ExternLibrary("dummy", kLibRelPathLinux, bin_dir, false, false));
-  // The system search with LD_LIBRARY_PATH must be tested outside.
 #endif
 }
 
@@ -74,14 +74,14 @@ TEST(ExternTest, ExternLibraryGet) {
   ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
                       "dummy", kLibRelPath, bin_dir, false, true));
 
-  EXPECT_NO_THROW(library->get<int(*)()>("foo"));
-  EXPECT_NO_THROW(library->get<double(*)()>("bar"));
-  EXPECT_NO_THROW(library->get<float(*)()>("baz"));
-  EXPECT_THROW(library->get<int(*)()>("foobar"), UndefinedElement);
+  EXPECT_NO_THROW(library->get<int (*)()>("foo"));
+  EXPECT_NO_THROW(library->get<double (*)()>("bar"));
+  EXPECT_NO_THROW(library->get<float (*)()>("baz"));
+  EXPECT_THROW(library->get<int (*)()>("foobar"), UndefinedElement);
 
-  EXPECT_EQ(42, library->get<int(*)()>("foo")());
-  EXPECT_EQ(42, library->get<double(*)()>("bar")());
-  EXPECT_EQ(42, library->get<float(*)()>("baz")());
+  EXPECT_EQ(42, library->get<int (*)()>("foo")());
+  EXPECT_EQ(42, library->get<double (*)()>("bar")());
+  EXPECT_EQ(42, library->get<float (*)()>("baz")());
 }
 
 TEST(ExternTest, ExternFunction) {

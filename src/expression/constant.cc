@@ -27,7 +27,7 @@ namespace mef {
 
 ConstantExpression ConstantExpression::kOne(1);
 ConstantExpression ConstantExpression::kZero(0);
-ConstantExpression ConstantExpression::kPi(
+ConstantExpression ConstantExpression::kPi(  // This line confuses some linters!
     boost::math::constants::pi<double>());
 
 }  // namespace mef

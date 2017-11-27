@@ -221,8 +221,8 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ///                    exactly to the values.
   ///
   /// @returns The total probability calculated with the given values.
-  virtual double CalculateTotalProbability(
-      const Pdag::IndexMap<double>& p_vars) noexcept = 0;
+  virtual double
+  CalculateTotalProbability(const Pdag::IndexMap<double>& p_vars) noexcept = 0;
 
   double CalculateTotalProbability() noexcept final {
     return this->CalculateTotalProbability(p_vars_);

@@ -209,9 +209,8 @@ TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
     EXPECT_EQ(5, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
-                                           {"PumpOne", "ValveTwo"},
-                                           {"ValveOne"}};
+    std::set<std::set<std::string>> mcs = {
+        {"PumpOne", "PumpTwo"}, {"PumpOne", "ValveTwo"}, {"ValveOne"}};
     EXPECT_EQ(mcs, products());
   }
 }
@@ -550,8 +549,8 @@ TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
 TEST_F(RiskAnalysisTest, ReportAll) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  settings.importance_analysis(true).uncertainty_analysis(true)
-      .ccf_analysis(true);
+  settings.importance_analysis(true).uncertainty_analysis(true).ccf_analysis(
+      true);
   CheckReport({tree_input});
 }
 
@@ -636,8 +635,7 @@ TEST_F(RiskAnalysisTest, UndefinedEventsMixedRoles) {
 
 // Extern function call check.
 TEST_P(RiskAnalysisTest, ExternFunctionProbability) {
-  std::string tree_input =
-      "./share/scram/input/model/extern_full_check.xml";
+  std::string tree_input = "./share/scram/input/model/extern_full_check.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}, true));
   ASSERT_NO_THROW(analysis->Analyze());

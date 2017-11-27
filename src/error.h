@@ -25,8 +25,8 @@
 #include <string>
 
 #include <boost/current_function.hpp>
-#include <boost/exception/info.hpp>
 #include <boost/exception/exception.hpp>
+#include <boost/exception/info.hpp>
 
 /// Convenience macro to throw SCRAM exceptions.
 /// This is similar to BOOST_THROW_EXCEPTION;

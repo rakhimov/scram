@@ -70,8 +70,8 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
   }
 
   if (settings.prime_implicants()) {
-    std::set<std::set<std::string>> pi = {{"A", "B"}, {"not A", "C"},
-                                          {"B", "C"}};
+    std::set<std::set<std::string>> pi = {
+        {"A", "B"}, {"not A", "C"}, {"B", "C"}};
     EXPECT_EQ(3, products().size());
     EXPECT_EQ(pi, products());
   } else {
@@ -202,8 +202,8 @@ TEST_F(RiskAnalysisTest, MonteCarloAorNotB) {
 
 // Repeated negative gate expansion.
 TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
-  std::string tree_input = "./share/scram/input/core/"
-                           "multiple_parent_negative_gate.xml";
+  std::string tree_input =
+      "./share/scram/input/core/multiple_parent_negative_gate.xml";
 
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
@@ -402,16 +402,9 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
     EXPECT_NEAR(0.04308, p_total(), 1e-5);
   }
   // Minimal cut set check.
-  std::set<std::set<std::string>> mcs = {{pumps},
-                                         {valves},
-                                         {v1, v2, v3},
-                                         {p1, v2, v3},
-                                         {p2, v1, v3},
-                                         {p3, v1, v2},
-                                         {p3, p2, v1},
-                                         {p1, p2, v3},
-                                         {p1, p3, v2},
-                                         {p1, p2, p3}};
+  std::set<std::set<std::string>> mcs = {
+      {pumps},      {valves},     {v1, v2, v3}, {p1, v2, v3}, {p2, v1, v3},
+      {p3, v1, v2}, {p3, p2, v1}, {p1, p2, v3}, {p1, p3, v2}, {p1, p2, p3}};
   EXPECT_EQ(10, products().size());
   EXPECT_EQ(mcs, products());
 }

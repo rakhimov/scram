@@ -119,8 +119,7 @@ void Reporter::Report(const core::RiskAnalysis& risk_an,
 /// Describes the fault tree analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
-    const core::Settings& settings,
-    xml::StreamElement* information) {
+    const core::Settings& settings, xml::StreamElement* information) {
   {
     xml::StreamElement quant = information->AddChild("calculated-quantity");
     if (settings.prime_implicants()) {
@@ -154,8 +153,7 @@ void Reporter::ReportCalculatedQuantity<core::FaultTreeAnalysis>(
 /// Describes the probability analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
-    const core::Settings& settings,
-    xml::StreamElement* information) {
+    const core::Settings& settings, xml::StreamElement* information) {
   xml::StreamElement quant = information->AddChild("calculated-quantity");
   quant.SetAttribute("name", "Probability Analysis")
       .SetAttribute("definition",
@@ -185,8 +183,7 @@ void Reporter::ReportCalculatedQuantity<core::ProbabilityAnalysis>(
 /// Describes the importance analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(
-    const core::Settings& /*settings*/,
-    xml::StreamElement* information) {
+    const core::Settings& /*settings*/, xml::StreamElement* information) {
   information->AddChild("calculated-quantity")
       .SetAttribute("name", "Importance Analysis")
       .SetAttribute("definition",
@@ -197,8 +194,7 @@ void Reporter::ReportCalculatedQuantity<core::ImportanceAnalysis>(
 /// Describes the uncertainty analysis and techniques.
 template <>
 void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
-    const core::Settings& settings,
-    xml::StreamElement* information) {
+    const core::Settings& settings, xml::StreamElement* information) {
   xml::StreamElement quant = information->AddChild("calculated-quantity");
   quant.SetAttribute("name", "Uncertainty Analysis")
       .SetAttribute("definition",
@@ -216,8 +212,7 @@ void Reporter::ReportCalculatedQuantity<core::UncertaintyAnalysis>(
 /// Describes all performed analyses deduced from settings.
 template <>
 void Reporter::ReportCalculatedQuantity<core::RiskAnalysis>(
-    const core::Settings& settings,
-    xml::StreamElement* information) {
+    const core::Settings& settings, xml::StreamElement* information) {
   // Report the fault tree analysis by default.
   ReportCalculatedQuantity<core::FaultTreeAnalysis>(settings, information);
   // Report optional analyses.
@@ -255,12 +250,11 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
                        "Unused extern functions: ", &information);
   ReportUnusedElements(risk_an.model().initiating_events(),
                        "Unused initiating events: ", &information);
-  ReportUnusedElements(risk_an.model().event_trees(),
-                       "Unused event trees: ", &information);
+  ReportUnusedElements(risk_an.model().event_trees(), "Unused event trees: ",
+                       &information);
   ReportUnusedElements(risk_an.model().sequences(), "Unused sequences: ",
                        &information);
-  ReportUnusedElements(risk_an.model().rules(), "Unused rules: ",
-                       &information);
+  ReportUnusedElements(risk_an.model().rules(), "Unused rules: ", &information);
   for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {
     std::string header = "In event tree " + event_tree->name() + ", ";
     ReportUnusedElements(event_tree->branches(), header + "unused branches: ",

@@ -268,10 +268,9 @@ class Preprocessor : private boost::noncopyable {
   ///          it must be handled before calling this function.
   ///          The arguments and type of the gate
   ///          must be inverted according to the logic of the root gate.
-  void PropagateComplements(
-      const GatePtr& gate,
-      bool keep_modules,
-      std::unordered_map<int, GatePtr>* complements) noexcept;
+  void
+  PropagateComplements(const GatePtr& gate, bool keep_modules,
+                       std::unordered_map<int, GatePtr>* complements) noexcept;
 
   /// Runs gate coalescence on the whole PDAG.
   ///
@@ -376,9 +375,9 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in] args  Modular arguments to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  GatePtr CreateNewModule(
-      const GatePtr& gate,
-      const std::vector<std::pair<int, NodePtr>>& args) noexcept;
+  GatePtr
+  CreateNewModule(const GatePtr& gate,
+                  const std::vector<std::pair<int, NodePtr>>& args) noexcept;
 
   /// Checks if a group of modular arguments share
   /// anything with non-modular arguments.
@@ -532,9 +531,9 @@ class Preprocessor : private boost::noncopyable {
   /// @param[out] groups  Non-intersecting collection of groups of candidates.
   ///
   /// @note Groups with only one member are discarded.
-  void GroupCandidatesByArgs(
-      MergeTable::Candidates* candidates,
-      std::vector<MergeTable::Candidates>* groups) noexcept;
+  void
+  GroupCandidatesByArgs(MergeTable::Candidates* candidates,
+                        std::vector<MergeTable::Candidates>* groups) noexcept;
 
   /// Finds intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
@@ -643,8 +642,7 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in,out] candidates  Candidates for distributivity check.
   ///
   /// @returns true if transformations are performed.
-  bool HandleDistributiveArgs(const GatePtr& gate,
-                              Operator distr_type,
+  bool HandleDistributiveArgs(const GatePtr& gate, Operator distr_type,
                               std::vector<GatePtr>* candidates) noexcept;
 
   /// Detects relationships between the gate and its distributive arguments
@@ -773,8 +771,7 @@ class Preprocessor : private boost::noncopyable {
   ///
   /// @returns The number of encounters with the destinations.
   int CollectStateDestinations(
-      const GatePtr& gate,
-      int index,
+      const GatePtr& gate, int index,
       std::unordered_map<int, GateWeakPtr>* destinations) noexcept;
 
   /// Detects if parents of a node are redundant.
@@ -789,8 +786,7 @@ class Preprocessor : private boost::noncopyable {
   /// @post Destinations that are also redundant parents are removed
   ///       if the semantics of the transformations is equivalent.
   void CollectRedundantParents(
-      const NodePtr& node,
-      std::unordered_map<int, GateWeakPtr>* destinations,
+      const NodePtr& node, std::unordered_map<int, GateWeakPtr>* destinations,
       std::vector<GateWeakPtr>* redundant_parents) noexcept;
 
   /// Detects if parents of a node are redundant.

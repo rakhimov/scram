@@ -48,7 +48,7 @@ TEST(SerializationTest, InputOutput) {
     std::shared_ptr<Model> model;
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
     fs::path temp_file = utility::GenerateFilePath();
-    ASSERT_NO_THROW(Serialize(*model, temp_file.string())) << input.front()
+    ASSERT_NO_THROW(Serialize(*model, temp_file.string()))
         << input.front() << " => " << temp_file;
     ASSERT_NO_THROW(xml::Document(temp_file.string(), &validator))
         << input.front() << " => " << temp_file;

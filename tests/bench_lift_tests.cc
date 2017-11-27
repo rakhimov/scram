@@ -31,10 +31,9 @@ TEST_P(RiskAnalysisTest, Lift) {
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_NEAR(1.19999e-5, p_total(), 1e-5);
 
-  std::set<std::set<std::string>> mcs = {{"LMD_1"}, {"DPD_1"}, {"DM_1"},
-                                         {"PS_1"}, {"DOD_1"}, {"DOD_2"},
-                                         {"DMS_1"}, {"CP_1"}, {"DMS_2"},
-                                         {"LMD_2"}, {"LPD_1"}, {"D_1"}};
+  std::set<std::set<std::string>> mcs = {
+      {"LMD_1"}, {"DPD_1"}, {"DM_1"},  {"PS_1"},  {"DOD_1"}, {"DOD_2"},
+      {"DMS_1"}, {"CP_1"},  {"DMS_2"}, {"LMD_2"}, {"LPD_1"}, {"D_1"}};
 
   EXPECT_EQ(12, products().size());
   EXPECT_EQ(mcs, products());

@@ -27,9 +27,9 @@
 #include <utility>
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/variant.hpp>
 

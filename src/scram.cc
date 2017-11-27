@@ -57,6 +57,7 @@ po::options_description ConstructOptions() {
   using path = std::string;  // To print argument type as path.
 
   po::options_description desc("Options");
+  // clang-format off
   desc.add_options()
       ("help", "Display this help message")
       ("version", "Display version information")
@@ -97,6 +98,7 @@ po::options_description ConstructOptions() {
       ("no-report", "Don't generate analysis report");
   desc.add(debug);
 #endif
+  // clang-format on
   return desc;
 }
 #undef OPT_VALUE
@@ -116,7 +118,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   try {
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
+    std::cerr << "Option error: " << err.what() << "\n\n"
+              << usage << "\n\n"
               << desc << std::endl;
     return 1;
   }
@@ -131,14 +134,18 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
       *vm);
   po::notify(*vm);
 
+  auto print_help = [&usage, &desc](std::ostream& out) {
+    out << usage << "\n\n" << desc << std::endl;
+  };
+
   // Process command-line arguments.
   if (vm->count("help")) {
-    std::cout << usage << "\n\n" << desc << std::endl;
+    print_help(std::cout);
     return -1;
   }
   if (vm->count("version")) {
-    std::cout << "SCRAM " << scram::version::core()
-              << " (" << scram::version::describe() << ")"
+    std::cout << "SCRAM " << scram::version::core() << " ("
+              << scram::version::describe() << ")"
               << "\n\nDependencies:\n"
               << "   Boost       " << scram::version::boost() << "\n"
               << "   libxml2     " << scram::version::libxml() << std::endl;
@@ -149,37 +156,39 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     int level = (*vm)["verbosity"].as<int>();
     if (level < 0 || level > scram::kMaxVerbosity) {
       std::cerr << "Log verbosity must be between 0 and "
-                << scram::kMaxVerbosity << ".\n\n"
-                << usage << "\n\n" << desc << std::endl;
+                << scram::kMaxVerbosity << ".\n\n";
+      print_help(std::cerr);
       return 1;
     }
   }
 
   if (!vm->count("input-files") && !vm->count("config-file")) {
-    std::cerr << "No input or configuration file is given.\n\n"
-              << usage << "\n\n" << desc << std::endl;
+    std::cerr << "No input or configuration file is given.\n\n";
+    print_help(std::cerr);
     return 1;
   }
   if ((vm->count("bdd") + vm->count("zbdd") + vm->count("mocus")) > 1) {
     std::cerr << "Mutually exclusive qualitative analysis algorithms.\n"
-              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n\n"
-              << usage << "\n\n" << desc << std::endl;
+              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n\n";
+    print_help(std::cerr);
     return 1;
   }
   if (vm->count("rare-event") && vm->count("mcub")) {
     std::cerr << "The rare event and MCUB approximations cannot be "
-              << "applied at the same time.\n\n"
-              << usage << "\n\n" << desc << std::endl;
+              << "applied at the same time.\n\n";
+    print_help(std::cerr);
     return 1;
   }
   return 0;
 }
 
+// clang-format off
 /// Helper macro for ConstructSettings
 /// to set the flag in "settings"
 /// only if provided by "vm" arguments.
 #define SET(tag, type, member) \
   if (vm.count(tag)) settings->member(vm[tag].as<type>())
+// clang-format on
 
 /// Updates analysis settings from command-line arguments.
 ///

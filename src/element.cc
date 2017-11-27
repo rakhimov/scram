@@ -86,8 +86,7 @@ bool Element::RemoveAttribute(const std::string& name) {
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
-    : kBasePath_(std::move(base_path)),
-      kRole_(role) {
+    : kBasePath_(std::move(base_path)), kRole_(role) {
   if (!kBasePath_.empty() &&
       (kBasePath_.front() == '.' || kBasePath_.back() == '.')) {
     SCRAM_THROW(ValidityError("Element reference base path is malformed."));

@@ -23,8 +23,9 @@
 #include <set>
 #include <vector>
 
-#include <boost/range/algorithm.hpp>
 #include <gtest/gtest.h>
+
+#include <boost/range/algorithm.hpp>
 
 namespace scram {
 namespace core {

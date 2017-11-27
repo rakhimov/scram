@@ -624,11 +624,11 @@ void Initializer::ProcessTbdElements() {
 
   for (const auto& tbd_element : tbd_) {
     try {
-        boost::apply_visitor(
-            [this, &tbd_element](auto* tbd_construct) {
-              this->Define(tbd_element.second, tbd_construct);
-            },
-            tbd_element.first);
+      boost::apply_visitor(
+          [this, &tbd_element](auto* tbd_construct) {
+            this->Define(tbd_element.second, tbd_construct);
+          },
+          tbd_element.first);
     } catch (ValidityError& err) {
       err << boost::errinfo_file_name(
           tbd_element.second.filename().to_string());
@@ -648,8 +648,8 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
     }
   }
   for (const xml::Element& node : et_node.children("define-sequence")) {
-    event_tree->Add(Register<Sequence>(node, event_tree->name(),
-                                       RoleSpecifier::kPublic));
+    event_tree->Add(
+        Register<Sequence>(node, event_tree->name(), RoleSpecifier::kPublic));
   }
   for (const xml::Element& node : et_node.children("define-branch")) {
     try {
@@ -913,8 +913,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   }
 
   if (node_name == "collect-formula") {
-    return register_instruction(std::make_unique<CollectFormula>(
-        GetFormula(*xml_element.child(), "")));
+    return register_instruction(
+        std::make_unique<CollectFormula>(GetFormula(*xml_element.child(), "")));
   }
 
   if (node_name == "if") {
@@ -1015,8 +1015,7 @@ struct Initializer::Extractor<T, 0> {
   std::unique_ptr<T> operator()(xml::Element::Range::iterator it,
                                 xml::Element::Range::iterator it_end,
                                 const std::string& /*base_path*/,
-                                Initializer* /*init*/,
-                                Ts&&... expressions) {
+                                Initializer* /*init*/, Ts&&... expressions) {
     static_assert(sizeof...(Ts), "Unintended use case.");
     assert(it == it_end && "Too many arguments in the args container.");
     return std::make_unique<T>(std::forward<Ts>(expressions)...);
@@ -1072,7 +1071,9 @@ constexpr int num_args(std::false_type) {
 }
 
 template <class T>
-constexpr int num_args(std::true_type) { return -1; }
+constexpr int num_args(std::true_type) {
+  return -1;
+}
 
 template <class T>
 constexpr std::enable_if_t<std::is_base_of<Expression, T>::value, int>
@@ -1085,18 +1086,18 @@ num_args() {
 }  // namespace
 
 template <class T>
-std::unique_ptr<Expression> Initializer::Extract(
-    const xml::Element::Range& args, const std::string& base_path,
-    Initializer* init) {
+std::unique_ptr<Expression>
+Initializer::Extract(const xml::Element::Range& args,
+                     const std::string& base_path, Initializer* init) {
   return Extractor<T, num_args<T>()>()(args, base_path, init);
 }
 
 /// Specialization for Extractor of Histogram expressions.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<Histogram>(
-    const xml::Element::Range& args,
-    const std::string& base_path,
-    Initializer* init) {
+std::unique_ptr<Expression>
+Initializer::Extract<Histogram>(const xml::Element::Range& args,
+                                const std::string& base_path,
+                                Initializer* init) {
   auto it = args.begin();
   std::vector<Expression*> boundaries = {init->GetExpression(*it, base_path)};
   std::vector<Expression*> weights;
@@ -1113,10 +1114,10 @@ std::unique_ptr<Expression> Initializer::Extract<Histogram>(
 
 /// Specialization due to overloaded constructors.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<LognormalDeviate>(
-    const xml::Element::Range& args,
-    const std::string& base_path,
-    Initializer* init) {
+std::unique_ptr<Expression>
+Initializer::Extract<LognormalDeviate>(const xml::Element::Range& args,
+                                       const std::string& base_path,
+                                       Initializer* init) {
   if (args.size() == 3)
     return Extractor<LognormalDeviate, 3>()(args, base_path, init);
   return Extractor<LognormalDeviate, 2>()(args, base_path, init);
@@ -1124,10 +1125,10 @@ std::unique_ptr<Expression> Initializer::Extract<LognormalDeviate>(
 
 /// Specialization due to overloaded constructors and un-fixed number of args.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
-    const xml::Element::Range& args,
-    const std::string& base_path,
-    Initializer* init) {
+std::unique_ptr<Expression>
+Initializer::Extract<PeriodicTest>(const xml::Element::Range& args,
+                                   const std::string& base_path,
+                                   Initializer* init) {
   switch (args.size()) {
     case 4:
       return Extractor<PeriodicTest, 4>()(args, base_path, init);
@@ -1143,10 +1144,9 @@ std::unique_ptr<Expression> Initializer::Extract<PeriodicTest>(
 
 /// Specialization for Switch-Case operation extraction.
 template <>
-std::unique_ptr<Expression> Initializer::Extract<Switch>(
-    const xml::Element::Range& args,
-    const std::string& base_path,
-    Initializer* init) {
+std::unique_ptr<Expression>
+Initializer::Extract<Switch>(const xml::Element::Range& args,
+                             const std::string& base_path, Initializer* init) {
   assert(!args.empty());
   Expression* default_value = nullptr;
   std::vector<Switch::Case> cases;
@@ -1382,8 +1382,7 @@ T* Initializer::GetEntity(const std::string& entity_reference,
                           const PathTable<T>& path_container) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
-    if (auto it = ext::find(path_container,
-                            base_path + "." + entity_reference))
+    if (auto it = ext::find(path_container, base_path + "." + entity_reference))
       return &**it;
   }
 

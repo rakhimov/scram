@@ -41,8 +41,8 @@ namespace ext {
 ///
 /// @returns true if the [first1, last1) and [first2, last2) ranges intersect.
 template <typename Iterator1, typename Iterator2>
-bool intersects(Iterator1 first1, Iterator1 last1,
-                Iterator2 first2, Iterator2 last2) noexcept {
+bool intersects(Iterator1 first1, Iterator1 last1, Iterator2 first2,
+                Iterator2 last2) noexcept {
   while (first1 != last1 && first2 != last2) {
     if (*first1 < *first2) {
       ++first1;
@@ -58,8 +58,8 @@ bool intersects(Iterator1 first1, Iterator1 last1,
 /// Range-based version of ``intersects``.
 template <class SinglePassRange1, class SinglePassRange2>
 bool intersects(const SinglePassRange1& rng1, const SinglePassRange2& rng2) {
-  return intersects(boost::begin(rng1), boost::end(rng1),
-                    boost::begin(rng2), boost::end(rng2));
+  return intersects(boost::begin(rng1), boost::end(rng1), boost::begin(rng2),
+                    boost::end(rng2));
 }
 
 /// Range-based versions of std algorithms missing in Boost.

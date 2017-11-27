@@ -26,8 +26,8 @@
 #include <algorithm>
 #include <initializer_list>
 #include <stdexcept>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace ext {
 
@@ -129,8 +129,7 @@ struct MoveEraser {
 ///                      ``erase(it, *container)`` static member function
 ///                      to control the element erasure from the container.
 /// @tparam Sequence  The underlying container type.
-template <typename Key, typename Value,
-          class ErasePolicy = DefaultEraser,
+template <typename Key, typename Value, class ErasePolicy = DefaultEraser,
           template <typename...> class Sequence = std::vector>
 class linear_map {
   /// Non-member equality test operators.

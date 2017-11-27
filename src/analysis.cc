@@ -24,8 +24,7 @@ namespace scram {
 namespace core {
 
 Analysis::Analysis(Settings settings)
-    : settings_(std::move(settings)),
-      analysis_time_(0) {}
+    : settings_(std::move(settings)), analysis_time_(0) {}
 
 Analysis::~Analysis() = default;  ///< Pure virtual destructor.
 

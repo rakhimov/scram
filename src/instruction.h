@@ -123,7 +123,7 @@ class IfThenElse : public Visitable<IfThenElse> {
   Instruction* else_instruction() const { return else_instruction_; }
 
  private:
-  Expression* expression_;         ///< The condition source.
+  Expression* expression_;  ///< The condition source.
   Instruction* then_instruction_;  ///< The mandatory 'truth' instruction.
   Instruction* else_instruction_;  ///< The optional 'false' instruction.
 };

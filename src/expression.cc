@@ -26,9 +26,7 @@ namespace scram {
 namespace mef {
 
 Expression::Expression(std::vector<Expression*> args)
-    : args_(std::move(args)),
-      sampled_value_(0),
-      sampled_(false) {}
+    : args_(std::move(args)), sampled_value_(0), sampled_(false) {}
 
 double Expression::Sample() noexcept {
   if (!sampled_) {

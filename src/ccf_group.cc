@@ -157,9 +157,8 @@ void CcfGroup::ApplyModel() {
   for (auto& entry : probabilities) {
     int level = entry.first;
     Expression* prob = entry.second;
-    for (auto combination :
-         ext::make_combination_generator(level, proxy_gates.begin(),
-                                         proxy_gates.end())) {
+    for (auto combination : ext::make_combination_generator(
+             level, proxy_gates.begin(), proxy_gates.end())) {
       auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
       for (Gate* gate : combination)

@@ -85,7 +85,7 @@ TEST_F(RiskAnalysisTest, ThreeMotorEventTree) {
   EXPECT_EQ(1, analysis->event_tree_results().size());
   std::map<std::string, double> expected = {
       {"S1", 0.02115}, {"S2", 0.00272}, {"S3", 0.00309}, {"S4", 0.00272},
-      {"S5", 0.00272}, {"S6", 0.00272}, {"S7", 0.00272},  {"S8", 0.00272}};
+      {"S5", 0.00272}, {"S6", 0.00272}, {"S7", 0.00272}, {"S8", 0.00272}};
   const auto& results = sequences();
   ASSERT_EQ(8, results.size());
   for (const auto& result : expected) {
