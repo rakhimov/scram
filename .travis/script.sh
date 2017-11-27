@@ -21,11 +21,15 @@ ccache -s
 
 ./.travis/run_tests.sh
 
-if [[ -z "${RELEASE}" && "$CXX" = "clang++" ]]; then
+[[ -z "${RELEASE}" ]] || exit 0
+
+if [[ "$CXX" = "clang++" ]]; then
   ./run-clang-format/run-clang-format.py -r gui/
+  ./run-clang-format/run-clang-format.py -r src/
+  ./run-clang-format/run-clang-format.py tests/*.{h,cc}
 fi
 
-[[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
+[[ "$CXX" = "g++" ]] || exit 0
 # Submit coverage of C++ and Python.
 COV_DIR="build/src/CMakeFiles/scramcore.dir/"
 TRACE_FILE="coverage.info"
