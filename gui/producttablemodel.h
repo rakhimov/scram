@@ -48,7 +48,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
-    struct Product {
+    struct Product
+    {
         QString toString;
         int order;
         double probability;

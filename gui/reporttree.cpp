@@ -81,7 +81,8 @@ QVariant ReportTree::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid() || role != Qt::DisplayRole)
         return {};
-    struct {
+    struct
+    {
         QString operator()(const mef::Gate *gate)
         {
             return QString::fromStdString(gate->id());

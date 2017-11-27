@@ -26,8 +26,7 @@ namespace gui {
 namespace model {
 
 ProductTableModel::ProductTableModel(const core::ProductContainer &products,
-                                     bool withProbability,
-                                     QObject *parent)
+                                     bool withProbability, QObject *parent)
     : QAbstractTableModel(parent), m_withProbability(withProbability)
 {
     m_products.reserve(products.size());

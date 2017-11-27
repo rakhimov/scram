@@ -76,10 +76,7 @@ public:
     /// @returns The name data.
     QString name() const { return nameLine->text(); }
     /// @returns The label data.
-    QString label() const
-    {
-        return labelText->toPlainText().simplified();
-    }
+    QString label() const { return labelText->toPlainText().simplified(); }
 
     /// @returns The Boolean constant data.
     bool booleanConstant() const { return stateBox->currentIndex(); }
@@ -139,16 +136,16 @@ private:
     template <class T>
     void setupData(const model::Element &element, const T *origin);
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
-    void stealTopFocus(QLineEdit *lineEdit);  ///< Intercept the auto-default.
+    void stealTopFocus(QLineEdit *lineEdit); ///< Intercept the auto-default.
 
     /// Sets up the formula argument completer.
     void setupArgCompleter();
 
     mef::Model *m_model;
     QStatusBar *m_errorBar;
-    QString m_initName;  ///< The name not validated for duplicates.
-    const mef::Element *m_event = nullptr;  ///< Set only for existing events.
-    bool m_fixContainerName = false;  ///< @todo Implement fault tree change.
+    QString m_initName; ///< The name not validated for duplicates.
+    const mef::Element *m_event = nullptr; ///< Set only for existing events.
+    bool m_fixContainerName = false; ///< @todo Implement fault tree change.
 };
 
 } // namespace gui

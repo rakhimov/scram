@@ -26,9 +26,9 @@
 #include <type_traits>
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index_container.hpp>
 
 #include <QObject>
 #include <QString>
@@ -46,12 +46,16 @@ namespace model {
 /// Fault tree container element management assuming normalized model.
 /// @todo Move into an appropriate proxy type.
 /// @{
-inline void remove(mef::Event *, mef::FaultTree *)  {}
+inline void remove(mef::Event *, mef::FaultTree *)
+{
+}
 inline void remove(mef::Gate *gate, mef::FaultTree *faultTree)
 {
     faultTree->Remove(gate);
 }
-inline void add(mef::Event *, mef::FaultTree *)  {}
+inline void add(mef::Event *, mef::FaultTree *)
+{
+}
 inline void add(mef::Gate *gate, mef::FaultTree *faultTree)
 {
     faultTree->Add(gate);
@@ -63,7 +67,7 @@ class Element : public QObject
     Q_OBJECT
 
     template <class, class>
-    friend class Proxy;  // Gets access to the data.
+    friend class Proxy; // Gets access to the data.
 
 public:
     /// @returns A unique ID string for element within the element type-group.
@@ -143,7 +147,7 @@ template <class E, class T>
 class Proxy
 {
 public:
-    using Origin = T;  ///< The MEF type.
+    using Origin = T; ///< The MEF type.
 
     const T *data() const
     {
@@ -160,11 +164,7 @@ class BasicEvent : public Element, public Proxy<BasicEvent, mef::BasicEvent>
     Q_OBJECT
 
 public:
-    enum Flavor {
-        Basic = 0,
-        Undeveloped,
-        Conditional
-    };
+    enum Flavor { Basic = 0, Undeveloped, Conditional };
 
     static QString flavorToString(Flavor flavor)
     {
@@ -196,7 +196,10 @@ public:
     ///
     /// @pre The basic event has expression.
     template <typename T = double>
-    T probability() const { return data()->p(); }
+    T probability() const
+    {
+        return data()->p();
+    }
 
     /// Sets the basic event expression.
     ///
@@ -306,10 +309,7 @@ public:
     }
 
     int numArgs() const { return data()->formula().num_args(); }
-    int voteNumber() const
-    {
-        return data()->formula().vote_number();
-    }
+    int voteNumber() const { return data()->formula().vote_number(); }
 
     const std::vector<mef::Formula::EventArg> &args() const
     {
@@ -362,6 +362,7 @@ inline QString Gate::type() const
     assert(false);
 }
 
+// clang-format off
 /// Table of proxy elements uniquely wrapping the core model element.
 ///
 /// @tparam T  The proxy type.
@@ -370,6 +371,7 @@ using ProxyTable = boost::multi_index_container<
     std::unique_ptr<T>, boost::multi_index::indexed_by<
            boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
                P, const M *, &P::data>>>>;
+// clang-format on
 
 /// The wrapper around the MEF Model.
 class Model : public Element, public Proxy<Model, mef::Model>
@@ -451,25 +453,25 @@ public:
         {
         }
 
-    void redo() override
-    {
-        m_model->m_model->Add(std::move(m_event));
-        auto it = m_model->table<T>().emplace(std::move(m_proxy)).first;
-        emit m_model->added(it->get());
+        void redo() override
+        {
+            m_model->m_model->Add(std::move(m_event));
+            auto it = m_model->table<T>().emplace(std::move(m_proxy)).first;
+            emit m_model->added(it->get());
 
-        if (m_faultTree)
-            add(m_address, m_faultTree);
-    }
+            if (m_faultTree)
+                add(m_address, m_faultTree);
+        }
 
-    void undo() override
-    {
-        m_event = m_model->m_model->Remove(m_address);
-        m_proxy = ext::extract(m_address, &m_model->table<T>());
-        emit m_model->removed(m_proxy.get());
+        void undo() override
+        {
+            m_event = m_model->m_model->Remove(m_address);
+            m_proxy = ext::extract(m_address, &m_model->table<T>());
+            emit m_model->removed(m_proxy.get());
 
-        if (m_faultTree)
-            remove(m_address, m_faultTree);
-    }
+            if (m_faultTree)
+                remove(m_address, m_faultTree);
+        }
 
     protected:
         AddEvent(T *event, Model *model, mef::FaultTree *faultTree,
@@ -484,7 +486,7 @@ public:
         std::unique_ptr<T> m_proxy;
         typename T::Origin *const m_address;
         std::unique_ptr<typename T::Origin> m_event;
-        mef::FaultTree *m_faultTree;  ///< Optional container.
+        mef::FaultTree *m_faultTree; ///< Optional container.
     };
 
     /// Removes an event from the model.
@@ -542,11 +544,11 @@ public:
         {
             Switch<Next, Current> operator()(const ChangeEventType &self)
             {
-                std::unique_ptr<typename Current::Origin> curEvent
-                    = self.m_model->m_model->Remove(m_address->data());
-                std::unique_ptr<Current> curProxy
-                    = ext::extract(m_address->data(),
-                                   &self.m_model->template table<Current>());
+                std::unique_ptr<typename Current::Origin> curEvent =
+                    self.m_model->m_model->Remove(m_address->data());
+                std::unique_ptr<Current> curProxy =
+                    ext::extract(m_address->data(),
+                                 &self.m_model->template table<Current>());
                 emit self.m_model->removed(m_address);
                 Next *nextAddress = m_proxy.get();
                 self.m_model->m_model->Add(std::move(m_event));
@@ -609,7 +611,10 @@ private:
 };
 
 template <>
-inline ProxyTable<Gate> &Model::table<Gate>() { return m_gates; }
+inline ProxyTable<Gate> &Model::table<Gate>()
+{
+    return m_gates;
+}
 template <>
 inline ProxyTable<BasicEvent> &Model::table<BasicEvent>()
 {

@@ -46,10 +46,10 @@ void ZoomableView::zoomBestFit()
 {
     QSize viewSize = size();
     QSize sceneSize = scene()->sceneRect().size().toSize();
-    double ratioHeight
-        = static_cast<double>(viewSize.height()) / sceneSize.height();
-    double ratioWidth
-        = static_cast<double>(viewSize.width()) / sceneSize.width();
+    double ratioHeight =
+        static_cast<double>(viewSize.height()) / sceneSize.height();
+    double ratioWidth =
+        static_cast<double>(viewSize.width()) / sceneSize.width();
     setZoom(std::min(ratioHeight, ratioWidth) * 100);
 }
 

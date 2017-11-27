@@ -42,11 +42,7 @@ class ReportTree : public QAbstractItemModel
 
 public:
     /// The child row analysis item types.
-    enum class Row {
-        Products,
-        Probability,
-        Importance
-    };
+    enum class Row { Products, Probability, Importance };
 
     /// @param[in] results  The analysis result data.
     ///

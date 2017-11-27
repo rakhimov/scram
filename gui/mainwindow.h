@@ -172,7 +172,10 @@ private:
     ///
     /// @returns The fault tree container of the element.
     template <class T>
-    mef::FaultTree *getFaultTree(T *) { return nullptr; }
+    mef::FaultTree *getFaultTree(T *)
+    {
+        return nullptr;
+    }
 
     /// @tparam T  The model proxy type.
     template <class T>
@@ -186,7 +189,7 @@ private:
     ///
     /// @returns Table view ready for inclusion to tabs.
     template <class ContainerModel, typename... Ts>
-    QTableView *constructTableView(QWidget *parent, Ts&&... modelArgs);
+    QTableView *constructTableView(QWidget *parent, Ts &&... modelArgs);
 
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
@@ -267,10 +270,10 @@ private:
     QSettings m_preferences;
     std::array<QAction *, 5> m_recentFileActions;
 
-    std::vector<std::string> m_inputFiles;  ///< The project model files.
-    core::Settings m_settings; ///< The analysis settings.
-    std::shared_ptr<mef::Model> m_model; ///< The analysis model.
-    std::unique_ptr<model::Model> m_guiModel;  ///< The GUI Model wrapper.
+    std::vector<std::string> m_inputFiles;    ///< The project model files.
+    core::Settings m_settings;                ///< The analysis settings.
+    std::shared_ptr<mef::Model> m_model;      ///< The analysis model.
+    std::unique_ptr<model::Model> m_guiModel; ///< The GUI Model wrapper.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
 };
 

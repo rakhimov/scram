@@ -39,12 +39,7 @@ class ModelTree : public QAbstractItemModel
 
 public:
     /// The top row containers of the tree.
-    enum class Row {
-        FaultTrees,
-        Gates,
-        BasicEvents,
-        HouseEvents
-    };
+    enum class Row { FaultTrees, Gates, BasicEvents, HouseEvents };
 
     explicit ModelTree(model::Model *model, QObject *parent = nullptr);
 
@@ -59,7 +54,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
-    struct NameComparator {
+    struct NameComparator
+    {
         bool operator()(const mef::Element *lhs, const mef::Element *rhs) const
         {
             return lhs->name() < rhs->name();

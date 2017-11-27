@@ -26,7 +26,8 @@
 namespace scram {
 namespace gui {
 
-class Printable {
+class Printable
+{
 public:
     virtual ~Printable() = default;
 
@@ -38,7 +39,6 @@ public:
 private:
     /// The actual printing must be implemented by derived classes.
     virtual void doPrint(QPrinter *printer) = 0;
-
 };
 
 } // namespace gui

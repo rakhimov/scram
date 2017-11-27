@@ -61,12 +61,14 @@ namespace {
  */
 int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
 {
-    const char* usage = "Usage:    scram-gui [options] [input-files]...";
+    const char *usage = "Usage:    scram-gui [options] [input-files]...";
     po::options_description desc("Options");
+    // clang-format off
     desc.add_options()
             ("help", "Display this help message")
             ("config-file", po::value<std::string>()->value_name("path"),
              "Project configuration file");
+    // clang-format on
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
     } catch (const std::exception &err) {
@@ -105,7 +107,8 @@ void notifyError(const QString &title, const QString &text,
 }
 
 /// Guards the application from crashes on escaped internal exceptions.
-class GuardedApplication : public QApplication {
+class GuardedApplication : public QApplication
+{
 public:
     using QApplication::QApplication;
 
@@ -168,8 +171,8 @@ void crashHandler(int signum) noexcept
 }
 
 /// Preserve the global default before setting a new terminate handler.
-static const std::terminate_handler gDefaultTerminateHandler
-    = std::get_terminate();
+static const std::terminate_handler gDefaultTerminateHandler =
+    std::get_terminate();
 
 /// Pulls the exception message into GUI before crash.
 void terminateHandler() noexcept
@@ -229,13 +232,13 @@ void installTranslators(GuardedApplication *app)
 {
     QString language = getUiLanguage();
     if (language == QStringLiteral("en"))
-        return;  // The default language.
+        return; // The default language.
 
     QString qtTsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
     QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
                                                  + "/share/scram/translations");
-    std::pair<const char *, QString> domains[]
-        = {{"qtbase", qtTsPath}, {"qt", qtTsPath}, {"scramgui", scramTsPath}};
+    std::pair<const char *, QString> domains[] = {
+        {"qtbase", qtTsPath}, {"qt", qtTsPath}, {"scramgui", scramTsPath}};
 
     for (const auto &domain : domains) {
         auto *translator = new QTranslator(app);
@@ -295,7 +298,9 @@ int main(int argc, char *argv[])
             } else {
                 w.addInputFiles(inputFiles);
             }
-        } catch (const boost::exception &) { assert(false); }
+        } catch (const boost::exception &) {
+            assert(false);
+        }
     }
     return app.exec();
 }

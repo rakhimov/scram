@@ -107,37 +107,35 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         validate();
     });
     connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
-                QString name = addArgLine->text();
-                if (name.isEmpty())
-                    return;
-                addArgLine->setStyleSheet(yellowBackground);
-                if (hasFormulaArg(name)) {
-                    m_errorBar->showMessage(
-                        //: Duplicate arguments are not allowed in a formula.
-                        tr("The argument '%1' is already in formula.")
-                            .arg(name));
-                    return;
-                }
-                if (name == nameLine->text()) {
-                    m_errorBar->showMessage(
-                        //: Self-cycle is also called a loop in a graph.
-                        tr("The argument '%1' would introduce a self-cycle.")
-                            .arg(name));
-                    return;
-                } else if (m_event) {
-                    auto it = m_model->gates().find(name.toStdString());
-                    if (it != m_model->gates().end() && checkCycle(it->get())) {
-                        m_errorBar->showMessage(
-                            //: Fault trees are acyclic graphs.
-                            tr("The argument '%1' would introduce a cycle.")
-                                .arg(name));
-                        return;
-                    }
-                }
-                addArgLine->setStyleSheet({});
-                argsList->addItem(name);
-                emit formulaArgsChanged();
-            });
+        QString name = addArgLine->text();
+        if (name.isEmpty())
+            return;
+        addArgLine->setStyleSheet(yellowBackground);
+        if (hasFormulaArg(name)) {
+            m_errorBar->showMessage(
+                //: Duplicate arguments are not allowed in a formula.
+                tr("The argument '%1' is already in formula.").arg(name));
+            return;
+        }
+        if (name == nameLine->text()) {
+            m_errorBar->showMessage(
+                //: Self-cycle is also called a loop in a graph.
+                tr("The argument '%1' would introduce a self-cycle.")
+                    .arg(name));
+            return;
+        } else if (m_event) {
+            auto it = m_model->gates().find(name.toStdString());
+            if (it != m_model->gates().end() && checkCycle(it->get())) {
+                m_errorBar->showMessage(
+                    //: Fault trees are acyclic graphs.
+                    tr("The argument '%1' would introduce a cycle.").arg(name));
+                return;
+            }
+        }
+        addArgLine->setStyleSheet({});
+        argsList->addItem(name);
+        emit formulaArgsChanged();
+    });
     connect(addArgLine, &QLineEdit::textChanged,
             [this] { addArgLine->setStyleSheet({}); });
     stealTopFocus(addArgLine);
@@ -198,7 +196,8 @@ bool EventDialog::hasFormulaArg(const QString &name)
 
 bool EventDialog::checkCycle(const mef::Gate *gate)
 {
-    struct {
+    struct
+    {
         bool operator()(const mef::Event *) const { return false; }
         bool operator()(const mef::Gate *arg) const
         {
@@ -220,12 +219,12 @@ template <class T>
 mef::FaultTree *EventDialog::getFaultTree(const T *event) const
 {
     // Find the fault tree of the first parent gate.
-    auto it
-        = boost::find_if(m_model->gates(), [&event](const mef::GatePtr &gate) {
-              return boost::find(gate->formula().event_args(),
-                                 mef::Formula::EventArg(const_cast<T *>(event)))
-                     != gate->formula().event_args().end();
-          });
+    auto it =
+        boost::find_if(m_model->gates(), [&event](const mef::GatePtr &gate) {
+            return boost::find(gate->formula().event_args(),
+                               mef::Formula::EventArg(const_cast<T *>(event)))
+                   != gate->formula().event_args().end();
+        });
     if (it == m_model->gates().end())
         return nullptr;
     return getFaultTree(it->get());
@@ -234,10 +233,10 @@ mef::FaultTree *EventDialog::getFaultTree(const T *event) const
 template <>
 mef::FaultTree *EventDialog::getFaultTree(const mef::Gate *event) const
 {
-    auto it = boost::find_if(
-        m_model->fault_trees(), [&event](const mef::FaultTreePtr &faultTree) {
-            return faultTree->gates().count(event->name());
-        });
+    auto it = boost::find_if(m_model->fault_trees(),
+                             [&event](const mef::FaultTreePtr &faultTree) {
+                                 return faultTree->gates().count(event->name());
+                             });
     GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
     return it->get();
 }
@@ -279,8 +278,8 @@ void EventDialog::setupData(const model::BasicEvent &element)
             expressionType->setCurrentIndex(0);
             constantValue->setText(QString::number(constExpr->value()));
         } else {
-            auto *exponentialExpr = dynamic_cast<mef::Exponential *>(
-                &basicEvent.expression());
+            auto *exponentialExpr =
+                dynamic_cast<mef::Exponential *>(&basicEvent.expression());
             GUI_ASSERT(exponentialExpr, );
             expressionType->setCurrentIndex(1);
             exponentialRate->setText(
@@ -314,7 +313,7 @@ void EventDialog::setupData(const model::Gate &element)
     for (const mef::Formula::EventArg &arg : element.args())
         argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
-    emit formulaArgsChanged();  ///< @todo Bogus signal order conflicts.
+    emit formulaArgsChanged(); ///< @todo Bogus signal order conflicts.
 }
 
 std::unique_ptr<mef::Expression> EventDialog::expression() const
@@ -358,7 +357,8 @@ void EventDialog::validate()
                 tr("The event with name '%1' already exists.").arg(name));
             return;
         }
-    } catch (const mef::UndefinedElement &) {}
+    } catch (const mef::UndefinedElement &) {
+    }
 
     if (!tabFormula->isHidden() && hasFormulaArg(name)) {
         m_errorBar->showMessage(
@@ -434,8 +434,8 @@ void EventDialog::validate()
             return;
         GUI_ASSERT(typeBox->currentIndex() == ext::one_bit_index(Gate), );
         QString faultTreeName = containerFaultTreeName->text();
-        if (auto it
-            = ext::find(m_model->fault_trees(), faultTreeName.toStdString())) {
+        if (auto it = ext::find(m_model->fault_trees(),
+                                faultTreeName.toStdString())) {
             GUI_ASSERT((*it)->top_events().empty() == false, );
             m_errorBar->showMessage(
                 //: Fault tree redefinition.
@@ -464,7 +464,8 @@ void EventDialog::connectLineEdits(std::initializer_list<QLineEdit *> lineEdits)
 
 void EventDialog::stealTopFocus(QLineEdit *lineEdit)
 {
-    struct FocusGrabber : public QObject {
+    struct FocusGrabber : public QObject
+    {
         FocusGrabber(QObject *parent, QPushButton *okButton)
             : QObject(parent), m_ok(okButton)
         {

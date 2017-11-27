@@ -27,7 +27,8 @@ namespace scram {
 namespace gui {
 
 /// Provider of common validators.
-class Validator {
+class Validator
+{
 public:
     /// @returns The validator suitable for MEF element names.
     static const QValidator *name();
@@ -45,4 +46,4 @@ public:
 } // namespace gui
 } // namespace scram
 
-#endif  // VALIDATOR_H
+#endif // VALIDATOR_H

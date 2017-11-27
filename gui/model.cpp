@@ -70,8 +70,8 @@ BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
 void BasicEvent::SetExpression::redo()
 {
     auto *mefEvent = m_basicEvent->data();
-    mef::Expression *cur_expression
-        = mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
+    mef::Expression *cur_expression =
+        mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
     if (m_expression == cur_expression)
         return;
     mefEvent->expression(m_expression);
@@ -188,9 +188,8 @@ Model::SetName::SetName(QString name, Model *model)
 
 void Model::SetName::redo()
 {
-    QString currentName = m_model->m_model->HasDefaultName()
-                              ? QStringLiteral("")
-                              : m_model->id();
+    QString currentName =
+        m_model->m_model->HasDefaultName() ? QStringLiteral("") : m_model->id();
     if (currentName == m_name)
         return;
     m_model->m_model->SetOptionalName(m_name.toStdString());

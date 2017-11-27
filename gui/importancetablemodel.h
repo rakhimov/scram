@@ -53,7 +53,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
-    const std::vector<core::ImportanceRecord>& m_data;
+    const std::vector<core::ImportanceRecord> &m_data;
 };
 
 } // namespace model

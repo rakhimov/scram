@@ -104,7 +104,7 @@ protected:
 private:
     QGraphicsItem *m_typeGraphics; ///< The graphics of the derived type.
     QMetaObject::Connection m_labelConnection; ///< Tracks the label changes.
-    QMetaObject::Connection m_idConnection; ///< Tracks the ID changes.
+    QMetaObject::Connection m_idConnection;    ///< Tracks the ID changes.
 };
 
 /**
@@ -186,10 +186,10 @@ public:
 
 private:
     static const QSizeF m_maxSize; ///< The constraints on type graphics.
-    static const double m_space;  ///< The space between children in chars.
+    static const double m_space;   ///< The space between children in chars.
 
-    double m_width = 0; ///< Assume the graph does not change its width.
-    bool m_transferOut = false;  ///< The indication of the transfer-out.
+    double m_width = 0;         ///< Assume the graph does not change its width.
+    bool m_transferOut = false; ///< The indication of the transfer-out.
 };
 
 class DiagramScene : public QGraphicsScene
