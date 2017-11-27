@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 
 # In-source build prevention.
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -42,19 +42,12 @@ option(PACKAGE "Package for distribution" OFF)
 
 ####################### Begin compiler configurations ###################
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  # Needed for Clang Tooling.
+
 # Default to C++14.
-if(CMAKE_VERSION VERSION_LESS 3.1)
-  include(CheckCXXCompilerFlag)
-  CHECK_CXX_COMPILER_FLAG("-std=c++1y" COMPILER_SUPPORTS_CXX14)
-  if(NOT COMPILER_SUPPORTS_CXX14)
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support.")
-  endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
-else()
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 function(CHECK_COMPILER_VERSION MIN_VERSION)
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS MIN_VERSION)

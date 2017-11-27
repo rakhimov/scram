@@ -76,7 +76,7 @@ Dependencies
 ====================   ====================
 Package                Minimum Version
 ====================   ====================
-CMake                  2.8.12
+CMake                  3.5
 boost                  1.61 (1.58 on Linux)
 libxml2                2.9.1
 Python                 2.7.3 or 3.3

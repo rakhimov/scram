@@ -23,6 +23,10 @@ if [[ "$CXX" = "clang++" ]]; then
     git clone https://github.com/Sarcasm/run-clang-format
   fi
 fi
+
+# CMake 3.5
+sudo apt-get install cmake3
+
 # Boost
 sudo apt-get install \
   libboost-{program-options,math,random,filesystem,system,date-time}1.58-dev
