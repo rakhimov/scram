@@ -21,6 +21,10 @@ ccache -s
 
 ./.travis/run_tests.sh
 
+if [[ -z "${RELEASE}" && "$CXX" = "clang++" ]]; then
+  ./run-clang-format/run-clang-format.py -r gui/
+fi
+
 [[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
 # Submit coverage of C++ and Python.
 COV_DIR="build/src/CMakeFiles/scramcore.dir/"
