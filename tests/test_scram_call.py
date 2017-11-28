@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Olzhas Rakhimov
+# Copyright (C) 2014-2017 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Tests to command-line SCRAM with correct and incorrect arguments."""
 
 import os
@@ -96,8 +95,10 @@ def test_fta_calls():
     yield assert_equal, 0, call(cmd)
 
     # Test the uncertainty
-    cmd = ["scram", fta_input, "--uncertainty", "true", "--num-bins", "20",
-           "--num-quantiles", "20"]
+    cmd = [
+        "scram", fta_input, "--uncertainty", "true", "--num-bins", "20",
+        "--num-quantiles", "20"
+    ]
     yield assert_equal, 0, call(cmd)
 
     # Test calls for prime implicants
@@ -121,8 +122,10 @@ def test_config_file():
 
     # Test the clash of files from configuration and command-line
     config_file = "./input/fta/full_configuration.xml"
-    cmd = ["scram", "--config-file", config_file,
-           "input/fta/correct_tree_input_with_probs.xml"]
+    cmd = [
+        "scram", "--config-file", config_file,
+        "input/fta/correct_tree_input_with_probs.xml"
+    ]
     yield assert_not_equal, 0, call(cmd)
 
 

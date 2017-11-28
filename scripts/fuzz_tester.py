@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015-2016 Olzhas Rakhimov
+# Copyright (C) 2015-2017 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Runs SCRAM with various input files and configurations.
 
 This script is helpful to detect rare bugs, failed assumptions,
@@ -113,13 +112,14 @@ def generate_input(normal, coherent, output_dir=None):
     Returns:
         The path to the input file.
     """
-    input_file = NamedTemporaryFile(dir=output_dir, prefix="fault_tree_",
-                                    suffix=".xml", delete=False)
-    cmd = ["--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
-           "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5",
-           "--seed", str(random.randint(1, 1e8)),
-           "--max-prob", "0.5", "--min-prob", "0.1",
-           "-o", input_file.name]
+    input_file = NamedTemporaryFile(
+        dir=output_dir, prefix="fault_tree_", suffix=".xml", delete=False)
+    cmd = [
+        "--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
+        "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5", "--seed",
+        str(random.randint(1, 1e8)), "--max-prob", "0.5", "--min-prob", "0.1",
+        "-o", input_file.name
+    ]
     weights = ["--weights-g", "1", "1"]
     if not normal:
         weights += ["1"]
@@ -258,28 +258,51 @@ def main():
         1 for test failures.
         2 for system failures.
     """
+    # #lizard forgives the function length
     parser = ap.ArgumentParser(description="SCRAM Fuzz Tester")
-    parser.add_argument("-n", "--num-runs", type=int, help="# of SCRAM runs",
-                        default=10, metavar="int")
-    parser.add_argument("--preprocessor", action="store_true",
-                        help="focus on Preprocessor")
+    parser.add_argument(
+        "-n",
+        "--num-runs",
+        type=int,
+        help="# of SCRAM runs",
+        default=10,
+        metavar="int")
+    parser.add_argument(
+        "--preprocessor", action="store_true", help="focus on Preprocessor")
     parser.add_argument("--mocus", action="store_true", help="focus on MOCUS")
     parser.add_argument("--bdd", action="store_true", help="focus on BDD")
     parser.add_argument("--zbdd", action="store_true", help="focus on ZBDD")
-    parser.add_argument("--cross-validate", action="store_true",
-                        help="compare results of BDD, ZBDD, and MOCUS")
-    parser.add_argument("--coherent", action="store_true",
-                        help="focus on coherent models")
-    parser.add_argument("--normal", action="store_true",
-                        help="focus on models with AND/OR gates only")
-    parser.add_argument("--prime-implicants", action="store_true",
-                        help="focus on Prime Implicants")
-    parser.add_argument("--time-limit", type=int, metavar="seconds",
-                        help="CPU time limit for each run")
-    parser.add_argument("-j", "--jobs", type=int, metavar="N",
-                        help="allow N runs (jobs) at once")
-    parser.add_argument("-o", "--output-dir", type=str, metavar="path",
-                        help="directory to put results")
+    parser.add_argument(
+        "--cross-validate",
+        action="store_true",
+        help="compare results of BDD, ZBDD, and MOCUS")
+    parser.add_argument(
+        "--coherent", action="store_true", help="focus on coherent models")
+    parser.add_argument(
+        "--normal",
+        action="store_true",
+        help="focus on models with AND/OR gates only")
+    parser.add_argument(
+        "--prime-implicants",
+        action="store_true",
+        help="focus on Prime Implicants")
+    parser.add_argument(
+        "--time-limit",
+        type=int,
+        metavar="seconds",
+        help="CPU time limit for each run")
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        metavar="N",
+        help="allow N runs (jobs) at once")
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=str,
+        metavar="path",
+        help="directory to put results")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)
@@ -321,8 +344,8 @@ class Fuzzer(object):  # pylint: disable=too-few-public-methods
                                     self.args.output_dir)
         num_runs = job_number + 1
         if self.call_function(input_file):
-            logging.info("SCRAM failed run " + str(num_runs) + ": " +
-                         input_file)
+            logging.info(
+                "SCRAM failed run " + str(num_runs) + ": " + input_file)
             return 1
         os.remove(input_file)
         os.remove(get_log_file_name(input_file))

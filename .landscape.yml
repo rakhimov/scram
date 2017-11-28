@@ -3,7 +3,7 @@ test-warnings: yes
 strictness: veryhigh
 max-line-length: 80
 pep257:
-    disable: [D203, D401]
+    disable: [D406, D413, D407, D213, D202, D203, D401]
 pep8:
     full: true
 mccabe:

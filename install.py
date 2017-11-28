@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """Installation script for SCRAM.
 
 This script automates the build and installation processes
@@ -66,8 +65,8 @@ def generate_make_files(args):
     if args.mingw64:
         cmake_cmd += ["-G", "MSYS Makefiles"]
 
-    subprocess.check_call(cmake_cmd, cwd=args.build_dir,
-                          shell=(os.name == "nt"))
+    subprocess.check_call(
+        cmake_cmd, cwd=args.build_dir, shell=(os.name == "nt"))
 
 
 def install_scram(args):
@@ -109,48 +108,75 @@ def uninstall_scram(args):
     makefile = os.path.join(args.build_dir, "Makefile")
     if not os.path.exists(args.build_dir) or not os.path.exists(makefile):
         sys.exit("May not uninstall scram since it has not yet been built.")
-    subprocess.check_call(["make", "uninstall"], cwd=args.build_dir,
-                          shell=(os.name == "nt"))
+    subprocess.check_call(
+        ["make", "uninstall"], cwd=args.build_dir, shell=(os.name == "nt"))
 
 
 def main():
     """Initiates installation processes taking command-line arguments."""
     parser = ap.ArgumentParser(description="SCRAM installation script.")
-    parser.add_argument("--build_dir", help="path for the build directory",
-                        default="build")
-    parser.add_argument("--uninstall", action="store_true",
-                        help="remove the previous installation", default=False)
+    parser.add_argument(
+        "--build_dir", help="path for the build directory", default="build")
+    parser.add_argument(
+        "--uninstall",
+        action="store_true",
+        help="remove the previous installation",
+        default=False)
     clean = "attempt to remove the build directory before building"
     parser.add_argument("--clean-build", action="store_true", help=clean)
-    parser.add_argument("-j", "--threads", type=int,
-                        help="the number of threads to use in the make step")
-    parser.add_argument("--prefix", help="path to the installation directory",
-                        default=absexpanduser("~/.local"))
-    parser.add_argument("--build-only", action="store_true",
-                        help="only build the package, do not install")
-    parser.add_argument("--test", action="store_true",
-                        help="run tests after building")
+    parser.add_argument(
+        "-j",
+        "--threads",
+        type=int,
+        help="the number of threads to use in the make step")
+    parser.add_argument(
+        "--prefix",
+        help="path to the installation directory",
+        default=absexpanduser("~/.local"))
+    parser.add_argument(
+        "--build-only",
+        action="store_true",
+        help="only build the package, do not install")
+    parser.add_argument(
+        "--test", action="store_true", help="run tests after building")
     parser.add_argument("--build-type", help="the CMAKE_BUILD_TYPE")
-    parser.add_argument("--debug", help="build for debugging (default)",
-                        action="store_true", default=False)
-    parser.add_argument("--release",
-                        help="build for release with optimizations",
-                        action="store_true", default=False)
-    parser.add_argument("--profile", help="build with profiling",
-                        action="store_true", default=False)
-    parser.add_argument("--coverage", help="build with coverage",
-                        action="store_true", default=False)
-    parser.add_argument("-D", metavar="VAR", action="append",
-                        help="pass environment variable(s) to CMake")
-    parser.add_argument("--mingw64",
-                        help="building on MSYS2 with mingw64-x86_64",
-                        action="store_true", default=False)
+    parser.add_argument(
+        "--debug",
+        help="build for debugging (default)",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "--release",
+        help="build for release with optimizations",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "--profile",
+        help="build with profiling",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "--coverage",
+        help="build with coverage",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "-D",
+        metavar="VAR",
+        action="append",
+        help="pass environment variable(s) to CMake")
+    parser.add_argument(
+        "--mingw64",
+        help="building on MSYS2 with mingw64-x86_64",
+        action="store_true",
+        default=False)
 
     args = parser.parse_args()
     if args.uninstall:
         uninstall_scram(args)
     else:
         install_scram(args)
+
 
 if __name__ == "__main__":
     main()

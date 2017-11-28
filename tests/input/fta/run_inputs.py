@@ -14,13 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Runs SCRAM with test inputs to examine the output visually."""
 
 from __future__ import print_function
 
 import subprocess
-
 
 # Input that must be analyzed with the results printed.
 PRINT_INPUTS = [
@@ -30,7 +28,7 @@ PRINT_INPUTS = [
     "two_top_events.xml",
     "two_top_through_formula.xml",
     "mixed_roles.xml",
-    ]
+]
 
 # Correct corner case inputs without probability information
 PASS_INPUTS = [
@@ -49,7 +47,7 @@ PASS_INPUTS = [
     "non_top_gate.xml",
     "nested_formula.xml",
     "case_sensitivity.xml",
-    ]
+]
 
 # Correct corner cases with probability information
 PASS_PROBS = [
@@ -57,7 +55,7 @@ PASS_PROBS = [
     "trailing_spaces.xml",
     "correct_expressions.xml",
     "flavored_types.xml",
-    ]
+]
 
 # Incorrect input files without probability calculations
 BAD_INPUTS = [
@@ -111,13 +109,13 @@ BAD_INPUTS = [
     "ccf_more_factors_than_needed.xml",
     "ccf_wrong_distribution.xml",
     "repeated_ccf_members.xml",
-    ]
+]
 
 # Incorrect input files with probability calculations
 BAD_PROBS = [
     "missing_bool_constant.xml",
     "missing_expression.xml",
-    ]
+]
 
 BAD_CONFIG = ["int_overflow_config.xml"]
 
@@ -162,6 +160,7 @@ def main():
     # Incorrect configurations
     run_inputs("validating incorrect configuration files", BAD_CONFIG,
                ["--validate", "--verbosity", "1", "--config-file"])
+
 
 if __name__ == "__main__":
     main()
