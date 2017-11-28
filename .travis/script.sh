@@ -81,4 +81,5 @@ if [[ -s style.txt ]]; then
 fi
 
 # Python linting
-prospector ./*.py scripts/*.py || echo "TODO: Fix the Python code"
+yapf -d ./*.py scripts/*.py scripts/test/*.py tests/*.py tests/input/fta/run_inputs.py
+prospector ./*.py scripts/*.py

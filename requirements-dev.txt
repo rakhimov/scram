@@ -3,3 +3,4 @@ codecov
 coverage
 cpplint
 prospector
+yapf
