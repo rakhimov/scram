@@ -297,6 +297,7 @@ Python
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_ and reporting with Codecov_
 #. Continuous code quality control on Landscape_ with Prospector_
+#. Consistent code formatting with YAPF_
 
 .. _Pylint: https://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
@@ -304,6 +305,7 @@ Python
 .. _Codecov: https://codecov.io/github/rakhimov/scram
 .. _Landscape: https://landscape.io/
 .. _Prospector: https://github.com/landscapeio/prospector
+.. _YAPF: https://github.com/google/yapf
 
 
 Targets
