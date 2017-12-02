@@ -5,16 +5,18 @@ set -ev
 if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew update
   # brew outdated boost || brew upgrade boost
-  brew install libxml2
+  # brew install libxml2
   brew install gperftools
   brew install qt5
   brew install ccache
+  # brew install python --universal
+  sudo pip2 install nose
 fi
+
+[[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
 sudo -H pip install -U pip wheel
 sudo -H pip install nose  # Testing main() requires nosetests!
-
-[[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
 if [[ "$CXX" = "clang++" ]]; then
   sudo apt-get install -qq clang-${CLANG_VERSION}
