@@ -103,14 +103,6 @@ endif()
 
 ##################### Begin cmake configuration ###################
 
-# Set project directories.
-set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
-set(SCRAM_GUI_DIR "${PROJECT_SOURCE_DIR}/gui")
-set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
-set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
-set(SCRAM_INPUT_DIR "${PROJECT_SOURCE_DIR}/input")
-
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/bin")
@@ -142,7 +134,7 @@ endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Tell CMake where the modules are.
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 ######################## End cmake configuration ###################
 
@@ -220,30 +212,25 @@ message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
 include_directories(SYSTEM "${LIBXML2_INCLUDE_DIR}")
 
-include_directories("${PROJECT_SOURCE_DIR}")  # Include the core headers via "src".
+include_directories("${CMAKE_SOURCE_DIR}")  # Include the core headers via "src".
 
-add_subdirectory("${SCRAM_SOURCE_DIR}")
-add_subdirectory("${SCRAM_SHARE_DIR}")
-add_subdirectory("${SCRAM_INPUT_DIR}")
+add_subdirectory(src)
+add_subdirectory(share)
+add_subdirectory(input)
 
 if(BUILD_GUI)
-  add_subdirectory("${SCRAM_GUI_DIR}")
+  add_subdirectory(gui)
 endif()
 
 if(BUILD_TESTS)
-  add_subdirectory("${SCRAM_TEST_DIR}")
+  add_subdirectory(tests)
 endif()
 
 ####################### End includes ####################################
 
 ###################### Begin uninstall target ###########################
 
-configure_file(
-  "${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY
-  )
-
+configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake @ONLY)
 add_custom_target(uninstall
   COMMAND "${CMAKE_COMMAND}" -P "\"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake\"")
 
@@ -254,7 +241,7 @@ add_custom_target(uninstall
 if(PACKAGE)
   if(WIN32)
     set(CPACK_GENERATOR "NSIS")
-    # set(CPACK_PACKAGE_ICON "${PROJECT_SOURCE_DIR}\\\\gui\\\\images\\\\scram_logo.bmp")
+    # set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\gui\\\\images\\\\scram_logo.bmp")
     set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\scram-gui.exe")
     set(CPACK_NSIS_MODIFY_PATH ON)
     set(CPACK_NSIS_HELP_LINK "https://scram-pra.org")
@@ -287,7 +274,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Probabilistic risk analysis tool")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SCRAM_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SCRAM_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SCRAM_VERSION_MICRO}")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 set(CPACK_STRIP_FILES ON)
 

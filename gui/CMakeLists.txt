@@ -33,13 +33,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
+set(SCRAM_GUI_RES res.qrc)
 
 if(NOT HAS_TANGO AND (WIN32 OR APPLE))
-  set(TANGO_QRC "${CMAKE_CURRENT_SOURCE_DIR}/qtango/icons/tango/tango.qrc")
+  set(TANGO_QRC qtango/icons/tango/tango.qrc)
   execute_process(
     COMMAND python generate_rcc.py icons/tango/index.theme
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/qtango"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/qtango
     RESULT_VARIABLE qtango_return
     OUTPUT_VARIABLE qtango_out
     ERROR_VARIABLE qtango_out
@@ -51,28 +51,27 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
 endif()
 
 set(SCRAM_GUI_SRC
-  "${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/reporttree.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/importancetablemodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/producttablemodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/preferencesdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/printable.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/zoomableview.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/diagram.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+  validator.cpp
+  model.cpp
+  modeltree.cpp
+  reporttree.cpp
+  elementcontainermodel.cpp
+  importancetablemodel.cpp
+  producttablemodel.cpp
+  preferencesdialog.cpp
+  settingsdialog.cpp
+  eventdialog.cpp
+  printable.cpp
+  zoomableview.cpp
+  diagram.cpp
+  mainwindow.cpp
+  main.cpp
   )
-set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
 
-add_subdirectory("${SCRAM_GUI_TS_DIR}")
+add_subdirectory(translations)
 
 if(WIN32)
-  list(APPEND SCRAM_GUI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/scram.rc")
+  list(APPEND SCRAM_GUI_SRC scram.rc)
 endif()
 add_executable(scram-gui WIN32 ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
 
@@ -88,21 +87,21 @@ install(TARGETS scram-gui
 if(UNIX AND NOT APPLE)
   foreach (size IN ITEMS 32 128)
     install(
-      FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid${size}x${size}.png"
-      DESTINATION "share/icons/hicolor/${size}x${size}/apps"
+      FILES       images/scram_solid${size}x${size}.png
+      DESTINATION share/icons/hicolor/${size}x${size}/apps
       COMPONENT gui
-      RENAME      "scram.png")
+      RENAME      scram.png)
   endforeach ()
   install(
-    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid.svg"
-    DESTINATION "share/icons/hicolor/scalable/apps"
+    FILES       images/scram_solid.svg
+    DESTINATION share/icons/hicolor/scalable/apps
     COMPONENT gui
-    RENAME      "scram.svg")
+    RENAME      scram.svg)
 
   # Install a desktop file
   # so that SCRAM appears in the application start menu with an icon.
   install(FILES scram-gui.desktop
-    DESTINATION "share/applications"
+    DESTINATION share/applications
     COMPONENT gui)
 endif()
 
@@ -143,8 +142,6 @@ if(PACKAGE)
   endif()
 endif()
 
-set(SCRAM_GUI_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
-
 if(BUILD_TESTS)
-  add_subdirectory("${SCRAM_GUI_TEST_DIR}")
+  add_subdirectory(tests)
 endif()
