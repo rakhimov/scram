@@ -1,7 +1,7 @@
 # Find the QtWidgets library.
 if(APPLE)
   # Qt5 with Homebrew.
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
+  list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5)
 endif()
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)

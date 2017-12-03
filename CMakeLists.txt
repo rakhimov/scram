@@ -139,10 +139,10 @@ if(NOT WITH_PROFILE)
   find_package(Tcmalloc)
   find_package(JeMalloc)
   if(WITH_TCMALLOC AND Tcmalloc_FOUND)
-    set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+    list(APPEND LIBS ${Tcmalloc_LIBRARIES})
     set(MALLOC "TCMalloc")
   elseif(WITH_JEMALLOC AND JEMALLOC_FOUND)
-    set(LIBS ${LIBS} ${JEMALLOC_LIBRARIES})
+    list(APPEND LIBS ${JEMALLOC_LIBRARIES})
     set(MALLOC "JEMalloc")
   endif()
 endif()
@@ -150,16 +150,16 @@ message(STATUS "The memory allocator: ${MALLOC}")
 
 # Find LibXML2 and dependencies.
 find_package(LibXml2 REQUIRED)
-set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
+list(APPEND LIBS ${LIBXML2_LIBRARIES})
 
-message(STATUS ${LIBS})
+message(STATUS "${LIBS}")
 
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(BOOST_MIN_VERSION "1.58.0")
-  set(LIBS ${LIBS} ${CMAKE_DL_LIBS})
+  list(APPEND LIBS ${CMAKE_DL_LIBS})
 else()
   set(BOOST_MIN_VERSION "1.61.0")
 endif()
@@ -170,8 +170,6 @@ if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
 endif()
 
-unset(Boost_INCLUDE_DIR CACHE)
-unset(Boost_LIBRARY_DIRS CACHE)
 find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
   program_options filesystem system date_time random
   REQUIRED)
@@ -188,13 +186,13 @@ endif()
 message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
 
-set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+list(APPEND LIBS ${Boost_PROGRAM_OPTIONS_LIBRARY})
 message(STATUS "    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
-set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
+list(APPEND LIBS ${Boost_SYSTEM_LIBRARY})
 message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
-set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
+list(APPEND LIBS ${Boost_FILESYSTEM_LIBRARY})
 message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
-set(LIBS ${LIBS} ${Boost_DATE_TIME_LIBRARY})
+list(APPEND LIBS ${Boost_DATE_TIME_LIBRARY})
 message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
 
 ########################## End of find libraries ########################
