@@ -1,15 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 # In-source build prevention.
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(STATUS "SCRAM requires an out-of-source build.")
-  message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
-  message(STATUS "CMakeCache.txt")
-  message(STATUS "CMakeFiles")
-  message(STATUS "Once these files are removed, create a separate directory")
-  message(STATUS "and run CMake from there.")
-  message(FATAL_ERROR "in-source build detected")
-endif()
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(SCRAM)
 set(SCRAM_VERSION_MAJOR 0)  # Indicate major API change after 1.0.0
