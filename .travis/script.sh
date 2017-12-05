@@ -83,3 +83,11 @@ fi
 # Python linting
 yapf -d ./*.py scripts/*.py scripts/test/*.py tests/*.py tests/input/fta/run_inputs.py
 prospector ./*.py scripts/*.py
+
+# Qt lupdate warnings
+lupdate gui -ts gui/traslations/scramgui_en.ts 2> ts_warnings.txt
+if [[ -s ts_warnings.txt ]]; then
+  echo "Qt Lupdate warnings:" >&2
+  cat ts_warnings.txt >&2
+  exit 1
+fi
