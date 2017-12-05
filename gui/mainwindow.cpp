@@ -116,8 +116,8 @@ public:
     void exportAs()
     {
         QString filename = QFileDialog::getSaveFileName(
-            this, tr("Export As"), QDir::homePath(),
-            tr("SVG files (*.svg);;All files (*.*)"));
+            this, QObject::tr("Export As"), QDir::homePath(),
+            QObject::tr("SVG files (*.svg);;All files (*.*)"));
         QSize sceneSize = scene()->sceneRect().size().toSize();
 
         QSvgGenerator generator;
