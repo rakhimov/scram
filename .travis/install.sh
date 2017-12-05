@@ -19,9 +19,7 @@ sudo -H pip install -U pip wheel
 sudo -H pip install nose  # Testing main() requires nosetests!
 
 if [[ "$CXX" = "clang++" ]]; then
-  sudo apt-get install -qq clang-${CLANG_VERSION}
   if [[ -z "${RELEASE}" ]]; then
-    sudo apt-get install -qq clang-format-${CLANG_VERSION}
     git clone https://github.com/Sarcasm/run-clang-format
   fi
 fi

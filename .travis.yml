@@ -23,7 +23,6 @@ compiler:
 env:
     global:
         - PATH=$PATH:$PWD/install/bin
-        - CLANG_VERSION="3.6"
     matrix:
         - RELEASE=
         - RELEASE=true
@@ -62,7 +61,6 @@ addons:
             - libqt5opengl5-dev
         sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty
             - sourceline: "ppa:kzemek/boost"
 
 before_install:
@@ -74,10 +72,6 @@ before_install:
 
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
-    - if [[ "$CXX" == "clang++" ]] && [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-          export CC=clang-${CLANG_VERSION};
-          export CXX=clang++-${CLANG_VERSION};
-      fi
 
 before_script:
     - .travis/before_script.sh
