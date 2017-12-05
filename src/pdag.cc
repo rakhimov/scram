@@ -46,26 +46,28 @@ void NodeParentManager::AddParent(const GatePtr& gate) {
   parents_.data().emplace_back(gate->index(), gate);
 }
 
-Node::Node(Pdag* graph) noexcept : index_(Pdag::NodeIndexGenerator()(graph)),
-                                   order_(0),
-                                   visits_{},
-                                   opti_value_(0),
-                                   pos_count_(0),
-                                   neg_count_(0),
-                                   graph_(*graph) {}
+Node::Node(Pdag* graph) noexcept
+    : index_(Pdag::NodeIndexGenerator()(graph)),
+      order_(0),
+      visits_{},
+      opti_value_(0),
+      pos_count_(0),
+      neg_count_(0),
+      graph_(*graph) {}
 
 Node::~Node() = default;
 
-Gate::Gate(Operator type, Pdag* graph) noexcept : Node(graph),
-                                                  type_(type),
-                                                  mark_(false),
-                                                  module_(false),
-                                                  coherent_(false),
-                                                  vote_number_(0),
-                                                  descendant_(0),
-                                                  ancestor_(0),
-                                                  min_time_(0),
-                                                  max_time_(0) {}
+Gate::Gate(Operator type, Pdag* graph) noexcept
+    : Node(graph),
+      type_(type),
+      mark_(false),
+      module_(false),
+      coherent_(false),
+      vote_number_(0),
+      descendant_(0),
+      ancestor_(0),
+      min_time_(0),
+      max_time_(0) {}
 
 void Gate::type(Operator type) {  // Don't use in Gate constructor!
   /// @todo Find the inefficient resets.
@@ -445,12 +447,13 @@ void Gate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-Pdag::Pdag() noexcept : node_index_(0),
-                        complement_(false),
-                        coherent_(true),
-                        normal_(true),
-                        register_null_gates_(true),
-                        constant_(new Constant(this)) {}
+Pdag::Pdag() noexcept
+    : node_index_(0),
+      complement_(false),
+      coherent_(true),
+      normal_(true),
+      register_null_gates_(true),
+      constant_(new Constant(this)) {}
 
 Pdag::Pdag(const mef::Gate& root, bool ccf, const mef::Model* model) noexcept
     : Pdag() {
