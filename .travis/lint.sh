@@ -2,15 +2,9 @@
 
 set -ev
 
-[[ -z "${RELEASE}" ]] || exit 0
-
-if [[ "$CXX" = "clang++" ]]; then
-  ./run-clang-format/run-clang-format.py -r gui/
-  ./run-clang-format/run-clang-format.py -r src/
-  ./run-clang-format/run-clang-format.py tests/*.{h,cc}
-fi
-
-[[ "$CXX" = "g++" ]] || exit 0
+./run-clang-format/run-clang-format.py -r gui/
+./run-clang-format/run-clang-format.py -r src/
+./run-clang-format/run-clang-format.py tests/*.{h,cc}
 
 # Check documentation coverage
 which doxygen || exit 1

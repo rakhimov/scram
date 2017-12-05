@@ -30,10 +30,13 @@ env:
 jobs:
     include:
         - stage: lint
-          script: .travis/lint.sh
-        - stage: lint
           compiler: clang
           script: .travis/lint.sh
+          env: LINT=true  # Travis does not provide ENV var for stage names :(
+          addons:
+              apt:
+                  packages:
+                      - qttools5-dev-tools
 
 stages:
     - lint
