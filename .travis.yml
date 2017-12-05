@@ -12,7 +12,9 @@ cache:
     directories:
         - $HOME/.cache/pip
 
-os: linux
+os:
+    - linux
+    - osx
 
 compiler:
     - gcc
@@ -26,11 +28,24 @@ env:
         - RELEASE=
         - RELEASE=true
 
-matrix:
+jobs:
     include:
-        - os: osx
+        - stage: lint
+          script: .travis/lint.sh
+        - stage: lint
           compiler: clang
-          env: RELEASE=true  # OS X builds are slow and limited.
+          script: .travis/lint.sh
+
+stages:
+    - lint
+    - test
+
+matrix:
+    exclude:  # OS X builds are slow and limited.
+        - os: osx
+          compiler: gcc
+        - os: osx
+          env: RELEASE=
 
 addons:
     apt:

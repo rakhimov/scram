@@ -10,4 +10,5 @@ if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
   fi
 fi
 
+mkdir build
 mkdir install
