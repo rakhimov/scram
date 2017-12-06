@@ -8,14 +8,18 @@ fi
 
 ccache -s
 
-install_cmd="time -p ./install.py --prefix=./install --threads 2"
+cd build
+install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install -DBUILD_SHARED_LIBS=ON"
 if [[ -n "${RELEASE}" ]]; then
-  ${install_cmd} --release
+  ${install_cmd} -DCMAKE_BUILD_TYPE=Release
 elif [[ "$CXX" = "g++" ]]; then
-  ${install_cmd} --coverage --profile
+  ${install_cmd} -Wdev -DCMAKE_BUILD_TYPE=Debug -DWITH_PROFILE=ON -DWITH_COVERAGE=ON
 else
-  ${install_cmd} --debug
+  ${install_cmd} -DCMAKE_BUILD_TYPE=Debug
 fi
+
+time -p make install -j 2
+cd ..
 
 ccache -s
 
