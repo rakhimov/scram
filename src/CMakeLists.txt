@@ -56,7 +56,7 @@ set(SCRAM_CORE_SRC
   initializer.cc
   risk_analysis.cc
   )
-add_library(scramcore ${SCRAM_CORE_SRC})
+add_library(scramcore SHARED ${SCRAM_CORE_SRC})
 
 if(WIN32)
   install(TARGETS scramcore RUNTIME DESTINATION bin COMPONENT scram)

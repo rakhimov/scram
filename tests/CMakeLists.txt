@@ -1,5 +1,3 @@
-set(BUILD_SHARED_LIBS FALSE)  # No need to share with other executables.
-
 # Exclude Debug warnings from the framework.
 set(CURRENT_DEBUG_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")

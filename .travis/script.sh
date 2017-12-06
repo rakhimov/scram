@@ -9,7 +9,7 @@ fi
 ccache -s
 
 cd build
-install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install -DBUILD_SHARED_LIBS=ON"
+install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install"
 if [[ -n "${RELEASE}" ]]; then
   ${install_cmd} -DCMAKE_BUILD_TYPE=Release
 elif [[ "$CXX" = "g++" ]]; then

@@ -27,7 +27,7 @@ before_build:
 
 build_script:
     - cd build
-    - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_SHARED_LIBS=ON
+    - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON
     - make install/strip -j 2
     - cmake .. -DPACKAGE=ON
     - make install/strip -j 2

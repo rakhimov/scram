@@ -11,8 +11,6 @@ set(SCRAM_VERSION_MICRO 0)  # Bug fixes.
 
 ####################### Begin Options ###################
 
-option(BUILD_SHARED_LIBS OFF)
-
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
 option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 
