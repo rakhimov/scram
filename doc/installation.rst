@@ -94,6 +94,6 @@ Available from `Docker Hub <https://hub.docker.com/r/rakhimov/scram/>`_:
 Other Platforms
 ===============
 
-Please follow the building and installing instructions_ on GitHub.
+Please consult with the building and installing instructions_ on GitHub.
 
 .. _instructions: https://github.com/rakhimov/scram/tree/master#building-and-installing

@@ -110,57 +110,11 @@ Intel                  17.0.2
 Installing Dependencies
 =======================
 
-The following installation instructions and scripts are taken from Cyclus_.
-
-.. _Cyclus: https://github.com/cyclus/cyclus
-
-This guide assumes that the user has root access (to issue sudo commands)
-and access to a package manager
-or has some other suitable method of automatically installing libraries.
-
-
 Ubuntu
 ------
 
-This process is tested on Ubuntu 16.04 LTS
-using ``apt-get`` as the package manager.
-
-The command to install a dependency takes the form of:
-
-.. code-block:: bash
-
-    sudo apt-get install package
-
-Where ``package`` is replaced by the correct package name.
-The minimal list of required library package names is:
-
-#. cmake
-#. libboost-all-dev
-#. libxml2-dev
-#. qtbase5-dev
-#. qtbase5-dev-tools
-#. qttools5-dev
-#. qttools5-dev-tools
-#. libqt5svg5-dev
-#. libqt5opengl5-dev
-
-and (optionally):
-
-#. libgoogle-perftools-dev
-
-compiler:
-
-- gcc g++
-
-For example, in order to install ``Boost`` on your system, type:
-
-.. code-block:: bash
-
-    sudo apt-get install libboost-all-dev
-
-Python and GCC/G++ compilers are assumed to be available on the system.
-If you'd prefer to copy/paste,
-the following line will install all major dependencies:
+Python and GCC/G++ compiler are assumed to be available on the system.
+The process is tested on Ubuntu 16.04 LTS using ``apt-get`` as the package manager:
 
 .. code-block:: bash
 
@@ -170,54 +124,15 @@ the following line will install all major dependencies:
 macOS
 -----
 
-If on a Mac system, a good manager to use is macports_ or homebrew_.
-It is assumed that some dependencies are provided by Xcode.
+If on a Mac system, homebrew_ is a good package manager to use.
+It is assumed that some dependencies are provided by Xcode (e.g., Python, llvm/clang, make).
 The following instructions are tested on OS X 10.9,
-but it should work for later versions as well.
-
-Using homebrew_, the command to install a dependency takes the form of:
-
-.. code-block:: bash
-
-    brew install package
-
-If the ``package`` is already installed the command will fail,
-instead upgrade the ``package`` if necessary:
-
-.. code-block:: bash
-
-    brew outdated package || brew upgrade package
-
-Where ``package`` is replaced by the correct package name.
-The minimal list of required library package names is:
-
-#. cmake
-#. boost
-#. libxml2
-#. qt5
-
-and (optionally):
-
-#. gperftools
-
-compiler:
-
-- clang/llvm
-
-For example, in order to install ``Boost`` on your system, type:
-
-.. code-block:: bash
-
-    brew install boost
-
-If you'd prefer to copy/paste,
-the following line will install all major dependencies:
+but it should work for later versions as well:
 
 .. code-block:: bash
 
     brew install cmake boost libxml2 gperftools qt5
 
-.. _macports: http://www.macports.org/
 .. _homebrew: http://brew.sh/
 
 
@@ -226,41 +141,11 @@ Windows
 
 MSYS2_/Mingw-w64_ is the recommended platform to work on Windows.
 Assuming MSYS2 is installed on the system,
-the following instructions will install SCRAM dependencies.
-
-Using ``pacman``, in MSYS2_64 command shell,
-a C++ dependency installation takes the form of:
+the following instructions will install SCRAM dependencies:
 
 .. code-block:: bash
 
-    pacman -S mingw-w64-x86_64-package
-
-Where ``package`` is replaced by the correct package name:
-
-#. gcc
-#. make
-#. cmake
-#. boost
-#. libxml2
-#. qt5
-
-and (optionally):
-
-#. jemalloc
-
-If Python has not yet been installed on the system,
-Python installation takes the form of:
-
-.. code-block:: bash
-
-    pacman -S python
-
-If you'd prefer to copy/paste,
-the following line will install all major dependencies:
-
-.. code-block:: bash
-
-    pacman --noconfirm -S python mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,qt5,jemalloc}
+    pacman --noconfirm -S mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,qt5,jemalloc}
 
 SCRAM installation and executables must be run inside of the MSYS2 shell.
 
@@ -271,44 +156,43 @@ SCRAM installation and executables must be run inside of the MSYS2 shell.
 Installing SCRAM
 ================
 
-A python script is provided to make the build/installation process easier.
-If there are dependency issues, ``CMake`` output should guide with errors.
-``CMake`` can be used directly without the python script to configure the build.
-
-The default installation directory is ``~/.local``.
-The default linkage is dynamic;
-however, tests are statically linked against GoogleTest.
+The project is configured with CMake_ scripts.
+CMake generates native "makefiles" or build system configurations
+to be used in your compiler environment.
+If there are dependency issues, CMake output should guide with errors.
+The configuration and build must happen out-of-source (e.g., in ``build`` sub-directory).
 
 .. code-block:: bash
 
-    .../scram$ python install.py  --prefix=path/to/installation/directory
+    .../scram/build$ cmake .. -DCMAKE_INSTALL_PREFIX=path/to/installation/directory -DCMAKE_BUILD_TYPE=Release
+
+For Mingw-w64_ on Windows, specify ``-G "MSYS Makefiles"`` generator flag.
+
+Various other project configurations can be explored with CMake or its front-ends.
+For example:
+
+.. code-block:: bash
+
+    .../scram/build$ cmake -L
+
+    .../scram/build$ ccmake .
+
+    .../scram/build$ cmake-gui .
+
+An example build/install instruction with the CMake generated Makefiles:
+
+.. code-block:: bash
+
+    .../scram/build$ make install
 
 The main and test binaries are installed in ``installation/directory/bin``.
 The input files and schema are copied in ``installation/directory/share/scram/``.
 
-The default build type is ``Debug`` with many compiler warnings turned on,
-but it can be overridden by ``--release`` or ``--build-type CMAKE_BUILD_TYPE``.
-For performance testing and distribution, use ``--release`` flag:
-
-.. code-block:: bash
-
-    .../scram$ python install.py --prefix=path/to/installation/directory --release
-
-For Mingw-w64_ on Windows, add ``--mingw64`` flag.
-
-.. code-block:: bash
-
-    .../scram$ python install.py --prefix=path/to/installation/directory --release --mingw64
-
-Various other flags are described by the script's help prompt.
-
-.. code-block:: bash
-
-    .../scram$ python install.py --help
-
 Other tools, such as the **fault tree generator**,
 can be found in the ``scripts`` directory.
-These tools do not need compilation or installation.
+These tools do not require compilation or installation.
+
+.. _CMake: https://cmake.org
 
 
 ***********************
