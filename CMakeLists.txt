@@ -15,9 +15,6 @@ option(BUILD_SHARED_LIBS OFF)
 
 option(INSTALL_LIBS "Install the generated libraries" ${BUILD_SHARED_LIBS})
 
-# Linking of external libraries, such as BOOST.
-option(WITH_STATIC_LIBS "Try to link against static libraries" OFF)
-
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
 option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 
@@ -163,8 +160,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 else()
   set(BOOST_MIN_VERSION "1.61.0")
 endif()
-set(Boost_USE_STATIC_LIBS ${WITH_STATIC_LIBS})
-set(Boost_USE_STATIC_RUNTIME ${WITH_STATIC_LIBS})
 
 if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
