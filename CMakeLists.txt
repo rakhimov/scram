@@ -13,8 +13,6 @@ set(SCRAM_VERSION_MICRO 0)  # Bug fixes.
 
 option(BUILD_SHARED_LIBS OFF)
 
-option(INSTALL_LIBS "Install the generated libraries" ${BUILD_SHARED_LIBS})
-
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
 option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
 
@@ -114,9 +112,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # (but later on when installing).
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-if(INSTALL_LIBS)
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram")
-endif()
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram")
 
 # Add the automatically determined parts of the RPATH,
 # which point to directories outside the build tree
