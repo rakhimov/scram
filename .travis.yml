@@ -30,6 +30,8 @@ env:
 jobs:
     include:
         - stage: lint
+          dist: trusty
+          sudo: false
           compiler: clang
           script: .travis/lint.sh
           env: LINT=true  # Travis does not provide ENV var for stage names :(

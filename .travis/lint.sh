@@ -41,7 +41,7 @@ if [[ -s style.txt ]]; then
 fi
 
 # Python linting
-yapf -d scripts/*.py scripts/test/*.py tests/*.py tests/input/fta/run_inputs.py
+yapf -p -d scripts/*.py scripts/test/*.py tests/*.py tests/input/fta/run_inputs.py
 prospector scripts/*.py
 
 # Qt lupdate warnings

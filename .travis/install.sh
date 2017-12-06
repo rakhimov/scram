@@ -15,7 +15,7 @@ fi
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
 
-sudo -H pip install -U pip wheel
+pip install --user -U pip wheel
 
 if [[ ! -z "${LINT}" ]]; then
   git clone https://github.com/Sarcasm/run-clang-format
@@ -24,14 +24,14 @@ if [[ ! -z "${LINT}" ]]; then
   DOXYGEN='doxygen-1.8.11.linux.bin.tar.gz'
   wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.11/${DOXYGEN}
   tar -xf ${DOXYGEN}
-  sudo cp doxygen-1.8.11/bin/* /usr/bin/
+  cp doxygen-1.8.11/bin/* ~/.local/bin/
 
-  sudo -H pip install -r requirements-dev.txt  # Python linting tools.
+  pip install --user -r requirements-dev.txt  # Python linting tools.
 
   exit 0  # Compilation dependencies are not required.
 fi
 
-sudo -H pip install nose  # Testing main() requires nosetests!
+pip install --user nose  # Testing main() requires nosetests!
 
 # CMake 3.5
 sudo apt-get install cmake3
@@ -46,5 +46,5 @@ sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind
 sudo apt-get install -qq lcov
 
-sudo -H pip install -r requirements-dev.txt
-sudo -H pip install -r requirements-tests.txt
+pip install --user -r requirements-dev.txt
+pip install --user -r requirements-tests.txt
