@@ -210,8 +210,8 @@ void installCrashHandlers() noexcept
 QString getUiLanguage()
 {
     /// @todo Discover available translations programmatically.
-    static const char *const availableLanguages[] = {"en", "ru_RU", "de_DE"};
-
+    static const char *const availableLanguages[] = {"en", "ru_RU", "de_DE",
+                                                     "es_ES"};
     QSettings preferences;
     QString language = preferences.value(QStringLiteral("language")).toString();
     if (!language.isEmpty())
