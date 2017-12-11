@@ -765,22 +765,22 @@
     <message>
       <source>Fault Trees (%L1)</source>
       <extracomment>The parent item for collections of fault trees in the model.</extracomment>
-      <translation>Árboles de fallas (% L1)</translation>
+      <translation>Árboles de fallas (%L1)</translation>
     </message>
     <message>
       <source>Gates (%L1)</source>
       <extracomment>The table of gates.</extracomment>
-      <translation>Puertos (% L1)</translation>
+      <translation>Puertos (%L1)</translation>
     </message>
     <message>
       <source>Basic Events (%L1)</source>
       <extracomment>The table of basic events.</extracomment>
-      <translation>Eventos básicos (% L1)</translation>
+      <translation>Eventos básicos (%L1)</translation>
     </message>
     <message>
       <source>House Events (%L1)</source>
       <extracomment>The table of house events.</extracomment>
-      <translation>Eventos locales (% L1)</translation>
+      <translation>Eventos locales (%L1)</translation>
     </message>
   </context>
   <context>
