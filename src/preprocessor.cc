@@ -1341,8 +1341,8 @@ void Preprocessor::GroupCandidatesByArgs(
         groups->emplace_back(std::move(group));
     }
   }
-  BLOG(DEBUG4, !groups->empty()) << "Grouped merge candidates in "
-                                 << groups->size() << " group(s).";
+  BLOG(DEBUG4, !groups->empty())
+      << "Grouped merge candidates in " << groups->size() << " group(s).";
 }
 
 void Preprocessor::GroupCommonParents(

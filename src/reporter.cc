@@ -238,27 +238,27 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
   ReportPerformance(risk_an, &information);
   ReportCalculatedQuantity(risk_an.settings(), &information);
   ReportModelFeatures(risk_an.model(), &information);
-  ReportUnusedElements(risk_an.model().basic_events(), "Unused basic events: ",
-                       &information);
-  ReportUnusedElements(risk_an.model().house_events(), "Unused house events: ",
-                       &information);
-  ReportUnusedElements(risk_an.model().parameters(), "Unused parameters: ",
-                       &information);
-  ReportUnusedElements(risk_an.model().libraries(), "Unused libraries: ",
-                       &information);
+  ReportUnusedElements(risk_an.model().basic_events(),
+                       "Unused basic events: ", &information);
+  ReportUnusedElements(risk_an.model().house_events(),
+                       "Unused house events: ", &information);
+  ReportUnusedElements(risk_an.model().parameters(),
+                       "Unused parameters: ", &information);
+  ReportUnusedElements(risk_an.model().libraries(),
+                       "Unused libraries: ", &information);
   ReportUnusedElements(risk_an.model().extern_functions(),
                        "Unused extern functions: ", &information);
   ReportUnusedElements(risk_an.model().initiating_events(),
                        "Unused initiating events: ", &information);
-  ReportUnusedElements(risk_an.model().event_trees(), "Unused event trees: ",
-                       &information);
-  ReportUnusedElements(risk_an.model().sequences(), "Unused sequences: ",
-                       &information);
+  ReportUnusedElements(risk_an.model().event_trees(),
+                       "Unused event trees: ", &information);
+  ReportUnusedElements(risk_an.model().sequences(),
+                       "Unused sequences: ", &information);
   ReportUnusedElements(risk_an.model().rules(), "Unused rules: ", &information);
   for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {
     std::string header = "In event tree " + event_tree->name() + ", ";
-    ReportUnusedElements(event_tree->branches(), header + "unused branches: ",
-                         &information);
+    ReportUnusedElements(event_tree->branches(),
+                         header + "unused branches: ", &information);
     ReportUnusedElements(event_tree->functional_events(),
                          header + "unused functional events: ", &information);
   }

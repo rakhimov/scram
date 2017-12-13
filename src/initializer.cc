@@ -1817,14 +1817,14 @@ void Initializer::EnsureNoSubstitutionConflicts() {
       };
       if (target_ptr && in_hypothesis(*target_ptr))
         SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin->name() + "' target event should not "
-                                                   "appear in another "
-                                                   "substitution hypothesis."));
+                                  origin->name() +
+                                  "' target event should not appear in another "
+                                  "substitution hypothesis."));
       if (ext::any_of(origin->source(), in_hypothesis))
         SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin->name() + "' source event should not "
-                                                   "appear in another "
-                                                   "substitution hypothesis."));
+                                  origin->name() +
+                                  "' source event should not appear in another "
+                                  "substitution hypothesis."));
     }
   }
 }

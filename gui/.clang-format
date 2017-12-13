@@ -11,7 +11,7 @@ BraceWrapping:
     AfterClass: true
     AfterStruct: true
     AfterFunction: true
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: InlineOnly
 CommentPragmas: "^!|^:"
 # ExperimentalAutoDetectBinPacking: true
 # FixNamespaceComments: true

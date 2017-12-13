@@ -230,8 +230,8 @@ TEST(InitializerTest, CorrectProbabilityInputs) {
   settings.probability_analysis(true);
 
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, settings)) << " Filename: "
-                                                          << input;
+    EXPECT_NO_THROW(Initializer({dir + input}, settings))
+        << " Filename: " << input;
   }
 }
 
@@ -338,8 +338,8 @@ TEST(InitializerTest, CorrectModelInputs) {
   core::Settings settings;
   settings.approximation(core::Approximation::kRareEvent);
   for (const auto& input : correct_inputs) {
-    EXPECT_NO_THROW(Initializer({dir + input}, settings, true)) << " Filename: "
-                                                                << input;
+    EXPECT_NO_THROW(Initializer({dir + input}, settings, true))
+        << " Filename: " << input;
   }
 }
 
