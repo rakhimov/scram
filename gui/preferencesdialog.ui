@@ -40,7 +40,12 @@
      </item>
      <item>
       <property name="text">
-       <string>Español</string>
+       <string notr="true">Español</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string notr="true">Türkçe</string>
       </property>
      </item>
     </widget>
