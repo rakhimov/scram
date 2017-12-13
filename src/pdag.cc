@@ -948,8 +948,8 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  auto print_arg = [&os, &formula, &sig, &num_args](int index,
-                                                    const std::string& name) {
+  auto print_arg = [&formula, &sig, &num_args](int index,
+                                               const std::string& name) {
     if (index < 0)
       formula += "~";  // Negation.
     formula += name;
