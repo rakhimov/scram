@@ -22,7 +22,7 @@ compiler:
 
 env:
     global:
-        - PATH=$PATH:$PWD/install/bin
+        - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
     matrix:
         - RELEASE=
         - RELEASE=true
@@ -74,6 +74,7 @@ before_install:
       | grep -E  '\[(skip travis|travis skip)\]'
       && echo "[skip travis] has been found, exiting."
       && exit 0 || echo "continue"
+    - mkdir -p ~/.local/bin
 
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
