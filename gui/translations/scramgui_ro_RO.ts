@@ -5,19 +5,19 @@
     <name>EventDialog</name>
     <message>
       <source>Event Editor</source>
-      <translation type="unfinished">Event Editor</translation>
+      <translation>Editor Eveniment</translation>
     </message>
     <message>
       <source>Label:</source>
-      <translation type="unfinished">Label:</translation>
+      <translation>Etichetă:</translation>
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Nume:</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation type="unfinished">Type:</translation>
+      <translation>Tip:</translation>
     </message>
     <message>
       <source>House event</source>
