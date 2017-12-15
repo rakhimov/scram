@@ -5,19 +5,19 @@
     <name>EventDialog</name>
     <message>
       <source>Event Editor</source>
-      <translation type="unfinished">Event Editor</translation>
+      <translation>Éditeur d'Évenement</translation>
     </message>
     <message>
       <source>Label:</source>
-      <translation type="unfinished">Label:</translation>
+      <translation>Étiquette:</translation>
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Nom:</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation type="unfinished">Type:</translation>
+      <translation>Type:</translation>
     </message>
     <message>
       <source>House event</source>
@@ -37,36 +37,36 @@
     <message>
       <source>Conditional</source>
       <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Conditionnel</translation>
     </message>
     <message>
       <source>Gate</source>
       <extracomment>The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.</extracomment>
-      <translation type="unfinished">Gate</translation>
+      <translation>Portail</translation>
     </message>
     <message>
       <source>State:</source>
-      <translation type="unfinished">State:</translation>
+      <translation>État:</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Faux</translation>
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Vrai</translation>
     </message>
     <message>
       <source>Expression</source>
-      <translation type="unfinished">Expression</translation>
+      <translation>Expression</translation>
     </message>
     <message>
       <source>Value:</source>
-      <translation type="unfinished">Value:</translation>
+      <translation>Valeur:</translation>
     </message>
     <message>
       <source>Rate:</source>
-      <translation type="unfinished">Rate:</translation>
+      <translation>Taux:</translation>
     </message>
     <message>
       <source>Connective:</source>
@@ -74,39 +74,39 @@
     </message>
     <message>
       <source>AND</source>
-      <translation type="unfinished">AND</translation>
+      <translation>AND</translation>
     </message>
     <message>
       <source>OR</source>
-      <translation type="unfinished">OR</translation>
+      <translation>OR</translation>
     </message>
     <message>
       <source>ATLEAST</source>
       <extracomment>VOTE, Voting OR, Combo, Combination, K/N gate</extracomment>
-      <translation type="unfinished">ATLEAST</translation>
+      <translation>ATLEAST</translation>
     </message>
     <message>
       <source>XOR</source>
       <extracomment>Exclusive OR</extracomment>
-      <translation type="unfinished">XOR</translation>
+      <translation>XOR</translation>
     </message>
     <message>
       <source>NOT</source>
-      <translation type="unfinished">NOT</translation>
+      <translation>NOT</translation>
     </message>
     <message>
       <source>NAND</source>
       <extracomment>NOT AND</extracomment>
-      <translation type="unfinished">NAND</translation>
+      <translation>NAND</translation>
     </message>
     <message>
       <source>NOR</source>
       <extracomment>NOT OR</extracomment>
-      <translation type="unfinished">NOR</translation>
+      <translation>NOR</translation>
     </message>
     <message>
       <source>Min:</source>
-      <translation type="unfinished">Min:</translation>
+      <translation>Min:</translation>
     </message>
     <message>
       <source>Add argument with its ID</source>
@@ -197,11 +197,11 @@
     </message>
     <message>
       <source>Data</source>
-      <translation type="unfinished">Data</translation>
+      <translation>Donnée</translation>
     </message>
     <message>
       <source>Reports</source>
-      <translation type="unfinished">Reports</translation>
+      <translation>Rapports</translation>
     </message>
     <message>
       <source>About &amp;Qt</source>
@@ -249,51 +249,51 @@
     </message>
     <message>
       <source>&amp;Print...</source>
-      <translation type="unfinished">&amp;Print...</translation>
+      <translation>&amp;Imprimer...</translation>
     </message>
     <message>
       <source>Print</source>
-      <translation type="unfinished">Print</translation>
+      <translation>Imprimer</translation>
     </message>
     <message>
       <source>&amp;Export As...</source>
-      <translation type="unfinished">&amp;Export As...</translation>
+      <translation>&amp;Exporter sous...</translation>
     </message>
     <message>
       <source>Zoom &amp;In</source>
-      <translation type="unfinished">Zoom &amp;In</translation>
+      <translation>Zoom &amp;Avant</translation>
     </message>
     <message>
       <source>Zoom &amp;Out</source>
-      <translation type="unfinished">Zoom &amp;Out</translation>
+      <translation>Zoom &amp;Arrière</translation>
     </message>
     <message>
       <source>Best &amp;Fit</source>
-      <translation type="unfinished">Best &amp;Fit</translation>
+      <translation>Meilleur &amp;Fit</translation>
     </message>
     <message>
       <source>Run Analysis</source>
-      <translation type="unfinished">Run Analysis</translation>
+      <translation>Exécuter Analyse</translation>
     </message>
     <message>
       <source>Analysis Settings</source>
-      <translation type="unfinished">Analysis Settings</translation>
+      <translation>Paramètres d'analyse</translation>
     </message>
     <message>
       <source>&amp;Model</source>
-      <translation type="unfinished">&amp;Model</translation>
+      <translation>&amp;Modèle</translation>
     </message>
     <message>
       <source>&amp;Data</source>
-      <translation type="unfinished">&amp;Data</translation>
+      <translation>&amp;Donnée</translation>
     </message>
     <message>
       <source>&amp;Reports</source>
-      <translation type="unfinished">&amp;Reports</translation>
+      <translation>&amp;Rapports</translation>
     </message>
     <message>
       <source>Print Previe&amp;w...</source>
-      <translation type="unfinished">Print Previe&amp;w...</translation>
+      <translation>A&amp;perçu d'Impression...</translation>
     </message>
     <message>
       <source>&amp;Add Element</source>
@@ -366,7 +366,7 @@
     <message>
       <source>min</source>
       <extracomment>Shortened time unit for &apos;minutes&apos;</extracomment>
-      <translation type="unfinished">min</translation>
+      <translation>min</translation>
     </message>
   </context>
   <context>
@@ -405,11 +405,11 @@
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Vrai</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Faux</translation>
     </message>
     <message>
       <source>Add event &apos;%1&apos;</source>
@@ -425,108 +425,108 @@
     </message>
     <message>
       <source>IO Error</source>
-      <translation type="unfinished">IO Error</translation>
+      <translation>Erreur d'E/S</translation>
     </message>
     <message>
       <source>File: %1</source>
-      <translation type="unfinished">File: %1</translation>
+      <translation>Fichier: %1</translation>
     </message>
     <message>
       <source>Line: %1</source>
-      <translation type="unfinished">Line: %1</translation>
+      <translation>Ligne: %1</translation>
     </message>
     <message>
       <source>MEF Container: %1</source>
-      <translation type="unfinished">MEF Container: %1</translation>
+      <translation>Conteneur MEF: %1</translation>
     </message>
     <message>
       <source>XML element: %1</source>
-      <translation type="unfinished">XML element: %1</translation>
+      <translation>Élément XML: %1</translation>
     </message>
     <message>
       <source>XML attribute: %1</source>
-      <translation type="unfinished">XML attribute: %1</translation>
+      <translation>Attribut XML: %1</translation>
     </message>
   </context>
   <context>
     <name>SettingsDialog</name>
     <message>
       <source>Analysis Settings</source>
-      <translation type="unfinished">Analysis Settings</translation>
+      <translation>Paramètres d'analyse</translation>
     </message>
     <message>
       <source>Approximations</source>
-      <translation type="unfinished">Approximations</translation>
+      <translation>Approximations</translation>
     </message>
     <message>
       <source>Rare-event</source>
-      <translation type="unfinished">Rare-event</translation>
+      <translation>Événement-rare</translation>
     </message>
     <message>
       <source>Analyses</source>
-      <translation type="unfinished">Analyses</translation>
+      <translation>Analyses</translation>
     </message>
     <message>
       <source>Prime implicants</source>
-      <translation type="unfinished">Prime implicants</translation>
+      <translation>Premier implicants</translation>
     </message>
     <message>
       <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilité</translation>
     </message>
     <message>
       <source>Importance</source>
-      <translation type="unfinished">Importance</translation>
+      <translation>Importance</translation>
     </message>
     <message>
       <source>Algorithms</source>
-      <translation type="unfinished">Algorithms</translation>
+      <translation>Algorithmes</translation>
     </message>
     <message>
       <source>Limits</source>
-      <translation type="unfinished">Limits</translation>
+      <translation>Limites</translation>
     </message>
     <message>
       <source>Mission time:</source>
-      <translation type="unfinished">Mission time:</translation>
+      <translation>Temps de mission:</translation>
     </message>
     <message>
       <source>Product order:</source>
-      <translation type="unfinished">Product order:</translation>
+      <translation>Commande de produit:</translation>
     </message>
   </context>
   <context>
     <name>StartPage</name>
     <message>
       <source>Start Here</source>
-      <translation type="unfinished">Start Here</translation>
+      <translation>Commencez Ici</translation>
     </message>
     <message>
       <source>Start a New Model</source>
-      <translation type="unfinished">Start a New Model</translation>
+      <translation>Commencer un Nouveau Modèle</translation>
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Ouvrir Fichiers de Modèle</translation>
     </message>
     <message>
       <source>Example Models</source>
-      <translation type="unfinished">Example Models</translation>
+      <translation>Modèles d'Exemple</translation>
     </message>
     <message>
       <source>Recent Files</source>
-      <translation type="unfinished">Recent Files</translation>
+      <translation>Fichiers Récents</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::DiagramView</name>
     <message>
       <source>Export As</source>
-      <translation type="unfinished">Export As</translation>
+      <translation>Exporter Sous</translation>
     </message>
     <message>
       <source>SVG files (*.svg);;All files (*.*)</source>
-      <translation type="unfinished">SVG files (*.svg);;All files (*.*)</translation>
+      <translation>Fichiers SVG (*.svg);;Tous les fichiers (*.*)</translation>
     </message>
   </context>
   <context>
@@ -907,77 +907,77 @@
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Étiquette</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::HouseEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>State</source>
       <extracomment>House event Boolean state.</extracomment>
-      <translation type="unfinished">State</translation>
+      <translation>État</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Étiquette</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::ImportanceTableModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Occurrence</source>
-      <translation type="unfinished">Occurrence</translation>
+      <translation>Occurrence</translation>
     </message>
     <message>
       <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilité</translation>
     </message>
     <message>
       <source>MIF</source>
-      <translation type="unfinished">MIF</translation>
+      <translation>MIF</translation>
     </message>
     <message>
       <source>CIF</source>
-      <translation type="unfinished">CIF</translation>
+      <translation>CIF</translation>
     </message>
     <message>
       <source>DIF</source>
-      <translation type="unfinished">DIF</translation>
+      <translation>DIF</translation>
     </message>
     <message>
       <source>RAW</source>
-      <translation type="unfinished">RAW</translation>
+      <translation>RAW</translation>
     </message>
     <message>
       <source>RRW</source>
-      <translation type="unfinished">RRW</translation>
+      <translation>RRW</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::ProductTableModel</name>
     <message>
       <source>Product</source>
-      <translation type="unfinished">Product</translation>
+      <translation>Produit</translation>
     </message>
     <message>
       <source>Order</source>
-      <translation type="unfinished">Order</translation>
+      <translation>Commande</translation>
     </message>
     <message>
       <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilité</translation>
     </message>
     <message>
       <source>Contribution</source>
-      <translation type="unfinished">Contribution</translation>
+      <translation>Contribution</translation>
     </message>
   </context>
 </TS>
