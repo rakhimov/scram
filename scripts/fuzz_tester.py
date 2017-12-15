@@ -344,14 +344,12 @@ class Fuzzer(object):  # pylint: disable=too-few-public-methods
                                     self.args.output_dir)
         num_runs = job_number + 1
         if self.call_function(input_file):
-            logging.info(
-                "SCRAM failed run " + str(num_runs) + ": " + input_file)
+            logging.info("SCRAM failed run #%d : %s", num_runs, input_file)
             return 1
         os.remove(input_file)
         os.remove(get_log_file_name(input_file))
         if not num_runs % 10:
-            logging.info(
-                "\n========== Finished run #" + str(num_runs) + " ==========\n")
+            logging.info("\n========== Finished run #%d ==========\n", num_runs)
         return 0
 
 
