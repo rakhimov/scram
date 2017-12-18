@@ -7,5 +7,6 @@ comment:
 
 coverage:
     ignore:
-        - tests/**/*
-        - scripts/test/**/*
+        - tests
+        - scripts/test
+        - gui/tests

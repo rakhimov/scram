@@ -5,14 +5,6 @@ configure_file(version.cc.in version.cc @ONLY)
 configure_file(env.cc.in env.cc @ONLY)
 ################### End File Configurations ####################
 
-if(WITH_COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-endif()
-
-if(WITH_PROFILE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-endif()
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_SRC

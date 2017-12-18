@@ -23,6 +23,7 @@ compiler:
 env:
     global:
         - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
+        - QT_QPA_FONTDIR=/usr/share/fonts
     matrix:
         - RELEASE=
         - RELEASE=true
@@ -64,6 +65,7 @@ addons:
             - qttools5-dev-tools
             - libqt5svg5-dev
             - libqt5opengl5-dev
+            - fontconfig
         sources:
             - ubuntu-toolchain-r-test
             - sourceline: "ppa:kzemek/boost"

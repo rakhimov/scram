@@ -6,9 +6,17 @@ set -ev
 # And this script is called from the root directory.
 which scram
 which scram_tests
+which scram-gui
 
 scram_tests
 nosetests -w ./tests/
+
+[[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
+
+scram-gui --help -platform offscreen
+scram-gui input/TwoTrain/two_train.xml -platform offscreen&
+sleep 5
+kill $!
 
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
   nosetests --with-coverage -w scripts test/
