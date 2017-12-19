@@ -1,4 +1,4 @@
-# Find the QtWidgets library.
+# Find Qt5 libraries.
 if(APPLE)
   # Qt5 with Homebrew.
   list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5)
@@ -62,7 +62,6 @@ set(SCRAM_GUI_SRC
   zoomableview.cpp
   diagram.cpp
   mainwindow.cpp
-  main.cpp
   )
 
 add_subdirectory(translations)
@@ -70,13 +69,16 @@ add_subdirectory(translations)
 if(WIN32)
   list(APPEND SCRAM_GUI_SRC scram.rc)
 endif()
-add_executable(scram-gui WIN32 ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-
+add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
 target_link_libraries(scram-gui
   ${LIBS} scram
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
-install(TARGETS scram-gui
+add_executable(scram-gui-bin WIN32 main.cpp ${SCRAM_GUI_RES})
+set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
+target_link_libraries(scram-gui-bin scram-gui scram ${Boost_LIBRARIES})
+install(
+  TARGETS scram-gui-bin
   RUNTIME DESTINATION bin
   COMPONENT gui
   )
