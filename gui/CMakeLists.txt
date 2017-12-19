@@ -47,6 +47,8 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
   list(APPEND SCRAM_GUI_RES "${TANGO_QRC}")
 endif()
 
+add_subdirectory(translations)
+
 set(SCRAM_GUI_SRC
   validator.cpp
   model.cpp
@@ -63,18 +65,12 @@ set(SCRAM_GUI_SRC
   diagram.cpp
   mainwindow.cpp
   )
-
-add_subdirectory(translations)
-
-if(WIN32)
-  list(APPEND SCRAM_GUI_SRC scram.rc)
-endif()
 add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
 target_link_libraries(scram-gui
   ${LIBS} scram
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
-add_executable(scram-gui-bin WIN32 main.cpp ${SCRAM_GUI_RES})
+add_executable(scram-gui-bin WIN32 main.cpp scram.rc ${SCRAM_GUI_RES})
 set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
 target_link_libraries(scram-gui-bin scram-gui scram ${Boost_LIBRARIES})
 install(
