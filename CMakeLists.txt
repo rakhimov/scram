@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0048 NEW)  # Project version specification.
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-project(SCRAM)
-set(SCRAM_VERSION_MAJOR 0)  # Indicate major API change after 1.0.0
-set(SCRAM_VERSION_MINOR 16)  # New features and improvements.
-set(SCRAM_VERSION_MICRO 0)  # Bug fixes.
+project(SCRAM VERSION 0.16.0 LANGUAGES CXX)
 
 ####################### Begin Options ###################
 
@@ -249,9 +247,9 @@ endif()
 
 set(CPACK_PACKAGE_VENDOR "Olzhas Rakhimov")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Probabilistic risk analysis tool")
-set(CPACK_PACKAGE_VERSION_MAJOR "${SCRAM_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${SCRAM_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${SCRAM_VERSION_MICRO}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 set(CPACK_STRIP_FILES ON)
