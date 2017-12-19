@@ -338,6 +338,7 @@ through unit, integration, regression, and benchmarking tests.
 The following tools are used for this purpose:
 
 - GoogleTest_
+- `Qt Test`_
 - Nose_
 
 These tests are automated,
@@ -348,6 +349,7 @@ with auto-generated analysis input files
 to discover bugs, bottlenecks, and assumption failures.
 
 .. _GoogleTest: https://github.com/google/googletest
+.. _Qt Test: http://doc.qt.io/qt-5/qtest-overview.html
 .. _Nose: httpss://nose.readthedocs.io/en/latest/
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
 .. _AppVeyor: https://ci.appveyor.com/project/rakhimov/scram
@@ -356,11 +358,13 @@ to discover bugs, bottlenecks, and assumption failures.
 References for testing and quality assurance
 --------------------------------------------
 
+- `Writing Unit Tests (Qt GUI)`_
 - `Software Testing Fundamentals`_
 - `Software Testing Tutorial`_
 - `ISO Standards for Software Testing`_
 - `Introduction to Test Driven Development`_
 
+.. _Writing Unit Tests (Qt GUI): https://wiki.qt.io/Writing_Unit_Tests
 .. _Software Testing Fundamentals: http://softwaretestingfundamentals.com/
 .. _Software Testing Tutorial: http://www.tutorialspoint.com/software_testing/
 .. _ISO Standards for Software Testing: http://softwaretestingstandard.org/
