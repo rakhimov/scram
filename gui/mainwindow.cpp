@@ -52,6 +52,7 @@
 
 #include "diagram.h"
 #include "elementcontainermodel.h"
+#include "eventdialog.h"
 #include "guiassert.h"
 #include "importancetablemodel.h"
 #include "modeltree.h"

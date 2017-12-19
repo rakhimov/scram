@@ -39,7 +39,6 @@
 #include "src/risk_analysis.h"
 #include "src/settings.h"
 
-#include "eventdialog.h"
 #include "model.h"
 #include "zoomableview.h"
 
@@ -49,6 +48,8 @@ class MainWindow;
 
 namespace scram {
 namespace gui {
+
+class EventDialog; ///< @todo Static build issues if the header is included.
 
 class MainWindow : public QMainWindow
 {
