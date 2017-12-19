@@ -29,10 +29,11 @@ ccache -s
 
 [[ "$CXX" = "g++" ]] || exit 0
 # Submit coverage of C++ and Python.
-COV_DIR="build/src/CMakeFiles/scramcore.dir/"
+COV_DIR="build/src/CMakeFiles/scram.dir/"
+CLI_COV_DIR="build/src/CMakeFiles/scram-cli.dir/"
 TRACE_FILE="coverage.info"
-lcov --no-compat-libtool --directory \
-  $COV_DIR -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q 2> /dev/null
+lcov --no-compat-libtool --directory $COV_DIR --directory $CLI_COV_DIR \
+  -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q 2> /dev/null
 lcov --extract $TRACE_FILE '*/scram/*' -o $TRACE_FILE
 codecov > /dev/null
 
