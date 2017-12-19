@@ -139,11 +139,8 @@ message(STATUS "The memory allocator: ${MALLOC}")
 find_package(LibXml2 REQUIRED)
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 
-message(STATUS "${LIBS}")
-
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
-# Capitalization matters on some platforms.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(BOOST_MIN_VERSION "1.58.0")
   list(APPEND LIBS ${CMAKE_DL_LIBS})
@@ -155,30 +152,14 @@ if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
 endif()
 
-find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
+find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
   program_options filesystem system date_time random
-  REQUIRED)
+  )
+message(STATUS "Boost Include directory: ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost Library directories: ${Boost_LIBRARY_DIRS}")
+list(APPEND LIBS ${Boost_LIBRARIES})
 
-if(Boost_USE_STATIC_LIBS)
-  message(STATUS "Linking against boost static libraries")
-else()
-  message(STATUS "Linking against boost dynamic libraries")
-endif()
-
-if(Boost_ROOT)
-  message(STATUS "    Boost Root: ${Boost_ROOT}")
-endif()
-message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
-message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
-
-list(APPEND LIBS ${Boost_PROGRAM_OPTIONS_LIBRARY})
-message(STATUS "    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
-list(APPEND LIBS ${Boost_SYSTEM_LIBRARY})
-message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
-list(APPEND LIBS ${Boost_FILESYSTEM_LIBRARY})
-message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
-list(APPEND LIBS ${Boost_DATE_TIME_LIBRARY})
-message(STATUS "    Boost Date-Time location: ${Boost_DATE_TIME_LIBRARY}")
+message(STATUS "Libraries: ${LIBS}")
 
 ########################## End of find libraries ########################
 
