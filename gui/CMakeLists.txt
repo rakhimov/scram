@@ -3,14 +3,11 @@ if(APPLE)
   # Qt5 with Homebrew.
   list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5)
 endif()
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5 "5.2.1" REQUIRED COMPONENTS
+  Core Widgets Svg OpenGL PrintSupport Concurrent
+  )
 message(STATUS "Found Qt5")
-message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+message(STATUS "Qt5 Version: ${Qt5_VERSION}")
 
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
