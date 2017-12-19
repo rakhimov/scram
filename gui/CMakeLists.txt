@@ -129,10 +129,16 @@ if(PACKAGE)
       endif()
     endmacro()
     install_qt5_plugin("Qt5::QWindowsIntegrationPlugin" QT_PLUGINS)
-    set(QT_TRANSLATION_DIR ${Qt5Core_DIR}/../../../translations)
+
     execute_process(COMMAND qmake -query QT_INSTALL_TRANSLATIONS
       OUTPUT_VARIABLE QT_TRANSLATIONS_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-    install(DIRECTORY "${QT_TRANSLATIONS_DIR}" DESTINATION . COMPONENT gui)
+    install(
+      DIRECTORY "${QT_TRANSLATIONS_DIR}/"
+      DESTINATION translations
+      COMPONENT gui
+      FILES_MATCHING PATTERN "qtbase_*" PATTERN "qt_*" PATTERN "qt_help_*" EXCLUDE
+      )
+
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       "[Paths]\nPlugins = ../${_qt_plugin_dir}\nTranslations = ../translations\n")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
