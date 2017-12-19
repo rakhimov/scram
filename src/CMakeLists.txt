@@ -56,30 +56,30 @@ set(SCRAM_CORE_SRC
   initializer.cc
   risk_analysis.cc
   )
-add_library(scramcore SHARED ${SCRAM_CORE_SRC})
+add_library(scram SHARED ${SCRAM_CORE_SRC})
+target_link_libraries(scram ${LIBS})
 
 if(WIN32)
-  install(TARGETS scramcore RUNTIME DESTINATION bin COMPONENT scram)
+  install(TARGETS scram RUNTIME DESTINATION bin COMPONENT scram)
 else()
-  set_target_properties(scramcore
+  set_target_properties(scram
     PROPERTIES
     INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram"
     )
   install(
-    TARGETS scramcore
+    TARGETS scram
     DESTINATION lib/scram
     COMPONENT scram
     )
 endif()
 
-target_link_libraries(scramcore ${LIBS})
-
-add_executable(scram scram.cc)
-target_link_libraries(scram scramcore ${Boost_LIBRARIES})
+add_executable(scram-cli scram.cc)
+set_target_properties(scram-cli PROPERTIES OUTPUT_NAME scram)
+target_link_libraries(scram-cli scram ${Boost_LIBRARIES})
 
 install(
-  TARGETS scram
+  TARGETS scram-cli
   RUNTIME DESTINATION bin
   COMPONENT scram
   )

@@ -54,7 +54,7 @@ configure_file(scram_unit_test_driver.cc.in scram_unit_test_driver.cc @ONLY)
 
 add_executable(scram_tests ${CMAKE_CURRENT_BINARY_DIR}/scram_unit_test_driver.cc ${SCRAM_CORE_TEST_SOURCE})
 
-target_link_libraries(scram_tests ${LIBS} scramcore gtest)
+target_link_libraries(scram_tests ${LIBS} scram gtest)
 
 install(
   TARGETS scram_tests
@@ -63,8 +63,8 @@ install(
   )
 
 # Copy test input files into the shared directory for testing.
-install(DIRECTORY
-  input
+install(
+  DIRECTORY input
   DESTINATION share/scram
   COMPONENT testing
   )

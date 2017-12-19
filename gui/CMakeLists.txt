@@ -73,7 +73,7 @@ endif()
 add_executable(scram-gui WIN32 ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
 
 target_link_libraries(scram-gui
-  ${LIBS} scramcore
+  ${LIBS} scram
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
 install(TARGETS scram-gui
