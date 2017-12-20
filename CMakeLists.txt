@@ -7,6 +7,8 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(SCRAM VERSION 0.16.0 LANGUAGES CXX)
 
+include(CTest)
+
 ####################### Begin Options ###################
 
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)

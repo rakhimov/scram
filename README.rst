@@ -286,6 +286,22 @@ To run all performance tests (may take considerable time):
     scram_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
 
 
+To run GUI tests
+================
+
+Unfortunately, Qt Test does not automatically register or manage all its test cases,
+nor does it provide a single test driver.
+Each test case is a separate binary with its own commands and reports.
+Take a look at ``build/bin`` directory for the compiled tests to run.
+
+All Qt Tests are also manually registered with CTest
+so that it is possible to run all the GUI tests at once:
+
+.. code-block:: bash
+
+    .../scram/build$ ctest --verbose
+
+
 To run fuzz testing
 ===================
 

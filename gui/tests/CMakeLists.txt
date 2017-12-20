@@ -9,8 +9,3 @@ endmacro()
 enable_testing()
 
 TEST(TestDummy testdummy.cpp)
-
-add_custom_target(gui_tests COMMAND ${CMAKE_CTEST_COMMAND}
-  DEPENDS
-  TestDummy
-)

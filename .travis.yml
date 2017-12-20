@@ -24,6 +24,7 @@ env:
     global:
         - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
         - QT_QPA_FONTDIR=/usr/share/fonts
+        - QT_QPA_PLATFORM=offscreen
     matrix:
         - RELEASE=
         - RELEASE=true

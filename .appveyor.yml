@@ -42,6 +42,9 @@ test_script:
     - scram_tests
     - scram --version
     - scram input\TwoTrain\two_train.xml
+    - cd build
+    - ctest --verbose
+    - cd ..
 
 on_failure:
     - type build\_CPack_Packages\win64\NSIS\NSISOutput.log
