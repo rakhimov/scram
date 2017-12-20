@@ -17,7 +17,7 @@ fi
 
 pip install --user -U pip wheel
 
-if [[ ! -z "${LINT}" ]]; then
+if [[ "${CONFIG}" == "Lint" ]]; then
   git clone https://github.com/Sarcasm/run-clang-format
 
   # Install newer doxygen due to bugs in 1.8.6 with C++11 code.
@@ -40,7 +40,7 @@ sudo apt-get install cmake3
 sudo apt-get install \
   libboost-{program-options,math,random,filesystem,system,date-time}1.58-dev
 
-[[ -z "${RELEASE}" && "$CXX" = "g++" ]] || exit 0
+[[ "${CONFIG}" == "Coverage" ]] || exit 0
 
 sudo apt-get install -qq ggcov
 sudo apt-get install -qq valgrind

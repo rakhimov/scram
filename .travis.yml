@@ -12,9 +12,7 @@ cache:
     directories:
         - $HOME/.cache/pip
 
-os:
-    - linux
-    - osx
+os: linux
 
 compiler:
     - gcc
@@ -26,8 +24,8 @@ env:
         - QT_QPA_FONTDIR=/usr/share/fonts
         - QT_QPA_PLATFORM=offscreen
     matrix:
-        - RELEASE=
-        - RELEASE=true
+        - CONFIG=Debug
+        - CONFIG=Release
 
 jobs:
     include:
@@ -36,22 +34,25 @@ jobs:
           sudo: false
           compiler: clang
           script: .travis/lint.sh
-          env: LINT=true  # Travis does not provide ENV var for stage names :(
+          env: CONFIG=Lint  # Travis does not provide ENV var for stage names :(
           addons:
               apt:
                   packages:
                       - qttools5-dev-tools
+        - stage: test
+          os: osx  # OS X builds are slow and limited.
+          compiler: clang
+          env: CONFIG=Release
+        - stage: test
+          compiler: gcc
+          env: CONFIG=Coverage
+    exclude:
+        - compiler: gcc
+          env: CONFIG=Debug
 
 stages:
     - lint
     - test
-
-matrix:
-    exclude:  # OS X builds are slow and limited.
-        - os: osx
-          compiler: gcc
-        - os: osx
-          env: RELEASE=
 
 addons:
     apt:

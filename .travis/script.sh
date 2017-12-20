@@ -10,12 +10,10 @@ ccache -s
 
 cd build
 install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install"
-if [[ -n "${RELEASE}" ]]; then
-  ${install_cmd} -DCMAKE_BUILD_TYPE=Release
-elif [[ "$CXX" = "g++" ]]; then
+if [[ "${CONFIG}" == "Coverage" ]]; then
   ${install_cmd} -Wdev -DCMAKE_BUILD_TYPE=Debug -DWITH_PROFILE=ON -DWITH_COVERAGE=ON
 else
-  ${install_cmd} -DCMAKE_BUILD_TYPE=Debug
+  ${install_cmd} -DCMAKE_BUILD_TYPE="${CONFIG}"
 fi
 
 time -p make install -j 2
@@ -25,9 +23,7 @@ ccache -s
 
 ./.travis/run_tests.sh
 
-[[ -z "${RELEASE}" ]] || exit 0
-
-[[ "$CXX" = "g++" ]] || exit 0
+[[ "${CONFIG}" == "Coverage" ]] || exit 0
 # Submit coverage of C++ and Python.
 COV_DIR="build/src/CMakeFiles/scram.dir/"
 CLI_COV_DIR="build/src/CMakeFiles/scram-cli.dir/"

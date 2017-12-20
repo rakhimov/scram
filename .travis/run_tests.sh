@@ -22,7 +22,7 @@ scram-gui input/TwoTrain/two_train.xml&
 sleep 5
 kill $!
 
-if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
+if [[ "${CONFIG}" == "Coverage" ]]; then
   nosetests --with-coverage -w scripts test/
 fi
 
