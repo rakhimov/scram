@@ -36,15 +36,7 @@ pip install --user nose  # Testing main() requires nosetests!
 # CMake 3.5
 sudo apt-get install cmake3
 
-# Boost
-sudo apt-get install \
-  libboost-{program-options,math,random,filesystem,system,date-time}1.58-dev
-
-[[ "${CONFIG}" == "Coverage" ]] || exit 0
-
-sudo apt-get install -qq ggcov
-sudo apt-get install -qq valgrind
-sudo apt-get install -qq lcov
-
-pip install --user -r requirements-dev.txt
-pip install --user -r requirements-tests.txt
+if [[ "${CONFIG}" == "Coverage" ]]; then
+  pip install --user -r requirements-dev.txt
+  pip install --user -r requirements-tests.txt
+fi

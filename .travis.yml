@@ -27,6 +27,30 @@ env:
         - CONFIG=Debug
         - CONFIG=Release
 
+addons:
+    apt:
+        packages:
+            - gcc-4.9
+            - g++-4.9
+            - libboost-program-options1.58-dev
+            - libboost-math1.58-dev
+            - libboost-random1.58-dev
+            - libboost-filesystem1.58-dev
+            - libboost-date-time1.58-dev
+            - libxml2-dev
+            - libgoogle-perftools-dev
+            - qtbase5-dev
+            - qtbase5-dev-tools
+            - qttools5-dev
+            - qttools5-dev-tools
+            - libqt5svg5-dev
+            - libqt5opengl5-dev
+            - fontconfig
+            - lcov
+        sources: &Sources
+            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:kzemek/boost"
+
 jobs:
     include:
         - stage: lint
@@ -46,6 +70,22 @@ jobs:
         - stage: test
           compiler: gcc
           env: CONFIG=Coverage
+        - stage: test
+          compiler: gcc
+          env: CONFIG=Memcheck
+          addons:
+              apt:
+                  packages:
+                      - gcc-4.9
+                      - g++-4.9
+                      - libboost-program-options1.58-dev
+                      - libboost-math1.58-dev
+                      - libboost-random1.58-dev
+                      - libboost-filesystem1.58-dev
+                      - libboost-date-time1.58-dev
+                      - libxml2-dev
+                      - valgrind
+                  sources: *Sources
     exclude:
         - compiler: gcc
           env: CONFIG=Debug
@@ -53,24 +93,6 @@ jobs:
 stages:
     - lint
     - test
-
-addons:
-    apt:
-        packages:
-            - gcc-4.9
-            - g++-4.9
-            - libxml2-dev
-            - libgoogle-perftools-dev
-            - qtbase5-dev
-            - qtbase5-dev-tools
-            - qttools5-dev
-            - qttools5-dev-tools
-            - libqt5svg5-dev
-            - libqt5opengl5-dev
-            - fontconfig
-        sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "ppa:kzemek/boost"
 
 before_install:
     - >
