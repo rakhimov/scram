@@ -8,4 +8,11 @@ endmacro()
 
 enable_testing()
 
-TEST(TestDummy testdummy.cpp)
+set(SCRAM_GUI_TEST_SRC
+  testdummy.cpp
+  )
+
+foreach(testfile ${SCRAM_GUI_TEST_SRC})
+  get_filename_component(testname "${testfile}" NAME_WE)
+  TEST("${testname}" "${testfile}")
+endforeach()
