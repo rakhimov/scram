@@ -10,6 +10,7 @@ enable_testing()
 
 set(SCRAM_GUI_TEST_SRC
   testdummy.cpp
+  testvalidator.cpp
   )
 
 foreach(testfile ${SCRAM_GUI_TEST_SRC})

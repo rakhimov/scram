@@ -40,7 +40,7 @@ const QValidator *Validator::name()
 const QValidator *Validator::percent()
 {
     static const QRegularExpressionValidator percentValidator(
-        QRegularExpression(QStringLiteral(R"([1-9]\d+%?)")));
+        QRegularExpression(QStringLiteral(R"([1-9]\d*%?)")));
     return &percentValidator;
 }
 
