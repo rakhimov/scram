@@ -1,4 +1,4 @@
-sudo: required
+sudo: false
 dist: trusty
 
 branches:
@@ -23,6 +23,7 @@ env:
         - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
         - QT_QPA_FONTDIR=/usr/share/fonts
         - QT_QPA_PLATFORM=offscreen
+        - GCC_VERSION=4.9
     matrix:
         - CONFIG=Debug
         - CONFIG=Release
@@ -54,8 +55,6 @@ addons:
 jobs:
     include:
         - stage: lint
-          dist: trusty
-          sudo: false
           compiler: clang
           script: .travis/lint.sh
           env: CONFIG=Lint  # Travis does not provide ENV var for stage names :(
@@ -106,7 +105,7 @@ install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
 
 before_script:
-    - .travis/before_script.sh
+    - mkdir build install
 
 script:
     - .travis/script.sh

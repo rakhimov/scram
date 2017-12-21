@@ -10,6 +10,10 @@ ccache -s
 
 cd build
 install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install"
+if [[ "${CXX}" == "g++" ]]; then
+  install_cmd="${install_cmd} -DCMAKE_C_COMPILER=gcc-${GCC_VERSION} -DCMAKE_CXX_COMPILER=g++-${GCC_VERSION}"
+fi
+
 if [[ "${CONFIG}" == "Coverage" ]]; then
   ${install_cmd} -Wdev -DCMAKE_BUILD_TYPE=Debug -DWITH_COVERAGE=ON
 elif [[ "${CONFIG}" == "Memcheck" ]]; then
@@ -35,8 +39,10 @@ if [[ "${CONFIG}" == "Coverage" ]]; then
   TRACE_FILE="coverage.info"
   lcov --no-compat-libtool --directory $COV_DIR --directory $CLI_COV_DIR \
     --directory $GUI_COV_DIR \
+    --gcov-tool gcov-${GCC_VERSION} \
     -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q
-  lcov --extract $TRACE_FILE '*/scram/*' -o $TRACE_FILE
+  lcov --extract $TRACE_FILE --gcov-tool gcov-${GCC_VERSION} \
+    '*/scram/*' -o $TRACE_FILE
   codecov > /dev/null
 elif [[ "${CONFIG}" == "Memcheck" ]]; then
   # Check for memory leaks with Valgrind
