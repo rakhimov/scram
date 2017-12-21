@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.5)
-cmake_policy(SET CMP0048 NEW)  # Project version specification.
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
