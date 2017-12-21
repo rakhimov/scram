@@ -33,9 +33,6 @@ fi
 
 pip install --user nose  # Testing main() requires nosetests!
 
-# CMake 3.5
-sudo apt-get install cmake3
-
 if [[ "${CONFIG}" == "Coverage" ]]; then
   pip install --user -r requirements-dev.txt
   pip install --user -r requirements-tests.txt
