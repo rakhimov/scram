@@ -362,16 +362,14 @@ inline QString Gate::type() const
     assert(false);
 }
 
-// clang-format off
 /// Table of proxy elements uniquely wrapping the core model element.
 ///
 /// @tparam T  The proxy type.
 template <class T, class M = typename T::Origin, class P = Proxy<T, M>>
 using ProxyTable = boost::multi_index_container<
-    std::unique_ptr<T>, boost::multi_index::indexed_by<
-           boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
-               P, const M *, &P::data>>>>;
-// clang-format on
+    std::unique_ptr<T>,
+    boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+        boost::multi_index::const_mem_fun<P, const M *, &P::data>>>>;
 
 /// The wrapper around the MEF Model.
 class Model : public Element, public Proxy<Model, mef::Model>
