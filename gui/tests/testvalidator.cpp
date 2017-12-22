@@ -21,6 +21,27 @@
 
 Q_DECLARE_METATYPE(QValidator::State)
 
+namespace QTest {
+
+/// @warning This is a C string API in Qt C++ code!!!
+///          The caller must deallocate the returned string.
+///          This is only specialized for QCOMPARE to print better messages.
+template <>
+char *toString(const QValidator::State &state)
+{
+    switch (state) {
+    case QValidator::Invalid:
+        return qstrdup("Invalid");
+    case QValidator::Intermediate:
+        return qstrdup("Intermediate");
+    case QValidator::Acceptable:
+        return qstrdup("Acceptable");
+    }
+    Q_UNREACHABLE();
+}
+
+} // namespace QTest
+
 class TestValidator : public QObject
 {
     Q_OBJECT
