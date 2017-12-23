@@ -46,7 +46,7 @@
     </message>
     <message>
       <source>State:</source>
-      <translation>Devlet:</translation>
+      <translation>Durumu:</translation>
     </message>
     <message>
       <source>False</source>
@@ -70,7 +70,7 @@
     </message>
     <message>
       <source>Connective:</source>
-      <translation>Bağlandı:</translation>
+      <translation>Bağlaç:</translation>
     </message>
     <message>
       <source>AND</source>
@@ -140,7 +140,7 @@
     <message>
       <source>Exponential</source>
       <comment>probability type defined w/ negative exponential formula</comment>
-      <translation>Üsse ait</translation>
+      <translation>Üstel</translation>
     </message>
     <message>
       <source>NULL</source>
@@ -201,7 +201,7 @@
     </message>
     <message>
       <source>Reports</source>
-      <translation>Rapor et</translation>
+      <translation>Raporlar</translation>
     </message>
     <message>
       <source>About &amp;Qt</source>
@@ -838,7 +838,7 @@
     <message>
       <source>Flavor</source>
       <extracomment>The flavor type of a basic event.</extracomment>
-      <translation>Lezzet</translation>
+      <translation>Tür</translation>
     </message>
     <message>
       <source>Probability</source>
