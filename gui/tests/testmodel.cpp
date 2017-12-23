@@ -30,6 +30,7 @@ class TestModel : public QObject
 
 private slots:
     void testElementLabelChange();
+    void testModelSetName();
 };
 
 void TestModel::testElementLabelChange()
@@ -68,6 +69,43 @@ void TestModel::testElementLabelChange()
     QVERIFY(spy.front().front().toString().isEmpty());
     QVERIFY(event.label().empty());
     QVERIFY(proxy.label().isEmpty());
+}
+
+void TestModel::testModelSetName()
+{
+    mef::Model model;
+    gui::model::Model proxy(&model);
+    QVERIFY(model.HasDefaultName());
+    QVERIFY(model.GetOptionalName().empty());
+    QVERIFY(!model.name().empty());
+
+    const char *name = "model";
+    QSignalSpy spy(&proxy, SIGNAL(modelNameChanged(QString)));
+    QVERIFY(spy.isValid());
+
+    gui::model::Model::SetName setter(name, &proxy);
+    setter.redo();
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(spy.front().size(), 1);
+    TEST_EQ(spy.front().front().toString(), name);
+    TEST_EQ(proxy.id(), name);
+    TEST_EQ(model.name(), name);
+    TEST_EQ(model.GetOptionalName(), name);
+    spy.clear();
+
+    gui::model::Model::SetName(name, &proxy).redo();
+    QVERIFY(spy.empty());
+    TEST_EQ(proxy.id(), name);
+    TEST_EQ(model.name(), name);
+
+    setter.undo();
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(spy.front().size(), 1);
+    QVERIFY(spy.front().front().toString().isEmpty());
+    QVERIFY(model.HasDefaultName());
+    QVERIFY(model.GetOptionalName().empty());
+    QVERIFY(!model.name().empty());
+    QVERIFY(proxy.id() != name);
 }
 
 QTEST_MAIN(TestModel)
