@@ -31,6 +31,7 @@ class TestModel : public QObject
 private slots:
     void testElementLabelChange();
     void testModelSetName();
+    void testAddFaultTree();
 };
 
 void TestModel::testElementLabelChange()
@@ -106,6 +107,38 @@ void TestModel::testModelSetName()
     QVERIFY(model.GetOptionalName().empty());
     QVERIFY(!model.name().empty());
     QVERIFY(proxy.id() != name);
+}
+
+void TestModel::testAddFaultTree()
+{
+    mef::Model model;
+    gui::model::Model proxyModel(&model);
+    auto faultTree = std::make_unique<mef::FaultTree>("FT");
+    QVERIFY(model.fault_trees().empty());
+    QVERIFY(proxyModel.faultTrees().empty());
+
+    QSignalSpy spyAdd(&proxyModel, SIGNAL(added(mef::FaultTree *)));
+    QSignalSpy spyRemove(&proxyModel, SIGNAL(removed(mef::FaultTree *)));
+    QVERIFY(spyAdd.isValid());
+    QVERIFY(spyRemove.isValid());
+
+    auto *address = faultTree.get();
+    gui::model::Model::AddFaultTree adder(std::move(faultTree), &proxyModel);
+    adder.redo();
+    QVERIFY(spyRemove.empty());
+    QCOMPARE(spyAdd.size(), 1);
+    QCOMPARE(spyAdd.front().size(), 1);
+    TEST_EQ(model.fault_trees().size(), 1);
+    QCOMPARE(model.fault_trees().begin()->get(), address);
+    TEST_EQ(proxyModel.faultTrees().size(), 1);
+    spyAdd.clear();
+
+    adder.undo();
+    QVERIFY(spyAdd.empty());
+    QCOMPARE(spyRemove.size(), 1);
+    QCOMPARE(spyRemove.front().size(), 1);
+    QVERIFY(model.fault_trees().empty());
+    QVERIFY(proxyModel.faultTrees().empty());
 }
 
 QTEST_MAIN(TestModel)
