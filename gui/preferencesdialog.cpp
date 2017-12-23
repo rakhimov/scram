@@ -31,7 +31,7 @@ namespace scram {
 namespace gui {
 
 const char *const PreferencesDialog::m_languageToLocale[] = {
-    "en", "ru_RU", "de_DE", "es_ES", "tr_TR", "nl_NL", "id_ID"};
+    "en", "ru_RU", "de_DE", "es_ES", "tr_TR", "nl_NL", "id_ID", "pl_PL"};
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
