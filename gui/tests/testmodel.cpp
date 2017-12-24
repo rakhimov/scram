@@ -33,6 +33,7 @@ private slots:
     void testModelSetName();
     void testAddFaultTree();
     void testRemoveFaultTree();
+    void testAddBasicEvent();
 };
 
 void TestModel::testElementLabelChange()
@@ -171,6 +172,51 @@ void TestModel::testRemoveFaultTree()
     TEST_EQ(model.fault_trees().size(), 1);
     QCOMPARE(model.fault_trees().begin()->get(), address);
     TEST_EQ(proxyModel.faultTrees().size(), 1);
+}
+
+void TestModel::testAddBasicEvent()
+{
+    mef::Model model;
+    model.Add(std::make_unique<mef::FaultTree>("FT"));
+    gui::model::Model proxyModel(&model);
+    auto *faultTree = proxyModel.faultTrees().begin()->get();
+    QVERIFY(model.basic_events().empty());
+    QVERIFY(faultTree->basic_events().empty());
+    QVERIFY(proxyModel.basicEvents().empty());
+
+    auto spyAdd =
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added,
+                                            gui::model::BasicEvent *));
+    auto spyRemove =
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed,
+                                            gui::model::BasicEvent *));
+
+    auto event = std::make_unique<mef::BasicEvent>("pump");
+    auto *address = event.get();
+
+    gui::model::Model::AddEvent<gui::model::BasicEvent> adder(
+        std::move(event), &proxyModel, faultTree);
+    adder.redo();
+    QVERIFY(spyRemove.empty());
+    TEST_EQ(spyAdd.size(), 1);
+    gui::model::BasicEvent *proxyEvent = std::get<0>(spyAdd.front());
+    QCOMPARE(proxyEvent->data(), address);
+
+    TEST_EQ(model.basic_events().size(), 1);
+    TEST_EQ(model.basic_events().begin()->get(), address);
+    TEST_EQ(faultTree->basic_events().size(), /*expected=1, but normalized=*/0);
+    /* TEST_EQ(*faultTree->basic_events().begin(), address); */
+    TEST_EQ(proxyModel.basicEvents().size(), 1);
+    TEST_EQ(proxyModel.basicEvents().begin()->get(), proxyEvent);
+    spyAdd.clear();
+
+    adder.undo();
+    QVERIFY(spyAdd.empty());
+    TEST_EQ(spyRemove.size(), 1);
+    QCOMPARE(std::get<0>(spyRemove.front()), proxyEvent);
+    QVERIFY(model.basic_events().empty());
+    QVERIFY(faultTree->basic_events().empty());
+    QVERIFY(proxyModel.basicEvents().empty());
 }
 
 QTEST_MAIN(TestModel)
