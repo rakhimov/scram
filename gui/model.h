@@ -387,6 +387,10 @@ public:
     {
         return m_model->fault_trees();
     }
+    /// Generic access to event tables.
+    template <class T>
+    ProxyTable<T> &table();
+
     /// @returns The parent gates of an event.
     std::vector<Gate *> parents(mef::Formula::EventArg event) const;
 
@@ -598,9 +602,6 @@ private:
     ///
     /// @todo Remove normalization upon full container support for elements.
     void normalize(mef::Model *model);
-
-    template <class T>
-    ProxyTable<T> &table();
 
     mef::Model *m_model;
     ProxyTable<HouseEvent> m_houseEvents;
