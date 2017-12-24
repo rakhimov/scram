@@ -32,6 +32,7 @@ private slots:
     void testElementLabelChange();
     void testModelSetName();
     void testAddFaultTree();
+    void testRemoveFaultTree();
 };
 
 void TestModel::testElementLabelChange()
@@ -134,6 +135,42 @@ void TestModel::testAddFaultTree()
     QCOMPARE(std::get<0>(spyRemove.front()), address);
     QVERIFY(model.fault_trees().empty());
     QVERIFY(proxyModel.faultTrees().empty());
+}
+
+void TestModel::testRemoveFaultTree()
+{
+    mef::Model model;
+    auto faultTree = std::make_unique<mef::FaultTree>("FT");
+    auto *address = faultTree.get();
+    QVERIFY(model.fault_trees().empty());
+    model.Add(std::move(faultTree));
+    TEST_EQ(model.fault_trees().size(), 1);
+    QCOMPARE(model.fault_trees().begin()->get(), address);
+
+    gui::model::Model proxyModel(&model);
+    TEST_EQ(proxyModel.faultTrees().size(), 1);
+
+    auto spyAdd = ext::make_spy(
+        &proxyModel, OVERLOAD(gui::model::Model, added, mef::FaultTree *));
+    auto spyRemove = ext::make_spy(
+        &proxyModel, OVERLOAD(gui::model::Model, removed, mef::FaultTree *));
+
+    gui::model::Model::RemoveFaultTree remover(address, &proxyModel);
+    remover.redo();
+    QVERIFY(spyAdd.empty());
+    TEST_EQ(spyRemove.size(), 1);
+    QCOMPARE(std::get<0>(spyRemove.front()), address);
+    QVERIFY(model.fault_trees().empty());
+    QVERIFY(proxyModel.faultTrees().empty());
+    spyRemove.clear();
+
+    remover.undo();
+    QVERIFY(spyRemove.empty());
+    TEST_EQ(spyAdd.size(), 1);
+    QCOMPARE(std::get<0>(spyAdd.front()), address);
+    TEST_EQ(model.fault_trees().size(), 1);
+    QCOMPARE(model.fault_trees().begin()->get(), address);
+    TEST_EQ(proxyModel.faultTrees().size(), 1);
 }
 
 QTEST_MAIN(TestModel)
