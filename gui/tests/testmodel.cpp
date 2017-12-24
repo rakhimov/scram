@@ -34,6 +34,7 @@ private slots:
     void testAddFaultTree();
     void testRemoveFaultTree();
     void testAddBasicEvent();
+    void testRemoveBasicEvent();
 };
 
 void TestModel::testElementLabelChange()
@@ -217,6 +218,52 @@ void TestModel::testAddBasicEvent()
     QVERIFY(model.basic_events().empty());
     QVERIFY(faultTree->basic_events().empty());
     QVERIFY(proxyModel.basicEvents().empty());
+}
+
+void TestModel::testRemoveBasicEvent()
+{
+    mef::Model model;
+    model.Add(std::make_unique<mef::FaultTree>("FT"));
+    auto *faultTree = model.fault_trees().begin()->get();
+    auto event = std::make_unique<mef::BasicEvent>("pump");
+    auto *address = event.get();
+    model.Add(std::move(event));
+    faultTree->Add(address);
+    gui::model::Model proxyModel(&model);
+
+    TEST_EQ(model.basic_events().size(), 1);
+    TEST_EQ(faultTree->basic_events().size(), /*expected=1, but normalized=*/0);
+    TEST_EQ(proxyModel.basicEvents().size(), 1);
+    auto *proxyEvent = proxyModel.basicEvents().begin()->get();
+    QCOMPARE(proxyEvent->data(), address);
+
+    auto spyAdd =
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added,
+                                            gui::model::BasicEvent *));
+    auto spyRemove =
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed,
+                                            gui::model::BasicEvent *));
+
+    gui::model::Model::RemoveEvent<gui::model::BasicEvent> remover(
+        proxyEvent, &proxyModel, faultTree);
+    remover.redo();
+    QVERIFY(spyAdd.empty());
+    TEST_EQ(spyRemove.size(), 1);
+    QCOMPARE(std::get<0>(spyRemove.front()), proxyEvent);
+    QVERIFY(model.basic_events().empty());
+    QVERIFY(faultTree->basic_events().empty());
+    QVERIFY(proxyModel.basicEvents().empty());
+    spyRemove.clear();
+
+    remover.undo();
+    QVERIFY(spyRemove.empty());
+    TEST_EQ(spyAdd.size(), 1);
+    QCOMPARE(std::get<0>(spyAdd.front()), proxyEvent);
+    TEST_EQ(model.basic_events().size(), 1);
+    QCOMPARE(model.basic_events().begin()->get(), address);
+    TEST_EQ(faultTree->basic_events().size(), /*expected=1, but normalized=*/0);
+    TEST_EQ(proxyModel.basicEvents().size(), 1);
+    QCOMPARE(proxyModel.basicEvents().begin()->get(), proxyEvent);
 }
 
 QTEST_MAIN(TestModel)
