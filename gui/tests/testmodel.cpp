@@ -36,12 +36,18 @@ private slots:
     void testAddBasicEvent() { testAddEvent<gui::model::BasicEvent>(); }
     void testAddHouseEvent() { testAddEvent<gui::model::HouseEvent>(); }
     void testAddGate() { testAddEvent<gui::model::Gate>(); }
-    void testRemoveBasicEvent();
+    void testRemoveBasicEvent() { testRemoveEvent<gui::model::BasicEvent>(); }
+    void testRemoveHouseEvent() { testRemoveEvent<gui::model::HouseEvent>(); }
+    void testRemoveGate() { testRemoveEvent<gui::model::Gate>(); }
 
 private:
     /// @tparam T  Proxy type.
     template <class T>
     void testAddEvent();
+
+    /// @tparam T  Proxy type.
+    template <class T>
+    void testRemoveEvent();
 };
 
 void TestModel::testElementLabelChange()
@@ -289,50 +295,61 @@ void TestModel::testAddEvent()
     QVERIFY(proxyModel.table<T>().empty());
 }
 
-void TestModel::testRemoveBasicEvent()
+template <class T>
+void TestModel::testRemoveEvent()
 {
+    using E = typename T::Origin;
+
     mef::Model model;
     model.Add(std::make_unique<mef::FaultTree>("FT"));
     auto *faultTree = model.fault_trees().begin()->get();
-    auto event = std::make_unique<mef::BasicEvent>("pump");
+    auto event = std::make_unique<E>("pump");
     auto *address = event.get();
     model.Add(std::move(event));
     faultTree->Add(address);
     gui::model::Model proxyModel(&model);
 
-    TEST_EQ(model.basic_events().size(), 1);
-    TEST_EQ(faultTree->basic_events().size(), /*expected=1, but normalized=*/0);
-    TEST_EQ(proxyModel.basicEvents().size(), 1);
-    auto *proxyEvent = proxyModel.basicEvents().begin()->get();
+    TEST_EQ(table<E>(model).size(), 1);
+    if (IsNormalized<T>::value) {
+        TEST_EQ(table<E>(*faultTree).size(), 0);
+    } else {
+        TEST_EQ(table<E>(*faultTree).size(), 1);
+        TEST_EQ(*table<E>(*faultTree).begin(), address);
+    }
+    TEST_EQ(proxyModel.table<T>().size(), 1);
+    auto *proxyEvent = proxyModel.table<T>().begin()->get();
     QCOMPARE(proxyEvent->data(), address);
 
     auto spyAdd =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added,
-                                            gui::model::BasicEvent *));
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added, T *));
     auto spyRemove =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed,
-                                            gui::model::BasicEvent *));
+        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed, T *));
 
-    gui::model::Model::RemoveEvent<gui::model::BasicEvent> remover(
-        proxyEvent, &proxyModel, faultTree);
+    gui::model::Model::RemoveEvent<T> remover(proxyEvent, &proxyModel,
+                                              faultTree);
     remover.redo();
     QVERIFY(spyAdd.empty());
     TEST_EQ(spyRemove.size(), 1);
     QCOMPARE(std::get<0>(spyRemove.front()), proxyEvent);
-    QVERIFY(model.basic_events().empty());
-    QVERIFY(faultTree->basic_events().empty());
-    QVERIFY(proxyModel.basicEvents().empty());
+    QVERIFY(table<E>(model).empty());
+    QVERIFY(table<E>(*faultTree).empty());
+    QVERIFY(proxyModel.table<T>().empty());
     spyRemove.clear();
 
     remover.undo();
     QVERIFY(spyRemove.empty());
     TEST_EQ(spyAdd.size(), 1);
     QCOMPARE(std::get<0>(spyAdd.front()), proxyEvent);
-    TEST_EQ(model.basic_events().size(), 1);
-    QCOMPARE(model.basic_events().begin()->get(), address);
-    TEST_EQ(faultTree->basic_events().size(), /*expected=1, but normalized=*/0);
-    TEST_EQ(proxyModel.basicEvents().size(), 1);
-    QCOMPARE(proxyModel.basicEvents().begin()->get(), proxyEvent);
+    TEST_EQ(table<E>(model).size(), 1);
+    TEST_EQ(table<E>(model).begin()->get(), address);
+    if (IsNormalized<T>::value) {
+        TEST_EQ(table<E>(*faultTree).size(), 0);
+    } else {
+        TEST_EQ(table<E>(*faultTree).size(), 1);
+        TEST_EQ(*table<E>(*faultTree).begin(), address);
+    }
+    TEST_EQ(proxyModel.table<T>().size(), 1);
+    QCOMPARE(proxyModel.table<T>().begin()->get(), proxyEvent);
 }
 
 QTEST_MAIN(TestModel)
