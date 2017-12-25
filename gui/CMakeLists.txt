@@ -50,6 +50,7 @@ endif()
 add_subdirectory(translations)
 
 set(SCRAM_GUI_SRC
+  language.cpp
   validator.cpp
   model.cpp
   modeltree.cpp

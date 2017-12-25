@@ -37,9 +37,9 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
 
+#include "language.h"
 #include "mainwindow.h"
 
-#include "src/env.h"
 #include "src/error.h"
 #include "src/version.h"
 
@@ -233,8 +233,7 @@ void installTranslators(GuardedApplication *app)
         return false;
     };
 
-    QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
-                                                 + "/share/scram/translations");
+    auto scramTsPath = QString::fromStdString(scram::gui::translationsPath());
     if (!loadTs("scramgui", scramTsPath))
         return; // The language is not available or installed.
 
