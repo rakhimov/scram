@@ -19,12 +19,16 @@
 #define LANGUAGE_H
 
 #include <string>
+#include <vector>
 
 namespace scram {
 namespace gui {
 
 /// @returns The path to SCRAM GUI translations directory.
 const std::string &translationsPath();
+
+/// @returns Available translations represented with locale with underscores.
+std::vector<std::string> translations();
 
 } // namespace gui
 } // namespace scram

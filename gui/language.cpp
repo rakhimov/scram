@@ -17,6 +17,10 @@
 
 #include "language.h"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/utility/string_ref.hpp>
+
 #include "src/env.h"
 
 namespace scram {
@@ -27,6 +31,35 @@ const std::string &translationsPath()
     static const std::string tsPath(scram::Env::install_dir()
                                     + "/share/scram/translations");
     return tsPath;
+}
+
+std::vector<std::string> translations()
+{
+    namespace fs = boost::filesystem;
+
+    std::vector<std::string> result;
+    for (fs::directory_iterator it(translationsPath()), it_end; it != it_end;
+         ++it) {
+        if (!fs::is_regular_file(it->status()))
+            continue;
+
+        std::string filename = it->path().filename().string();
+
+        auto dot_pos = filename.find_last_of('.');
+        if (dot_pos == std::string::npos
+            || boost::string_ref(filename.data() + dot_pos + 1) != "qm")
+            continue;
+
+        auto domain_pos = filename.find_first_of('_');
+        if (domain_pos == std::string::npos
+            || boost::string_ref(filename.data(), domain_pos) != "scramgui")
+            continue;
+
+        filename.erase(dot_pos);
+        filename.erase(0, domain_pos + 1);
+        result.push_back(std::move(filename));
+    }
+    return result;
 }
 
 } // namespace gui
