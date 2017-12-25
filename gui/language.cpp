@@ -21,7 +21,11 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/utility/string_ref.hpp>
 
+#include <QLocale>
+
 #include "src/env.h"
+
+#include "guiassert.h"
 
 namespace scram {
 namespace gui {
@@ -60,6 +64,17 @@ std::vector<std::string> translations()
         result.push_back(std::move(filename));
     }
     return result;
+}
+
+QString nativeLanguageName(const std::string &locale)
+{
+    QLocale nativeLocale(QString::fromStdString(locale));
+    GUI_ASSERT(nativeLocale != QLocale::c(), {});
+    QString language = nativeLocale.nativeLanguageName();
+    GUI_ASSERT(!language.isEmpty(), {});
+    if (language[0].isLower())
+        language[0] = language[0].toUpper();
+    return language;
 }
 
 } // namespace gui

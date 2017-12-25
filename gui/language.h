@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include <QString>
+
 namespace scram {
 namespace gui {
 
@@ -29,6 +31,14 @@ const std::string &translationsPath();
 
 /// @returns Available translations represented with locale with underscores.
 std::vector<std::string> translations();
+
+/// @param[in] locale  The locale code with underscores.
+///
+/// @returns The native language name ready to be used in UI.
+///
+/// @pre The locale string is valid as required by QLocale.
+/// @pre The locale language is a valid human language (not "C").
+QString nativeLanguageName(const std::string &locale);
 
 } // namespace gui
 } // namespace scram
