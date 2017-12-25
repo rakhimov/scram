@@ -22,48 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QComboBox" name="languageBox">
-     <item>
-      <property name="text">
-       <string notr="true">English</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Русский</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Deutsch</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Español</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Türkçe</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Nederlands</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Bahasa Indonesia</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Polski</string>
-      </property>
-     </item>
-    </widget>
+    <widget class="QComboBox" name="languageBox"/>
    </item>
    <item row="1" column="0">
     <widget class="QCheckBox" name="checkUndoLimit">

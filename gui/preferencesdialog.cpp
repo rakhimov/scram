@@ -21,45 +21,68 @@
 #include <string>
 
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include <QStringListModel>
 
 #include <boost/range/algorithm.hpp>
 
 #include "guiassert.h"
+#include "language.h"
 #include "overload.h"
 
 namespace scram {
 namespace gui {
-
-const char *const PreferencesDialog::m_languageToLocale[] = {
-    "en", "ru_RU", "de_DE", "es_ES", "tr_TR", "nl_NL", "id_ID", "pl_PL"};
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
                                      QTimer *autoSaveTimer, QWidget *parent)
     : QDialog(parent), ui(new Ui::PreferencesDialog)
 {
+    // The available locales excluding the default English.
+    static const std::vector<std::string> locales = gui::translations();
+    // Native language representations including default English as the last.
+    static const QStringList nativeLanguages = [] {
+        QStringList result;
+        result.reserve(locales.size());
+        for (const std::string &locale : locales)
+            result.push_back(gui::nativeLanguageName(locale));
+
+        result.push_back(QStringLiteral("English"));
+        return result;
+    }();
+
     ui->setupUi(this);
 
-    GUI_ASSERT(std::distance(std::begin(m_languageToLocale),
-                             std::end(m_languageToLocale))
-                   == ui->languageBox->count(), );
-    auto it = boost::find(m_languageToLocale,
-                          preferences->value(QStringLiteral("language"))
-                              .toString()
-                              .toStdString());
-    auto it_end = std::end(m_languageToLocale);
-    if (it != it_end)
-        ui->languageBox->setCurrentIndex(std::distance(m_languageToLocale, it));
-    connect(ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int),
-            preferences, [this, preferences](int index) {
-                QMessageBox::information(
-                    this, tr("Restart Required"),
-                    tr("The language change will take effect after an "
-                       "application restart."));
-                preferences->setValue(
-                    QStringLiteral("language"),
-                    QString::fromLatin1(m_languageToLocale[index]));
-            });
+    auto *listModel = new QStringListModel(nativeLanguages, this);
+    auto *proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(listModel);
+    proxyModel->sort(0);
+    ui->languageBox->setModel(proxyModel);
+    int index = [&preferences]() -> int {
+        QString language =
+            preferences->value(QStringLiteral("language")).toString();
+        if (language == QStringLiteral("en")) // Assume the common case is
+            return locales.size();            // the default language.
+
+        auto it = boost::find(locales, language.toStdString());
+        return std::distance(locales.begin(), it); // The default if it == end.
+    }();
+    ui->languageBox->setCurrentIndex(
+        proxyModel->mapFromSource(listModel->index(index, 0)).row());
+    connect(
+        ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+        preferences, [this, preferences, proxyModel](int proxyIndex) {
+            QMessageBox::information(
+                this, tr("Restart Required"),
+                tr("The language change will take effect after an "
+                   "application restart."));
+            int index =
+                proxyModel->mapToSource(proxyModel->index(proxyIndex, 0)).row();
+            QString locale = index == locales.size()
+                                 ? QStringLiteral("en")
+                                 : QString::fromStdString(locales[index]);
+            preferences->setValue(QStringLiteral("language"), locale);
+        });
 
     if (undoStack->undoLimit()) {
         ui->checkUndoLimit->setChecked(true);

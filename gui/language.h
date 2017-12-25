@@ -30,6 +30,8 @@ namespace gui {
 const std::string &translationsPath();
 
 /// @returns Available translations represented with locale with underscores.
+///
+/// @post The default English is not expected to be in translations.
 std::vector<std::string> translations();
 
 /// @param[in] locale  The locale code with underscores.

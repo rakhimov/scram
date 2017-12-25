@@ -61,7 +61,8 @@ std::vector<std::string> translations()
 
         filename.erase(dot_pos);
         filename.erase(0, domain_pos + 1);
-        result.push_back(std::move(filename));
+        if (filename != "en")
+            result.push_back(std::move(filename));
     }
     return result;
 }
