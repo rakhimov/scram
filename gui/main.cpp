@@ -36,7 +36,6 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/algorithm.hpp>
 
 #include "mainwindow.h"
 
@@ -206,23 +205,6 @@ void installCrashHandlers() noexcept
     std::set_terminate(&terminateHandler);
 }
 
-/// @returns The UI language for the translator setup.
-QString getUiLanguage()
-{
-    /// @todo Discover available translations programmatically.
-    static const char *const availableLanguages[] = {
-        "en", "ru_RU", "de_DE", "es_ES", "tr_TR", "nl_NL", "id_ID", "pl_PL"};
-    QSettings preferences;
-    QString language = preferences.value(QStringLiteral("language")).toString();
-    if (!language.isEmpty())
-        return language;
-    QString system = QLocale::system().name();
-    auto it = boost::find(availableLanguages, system.toStdString());
-    if (it != std::end(availableLanguages))
-        return system;
-    return QStringLiteral("en");
-}
-
 /// Installs translators to the main application.
 ///
 /// @param[in,out] app  The application to register translators.
@@ -230,28 +212,35 @@ QString getUiLanguage()
 /// @pre No application window has been created.
 void installTranslators(GuardedApplication *app)
 {
-    QString language = getUiLanguage();
-    if (language == QStringLiteral("en"))
+    QString language = QSettings().value(QStringLiteral("language")).toString();
+    if (language.isEmpty())
+        language = QLocale::system().name();
+
+    if (language.startsWith(QStringLiteral("en")))
         return; // The default language.
 
-    QString qtTsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-    QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
-                                                 + "/share/scram/translations");
-    std::pair<const char *, QString> domains[] = {
-        {"qtbase", qtTsPath}, {"qt", qtTsPath}, {"scramgui", scramTsPath}};
-
-    for (const auto &domain : domains) {
+    auto loadTs = [&app, &language](const char *domain, const QString &tsPath) {
         auto *translator = new QTranslator(app);
         if (translator->load(QStringLiteral("%1_%2").arg(
-                                 QString::fromLatin1(domain.first), language),
-                             domain.second)) {
+                                 QString::fromLatin1(domain), language),
+                             tsPath)) {
             app->installTranslator(translator);
-        } else {
-            delete translator;
-            qCritical("Missing translations: %s_%s", domain.first,
-                      language.toStdString().data());
+            return true;
         }
-    }
+        delete translator;
+        qCritical("Missing translations: %s_%s", domain,
+                  language.toStdString().data());
+        return false;
+    };
+
+    QString scramTsPath = QString::fromStdString(scram::Env::install_dir()
+                                                 + "/share/scram/translations");
+    if (!loadTs("scramgui", scramTsPath))
+        return; // The language is not available or installed.
+
+    QString qtTsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    loadTs("qtbase", qtTsPath);
+    loadTs("qt", qtTsPath);
 }
 
 } // namespace
