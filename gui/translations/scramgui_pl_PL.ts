@@ -717,7 +717,7 @@
     </message>
     <message>
       <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
-      <translation type="unfinished">&lt;h1&gt;SCRAM %1&lt;/h1&gt;Interfejs graficzny dla SCRAM,&lt;br/&gt;wielofunkcyjne narzędzie do analizy ryzyka.&lt;br/&gt;&lt;br/&gt;Licencji: GPLv3+&lt;br/&gt;Strona główna: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Wsparcie techniczne: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;śledzenie błędów: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
+      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Interfejs graficzny dla SCRAM,&lt;br/&gt;wielofunkcyjne narzędzie do analizy ryzyka.&lt;br/&gt;&lt;br/&gt;Licencji: GPLv3+&lt;br/&gt;Strona główna: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Wsparcie techniczne: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;śledzenie błędów: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
     </message>
     <message>
       <source>Configuration file error</source>
