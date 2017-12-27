@@ -39,6 +39,8 @@
 #include "src/ext/multi_index.h"
 #include "src/model.h"
 
+#include "command.h"
+
 namespace scram {
 namespace gui {
 namespace model {
@@ -78,13 +80,12 @@ public:
     /// @returns The additional description for the element.
     QString label() const { return QString::fromStdString(m_data->label()); }
 
-    class SetLabel : public QUndoCommand
+    class SetLabel : public Involution
     {
     public:
         SetLabel(Element *element, QString label);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         QString m_label;
@@ -92,19 +93,18 @@ public:
     };
 
     template <class T>
-    class SetId : public QUndoCommand
+    class SetId : public Involution
     {
     public:
         SetId(T *event, QString name, mef::Model *model,
               mef::FaultTree *faultTree = nullptr)
-            : QUndoCommand(QObject::tr("Rename event '%1' to '%2'")
-                               .arg(event->id(), name)),
+            : Involution(QObject::tr("Rename event '%1' to '%2'")
+                             .arg(event->id(), name)),
               m_name(std::move(name)), m_event(event), m_model(model),
               m_faultTree(faultTree)
         {
         }
 
-        void undo() override { redo(); }
         void redo() override
         {
             QString cur_name = m_event->id();
@@ -206,7 +206,7 @@ public:
     /// @note Currently, the expression change
     ///       is detected with address comparison,
     ///       which may fail if the current expression has been changed.
-    class SetExpression : public QUndoCommand
+    class SetExpression : public Involution
     {
     public:
         /// @param[in] basicEvent  The basic event to receive an expression.
@@ -215,7 +215,6 @@ public:
         SetExpression(BasicEvent *basicEvent, mef::Expression *expression);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         mef::Expression *m_expression;
@@ -223,13 +222,12 @@ public:
     };
 
     /// Sets the flavor of the basic event.
-    class SetFlavor : public QUndoCommand
+    class SetFlavor : public Involution
     {
     public:
         SetFlavor(BasicEvent *basicEvent, Flavor flavor);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         Flavor m_flavor;
@@ -265,13 +263,12 @@ public:
     }
 
     /// Flips the house event state.
-    class SetState : public QUndoCommand
+    class SetState : public Involution
     {
     public:
         SetState(HouseEvent *houseEvent, bool state);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         bool m_state;
@@ -317,13 +314,12 @@ public:
     }
 
     /// Formula modification commands.
-    class SetFormula : public QUndoCommand
+    class SetFormula : public Involution
     {
     public:
         SetFormula(Gate *gate, mef::FormulaPtr formula);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         mef::FormulaPtr m_formula;
@@ -396,13 +392,12 @@ public:
 
     /// Model manipulation commands.
     /// @{
-    class SetName : public QUndoCommand
+    class SetName : public Involution
     {
     public:
         SetName(QString name, Model *model);
 
         void redo() override;
-        void undo() override { redo(); }
 
     private:
         Model *m_model;
