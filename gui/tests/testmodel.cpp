@@ -39,6 +39,7 @@ private slots:
     void testRemoveBasicEvent() { testRemoveEvent<gui::model::BasicEvent>(); }
     void testRemoveHouseEvent() { testRemoveEvent<gui::model::HouseEvent>(); }
     void testRemoveGate() { testRemoveEvent<gui::model::Gate>(); }
+    void testHouseEventState();
 
 private:
     /// @tparam T  Proxy type.
@@ -350,6 +351,32 @@ void TestModel::testRemoveEvent()
     }
     TEST_EQ(proxyModel.table<T>().size(), 1);
     QCOMPARE(proxyModel.table<T>().begin()->get(), proxyEvent);
+}
+
+void TestModel::testHouseEventState()
+{
+    mef::HouseEvent event("Flood");
+    gui::model::HouseEvent proxy(&event);
+    QCOMPARE(event.state(), false);
+    QCOMPARE(proxy.state(), false);
+    TEST_EQ(proxy.state<QString>(), "False");
+
+    auto spy = ext::make_spy(&proxy, &gui::model::HouseEvent::stateChanged);
+    gui::model::HouseEvent::SetState setter(&proxy, true);
+    setter.redo();
+    TEST_EQ(spy.size(), 1);
+    QCOMPARE(std::get<0>(spy.front()), true);
+    QCOMPARE(proxy.state(), true);
+    QCOMPARE(event.state(), true);
+    TEST_EQ(proxy.state<QString>(), "True");
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    QCOMPARE(std::get<0>(spy.front()), false);
+    QCOMPARE(event.state(), false);
+    QCOMPARE(proxy.state(), false);
+    TEST_EQ(proxy.state<QString>(), "False");
 }
 
 QTEST_MAIN(TestModel)
