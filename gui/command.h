@@ -32,6 +32,15 @@
 ///    to hold only single snapshot data (no duplication of the state).
 ///    That is, the redo stage saves the past (by overwriting the future),
 ///    and the undo stage saves the future by overwriting the saved past.
+/// 5. Objects (undo-redo arguments) must be alive and have stable addresses for
+///    at least as long as there's a referencing undo-redo command in the stack.
+///    Constructive/destructive commands extend
+///    the life-time of an object for this reason.
+///    That is, destructive commands do not destroy/deallocate at redo
+///    or re-construct/allocate at undo (vice-versa for the constructive).
+///    The object is destroyed/deallocated
+///    after its corresponding constructive/destructive commands are destroyed
+///    (e.g., by being popped/removed from the undo stack).
 
 #ifndef COMMAND_H
 #define COMMAND_H
