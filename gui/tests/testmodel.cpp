@@ -40,6 +40,9 @@ private slots:
     void testRemoveHouseEvent() { testRemoveEvent<gui::model::HouseEvent>(); }
     void testRemoveGate() { testRemoveEvent<gui::model::Gate>(); }
     void testHouseEventState();
+    void testBasicEventFlavorToString();
+    void testBasicEventSetFlavor();
+    void testBasicEventConstructWithFlavor();
 
 private:
     /// @tparam T  Proxy type.
@@ -377,6 +380,58 @@ void TestModel::testHouseEventState()
     QCOMPARE(event.state(), false);
     QCOMPARE(proxy.state(), false);
     TEST_EQ(proxy.state<QString>(), "False");
+}
+
+void TestModel::testBasicEventFlavorToString()
+{
+    using namespace gui::model;
+    TEST_EQ(BasicEvent::flavorToString(BasicEvent::Basic), "Basic");
+    TEST_EQ(BasicEvent::flavorToString(BasicEvent::Undeveloped), "Undeveloped");
+    TEST_EQ(BasicEvent::flavorToString(BasicEvent::Conditional), "Conditional");
+}
+
+void TestModel::testBasicEventSetFlavor()
+{
+    mef::BasicEvent event("pump");
+    gui::model::BasicEvent proxy(&event);
+    QVERIFY(event.attributes().empty());
+    QCOMPARE(proxy.flavor(), gui::model::BasicEvent::Basic);
+
+    auto spy = ext::make_spy(&proxy, &gui::model::BasicEvent::flavorChanged);
+    auto value = gui::model::BasicEvent::Undeveloped;
+    gui::model::BasicEvent::SetFlavor setter(&proxy, value);
+    setter.redo();
+    TEST_EQ(spy.size(), 1);
+    QCOMPARE(std::get<0>(spy.front()), value);
+    QCOMPARE(proxy.flavor(), value);
+    QVERIFY(event.HasAttribute("flavor"));
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    QCOMPARE(std::get<0>(spy.front()), gui::model::BasicEvent::Basic);
+    QVERIFY(event.attributes().empty());
+    QCOMPARE(proxy.flavor(), gui::model::BasicEvent::Basic);
+}
+
+void TestModel::testBasicEventConstructWithFlavor()
+{
+    mef::BasicEvent event("pump");
+    {
+        QVERIFY(event.attributes().empty());
+        QCOMPARE(gui::model::BasicEvent(&event).flavor(),
+                 gui::model::BasicEvent::Basic);
+    }
+    {
+        event.SetAttribute({"flavor", "undeveloped"});
+        QCOMPARE(gui::model::BasicEvent(&event).flavor(),
+                 gui::model::BasicEvent::Undeveloped);
+    }
+    {
+        event.SetAttribute({"flavor", "conditional"});
+        QCOMPARE(gui::model::BasicEvent(&event).flavor(),
+                 gui::model::BasicEvent::Conditional);
+    }
 }
 
 QTEST_MAIN(TestModel)
