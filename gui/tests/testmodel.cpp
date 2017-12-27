@@ -19,6 +19,8 @@
 
 #include <QtTest>
 
+#include "src/expression/constant.h"
+
 #include "gui/overload.h"
 #include "help.h"
 
@@ -43,6 +45,7 @@ private slots:
     void testBasicEventFlavorToString();
     void testBasicEventSetFlavor();
     void testBasicEventConstructWithFlavor();
+    void testBasicEventSetExpression();
 
 private:
     /// @tparam T  Proxy type.
@@ -432,6 +435,38 @@ void TestModel::testBasicEventConstructWithFlavor()
         QCOMPARE(gui::model::BasicEvent(&event).flavor(),
                  gui::model::BasicEvent::Conditional);
     }
+}
+
+void TestModel::testBasicEventSetExpression()
+{
+    mef::BasicEvent event("pump");
+    gui::model::BasicEvent proxy(&event);
+    QVERIFY(!event.HasExpression());
+    QVERIFY(!proxy.expression());
+    QCOMPARE(proxy.probability<QVariant>(), QVariant());
+
+    double value = 0.1;
+    mef::ConstantExpression prob(value);
+    auto spy =
+        ext::make_spy(&proxy, &gui::model::BasicEvent::expressionChanged);
+    gui::model::BasicEvent::SetExpression setter(&proxy, &prob);
+    setter.redo();
+    QCOMPARE(prob.value(), value);
+
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), &prob);
+    TEST_EQ(&event.expression(), &prob);
+    QCOMPARE(event.p(), value);
+    TEST_EQ(proxy.expression(), &prob);
+    QCOMPARE(proxy.probability(), value);
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), nullptr);
+    QVERIFY(!event.HasExpression());
+    QVERIFY(!proxy.expression());
+    QCOMPARE(proxy.probability<QVariant>(), QVariant());
 }
 
 QTEST_MAIN(TestModel)
