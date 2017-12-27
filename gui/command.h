@@ -36,6 +36,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <type_traits>
+
 #include <QUndoCommand>
 
 namespace scram {
@@ -53,6 +55,22 @@ public:
     /// The redo is always called first;
     /// therefore, undo is implemented in terms of redo.
     void undo() final { return redo(); }
+};
+
+/// A command that is an inverse of another command.
+///
+/// @tparam T  The undo-redo command type.
+template <class T>
+class Inverse : public T
+{
+    static_assert(std::is_base_of<QUndoCommand, T>::value, "");
+
+public:
+    void redo() final { T::undo(); }
+    void undo() final { T::redo(); }
+
+protected:
+    using T::T;
 };
 
 } // namespace gui

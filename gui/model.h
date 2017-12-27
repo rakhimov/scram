@@ -426,13 +426,10 @@ public:
         mef::FaultTreePtr m_faultTree;
     };
 
-    class RemoveFaultTree : public AddFaultTree
+    class RemoveFaultTree : public Inverse<AddFaultTree>
     {
     public:
         RemoveFaultTree(mef::FaultTree *faultTree, Model *model);
-
-        void redo() override { AddFaultTree::undo(); }
-        void undo() override { AddFaultTree::redo(); }
     };
 
     /// @tparam T  The Model event type.
@@ -492,19 +489,17 @@ public:
     ///
     /// @pre The event has no dependent/parent gates.
     template <class T>
-    class RemoveEvent : public AddEvent<T>
+    class RemoveEvent : public Inverse<AddEvent<T>>
     {
         static_assert(std::is_base_of<Element, T>::value, "");
 
     public:
         RemoveEvent(T *event, Model *model, mef::FaultTree *faultTree = nullptr)
-            : AddEvent<T>(event, model, faultTree,
-                          QObject::tr("Remove event '%1'").arg(event->id()))
+            : Inverse<AddEvent<T>>(
+                  event, model, faultTree,
+                  QObject::tr("Remove event '%1'").arg(event->id()))
         {
         }
-
-        void redo() override { AddEvent<T>::undo(); }
-        void undo() override { AddEvent<T>::redo(); }
     };
 
     /// Changes the event type.

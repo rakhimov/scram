@@ -218,9 +218,9 @@ void Model::AddFaultTree::undo()
 }
 
 Model::RemoveFaultTree::RemoveFaultTree(mef::FaultTree *faultTree, Model *model)
-    : AddFaultTree(faultTree, model,
-                   QObject::tr("Remove fault tree '%1'")
-                       .arg(QString::fromStdString(faultTree->name())))
+    : Inverse<AddFaultTree>(faultTree, model,
+                            QObject::tr("Remove fault tree '%1'")
+                                .arg(QString::fromStdString(faultTree->name())))
 {
 }
 
