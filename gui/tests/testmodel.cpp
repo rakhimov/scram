@@ -46,6 +46,8 @@ private slots:
     void testBasicEventSetFlavor();
     void testBasicEventConstructWithFlavor();
     void testBasicEventSetExpression();
+    void testGateType();
+    void testGateSetFormula();
 
 private:
     /// @tparam T  Proxy type.
@@ -467,6 +469,61 @@ void TestModel::testBasicEventSetExpression()
     QVERIFY(!event.HasExpression());
     QVERIFY(!proxy.expression());
     QCOMPARE(proxy.probability<QVariant>(), QVariant());
+}
+
+void TestModel::testGateType()
+{
+    mef::Gate gate("pump");
+    gui::model::Gate proxy(&gate);
+    gate.formula(std::make_unique<mef::Formula>(mef::kNull));
+    TEST_EQ(proxy.type<QString>(), "null");
+    gate.formula(std::make_unique<mef::Formula>(mef::kAnd));
+    TEST_EQ(proxy.type<QString>(), "and");
+    gate.formula(std::make_unique<mef::Formula>(mef::kOr));
+    TEST_EQ(proxy.type<QString>(), "or");
+    gate.formula(std::make_unique<mef::Formula>(mef::kXor));
+    TEST_EQ(proxy.type<QString>(), "xor");
+    gate.formula(std::make_unique<mef::Formula>(mef::kNor));
+    TEST_EQ(proxy.type<QString>(), "nor");
+    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    TEST_EQ(proxy.type<QString>(), "not");
+    gate.formula(std::make_unique<mef::Formula>(mef::kNand));
+    TEST_EQ(proxy.type<QString>(), "nand");
+
+    auto vote = std::make_unique<mef::Formula>(mef::kVote);
+    vote->vote_number(2);
+    gate.formula(std::move(vote));
+    TEST_EQ(proxy.type<QString>(), "at-least 2");
+    QCOMPARE(proxy.voteNumber(), 2);
+}
+
+void TestModel::testGateSetFormula()
+{
+    mef::Gate gate("pump");
+    QVERIFY(!gate.HasFormula());
+    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    auto *initFormula = &gate.formula();
+    gui::model::Gate proxy(&gate);
+    QCOMPARE(proxy.type(), mef::kNot);
+
+    auto formula = std::make_unique<mef::Formula>(mef::kNull);
+    auto *address = formula.get();
+    auto spy = ext::make_spy(&proxy, &gui::model::Gate::formulaChanged);
+    gui::model::Gate::SetFormula setter(&proxy, std::move(formula));
+    setter.redo();
+    TEST_EQ(spy.size(), 1);
+    QCOMPARE(proxy.type(), mef::kNull);
+    QVERIFY(gate.HasFormula());
+    QCOMPARE(&gate.formula(), address);
+    QCOMPARE(proxy.numArgs(), 0);
+    QVERIFY(proxy.args().empty());
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    QVERIFY(gate.HasFormula());
+    QCOMPARE(&gate.formula(), initFormula);
+    QCOMPARE(proxy.type(), mef::kNot);
 }
 
 QTEST_MAIN(TestModel)
