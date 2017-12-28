@@ -19,6 +19,7 @@
 #include "ui_preferencesdialog.h"
 
 #include <string>
+#include <vector>
 
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
@@ -36,7 +37,17 @@ namespace gui {
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
                                      QTimer *autoSaveTimer, QWidget *parent)
-    : QDialog(parent), ui(new Ui::PreferencesDialog)
+    : QDialog(parent), ui(new Ui::PreferencesDialog), m_preferences(preferences)
+{
+    ui->setupUi(this);
+    setupLanguage();
+    setupUndoStack(undoStack);
+    setupAutoSave(autoSaveTimer);
+}
+
+PreferencesDialog::~PreferencesDialog() = default;
+
+void PreferencesDialog::setupLanguage()
 {
     // The available locales excluding the default English.
     static const std::vector<std::string> locales = gui::translations();
@@ -51,16 +62,14 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
         return result;
     }();
 
-    ui->setupUi(this);
-
     auto *listModel = new QStringListModel(nativeLanguages, this);
     auto *proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setSourceModel(listModel);
     proxyModel->sort(0);
     ui->languageBox->setModel(proxyModel);
-    int index = [&preferences]() -> int {
+    int currentIndex = [this]() -> int {
         QString language =
-            preferences->value(QStringLiteral("language")).toString();
+            m_preferences->value(QStringLiteral("language")).toString();
         if (language == QStringLiteral("en")) // Assume the common case is
             return locales.size();            // the default language.
 
@@ -68,10 +77,10 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
         return std::distance(locales.begin(), it); // The default if it == end.
     }();
     ui->languageBox->setCurrentIndex(
-        proxyModel->mapFromSource(listModel->index(index, 0)).row());
+        proxyModel->mapFromSource(listModel->index(currentIndex, 0)).row());
     connect(
-        ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int),
-        preferences, [this, preferences, proxyModel](int proxyIndex) {
+        ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int), this,
+        [this, proxyModel](int proxyIndex) {
             QMessageBox::information(
                 this, tr("Restart Required"),
                 tr("The language change will take effect after an "
@@ -81,16 +90,19 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
             QString locale = index == locales.size()
                                  ? QStringLiteral("en")
                                  : QString::fromStdString(locales[index]);
-            preferences->setValue(QStringLiteral("language"), locale);
+            m_preferences->setValue(QStringLiteral("language"), locale);
         });
+}
 
+void PreferencesDialog::setupUndoStack(QUndoStack *undoStack)
+{
     if (undoStack->undoLimit()) {
         ui->checkUndoLimit->setChecked(true);
         ui->undoLimitBox->setValue(undoStack->undoLimit());
     }
-    auto setUndoLimit = [preferences, undoStack](int undoLimit) {
+    auto setUndoLimit = [this, undoStack](int undoLimit) {
         undoStack->setUndoLimit(undoLimit);
-        preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
+        m_preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
     };
     connect(ui->undoLimitBox, OVERLOAD(QSpinBox, valueChanged, int), undoStack,
             setUndoLimit);
@@ -98,14 +110,17 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
             [this, setUndoLimit](bool checked) {
                 setUndoLimit(checked ? ui->undoLimitBox->value() : 0);
             });
+}
 
+void PreferencesDialog::setupAutoSave(QTimer *autoSaveTimer)
+{
     if (autoSaveTimer->isActive()) {
         ui->checkAutoSave->setChecked(true);
         ui->autoSaveBox->setValue(autoSaveTimer->interval() / 60000);
     }
-    auto setAutoSave = [preferences, autoSaveTimer](int intervalMin) {
+    auto setAutoSave = [this, autoSaveTimer](int intervalMin) {
         int intervalMs = intervalMin * 60000;
-        preferences->setValue(QStringLiteral("autoSave"), intervalMs);
+        m_preferences->setValue(QStringLiteral("autoSave"), intervalMs);
         if (intervalMin)
             autoSaveTimer->start(intervalMs);
         else
@@ -119,8 +134,6 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
                 setAutoSave(checked ? ui->autoSaveBox->value() : 0);
             });
 }
-
-PreferencesDialog::~PreferencesDialog() = default;
 
 } // namespace gui
 } // namespace scram

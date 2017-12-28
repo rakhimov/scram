@@ -43,10 +43,12 @@ public:
     ~PreferencesDialog();
 
 private:
-    /// Language to locale mapping in the same order as presented in the dialog.
-    static const char *const m_languageToLocale[];
+    void setupLanguage();
+    void setupUndoStack(QUndoStack *undoStack);
+    void setupAutoSave(QTimer *autoSaveTimer);
 
     std::unique_ptr<Ui::PreferencesDialog> ui;
+    QSettings *m_preferences;
 };
 
 } // namespace gui
