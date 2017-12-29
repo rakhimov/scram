@@ -36,11 +36,25 @@ namespace QTest {
 /// @warning This is a C string API in Qt C++ code!!!
 ///          The caller must deallocate the returned string.
 ///          This is only specialized for QCOMPARE to print better messages.
+/// @{
 template <>
 inline char *toString(const std::string &value)
 {
     return qstrdup(value.c_str());
 }
+
+template <>
+inline char *toString(const std::vector<std::string> &value)
+{
+    std::string result = "{";
+    for (const auto &item : value) {
+        result += item;
+        result += ", ";
+    }
+    result += " }";
+    return toString(result);
+}
+/// @}
 
 } // namespace QTest
 

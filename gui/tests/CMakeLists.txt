@@ -16,6 +16,7 @@ endmacro()
 
 set(SCRAM_GUI_TEST_SRC
   testvalidator.cpp
+  testlanguage.cpp
   testmodel.cpp
   )
 
