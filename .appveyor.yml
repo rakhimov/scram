@@ -38,10 +38,6 @@ build_script:
     - cd build
     - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DCMAKE_VERBOSE_MAKEFILE=ON
     - make install/strip -j 2
-    - cmake .. -DPACKAGE=ON
-    - make install/strip -j 2
-    - cpack --verbose
-    - dir
     - cd ..
     - ccache -s
 
@@ -54,6 +50,13 @@ test_script:
     - scram input\TwoTrain\two_train.xml
     - cd build
     - ctest --verbose
+    - cd ..
+
+after_test:
+    - cd build
+    - cmake .. -DPACKAGE=ON
+    - cpack --verbose
+    - dir
     - cd ..
 
 on_failure:
