@@ -292,7 +292,8 @@ To run GUI tests
 Unfortunately, Qt Test does not automatically register or manage all its test cases,
 nor does it provide a single test driver.
 Each test case is a separate binary with its own commands and reports.
-Take a look at ``build/bin`` directory for the compiled tests to run.
+Take a look at ``path/to/installation/directory/bin`` directory
+for the compiled ``scramgui_test${CASE_NAME}`` binaries to run.
 
 All Qt Tests are also manually registered with CTest
 so that it is possible to run all the GUI tests at once:

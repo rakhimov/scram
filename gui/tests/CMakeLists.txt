@@ -4,12 +4,15 @@ find_package(Qt5Test REQUIRED)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -UQT_NO_CAST_FROM_ASCII")
 
 macro(TEST NAME FILE)
-  add_executable(${NAME} ${FILE})
-  target_link_libraries(${NAME} scram-gui Qt5::Test)
-  add_test(NAME ${NAME} COMMAND  $<TARGET_FILE:${NAME}>)
+  add_executable(scramgui_${NAME} ${FILE})
+  target_link_libraries(scramgui_${NAME} scram-gui Qt5::Test)
+  install(
+    TARGETS scramgui_${NAME}
+    RUNTIME DESTINATION bin
+    COMPONENT testing
+    )
+  add_test(${NAME} scramgui_${NAME})
 endmacro()
-
-enable_testing()
 
 set(SCRAM_GUI_TEST_SRC
   testvalidator.cpp

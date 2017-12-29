@@ -6,8 +6,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(SCRAM VERSION 0.16.0 LANGUAGES CXX)
 
-include(CTest)
-
 ####################### Begin Options ###################
 
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
@@ -19,7 +17,7 @@ option(WITH_PROFILE "Instrument for performance profiling" OFF)
 option(HAS_TANGO "The system provides the fall-back Tango icons" OFF)
 
 option(BUILD_GUI "Build the GUI front-end" ON)
-option(BUILD_TESTS "Build the tests" ON)
+option(BUILD_TESTING "Build the tests" ON)  # Influences CTest.
 
 option(PACKAGE "Package for distribution" OFF)
 
@@ -95,6 +93,8 @@ endif()
 ######################## End compiler configurations ####################
 
 ##################### Begin cmake configuration ###################
+
+include(CTest)
 
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -189,7 +189,7 @@ if(BUILD_GUI)
   add_subdirectory(gui)
 endif()
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
