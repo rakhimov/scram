@@ -17,9 +17,11 @@
 
 #include "language.h"
 
+#include <cstring>
+
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/utility/string_ref.hpp>
 
 #include <QLocale>
 
@@ -48,19 +50,15 @@ std::vector<std::string> translations()
             continue;
 
         std::string filename = it->path().filename().string();
+        const char suffix[] = ".qm";
+        const char prefix[] = "scramgui_";
 
-        auto dot_pos = filename.find_last_of('.');
-        if (dot_pos == std::string::npos
-            || boost::string_ref(filename.data() + dot_pos + 1) != "qm")
+        if (!boost::starts_with(filename, prefix)
+            || !boost::ends_with(filename, suffix))
             continue;
 
-        auto domain_pos = filename.find_first_of('_');
-        if (domain_pos == std::string::npos
-            || boost::string_ref(filename.data(), domain_pos) != "scramgui")
-            continue;
-
-        filename.erase(dot_pos);
-        filename.erase(0, domain_pos + 1);
+        filename.erase(filename.size() - std::strlen(suffix));
+        filename.erase(0, std::strlen(prefix));
         if (filename != "en")
             result.push_back(std::move(filename));
     }
