@@ -248,9 +248,22 @@ struct IsNormalized : std::true_type
 };
 
 template <>
-struct IsNormalized<gui::model::Gate> : std::false_type
+struct IsNormalized<mef::Gate> : std::false_type
 {
 };
+
+template <class T>
+void testNormalized(const mef::FaultTree &faultTree, const T *address,
+                    const char *info)
+{
+    qWarning("%s", info);
+    if (IsNormalized<T>::value) {
+        TEST_EQ(table<T>(faultTree).size(), 0);
+    } else {
+        TEST_EQ(table<T>(faultTree).size(), 1);
+        TEST_EQ(*table<T>(faultTree).begin(), address);
+    }
+}
 
 } // namespace
 
@@ -285,12 +298,7 @@ void TestModel::testAddEvent()
 
     TEST_EQ(table<E>(model).size(), 1);
     TEST_EQ(table<E>(model).begin()->get(), address);
-    if (IsNormalized<T>::value) {
-        TEST_EQ(table<E>(*faultTree).size(), 0);
-    } else {
-        TEST_EQ(table<E>(*faultTree).size(), 1);
-        TEST_EQ(*table<E>(*faultTree).begin(), address);
-    }
+    testNormalized(*faultTree, address, "Add event into fault tree.");
     TEST_EQ(proxyModel.table<T>().size(), 1);
     TEST_EQ(proxyModel.table<T>().begin()->get(), proxyEvent);
     spyAdd.clear();
@@ -319,12 +327,7 @@ void TestModel::testRemoveEvent()
     gui::model::Model proxyModel(&model);
 
     TEST_EQ(table<E>(model).size(), 1);
-    if (IsNormalized<T>::value) {
-        TEST_EQ(table<E>(*faultTree).size(), 0);
-    } else {
-        TEST_EQ(table<E>(*faultTree).size(), 1);
-        TEST_EQ(*table<E>(*faultTree).begin(), address);
-    }
+    testNormalized(*faultTree, address, "Add event into fault tree.");
     TEST_EQ(proxyModel.table<T>().size(), 1);
     auto *proxyEvent = proxyModel.table<T>().begin()->get();
     QCOMPARE(proxyEvent->data(), address);
@@ -351,12 +354,7 @@ void TestModel::testRemoveEvent()
     QCOMPARE(std::get<0>(spyAdd.front()), proxyEvent);
     TEST_EQ(table<E>(model).size(), 1);
     TEST_EQ(table<E>(model).begin()->get(), address);
-    if (IsNormalized<T>::value) {
-        TEST_EQ(table<E>(*faultTree).size(), 0);
-    } else {
-        TEST_EQ(table<E>(*faultTree).size(), 1);
-        TEST_EQ(*table<E>(*faultTree).begin(), address);
-    }
+    testNormalized(*faultTree, address, "Undo event removal.");
     TEST_EQ(proxyModel.table<T>().size(), 1);
     QCOMPARE(proxyModel.table<T>().begin()->get(), proxyEvent);
 }
