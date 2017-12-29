@@ -4,6 +4,7 @@ dist: trusty
 branches:
     except:
         - l10n_develop
+        - appveyor
 
 language: cpp
 
@@ -94,11 +95,6 @@ stages:
     - test
 
 before_install:
-    - >
-      echo "$TRAVIS_COMMIT_MESSAGE"
-      | grep -E  '\[(skip travis|travis skip)\]'
-      && echo "[skip travis] has been found, exiting."
-      && exit 0 || echo "continue"
     - mkdir -p ~/.local/bin
 
 install:
