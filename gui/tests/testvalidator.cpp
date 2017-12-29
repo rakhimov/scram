@@ -169,6 +169,6 @@ private:
     }
 };
 
-QTEST_MAIN(TestValidator)
+QTEST_APPLESS_MAIN(TestValidator)
 
 #include "testvalidator.moc"

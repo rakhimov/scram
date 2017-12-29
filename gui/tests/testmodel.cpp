@@ -524,6 +524,6 @@ void TestModel::testGateSetFormula()
     QCOMPARE(proxy.type(), mef::kNot);
 }
 
-QTEST_MAIN(TestModel)
+QTEST_APPLESS_MAIN(TestModel)
 
 #include "testmodel.moc"

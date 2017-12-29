@@ -65,6 +65,6 @@ void TestLanguage::testNativeName()
     QCOMPARE(scram::gui::nativeLanguageName(code.data()), name);
 }
 
-QTEST_MAIN(TestLanguage)
+QTEST_APPLESS_MAIN(TestLanguage)
 
 #include "testlanguage.moc"
