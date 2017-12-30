@@ -62,13 +62,6 @@ install(
   COMPONENT testing
   )
 
-# Copy test input files into the shared directory for testing.
-install(
-  DIRECTORY input
-  DESTINATION share/scram
-  COMPONENT testing
-  )
-
 # Create dummy library to test dynamic loading and extern function.
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
 if(WIN32)

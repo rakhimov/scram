@@ -27,4 +27,4 @@ if [[ "${CONFIG}" == "Coverage" ]]; then
 fi
 
 LD_LIBRARY_PATH=${PWD}/build/lib/scram/:${LD_LIBRARY_PATH} \
-  scram --validate --allow-extern install/share/scram/input/model/system_extern_library.xml
+  scram --validate --allow-extern tests/input/model/system_extern_library.xml
