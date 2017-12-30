@@ -15,6 +15,8 @@ if [[ -s doc_errors.txt ]]; then
   exit 1
 fi
 
+doxygen ./.travis/gui_doxygen.conf > /dev/null  # TODO: Make GUI docs strict.
+
 # Lizard function complexity printout for C++ and Python
 lizard -w -L 60 -a 5 -EIgnoreAssert -ENS -Ecpre src gui \
   || echo "TODO: Fix the C++ complexity"
