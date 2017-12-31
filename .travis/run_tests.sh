@@ -26,5 +26,5 @@ if [[ "${CONFIG}" == "Coverage" ]]; then
   nosetests --with-coverage -w scripts test/
 fi
 
-LD_LIBRARY_PATH=${PWD}/install/lib/scram/test/:${LD_LIBRARY_PATH} \
+LD_LIBRARY_PATH=${PWD}/build/lib/scram/:${LD_LIBRARY_PATH} \
   scram --validate --allow-extern install/share/scram/input/model/system_extern_library.xml

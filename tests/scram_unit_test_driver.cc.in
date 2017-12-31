@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <unistd.h>
-
+#include <boost/filesystem.hpp>
 #include <gtest/gtest.h>
 
 #include "risk_analysis_tests.h"
@@ -35,8 +34,8 @@ INSTANTIATE_TEST_CASE_P(MOCUS, RiskAnalysisTest, ::testing::Values("mocus"));
 }  // namespace scram
 
 int main(int argc, char* argv[]) {
-  const char* target = "@CMAKE_INSTALL_PREFIX@";
-  int ret = chdir(target);
+  boost::system::error_code ret;
+  boost::filesystem::current_path("@CMAKE_SOURCE_DIR@", ret);
   assert(ret == 0);
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ::testing::InitGoogleTest(&argc, argv);

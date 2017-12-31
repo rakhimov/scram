@@ -25,7 +25,7 @@ namespace test {
 
 // Benchmark Tests for Theatre fault tree from OpenFTA.
 TEST_P(RiskAnalysisTest, Theatre) {
-  std::string tree_input = "./share/scram/input/Theatre/theatre.xml";
+  std::string tree_input = "input/Theatre/theatre.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());

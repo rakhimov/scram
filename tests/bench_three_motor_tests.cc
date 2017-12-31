@@ -25,7 +25,7 @@ namespace test {
 
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
 TEST_P(RiskAnalysisTest, ThreeMotor) {
-  std::string tree_input = "./share/scram/input/ThreeMotor/three_motor.xml";
+  std::string tree_input = "input/ThreeMotor/three_motor.xml";
   std::set<std::set<std::string>> mcs;  // For expected min cut sets.
   std::string T3 = "T3";
   std::string S1 = "S1";
@@ -77,7 +77,7 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
 
 // All permutations of house events.
 TEST_F(RiskAnalysisTest, ThreeMotorEventTree) {
-  std::string dir = "./share/scram/input/ThreeMotor/";
+  std::string dir = "input/ThreeMotor/";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(
       ProcessInputFiles({dir + "three_motor.xml", dir + "event_tree.xml"}));

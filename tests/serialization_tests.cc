@@ -34,16 +34,15 @@ TEST(SerializationTest, InputOutput) {
   static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
-      {"./share/scram/input/fta/correct_tree_input.xml"},
-      {"./share/scram/input/fta/correct_tree_input_with_probs.xml"},
-      {"./share/scram/input/fta/missing_bool_constant.xml"},
-      {"./share/scram/input/fta/null_gate_with_label.xml"},
-      {"./share/scram/input/fta/flavored_types.xml"},
-      {"./share/scram/input/TwoTrain/two_train.xml"},
-      {"./share/scram/input/fta/correct_formulas.xml"},
-      {"./share/scram/input/Theatre/theatre.xml"},
-      {"./share/scram/input/Baobab/baobab2.xml",
-       "./share/scram/input/Baobab/baobab2-basic-events.xml"}};
+      {"tests/input/fta/correct_tree_input.xml"},
+      {"tests/input/fta/correct_tree_input_with_probs.xml"},
+      {"tests/input/fta/missing_bool_constant.xml"},
+      {"tests/input/fta/null_gate_with_label.xml"},
+      {"tests/input/fta/flavored_types.xml"},
+      {"input/TwoTrain/two_train.xml"},
+      {"tests/input/fta/correct_formulas.xml"},
+      {"input/Theatre/theatre.xml"},
+      {"input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"}};
   for (const auto& input : inputs) {
     std::shared_ptr<Model> model;
     ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());

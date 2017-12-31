@@ -26,7 +26,7 @@ namespace test {
 // Benchmark Tests for an example fault tree
 // given in NE574 Risk Analysis class at UW-Madison.
 TEST_P(RiskAnalysisTest, ne574) {
-  std::string tree_input = "./share/scram/input/ne574/ne574.xml";
+  std::string tree_input = "input/ne574/ne574.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());

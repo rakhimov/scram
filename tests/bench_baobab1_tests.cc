@@ -31,8 +31,7 @@ TEST_F(RiskAnalysisTest, Baobab1) {
   settings.algorithm("bdd");
 #endif
   std::vector<std::string> input_files = {
-      "./share/scram/input/Baobab/baobab1.xml",
-      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+      "input/Baobab/baobab1.xml", "input/Baobab/baobab1-basic-events.xml"};
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -49,8 +48,7 @@ TEST_F(RiskAnalysisTest, Baobab1) {
 
 TEST_P(RiskAnalysisTest, Baobab1L8) {
   std::vector<std::string> input_files = {
-      "./share/scram/input/Baobab/baobab1.xml",
-      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+      "input/Baobab/baobab1.xml", "input/Baobab/baobab1-basic-events.xml"};
   settings.limit_order(8);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -61,8 +59,7 @@ TEST_P(RiskAnalysisTest, Baobab1L8) {
 
 TEST_P(RiskAnalysisTest, Baobab1L4Importance) {
   std::vector<std::string> input_files = {
-      "./share/scram/input/Baobab/baobab1.xml",
-      "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+      "input/Baobab/baobab1.xml", "input/Baobab/baobab1-basic-events.xml"};
   settings.limit_order(4).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());

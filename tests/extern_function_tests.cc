@@ -23,11 +23,12 @@
 
 #include <boost/predef.h>
 
+#include <boost/filesystem.hpp>
+
 #if BOOST_OS_LINUX
 #include <stdlib.h>
 #endif
 
-#include "env.h"
 #include "expression/constant.h"
 
 namespace scram {
@@ -35,21 +36,21 @@ namespace mef {
 namespace test {
 
 const char kLibName[] = "scram_dummy_extern";
-const char kLibRelPath[] = "../lib/scram/test/scram_dummy_extern";
+const char kLibRelPath[] = "build/lib/scram/scram_dummy_extern";
 
 #if BOOST_OS_LINUX
-const char kLibRelPathLinux[] = "../lib/scram/test/libscram_dummy_extern.so";
+const char kLibRelPathLinux[] = "build/lib/scram/libscram_dummy_extern.so";
 #endif
 
 TEST(ExternTest, ExternLibraryLoad) {
-  const std::string bin_dir = Env::install_dir() + "/bin";
+  const std::string cwd_dir = boost::filesystem::current_path().string();
   EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, false), DLError);
   EXPECT_THROW(ExternLibrary("dummy", kLibName, "", false, true), DLError);
   EXPECT_THROW(ExternLibrary("dummy", kLibName, "", true, true), DLError);
-  EXPECT_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, false),
+  EXPECT_THROW(ExternLibrary("dummy", kLibRelPath, cwd_dir, false, false),
                DLError);
-  EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, false, true));
-  EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, bin_dir, true, true));
+  EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, cwd_dir, false, true));
+  EXPECT_NO_THROW(ExternLibrary("dummy", kLibRelPath, cwd_dir, true, true));
 
   EXPECT_THROW(ExternLibrary("d", "", "", false, false), ValidityError);
   EXPECT_THROW(ExternLibrary("d", ".", "", false, false), ValidityError);
@@ -63,16 +64,16 @@ TEST(ExternTest, ExternLibraryLoad) {
 #if BOOST_OS_LINUX
   // The system search with LD_LIBRARY_PATH must be tested outside.
   EXPECT_NO_THROW(
-      ExternLibrary("dummy", kLibRelPathLinux, bin_dir, false, false));
+      ExternLibrary("dummy", kLibRelPathLinux, cwd_dir, false, false));
 #endif
 }
 
 TEST(ExternTest, ExternLibraryGet) {
-  const std::string bin_dir = Env::install_dir() + "/bin";
+  const std::string cwd_dir = boost::filesystem::current_path().string();
 
   std::unique_ptr<ExternLibrary> library;
   ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
-                      "dummy", kLibRelPath, bin_dir, false, true));
+                      "dummy", kLibRelPath, cwd_dir, false, true));
 
   EXPECT_NO_THROW(library->get<int (*)()>("foo"));
   EXPECT_NO_THROW(library->get<double (*)()>("bar"));
@@ -85,8 +86,8 @@ TEST(ExternTest, ExternLibraryGet) {
 }
 
 TEST(ExternTest, ExternFunction) {
-  const std::string bin_dir = Env::install_dir() + "/bin";
-  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
+  const std::string cwd_dir = boost::filesystem::current_path().string();
+  ExternLibrary library("dummy", kLibRelPath, cwd_dir, false, true);
 
   EXPECT_NO_THROW(ExternFunction<int>("extern", "foo", library));
   EXPECT_NO_THROW(ExternFunction<double>("extern", "bar", library));
@@ -98,8 +99,8 @@ TEST(ExternTest, ExternFunction) {
 }
 
 TEST(ExternTest, ExternExpression) {
-  const std::string bin_dir = Env::install_dir() + "/bin";
-  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
+  const std::string cwd_dir = boost::filesystem::current_path().string();
+  ExternLibrary library("dummy", kLibRelPath, cwd_dir, false, true);
   ExternFunction<int> foo("dummy_foo", "foo", library);
   ExternFunction<double, double> identity("dummy_id", "identity", library);
   ConstantExpression arg_one(12);
@@ -119,8 +120,8 @@ TEST(ExternTest, ExternExpression) {
 }
 
 TEST(ExternTest, ExternFunctionApply) {
-  const std::string bin_dir = Env::install_dir() + "/bin";
-  ExternLibrary library("dummy", kLibRelPath, bin_dir, false, true);
+  const std::string cwd_dir = boost::filesystem::current_path().string();
+  ExternLibrary library("dummy", kLibRelPath, cwd_dir, false, true);
   ExternFunctionPtr foo(new ExternFunction<int>("dummy_foo", "foo", library));
   ExternFunctionPtr identity(
       new ExternFunction<double, double>("dummy_id", "identity", library));

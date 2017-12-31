@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ namespace test {
 
 // Benchmark tests for Lift system from OpenFTA.
 TEST_P(RiskAnalysisTest, Lift) {
-  std::string tree_input = "./share/scram/input/Lift/lift.xml";
+  std::string tree_input = "input/Lift/lift.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());

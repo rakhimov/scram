@@ -10,7 +10,7 @@
       </extern-function>
     </define-basic-event>
   </define-fault-tree>
-  <define-extern-library name="dummy" path="../../../../lib/scram/test/scram_dummy_extern" decorate="true"/>
+  <define-extern-library name="dummy" path="../../../build/lib/scram/scram_dummy_extern" decorate="true"/>
   <define-extern-function name="id" symbol="identity" library="dummy">
     <double/>
     <double/>

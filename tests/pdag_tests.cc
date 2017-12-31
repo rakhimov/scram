@@ -31,7 +31,7 @@ namespace test {
 TEST(PdagTest, Print) {
   std::unique_ptr<mef::Initializer> init;
   ASSERT_NO_THROW(init.reset(new mef::Initializer(
-      {"./share/scram/input/fta/correct_formulas.xml"}, Settings())));
+      {"tests/input/fta/correct_formulas.xml"}, Settings())));
   const mef::FaultTreePtr& ft = *init->model()->fault_trees().begin();
   Pdag graph(*ft->top_events().front());
   graph.Print();

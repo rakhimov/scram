@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@ namespace test {
 // Benchmark Tests for Baobab 2 fault tree from XFTA.
 TEST_P(RiskAnalysisTest, Baobab2) {
   std::vector<std::string> input_files = {
-      "./share/scram/input/Baobab/baobab2.xml",
-      "./share/scram/input/Baobab/baobab2-basic-events.xml"};
+      "input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"};
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(4805, products().size());

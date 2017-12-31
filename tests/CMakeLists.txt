@@ -73,9 +73,11 @@ install(
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
 if(WIN32)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
-endif()
 install(
   TARGETS scram_dummy_extern
-  DESTINATION lib/scram/test
+  LIBRARY DESTINATION "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+  ARCHIVE DESTINATION "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/static"
+  RUNTIME DESTINATION "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
   COMPONENT testing
   )
+endif()
