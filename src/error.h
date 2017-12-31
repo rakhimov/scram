@@ -28,6 +28,15 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
 
+/// Check if CMake provides required definitions.
+#ifndef PROJECT_SOURCE_DIR
+#error "The project source directory is not provided w/ CMake."
+#endif
+
+/// The current file path relative to the project source directory.
+/// With CMake, the default __FILE__ is absolute.
+#define FILEPATH (__FILE__ + sizeof(PROJECT_SOURCE_DIR))
+
 /// Convenience macro to throw SCRAM exceptions.
 /// This is similar to BOOST_THROW_EXCEPTION;
 /// however, it doesn't obfuscate
@@ -36,7 +45,7 @@
 /// @param[in] err  The error type deriving from boost::exception.
 #define SCRAM_THROW(err)                                                       \
   throw err << ::boost::throw_function(BOOST_THROW_EXCEPTION_CURRENT_FUNCTION) \
-            << ::boost::throw_file(__FILE__) << ::boost::throw_line(__LINE__)
+            << ::boost::throw_file(FILEPATH) << ::boost::throw_line(__LINE__)
 
 namespace scram {
 

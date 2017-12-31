@@ -38,6 +38,8 @@ function(CHECK_COMPILER_VERSION MIN_VERSION)
   endif()
 endfunction()
 
+add_definitions(-DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")  # Needed to print file paths.
+
 set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers -Wold-style-cast")
 
