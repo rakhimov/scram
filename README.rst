@@ -167,6 +167,7 @@ The configuration and build must happen out-of-source (e.g., in ``build`` sub-di
     .../scram/build$ cmake .. -DCMAKE_INSTALL_PREFIX=path/to/installation/directory -DCMAKE_BUILD_TYPE=Release
 
 For Mingw-w64_ on Windows, specify ``-G "MSYS Makefiles"`` generator flag.
+To build tests, specify ``-DBUILD_TESTING=ON`` option.
 
 Various other project configurations can be explored with CMake or its front-ends.
 For example:

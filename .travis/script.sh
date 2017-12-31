@@ -9,7 +9,7 @@ fi
 ccache -s
 
 cd build
-install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install"
+install_cmd="cmake .. -DCMAKE_INSTALL_PREFIX=../install -DBUILD_TESTING=ON"
 if [[ "${CXX}" == "g++" ]]; then
   install_cmd="${install_cmd} -DCMAKE_C_COMPILER=gcc-${GCC_VERSION} -DCMAKE_CXX_COMPILER=g++-${GCC_VERSION}"
 fi

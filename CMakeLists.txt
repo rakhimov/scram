@@ -17,7 +17,7 @@ option(WITH_PROFILE "Instrument for performance profiling" OFF)
 option(HAS_TANGO "The system provides the fall-back Tango icons" OFF)
 
 option(BUILD_GUI "Build the GUI front-end" ON)
-option(BUILD_TESTING "Build the tests" ON)  # Influences CTest.
+option(BUILD_TESTING "Build the tests" OFF)  # Influences CTest.
 
 option(PACKAGE "Package for distribution" OFF)
 
