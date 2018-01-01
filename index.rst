@@ -13,6 +13,7 @@ are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 .. rubric:: Code documentation:
 
 - `C++ core code <api/index.xhtml>`_
+- `C++ GUI code <gui-api/index.xhtml>`_
 - `Python scripts <scripts/modules.html>`_
 
 .. _Open-PSA: https://open-psa.github.io
