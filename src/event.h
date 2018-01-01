@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file event.h
+/// @file
 /// Contains event classes for fault trees.
 
 #ifndef SCRAM_SRC_EVENT_H_

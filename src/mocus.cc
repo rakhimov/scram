@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file mocus.cc
+/// @file
 /// Implementation of the MOCUS algorithm.
 /// The algorithm assumes
 /// that the graph is in negation normal form.

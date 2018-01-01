@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file importance_analysis.cc
+/// @file
 /// Implementations of functions to provide
 /// quantitative importance informations.
 

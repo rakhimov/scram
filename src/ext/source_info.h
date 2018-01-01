@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
+ * Copyright (C) 2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,18 @@
  */
 
 /// @file
-/// Implementation file of various RNGs.
+/// Helper facilities to get source file information.
 
-#include "random.h"
+#ifndef SCRAM_SRC_EXT_SOURCE_INFO_H_
+#define SCRAM_SRC_EXT_SOURCE_INFO_H_
 
-namespace scram {
+/// Check if CMake provides required definitions.
+#ifndef PROJECT_SOURCE_DIR
+#error "The project source directory is not provided w/ CMake."
+#endif
 
-std::mt19937 Random::rng_;
+/// The current file path relative to the project source directory.
+/// With CMake, the default __FILE__ is absolute.
+#define FILE_REL_PATH (__FILE__ + sizeof(PROJECT_SOURCE_DIR))
 
-}  // namespace scram
+#endif  // SCRAM_SRC_EXT_SOURCE_INFO_H_

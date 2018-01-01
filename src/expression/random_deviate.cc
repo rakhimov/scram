@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file random_deviate.cc
+/// @file
 /// Implementations of random deviate expressions.
 
 #include "random_deviate.h"

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file command.h
+/// @file
 /// Undo-redo helper facilities based on the Qt Undo framework.
 ///
 /// Undo-redo facilities assume the following contract:

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file constant.cc
+/// @file
 /// Implementation of various constant expressions.
 
 #include "constant.h"

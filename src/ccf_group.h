@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file ccf_group.h
+/// @file
 /// Functional containers for basic events
 /// grouped by common cause failure.
 /// Common cause failure can be modeled

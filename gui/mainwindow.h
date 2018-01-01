@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// The main application window.
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file linear_map.h
+/// @file
 /// Implementation of a vector-based map for a small number of entries.
 
 #ifndef SCRAM_SRC_EXT_LINEAR_MAP_H_

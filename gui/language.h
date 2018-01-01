@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Localization and translation facilities.
+
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 

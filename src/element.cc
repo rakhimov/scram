@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file element.cc
+/// @file
 /// Implementation of helper features for all elements of the analysis.
 
 #include "element.h"

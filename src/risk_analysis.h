@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file risk_analysis.h
+/// @file
 /// Contains the main system for performing analysis.
 
 #ifndef SCRAM_SRC_RISK_ANALYSIS_H_

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file model.h
+/// @file
 /// Wrapper Model classes for the MEF data.
 
 #ifndef MODEL_H

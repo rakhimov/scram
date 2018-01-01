@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file reporttree.h
+/// @file
 /// Report tree model to represent the analysis results.
 
 #ifndef REPORTTREE_H

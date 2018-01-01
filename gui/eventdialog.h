@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Dialog to edit and validate events.
+
 #ifndef EVENTDIALOG_H
 #define EVENTDIALOG_H
 

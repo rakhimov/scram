@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file bdd.cc
+/// @file
 /// Implementation of BDD fault tree analysis algorithms.
 
 #include "bdd.h"

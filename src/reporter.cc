@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file reporter.cc
+/// @file
 /// Implements Reporter class.
 
 #include "reporter.h"

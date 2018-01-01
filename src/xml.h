@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file xml.h
+/// @file
 /// XML helper facilities to work with libxml2.
 /// Adaptors and helper functions provide read-only facilities.
 ///

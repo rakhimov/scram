@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file modeltree.h
+/// @file
 /// The main tree representation of the Model.
 
 #ifndef MODELTREE_H

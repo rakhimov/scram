@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file preprocessor.cc
+/// @file
 /// Implementation of preprocessing algorithms.
 /// The main goal of preprocessing algorithms is
 /// to make PDAGs simpler, modular, easier for analysis.

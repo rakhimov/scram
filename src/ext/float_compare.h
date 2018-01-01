@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file float_compare.h
+/// @file
 /// Floating pointing comparison helper functions.
 
 #ifndef SCRAM_SRC_EXT_FLOAT_COMPARE_H_

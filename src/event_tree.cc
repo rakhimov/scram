@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file event_tree.cc
+/// @file
 /// Implementation of event tree facilities.
 
 #include "event_tree.h"

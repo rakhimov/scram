@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file combination_iterator.h
+/// @file
 /// n-choose-k combination generation facilities.
 
 #ifndef SCRAM_SRC_EXT_COMBINATION_ITERATOR_H_

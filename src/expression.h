@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file expression.h
+/// @file
 /// Provides the base class for all expressions
 /// and units for expression values.
 

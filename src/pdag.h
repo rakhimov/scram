@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file pdag.h
+/// @file
 /// Classes and facilities to represent fault trees
 /// as PDAGs with event and gate indices instead of ID names.
 /// These facilities are designed to work

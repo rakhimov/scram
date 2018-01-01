@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file variant.h
+/// @file
 /// Extra helper functions for boost::variant.
 
 #ifndef SCRAM_SRC_EXT_VARIANT_H_

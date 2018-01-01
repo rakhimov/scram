@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file expression.cc
+/// @file
 /// Implementation of the expression base class.
 
 #include "expression.h"

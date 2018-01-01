@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file random_deviate.h
+/// @file
 /// A collection of deviate expressions with random distributions
 /// sampled at run-time.
 

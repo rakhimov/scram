@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file mocus.h
+/// @file
 /// Fault tree analysis with the MOCUS algorithm.
 /// This algorithm requires a fault tree in negation normal form.
 /// The fault tree must only contain AND and OR gates.

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file exponential.cc
+/// @file
 /// Implementation of various exponential expressions.
 
 #include "exponential.h"

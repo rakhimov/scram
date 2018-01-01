@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file ccf_group.cc
+/// @file
 /// Implementation of various common cause failure models.
 
 #include "ccf_group.h"

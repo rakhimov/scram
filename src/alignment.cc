@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file alignment.cc
+/// @file
 /// Implementation of alignment and phase classes.
 
 #include "alignment.h"

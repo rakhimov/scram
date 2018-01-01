@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file help.h
+/// @file
 /// Helper workarounds or additions to Qt Test.
 
 #ifndef SCRAM_GUI_TEST_HELP_H

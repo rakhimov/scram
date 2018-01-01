@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Graphics classes to draw diagrams.
+
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file initializer.h
+/// @file
 /// A facility that processes input files into analysis constructs.
 
 #ifndef SCRAM_SRC_INITIALIZER_H_

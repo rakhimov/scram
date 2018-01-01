@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file bdd.h
+/// @file
 /// Fault tree analysis with the Binary Decision Diagram algorithms.
 
 #ifndef SCRAM_SRC_BDD_H_

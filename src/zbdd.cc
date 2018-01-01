@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file zbdd.cc
+/// @file
 /// Implementation of Zero-Suppressed BDD algorithms.
 
 #include "zbdd.h"

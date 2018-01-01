@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file alignment.h
+/// @file
 /// Mission and phase constructs.
 
 #ifndef SCRAM_SRC_ALIGNMENT_H_

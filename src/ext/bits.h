@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file bits.h
+/// @file
 /// Helper constexpr functions to make bit operations explicit.
 
 #ifndef SCRAM_SRC_EXT_BITS_H_

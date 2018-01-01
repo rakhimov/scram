@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file reporter.h
+/// @file
 /// Reporter of results.
 
 #ifndef SCRAM_SRC_REPORTER_H_

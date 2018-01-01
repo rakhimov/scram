@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file index_map.h
+/// @file
 /// Non-zero based Index->Value map adapter on sequential containers.
 
 #ifndef SCRAM_SRC_EXT_INDEX_MAP_H_

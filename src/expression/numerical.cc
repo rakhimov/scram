@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file numerical.cc
+/// @file
 /// Implementation of various numerical expressions.
 
 #include "numerical.h"

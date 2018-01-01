@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file zbdd.h
+/// @file
 /// Zero-Suppressed Binary Decision Diagram facilities.
 
 #ifndef SCRAM_SRC_ZBDD_H_

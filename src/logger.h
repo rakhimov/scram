@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file logger.h
+/// @file
 /// Logging capability for various purposes,
 /// such as warnings and debugging.
 /// This logging facility caters mostly developers.

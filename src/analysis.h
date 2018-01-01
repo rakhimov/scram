@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file analysis.h
+/// @file
 /// Common facilities for all analysis classes.
 
 #ifndef SCRAM_SRC_ANALYSIS_H_

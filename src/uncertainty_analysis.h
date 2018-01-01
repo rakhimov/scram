@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file uncertainty_analysis.h
+/// @file
 /// Provides functionality for uncertainty analysis
 /// with Monte Carlo method.
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file validator.h
+/// @file
 /// Collection of validators.
 
 #ifndef VALIDATOR_H

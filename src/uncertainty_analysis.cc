@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file uncertainty_analysis.cc
+/// @file
 /// Implements the functionality to run Monte Carlo simulations.
 
 #include "uncertainty_analysis.h"

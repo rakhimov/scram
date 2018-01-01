@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file risk_analysis.cc
+/// @file
 /// Implementation of risk analysis handler.
 
 #include "risk_analysis.h"

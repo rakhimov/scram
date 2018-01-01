@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file error.h
+/// @file
 /// Exceptions for SCRAM.
 
 #ifndef SCRAM_SRC_ERROR_H_
@@ -28,14 +28,7 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
 
-/// Check if CMake provides required definitions.
-#ifndef PROJECT_SOURCE_DIR
-#error "The project source directory is not provided w/ CMake."
-#endif
-
-/// The current file path relative to the project source directory.
-/// With CMake, the default __FILE__ is absolute.
-#define FILEPATH (__FILE__ + sizeof(PROJECT_SOURCE_DIR))
+#include "ext/source_info.h"
 
 /// Convenience macro to throw SCRAM exceptions.
 /// This is similar to BOOST_THROW_EXCEPTION;
@@ -45,7 +38,8 @@
 /// @param[in] err  The error type deriving from boost::exception.
 #define SCRAM_THROW(err)                                                       \
   throw err << ::boost::throw_function(BOOST_THROW_EXCEPTION_CURRENT_FUNCTION) \
-            << ::boost::throw_file(FILEPATH) << ::boost::throw_line(__LINE__)
+            << ::boost::throw_file(FILE_REL_PATH)                              \
+            << ::boost::throw_line(__LINE__)
 
 namespace scram {
 

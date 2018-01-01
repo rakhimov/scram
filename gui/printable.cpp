@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file printable.cpp
+/// @file
 /// Implementation of default print functionality.
 
 #include "printable.h"

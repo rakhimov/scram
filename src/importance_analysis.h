@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file importance_analysis.h
+/// @file
 /// Contains functionality to do numerical analysis
 /// of importance factors.
 
