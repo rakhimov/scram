@@ -21,8 +21,8 @@
 #pragma GCC diagnostic ignored "-Wmissing-declarations"
 
 extern "C" {
-  int foo() { return 42; }
-  double bar() { return 42; }
-  float baz() { return 42; }
-  double identity(double arg) { return arg; }
+int foo() { return 42; }
+double bar() { return 42; }
+float baz() { return 42; }
+double identity(double arg) { return arg; }
 }

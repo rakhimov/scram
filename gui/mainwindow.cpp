@@ -52,6 +52,7 @@
 
 #include "diagram.h"
 #include "elementcontainermodel.h"
+#include "eventdialog.h"
 #include "guiassert.h"
 #include "importancetablemodel.h"
 #include "modeltree.h"
@@ -66,9 +67,11 @@
 namespace scram {
 namespace gui {
 
+/// The dialog to set the model name.
 class NameDialog : public QDialog, public Ui::NameDialog
 {
 public:
+    /// @param[in,out] parent  The owner widget.
     explicit NameDialog(QWidget *parent) : QDialog(parent)
     {
         setupUi(this);
@@ -76,18 +79,22 @@ public:
     }
 };
 
+/// The initial start tab.
 class StartPage : public QWidget, public Ui::StartPage
 {
 public:
+    /// @param[in,out] parent  The owner widget.
     explicit StartPage(QWidget *parent = nullptr) : QWidget(parent)
     {
         setupUi(this);
     }
 };
 
+/// The dialog to block user input while waiting for a long-running process.
 class WaitDialog : public QProgressDialog
 {
 public:
+    /// @param[in,out] parent  The owner widget.
     explicit WaitDialog(QWidget *parent) : QProgressDialog(parent)
     {
         setFixedSize(size());
@@ -100,6 +107,7 @@ public:
     }
 
 private:
+    /// Intercepts disruptive keyboard presses.
     void keyPressEvent(QKeyEvent *event) override
     {
         if (event->key() == Qt::Key_Escape)
@@ -108,16 +116,18 @@ private:
     }
 };
 
+/// The default view for graphics views (e.g., fault tree diagram).
 class DiagramView : public ZoomableView, public Printable
 {
 public:
     using ZoomableView::ZoomableView;
 
+    /// Exports the image of the diagram.
     void exportAs()
     {
         QString filename = QFileDialog::getSaveFileName(
-            this, tr("Export As"), QDir::homePath(),
-            tr("SVG files (*.svg);;All files (*.*)"));
+            this, QObject::tr("Export As"), QDir::homePath(),
+            QObject::tr("SVG files (*.svg);;All files (*.*)"));
         QSize sceneSize = scene()->sceneRect().size().toSize();
 
         QSvgGenerator generator;
@@ -144,7 +154,7 @@ private:
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow),
       m_undoStack(new QUndoStack(this)),
-      m_zoomBox(new QComboBox),  // Will be owned by the tool bar later.
+      m_zoomBox(new QComboBox), // Will be owned by the tool bar later.
       m_autoSaveTimer(new QTimer(this))
 {
     ui->setupUi(this);
@@ -155,9 +165,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_zoomBox->setValidator(Validator::percent());
     for (QAction *action : ui->menuZoom->actions()) {
         m_zoomBox->addItem(action->text());
-        connect(action, &QAction::triggered, m_zoomBox, [action, this] {
-            m_zoomBox->setCurrentText(action->text());
-        });
+        connect(action, &QAction::triggered, m_zoomBox,
+                [action, this] { m_zoomBox->setCurrentText(action->text()); });
     }
     m_zoomBox->setCurrentText(QStringLiteral("100%"));
     ui->zoomToolBar->addWidget(m_zoomBox); // Transfer the ownership.
@@ -179,15 +188,15 @@ void displayError(const scram::IOError &err, const QString &text,
     QMessageBox message(QMessageBox::Critical, QObject::tr("IO Error"), text,
                         QMessageBox::Ok, parent);
 
-    const std::string *filename
-        = boost::get_error_info<boost::errinfo_file_name>(err);
+    const std::string *filename =
+        boost::get_error_info<boost::errinfo_file_name>(err);
     GUI_ASSERT(filename, );
     message.setInformativeText(
         QObject::tr("File: %1").arg(QString::fromStdString(*filename)));
 
     std::stringstream detail;
-    if (const std::string *mode
-            = boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
+    if (const std::string *mode =
+            boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
         detail << "Open mode: " << *mode << "\n";
     }
     if (const int *errnum = boost::get_error_info<boost::errinfo_errno>(err)) {
@@ -208,31 +217,31 @@ void displayError(const scram::Error &err, const QString &title,
     QString info;
     auto newLine = [&info] { info.append(QStringLiteral("\n")); };
 
-    if (const std::string *filename
-            = boost::get_error_info<boost::errinfo_file_name>(err)) {
+    if (const std::string *filename =
+            boost::get_error_info<boost::errinfo_file_name>(err)) {
         info.append(
             QObject::tr("File: %1").arg(QString::fromStdString(*filename)));
         newLine();
-        if (const int *line
-                = boost::get_error_info<boost::errinfo_at_line>(err)) {
+        if (const int *line =
+                boost::get_error_info<boost::errinfo_at_line>(err)) {
             info.append(QObject::tr("Line: %1").arg(*line));
             newLine();
         }
     }
-    if (const std::string *container
-            = boost::get_error_info<scram::mef::errinfo_container>(err)) {
+    if (const std::string *container =
+            boost::get_error_info<scram::mef::errinfo_container>(err)) {
         info.append(QObject::tr("MEF Container: %1")
                         .arg(QString::fromStdString(*container)));
         newLine();
     }
-    if (const std::string *xml_element
-            = boost::get_error_info<scram::xml::errinfo_element>(err)) {
+    if (const std::string *xml_element =
+            boost::get_error_info<scram::xml::errinfo_element>(err)) {
         info.append(QObject::tr("XML element: %1")
                         .arg(QString::fromStdString(*xml_element)));
         newLine();
     }
-    if (const std::string *xml_attribute
-        = boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+    if (const std::string *xml_attribute =
+            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
         info.append(QObject::tr("XML attribute: %1")
                         .arg(QString::fromStdString(*xml_attribute)));
         newLine();
@@ -316,8 +325,8 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     } catch (const scram::mef::ValidityError &err) {
         displayError(err,
                      //: The error upon initialization from a file.
-                     tr("Initialization Error"),
-                     tr("Invalid input model"), this);
+                     tr("Initialization Error"), tr("Invalid input model"),
+                     this);
         return false;
     }
 
@@ -451,8 +460,7 @@ void MainWindow::setupActions()
     auto *searchAction = new QAction(this);
     searchAction->setShortcuts({QKeySequence::Find, Qt::Key_Slash});
     m_searchBar->addAction(searchAction);
-    connect(searchAction, &QAction::triggered,
-            [this] {
+    connect(searchAction, &QAction::triggered, [this] {
         if (m_searchBar->isHidden())
             return;
         m_searchBar->setFocus();
@@ -523,11 +531,10 @@ void MainWindow::setupConnections()
         resetModelTree();
         resetReportTree(nullptr);
     });
-    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTree,
-            [this] {
-                if (m_analysis)
-                    resetReportTree(nullptr);
-            });
+    connect(m_undoStack, &QUndoStack::indexChanged, ui->reportTree, [this] {
+        if (m_analysis)
+            resetReportTree(nullptr);
+    });
     connect(m_autoSaveTimer, &QTimer::timeout, this,
             &MainWindow::autoSaveModel);
 }
@@ -545,8 +552,8 @@ void MainWindow::loadPreferences()
         m_preferences.value(QStringLiteral("undoLimit"), 0).toInt());
 
     GUI_ASSERT(m_autoSaveTimer->isActive() == false, );
-    int interval
-        = m_preferences.value(QStringLiteral("autoSave"), 300000).toInt();
+    int interval =
+        m_preferences.value(QStringLiteral("autoSave"), 300000).toInt();
     if (interval)
         m_autoSaveTimer->start(interval);
 
@@ -562,7 +569,7 @@ void MainWindow::savePreferences()
     m_preferences.endGroup();
 
     QStringList fileList;
-    for (QAction* fileAction : m_recentFileActions) {
+    for (QAction *fileAction : m_recentFileActions) {
         if (!fileAction->isVisible())
             break;
         fileList.push_back(fileAction->text());
@@ -573,8 +580,8 @@ void MainWindow::savePreferences()
 void MainWindow::setupStartPage()
 {
     auto *startPage = new StartPage(this);
-    QString examplesDir
-        = QString::fromStdString(Env::install_dir() + "/share/scram/input");
+    QString examplesDir =
+        QString::fromStdString(Env::install_dir() + "/share/scram/input");
     startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
     connect(startPage->newModelButton, &QAbstractButton::clicked,
             ui->actionNewModel, &QAction::trigger);
@@ -590,8 +597,8 @@ void MainWindow::setupStartPage()
     for (QAction *fileAction : m_recentFileActions) {
         if (!fileAction->isVisible())
             break;
-        auto *button
-            = new QCommandLinkButton(QFileInfo(fileAction->text()).fileName());
+        auto *button =
+            new QCommandLinkButton(QFileInfo(fileAction->text()).fileName());
         button->setToolTip(fileAction->text());
         startPage->recentFilesBox->layout()->addWidget(button);
         connect(button, &QAbstractButton::clicked, fileAction,
@@ -682,7 +689,7 @@ void MainWindow::saveToFile(std::string destination)
         mef::Serialize(*m_model, temp_file.string());
         try {
             fs::rename(temp_file, destination);
-        } catch (const fs::filesystem_error& err) {
+        } catch (const fs::filesystem_error &err) {
             SCRAM_THROW(IOError(err.what()))
                 << boost::errinfo_file_name(destination)
                 << boost::errinfo_errno(err.code().value());
@@ -785,8 +792,8 @@ void MainWindow::runAnalysis()
     WaitDialog progress(this);
     //: This is a message shown during the analysis run.
     progress.setLabelText(tr("Running analysis..."));
-    auto analysis
-        = std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
+    auto analysis =
+        std::make_unique<core::RiskAnalysis>(m_model.get(), m_settings);
     QFutureWatcher<void> futureWatcher;
     connect(&futureWatcher, SIGNAL(finished()), &progress, SLOT(reset()));
     futureWatcher.setFuture(
@@ -814,14 +821,15 @@ void MainWindow::exportReportAs()
 
 void MainWindow::setupZoomableView(ZoomableView *view)
 {
-    struct ZoomFilter : public QObject {
+    struct ZoomFilter : public QObject
+    {
         ZoomFilter(ZoomableView *zoomable, MainWindow *window)
             : QObject(zoomable), m_window(window), m_zoomable(zoomable)
         {
         }
         bool eventFilter(QObject *object, QEvent *event) override
         {
-            auto setEnabled = [this] (bool state) {
+            auto setEnabled = [this](bool state) {
                 m_window->m_zoomBox->setEnabled(state);
                 m_window->ui->actionZoomIn->setEnabled(state);
                 m_window->ui->actionZoomIn->setEnabled(state);
@@ -871,14 +879,15 @@ template <class T>
 void MainWindow::setupPrintableView(T *view)
 {
     static_assert(std::is_base_of<QObject, T>::value, "Missing QObject");
-    struct PrintFilter : public QObject {
+    struct PrintFilter : public QObject
+    {
         PrintFilter(T *printable, MainWindow *window)
             : QObject(printable), m_window(window), m_printable(printable)
         {
         }
         bool eventFilter(QObject *object, QEvent *event) override
         {
-            auto setEnabled = [this] (bool state) {
+            auto setEnabled = [this](bool state) {
                 m_window->ui->actionPrint->setEnabled(state);
                 m_window->ui->actionPrintPreview->setEnabled(state);
             };
@@ -905,7 +914,8 @@ void MainWindow::setupPrintableView(T *view)
 template <class T>
 void MainWindow::setupExportableView(T *view)
 {
-    struct ExportFilter : public QObject {
+    struct ExportFilter : public QObject
+    {
         ExportFilter(T *exportable, MainWindow *window)
             : QObject(exportable), m_window(window), m_exportable(exportable)
         {
@@ -934,7 +944,8 @@ void MainWindow::setupExportableView(T *view)
 template <class T>
 void MainWindow::setupSearchable(QObject *view, T *model)
 {
-    struct SearchFilter : public QObject {
+    struct SearchFilter : public QObject
+    {
         SearchFilter(T *searchable, MainWindow *window)
             : QObject(searchable), m_window(window), m_searchable(searchable)
         {
@@ -965,14 +976,19 @@ void MainWindow::setupSearchable(QObject *view, T *model)
     view->installEventFilter(new SearchFilter(model, this));
 }
 
+/// Specialization to find the fault tree container of a gate.
+///
+/// @param[in] gate  The gate belonging exactly to one fault tree.
+///
+/// @returns The fault tree container with the given gate.
 template <>
 mef::FaultTree *MainWindow::getFaultTree(mef::Gate *gate)
 {
     /// @todo Duplicate code from EventDialog.
-    auto it = boost::find_if(
-        m_model->fault_trees(), [&gate](const mef::FaultTreePtr &faultTree) {
-            return faultTree->gates().count(gate->name());
-        });
+    auto it = boost::find_if(m_model->fault_trees(),
+                             [&gate](const mef::FaultTreePtr &faultTree) {
+                                 return faultTree->gates().count(gate->name());
+                             });
     GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
     return it->get();
 }
@@ -984,6 +1000,7 @@ void MainWindow::removeEvent(T *event, mef::FaultTree *faultTree)
         new model::Model::RemoveEvent<T>(event, m_guiModel.get(), faultTree));
 }
 
+/// Specialization to deal with complexities of gate/fault-tree removal.
 template <>
 void MainWindow::removeEvent(model::Gate *event, mef::FaultTree *faultTree)
 {
@@ -991,7 +1008,7 @@ void MainWindow::removeEvent(model::Gate *event, mef::FaultTree *faultTree)
     GUI_ASSERT(faultTree->gates().empty() == false, );
     if (faultTree->top_events().front() != event->data()) {
         m_undoStack->push(new model::Model::RemoveEvent<model::Gate>(
-                event, m_guiModel.get(), faultTree));
+            event, m_guiModel.get(), faultTree));
         return;
     }
     QString faultTreeName = QString::fromStdString(faultTree->name());
@@ -1019,9 +1036,12 @@ void MainWindow::removeEvent(model::Gate *event, mef::FaultTree *faultTree)
 template <class T>
 void MainWindow::setupRemovable(QAbstractItemView *view)
 {
-    struct RemoveFilter : public QObject {
+    struct RemoveFilter : public QObject
+    {
         RemoveFilter(QAbstractItemView *removable, MainWindow *window)
-            : QObject(removable), m_window(window), m_removable(removable) {}
+            : QObject(removable), m_window(window), m_removable(removable)
+        {
+        }
 
         void react(const QModelIndexList &indexes)
         {
@@ -1042,16 +1062,16 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                 connect(
                     m_window->ui->actionRemoveElement, &QAction::triggered,
                     m_removable, [this] {
-                        auto currentIndexes
-                            = m_removable->selectionModel()->selectedIndexes();
+                        auto currentIndexes =
+                            m_removable->selectionModel()->selectedIndexes();
                         GUI_ASSERT(currentIndexes.empty() == false, );
                         auto index = currentIndexes.front();
                         GUI_ASSERT(index.parent().isValid() == false, );
                         auto *element = static_cast<T *>(
                             index.data(Qt::UserRole).value<void *>());
                         GUI_ASSERT(element, );
-                        auto parents
-                            = m_window->m_guiModel->parents(element->data());
+                        auto parents =
+                            m_window->m_guiModel->parents(element->data());
                         if (!parents.empty()) {
                             QMessageBox::information(
                                 m_window,
@@ -1066,8 +1086,7 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
                             return;
                         }
                         m_window->removeEvent(
-                                element,
-                                m_window->getFaultTree(element->data()));
+                            element, m_window->getFaultTree(element->data()));
                     });
             } else if (event->type() == QEvent::Hide) {
                 m_window->ui->actionRemoveElement->setEnabled(false);
@@ -1084,6 +1103,11 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
     view->installEventFilter(new RemoveFilter(view, this));
 }
 
+/// Specialization to construct formula out of event editor data.
+///
+/// @param[in] dialog  The valid event dialog with data for a gate formula.
+///
+/// @returns A new formula with arguments from the event dialog.
 template <>
 mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
@@ -1106,11 +1130,12 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
     return formula;
 }
 
+/// Specialization to construct basic event out of event editor data.
 template <>
 mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
 {
-    auto basicEvent
-        = std::make_unique<mef::BasicEvent>(dialog.name().toStdString());
+    auto basicEvent =
+        std::make_unique<mef::BasicEvent>(dialog.name().toStdString());
     basicEvent->label(dialog.label().toStdString());
     switch (dialog.currentType()) {
     case EventDialog::BasicEvent:
@@ -1131,17 +1156,19 @@ mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
     return basicEvent;
 }
 
+/// Specialization to construct house event out of event editor data.
 template <>
 mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
 {
     GUI_ASSERT(dialog.currentType() == EventDialog::HouseEvent, nullptr);
-    auto houseEvent
-        = std::make_unique<mef::HouseEvent>(dialog.name().toStdString());
+    auto houseEvent =
+        std::make_unique<mef::HouseEvent>(dialog.name().toStdString());
     houseEvent->label(dialog.label().toStdString());
     houseEvent->state(dialog.booleanConstant());
     return houseEvent;
 }
 
+/// Specialization to construct gate out of event editor data.
 template <>
 mef::GatePtr MainWindow::extract(const EventDialog &dialog)
 {
@@ -1367,11 +1394,11 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
 }
 
 template <class ContainerModel, typename... Ts>
-QTableView *MainWindow::constructTableView(QWidget *parent, Ts&&... modelArgs)
+QTableView *MainWindow::constructTableView(QWidget *parent, Ts &&... modelArgs)
 {
     auto *table = new QTableView(parent);
-    auto *tableModel
-        = new ContainerModel(std::forward<Ts>(modelArgs)..., table);
+    auto *tableModel =
+        new ContainerModel(std::forward<Ts>(modelArgs)..., table);
     auto *proxyModel = new model::SortFilterProxyModel(table);
     proxyModel->setSourceModel(tableModel);
     table->setModel(proxyModel);
@@ -1474,8 +1501,8 @@ void MainWindow::activateModelTree(const QModelIndex &index)
             return;
         }
         case ModelTree::Row::BasicEvents: {
-            auto *table
-                = constructElementTable<model::BasicEventContainerModel>(
+            auto *table =
+                constructElementTable<model::BasicEventContainerModel>(
                     m_guiModel.get(), this);
             //: The tab for the table of basic events.
             ui->tabWidget->addTab(table, tr("Basic Events"));
@@ -1483,8 +1510,8 @@ void MainWindow::activateModelTree(const QModelIndex &index)
             return;
         }
         case ModelTree::Row::HouseEvents: {
-            auto *table
-                = constructElementTable<model::HouseEventContainerModel>(
+            auto *table =
+                constructElementTable<model::HouseEventContainerModel>(
                     m_guiModel.get(), this);
             //: The tab for the table of house events.
             ui->tabWidget->addTab(table, tr("House Events"));
@@ -1499,8 +1526,8 @@ void MainWindow::activateModelTree(const QModelIndex &index)
     GUI_ASSERT(index.parent().parent().isValid() == false, );
     GUI_ASSERT(index.parent().row()
                    == static_cast<int>(ModelTree::Row::FaultTrees), );
-    auto faultTree = static_cast<mef::FaultTree *>(
-        index.data(Qt::UserRole).value<void *>());
+    auto faultTree =
+        static_cast<mef::FaultTree *>(index.data(Qt::UserRole).value<void *>());
     GUI_ASSERT(faultTree, );
     activateFaultTreeDiagram(faultTree);
 }
@@ -1515,8 +1542,8 @@ void MainWindow::activateReportTree(const QModelIndex &index)
     GUI_ASSERT(parentIndex.parent().isValid() == false, );
     QString name = parentIndex.data(Qt::DisplayRole).toString();
     GUI_ASSERT(parentIndex.row() < m_analysis->results().size(), );
-    const core::RiskAnalysis::Result &result
-        = m_analysis->results()[parentIndex.row()];
+    const core::RiskAnalysis::Result &result =
+        m_analysis->results()[parentIndex.row()];
 
     QWidget *widget = nullptr;
     switch (static_cast<ReportTree::Row>(index.row())) {
@@ -1603,13 +1630,13 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
 
 void MainWindow::resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis)
 {
-    m_analysis = std::move(analysis);
-    ui->actionExportReportAs->setEnabled(static_cast<bool>(m_analysis));
+    ui->actionExportReportAs->setEnabled(static_cast<bool>(analysis));
 
     auto *oldModel = ui->reportTree->model();
     ui->reportTree->setModel(
-        m_analysis ? new ReportTree(&m_analysis->results(), this) : nullptr);
+        analysis ? new ReportTree(&analysis->results(), this) : nullptr);
     delete oldModel;
+    m_analysis = std::move(analysis);
 }
 
 } // namespace gui

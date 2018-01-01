@@ -117,7 +117,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const Bdd::VertexPtr& vertex,
     if (ite.complement_edge())
       low = 1 - low;
     ite.factor(high - low);
-  } else  {
+  } else {
     assert(ite.order() < order);
     double p_var = 0;
     if (ite.module()) {

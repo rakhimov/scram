@@ -5,108 +5,108 @@
     <name>EventDialog</name>
     <message>
       <source>Event Editor</source>
-      <translation type="unfinished">Event Editor</translation>
+      <translation>Éditeur d'Évenement</translation>
     </message>
     <message>
       <source>Label:</source>
-      <translation type="unfinished">Label:</translation>
+      <translation>Étiquette :</translation>
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Nom :</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation type="unfinished">Type:</translation>
+      <translation>Type :</translation>
     </message>
     <message>
       <source>House event</source>
       <extracomment>Constant event w/ Boolean state value</extracomment>
-      <translation type="unfinished">House event</translation>
+      <translation>Événement maison</translation>
     </message>
     <message>
       <source>Basic event</source>
       <extracomment>The main analysis event (e.g., component failure)</extracomment>
-      <translation type="unfinished">Basic event</translation>
+      <translation>Événement de Base</translation>
     </message>
     <message>
       <source>Undeveloped</source>
       <extracomment>The basic event flavor that indicates the further developement into a gate is possible.</extracomment>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Événement non développé</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Conditionnel</translation>
     </message>
     <message>
       <source>Gate</source>
       <extracomment>The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.</extracomment>
-      <translation type="unfinished">Gate</translation>
+      <translation>Porte</translation>
     </message>
     <message>
       <source>State:</source>
-      <translation type="unfinished">State:</translation>
+      <translation>État :</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Faux</translation>
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Vrai</translation>
     </message>
     <message>
       <source>Expression</source>
-      <translation type="unfinished">Expression</translation>
+      <translation>Expression</translation>
     </message>
     <message>
       <source>Value:</source>
-      <translation type="unfinished">Value:</translation>
+      <translation>Valeur :</translation>
     </message>
     <message>
       <source>Rate:</source>
-      <translation type="unfinished">Rate:</translation>
+      <translation>Taux :</translation>
     </message>
     <message>
       <source>Connective:</source>
-      <translation type="unfinished">Connective:</translation>
+      <translation>Conjonction :</translation>
     </message>
     <message>
       <source>AND</source>
-      <translation type="unfinished">AND</translation>
+      <translation>ET</translation>
     </message>
     <message>
       <source>OR</source>
-      <translation type="unfinished">OR</translation>
+      <translation>OU</translation>
     </message>
     <message>
       <source>ATLEAST</source>
       <extracomment>VOTE, Voting OR, Combo, Combination, K/N gate</extracomment>
-      <translation type="unfinished">ATLEAST</translation>
+      <translation>AU MOINS</translation>
     </message>
     <message>
       <source>XOR</source>
       <extracomment>Exclusive OR</extracomment>
-      <translation type="unfinished">XOR</translation>
+      <translation>OU exclusif</translation>
     </message>
     <message>
       <source>NOT</source>
-      <translation type="unfinished">NOT</translation>
+      <translation>NON</translation>
     </message>
     <message>
       <source>NAND</source>
       <extracomment>NOT AND</extracomment>
-      <translation type="unfinished">NAND</translation>
+      <translation>NON-ET</translation>
     </message>
     <message>
       <source>NOR</source>
       <extracomment>NOT OR</extracomment>
-      <translation type="unfinished">NOR</translation>
+      <translation>NON-OU</translation>
     </message>
     <message>
       <source>Min:</source>
-      <translation type="unfinished">Min:</translation>
+      <translation>Min :</translation>
     </message>
     <message>
       <source>Add argument with its ID</source>
@@ -122,62 +122,62 @@
     </message>
     <message>
       <source>Container</source>
-      <translation type="unfinished">Container</translation>
+      <translation>Conteneur</translation>
     </message>
     <message>
       <source>Fault tree:</source>
-      <translation type="unfinished">Fault tree:</translation>
+      <translation>Arbre de défaillance :</translation>
     </message>
     <message>
       <source>Model</source>
-      <translation type="unfinished">Model</translation>
+      <translation>Modèle</translation>
     </message>
     <message>
       <source>Constant</source>
       <comment>constant probability value</comment>
-      <translation type="unfinished">Constant</translation>
+      <translation>Constante</translation>
     </message>
     <message>
       <source>Exponential</source>
       <comment>probability type defined w/ negative exponential formula</comment>
-      <translation type="unfinished">Exponential</translation>
+      <translation>Exponentielle</translation>
     </message>
     <message>
       <source>NULL</source>
       <comment>Not a null value.</comment>
       <extracomment>Pass-through, NO-OP type</extracomment>
-      <translation type="unfinished">NULL</translation>
+      <translation>NULL</translation>
     </message>
   </context>
   <context>
     <name>MainWindow</name>
     <message>
       <source>&amp;Help</source>
-      <translation type="unfinished">&amp;Help</translation>
+      <translation>&amp;Aide</translation>
     </message>
     <message>
       <source>&amp;File</source>
-      <translation type="unfinished">&amp;File</translation>
+      <translation>&amp;Fichier</translation>
     </message>
     <message>
       <source>&amp;View</source>
-      <translation type="unfinished">&amp;View</translation>
+      <translation>&amp;Vue</translation>
     </message>
     <message>
       <source>&amp;Zoom</source>
-      <translation type="unfinished">&amp;Zoom</translation>
+      <translation>&amp;Zoom</translation>
     </message>
     <message>
       <source>&amp;Toolbars</source>
-      <translation type="unfinished">&amp;Toolbars</translation>
+      <translation>&amp;Barres d'outils</translation>
     </message>
     <message>
       <source>&amp;Analysis</source>
-      <translation type="unfinished">&amp;Analysis</translation>
+      <translation>&amp;Analyse</translation>
     </message>
     <message>
       <source>&amp;Edit</source>
-      <translation type="unfinished">&amp;Edit</translation>
+      <translation>&amp;Édition</translation>
     </message>
     <message>
       <source>Model Tool Bar</source>
@@ -197,15 +197,15 @@
     </message>
     <message>
       <source>Data</source>
-      <translation type="unfinished">Data</translation>
+      <translation>Données</translation>
     </message>
     <message>
       <source>Reports</source>
-      <translation type="unfinished">Reports</translation>
+      <translation>Rapports</translation>
     </message>
     <message>
       <source>About &amp;Qt</source>
-      <translation type="unfinished">About &amp;Qt</translation>
+      <translation>À propos de &amp;Qt</translation>
     </message>
     <message>
       <source>About the Qt toolkit</source>
@@ -213,11 +213,11 @@
     </message>
     <message>
       <source>About &amp;SCRAM</source>
-      <translation type="unfinished">About &amp;SCRAM</translation>
+      <translation>À propos de &amp;SCRAM</translation>
     </message>
     <message>
       <source>E&amp;xit</source>
-      <translation type="unfinished">E&amp;xit</translation>
+      <translation>Q&amp;uitter</translation>
     </message>
     <message>
       <source>Exit the Application</source>
@@ -237,7 +237,7 @@
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Ouvrir Fichiers de Modèle</translation>
     </message>
     <message>
       <source>&amp;Save Model</source>
@@ -249,51 +249,51 @@
     </message>
     <message>
       <source>&amp;Print...</source>
-      <translation type="unfinished">&amp;Print...</translation>
+      <translation>&amp;Imprimer...</translation>
     </message>
     <message>
       <source>Print</source>
-      <translation type="unfinished">Print</translation>
+      <translation>Imprimer</translation>
     </message>
     <message>
       <source>&amp;Export As...</source>
-      <translation type="unfinished">&amp;Export As...</translation>
+      <translation>&amp;Exporter sous...</translation>
     </message>
     <message>
       <source>Zoom &amp;In</source>
-      <translation type="unfinished">Zoom &amp;In</translation>
+      <translation>Zoom &amp;Avant</translation>
     </message>
     <message>
       <source>Zoom &amp;Out</source>
-      <translation type="unfinished">Zoom &amp;Out</translation>
+      <translation>Zoom A&amp;rrière</translation>
     </message>
     <message>
       <source>Best &amp;Fit</source>
-      <translation type="unfinished">Best &amp;Fit</translation>
+      <translation>Meilleur &amp;Fit</translation>
     </message>
     <message>
       <source>Run Analysis</source>
-      <translation type="unfinished">Run Analysis</translation>
+      <translation>Exécuter Analyse</translation>
     </message>
     <message>
       <source>Analysis Settings</source>
-      <translation type="unfinished">Analysis Settings</translation>
+      <translation>Paramètres d'analyse</translation>
     </message>
     <message>
       <source>&amp;Model</source>
-      <translation type="unfinished">&amp;Model</translation>
+      <translation>&amp;Modèle</translation>
     </message>
     <message>
       <source>&amp;Data</source>
-      <translation type="unfinished">&amp;Data</translation>
+      <translation>&amp;Données</translation>
     </message>
     <message>
       <source>&amp;Reports</source>
-      <translation type="unfinished">&amp;Reports</translation>
+      <translation>&amp;Rapports</translation>
     </message>
     <message>
       <source>Print Previe&amp;w...</source>
-      <translation type="unfinished">Print Previe&amp;w...</translation>
+      <translation>A&amp;perçu d'Impression...</translation>
     </message>
     <message>
       <source>&amp;Add Element</source>
@@ -314,20 +314,20 @@
     <message>
       <source>&amp;Run</source>
       <comment>execute analysis</comment>
-      <translation type="unfinished">&amp;Run</translation>
+      <translation>&amp;Exécuter</translation>
     </message>
     <message>
       <source>&amp;Settings...</source>
       <comment>analysis configuration</comment>
-      <translation type="unfinished">&amp;Settings...</translation>
+      <translation>&amp;Paramètres...</translation>
     </message>
     <message>
       <source>Recent &amp;Files</source>
-      <translation type="unfinished">Recent &amp;Files</translation>
+      <translation>Fichiers &amp;Récents</translation>
     </message>
     <message>
       <source>&amp;Preferences...</source>
-      <translation type="unfinished">&amp;Preferences...</translation>
+      <translation>&amp;Préférences...</translation>
     </message>
     <message>
       <source>&amp;Clear List</source>
@@ -342,31 +342,31 @@
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Nom :</translation>
     </message>
   </context>
   <context>
     <name>PreferencesDialog</name>
     <message>
       <source>Preferences</source>
-      <translation type="unfinished">Preferences</translation>
+      <translation>Préférences</translation>
     </message>
     <message>
       <source>Lanuage:</source>
-      <translation type="unfinished">Lanuage:</translation>
+      <translation>Langue :</translation>
     </message>
     <message>
       <source>Undo limit:</source>
-      <translation type="unfinished">Undo limit:</translation>
+      <translation>Annuler la limite :</translation>
     </message>
     <message>
       <source>Auto-save:</source>
-      <translation type="unfinished">Auto-save:</translation>
+      <translation>Sauvegarde automatique :</translation>
     </message>
     <message>
       <source>min</source>
       <extracomment>Shortened time unit for &apos;minutes&apos;</extracomment>
-      <translation type="unfinished">min</translation>
+      <translation>min</translation>
     </message>
   </context>
   <context>
@@ -405,11 +405,11 @@
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Vrai</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Faux</translation>
     </message>
     <message>
       <source>Add event &apos;%1&apos;</source>
@@ -425,108 +425,108 @@
     </message>
     <message>
       <source>IO Error</source>
-      <translation type="unfinished">IO Error</translation>
+      <translation>Erreur d'E/S</translation>
     </message>
     <message>
       <source>File: %1</source>
-      <translation type="unfinished">File: %1</translation>
+      <translation>Fichier : %1</translation>
     </message>
     <message>
       <source>Line: %1</source>
-      <translation type="unfinished">Line: %1</translation>
+      <translation>Ligne : %1</translation>
     </message>
     <message>
       <source>MEF Container: %1</source>
-      <translation type="unfinished">MEF Container: %1</translation>
+      <translation>Conteneur MEF : %1</translation>
     </message>
     <message>
       <source>XML element: %1</source>
-      <translation type="unfinished">XML element: %1</translation>
+      <translation>Élément XML : %1</translation>
     </message>
     <message>
       <source>XML attribute: %1</source>
-      <translation type="unfinished">XML attribute: %1</translation>
+      <translation>Attribut XML : %1</translation>
     </message>
   </context>
   <context>
     <name>SettingsDialog</name>
     <message>
       <source>Analysis Settings</source>
-      <translation type="unfinished">Analysis Settings</translation>
+      <translation>Paramètres d'analyse</translation>
     </message>
     <message>
       <source>Approximations</source>
-      <translation type="unfinished">Approximations</translation>
+      <translation>Approximations</translation>
     </message>
     <message>
       <source>Rare-event</source>
-      <translation type="unfinished">Rare-event</translation>
+      <translation>Événement-rare</translation>
     </message>
     <message>
       <source>Analyses</source>
-      <translation type="unfinished">Analyses</translation>
+      <translation>Analyses</translation>
     </message>
     <message>
       <source>Prime implicants</source>
-      <translation type="unfinished">Prime implicants</translation>
+      <translation>Premier implicants</translation>
     </message>
     <message>
       <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilité</translation>
     </message>
     <message>
       <source>Importance</source>
-      <translation type="unfinished">Importance</translation>
+      <translation>Importance</translation>
     </message>
     <message>
       <source>Algorithms</source>
-      <translation type="unfinished">Algorithms</translation>
+      <translation>Algorithmes</translation>
     </message>
     <message>
       <source>Limits</source>
-      <translation type="unfinished">Limits</translation>
+      <translation>Limites</translation>
     </message>
     <message>
       <source>Mission time:</source>
-      <translation type="unfinished">Mission time:</translation>
+      <translation>Temps de mission :</translation>
     </message>
     <message>
       <source>Product order:</source>
-      <translation type="unfinished">Product order:</translation>
+      <translation>Ordre de produit :</translation>
     </message>
   </context>
   <context>
     <name>StartPage</name>
     <message>
       <source>Start Here</source>
-      <translation type="unfinished">Start Here</translation>
+      <translation>Commencez Ici</translation>
     </message>
     <message>
       <source>Start a New Model</source>
-      <translation type="unfinished">Start a New Model</translation>
+      <translation>Commencer un Nouveau Modèle</translation>
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Ouvrir Fichiers de Modèle</translation>
     </message>
     <message>
       <source>Example Models</source>
-      <translation type="unfinished">Example Models</translation>
+      <translation>Modèles d'Exemple</translation>
     </message>
     <message>
       <source>Recent Files</source>
-      <translation type="unfinished">Recent Files</translation>
+      <translation>Fichiers Récents</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::DiagramView</name>
     <message>
       <source>Export As</source>
-      <translation type="unfinished">Export As</translation>
+      <translation>Exporter Sous</translation>
     </message>
     <message>
       <source>SVG files (*.svg);;All files (*.*)</source>
-      <translation type="unfinished">SVG files (*.svg);;All files (*.*)</translation>
+      <translation>Fichiers SVG (*.svg);;Tous les fichiers (*.*)</translation>
     </message>
   </context>
   <context>
@@ -602,12 +602,12 @@
     </message>
     <message>
       <source>Configuration Error</source>
-      <translation type="unfinished">Configuration Error</translation>
+      <translation>Erreur de configuration</translation>
     </message>
     <message>
       <source>Initialization Error</source>
       <extracomment>The error upon initialization from a file.</extracomment>
-      <translation type="unfinished">Initialization Error</translation>
+      <translation>Erreur d'initialisation</translation>
     </message>
     <message>
       <source>Fault tree &apos;%1&apos; must have a single top-gate.</source>
@@ -621,15 +621,15 @@
     </message>
     <message>
       <source>About SCRAM</source>
-      <translation type="unfinished">About SCRAM</translation>
+      <translation>À propos de SCRAM</translation>
     </message>
     <message>
       <source>Undo:</source>
-      <translation type="unfinished">Undo:</translation>
+      <translation>Annuler :</translation>
     </message>
     <message>
       <source>Redo:</source>
-      <translation type="unfinished">Redo:</translation>
+      <translation>Refaire :</translation>
     </message>
     <message>
       <source>Save Model?</source>
@@ -641,7 +641,7 @@
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Ouvrir Fichiers de Modèle</translation>
     </message>
     <message>
       <source>Model Exchange Format</source>
@@ -649,7 +649,7 @@
     </message>
     <message>
       <source>All files</source>
-      <translation type="unfinished">All files</translation>
+      <translation>Tous les fichiers</translation>
     </message>
     <message>
       <source>Save Model As</source>
@@ -689,74 +689,30 @@
     <message>
       <source>Gates</source>
       <extracomment>The tab for the table of gates.</extracomment>
-      <translation type="unfinished">Gates</translation>
+      <translation>Portes</translation>
     </message>
     <message>
       <source>Basic Events</source>
       <extracomment>The tab for the table of basic events.</extracomment>
-      <translation type="unfinished">Basic Events</translation>
+      <translation>Événements de base</translation>
     </message>
     <message>
       <source>House Events</source>
       <extracomment>The tab for the table of house events.</extracomment>
-      <translation type="unfinished">House Events</translation>
+      <translation>Événements maison</translation>
     </message>
     <message>
       <source>Fault Tree: %1</source>
       <extracomment>The tab for a fault tree diagram.</extracomment>
-      <translation type="unfinished">Fault Tree: %1</translation>
-    </message>
-    <message>
-      <source>Product</source>
-      <translation type="unfinished">Product</translation>
-    </message>
-    <message>
-      <source>Order</source>
-      <translation type="unfinished">Order</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
-    </message>
-    <message>
-      <source>Contribution</source>
-      <translation type="unfinished">Contribution</translation>
+      <translation>Arbre de défaillance : %1</translation>
     </message>
     <message>
       <source>Products: %1</source>
-      <translation type="unfinished">Products: %1</translation>
-    </message>
-    <message>
-      <source>ID</source>
-      <translation type="unfinished">ID</translation>
-    </message>
-    <message>
-      <source>Occurrence</source>
-      <translation type="unfinished">Occurrence</translation>
-    </message>
-    <message>
-      <source>MIF</source>
-      <translation type="unfinished">MIF</translation>
-    </message>
-    <message>
-      <source>CIF</source>
-      <translation type="unfinished">CIF</translation>
-    </message>
-    <message>
-      <source>DIF</source>
-      <translation type="unfinished">DIF</translation>
-    </message>
-    <message>
-      <source>RAW</source>
-      <translation type="unfinished">RAW</translation>
-    </message>
-    <message>
-      <source>RRW</source>
-      <translation type="unfinished">RRW</translation>
+      <translation>Produits : %1</translation>
     </message>
     <message>
       <source>Importance: %1</source>
-      <translation type="unfinished">Importance: %1</translation>
+      <translation>Importance : %1</translation>
     </message>
     <message>
       <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
@@ -764,19 +720,19 @@
     </message>
     <message>
       <source>Configuration file error</source>
-      <translation type="unfinished">Configuration file error</translation>
+      <translation>Erreur de fichier de configuration</translation>
     </message>
     <message>
       <source>XML Validity Error</source>
-      <translation type="unfinished">XML Validity Error</translation>
+      <translation>Erreur de validité XML</translation>
     </message>
     <message>
       <source>Invalid configuration file</source>
-      <translation type="unfinished">Invalid configuration file</translation>
+      <translation>Fichier de configuration non valide</translation>
     </message>
     <message>
       <source>Invalid configurations</source>
-      <translation type="unfinished">Invalid configurations</translation>
+      <translation>Configurations invalides</translation>
     </message>
     <message>
       <source>Input file error</source>
@@ -803,53 +759,54 @@
       <source>Reporting error</source>
       <translation type="unfinished">Reporting error</translation>
     </message>
-    <message>
-      <source>Products (%L1)</source>
-      <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-      <translation type="unfinished">Products (%L1)</translation>
-    </message>
-    <message>
-      <source>Probability (%1)</source>
-      <translation type="unfinished">Probability (%1)</translation>
-    </message>
-    <message>
-      <source>Importance Factors (%L1)</source>
-      <extracomment>The number of important events w/ factors defined.</extracomment>
-      <translation type="unfinished">Importance Factors (%L1)</translation>
-    </message>
   </context>
   <context>
     <name>scram::gui::ModelTree</name>
     <message>
       <source>Fault Trees (%L1)</source>
       <extracomment>The parent item for collections of fault trees in the model.</extracomment>
-      <translation type="unfinished">Fault Trees (%L1)</translation>
+      <translation>Arbres de défaillance (%L1)</translation>
     </message>
     <message>
       <source>Gates (%L1)</source>
       <extracomment>The table of gates.</extracomment>
-      <translation type="unfinished">Gates (%L1)</translation>
+      <translation>Portes (%L1)</translation>
     </message>
     <message>
       <source>Basic Events (%L1)</source>
       <extracomment>The table of basic events.</extracomment>
-      <translation type="unfinished">Basic Events (%L1)</translation>
+      <translation>Événements de base (%L1)</translation>
     </message>
     <message>
       <source>House Events (%L1)</source>
       <extracomment>The table of house events.</extracomment>
-      <translation type="unfinished">House Events (%L1)</translation>
+      <translation>Événements maison (%L1)</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::PreferencesDialog</name>
     <message>
       <source>Restart Required</source>
-      <translation type="unfinished">Restart Required</translation>
+      <translation>Redémarrage Requis</translation>
     </message>
     <message>
       <source>The language change will take effect after an application restart.</source>
       <translation type="unfinished">The language change will take effect after an application restart.</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::ReportTree</name>
+    <message>
+      <source>Products (%L1)</source>
+      <translation>Produits (%L1)</translation>
+    </message>
+    <message>
+      <source>Probability (%1)</source>
+      <translation>Probabilité (%1)</translation>
+    </message>
+    <message>
+      <source>Importance Factors (%L1)</source>
+      <translation>Facteurs d’importance (%L1)</translation>
     </message>
   </context>
   <context>
@@ -860,113 +817,167 @@
     </message>
     <message>
       <source>Basic</source>
-      <translation type="unfinished">Basic</translation>
+      <translation>Base</translation>
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Non développé</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Conditionnel</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::BasicEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Flavor</source>
       <extracomment>The flavor type of a basic event.</extracomment>
-      <translation type="unfinished">Flavor</translation>
+      <translation>Variante</translation>
     </message>
     <message>
       <source>Probability</source>
       <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilité</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Étiquette</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::Gate</name>
     <message>
       <source>and</source>
-      <translation type="unfinished">and</translation>
+      <translation>et</translation>
     </message>
     <message>
       <source>or</source>
-      <translation type="unfinished">or</translation>
+      <translation>ou</translation>
     </message>
     <message>
       <source>at-least %1</source>
       <extracomment>Also named as &apos;vote&apos;, &apos;voting or&apos;, &apos;combination&apos;, &apos;combo&apos;.</extracomment>
-      <translation type="unfinished">at-least %1</translation>
+      <translation>au moins %1</translation>
     </message>
     <message>
       <source>xor</source>
-      <translation type="unfinished">xor</translation>
+      <translation>ou exclusif</translation>
     </message>
     <message>
       <source>not</source>
-      <translation type="unfinished">not</translation>
+      <translation>non</translation>
     </message>
     <message>
       <source>null</source>
       <extracomment>This is &apos;pass-through&apos; or &apos;no-action&apos; gate type.</extracomment>
-      <translation type="unfinished">null</translation>
+      <translation>null</translation>
     </message>
     <message>
       <source>nand</source>
       <extracomment>not and.</extracomment>
-      <translation type="unfinished">nand</translation>
+      <translation>non-et</translation>
     </message>
     <message>
       <source>nor</source>
       <extracomment>not or.</extracomment>
-      <translation type="unfinished">nor</translation>
+      <translation>non-ou</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::GateContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Connective</source>
       <extracomment>Boolean operator of the Boolean formula.</extracomment>
-      <translation type="unfinished">Connective</translation>
+      <translation>Conjonction</translation>
     </message>
     <message>
       <source>Args</source>
       <extracomment>The number of arguments in the Boolean formula.</extracomment>
-      <translation type="unfinished">Args</translation>
+      <translation>Args</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Étiquette</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::HouseEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>State</source>
       <extracomment>House event Boolean state.</extracomment>
-      <translation type="unfinished">State</translation>
+      <translation>État</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Étiquette</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ImportanceTableModel</name>
+    <message>
+      <source>ID</source>
+      <translation>ID</translation>
+    </message>
+    <message>
+      <source>Occurrence</source>
+      <translation>Occurrence</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Probabilité</translation>
+    </message>
+    <message>
+      <source>MIF</source>
+      <translation>MIF</translation>
+    </message>
+    <message>
+      <source>CIF</source>
+      <translation>CIF</translation>
+    </message>
+    <message>
+      <source>DIF</source>
+      <translation>DIF</translation>
+    </message>
+    <message>
+      <source>RAW</source>
+      <translation>RAW</translation>
+    </message>
+    <message>
+      <source>RRW</source>
+      <translation>RRW</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ProductTableModel</name>
+    <message>
+      <source>Product</source>
+      <translation>Produit</translation>
+    </message>
+    <message>
+      <source>Order</source>
+      <translation>Ordre</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Probabilité</translation>
+    </message>
+    <message>
+      <source>Contribution</source>
+      <translation>Contribution</translation>
     </message>
   </context>
 </TS>

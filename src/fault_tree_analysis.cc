@@ -93,9 +93,7 @@ std::vector<int> ProductContainer::Distribution() const {
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,
                                      const Settings& settings,
                                      const mef::Model* model)
-    : Analysis(settings),
-      top_event_(root),
-      model_(model) {}
+    : Analysis(settings), top_event_(root), model_(model) {}
 
 void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);

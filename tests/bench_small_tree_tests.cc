@@ -26,7 +26,7 @@ namespace test {
 // Benchmark Tests for Small Tree fault tree from XFTA.
 // This benchmark is for uncertainty analysis.
 TEST_P(RiskAnalysisTest, SmallTree) {
-  std::string tree_input = "./share/scram/input/SmallTree/SmallTree.xml";
+  std::string tree_input = "input/SmallTree/SmallTree.xml";
   settings.uncertainty_analysis(true);
   settings.num_trials(10000);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));

@@ -708,52 +708,8 @@
       <translation>Дерево отказов: %1</translation>
     </message>
     <message>
-      <source>Product</source>
-      <translation>Произведение</translation>
-    </message>
-    <message>
-      <source>Order</source>
-      <translation>Мощность</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <translation>Вероятность</translation>
-    </message>
-    <message>
-      <source>Contribution</source>
-      <translation>Вклад</translation>
-    </message>
-    <message>
       <source>Products: %1</source>
       <translation>Произведения: %1</translation>
-    </message>
-    <message>
-      <source>ID</source>
-      <translation>ID</translation>
-    </message>
-    <message>
-      <source>Occurrence</source>
-      <translation>Возникновение</translation>
-    </message>
-    <message>
-      <source>MIF</source>
-      <translation>МФВ</translation>
-    </message>
-    <message>
-      <source>CIF</source>
-      <translation>КФВ</translation>
-    </message>
-    <message>
-      <source>DIF</source>
-      <translation>ДФВ</translation>
-    </message>
-    <message>
-      <source>RAW</source>
-      <translation>ЦДР</translation>
-    </message>
-    <message>
-      <source>RRW</source>
-      <translation>ЦУР</translation>
     </message>
     <message>
       <source>Importance: %1</source>
@@ -804,20 +760,6 @@
       <source>Reporting error</source>
       <translation>Ошибка при отчете</translation>
     </message>
-    <message>
-      <source>Products (%L1)</source>
-      <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-      <translation>Произведения (%L1)</translation>
-    </message>
-    <message>
-      <source>Probability (%1)</source>
-      <translation>Вероятность (%1)</translation>
-    </message>
-    <message>
-      <source>Importance Factors (%L1)</source>
-      <extracomment>The number of important events w/ factors defined.</extracomment>
-      <translation>Факторы важности (%L1)</translation>
-    </message>
   </context>
   <context>
     <name>scram::gui::ModelTree</name>
@@ -851,6 +793,21 @@
     <message>
       <source>The language change will take effect after an application restart.</source>
       <translation>Языковые изменения вступят в силу после перезапуска приложения.</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::ReportTree</name>
+    <message>
+      <source>Products (%L1)</source>
+      <translation>Произведения (%L1)</translation>
+    </message>
+    <message>
+      <source>Probability (%1)</source>
+      <translation>Вероятность (%1)</translation>
+    </message>
+    <message>
+      <source>Importance Factors (%L1)</source>
+      <translation>Факторы важности (%L1)</translation>
     </message>
   </context>
   <context>
@@ -968,6 +925,60 @@
     <message>
       <source>Label</source>
       <translation>Метка</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ImportanceTableModel</name>
+    <message>
+      <source>ID</source>
+      <translation>ID</translation>
+    </message>
+    <message>
+      <source>Occurrence</source>
+      <translation>Возникновение</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Вероятность</translation>
+    </message>
+    <message>
+      <source>MIF</source>
+      <translation>МФВ</translation>
+    </message>
+    <message>
+      <source>CIF</source>
+      <translation>КФВ</translation>
+    </message>
+    <message>
+      <source>DIF</source>
+      <translation>ДФВ</translation>
+    </message>
+    <message>
+      <source>RAW</source>
+      <translation>ЦДР</translation>
+    </message>
+    <message>
+      <source>RRW</source>
+      <translation>ЦУР</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ProductTableModel</name>
+    <message>
+      <source>Product</source>
+      <translation>Произведение</translation>
+    </message>
+    <message>
+      <source>Order</source>
+      <translation>Мощность</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Вероятность</translation>
+    </message>
+    <message>
+      <source>Contribution</source>
+      <translation>Вклад</translation>
     </message>
   </context>
 </TS>

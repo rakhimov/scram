@@ -1,3 +1,6 @@
+# Qt Generated Project Configuration
+CMakeLists.txt.user
+
 # Build directories
 build/
 build-*/

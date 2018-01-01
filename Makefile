@@ -61,6 +61,7 @@ build/complexity_report.txt:
 doxygen: build/complexity_report.txt
 	@echo "Generating Doxygen docs..."
 	doxygen doxygen.conf
+	doxygen gui_doxygen.conf
 	@echo
 	@echo "Generated Doxygen docs from the C++ source."
 

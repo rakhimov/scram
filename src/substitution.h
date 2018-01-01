@@ -41,11 +41,7 @@ class Substitution : public Element, private boost::noncopyable {
   using Target = boost::variant<BasicEvent*, bool>;  ///< The target type.
 
   /// The "traditional" substitution types.
-  enum Type {
-    kDeleteTerms,
-    kRecoveryRule,
-    kExchangeEvent
-  };
+  enum Type { kDeleteTerms, kRecoveryRule, kExchangeEvent };
 
   using Element::Element;
 

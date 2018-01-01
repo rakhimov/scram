@@ -24,7 +24,7 @@ namespace core {
 namespace test {
 
 TEST_P(RiskAnalysisTest, AttackEventTree) {
-  const char* tree_input = "./share/scram/input/EventTrees/attack.xml";
+  const char* tree_input = "input/EventTrees/attack.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());

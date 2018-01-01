@@ -24,8 +24,6 @@
 namespace scram {
 namespace gui {
 
-const int ZoomableView::m_minZoomLevel = 10;
-
 void ZoomableView::setZoom(int level)
 {
     if (level == m_zoom)
@@ -46,10 +44,10 @@ void ZoomableView::zoomBestFit()
 {
     QSize viewSize = size();
     QSize sceneSize = scene()->sceneRect().size().toSize();
-    double ratioHeight
-        = static_cast<double>(viewSize.height()) / sceneSize.height();
-    double ratioWidth
-        = static_cast<double>(viewSize.width()) / sceneSize.width();
+    double ratioHeight =
+        static_cast<double>(viewSize.height()) / sceneSize.height();
+    double ratioWidth =
+        static_cast<double>(viewSize.width()) / sceneSize.width();
     setZoom(std::min(ratioHeight, ratioWidth) * 100);
 }
 

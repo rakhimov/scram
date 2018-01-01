@@ -61,8 +61,9 @@ void Pow::Validate() const {
   if (arg_one->value() == 0 && arg_two->value() <= 0)
     SCRAM_THROW(DomainError("0 to power 0 or less is undefined."));
   if (Contains(arg_one->interval(), 0) && !IsPositive(arg_two->interval())) {
-    SCRAM_THROW(DomainError("Power expression 'base' sample range contains 0);"
-                            " positive exponent is required."));
+    SCRAM_THROW(
+        DomainError("Power expression 'base' sample range contains 0);"
+                    " positive exponent is required."));
   }
 }
 /// @endcond

@@ -88,7 +88,7 @@ class Reporter {
   ///
   /// @param[in] settings  The whole analysis settings.
   /// @param[in,out] information  The XML element to append the results.
-  template<class T = core::RiskAnalysis>
+  template <class T = core::RiskAnalysis>
   void ReportCalculatedQuantity(const core::Settings& settings,
                                 xml::StreamElement* information);
 

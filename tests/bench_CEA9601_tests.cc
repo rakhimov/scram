@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 Olzhas Rakhimov
+ * Copyright (C) 2014-2017 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@ namespace test {
 #ifdef NDEBUG
 TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
   std::vector<std::string> input_files = {
-      "./share/scram/input/CEA9601/CEA9601.xml",
-      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
+      "input/CEA9601/CEA9601.xml", "input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(4).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -42,8 +41,7 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
 
 TEST_F(RiskAnalysisTest, CEA9601_Test_ZBDD) {
   std::vector<std::string> input_files = {
-      "./share/scram/input/CEA9601/CEA9601.xml",
-      "./share/scram/input/CEA9601/CEA9601-basic-events.xml"};
+      "input/CEA9601/CEA9601.xml", "input/CEA9601/CEA9601-basic-events.xml"};
   settings.limit_order(3).algorithm("zbdd").probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(analysis->Analyze());

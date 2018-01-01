@@ -20,8 +20,9 @@
 
 #include "extern.h"
 
-#include <boost/filesystem.hpp>
 #include <boost/predef.h>
+
+#include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
 #if BOOST_VERSION < 106100
@@ -57,7 +58,8 @@ class ExternLibrary::Pimpl {
  public:
   /// Loads the library for ExternLibrary.
   Pimpl(std::string lib_path, const fs::path& reference_dir, bool system,
-        bool decorate) : lib_handle_(nullptr) {
+        bool decorate)
+      : lib_handle_(nullptr) {
     if (decorate) {
       lib_path += ".so";
       auto pos = lib_path.rfind('/');
@@ -140,6 +142,7 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
     : Element(std::move(name)) {
   fs::path fs_path(lib_path);
   std::string filename = fs_path.filename().string();
+  // clang-format off
   if (fs_path.empty() ||
       filename == "." ||
       filename == ".." ||
@@ -148,6 +151,7 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
       lib_path.back() == '\\') {
     SCRAM_THROW(ValidityError("Invalid library path: " + lib_path));
   }
+  // clang-format on
 
   pimpl_ = new Pimpl(std::move(lib_path), reference_dir, system, decorate);
 }

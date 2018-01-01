@@ -31,28 +31,44 @@ namespace scram {
 namespace gui {
 namespace model {
 
-class ProductTableModel : public QAbstractTableModel {
+/// The table model for immutable analysis products.
+class ProductTableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+
 public:
     /// @param[in] products  The analysis results.
     /// @param[in] withProbability  The analysis includes the probability data.
+    /// @param[in,out] parent  The optional owner of this object.
+    ///
+    /// @pre The products container does not change
+    ///      during the lifetime of this table model.
     ProductTableModel(const core::ProductContainer &products,
                       bool withProbability, QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
-    struct Product {
-        QString toString;
-        int order;
-        double probability;
-        double contribution;
+    /// Proxy wrapper/cache for a product in the container.
+    ///
+    /// @note The products are converted into strings
+    ///       to simplify search & filter w/ Regex.
+    struct Product
+    {
+        QString toString;    ///< Specially formatted/encoded list of literals.
+        int order;           ///< The order of the product.
+        double probability;  ///< The optional probability.
+        double contribution; ///< The optional contribution.
     };
-    std::vector<Product> m_products;
-    bool m_withProbability;
+    std::vector<Product> m_products; ///< The proxy list of the products.
+    bool m_withProbability; ///< The flag for probability data inclusion.
 };
 
 } // namespace model

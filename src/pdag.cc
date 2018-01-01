@@ -837,22 +837,22 @@ void Pdag::Log() noexcept {
   LOG(DEBUG4) << "# of gates with positive and negative indices: "
               << logger.CountOverlap(logger.gates);
 
-  BLOG(DEBUG5, logger.gate_types[kAnd]) << "AND gates: "
-                                        << logger.gate_types[kAnd];
-  BLOG(DEBUG5, logger.gate_types[kOr]) << "OR gates: "
-                                       << logger.gate_types[kOr];
-  BLOG(DEBUG5, logger.gate_types[kVote]) << "K/N gates: "
-                                         << logger.gate_types[kVote];
-  BLOG(DEBUG5, logger.gate_types[kXor]) << "XOR gates: "
-                                        << logger.gate_types[kXor];
-  BLOG(DEBUG5, logger.gate_types[kNot]) << "NOT gates: "
-                                        << logger.gate_types[kNot];
-  BLOG(DEBUG5, logger.gate_types[kNand]) << "NAND gates: "
-                                         << logger.gate_types[kNand];
-  BLOG(DEBUG5, logger.gate_types[kNor]) << "NOR gates: "
-                                        << logger.gate_types[kNor];
-  BLOG(DEBUG5, logger.gate_types[kNull]) << "NULL gates: "
-                                         << logger.gate_types[kNull];
+  BLOG(DEBUG5, logger.gate_types[kAnd])
+      << "AND gates: " << logger.gate_types[kAnd];
+  BLOG(DEBUG5, logger.gate_types[kOr])
+      << "OR gates: " << logger.gate_types[kOr];
+  BLOG(DEBUG5, logger.gate_types[kVote])
+      << "K/N gates: " << logger.gate_types[kVote];
+  BLOG(DEBUG5, logger.gate_types[kXor])
+      << "XOR gates: " << logger.gate_types[kXor];
+  BLOG(DEBUG5, logger.gate_types[kNot])
+      << "NOT gates: " << logger.gate_types[kNot];
+  BLOG(DEBUG5, logger.gate_types[kNand])
+      << "NAND gates: " << logger.gate_types[kNand];
+  BLOG(DEBUG5, logger.gate_types[kNor])
+      << "NOR gates: " << logger.gate_types[kNor];
+  BLOG(DEBUG5, logger.gate_types[kNull])
+      << "NULL gates: " << logger.gate_types[kNull];
 
   LOG(DEBUG4) << "Total # of variables: " << logger.Count(logger.variables);
   LOG(DEBUG4) << "# of variables with negative indices: "
@@ -860,13 +860,13 @@ void Pdag::Log() noexcept {
   LOG(DEBUG4) << "# of variables with positive and negative indices: "
               << logger.CountOverlap(logger.variables);
 
-  BLOG(DEBUG4, !constant_->parents().empty()) << "Total # of constants: "
-                                              << constant_->parents().size();
+  BLOG(DEBUG4, !constant_->parents().empty())
+      << "Total # of constants: " << constant_->parents().size();
 }
 
 std::ostream& operator<<(std::ostream& os, const Constant& constant) {
-  os << "s(H" << constant.index() << ") = "
-     << (constant.value() ? "true" : "false") << "\n";
+  os << "s(H" << constant.index()
+     << ") = " << (constant.value() ? "true" : "false") << "\n";
   return os;
 }
 
@@ -948,8 +948,8 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
   const FormulaSig sig = GetFormulaSig(*gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  auto print_arg = [&os, &formula, &sig, &num_args](int index,
-                                                    const std::string& name) {
+  auto print_arg = [&formula, &sig, &num_args](int index,
+                                               const std::string& name) {
     if (index < 0)
       formula += "~";  // Negation.
     formula += name;
@@ -980,7 +980,9 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate) {
 }
 
 std::ostream& operator<<(std::ostream& os, Pdag* graph) {
-  os << "PDAG" << "\n\n" << graph->root();
+  os << "PDAG"
+     << "\n\n"
+     << graph->root();
   if (!graph->constant()->parents().empty())
     os << *graph->constant();
   return os;

@@ -26,19 +26,21 @@
 namespace scram {
 namespace gui {
 
-class Printable {
+/// An abstract mixin class for printable objects.
+class Printable
+{
 public:
     virtual ~Printable() = default;
 
     /// Prints with a print dialog.
     void print();
+
     /// Prints with a print preview dialog.
     void printPreview();
 
 private:
     /// The actual printing must be implemented by derived classes.
     virtual void doPrint(QPrinter *printer) = 0;
-
 };
 
 } // namespace gui

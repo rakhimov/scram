@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>212</width>
+    <width>276</width>
     <height>111</height>
    </rect>
   </property>
@@ -22,23 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QComboBox" name="languageBox">
-     <item>
-      <property name="text">
-       <string notr="true">English</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Русский</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string notr="true">Deutsch</string>
-      </property>
-     </item>
-    </widget>
+    <widget class="QComboBox" name="languageBox"/>
    </item>
    <item row="1" column="0">
     <widget class="QCheckBox" name="checkUndoLimit">

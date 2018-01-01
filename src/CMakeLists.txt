@@ -1,92 +1,70 @@
 ################### File Configurations #######################
 execute_process(COMMAND git describe --tags OUTPUT_VARIABLE core_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-configure_file(version.cc.in "${CMAKE_CURRENT_SOURCE_DIR}/version.cc" @ONLY)
-
-set(scram_install_dir "${CMAKE_INSTALL_PREFIX}")
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/env.cc.in"
-  "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
-  @ONLY
-  )
+configure_file(version.cc.in version.cc @ONLY)
+configure_file(env.cc.in env.cc @ONLY)
 ################### End File Configurations ####################
 
-set(LIB_LINK_FLAGS "")
-if(WITH_COVERAGE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-endif()
-
-if(WITH_PROFILE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-endif()
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_SRC
-  "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/version.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/logger.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/random.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/settings.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/config.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/element.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/parameter.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/conditional.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/constant.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/numerical.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/exponential.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/random_deviate.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/test_event.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/expression/extern.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/substitution.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/event_tree.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/alignment.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/model.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/pdag.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/mocus.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/bdd.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/zbdd.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/importance_analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/uncertainty_analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/event_tree_analysis.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/reporter.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/serialization.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/initializer.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis.cc"
+  ${CMAKE_CURRENT_BINARY_DIR}/env.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/version.cc
+  logger.cc
+  random.cc
+  settings.cc
+  xml.cc
+  config.cc
+  element.cc
+  expression.cc
+  parameter.cc
+  expression/conditional.cc
+  expression/constant.cc
+  expression/numerical.cc
+  expression/exponential.cc
+  expression/random_deviate.cc
+  expression/test_event.cc
+  expression/extern.cc
+  event.cc
+  substitution.cc
+  ccf_group.cc
+  fault_tree.cc
+  event_tree.cc
+  alignment.cc
+  model.cc
+  pdag.cc
+  preprocessor.cc
+  mocus.cc
+  bdd.cc
+  zbdd.cc
+  analysis.cc
+  fault_tree_analysis.cc
+  probability_analysis.cc
+  importance_analysis.cc
+  uncertainty_analysis.cc
+  event_tree_analysis.cc
+  reporter.cc
+  serialization.cc
+  initializer.cc
+  risk_analysis.cc
   )
-add_library(scramcore ${SCRAM_CORE_SRC})
-
-if(INSTALL_LIBS)
-  if(WIN32)
-    install(TARGETS scramcore RUNTIME DESTINATION bin COMPONENT scram)
-  else()
-    set_target_properties(scramcore
-      PROPERTIES
-      INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib/scram"
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/scram"
-      )
-    install(
-      TARGETS scramcore
-      DESTINATION lib/scram
-      COMPONENT scram
-      )
-  endif()
-endif()
-
-target_link_libraries(scramcore ${LIBS})
-
-add_executable(scram scram.cc)
-target_link_libraries(scram scramcore ${Boost_LIBRARIES})
+add_library(scram SHARED ${SCRAM_CORE_SRC})
+target_link_libraries(scram ${LIBS})
 
 install(
   TARGETS scram
+  LIBRARY DESTINATION lib/scram
+  ARCHIVE DESTINATION lib/scram/static
+  RUNTIME DESTINATION bin
+  COMPONENT scram
+  )
+
+add_executable(scram-cli scram.cc)
+set_target_properties(scram-cli PROPERTIES OUTPUT_NAME scram)
+target_link_libraries(scram-cli scram ${Boost_LIBRARIES})
+
+install(
+  TARGETS scram-cli
   RUNTIME DESTINATION bin
   COMPONENT scram
   )

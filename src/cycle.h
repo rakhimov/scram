@@ -198,12 +198,8 @@ inline bool ContinueConnector(const Instruction* connector,
       void Visit(const CollectExpression*) override {}
       void Visit(const CollectFormula*) override {}
       void Visit(const Link*) override {}
-      void Visit(const IfThenElse* ite) override {
-        visitor_->Visit(ite);
-      }
-      void Visit(const Block* block) override {
-        visitor_->Visit(block);
-      }
+      void Visit(const IfThenElse* ite) override { visitor_->Visit(ite); }
+      void Visit(const Block* block) override { visitor_->Visit(block); }
       void Visit(const Rule* rule) override {
         // Non-const rules are only needed to mark the nodes.
         if (DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_))

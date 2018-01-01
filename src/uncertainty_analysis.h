@@ -71,7 +71,7 @@ class UncertaintyAnalysis : public Analysis {
   }
 
   /// @returns The distribution histogram.
-  const std::vector<std::pair<double, double> >& distribution() const {
+  const std::vector<std::pair<double, double>>& distribution() const {
     return distribution_;
   }
 
@@ -84,8 +84,8 @@ class UncertaintyAnalysis : public Analysis {
   /// @param[in] graph  PDAG with the variables.
   ///
   /// @returns The gathered deviate expressions with variable indices.
-  std::vector<std::pair<int, mef::Expression&>> GatherDeviateExpressions(
-      const Pdag* graph) noexcept;
+  std::vector<std::pair<int, mef::Expression&>>
+  GatherDeviateExpressions(const Pdag* graph) noexcept;
 
   /// Samples uncertain probabilities.
   ///
@@ -131,8 +131,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   ///
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
   explicit UncertaintyAnalyzer(ProbabilityAnalyzer<Calculator>* prob_analyzer)
-      : UncertaintyAnalysis(prob_analyzer),
-        prob_analyzer_(prob_analyzer) {}
+      : UncertaintyAnalysis(prob_analyzer), prob_analyzer_(prob_analyzer) {}
 
  private:
   /// @returns Samples of the total probability.

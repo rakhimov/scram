@@ -147,9 +147,7 @@ BasicEventPtr Model::Remove(BasicEvent* basic_event) {
   return RemoveEvent(basic_event, &basic_events_);
 }
 
-GatePtr Model::Remove(Gate* gate) {
-  return RemoveEvent(gate, &gates_);
-}
+GatePtr Model::Remove(Gate* gate) { return RemoveEvent(gate, &gates_); }
 
 FaultTreePtr Model::Remove(FaultTree* fault_tree) {
   auto it = fault_trees_.find(fault_tree->name());

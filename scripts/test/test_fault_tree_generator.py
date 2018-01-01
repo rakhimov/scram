@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Olzhas Rakhimov
+# Copyright (C) 2014-2017 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Tests for the fault tree generator."""
 
 from __future__ import division, absolute_import
@@ -51,24 +50,24 @@ class FactorsTestCase(TestCase):
     def test_set_common_event_factors(self):
         """Tests setting of probability factors."""
         self.factors.set_common_event_factors(0.1, 0.1, 2, 2)  # no fail
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      -0.1, 0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      1.0, 0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, -0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, 1.0, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0, 0, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, 0.1, 1, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, 0.1, 101, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, 0.1, 2, 1)
-        assert_raises(FactorError, self.factors.set_common_event_factors,
-                      0.1, 0.1, 2, 101)
+        assert_raises(FactorError, self.factors.set_common_event_factors, -0.1,
+                      0.5, 2, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 1.0,
+                      0.5, 2, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      -0.5, 2, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      1.0, 2, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0, 0,
+                      2, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      0.1, 1, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      0.1, 101, 2)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      0.1, 2, 1)
+        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
+                      0.1, 2, 101)
         self.factors.set_common_event_factors(0.4, 0.2, 3, 4)
         assert_equal(0.4, self.factors.common_b)
         assert_equal(0.2, self.factors.common_g)
@@ -184,6 +183,8 @@ def test_main():
         assert_true(relaxng.validate(doc))
 
     main(["-b", "200", "-g", "200", "-o", tmp.name, "--aralia"])
-    cmd = ["./translators/aralia.py", tmp.name, "-o",
-           NamedTemporaryFile(mode="w+").name]
+    cmd = [
+        "./translators/aralia.py", tmp.name, "-o",
+        NamedTemporaryFile(mode="w+").name
+    ]
     assert_equal(0, call(cmd))

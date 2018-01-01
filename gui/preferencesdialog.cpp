@@ -19,56 +19,90 @@
 #include "ui_preferencesdialog.h"
 
 #include <string>
+#include <vector>
 
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include <QStringListModel>
 
 #include <boost/range/algorithm.hpp>
 
 #include "guiassert.h"
+#include "language.h"
 #include "overload.h"
 
 namespace scram {
 namespace gui {
 
-const char *const PreferencesDialog::m_languageToLocale[]
-    = {"en", "ru_RU", "de_DE"};
-
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
-                                     QTimer *autoSaveTimer,
-                                     QWidget *parent)
-    : QDialog(parent), ui(new Ui::PreferencesDialog)
+                                     QTimer *autoSaveTimer, QWidget *parent)
+    : QDialog(parent), ui(new Ui::PreferencesDialog), m_preferences(preferences)
 {
     ui->setupUi(this);
+    setupLanguage();
+    setupUndoStack(undoStack);
+    setupAutoSave(autoSaveTimer);
+}
 
-    GUI_ASSERT(std::distance(std::begin(m_languageToLocale),
-                             std::end(m_languageToLocale))
-                   == ui->languageBox->count(), );
-    auto it = boost::find(m_languageToLocale,
-                          preferences->value(QStringLiteral("language"))
-                              .toString()
-                              .toStdString());
-    auto it_end = std::end(m_languageToLocale);
-    if (it != it_end)
-        ui->languageBox->setCurrentIndex(std::distance(m_languageToLocale, it));
-    connect(ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int),
-            preferences, [this, preferences](int index) {
-                QMessageBox::information(
-                    this, tr("Restart Required"),
-                    tr("The language change will take effect after an "
-                       "application restart."));
-                preferences->setValue(
-                    QStringLiteral("language"),
-                    QString::fromLatin1(m_languageToLocale[index]));
-            });
+PreferencesDialog::~PreferencesDialog() = default;
 
+void PreferencesDialog::setupLanguage()
+{
+    // The available locales excluding the default English.
+    static const std::vector<std::string> locales = gui::translations();
+    // Native language representations including default English as the last.
+    static const QStringList nativeLanguages = [] {
+        QStringList result;
+        result.reserve(locales.size());
+        for (const std::string &locale : locales)
+            result.push_back(gui::nativeLanguageName(locale));
+
+        result.push_back(QStringLiteral("English"));
+        return result;
+    }();
+
+    auto *listModel = new QStringListModel(nativeLanguages, this);
+    auto *proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(listModel);
+    proxyModel->sort(0);
+    ui->languageBox->setModel(proxyModel);
+    int currentIndex = [this]() -> int {
+        QString language =
+            m_preferences->value(QStringLiteral("language")).toString();
+        if (language == QStringLiteral("en")) // Assume the common case is
+            return locales.size();            // the default language.
+
+        auto it = boost::find(locales, language.toStdString());
+        return std::distance(locales.begin(), it); // The default if it == end.
+    }();
+    ui->languageBox->setCurrentIndex(
+        proxyModel->mapFromSource(listModel->index(currentIndex, 0)).row());
+    connect(
+        ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int), this,
+        [this, proxyModel](int proxyIndex) {
+            QMessageBox::information(
+                this, tr("Restart Required"),
+                tr("The language change will take effect after an "
+                   "application restart."));
+            int index =
+                proxyModel->mapToSource(proxyModel->index(proxyIndex, 0)).row();
+            QString locale = index == locales.size()
+                                 ? QStringLiteral("en")
+                                 : QString::fromStdString(locales[index]);
+            m_preferences->setValue(QStringLiteral("language"), locale);
+        });
+}
+
+void PreferencesDialog::setupUndoStack(QUndoStack *undoStack)
+{
     if (undoStack->undoLimit()) {
         ui->checkUndoLimit->setChecked(true);
         ui->undoLimitBox->setValue(undoStack->undoLimit());
     }
-    auto setUndoLimit = [preferences, undoStack](int undoLimit) {
+    auto setUndoLimit = [this, undoStack](int undoLimit) {
         undoStack->setUndoLimit(undoLimit);
-        preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
+        m_preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
     };
     connect(ui->undoLimitBox, OVERLOAD(QSpinBox, valueChanged, int), undoStack,
             setUndoLimit);
@@ -76,14 +110,17 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
             [this, setUndoLimit](bool checked) {
                 setUndoLimit(checked ? ui->undoLimitBox->value() : 0);
             });
+}
 
+void PreferencesDialog::setupAutoSave(QTimer *autoSaveTimer)
+{
     if (autoSaveTimer->isActive()) {
         ui->checkAutoSave->setChecked(true);
         ui->autoSaveBox->setValue(autoSaveTimer->interval() / 60000);
     }
-    auto setAutoSave = [preferences, autoSaveTimer](int intervalMin) {
+    auto setAutoSave = [this, autoSaveTimer](int intervalMin) {
         int intervalMs = intervalMin * 60000;
-        preferences->setValue(QStringLiteral("autoSave"), intervalMs);
+        m_preferences->setValue(QStringLiteral("autoSave"), intervalMs);
         if (intervalMin)
             autoSaveTimer->start(intervalMs);
         else
@@ -97,8 +134,6 @@ PreferencesDialog::PreferencesDialog(QSettings *preferences,
                 setAutoSave(checked ? ui->autoSaveBox->value() : 0);
             });
 }
-
-PreferencesDialog::~PreferencesDialog() = default;
 
 } // namespace gui
 } // namespace scram

@@ -385,8 +385,9 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   template <class T>
   auto args() const {
     return boost::adaptors::transform(
-        const_cast<Gate*>(this)->args<T>(),
-        [](const Arg<T>& arg) { return ConstArg<T>{arg.first, *arg.second}; });
+        const_cast<Gate*>(this)->args<T>(), [](const Arg<T>& arg) {
+          return ConstArg<T>{arg.first, *arg.second};
+        });
   }
 
   /// Marks are used for linear traversal of graphs.
@@ -749,7 +750,9 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
 
 /// @returns The Gate type arguments of a gate.
 template <>
-inline const Gate::ArgMap<Gate>& Gate::args<Gate>() { return gate_args_; }
+inline const Gate::ArgMap<Gate>& Gate::args<Gate>() {
+  return gate_args_;
+}
 
 /// @returns The Variable type arguments of a gate.
 template <>
@@ -784,7 +787,7 @@ class Pdag : private boost::noncopyable {
  public:
   static const int kVariableStartIndex = 2;  ///< The shift value for mapping.
   /// Sequential mapping of Variable indices to other data of type T.
-  template<typename T>
+  template <typename T>
   using IndexMap = ext::index_map<kVariableStartIndex, T>;
 
   /// Generator of unique indices for graph nodes.
@@ -1062,8 +1065,8 @@ class Pdag : private boost::noncopyable {
   ///
   /// @pre The substitution is declarative.
   /// @pre All the substitution variables have been gathered.
-  GatePtr ConstructSubstitution(const mef::Substitution& substitution,
-                                bool ccf, ProcessedNodes* nodes) noexcept;
+  GatePtr ConstructSubstitution(const mef::Substitution& substitution, bool ccf,
+                                ProcessedNodes* nodes) noexcept;
 
   /// Collects non-declarative substitutions for later analysis.
   ///

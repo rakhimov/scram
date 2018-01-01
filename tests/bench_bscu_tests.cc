@@ -26,7 +26,7 @@ namespace test {
 // Benchmark Tests for BSCU fault tree from XFTA.
 // This benchmark is for uncertainty analysis.
 TEST_P(RiskAnalysisTest, BSCU) {
-  std::string tree_input = "./share/scram/input/BSCU/BSCU.xml";
+  std::string tree_input = "input/BSCU/BSCU.xml";
   settings.uncertainty_analysis(true);
   settings.num_trials(10000);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
@@ -56,7 +56,6 @@ TEST_P(RiskAnalysisTest, BSCU) {
     EXPECT_NEAR(0.183, sigma(), 5e-3);
   }
 }
-
 
 }  // namespace test
 }  // namespace core

@@ -19,7 +19,8 @@
 
 #include <gtest/gtest.h>
 
-#include "env.h"
+#include <boost/filesystem.hpp>
+
 #include "error.h"
 
 namespace scram {
@@ -33,30 +34,29 @@ TEST(ConfigTest, IOError) {
 
 // Test with XML content validation issues.
 TEST(ConfigTest, ValidityError) {
-  std::string config_file = "./share/scram/input/fta/invalid_configuration.xml";
+  std::string config_file = "tests/input/fta/invalid_configuration.xml";
   ASSERT_THROW(Config config(config_file), xml::ValidityError);
 }
 
 // Test with XML content numerical issues.
 TEST(ConfigTest, NumericalErrors) {
-  std::string config_file = "./share/scram/input/fta/int_overflow_config.xml";
+  std::string config_file = "tests/input/fta/int_overflow_config.xml";
   ASSERT_THROW(Config config(config_file), xml::ValidityError);
 }
 
 // Tests all settings with one file.
 TEST(ConfigTest, FullSettings) {
-  std::string config_file = "share/scram/input/fta/full_configuration.xml";
+  std::string config_file = "tests/input/fta/full_configuration.xml";
+  std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
   EXPECT_EQ(config.input_files().size(), 1);
   if (!config.input_files().empty()) {
-    EXPECT_EQ(Env::install_dir() +
-                  "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+    EXPECT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
               config.input_files().back());
   }
   // Check the output destination.
-  EXPECT_EQ(Env::install_dir() + "/share/scram/input/fta/./temp_results.xml",
-            config.output_path());
+  EXPECT_EQ(cwd + "/tests/input/fta/./temp_results.xml", config.output_path());
 
   const core::Settings& settings = config.settings();
   EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
@@ -78,18 +78,17 @@ TEST(ConfigTest, FullSettings) {
 }
 
 TEST(ConfigTest, PrimeImplicantsSettings) {
-  std::string config_file = "share/scram/input/fta/pi_configuration.xml";
+  std::string config_file = "tests/input/fta/pi_configuration.xml";
+  std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
   EXPECT_EQ(config.input_files().size(), 1);
   if (!config.input_files().empty()) {
-    EXPECT_EQ(Env::install_dir() +
-                  "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+    EXPECT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
               config.input_files().back());
   }
   // Check the output destination.
-  EXPECT_EQ(Env::install_dir() + "/share/scram/input/fta/temp_results.xml",
-            config.output_path());
+  EXPECT_EQ(cwd + "/tests/input/fta/temp_results.xml", config.output_path());
 
   const core::Settings& settings = config.settings();
   EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
@@ -97,12 +96,12 @@ TEST(ConfigTest, PrimeImplicantsSettings) {
 }
 
 TEST(ConfigTest, CanonicalPath) {
-  std::string config_file = "share/scram/input/win_path_in_config.xml";
+  std::string config_file = "tests/input/win_path_in_config.xml";
+  std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
   ASSERT_EQ(config.input_files().size(), 1);
-  ASSERT_EQ(Env::install_dir() +
-                "/share/scram/input/fta/correct_tree_input_with_probs.xml",
+  ASSERT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
             config.input_files().back());
 }
 

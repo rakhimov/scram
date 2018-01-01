@@ -60,9 +60,7 @@ double p_exp(double p_mu, double p_lambda, double mu, double lambda,
 }  // namespace
 
 Exponential::Exponential(Expression* lambda, Expression* t)
-    : ExpressionFormula({lambda, t}),
-      lambda_(*lambda),
-      time_(*t) {}
+    : ExpressionFormula({lambda, t}), lambda_(*lambda), time_(*t) {}
 
 void Exponential::Validate() const {
   EnsureNonNegative(&lambda_, "rate of failure");
@@ -118,9 +116,8 @@ PeriodicTest::PeriodicTest(Expression* lambda, Expression* tau,
     : Expression({lambda, tau, theta, time}),
       flavor_(new PeriodicTest::InstantRepair(lambda, tau, theta, time)) {}
 
-PeriodicTest::PeriodicTest(Expression* lambda, Expression* mu,
-                           Expression* tau, Expression* theta,
-                           Expression* time)
+PeriodicTest::PeriodicTest(Expression* lambda, Expression* mu, Expression* tau,
+                           Expression* theta, Expression* time)
     : Expression({lambda, mu, tau, theta, time}),
       flavor_(new PeriodicTest::InstantTest(lambda, mu, tau, theta, time)) {}
 

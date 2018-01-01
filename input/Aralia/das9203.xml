@@ -1,0 +1,366 @@
+<?xml version="1.0"?>
+<opsa-mef>
+<define-fault-tree name="das9203">
+<define-gate name="r1">
+<and>
+<gate name="g15"/>
+<gate name="g20"/>
+<gate name="g28"/>
+<gate name="g23"/>
+<gate name="g29"/>
+</and>
+</define-gate>
+<define-gate name="g29">
+<or>
+<gate name="g13"/>
+<gate name="g14"/>
+</or>
+</define-gate>
+<define-gate name="g14">
+<or>
+<basic-event name="e26"/>
+<basic-event name="e29"/>
+<gate name="g9"/>
+</or>
+</define-gate>
+<define-gate name="g9">
+<or>
+<basic-event name="e20"/>
+<basic-event name="e19"/>
+</or>
+</define-gate>
+<define-gate name="g13">
+<or>
+<basic-event name="e28"/>
+<basic-event name="e27"/>
+<gate name="g8"/>
+<gate name="g10"/>
+</or>
+</define-gate>
+<define-gate name="g10">
+<or>
+<basic-event name="e22"/>
+<basic-event name="e21"/>
+</or>
+</define-gate>
+<define-gate name="g8">
+<or>
+<basic-event name="e18"/>
+<basic-event name="e17"/>
+</or>
+</define-gate>
+<define-gate name="g23">
+<or>
+<basic-event name="e34"/>
+<gate name="g24"/>
+<gate name="g16"/>
+</or>
+</define-gate>
+<define-gate name="g24">
+<or>
+<basic-event name="e47"/>
+<basic-event name="e46"/>
+<gate name="g25"/>
+</or>
+</define-gate>
+<define-gate name="g28">
+<or>
+<gate name="g11"/>
+<gate name="g12"/>
+</or>
+</define-gate>
+<define-gate name="g12">
+<or>
+<basic-event name="e26"/>
+<basic-event name="e25"/>
+<gate name="g6"/>
+</or>
+</define-gate>
+<define-gate name="g6">
+<or>
+<basic-event name="e14"/>
+<basic-event name="e13"/>
+</or>
+</define-gate>
+<define-gate name="g11">
+<or>
+<basic-event name="e24"/>
+<basic-event name="e23"/>
+<gate name="g5"/>
+<gate name="g4"/>
+<gate name="g7"/>
+</or>
+</define-gate>
+<define-gate name="g7">
+<or>
+<basic-event name="e16"/>
+<basic-event name="e15"/>
+</or>
+</define-gate>
+<define-gate name="g4">
+<or>
+<basic-event name="e10"/>
+<basic-event name="e9"/>
+</or>
+</define-gate>
+<define-gate name="g5">
+<or>
+<basic-event name="e12"/>
+<basic-event name="e11"/>
+</or>
+</define-gate>
+<define-gate name="g20">
+<or>
+<basic-event name="e30"/>
+<gate name="g16"/>
+<gate name="g21"/>
+<gate name="g22"/>
+</or>
+</define-gate>
+<define-gate name="g22">
+<or>
+<basic-event name="e32"/>
+<basic-event name="e31"/>
+<basic-event name="e33"/>
+</or>
+</define-gate>
+<define-gate name="g21">
+<or>
+<basic-event name="e40"/>
+<gate name="g1"/>
+<gate name="g2"/>
+</or>
+</define-gate>
+<define-gate name="g15">
+<or>
+<gate name="g16"/>
+<gate name="g18"/>
+<gate name="g19"/>
+<gate name="g17"/>
+</or>
+</define-gate>
+<define-gate name="g17">
+<or>
+<basic-event name="e35"/>
+<basic-event name="e36"/>
+<gate name="g1"/>
+</or>
+</define-gate>
+<define-gate name="g1">
+<or>
+<basic-event name="e1"/>
+<basic-event name="e2"/>
+<basic-event name="e3"/>
+</or>
+</define-gate>
+<define-gate name="g19">
+<or>
+<basic-event name="e39"/>
+<basic-event name="e38"/>
+<gate name="g3"/>
+<gate name="g2"/>
+</or>
+</define-gate>
+<define-gate name="g2">
+<or>
+<basic-event name="e5"/>
+<basic-event name="e4"/>
+</or>
+</define-gate>
+<define-gate name="g3">
+<or>
+<basic-event name="e7"/>
+<basic-event name="e6"/>
+<basic-event name="e8"/>
+</or>
+</define-gate>
+<define-gate name="g18">
+<or>
+<basic-event name="e37"/>
+<gate name="g25"/>
+</or>
+</define-gate>
+<define-gate name="g25">
+<or>
+<basic-event name="e51"/>
+<basic-event name="e50"/>
+</or>
+</define-gate>
+<define-gate name="g16">
+<or>
+<basic-event name="e48"/>
+<basic-event name="e49"/>
+<gate name="g26"/>
+<gate name="g27"/>
+</or>
+</define-gate>
+<define-gate name="g27">
+<or>
+<basic-event name="e44"/>
+<basic-event name="e45"/>
+</or>
+</define-gate>
+<define-gate name="g26">
+<or>
+<basic-event name="e42"/>
+<basic-event name="e41"/>
+<basic-event name="e43"/>
+</or>
+</define-gate>
+</define-fault-tree>
+<model-data>
+<define-basic-event name="e1">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e2">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e3">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e4">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e5">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e6">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e7">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e8">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e9">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e10">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e11">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e12">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e13">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e14">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e15">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e16">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e17">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e18">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e19">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e20">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e21">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e22">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e23">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e24">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e25">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e26">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e27">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e28">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e29">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e48">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e49">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e35">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e36">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e37">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e38">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e39">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e30">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e40">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e31">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e32">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e33">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e34">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e46">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e47">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e50">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e51">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e41">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e42">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e43">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e44">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="e45">
+<float value="0.01"/>
+</define-basic-event>
+</model-data>
+</opsa-mef>

@@ -1,16 +1,13 @@
-# Find the QtWidgets library.
+# Find Qt5 libraries.
 if(APPLE)
   # Qt5 with Homebrew.
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/opt/qt5")
+  list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5)
 endif()
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5 "5.2.1" REQUIRED COMPONENTS
+  Core Widgets Svg OpenGL PrintSupport Concurrent
+  )
 message(STATUS "Found Qt5")
-message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+message(STATUS "Qt5 Version: ${Qt5_VERSION}")
 
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
@@ -33,13 +30,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
+set(SCRAM_GUI_RES res.qrc)
 
 if(NOT HAS_TANGO AND (WIN32 OR APPLE))
-  set(TANGO_QRC "${CMAKE_CURRENT_SOURCE_DIR}/qtango/icons/tango/tango.qrc")
+  set(TANGO_QRC qtango/icons/tango/tango.qrc)
   execute_process(
     COMMAND python generate_rcc.py icons/tango/index.theme
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/qtango"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/qtango
     RESULT_VARIABLE qtango_return
     OUTPUT_VARIABLE qtango_out
     ERROR_VARIABLE qtango_out
@@ -50,37 +47,35 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
   list(APPEND SCRAM_GUI_RES "${TANGO_QRC}")
 endif()
 
+add_subdirectory(translations)
+
 set(SCRAM_GUI_SRC
-  "${CMAKE_CURRENT_SOURCE_DIR}/validator.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/model.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/modeltree.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/reporttree.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/elementcontainermodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/importancetablemodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/producttablemodel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/preferencesdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/settingsdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/eventdialog.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/printable.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/zoomableview.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/diagram.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+  language.cpp
+  validator.cpp
+  model.cpp
+  modeltree.cpp
+  reporttree.cpp
+  elementcontainermodel.cpp
+  importancetablemodel.cpp
+  producttablemodel.cpp
+  preferencesdialog.cpp
+  settingsdialog.cpp
+  eventdialog.cpp
+  printable.cpp
+  zoomableview.cpp
+  diagram.cpp
+  mainwindow.cpp
   )
-set(SCRAM_GUI_TS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/translations")
-
-add_subdirectory("${SCRAM_GUI_TS_DIR}")
-
-if(WIN32)
-  list(APPEND SCRAM_GUI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/scram.rc")
-endif()
-add_executable(scram-gui WIN32 ${SCRAM_GUI_SRC} ${SCRAM_GUI_RES})
-
+add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
 target_link_libraries(scram-gui
-  ${LIBS} scramcore
+  ${LIBS} scram
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 
-install(TARGETS scram-gui
+add_executable(scram-gui-bin WIN32 main.cpp scram.rc ${SCRAM_GUI_RES})
+set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
+target_link_libraries(scram-gui-bin scram-gui scram ${Boost_LIBRARIES})
+install(
+  TARGETS scram-gui-bin
   RUNTIME DESTINATION bin
   COMPONENT gui
   )
@@ -88,21 +83,21 @@ install(TARGETS scram-gui
 if(UNIX AND NOT APPLE)
   foreach (size IN ITEMS 32 128)
     install(
-      FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid${size}x${size}.png"
-      DESTINATION "share/icons/hicolor/${size}x${size}/apps"
+      FILES       images/scram_solid${size}x${size}.png
+      DESTINATION share/icons/hicolor/${size}x${size}/apps
       COMPONENT gui
-      RENAME      "scram.png")
+      RENAME      scram.png)
   endforeach ()
   install(
-    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/images/scram_solid.svg"
-    DESTINATION "share/icons/hicolor/scalable/apps"
+    FILES       images/scram_solid.svg
+    DESTINATION share/icons/hicolor/scalable/apps
     COMPONENT gui
-    RENAME      "scram.svg")
+    RENAME      scram.svg)
 
   # Install a desktop file
   # so that SCRAM appears in the application start menu with an icon.
   install(FILES scram-gui.desktop
-    DESTINATION "share/applications"
+    DESTINATION share/applications
     COMPONENT gui)
 endif()
 
@@ -131,10 +126,16 @@ if(PACKAGE)
       endif()
     endmacro()
     install_qt5_plugin("Qt5::QWindowsIntegrationPlugin" QT_PLUGINS)
-    set(QT_TRANSLATION_DIR ${Qt5Core_DIR}/../../../translations)
+
     execute_process(COMMAND qmake -query QT_INSTALL_TRANSLATIONS
       OUTPUT_VARIABLE QT_TRANSLATIONS_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-    install(DIRECTORY "${QT_TRANSLATIONS_DIR}" DESTINATION . COMPONENT gui)
+    install(
+      DIRECTORY "${QT_TRANSLATIONS_DIR}/"
+      DESTINATION translations
+      COMPONENT gui
+      FILES_MATCHING PATTERN "qtbase_*" PATTERN "qt_*" PATTERN "qt_help_*" EXCLUDE
+      )
+
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       "[Paths]\nPlugins = ../${_qt_plugin_dir}\nTranslations = ../translations\n")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
@@ -143,8 +144,6 @@ if(PACKAGE)
   endif()
 endif()
 
-set(SCRAM_GUI_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
-
-if(BUILD_TESTS)
-  add_subdirectory("${SCRAM_GUI_TEST_DIR}")
+if(BUILD_TESTING)
+  add_subdirectory(tests)
 endif()

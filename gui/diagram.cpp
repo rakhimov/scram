@@ -99,7 +99,7 @@ void Event::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
     double w = units().width();
     double h = units().height();
-    double labelBoxWidth = m_size.width() * w ;
+    double labelBoxWidth = m_size.width() * w;
     QRectF rect(-labelBoxWidth / 2, 0, labelBoxWidth, m_labelBoxHeight * h);
     painter->drawRect(rect);
     painter->drawText(rect, Qt::AlignCenter | Qt::TextWordWrap,
@@ -174,17 +174,18 @@ Gate::Gate(model::Gate *event, model::Model *model,
            QGraphicsItem *parent)
     : Event(event, parent)
 {
-    double availableHeight
-        = m_size.height() - m_baseHeight - m_maxSize.height();
+    double availableHeight =
+        m_size.height() - m_baseHeight - m_maxSize.height();
     auto *pathItem = new QGraphicsLineItem(
         0, 0, 0, (availableHeight - 1) * units().height(), this);
     pathItem->setPos(0, (m_baseHeight + m_maxSize.height()) * units().height());
     Event::setTypeGraphics(getGateGraphicsType(event->type()).release());
-    struct {
+    struct
+    {
         Event *operator()(const mef::BasicEvent *arg)
         {
-            model::BasicEvent *proxyEvent
-                = m_model->basicEvents().find(arg)->get();
+            model::BasicEvent *proxyEvent =
+                m_model->basicEvents().find(arg)->get();
             switch (proxyEvent->flavor()) {
             case model::BasicEvent::Basic:
                 return new BasicEvent(proxyEvent, m_parent);
@@ -207,8 +208,8 @@ Gate::Gate(model::Gate *event, model::Model *model,
                 it->second->addTransferOut();
                 return new TransferIn(proxyEvent, m_parent);
             }
-            auto *arg_gate
-                = new Gate(proxyEvent, m_model, m_transfer, m_parent);
+            auto *arg_gate =
+                new Gate(proxyEvent, m_model, m_transfer, m_parent);
             m_transfer->emplace(arg, arg_gate);
             return arg_gate;
         }
@@ -276,13 +277,13 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     case mef::kVote: {
         double h = m_maxSize.height() * units().height();
         double a = h / sqrt(3);
-        auto polygon
-            = std::make_unique<QGraphicsPolygonItem>(QPolygonF{{{-a / 2, 0},
-                                                                {a / 2, 0},
-                                                                {a, h / 2},
-                                                                {a / 2, h},
-                                                                {-a / 2, h},
-                                                                {-a, h / 2}}});
+        auto polygon =
+            std::make_unique<QGraphicsPolygonItem>(QPolygonF{{{-a / 2, 0},
+                                                              {a / 2, 0},
+                                                              {a, h / 2},
+                                                              {a / 2, h},
+                                                              {-a / 2, h},
+                                                              {-a, h / 2}}});
         auto *gate = static_cast<model::Gate *>(m_event);
         auto *text = new QGraphicsTextItem(QStringLiteral("%1/%2")
                                                .arg(gate->voteNumber())
@@ -342,7 +343,10 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
     GUI_ASSERT(false && "Unexpected gate type", nullptr);
 }
 
-double Gate::width() const { return m_width; }
+double Gate::width() const
+{
+    return m_width;
+}
 
 void Gate::addTransferOut()
 {
@@ -394,7 +398,8 @@ void DiagramScene::redraw()
     std::unordered_map<const mef::Gate *, Gate *> transfer;
     addItem(new Gate(m_root, m_model, &transfer));
 
-    struct {
+    struct
+    {
         void operator()(mef::Event *) const {}
         void operator()(mef::BasicEvent *event) const
         {
@@ -406,8 +411,8 @@ void DiagramScene::redraw()
     } visitor{this};
 
     auto link = [this, &visitor](model::Gate *gate) {
-        connect(gate, &model::Gate::formulaChanged, this,
-                &DiagramScene::redraw, Qt::UniqueConnection);
+        connect(gate, &model::Gate::formulaChanged, this, &DiagramScene::redraw,
+                Qt::UniqueConnection);
         for (const mef::Formula::EventArg &arg : gate->args())
             boost::apply_visitor(visitor, arg);
     };

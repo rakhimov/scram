@@ -24,8 +24,7 @@ namespace core {
 namespace test {
 
 TEST_F(RiskAnalysisTest, GasLeakReactive) {
-  const char* tree_input =
-      "./share/scram/input/EventTrees/gas_leak/gas_leak_reactive.xml";
+  const char* tree_input = "input/EventTrees/gas_leak/gas_leak_reactive.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -44,9 +43,9 @@ TEST_F(RiskAnalysisTest, GasLeakReactive) {
 /// @todo Expand
 TEST_F(RiskAnalysisTest, GasLeak) {
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFiles(
-      {"./share/scram/input/EventTrees/gas_leak/gas_leak_reactive.xml",
-       "./share/scram/input/EventTrees/gas_leak/gas_leak.xml"}));
+  ASSERT_NO_THROW(
+      ProcessInputFiles({"input/EventTrees/gas_leak/gas_leak_reactive.xml",
+                         "input/EventTrees/gas_leak/gas_leak.xml"}));
   ASSERT_NO_THROW(analysis->Analyze());
   EXPECT_EQ(2, analysis->event_tree_results().size());
 }

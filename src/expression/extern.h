@@ -114,8 +114,8 @@ class ExternFunction<void>
   /// @returns Newly constructed expression as a result of function application.
   ///
   /// @throws ValidityError  The number of arguments is invalid.
-  virtual std::unique_ptr<Expression> apply(
-      std::vector<Expression*> args) const = 0;
+  virtual std::unique_ptr<Expression>
+  apply(std::vector<Expression*> args) const = 0;
 };
 
 /// The concrete extern functions uniquely stored in a model.
@@ -153,8 +153,8 @@ class ExternFunction : public ExternFunctionBase {
   R operator()(Args... args) const noexcept { return fptr_(args...); }
 
   /// @copydoc ExternFunction<void>::apply
-  std::unique_ptr<Expression> apply(
-      std::vector<Expression*> args) const override;
+  std::unique_ptr<Expression>
+  apply(std::vector<Expression*> args) const override;
 
  private:
   const Pointer fptr_;  ///< The pointer to the extern function in a library.
@@ -227,8 +227,8 @@ class ExternExpression
 };
 
 template <typename R, typename... Args>
-std::unique_ptr<Expression> ExternFunction<R, Args...>::apply(
-    std::vector<Expression*> args) const {
+std::unique_ptr<Expression>
+ExternFunction<R, Args...>::apply(std::vector<Expression*> args) const {
   return std::make_unique<ExternExpression<R, Args...>>(this, std::move(args));
 }
 

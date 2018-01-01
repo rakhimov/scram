@@ -5,19 +5,19 @@
     <name>EventDialog</name>
     <message>
       <source>Event Editor</source>
-      <translation type="unfinished">Event Editor</translation>
+      <translation>Editor dell'evento</translation>
     </message>
     <message>
       <source>Label:</source>
-      <translation type="unfinished">Label:</translation>
+      <translation>Etichetta:</translation>
     </message>
     <message>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>Nome:</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation type="unfinished">Type:</translation>
+      <translation>Tipo:</translation>
     </message>
     <message>
       <source>House event</source>
@@ -27,126 +27,126 @@
     <message>
       <source>Basic event</source>
       <extracomment>The main analysis event (e.g., component failure)</extracomment>
-      <translation type="unfinished">Basic event</translation>
+      <translation>Evento di base</translation>
     </message>
     <message>
       <source>Undeveloped</source>
       <extracomment>The basic event flavor that indicates the further developement into a gate is possible.</extracomment>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Sottosviluppato</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Condizionale</translation>
     </message>
     <message>
       <source>Gate</source>
       <extracomment>The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.</extracomment>
-      <translation type="unfinished">Gate</translation>
+      <translation>Cancello</translation>
     </message>
     <message>
       <source>State:</source>
-      <translation type="unfinished">State:</translation>
+      <translation>Stato:</translation>
     </message>
     <message>
       <source>False</source>
-      <translation type="unfinished">False</translation>
+      <translation>Falso</translation>
     </message>
     <message>
       <source>True</source>
-      <translation type="unfinished">True</translation>
+      <translation>Vero</translation>
     </message>
     <message>
       <source>Expression</source>
-      <translation type="unfinished">Expression</translation>
+      <translation>Espressione</translation>
     </message>
     <message>
       <source>Value:</source>
-      <translation type="unfinished">Value:</translation>
+      <translation>Valore:</translation>
     </message>
     <message>
       <source>Rate:</source>
-      <translation type="unfinished">Rate:</translation>
+      <translation>Tasso:</translation>
     </message>
     <message>
       <source>Connective:</source>
-      <translation type="unfinished">Connective:</translation>
+      <translation>Connettivo:</translation>
     </message>
     <message>
       <source>AND</source>
-      <translation type="unfinished">AND</translation>
+      <translation>AND</translation>
     </message>
     <message>
       <source>OR</source>
-      <translation type="unfinished">OR</translation>
+      <translation>OR</translation>
     </message>
     <message>
       <source>ATLEAST</source>
       <extracomment>VOTE, Voting OR, Combo, Combination, K/N gate</extracomment>
-      <translation type="unfinished">ATLEAST</translation>
+      <translation>ATLEAST</translation>
     </message>
     <message>
       <source>XOR</source>
       <extracomment>Exclusive OR</extracomment>
-      <translation type="unfinished">XOR</translation>
+      <translation>XOR</translation>
     </message>
     <message>
       <source>NOT</source>
-      <translation type="unfinished">NOT</translation>
+      <translation>NOT</translation>
     </message>
     <message>
       <source>NAND</source>
       <extracomment>NOT AND</extracomment>
-      <translation type="unfinished">NAND</translation>
+      <translation>NAND</translation>
     </message>
     <message>
       <source>NOR</source>
       <extracomment>NOT OR</extracomment>
-      <translation type="unfinished">NOR</translation>
+      <translation>NOR</translation>
     </message>
     <message>
       <source>Min:</source>
-      <translation type="unfinished">Min:</translation>
+      <translation>Min:</translation>
     </message>
     <message>
       <source>Add argument with its ID</source>
-      <translation type="unfinished">Add argument with its ID</translation>
+      <translation>Aggiungere argomento con il suo ID</translation>
     </message>
     <message>
       <source>Add Argument</source>
-      <translation type="unfinished">Add Argument</translation>
+      <translation>Aggiungere argomento</translation>
     </message>
     <message>
       <source>Remove Argument</source>
-      <translation type="unfinished">Remove Argument</translation>
+      <translation>Rimuovere argomento</translation>
     </message>
     <message>
       <source>Container</source>
-      <translation type="unfinished">Container</translation>
+      <translation>Contenitore</translation>
     </message>
     <message>
       <source>Fault tree:</source>
-      <translation type="unfinished">Fault tree:</translation>
+      <translation>Albero dei guasti:</translation>
     </message>
     <message>
       <source>Model</source>
-      <translation type="unfinished">Model</translation>
+      <translation>Modello</translation>
     </message>
     <message>
       <source>Constant</source>
       <comment>constant probability value</comment>
-      <translation type="unfinished">Constant</translation>
+      <translation>Costante</translation>
     </message>
     <message>
       <source>Exponential</source>
       <comment>probability type defined w/ negative exponential formula</comment>
-      <translation type="unfinished">Exponential</translation>
+      <translation>Esponenziale</translation>
     </message>
     <message>
       <source>NULL</source>
       <comment>Not a null value.</comment>
       <extracomment>Pass-through, NO-OP type</extracomment>
-      <translation type="unfinished">NULL</translation>
+      <translation>NULL</translation>
     </message>
   </context>
   <context>
@@ -181,39 +181,39 @@
     </message>
     <message>
       <source>Model Tool Bar</source>
-      <translation type="unfinished">Model Tool Bar</translation>
+      <translation>Barra degli strumenti dei modelo</translation>
     </message>
     <message>
       <source>Edit Tool Bar</source>
-      <translation type="unfinished">Edit Tool Bar</translation>
+      <translation>Barra degli strumenti dei edizione</translation>
     </message>
     <message>
       <source>Zoom Tool Bar</source>
-      <translation type="unfinished">Zoom Tool Bar</translation>
+      <translation>Barra degli strumenti dei zoom</translation>
     </message>
     <message>
       <source>Analysis Tool Bar</source>
-      <translation type="unfinished">Analysis Tool Bar</translation>
+      <translation>Barra degli strumenti di analisi</translation>
     </message>
     <message>
       <source>Data</source>
-      <translation type="unfinished">Data</translation>
+      <translation>Dati</translation>
     </message>
     <message>
       <source>Reports</source>
-      <translation type="unfinished">Reports</translation>
+      <translation>Rapporti</translation>
     </message>
     <message>
       <source>About &amp;Qt</source>
-      <translation type="unfinished">About &amp;Qt</translation>
+      <translation>Circa &amp;Qt</translation>
     </message>
     <message>
       <source>About the Qt toolkit</source>
-      <translation type="unfinished">About the Qt toolkit</translation>
+      <translation>Circa il Qt toolkit</translation>
     </message>
     <message>
       <source>About &amp;SCRAM</source>
-      <translation type="unfinished">About &amp;SCRAM</translation>
+      <translation>Circa &amp;SCRAM</translation>
     </message>
     <message>
       <source>E&amp;xit</source>
@@ -221,7 +221,7 @@
     </message>
     <message>
       <source>Exit the Application</source>
-      <translation type="unfinished">Exit the Application</translation>
+      <translation>Uscire dall'applicazione</translation>
     </message>
     <message>
       <source>&amp;New Model</source>
@@ -229,7 +229,7 @@
     </message>
     <message>
       <source>Create a New Model</source>
-      <translation type="unfinished">Create a New Model</translation>
+      <translation>Creare un Nuovo Modello</translation>
     </message>
     <message>
       <source>&amp;Open Model Files...</source>
@@ -237,7 +237,7 @@
     </message>
     <message>
       <source>Open Model Files</source>
-      <translation type="unfinished">Open Model Files</translation>
+      <translation>Aprire i file di modello</translation>
     </message>
     <message>
       <source>&amp;Save Model</source>
@@ -253,7 +253,7 @@
     </message>
     <message>
       <source>Print</source>
-      <translation type="unfinished">Print</translation>
+      <translation>Stampa</translation>
     </message>
     <message>
       <source>&amp;Export As...</source>
@@ -273,11 +273,11 @@
     </message>
     <message>
       <source>Run Analysis</source>
-      <translation type="unfinished">Run Analysis</translation>
+      <translation>Eseguire analisi</translation>
     </message>
     <message>
       <source>Analysis Settings</source>
-      <translation type="unfinished">Analysis Settings</translation>
+      <translation>Impostazioni di analisi</translation>
     </message>
     <message>
       <source>&amp;Model</source>
@@ -707,52 +707,8 @@
       <translation type="unfinished">Fault Tree: %1</translation>
     </message>
     <message>
-      <source>Product</source>
-      <translation type="unfinished">Product</translation>
-    </message>
-    <message>
-      <source>Order</source>
-      <translation type="unfinished">Order</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <translation type="unfinished">Probability</translation>
-    </message>
-    <message>
-      <source>Contribution</source>
-      <translation type="unfinished">Contribution</translation>
-    </message>
-    <message>
       <source>Products: %1</source>
       <translation type="unfinished">Products: %1</translation>
-    </message>
-    <message>
-      <source>ID</source>
-      <translation type="unfinished">ID</translation>
-    </message>
-    <message>
-      <source>Occurrence</source>
-      <translation type="unfinished">Occurrence</translation>
-    </message>
-    <message>
-      <source>MIF</source>
-      <translation type="unfinished">MIF</translation>
-    </message>
-    <message>
-      <source>CIF</source>
-      <translation type="unfinished">CIF</translation>
-    </message>
-    <message>
-      <source>DIF</source>
-      <translation type="unfinished">DIF</translation>
-    </message>
-    <message>
-      <source>RAW</source>
-      <translation type="unfinished">RAW</translation>
-    </message>
-    <message>
-      <source>RRW</source>
-      <translation type="unfinished">RRW</translation>
     </message>
     <message>
       <source>Importance: %1</source>
@@ -803,20 +759,6 @@
       <source>Reporting error</source>
       <translation type="unfinished">Reporting error</translation>
     </message>
-    <message>
-      <source>Products (%L1)</source>
-      <extracomment>Cut-sets or prime-implicants (depending on the settings).</extracomment>
-      <translation type="unfinished">Products (%L1)</translation>
-    </message>
-    <message>
-      <source>Probability (%1)</source>
-      <translation type="unfinished">Probability (%1)</translation>
-    </message>
-    <message>
-      <source>Importance Factors (%L1)</source>
-      <extracomment>The number of important events w/ factors defined.</extracomment>
-      <translation type="unfinished">Importance Factors (%L1)</translation>
-    </message>
   </context>
   <context>
     <name>scram::gui::ModelTree</name>
@@ -853,6 +795,21 @@
     </message>
   </context>
   <context>
+    <name>scram::gui::ReportTree</name>
+    <message>
+      <source>Products (%L1)</source>
+      <translation type="unfinished">Products (%L1)</translation>
+    </message>
+    <message>
+      <source>Probability (%1)</source>
+      <translation type="unfinished">Probability (%1)</translation>
+    </message>
+    <message>
+      <source>Importance Factors (%L1)</source>
+      <translation type="unfinished">Importance Factors (%L1)</translation>
+    </message>
+  </context>
+  <context>
     <name>scram::gui::model::BasicEvent</name>
     <message>
       <source>Set basic event &apos;%1&apos; flavor to &apos;%2&apos;</source>
@@ -864,109 +821,163 @@
     </message>
     <message>
       <source>Undeveloped</source>
-      <translation type="unfinished">Undeveloped</translation>
+      <translation>Sottosviluppato</translation>
     </message>
     <message>
       <source>Conditional</source>
       <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
-      <translation type="unfinished">Conditional</translation>
+      <translation>Condizionale</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::BasicEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Flavor</source>
       <extracomment>The flavor type of a basic event.</extracomment>
-      <translation type="unfinished">Flavor</translation>
+      <translation>Sapore</translation>
     </message>
     <message>
       <source>Probability</source>
       <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
-      <translation type="unfinished">Probability</translation>
+      <translation>Probabilità</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Etichetta</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::Gate</name>
     <message>
       <source>and</source>
-      <translation type="unfinished">and</translation>
+      <translation>and</translation>
     </message>
     <message>
       <source>or</source>
-      <translation type="unfinished">or</translation>
+      <translation>or</translation>
     </message>
     <message>
       <source>at-least %1</source>
       <extracomment>Also named as &apos;vote&apos;, &apos;voting or&apos;, &apos;combination&apos;, &apos;combo&apos;.</extracomment>
-      <translation type="unfinished">at-least %1</translation>
+      <translation>at-least %1</translation>
     </message>
     <message>
       <source>xor</source>
-      <translation type="unfinished">xor</translation>
+      <translation>xor</translation>
     </message>
     <message>
       <source>not</source>
-      <translation type="unfinished">not</translation>
+      <translation>not</translation>
     </message>
     <message>
       <source>null</source>
       <extracomment>This is &apos;pass-through&apos; or &apos;no-action&apos; gate type.</extracomment>
-      <translation type="unfinished">null</translation>
+      <translation>null</translation>
     </message>
     <message>
       <source>nand</source>
       <extracomment>not and.</extracomment>
-      <translation type="unfinished">nand</translation>
+      <translation>nand</translation>
     </message>
     <message>
       <source>nor</source>
       <extracomment>not or.</extracomment>
-      <translation type="unfinished">nor</translation>
+      <translation>nor</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::GateContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>Connective</source>
       <extracomment>Boolean operator of the Boolean formula.</extracomment>
-      <translation type="unfinished">Connective</translation>
+      <translation>Connettivo</translation>
     </message>
     <message>
       <source>Args</source>
       <extracomment>The number of arguments in the Boolean formula.</extracomment>
-      <translation type="unfinished">Args</translation>
+      <translation>Args</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Etichetta</translation>
     </message>
   </context>
   <context>
     <name>scram::gui::model::HouseEventContainerModel</name>
     <message>
       <source>ID</source>
-      <translation type="unfinished">ID</translation>
+      <translation>ID</translation>
     </message>
     <message>
       <source>State</source>
       <extracomment>House event Boolean state.</extracomment>
-      <translation type="unfinished">State</translation>
+      <translation>Stato</translation>
     </message>
     <message>
       <source>Label</source>
-      <translation type="unfinished">Label</translation>
+      <translation>Etichetta</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ImportanceTableModel</name>
+    <message>
+      <source>ID</source>
+      <translation>ID</translation>
+    </message>
+    <message>
+      <source>Occurrence</source>
+      <translation>Occorrenza</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Probabilità</translation>
+    </message>
+    <message>
+      <source>MIF</source>
+      <translation>MIF</translation>
+    </message>
+    <message>
+      <source>CIF</source>
+      <translation>CIF</translation>
+    </message>
+    <message>
+      <source>DIF</source>
+      <translation>DIF</translation>
+    </message>
+    <message>
+      <source>RAW</source>
+      <translation>RAW</translation>
+    </message>
+    <message>
+      <source>RRW</source>
+      <translation>RRW</translation>
+    </message>
+  </context>
+  <context>
+    <name>scram::gui::model::ProductTableModel</name>
+    <message>
+      <source>Product</source>
+      <translation>Prodotto</translation>
+    </message>
+    <message>
+      <source>Order</source>
+      <translation>Ordine</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <translation>Probabilità</translation>
+    </message>
+    <message>
+      <source>Contribution</source>
+      <translation>Contributo</translation>
     </message>
   </context>
 </TS>

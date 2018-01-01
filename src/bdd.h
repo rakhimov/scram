@@ -103,7 +103,7 @@ class WeakIntrusivePtr final : private boost::noncopyable {
   /// @returns Reference to this.
   WeakIntrusivePtr& operator=(const IntrusivePtr<T>& ptr) noexcept {
     this->~WeakIntrusivePtr();
-    new(this) WeakIntrusivePtr(ptr);
+    new (this) WeakIntrusivePtr(ptr);
     return *this;
   }
 
@@ -169,10 +169,7 @@ class Vertex : private boost::noncopyable {
 
  public:
   /// @param[in] id  Identifier of the BDD graph.
-  explicit Vertex(int id)
-      : id_(id),
-        use_count_(0),
-        table_ptr_(nullptr) {}
+  explicit Vertex(int id) : id_(id), use_count_(0), table_ptr_(nullptr) {}
 
   /// @returns Identifier of the BDD graph rooted by this vertex.
   int id() const { return id_; }
@@ -538,7 +535,7 @@ class UniqueTable {
       scale_power += std::log10(kMaxScaleCapacity / prev_capacity);
     }
     int growth_factor = std::pow(2, scale_power);
-    int new_capacity =  prev_capacity * growth_factor;
+    int new_capacity = prev_capacity * growth_factor;
     return core::GetPrimeNumber(new_capacity);
   }
 
@@ -911,9 +908,9 @@ class Bdd : private boost::noncopyable {
   /// @pre The operator is either AND or OR.
   ///
   /// @note The order of arguments does not matter for two variable operators.
-  Function Apply(Operator type,
-                 const VertexPtr& arg_one, const VertexPtr& arg_two,
-                 bool complement_one, bool complement_two) noexcept;
+  Function Apply(Operator type, const VertexPtr& arg_one,
+                 const VertexPtr& arg_two, bool complement_one,
+                 bool complement_two) noexcept;
 
   /// Calculates consensus of high and low of an if-then-else BDD vertex.
   ///

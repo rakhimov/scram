@@ -24,10 +24,11 @@
 
 #include <memory>
 
+#include <boost/predef.h>
+
 #include <boost/exception/errinfo_at_line.hpp>
 #include <boost/exception/errinfo_file_name.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/predef.h>
 #include <boost/range/algorithm.hpp>
 
 #include "env.h"

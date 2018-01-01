@@ -128,8 +128,8 @@ class PeriodicTest : public Expression {
   /// @param[in] tau  The time between tests in hours.
   /// @param[in] theta  The time before the first test in hours.
   /// @param[in] time  The current mission time in hours.
-  PeriodicTest(Expression* lambda, Expression* tau,
-               Expression* theta, Expression* time);
+  PeriodicTest(Expression* lambda, Expression* tau, Expression* theta,
+               Expression* time);
 
   /// Periodic tests with tests instantaneous and always successful.
   /// @copydetails PeriodicTest(Expression*, Expression*,
@@ -149,13 +149,10 @@ class PeriodicTest : public Expression {
   /// @param[in] available_at_test  Indicator of component availability at test.
   /// @param[in] sigma  The probability of failure detection upon test.
   /// @param[in] omega  The probability of failure at restart after repair/test.
-  PeriodicTest(Expression* lambda, Expression* lambda_test,
-               Expression* mu, Expression* tau,
-               Expression* theta, Expression* gamma,
-               Expression* test_duration,
-               Expression* available_at_test,
-               Expression* sigma, Expression* omega,
-               Expression* time);
+  PeriodicTest(Expression* lambda, Expression* lambda_test, Expression* mu,
+               Expression* tau, Expression* theta, Expression* gamma,
+               Expression* test_duration, Expression* available_at_test,
+               Expression* sigma, Expression* omega, Expression* time);
 
   void Validate() const override { flavor_->Validate(); }
   double value() noexcept override { return flavor_->value(); }
@@ -179,8 +176,8 @@ class PeriodicTest : public Expression {
   class InstantRepair : public Flavor {
    public:
     /// The same semantics as for 4 argument periodic-test.
-    InstantRepair(Expression* lambda, Expression* tau,
-                  Expression* theta, Expression* time)
+    InstantRepair(Expression* lambda, Expression* tau, Expression* theta,
+                  Expression* time)
         : lambda_(*lambda), tau_(*tau), theta_(*theta), time_(*time) {}
 
     void Validate() const override;
@@ -204,9 +201,8 @@ class PeriodicTest : public Expression {
   class InstantTest : public InstantRepair {
    public:
     /// The same semantics as for 5 argument periodic-test.
-    InstantTest(Expression* lambda, Expression* mu,
-                Expression* tau, Expression* theta,
-                Expression* time)
+    InstantTest(Expression* lambda, Expression* mu, Expression* tau,
+                Expression* theta, Expression* time)
         : InstantRepair(lambda, tau, theta, time), mu_(*mu) {}
 
     void Validate() const override;
@@ -226,12 +222,10 @@ class PeriodicTest : public Expression {
   class Complete : public InstantTest {
    public:
     /// The parameters have the same semantics as 11 argument periodic-test.
-    Complete(Expression* lambda, Expression* lambda_test,
-             Expression* mu, Expression* tau,
-             Expression* theta, Expression* gamma,
-             Expression* test_duration,
-             Expression* available_at_test, Expression* sigma,
-             Expression* omega, Expression* time)
+    Complete(Expression* lambda, Expression* lambda_test, Expression* mu,
+             Expression* tau, Expression* theta, Expression* gamma,
+             Expression* test_duration, Expression* available_at_test,
+             Expression* sigma, Expression* omega, Expression* time)
         : InstantTest(lambda, mu, tau, theta, time),
           lambda_test_(*lambda_test),
           gamma_(*gamma),

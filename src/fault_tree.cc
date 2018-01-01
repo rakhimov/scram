@@ -27,8 +27,7 @@ namespace mef {
 
 Component::Component(std::string name, std::string base_path,
                      RoleSpecifier role)
-    : Element(std::move(name)),
-      Role(role, std::move(base_path)) {}
+    : Element(std::move(name)), Role(role, std::move(base_path)) {}
 
 void Component::Add(Gate* gate) { AddEvent(gate, &gates_); }
 

@@ -30,8 +30,8 @@ namespace gui {
 namespace model {
 
 Element::SetLabel::SetLabel(Element *element, QString label)
-    : QUndoCommand(QObject::tr("Set element '%1' label to '%2'")
-                       .arg(element->id(), label)),
+    : Involution(QObject::tr("Set element '%1' label to '%2'")
+                     .arg(element->id(), label)),
       m_label(std::move(label)), m_element(element)
 {
 }
@@ -61,8 +61,8 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
 
 BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
                                          mef::Expression *expression)
-    : QUndoCommand(QObject::tr("Modify basic event '%1' expression")
-                       .arg(basicEvent->id())),
+    : Involution(QObject::tr("Modify basic event '%1' expression")
+                     .arg(basicEvent->id())),
       m_expression(expression), m_basicEvent(basicEvent)
 {
 }
@@ -70,8 +70,8 @@ BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
 void BasicEvent::SetExpression::redo()
 {
     auto *mefEvent = m_basicEvent->data();
-    mef::Expression *cur_expression
-        = mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
+    mef::Expression *cur_expression =
+        mefEvent->HasExpression() ? &mefEvent->expression() : nullptr;
     if (m_expression == cur_expression)
         return;
     mefEvent->expression(m_expression);
@@ -80,8 +80,8 @@ void BasicEvent::SetExpression::redo()
 }
 
 BasicEvent::SetFlavor::SetFlavor(BasicEvent *basicEvent, Flavor flavor)
-    : QUndoCommand(tr("Set basic event '%1' flavor to '%2'")
-                       .arg(basicEvent->id(), flavorToString(flavor))),
+    : Involution(tr("Set basic event '%1' flavor to '%2'")
+                     .arg(basicEvent->id(), flavorToString(flavor))),
       m_flavor(flavor), m_basicEvent(basicEvent)
 {
 }
@@ -110,8 +110,8 @@ void BasicEvent::SetFlavor::redo()
 }
 
 HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)
-    : QUndoCommand(QObject::tr("Set house event '%1' state to '%2'")
-                       .arg(houseEvent->id(), boolToString(state))),
+    : Involution(QObject::tr("Set house event '%1' state to '%2'")
+                     .arg(houseEvent->id(), boolToString(state))),
       m_state(state), m_houseEvent(houseEvent)
 {
 }
@@ -127,7 +127,7 @@ void HouseEvent::SetState::redo()
 }
 
 Gate::SetFormula::SetFormula(Gate *gate, mef::FormulaPtr formula)
-    : QUndoCommand(QObject::tr("Update gate '%1' formula").arg(gate->id())),
+    : Involution(QObject::tr("Update gate '%1' formula").arg(gate->id())),
       m_formula(std::move(formula)), m_gate(gate)
 {
 }
@@ -181,16 +181,15 @@ std::vector<Gate *> Model::parents(mef::Formula::EventArg event) const
 }
 
 Model::SetName::SetName(QString name, Model *model)
-    : QUndoCommand(QObject::tr("Rename model to '%1'").arg(name)),
-      m_model(model), m_name(std::move(name))
+    : Involution(QObject::tr("Rename model to '%1'").arg(name)), m_model(model),
+      m_name(std::move(name))
 {
 }
 
 void Model::SetName::redo()
 {
-    QString currentName = m_model->m_model->HasDefaultName()
-                              ? QStringLiteral("")
-                              : m_model->id();
+    QString currentName =
+        m_model->m_model->HasDefaultName() ? QStringLiteral("") : m_model->id();
     if (currentName == m_name)
         return;
     m_model->m_model->SetOptionalName(m_name.toStdString());
@@ -219,9 +218,9 @@ void Model::AddFaultTree::undo()
 }
 
 Model::RemoveFaultTree::RemoveFaultTree(mef::FaultTree *faultTree, Model *model)
-    : AddFaultTree(faultTree, model,
-                   QObject::tr("Remove fault tree '%1'")
-                       .arg(QString::fromStdString(faultTree->name())))
+    : Inverse<AddFaultTree>(faultTree, model,
+                            QObject::tr("Remove fault tree '%1'")
+                                .arg(QString::fromStdString(faultTree->name())))
 {
 }
 

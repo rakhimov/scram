@@ -26,7 +26,7 @@ namespace test {
 // Benchmark Tests for an example fault tree with
 // Two trains of Pumps and Valves.
 TEST_P(RiskAnalysisTest, TwoTrain) {
-  std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
+  std::string tree_input = "input/TwoTrain/two_train.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -44,7 +44,7 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
 }
 
 TEST_P(RiskAnalysisTest, TwoTrainUnityEventTree) {
-  std::string dir = "./share/scram/input/TwoTrain/";
+  std::string dir = "input/TwoTrain/";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(
       ProcessInputFiles({dir + "two_train.xml", dir + "event_tree.xml"}));
@@ -59,7 +59,7 @@ TEST_P(RiskAnalysisTest, TwoTrainSubstitutions) {
   if (settings.prime_implicants())
     return;  /// @todo Solve the test for prime implicants.
 
-  std::string dir = "./share/scram/input/TwoTrain/";
+  std::string dir = "input/TwoTrain/";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({dir + "substitutions.xml"}));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -80,7 +80,7 @@ TEST_P(RiskAnalysisTest, TwoTrainNonDeclarativeSubstitutions) {
   if (settings.prime_implicants())
     return;  /// @todo Solve the test for prime implicants.
 
-  std::string dir = "./share/scram/input/TwoTrain/";
+  std::string dir = "input/TwoTrain/";
   settings.probability_analysis(true);
   settings.approximation(core::Approximation::kRareEvent);
   ASSERT_NO_THROW(

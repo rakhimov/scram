@@ -52,10 +52,10 @@ std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
 /// @param[in] clones  The storage container for newly created clones.
 ///
 /// @returns The deep-copy of the argument formula with new (changed) arguments.
-std::unique_ptr<mef::Formula> Clone(
-    const mef::Formula& formula,
-    const std::unordered_map<std::string, bool>& set_instructions,
-    std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
+std::unique_ptr<mef::Formula>
+Clone(const mef::Formula& formula,
+      const std::unordered_map<std::string, bool>& set_instructions,
+      std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
   auto new_formula = std::make_unique<mef::Formula>(formula.type());
   struct {
     mef::Formula::EventArg operator()(mef::BasicEvent* arg) { return arg; }
@@ -98,8 +98,7 @@ std::unique_ptr<mef::Formula> Clone(
 }  // namespace
 
 EventTreeAnalysis::PathCollector::PathCollector(const PathCollector& other)
-    : expressions(other.expressions),
-      set_instructions(other.set_instructions) {
+    : expressions(other.expressions), set_instructions(other.set_instructions) {
   for (const mef::FormulaPtr& formula : other.formulas)
     formulas.push_back(core::Clone(*formula));
 }
@@ -181,10 +180,12 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
       }
 
       void Visit(const mef::CollectFormula* collect_formula) override {
+        // clang-format off
         collector_.path_collector_.formulas.push_back(
             core::Clone(collect_formula->formula(),
                         collector_.path_collector_.set_instructions,
                         collector_.clones_));
+        // clang-format on
       }
 
       void Visit(const mef::CollectExpression* collect_expression) override {
@@ -214,7 +215,9 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
       assert(state.empty());
       for (const mef::Path& fork_path : fork->paths()) {
         state = fork_path.state();
+        // clang-format off
         Collector(*this)(&fork_path);  // NOLINT(runtime/explicit)
+        // clang-format on
       }
       result_->context.functional_events.erase(name);
     }

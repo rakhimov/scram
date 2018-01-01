@@ -56,6 +56,7 @@ namespace scram {
 #define TIMER(level, ...) \
   Timer<level> BOOST_PP_CAT(timer_, __LINE__)(__VA_ARGS__)
 
+// clang-format off
 /// Logging with a level.
 #define LOG(level) \
   if (level <= scram::Logger::report_level()) scram::Logger().Get(level)
@@ -63,6 +64,7 @@ namespace scram {
 /// Conditional logging with a level.
 #define BLOG(level, cond) \
   if (cond) LOG(level)
+// clang-format on
 
 /// Levels for log statements.
 enum LogLevel {  // The numbers are used for array indices.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2016 Olzhas Rakhimov
+# Copyright (C) 2014-2017 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Generates a fault tree of various complexities.
 
 The generated fault tree can be put into an XML file with the Open-PSA MEF
@@ -39,6 +38,8 @@ However, if the number of gates are not set (constrained) by the user,
 all the other factors set by the user are
 guaranteed to be preserved and used as they are.
 """
+
+# pylint: disable=too-many-lines
 
 from __future__ import print_function, division, absolute_import
 
@@ -258,8 +259,9 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         self.__weights_g = weights[:]
         for _ in range(len(Factors.__OPERATORS) - len(weights)):
             self.__weights_g.append(0)  # padding for missing weights
-        self.__norm_weights = [x / sum(self.__weights_g)
-                               for x in self.__weights_g]
+        self.__norm_weights = [
+            x / sum(self.__weights_g) for x in self.__weights_g
+        ]
         self.__cum_dist = self.__norm_weights[:]
         self.__cum_dist.insert(0, 0)
         for i in range(1, len(self.__cum_dist)):
@@ -344,8 +346,8 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         Returns:
             The estimated number of common basic events.
         """
-        return int(self.common_b * self.__percent_basic *
-                   self.num_args * num_gate / self.parents_b)
+        return int(self.common_b * self.__percent_basic * self.num_args *
+                   num_gate / self.parents_b)
 
     def get_num_common_gate(self, num_gate):
         """Estimates the number of common gates.
@@ -360,8 +362,8 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         Returns:
             The estimated number of common gates.
         """
-        return int(self.common_g * self.__percent_gate *
-                   self.num_args * num_gate / self.parents_g)
+        return int(self.common_g * self.__percent_gate * self.num_args *
+                   num_gate / self.parents_g)
 
     def constrain_num_gate(self, num_gate):
         """Constrains the number of gates.
@@ -526,8 +528,7 @@ def correct_for_exhaustion(gates_queue, common_gate, fault_tree):
         # Initialize one more gate
         # by randomly choosing places in the fault tree.
         random_gate = random.choice(fault_tree.gates)
-        while (random_gate.operator == "not" or
-               random_gate.operator == "xor" or
+        while (random_gate.operator == "not" or random_gate.operator == "xor" or
                random_gate in common_gate):
             random_gate = random.choice(fault_tree.gates)
         new_gate = fault_tree.construct_gate()
@@ -613,8 +614,8 @@ def init_gates(gates_queue, common_basic, common_gate, fault_tree):
                 gate.add_argument(new_gate)
                 gates_queue.append(new_gate)
         else:
-            gate.add_argument(choose_basic_event(s_common, common_basic,
-                                                 fault_tree))
+            gate.add_argument(
+                choose_basic_event(s_common, common_basic, fault_tree))
 
     correct_for_exhaustion(gates_queue, common_gate, fault_tree)
 
@@ -675,10 +676,10 @@ def generate_fault_tree(ft_name, root_name, factors):
     num_gate = factors.get_num_gate()
     num_common_basic = factors.get_num_common_basic(num_gate)
     num_common_gate = factors.get_num_common_gate(num_gate)
-    common_basic = [fault_tree.construct_basic_event()
-                    for _ in range(num_common_basic)]
-    common_gate = [fault_tree.construct_gate()
-                   for _ in range(num_common_gate)]
+    common_basic = [
+        fault_tree.construct_basic_event() for _ in range(num_common_basic)
+    ]
+    common_gate = [fault_tree.construct_gate() for _ in range(num_common_gate)]
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
@@ -687,9 +688,11 @@ def generate_fault_tree(ft_name, root_name, factors):
     while gates_queue:
         init_gates(gates_queue, common_basic, common_gate, fault_tree)
 
-    assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
-    assert(not [x for x in fault_tree.gates
-                if x.is_orphan() and x is not fault_tree.top_gate])
+    assert (not [x for x in fault_tree.basic_events if x.is_orphan()])
+    assert (not [
+        x for x in fault_tree.gates
+        if x.is_orphan() and x is not fault_tree.top_gate
+    ])
 
     distribute_house_events(fault_tree)
     generate_ccf_groups(fault_tree)
@@ -716,22 +719,18 @@ def write_info(fault_tree, tree_file, seed):
         "The number of basic events: " + str(factors.num_basic) + "\n"
         "The number of house events: " + str(factors.num_house) + "\n"
         "The number of CCF groups: " + str(factors.num_ccf) + "\n"
-        "The average number of gate arguments: " +
-        str(factors.num_args) + "\n"
+        "The average number of gate arguments: " + str(factors.num_args) + "\n"
         "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
         str(factors.get_gate_weights()) + "\n"
-        "Percentage of common basic events per gate: " +
-        str(factors.common_b) + "\n"
-        "Percentage of common gates per gate: " +
-        str(factors.common_g) + "\n"
-        "The avg. number of parents for common basic events: " +
-        str(factors.parents_b) + "\n"
-        "The avg. number of parents for common gates: " +
-        str(factors.parents_g) + "\n"
-        "Maximum probability for basic events: " +
-        str(factors.max_prob) + "\n"
-        "Minimum probability for basic events: " +
-        str(factors.min_prob) + "\n"
+        "Percentage of common basic events per gate: " + str(factors.common_b) +
+        "\n"
+        "Percentage of common gates per gate: " + str(factors.common_g) + "\n"
+        "The avg. number of parents for common basic events: " + str(
+            factors.parents_b) + "\n"
+        "The avg. number of parents for common gates: " + str(
+            factors.parents_g) + "\n"
+        "Maximum probability for basic events: " + str(factors.max_prob) + "\n"
+        "Minimum probability for basic events: " + str(factors.min_prob) + "\n"
         "-->\n")
 
 
@@ -807,14 +806,14 @@ def get_complexity_summary(fault_tree):
         "Basic events to gates ratio: %f" %
         (len(fault_tree.basic_events) / len(fault_tree.gates)) + "\n"
         "The average number of gate arguments: %f" %
-        (sum(x.num_arguments() for x in fault_tree.gates) /
-         len(fault_tree.gates)) + "\n"
+        (sum(x.num_arguments()
+             for x in fault_tree.gates) / len(fault_tree.gates)) + "\n"
         "The number of common basic events: %d" % len(shared_b) + "\n"
         "The number of common gates: %d" % len(shared_g) + "\n"
         "Percentage of common basic events per gate: %f" % common_b + "\n"
         "Percentage of common gates per gate: %f" % common_g + "\n"
-        "Percentage of arguments that are basic events per gate: %f" %
-        frac_b + "\n")
+        "Percentage of arguments that are basic events per gate: %f" % frac_b +
+        "\n")
     if shared_b:
         summary_txt += (
             "The avg. number of parents for common basic events: %f" %
@@ -853,45 +852,117 @@ def manage_cmd_args(argv=None):
     Raises:
         ArgumentTypeError: There are problems with the arguments.
     """
-    parser = ap.ArgumentParser(description="Complex-Fault-Tree Generator",
-                               formatter_class=ap.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--ft-name", type=str, help="name for the fault tree",
-                        metavar="NCNAME", default="Autogenerated")
-    parser.add_argument("--root", type=str, help="name for the root gate",
-                        default="root", metavar="NCNAME")
-    parser.add_argument("--seed", type=int, default=123, metavar="int",
-                        help="seed for the PRNG")
-    parser.add_argument("-b", "--num-basic", type=int, help="# of basic events",
-                        default=100, metavar="int")
-    parser.add_argument("-a", "--num-args", type=float, default=3.0,
-                        help="avg. # of gate arguments", metavar="float")
-    parser.add_argument("--weights-g", type=str, nargs="+", metavar="float",
-                        help="weights for [AND, OR, K/N, NOT, XOR] gates",
-                        default=[1, 1, 0, 0, 0])
-    parser.add_argument("--common-b", type=float, default=0.1, metavar="float",
-                        help="avg. %% of common basic events per gate")
-    parser.add_argument("--common-g", type=float, default=0.1, metavar="float",
-                        help="avg. %% of common gates per gate")
-    parser.add_argument("--parents-b", type=float, default=2, metavar="float",
-                        help="avg. # of parents for common basic events")
-    parser.add_argument("--parents-g", type=float, default=2, metavar="float",
-                        help="avg. # of parents for common gates")
-    parser.add_argument("-g", "--num-gate", type=int, default=0, metavar="int",
-                        help="# of gates (discards parents-b/g and common-b/g)")
-    parser.add_argument("--max-prob", type=float, default=0.1, metavar="float",
-                        help="maximum probability for basic events")
-    parser.add_argument("--min-prob", type=float, default=0.01, metavar="float",
-                        help="minimum probability for basic events")
-    parser.add_argument("--num-house", type=int, help="# of house events",
-                        default=0, metavar="int")
-    parser.add_argument("--num-ccf", type=int, help="# of ccf groups",
-                        default=0, metavar="int")
-    parser.add_argument("-o", "--out", type=str, default="fault_tree.xml",
-                        metavar="path", help="a file to write the fault tree")
-    parser.add_argument("--aralia", action="store_true",
-                        help="apply the Aralia format to the output")
-    parser.add_argument("--nest", type=int, default=0, metavar="int",
-                        help="nestedness of Boolean formulae in the XML output")
+    # #lizard forgives the function length
+    parser = ap.ArgumentParser(
+        description="Complex-Fault-Tree Generator",
+        formatter_class=ap.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "--ft-name",
+        type=str,
+        help="name for the fault tree",
+        metavar="NCNAME",
+        default="Autogenerated")
+    parser.add_argument(
+        "--root",
+        type=str,
+        help="name for the root gate",
+        default="root",
+        metavar="NCNAME")
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=123,
+        metavar="int",
+        help="seed for the PRNG")
+    parser.add_argument(
+        "-b",
+        "--num-basic",
+        type=int,
+        help="# of basic events",
+        default=100,
+        metavar="int")
+    parser.add_argument(
+        "-a",
+        "--num-args",
+        type=float,
+        default=3.0,
+        help="avg. # of gate arguments",
+        metavar="float")
+    parser.add_argument(
+        "--weights-g",
+        type=str,
+        nargs="+",
+        metavar="float",
+        help="weights for [AND, OR, K/N, NOT, XOR] gates",
+        default=[1, 1, 0, 0, 0])
+    parser.add_argument(
+        "--common-b",
+        type=float,
+        default=0.1,
+        metavar="float",
+        help="avg. %% of common basic events per gate")
+    parser.add_argument(
+        "--common-g",
+        type=float,
+        default=0.1,
+        metavar="float",
+        help="avg. %% of common gates per gate")
+    parser.add_argument(
+        "--parents-b",
+        type=float,
+        default=2,
+        metavar="float",
+        help="avg. # of parents for common basic events")
+    parser.add_argument(
+        "--parents-g",
+        type=float,
+        default=2,
+        metavar="float",
+        help="avg. # of parents for common gates")
+    parser.add_argument(
+        "-g",
+        "--num-gate",
+        type=int,
+        default=0,
+        metavar="int",
+        help="# of gates (discards parents-b/g and common-b/g)")
+    parser.add_argument(
+        "--max-prob",
+        type=float,
+        default=0.1,
+        metavar="float",
+        help="maximum probability for basic events")
+    parser.add_argument(
+        "--min-prob",
+        type=float,
+        default=0.01,
+        metavar="float",
+        help="minimum probability for basic events")
+    parser.add_argument(
+        "--num-house",
+        type=int,
+        help="# of house events",
+        default=0,
+        metavar="int")
+    parser.add_argument(
+        "--num-ccf", type=int, help="# of ccf groups", default=0, metavar="int")
+    parser.add_argument(
+        "-o",
+        "--out",
+        type=str,
+        default="fault_tree.xml",
+        metavar="path",
+        help="a file to write the fault tree")
+    parser.add_argument(
+        "--aralia",
+        action="store_true",
+        help="apply the Aralia format to the output")
+    parser.add_argument(
+        "--nest",
+        type=int,
+        default=0,
+        metavar="int",
+        help="nestedness of Boolean formulae in the XML output")
     args = parser.parse_args(argv)
     if args.nest < 0:
         raise ap.ArgumentTypeError("The nesting factor cannot be negative")
@@ -949,6 +1020,7 @@ def main(argv=None):
             write_info(fault_tree, tree_file, args.seed)
             write_summary(fault_tree, tree_file)
             tree_file.write(fault_tree.to_xml(args.nest))
+
 
 if __name__ == "__main__":
     try:

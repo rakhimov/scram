@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index_container.hpp>
 
 namespace scram {
 namespace mef {

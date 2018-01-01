@@ -72,8 +72,7 @@ class Product {
   /// @param[in] data  The underlying set.
   /// @param[in] graph  The graph with indices to events map.
   Product(const std::vector<int>& data, const Pdag& graph) noexcept
-      : data_(data),
-        graph_(graph) {}
+      : data_(data), graph_(graph) {}
 
   /// @returns true for unity product with no literals.
   bool empty() const { return data_.empty(); }
@@ -128,8 +127,7 @@ class ProductContainer {
   /// @param[in] products  Sets with indices of events from calculations.
   /// @param[in] graph  PDAG with basic event indices and pointers.
   ProductContainer(const Zbdd& products, const Pdag& graph) noexcept
-      : products_(products),
-        graph_(graph) {
+      : products_(products), graph_(graph) {
     Pdag::IndexMap<bool> filter(graph_.basic_events().size());
     for (const std::vector<int>& result_set : products_) {
       for (int i : result_set) {

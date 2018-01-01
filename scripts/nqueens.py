@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015-2016 Olzhas Rakhimov
+# Copyright (C) 2015-2017 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """Generates a fault tree representation of the N Queens problem.
 
 The representation is given in the Aralia format.
@@ -62,6 +61,7 @@ def gate(i, j=None):
 
 def print_constraints(n):  # pylint: disable=invalid-name
     """Prints the main setup constraints for n queens."""
+
     def _append_attacked_positions(i, j, logic):
         """Appends positions attacked by the (i, j) queen into logic."""
         for k in range(1, n + 1):
@@ -106,8 +106,8 @@ def main():
     """Prints the the N Queens fault tree representation to standard output."""
     description = "Fault tree representation of the N Queens problem"
     parser = ap.ArgumentParser(description=description)
-    parser.add_argument("n", type=int, nargs="?", help="the number of queens",
-                        default=8)
+    parser.add_argument(
+        "n", type=int, nargs="?", help="the number of queens", default=8)
     args = parser.parse_args()
     if args.n < 1:
         raise ap.ArgumentTypeError("Illegal number of queens.")
@@ -115,6 +115,7 @@ def main():
     print_constraints(args.n)
     print_requirements(args.n)
     print_probabilities(args.n)
+
 
 if __name__ == "__main__":
     try:

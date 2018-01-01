@@ -18,8 +18,8 @@
 #include "expression.h"
 #include "expression/boolean.h"
 #include "expression/conditional.h"
-#include "expression/exponential.h"
 #include "expression/constant.h"
+#include "expression/exponential.h"
 #include "expression/numerical.h"
 #include "expression/random_deviate.h"
 #include "parameter.h"
@@ -38,10 +38,7 @@ class OpenExpression : public Expression {
  public:
   explicit OpenExpression(double m = 1, double s = 1, double mn = 0,
                           double mx = 0)
-      : mean(m),
-        sample(s),
-        min(mn),
-        max(mx) {}
+      : mean(m), sample(s), min(mn), max(mx) {}
   double mean;
   double sample;
   double min;  // This value is used only if explicitly set non-zero.
@@ -691,7 +688,8 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
   EXPECT_DOUBLE_EQ(1.0 / 3 / 5 / 4, dev->value());
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6 / 3, dev->Sample());
   EXPECT_TRUE(Interval::closed(-1.0 / -4 / 1 / -2, 2.0 / -4 / 1 / -2) ==
-              dev->interval()) << dev->interval();
+              dev->interval())
+      << dev->interval();
 }
 
 TEST(ExpressionTest, Abs) {
@@ -730,7 +728,8 @@ TEST(ExpressionTest, Acos) {
   EXPECT_NO_THROW(dev->Validate());
 
   EXPECT_TRUE(Interval::closed(0, ConstantExpression::kPi.value()) ==
-              dev->interval()) << dev->interval();
+              dev->interval())
+      << dev->interval();
 }
 
 TEST(ExpressionTest, Asin) {
@@ -1163,8 +1162,7 @@ TEST(ExpressionTest, Ite) {
   arg_one.mean = 0.5;
   EXPECT_DOUBLE_EQ(42, dev->value());
 
-  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
-      << dev->interval();
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval()) << dev->interval();
 }
 
 TEST(ExpressionTest, Switch) {
@@ -1181,8 +1179,7 @@ TEST(ExpressionTest, Switch) {
   arg_one.mean = 0.5;
   EXPECT_DOUBLE_EQ(42, dev->value());
 
-  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval())
-      << dev->interval();
+  EXPECT_TRUE(Interval::closed(5, 52) == dev->interval()) << dev->interval();
 
   EXPECT_DOUBLE_EQ(10, Switch({}, &arg_three).value());
 }

@@ -19,8 +19,8 @@
 
 #include "elementcontainermodel.h"
 
-#include "src/ext/variant.h"
 #include "src/event.h"
+#include "src/ext/variant.h"
 #include "src/model.h"
 
 #include "guiassert.h"
@@ -51,8 +51,8 @@ ElementContainerModel::ElementContainerModel(const T &container, Model *model,
 void ElementContainerModel::connectElement(Element *element)
 {
     connect(element, &Element::labelChanged, this, [this, element] {
-        QModelIndex index
-            = createIndex(getElementIndex(element), columnCount() - 1, element);
+        QModelIndex index =
+            createIndex(getElementIndex(element), columnCount() - 1, element);
         emit dataChanged(index, index);
     });
     connect(element, &Element::idChanged, this, [this, element] {
@@ -185,14 +185,14 @@ void BasicEventContainerModel::connectElement(Element *element)
     ElementContainerModel::connectElement(element);
     connect(static_cast<BasicEvent *>(element), &BasicEvent::flavorChanged,
             this, [this, element] {
-                QModelIndex index
-                    = createIndex(getElementIndex(element), 1, element);
+                QModelIndex index =
+                    createIndex(getElementIndex(element), 1, element);
                 emit dataChanged(index, index);
             });
     connect(static_cast<BasicEvent *>(element), &BasicEvent::expressionChanged,
             this, [this, element] {
-                QModelIndex index
-                    = createIndex(getElementIndex(element), 2, element);
+                QModelIndex index =
+                    createIndex(getElementIndex(element), 2, element);
                 emit dataChanged(index, index);
             });
 }
@@ -257,8 +257,8 @@ void HouseEventContainerModel::connectElement(Element *element)
     ElementContainerModel::connectElement(element);
     connect(static_cast<HouseEvent *>(element), &HouseEvent::stateChanged, this,
             [this, element] {
-                QModelIndex index
-                    = createIndex(getElementIndex(element), 1, element);
+                QModelIndex index =
+                    createIndex(getElementIndex(element), 1, element);
                 emit dataChanged(index, index);
             });
 }
@@ -399,7 +399,7 @@ bool GateSortFilterProxyModel::lessThan(const QModelIndex &lhs,
                                         const QModelIndex &rhs) const
 {
     if (lhs.parent().isValid())
-        return false;  // Don't sort arguments.
+        return false; // Don't sort arguments.
     return QSortFilterProxyModel::lessThan(lhs, rhs);
 }
 

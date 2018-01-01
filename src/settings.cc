@@ -81,8 +81,8 @@ Settings& Settings::prime_implicants(bool flag) {
 
 Settings& Settings::limit_order(int order) {
   if (order < 0) {
-    SCRAM_THROW(SettingsError("The limit on the order of products "
-                              "cannot be less than 0."));
+    SCRAM_THROW(SettingsError(
+        "The limit on the order of products cannot be less than 0."));
   }
   limit_order_ = order;
   return *this;
@@ -90,8 +90,8 @@ Settings& Settings::limit_order(int order) {
 
 Settings& Settings::cut_off(double prob) {
   if (prob < 0 || prob > 1)
-    SCRAM_THROW(SettingsError("The cut-off probability cannot be negative or"
-                              " more than 1."));
+    SCRAM_THROW(SettingsError(
+        "The cut-off probability cannot be negative or more than 1."));
   cut_off_ = prob;
   return *this;
 }
