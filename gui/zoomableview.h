@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file zoomableview.h
+/// @file
 /// Provides a GraphicsView with zoom in/out and other convenience features.
 
 #ifndef ZOOMABLEVIEW_H

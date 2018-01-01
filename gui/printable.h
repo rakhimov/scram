@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file printable.h
+/// @file
 /// Interface for printable objects.
 
 #ifndef PRINTABLE_H

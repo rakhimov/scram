@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Facilities to help with pointers to overloaded functions.
+
 /// Helper macro to resolve overloaded signals in Qt 5 style connections.
 ///
 /// @param T  The class type of the signal.

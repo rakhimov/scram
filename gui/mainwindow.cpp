@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "ui_namedialog.h"

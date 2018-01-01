@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Implementation of diagram graphics.
+
 #include "diagram.h"
 
 #include <cmath>

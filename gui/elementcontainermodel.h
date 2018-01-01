@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file elementcontainermodel.h
+/// @file
 /// The table model for elements.
 
 #ifndef ELEMENTCONTAINERMODEL_H

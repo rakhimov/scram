@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// GUI assertions that should not crash the program by default.
+
 #ifndef GUIASSERT_H
 #define GUIASSERT_H
 

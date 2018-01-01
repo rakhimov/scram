@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// Dialog to manage analysis settings.
+
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
