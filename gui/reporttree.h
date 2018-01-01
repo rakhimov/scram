@@ -45,6 +45,7 @@ public:
     enum class Row { Products, Probability, Importance };
 
     /// @param[in] results  The analysis result data.
+    /// @param[in,out] parent  The optional owner of the object.
     ///
     /// @pre The analysis results do not change over the report tree lifetime.
     /// @pre The analysis results live at least as long as this report tree.
@@ -52,15 +53,18 @@ public:
     explicit ReportTree(const std::vector<core::RiskAnalysis::Result> *results,
                         QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &index) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
-    const std::vector<core::RiskAnalysis::Result> &m_results;
+    const std::vector<core::RiskAnalysis::Result> &m_results; ///< The data.
 };
 
 } // namespace gui

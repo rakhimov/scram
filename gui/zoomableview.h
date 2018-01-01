@@ -27,6 +27,8 @@
 namespace scram {
 namespace gui {
 
+/// The base class for graphics views with default zoom logic.
+/// The zoom level is given as percents.
 class ZoomableView : public QGraphicsView
 {
     Q_OBJECT
@@ -38,21 +40,30 @@ public:
     int getZoom() const { return m_zoom; }
 
 signals:
+    /// @param[in] level  The current zoom level.
     void zoomChanged(int level);
 
 public slots:
+    /// Accepts requests to change the zoom to the given level.
     void setZoom(int level);
+
+    /// Incrementally zooms in by the absolute increment in the level.
     void zoomIn(int deltaLevel) { setZoom(m_zoom + deltaLevel); }
+
+    /// Incrementally zooms out by the absolute decrement in the level.
     void zoomOut(int deltaLevel) { setZoom(m_zoom - deltaLevel); }
+
+    /// Automatically adjusts the zoom to fit the view into the current scene.
     void zoomBestFit();
 
 protected:
+    /// Provides support for zoom-in/out with a mouse while holding Control key.
     void wheelEvent(QWheelEvent *event) override;
 
 private:
-    static const int m_minZoomLevel;
+    static const int m_minZoomLevel = 10; ///< The minimum allowed zoom level.
 
-    int m_zoom = 100; ///< The value is in percents.
+    int m_zoom = 100; ///< The zoom level value in percents.
 };
 
 } // namespace gui

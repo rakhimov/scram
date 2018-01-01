@@ -69,13 +69,18 @@ public:
 /// A command that is an inverse of another command.
 ///
 /// @tparam T  The undo-redo command type.
+///
+/// @pre T command can tolerate the undo before the redo.
 template <class T>
 class Inverse : public T
 {
     static_assert(std::is_base_of<QUndoCommand, T>::value, "");
 
 public:
+    /// Applies the command.
     void redo() final { T::undo(); }
+
+    /// Reverses the command.
     void undo() final { T::redo(); }
 
 protected:

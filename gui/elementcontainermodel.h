@@ -38,7 +38,7 @@ namespace scram {
 namespace gui {
 namespace model {
 
-/// The model to list elements in a table.
+/// The base class for models to list elements in a table.
 ///
 /// The model contains the original element pointer for Qt::UserRole.
 /// This only applies to top-level indices.
@@ -47,10 +47,17 @@ class ElementContainerModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
+    /// @param[in] parent  The top index (i.e., not valid).
+    ///
+    /// @returns The number of elements in the list as the row count.
     int rowCount(const QModelIndex &parent) const override;
 
 protected:
-    /// @tparam T  The container of smart pointers to elements.
+    /// @tparam T  The container type of smart pointers to elements.
+    ///
+    /// @param[in] container  The data container.
+    /// @param[in] model  The model managing the proxy Elements.
+    /// @param[in,out] parent  The optional owner of this object.
     template <class T>
     explicit ElementContainerModel(const T &container, Model *model,
                                    QObject *parent = nullptr);
@@ -62,31 +69,40 @@ protected:
     /// Assumes the table-layout and returns null index.
     QModelIndex parent(const QModelIndex &) const override { return {}; }
 
+    /// @param[in] index  The top row index in this container model.
+    ///
     /// @returns The element with the given index (row).
     ///
     /// @pre The index is valid.
     Element *getElement(int index) const;
 
+    /// @param[in] element  The element in this container model.
+    ///
     /// @returns The current index (row) of the element.
     ///
     /// @pre The element is in the table.
     int getElementIndex(Element *element) const;
 
-    void addElement(Element *element);
-    void removeElement(Element *element);
-
-    const std::vector<Element *> elements() const { return m_elements; }
+    /// @returns The current elements in the container.
+    const std::vector<Element *> &elements() const { return m_elements; }
 
 protected:
     /// Connects of the element change signals to the table modification.
     /// The base implementation only handles signals coming from base element.
     /// The derived classes need to override this function
     /// and append more connections.
+    ///
+    /// @param[in] element  The element in this container model.
     virtual void connectElement(Element *element);
 
 private:
-    std::vector<Element *> m_elements;
-    std::unordered_map<Element *, int> m_elementToIndex;
+    /// Adds an elements to the end of this container model.
+    void addElement(Element *element);
+    /// Removes an element from the container model.
+    void removeElement(Element *element);
+
+    std::vector<Element *> m_elements; ///< All the elements in the model.
+    std::unordered_map<Element *, int> m_elementToIndex; ///< An element to row.
 };
 
 /// The proxy model allows sorting and filtering.
@@ -105,43 +121,49 @@ public:
     }
 };
 
+/// Container model for basic events.
 class BasicEventContainerModel : public ElementContainerModel
 {
     Q_OBJECT
 
 public:
-    using ItemModel = BasicEvent;
-    using DataType = mef::BasicEvent;
+    using ItemModel = BasicEvent;     ///< The proxy Element type.
+    using DataType = mef::BasicEvent; ///< The data Element type.
 
+    /// Constructs from the table of proxy Basic Events in the Model.
     explicit BasicEventContainerModel(Model *model, QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int columnCount(const QModelIndex &parent) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role) const override;
-
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
     void connectElement(Element *element) final;
 };
 
+/// Container model for house events.
 class HouseEventContainerModel : public ElementContainerModel
 {
     Q_OBJECT
 
 public:
-    using ItemModel = HouseEvent;
-    using DataType = mef::HouseEvent;
+    using ItemModel = HouseEvent;     ///< The proxy Element type.
+    using DataType = mef::HouseEvent; ///< The data Element type.
 
+    /// Constructs from the table of proxy House Events in the Model.
     explicit HouseEventContainerModel(Model *model, QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int columnCount(const QModelIndex &parent) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role) const override;
-
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
     void connectElement(Element *element) final;
@@ -153,23 +175,23 @@ class GateContainerModel : public ElementContainerModel
     Q_OBJECT
 
 public:
-    using ItemModel = Gate;
-    using DataType = mef::Gate;
+    using ItemModel = Gate;     ///< The proxy Element type.
+    using DataType = mef::Gate; ///< The data Element type.
 
+    /// Constructs from the table of proxy Gates in the Model.
     explicit GateContainerModel(Model *model, QObject *parent = nullptr);
 
-    int columnCount(const QModelIndex &parent) const override;
-    int rowCount(const QModelIndex &parent) const override;
-
     /// The index for children embeds the parent information into the data.
+    /// @{
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
+    int columnCount(const QModelIndex &parent) const override;
+    int rowCount(const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &index) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role) const override;
-
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
     static const std::uintptr_t m_parentMask = 1; ///< Tagged parent pointer.
@@ -186,9 +208,12 @@ public:
     using QSortFilterProxyModel::QSortFilterProxyModel;
 
 protected:
+    /// Accepts only top elements for sorting and filtering.
+    /// @{
     bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
     bool lessThan(const QModelIndex &lhs,
                   const QModelIndex &rhs) const override;
+    /// @}
 };
 
 } // namespace model

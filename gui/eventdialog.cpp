@@ -230,6 +230,7 @@ mef::FaultTree *EventDialog::getFaultTree(const T *event) const
     return getFaultTree(it->get());
 }
 
+/// Finds fault tree container of the gate.
 template <>
 mef::FaultTree *EventDialog::getFaultTree(const mef::Gate *event) const
 {

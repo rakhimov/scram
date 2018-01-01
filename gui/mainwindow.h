@@ -56,6 +56,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    /// @param[in,out] parent  The optional owner of this object.
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -83,44 +84,33 @@ public:
     bool addInputFiles(const std::vector<std::string> &inputFiles);
 
 signals:
+    /// Indicates addition of new input or configuration files.
     void configChanged();
 
 private slots:
-    /**
-     * @brief Opens a new project configuration.
-     *
-     * The current project and input files are reset.
-     */
+    /// Opens a new project configuration.
+    ///
+    /// The current project and input files are reset.
     void createNewModel();
 
-    /**
-     * @brief Opens model files.
-     */
+    /// Opens model files.
     void openFiles(QString directory = QDir::homePath());
 
-    /**
-     * @brief Implicitly saves the modified model
-     *        only if the destination is available.
-     */
+    /// Implicitly saves the modified model
+    /// only if the destination is available.
     void autoSaveModel();
 
-    /**
-     * @brief Saves the project to a file.
-     *
-     * If the project is new,
-     * it does not have a default destination file.
-     * The user is required to specify the file upon save.
-     */
+    /// Saves the project to a file.
+    ///
+    /// If the project is new,
+    /// it does not have a default destination file.
+    /// The user is required to specify the file upon save.
     void saveModel();
 
-    /**
-     * @brief Saves the project to a potentially different file.
-     */
+    /// Saves the project to a potentially different file.
     void saveModelAs();
 
-    /**
-     * Exports the current analysis report.
-     */
+    /// Exports the current analysis report.
     void exportReportAs();
 
     /// Handles element addition with a dialog.
@@ -144,18 +134,25 @@ private:
     /// Connects print actions.
     ///
     /// @tparam T  Any type with print() and printPreview() functions.
+    ///
+    /// @param[in,out] view  The printable view.
     template <class T>
     void setupPrintableView(T *view);
 
     /// Connects the export actions to a widget.
     ///
     /// @tparam  Any type with exportAs() function.
+    ///
+    /// @param[in,out] view  The exportable view.
     template <class T>
     void setupExportableView(T *view);
 
     /// Connects the search bar to the model of the view.
     ///
     /// @tparam T  Any model type with setFilterRegExp(QString).
+    ///
+    /// @param[in,out] view  The searchable view.
+    /// @param[in,out] model  The model for the data in the view.
     template <class T>
     void setupSearchable(QObject *view, T *model);
 
@@ -163,6 +160,8 @@ private:
     /// Only selection of top indices activate the removal.
     ///
     /// @tparam T  The type of the objects to remove.
+    ///
+    /// @param[in,out] view  The view w/ removable data.
     ///
     /// @pre Selections are single row.
     /// @pre The model is proxy.
@@ -178,7 +177,14 @@ private:
         return nullptr;
     }
 
+    /// Removes event from a fault tree.
+    ///
     /// @tparam T  The model proxy type.
+    ///
+    /// @param[in,out] event  The existing event in the fault tree.
+    /// @param[in,out] faultTree  The container fault tree.
+    ///
+    /// @pre The event is in the fault tree.
     template <class T>
     void removeEvent(T *event, mef::FaultTree *faultTree);
 
@@ -192,59 +198,78 @@ private:
     template <class ContainerModel, typename... Ts>
     QTableView *constructTableView(QWidget *parent, Ts &&... modelArgs);
 
+    /// Constructs the table view of elements.
+    ///
+    /// @tparam ContainerModel  The element container model type.
+    ///
+    /// @param[in,out] guiModel  The proxy model managing the data.
+    /// @param[in,out] parent  The owner widget of the view.
+    ///
+    /// @returns A new table view listing the model elements.
     template <class ContainerModel>
     QAbstractItemView *constructElementTable(model::Model *guiModel,
                                              QWidget *parent);
 
+    /// Constructs a new MEF element out of Event editor data.
+    ///
+    /// @tparam T  The MEF element type.
+    ///
+    /// @param[in] dialog  The Event editor dialog w/ appropriate data.
+    ///
     /// @returns A new element constructed with the dialog data.
     template <class T>
     std::unique_ptr<T> extract(const EventDialog &dialog);
 
+    /// Retrieves the optional fault tree container out of an event editor.
+    ///
+    /// @param[in] dialog  The Event editor dialog.
+    ///
+    /// @returns The fault tree referenced in the event editor data.
+    ///          nullptr if no fault tree is referenced by the event editor.
     mef::FaultTree *getFaultTree(const EventDialog &dialog);
 
+    /// Launches the dialog to edit model elements.
+    /// @{
     template <class T>
     void editElement(EventDialog *dialog, model::Element *element);
     void editElement(EventDialog *dialog, model::HouseEvent *element);
     void editElement(EventDialog *dialog, model::BasicEvent *element);
     void editElement(EventDialog *dialog, model::Gate *element);
+    /// @}
 
-    /**
-     * Resets the tree view of the new model.
-     */
+    /// Resets the tree view of the new model.
     void resetModelTree();
 
     /// Activates the model tree elements.
     void activateModelTree(const QModelIndex &index);
+
     /// Activates the fault tree view.
+    ///
+    /// @param[in,out] faultTree  The valid fault tree to be shown in graphics.
     void activateFaultTreeDiagram(mef::FaultTree *faultTree);
+
     /// Activates the report tree elements.
     void activateReportTree(const QModelIndex &index);
 
-    /**
-     * @brief Resets the report view.
-     *
-     * @param analysis  The analysis with results.
-     *                  nullptr to clear the report widget.
-     */
+    /// Resets the report view.
+    ///
+    /// @param analysis  The analysis with results.
+    ///                  nullptr to clear the report widget.
     void resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis);
 
-    /**
-     * Saves the model and sets the model file.
-     *
-     * @param destination  The destination file to become the main model file.
-     */
+    /// Saves the model and sets the model file.
+    ///
+    /// @param destination  The destination file to become the main model file.
     void saveToFile(std::string destination);
 
-    /**
-     * Updates the recent file tracking.
-     *
-     * @param filePaths  The list to append to the recent file list.
-     *                   An empty list to clear the recent file list.
-     *
-     * @pre The list contains valid absolute input file paths.
-     *
-     * @note This does not store the result path list into persistent settings.
-     */
+    /// Updates the recent file tracking.
+    ///
+    /// @param filePaths  The list to append to the recent file list.
+    ///                   An empty list to clear the recent file list.
+    ///
+    /// @pre The list contains valid absolute input file paths.
+    ///
+    /// @note This does not store the result path list into persistent settings.
     void updateRecentFiles(QStringList filePaths);
 
     /// Override to save the model before closing the application.
@@ -261,15 +286,15 @@ private:
     /// Runs the analysis with the current model.
     void runAnalysis();
 
-    std::unique_ptr<Ui::MainWindow> ui;
-    QAction *m_undoAction;
-    QAction *m_redoAction;
-    QUndoStack *m_undoStack;
-    QComboBox *m_zoomBox; ///< The main zoom chooser/displayer widget.
-    QLineEdit *m_searchBar;
-    QTimer *m_autoSaveTimer;
-    QSettings m_preferences;
-    std::array<QAction *, 5> m_recentFileActions;
+    std::unique_ptr<Ui::MainWindow> ui; ///< The main UI of the application.
+    QAction *m_undoAction;   ///< The undo action from the undo stack.
+    QAction *m_redoAction;   ///< The redo action from the undo stack.
+    QUndoStack *m_undoStack; ///< The application undo stack.
+    QComboBox *m_zoomBox;    ///< The main zoom chooser/displayer widget.
+    QLineEdit *m_searchBar;  ///< The filter/search bar for main views.
+    QTimer *m_autoSaveTimer; ///< The timer to periodically save the model.
+    QSettings m_preferences; ///< The persistent global application settings.
+    std::array<QAction *, 5> m_recentFileActions; ///< Recent files.
 
     std::vector<std::string> m_inputFiles;    ///< The project model files.
     core::Settings m_settings;                ///< The analysis settings.

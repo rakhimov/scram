@@ -47,17 +47,15 @@ namespace po = boost::program_options;
 
 namespace {
 
-/**
- * Parses the command-line arguments.
- *
- * @param[in] argc  Count of arguments.
- * @param[in] argv  Values of arguments.
- * @param[out] vm  Variables map of program options.
- *
- * @returns 0 for success.
- * @returns 1 for errored state.
- * @returns -1 for information only state like help and version.
- */
+/// Parses the command-line arguments.
+///
+/// @param[in] argc  Count of arguments.
+/// @param[in] argv  Values of arguments.
+/// @param[out] vm  Variables map of program options.
+///
+/// @returns 0 for success.
+/// @returns 1 for errored state.
+/// @returns -1 for information only state like help and version.
 int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
 {
     const char *usage = "Usage:    scram-gui [options] [input-files]...";
@@ -244,6 +242,17 @@ void installTranslators(GuardedApplication *app)
 
 } // namespace
 
+/// Command-line SCRAM GUI entrance.
+///
+/// @param[in] argc  Argument count.
+/// @param[in] argv  Argument vector (including Qt args).
+///
+/// @returns 0 for success.
+///
+/// @note There are implicit Qt-specific options
+///       (e.g., -style, -stylesheet, -platform, -widgetcount, -reverse).
+///       These options are not listed in the help/usage of SCRAM GUI,
+///       but they can be invoked for debugging or advanced GUI customization.
 int main(int argc, char *argv[])
 {
     // Keep the following commented code!

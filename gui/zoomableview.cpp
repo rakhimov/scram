@@ -24,8 +24,6 @@
 namespace scram {
 namespace gui {
 
-const int ZoomableView::m_minZoomLevel = 10;
-
 void ZoomableView::setZoom(int level)
 {
     if (level == m_zoom)

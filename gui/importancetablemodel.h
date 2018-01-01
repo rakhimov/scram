@@ -41,19 +41,23 @@ class ImportanceTableModel : public QAbstractTableModel
 
 public:
     /// @param[in] data  The results of the importance analysis.
+    /// @param[in,out] parent  The optional owner of the object.
     ///
     /// @pre The data is alive at least as long as this model.
     ImportanceTableModel(const std::vector<core::ImportanceRecord> *data,
                          QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+    /// @}
 
 private:
-    const std::vector<core::ImportanceRecord> &m_data;
+    const std::vector<core::ImportanceRecord> &m_data; ///< The analysis result.
 };
 
 } // namespace model

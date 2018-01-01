@@ -33,6 +33,7 @@
 namespace scram {
 namespace gui {
 
+/// The tree representation for the Model constructs.
 class ModelTree : public QAbstractItemModel
 {
     Q_OBJECT
@@ -41,21 +42,34 @@ public:
     /// The top row containers of the tree.
     enum class Row { FaultTrees, Gates, BasicEvents, HouseEvents };
 
+    /// Constructs with the proxy Model as the data.
     explicit ModelTree(model::Model *model, QObject *parent = nullptr);
 
+    /// Required standard member functions of QAbstractItemModel interface.
+    /// @{
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
     QModelIndex index(int row, int column,
                       const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &index) const override;
+    /// @}
 
+    /// Provides the data for the tree items.
+    ///
+    /// @param[in] index  The index in this model.
+    /// @param[in] role  The role of the data.
+    ///
+    /// @returns The index data for the given role.
+    ///
     /// @note The Qt::UserRole provides the pointer
     ///       to the original model element if applicable.
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
+    /// The comparator to sort elements by their names.
     struct NameComparator
     {
+        /// Compares element names lexicographically.
         bool operator()(const mef::Element *lhs, const mef::Element *rhs) const
         {
             return lhs->name() < rhs->name();
@@ -69,7 +83,9 @@ private:
     template <class T, Row R>
     void setupElementCountConnections();
 
-    model::Model *m_model;
+    model::Model *m_model; ///< The proxy Model managing the data.
+
+    /// The set of fault trees.
     boost::container::flat_set<mef::FaultTree *, NameComparator> m_faultTrees;
 };
 

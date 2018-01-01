@@ -46,7 +46,6 @@ namespace gui {
 namespace model {
 
 /// Fault tree container element management assuming normalized model.
-/// @todo Move into an appropriate proxy type.
 /// @{
 inline void remove(mef::Event *, mef::FaultTree *)
 {
@@ -64,6 +63,7 @@ inline void add(mef::Gate *gate, mef::FaultTree *faultTree)
 }
 /// @}
 
+/// The base proxy Element model for mef::Element.
 class Element : public QObject
 {
     Q_OBJECT
@@ -80,22 +80,32 @@ public:
     /// @returns The additional description for the element.
     QString label() const { return QString::fromStdString(m_data->label()); }
 
+    /// Sets the label of an Element.
     class SetLabel : public Involution
     {
     public:
+        /// Stores an element and its new label.
         SetLabel(Element *element, QString label);
 
-        void redo() override;
+        void redo() override; ///< Applies changes.
 
     private:
-        QString m_label;
-        Element *m_element;
+        QString m_label;    ///< The label to be applied.
+        Element *m_element; ///< The target element.
     };
 
+    /// Sets the name of an Element.
+    ///
+    /// @tparam T  The proxy type.
+    ///
+    /// @pre The name format is valid for the MEF Elements.
+    ///
+    /// @todo Generalize for non-Event types.
     template <class T>
     class SetId : public Involution
     {
     public:
+        /// Stores an element, its new name and parent containers.
         SetId(T *event, QString name, mef::Model *model,
               mef::FaultTree *faultTree = nullptr)
             : Involution(QObject::tr("Rename event '%1' to '%2'")
@@ -105,6 +115,7 @@ public:
         {
         }
 
+        /// Applies the new name to the element.
         void redo() override
         {
             QString cur_name = m_event->id();
@@ -122,21 +133,25 @@ public:
         }
 
     private:
-        QString m_name;
-        T *m_event;
-        mef::Model *m_model;
-        mef::FaultTree *m_faultTree;
+        QString m_name;              ///< The name string to be applied.
+        T *m_event;                  ///< The proxy element.
+        mef::Model *m_model;         ///< The top model container.
+        mef::FaultTree *m_faultTree; ///< The parent fault tree container.
     };
 
 signals:
+    /// @param[in] label  The new label of the element.
     void labelChanged(const QString &label);
+
+    /// @param[in] id  The new ID of the element.
     void idChanged(const QString &id);
 
 protected:
+    /// Stores the reference to the original MEF Element to manage.
     explicit Element(mef::Element *element) : m_data(element) {}
 
 private:
-    mef::Element *const m_data;
+    mef::Element *const m_data; ///< The MEF element in the MEF model.
 };
 
 /// Provides the type and data of the origin for Proxy Elements.
@@ -149,6 +164,8 @@ class Proxy
 public:
     using Origin = T; ///< The MEF type.
 
+    /// @returns The original data managed by the proxy.
+    /// @{
     const T *data() const
     {
         return static_cast<const T *>(static_cast<const E *>(this)->m_data);
@@ -157,15 +174,19 @@ public:
     {
         return const_cast<T *>(static_cast<const Proxy *>(this)->data());
     }
+    /// @}
 };
 
+/// The proxy to manage mef::BasicEvent.
 class BasicEvent : public Element, public Proxy<BasicEvent, mef::BasicEvent>
 {
     Q_OBJECT
 
 public:
+    /// Basic event flavors.
     enum Flavor { Basic = 0, Undeveloped, Conditional };
 
+    /// Converts a basic event flavor to a UI string.
     static QString flavorToString(Flavor flavor)
     {
         switch (flavor) {
@@ -181,8 +202,10 @@ public:
         assert(false);
     }
 
+    /// Initializes proxy with the MEF basic event and its implicit flavor.
     explicit BasicEvent(mef::BasicEvent *basicEvent);
 
+    /// @returns The flavor of the basic event.
     Flavor flavor() const { return m_flavor; }
 
     /// @returns The current expression of this basic event.
@@ -203,6 +226,8 @@ public:
 
     /// Sets the basic event expression.
     ///
+    /// @pre The expression is valid for mef::BasicEvent.
+    ///
     /// @note Currently, the expression change
     ///       is detected with address comparison,
     ///       which may fail if the current expression has been changed.
@@ -214,32 +239,36 @@ public:
         ///                        nullptr to unset the expression.
         SetExpression(BasicEvent *basicEvent, mef::Expression *expression);
 
-        void redo() override;
+        void redo() override; ///< Applies the expression changes.
 
     private:
-        mef::Expression *m_expression;
-        BasicEvent *m_basicEvent;
+        mef::Expression *m_expression; ///< The valid expression to apply.
+        BasicEvent *m_basicEvent;      ///< The receiver basic event.
     };
 
     /// Sets the flavor of the basic event.
     class SetFlavor : public Involution
     {
     public:
+        /// Stores the basic event and its new flavor.
         SetFlavor(BasicEvent *basicEvent, Flavor flavor);
 
-        void redo() override;
+        void redo() override; ///< Applies the flavor changes.
 
     private:
-        Flavor m_flavor;
-        BasicEvent *m_basicEvent;
+        Flavor m_flavor;          ///< The basic event flavor.
+        BasicEvent *m_basicEvent; ///< The target basic event.
     };
 
 signals:
+    /// @param[in] expression  The new expression of the basic event.
     void expressionChanged(mef::Expression *expression);
+
+    /// @param[in] flavor  The new flavor of the basic event.
     void flavorChanged(Flavor flavor);
 
 private:
-    Flavor m_flavor;
+    Flavor m_flavor; ///< The current flavor of the basic event.
 };
 
 /// @returns The optional probability value of the basic event.
@@ -249,13 +278,16 @@ inline QVariant BasicEvent::probability<QVariant>() const
     return data()->HasExpression() ? QVariant(probability()) : QVariant();
 }
 
+/// The proxy to manage mef::HouseEvent.
 class HouseEvent : public Element, public Proxy<HouseEvent, mef::HouseEvent>
 {
     Q_OBJECT
 
 public:
+    /// @param[in,out] houseEvent  The MEF house event.
     explicit HouseEvent(mef::HouseEvent *houseEvent) : Element(houseEvent) {}
 
+    /// @returns The state data of the house event.
     template <typename T = bool>
     T state() const
     {
@@ -266,20 +298,22 @@ public:
     class SetState : public Involution
     {
     public:
+        /// Stores the house event and its new state.
         SetState(HouseEvent *houseEvent, bool state);
 
-        void redo() override;
+        void redo() override; ///< Applies the new state to the house event.
 
     private:
-        bool m_state;
-        HouseEvent *m_houseEvent;
+        bool m_state;             ///< The new state.
+        HouseEvent *m_houseEvent; ///< The target house event.
     };
 
 signals:
+    /// @param[in] value  The value of the house event's new state.
     void stateChanged(bool value);
 };
 
-/// @returns String representation for the Boolean value.
+/// Converts Boolean value to a UI string.
 inline QString boolToString(bool value)
 {
     return value ? QObject::tr("True") : QObject::tr("False");
@@ -292,44 +326,60 @@ inline QString HouseEvent::state<QString>() const
     return boolToString(state());
 }
 
+/// The proxy to manage mef::Gate.
+///
+/// @pre The gate formula is flat.
 class Gate : public Element, public Proxy<Gate, mef::Gate>
 {
     Q_OBJECT
 
 public:
+    /// @param[in,out] gate  The MEF gate with a flat formula.
     explicit Gate(mef::Gate *gate) : Element(gate) {}
 
+    /// @returns The current operator type of the gate.
     template <typename T = mef::Operator>
     T type() const
     {
         return data()->formula().type();
     }
 
+    /// @returns The number of gate arguments.
     int numArgs() const { return data()->formula().num_args(); }
+
+    /// @returns The vote number of the gate formula.
+    ///
+    /// @pre The vote number is appropriate for the formula type.
     int voteNumber() const { return data()->formula().vote_number(); }
 
+    /// @returns Event arguments of the gate.
     const std::vector<mef::Formula::EventArg> &args() const
     {
         return data()->formula().event_args();
     }
 
     /// Formula modification commands.
+    ///
+    /// @pre The formula is valid for mef::Gate.
     class SetFormula : public Involution
     {
     public:
+        /// Stores the gate and its new formula.
         SetFormula(Gate *gate, mef::FormulaPtr formula);
 
-        void redo() override;
+        void redo() override; ///< Applies the gate formula changes.
 
     private:
-        mef::FormulaPtr m_formula;
-        Gate *m_gate;
+        mef::FormulaPtr m_formula; ///< The new formula.
+        Gate *m_gate;              ///< The receiver gate for the formula.
     };
 
 signals:
+    /// Indicates gate formula changes or resets.
     void formulaChanged();
 };
 
+/// @returns The UI string representation for gate connective types.
 template <>
 inline QString Gate::type() const
 {
@@ -376,6 +426,8 @@ public:
     /// @param[in] model  The analysis model with all constructs.
     explicit Model(mef::Model *model);
 
+    /// The proxy element tables of the model.
+    /// @{
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
     const ProxyTable<Gate> &gates() const { return m_gates; }
@@ -383,37 +435,51 @@ public:
     {
         return m_model->fault_trees();
     }
+    /// @}
+
     /// Generic access to event tables.
     template <class T>
     ProxyTable<T> &table();
 
+    /// @param[in] event  The event defined/registered in the model.
+    ///
     /// @returns The parent gates of an event.
     std::vector<Gate *> parents(mef::Formula::EventArg event) const;
 
-    /// Model manipulation commands.
-    /// @{
+    /// Sets the optional name of the model.
+    ///
+    /// @pre The name format is valid for mef::Model.
+    ///
+    /// @note Empty name string resets the model name to a default one.
     class SetName : public Involution
     {
     public:
+        /// Stores the model and its new name.
         SetName(QString name, Model *model);
 
-        void redo() override;
+        void redo() override; ///< Applies the new name to the model.
 
     private:
-        Model *m_model;
-        QString m_name;
+        Model *m_model; ///< The current model.
+        QString m_name; ///< The new name string for the model.
     };
 
+    /// Adds a fault tree into a model.
+    ///
+    /// @pre The fault tree is not a duplicate of any existing fault tree.
+    ///
     /// @todo Provide a proxy class for the fault tree.
     class AddFaultTree : public QUndoCommand
     {
     public:
+        /// Stores the new fault tree and the target model.
         AddFaultTree(mef::FaultTreePtr faultTree, Model *model);
 
-        void redo() override;
-        void undo() override;
+        void redo() override; ///< Adds the fault tree.
+        void undo() override; ///< Removes the fault tree.
 
     protected:
+        /// Sets up the removal state.
         AddFaultTree(mef::FaultTree *address, Model *model, QString description)
             : QUndoCommand(std::move(description)), m_model(model),
               m_address(address)
@@ -421,22 +487,31 @@ public:
         }
 
     private:
-        Model *m_model;
-        mef::FaultTree *const m_address;
-        mef::FaultTreePtr m_faultTree;
+        Model *m_model; ///< The model for the fault tree addition.
+        mef::FaultTree *const m_address; ///< The data MEF fault tree.
+        mef::FaultTreePtr m_faultTree;   ///< The proxy of the MEF fault tree.
     };
 
+    /// Removes a fault tree from the model.
     class RemoveFaultTree : public Inverse<AddFaultTree>
     {
     public:
+        /// Stores the model and existing fault tree for removal.
         RemoveFaultTree(mef::FaultTree *faultTree, Model *model);
     };
 
-    /// @tparam T  The Model event type.
+    /// Adds an event to the model.
+    ///
+    /// @tparam T  The proxy event type.
+    ///
+    /// @pre The event is not a duplicate of any existing event.
+    ///
+    /// @todo Generalize for all element types.
     template <class T>
     class AddEvent : public QUndoCommand
     {
     public:
+        /// Stores the newly defined event and its destination container.
         AddEvent(std::unique_ptr<typename T::Origin> event, Model *model,
                  mef::FaultTree *faultTree = nullptr)
             : QUndoCommand(QObject::tr("Add event '%1'")
@@ -447,6 +522,7 @@ public:
         {
         }
 
+        /// Adds the event to the containers.
         void redo() override
         {
             m_model->m_model->Add(std::move(m_event));
@@ -457,6 +533,7 @@ public:
                 add(m_address, m_faultTree);
         }
 
+        /// Removes the event from the containers.
         void undo() override
         {
             m_event = m_model->m_model->Remove(m_address);
@@ -468,6 +545,7 @@ public:
         }
 
     protected:
+        /// Sets up the removal state.
         AddEvent(T *event, Model *model, mef::FaultTree *faultTree,
                  QString description)
             : QUndoCommand(std::move(description)), m_model(model),
@@ -476,14 +554,14 @@ public:
         }
 
     private:
-        Model *m_model;
-        std::unique_ptr<T> m_proxy;
-        typename T::Origin *const m_address;
-        std::unique_ptr<typename T::Origin> m_event;
-        mef::FaultTree *m_faultTree; ///< Optional container.
+        Model *m_model;             ///< The top container for the event.
+        std::unique_ptr<T> m_proxy; ///< The proxy managing the event data.
+        typename T::Origin *const m_address;         ///< The MEF data.
+        std::unique_ptr<typename T::Origin> m_event; ///< The MEF event.
+        mef::FaultTree *m_faultTree;                 ///< Optional container.
     };
 
-    /// Removes an event from the model.
+    /// Removes an existing event from the model.
     ///
     /// @tparam T  The proxy event type.
     ///
@@ -494,6 +572,7 @@ public:
         static_assert(std::is_base_of<Element, T>::value, "");
 
     public:
+        /// Stores model containers and the existing event for removal.
         RemoveEvent(T *event, Model *model, mef::FaultTree *faultTree = nullptr)
             : Inverse<AddEvent<T>>(
                   event, model, faultTree,
@@ -527,13 +606,20 @@ public:
         {
         }
 
+        /// Switches event type to the target one.
         void redo() override { m_switchFrom = m_switchTo(*this); }
+
+        /// Switches back the event type to the original one.
         void undo() override { m_switchTo = m_switchFrom(*this); }
 
     private:
+        /// Switches event type from the current one to the next one.
         template <class Current, class Next>
         struct Switch
         {
+            /// @param[in] self  The provider of access to the model data.
+            ///
+            /// @returns The reverse operation to switch types to the origin.
             Switch<Next, Current> operator()(const ChangeEventType &self)
             {
                 std::unique_ptr<typename Current::Origin> curEvent =
@@ -561,44 +647,61 @@ public:
                 return {nextAddress, std::move(curProxy), std::move(curEvent)};
             }
 
-            Current *m_address;
-            std::unique_ptr<Next> m_proxy;
-            std::unique_ptr<typename Next::Origin> m_event;
+            Current *m_address;            ///< The proxy in the model.
+            std::unique_ptr<Next> m_proxy; ///< The substitute target proxy.
+            std::unique_ptr<typename Next::Origin> m_event; ///< The target.
         };
-        Switch<E, T> m_switchTo;
-        Switch<T, E> m_switchFrom;
 
-        Model *m_model;
-        mef::FaultTree *m_faultTree;
-        std::vector<Gate *> m_gates;
+        Switch<E, T> m_switchTo;   ///< The forward switch.
+        Switch<T, E> m_switchFrom; ///< The backward switch.
+
+        Model *m_model;              ///< The proxy to manage the model.
+        mef::FaultTree *m_faultTree; ///< The optional fault tree container.
+        std::vector<Gate *> m_gates; ///< The parent gates of the event.
     };
-    /// @}
 
 signals:
+    /// @param[in] name  The new name of the model.
     void modelNameChanged(QString name);
+
+    /// Signals the addition of new elements into the model.
+    /// @{
     void added(mef::FaultTree *faultTree);
     void added(HouseEvent *houseEvent);
     void added(BasicEvent *basicEvent);
     void added(Gate *gate);
+    /// @}
+
+    /// Signals the removal of existing elements of the model.
+    /// @{
     void removed(mef::FaultTree *faultTree);
     void removed(HouseEvent *houseEvent);
     void removed(BasicEvent *basicEvent);
     void removed(Gate *gate);
+    /// @}
 
 private:
     /// Normalizes the model to the GUI expectations.
+    ///
+    /// @param[in,out] model  The valid and fully initialized MEF model.
     ///
     /// @post No house events or basic events in fault tree containers.
     ///
     /// @todo Remove normalization upon full container support for elements.
     void normalize(mef::Model *model);
 
-    mef::Model *m_model;
+    mef::Model *m_model; ///< The MEF model with data.
+
+    /// Proxy element tables.
+    /// @{
     ProxyTable<HouseEvent> m_houseEvents;
     ProxyTable<BasicEvent> m_basicEvents;
     ProxyTable<Gate> m_gates;
+    /// @}
 };
 
+/// Specializations for the typed access to the proxy model container.
+/// @{
 template <>
 inline ProxyTable<Gate> &Model::table<Gate>()
 {
@@ -614,6 +717,7 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 {
     return m_houseEvents;
 }
+/// @}
 
 } // namespace model
 } // namespace gui

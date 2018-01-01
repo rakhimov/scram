@@ -32,23 +32,39 @@ class PreferencesDialog;
 namespace scram {
 namespace gui {
 
+/// The dialog to present and manage GUI application preferences.
+///
+/// @note Some changes apply immediately,
+///       while others require an application restart.
 class PreferencesDialog : public QDialog
 {
     Q_OBJECT
 
 public:
+    /// @param[in,out] preferences  The persistent application preferences.
+    /// @param[in,out] undoStack  The main undo stack.
+    /// @param[in,out] autoSaveTimer  The timer to auto-save documents.
+    /// @param[in,out] parent  The optional owner of the object.
     explicit PreferencesDialog(QSettings *preferences, QUndoStack *undoStack,
                                QTimer *autoSaveTimer,
                                QWidget *parent = nullptr);
     ~PreferencesDialog();
 
 private:
+    /// Queries available languages,
+    /// and initializes the connections and the current language choice.
+    ///
+    /// @note The interface language changes take effect only after restart.
     void setupLanguage();
+
+    /// Initializes the dialog with the undo stack data and connections.
     void setupUndoStack(QUndoStack *undoStack);
+
+    /// Initializes the dialog with auto-save timer data and connections.
     void setupAutoSave(QTimer *autoSaveTimer);
 
-    std::unique_ptr<Ui::PreferencesDialog> ui;
-    QSettings *m_preferences;
+    std::unique_ptr<Ui::PreferencesDialog> ui; ///< The Preferences UI.
+    QSettings *m_preferences; ///< The persistent preferences to be saved.
 };
 
 } // namespace gui
