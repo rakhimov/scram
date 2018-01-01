@@ -24,6 +24,8 @@
 #include <QMessageBox>
 #include <QString>
 
+#include "src/ext/source_info.h"
+
 /// Assertion that avoids crashing the application.
 /// To simulate the standard assert (i.e., crash on error),
 /// define the environmental variable QT_FATAL_CRITICALS to non-empty value.
@@ -34,12 +36,12 @@
     do {                                                                       \
         if (cond)                                                              \
             break;                                                             \
-        qCritical("Assertion failure: %s in %s line %d", #cond, __FILE__,      \
+        qCritical("Assertion failure: %s in %s line %d", #cond, FILE_REL_PATH, \
                   __LINE__);                                                   \
         QMessageBox::critical(nullptr, QStringLiteral("Assertion Failure"),    \
                               QStringLiteral("%1 in %2 line %3")               \
                                   .arg(QStringLiteral(#cond),                  \
-                                       QString::fromUtf8(__FILE__),            \
+                                       QString::fromUtf8(FILE_REL_PATH),       \
                                        QString::number(__LINE__)));            \
         return ret;                                                            \
     } while (false)
