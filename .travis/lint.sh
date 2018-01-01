@@ -9,13 +9,12 @@ set -ev
 # Check documentation coverage
 which doxygen || exit 1
 doxygen ./.travis/doxygen.conf > /dev/null 2> doc_errors.txt || (cat doc_errors.txt && exit 1)
+doxygen ./.travis/gui_doxygen.conf > /dev/null 2>> doc_errors.txt || (cat doc_errors.txt && exit 1)
 if [[ -s doc_errors.txt ]]; then
   echo "Documentation errors:" >&2
   cat doc_errors.txt >&2
   exit 1
 fi
-
-doxygen ./.travis/gui_doxygen.conf > /dev/null  # TODO: Make GUI docs strict.
 
 # Lizard function complexity printout for C++ and Python
 lizard -w -L 60 -a 5 -EIgnoreAssert -ENS -Ecpre src gui \
