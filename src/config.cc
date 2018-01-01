@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file config.cc
+/// @file
 /// Implementation of configuration facilities.
 
 #include "config.h"

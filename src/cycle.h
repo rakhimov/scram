@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file cycle.h
+/// @file
 /// Validation facilities to detect and print cycles in graphs.
 
 #ifndef SCRAM_SRC_CYCLE_H_

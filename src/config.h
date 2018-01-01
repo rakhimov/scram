@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file config.h
+/// @file
 /// Configuration management facilities
 /// to make various setups for analysis possible.
 

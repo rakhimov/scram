@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file algorithm.h
+/// @file
 /// Helpful algorithm facilities as an extension to the STL or Boost.
 
 #ifndef SCRAM_SRC_EXT_ALGORITHM_H_

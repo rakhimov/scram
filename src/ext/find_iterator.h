@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file find_iterator.h
+/// @file
 /// Convenience iterator adaptor to wrap find calls and results.
 
 #ifndef SCRAM_SRC_EXT_FIND_ITERATOR_H_

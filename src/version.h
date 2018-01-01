@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file version.h
+/// @file
 /// Set of functions with version information
 /// of the core and dependencies.
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file instruction.h
+/// @file
 /// Model and event tree modifier instructions.
 
 #ifndef SCRAM_SRC_INSTRUCTION_H_

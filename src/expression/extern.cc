@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file extern.cc
+/// @file
 /// Implementation of foreign function calls with MEF expressions.
 
 #include "extern.h"

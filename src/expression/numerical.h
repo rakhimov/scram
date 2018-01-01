@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file numerical.h
+/// @file
 /// A collection of numerical expressions.
 /// @note The PI value is located in constant expressions.
 

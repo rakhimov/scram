@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file extern.h
+/// @file
 /// The MEF facilities to call external functions in expressions.
 
 #ifndef SCRAM_SRC_EXPRESSION_EXTERN_H_

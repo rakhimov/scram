@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file xml_stream.h
+/// @file
 /// Facilities to stream data in XML format.
 
 #ifndef SCRAM_SRC_XML_STREAM_H_

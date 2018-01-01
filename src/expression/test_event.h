@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file test_event.h
+/// @file
 /// Event tree analysis expressions to test functional and initiating events.
 
 #ifndef SCRAM_SRC_EXPRESSION_TEST_EVENT_H_

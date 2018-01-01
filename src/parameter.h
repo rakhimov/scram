@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file parameter.h
+/// @file
 /// Parameter expressions that act like a shareable variable.
 
 #ifndef SCRAM_SRC_PARAMETER_H_

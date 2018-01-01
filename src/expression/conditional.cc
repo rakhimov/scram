@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file conditional.cc
+/// @file
 /// Implementation of conditional expressions.
 
 #include "conditional.h"

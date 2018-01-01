@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file model.h
+/// @file
 /// Representation for a model container for risk analysis.
 
 #ifndef SCRAM_SRC_MODEL_H_

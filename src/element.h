@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file element.h
+/// @file
 /// Helper classes, structs, and properties
 /// common to all other classes.
 

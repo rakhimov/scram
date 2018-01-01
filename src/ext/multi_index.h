@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file multi_index.h
+/// @file
 /// Helper functions to boost multi_index_container.
 
 #include <boost/multi_index_container.hpp>

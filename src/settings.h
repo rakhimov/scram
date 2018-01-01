@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file settings.h
+/// @file
 /// Builder for settings.
 
 #ifndef SCRAM_SRC_SETTINGS_H_

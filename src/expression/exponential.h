@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file exponential.h
+/// @file
 /// Expressions and distributions
 /// that are described with exponential formulas.
 

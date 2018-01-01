@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file xml.cc
+/// @file
 /// XML facility expensive wrappers implemented out-of-line.
 
 #include "xml.h"

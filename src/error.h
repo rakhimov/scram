@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file error.h
+/// @file
 /// Exceptions for SCRAM.
 
 #ifndef SCRAM_SRC_ERROR_H_

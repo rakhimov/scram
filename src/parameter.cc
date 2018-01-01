@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file parameter.cc
+/// @file
 /// Implementation of expression parameters.
 
 #include "parameter.h"

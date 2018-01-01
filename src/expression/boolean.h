@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file boolean.h
+/// @file
 /// Boolean expressions.
 
 #ifndef SCRAM_SRC_EXPRESSION_BOOLEAN_H_

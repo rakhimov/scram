@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file preprocessor.h
+/// @file
 /// A collection of PDAG transformation/preprocessing algorithms
 /// that simplify fault trees for analysis.
 

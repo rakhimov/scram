@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file substitution.h
+/// @file
 /// The MEF Substitution constructs.
 
 #ifndef SCRAM_SRC_SUBSTITUTION_H_

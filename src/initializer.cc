@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file initializer.cc
+/// @file
 /// Implementation of input file processing into analysis constructs.
 
 #include "initializer.h"

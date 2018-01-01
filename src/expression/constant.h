@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file constant.h
+/// @file
 /// Constant expressions that cannot have uncertainties.
 
 #ifndef SCRAM_SRC_EXPRESSION_CONSTANT_H_

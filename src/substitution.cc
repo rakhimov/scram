@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file substitution.cc
+/// @file
 /// Implementation of Substitution members.
 
 #include "substitution.h"

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file scram_dummy_extern.cc
+/// @file
 /// Dummy library with extern functions to test dynamic loading in MEF extern.
 
 #pragma GCC diagnostic ignored "-Wmissing-declarations"

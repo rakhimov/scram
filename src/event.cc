@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file event.cc
+/// @file
 /// Implementation of Event Class and its derived classes.
 
 #include "event.h"

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file event_tree.h
+/// @file
 /// Event Tree facilities.
 
 #ifndef SCRAM_SRC_EVENT_TREE_H_

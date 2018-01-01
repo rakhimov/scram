@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file probability_analysis.h
+/// @file
 /// Contains functionality to do numerical analysis of probabilities.
 
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_

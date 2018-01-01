@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file serialization.h
+/// @file
 /// The MEF Model serialization facilities.
 ///
 /// @note This facility currently caters only models representable in the GUI.

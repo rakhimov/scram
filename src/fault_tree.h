@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file fault_tree.h
+/// @file
 /// Fault Tree and Component containers.
 
 #ifndef SCRAM_SRC_FAULT_TREE_H_

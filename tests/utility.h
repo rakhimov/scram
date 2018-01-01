@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file utility.h
+/// @file
 /// Test helper functions.
 
 #ifndef SCRAM_TESTS_UTILITY_H_

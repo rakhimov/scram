@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file fault_tree_analysis.h
+/// @file
 /// Fault Tree Analysis.
 
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_

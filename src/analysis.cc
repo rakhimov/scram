@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file analysis.cc
+/// @file
 /// Implementation of common facilities for all analysis classes.
 
 #include "analysis.h"

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file conditional.h
+/// @file
 /// Conditional (if-then-else, switch-case) expressions.
 
 #ifndef SCRAM_SRC_EXPRESSION_CONDITIONAL_H_

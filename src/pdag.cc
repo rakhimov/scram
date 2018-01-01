@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file pdag.cc
+/// @file
 /// Implementation of a Propositional Directed Acyclic Graph
 /// with indexed nodes, variables, and gates.
 /// The implementation caters other algorithms like preprocessing.

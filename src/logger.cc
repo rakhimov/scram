@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file logger.cc
+/// @file
 /// Initializing static members and member functions of Logger class.
 
 #include "logger.h"
