@@ -16,7 +16,7 @@ if [[ -s doc_errors.txt ]]; then
   exit 1
 fi
 ls src/**/*.{cc{,.in},h} | xargs -n 1 grep -q '^/// @file$'  # Missing file doc.
-ls gui/**/*.{cpp{,.in},h} | xargs -n 1 grep -q '^/// @file$'  # Missing file doc.
+ls gui/*.{cpp,h} | xargs -n 1 grep -q '^/// @file$'  # Missing file doc.
 
 # Lizard function complexity printout for C++ and Python
 lizard -w -L 60 -a 5 -EIgnoreAssert -ENS -Ecpre src gui \
