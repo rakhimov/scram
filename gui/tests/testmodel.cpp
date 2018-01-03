@@ -51,6 +51,9 @@ private slots:
     void testBasicEventParents() { testEventParents<gui::model::BasicEvent>(); }
     void testHouseEventParents() { testEventParents<gui::model::HouseEvent>(); }
     void testGateParents() { testEventParents<gui::model::Gate>(); }
+    void testBasicEventSetId() { testEventSetId<gui::model::BasicEvent>(); }
+    void testHouseEventSetId() { testEventSetId<gui::model::HouseEvent>(); }
+    void testGateSetId() { testEventSetId<gui::model::Gate>(); }
 
 private:
     /// @tparam T  Proxy type.
@@ -64,6 +67,10 @@ private:
     /// @tparam T  Proxy type.
     template <class T>
     void testEventParents();
+
+    /// @tparam T  Proxy type.
+    template <class T>
+    void testEventSetId();
 };
 
 void TestModel::testElementLabelChange()
@@ -570,6 +577,41 @@ void TestModel::testEventParents()
     gui::model::Model::RemoveEvent<gui::model::Gate>(proxyParent, &proxy)
         .redo();
     QVERIFY(proxy.parents(address).empty());
+}
+
+template <class T>
+void TestModel::testEventSetId()
+{
+    using E = typename T::Origin;
+
+    mef::Model model;
+    model.Add(std::make_unique<mef::FaultTree>("FT"));
+    auto *faultTree = model.fault_trees().begin()->get();
+    const char oldName[] = "pump";
+    auto event = std::make_unique<E>(oldName);
+    auto *address = event.get();
+    model.Add(std::move(event));
+    faultTree->Add(address);
+    gui::model::Model proxyModel(&model);
+    auto *proxyEvent = proxyModel.table<T>().find(address)->get();
+    TEST_EQ(proxyEvent->id(), oldName);
+
+    const char newName[] = "valve";
+    auto spy = ext::make_spy(proxyEvent, &gui::model::Element::idChanged);
+    gui::model::Element::SetId<T> setter(proxyEvent, newName, &model,
+                                         faultTree);
+    setter.redo();
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), newName);
+    TEST_EQ(proxyEvent->id(), newName);
+    TEST_EQ(address->id(), newName);
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), oldName);
+    TEST_EQ(proxyEvent->id(), oldName);
+    TEST_EQ(address->id(), oldName);
 }
 
 QTEST_APPLESS_MAIN(TestModel)
