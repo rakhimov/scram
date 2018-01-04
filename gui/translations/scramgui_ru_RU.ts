@@ -352,7 +352,7 @@
       <translation>Предпочтения</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
+      <source>Language:</source>
       <translation>Язык:</translation>
     </message>
     <message>

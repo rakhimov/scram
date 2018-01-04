@@ -99,6 +99,7 @@ public:
     /// @tparam T  The proxy type.
     ///
     /// @pre The name format is valid for the MEF Elements.
+    /// @pre The name does not belong to another element of the same type.
     ///
     /// @todo Generalize for non-Event types.
     template <class T>

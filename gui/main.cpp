@@ -133,76 +133,6 @@ public:
     }
 };
 
-/// Produces the crash dialog with a given reasoning.
-/// The dialog allows access to other windows
-/// so that users may try saving the model before the crash.
-void crashDialog(const QString &text, const QString &detail = {}) noexcept
-{
-    QMessageBox message(QMessageBox::Critical,
-                        QStringLiteral("Unrecoverable Internal Error"), text,
-                        QMessageBox::Ok);
-    message.setDetailedText(detail);
-    message.setWindowModality(Qt::WindowModal);
-    message.exec();
-}
-
-/// Attempts to inform about imminent crash due to internal errors.
-void crashHandler(int signum) noexcept
-{
-    switch (signum) {
-    case SIGSEGV:
-        crashDialog(QStringLiteral("SIGSEGV: Invalid memory access."));
-        break;
-    case SIGFPE:
-        crashDialog(QStringLiteral("SIGFPE: Erroneous arithmetic operation."));
-        break;
-    case SIGILL:
-        crashDialog(QStringLiteral("SIGILL: Illegal instruction."));
-        break;
-    }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    std::signal(signum, SIG_DFL);
-#pragma GCC diagnostic pop
-    std::raise(signum);
-}
-
-/// Preserve the global default before setting a new terminate handler.
-static const std::terminate_handler gDefaultTerminateHandler =
-    std::get_terminate();
-
-/// Pulls the exception message into GUI before crash.
-void terminateHandler() noexcept
-{
-    QString error;
-    QString detail;
-    try {
-        std::rethrow_exception(std::current_exception());
-    } catch (const scram::Error &err) {
-        std::string message = boost::diagnostic_information(err);
-        qCritical("%s", message.c_str());
-        error = QStringLiteral("SCRAM exception.");
-        detail = QString::fromStdString(message);
-    } catch (const std::exception &err) {
-        error = QStringLiteral("Standard exception.");
-        detail = QString::fromUtf8(err.what());
-    } catch (...) {
-        error = QStringLiteral("Exception of unknown type without a message.");
-    }
-    crashDialog(QStringLiteral("No-throw contract violation:\n%1").arg(error),
-                detail);
-    gDefaultTerminateHandler();
-}
-
-/// Installs crash handlers for system signals.
-void installCrashHandlers() noexcept
-{
-    std::signal(SIGSEGV, &crashHandler);
-    std::signal(SIGFPE, &crashHandler);
-    std::signal(SIGILL, &crashHandler);
-    std::set_terminate(&terminateHandler);
-}
-
 /// Installs translators to the main application.
 ///
 /// @param[in,out] app  The application to register translators.
@@ -262,8 +192,6 @@ int main(int argc, char *argv[])
     // so the explicit load should not be used, but it is kept for debugging.
     /* Q_INIT_RESOURCE(res); */
     GuardedApplication app(argc, argv);
-
-    installCrashHandlers();
 
     QCoreApplication::setOrganizationName(QStringLiteral("scram"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("scram-pra.org"));

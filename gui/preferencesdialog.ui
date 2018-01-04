@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="labelLanguage">
      <property name="text">
-      <string>Lanuage:</string>
+      <string>Language:</string>
      </property>
     </widget>
    </item>

@@ -352,7 +352,7 @@
       <translation>Tercihler</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
+      <source>Language:</source>
       <translation>Dil:</translation>
     </message>
     <message>

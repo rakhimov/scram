@@ -352,7 +352,7 @@
       <translation>Preferensi</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
+      <source>Language:</source>
       <translation>Bahasa:</translation>
     </message>
     <message>

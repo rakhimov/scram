@@ -352,7 +352,7 @@
       <translation>Voorkeuren</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
+      <source>Language:</source>
       <translation>Taal:</translation>
     </message>
     <message>

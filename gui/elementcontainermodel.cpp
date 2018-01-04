@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "src/ext/variant.h"
 #include "src/model.h"
 
+#include "align.h"
 #include "guiassert.h"
 #include "overload.h"
 
@@ -159,7 +160,7 @@ QVariant BasicEventContainerModel::data(const QModelIndex &index,
     if (!index.isValid())
         return {};
     if (role == Qt::TextAlignmentRole && index.column() == 2)
-        return Qt::AlignRight;
+        return ALIGN_NUMBER_IN_TABLE;
     if (role == Qt::UserRole)
         return QVariant::fromValue(index.internalPointer());
     if (role != Qt::DisplayRole)

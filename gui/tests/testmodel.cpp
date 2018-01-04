@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,12 @@ private slots:
     void testBasicEventSetExpression();
     void testGateType();
     void testGateSetFormula();
+    void testBasicEventParents() { testEventParents<gui::model::BasicEvent>(); }
+    void testHouseEventParents() { testEventParents<gui::model::HouseEvent>(); }
+    void testGateParents() { testEventParents<gui::model::Gate>(); }
+    void testBasicEventSetId() { testEventSetId<gui::model::BasicEvent>(); }
+    void testHouseEventSetId() { testEventSetId<gui::model::HouseEvent>(); }
+    void testGateSetId() { testEventSetId<gui::model::Gate>(); }
 
 private:
     /// @tparam T  Proxy type.
@@ -57,6 +63,14 @@ private:
     /// @tparam T  Proxy type.
     template <class T>
     void testRemoveEvent();
+
+    /// @tparam T  Proxy type.
+    template <class T>
+    void testEventParents();
+
+    /// @tparam T  Proxy type.
+    template <class T>
+    void testEventSetId();
 };
 
 void TestModel::testElementLabelChange()
@@ -263,6 +277,21 @@ void testNormalized(const mef::FaultTree &faultTree, const T *address,
         TEST_EQ(table<T>(faultTree).size(), 1);
         TEST_EQ(*table<T>(faultTree).begin(), address);
     }
+}
+
+template <class T>
+auto makeDefaultEvent(std::string name)
+{
+    return std::make_unique<T>(name);
+}
+
+template <>
+auto makeDefaultEvent<mef::Gate>(std::string name)
+{
+    auto gate = std::make_unique<mef::Gate>(name);
+    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
+    gate->formula().AddArgument(&mef::HouseEvent::kTrue);
+    return gate;
 }
 
 } // namespace
@@ -522,6 +551,67 @@ void TestModel::testGateSetFormula()
     QVERIFY(gate.HasFormula());
     QCOMPARE(&gate.formula(), initFormula);
     QCOMPARE(proxy.type(), mef::kNot);
+}
+
+template <class T>
+void TestModel::testEventParents()
+{
+    mef::Model model;
+    gui::model::Model proxy(&model);
+    auto event = makeDefaultEvent<typename T::Origin>("pump");
+    auto *address = event.get();
+    gui::model::Model::AddEvent<T>(std::move(event), &proxy).redo();
+
+    auto gate = std::make_unique<mef::Gate>("parent");
+    auto *parent = gate.get();
+    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
+    gate->formula().AddArgument(address);
+
+    QVERIFY(proxy.parents(address).empty());
+    gui::model::Model::AddEvent<gui::model::Gate>(std::move(gate), &proxy)
+        .redo();
+    auto *proxyParent = proxy.gates().find(parent)->get();
+    QVERIFY(proxy.parents(address).size() == 1);
+    QCOMPARE(proxy.parents(address).front(), proxyParent);
+
+    gui::model::Model::RemoveEvent<gui::model::Gate>(proxyParent, &proxy)
+        .redo();
+    QVERIFY(proxy.parents(address).empty());
+}
+
+template <class T>
+void TestModel::testEventSetId()
+{
+    using E = typename T::Origin;
+
+    mef::Model model;
+    model.Add(std::make_unique<mef::FaultTree>("FT"));
+    auto *faultTree = model.fault_trees().begin()->get();
+    const char oldName[] = "pump";
+    auto event = std::make_unique<E>(oldName);
+    auto *address = event.get();
+    model.Add(std::move(event));
+    faultTree->Add(address);
+    gui::model::Model proxyModel(&model);
+    auto *proxyEvent = proxyModel.table<T>().find(address)->get();
+    TEST_EQ(proxyEvent->id(), oldName);
+
+    const char newName[] = "valve";
+    auto spy = ext::make_spy(proxyEvent, &gui::model::Element::idChanged);
+    gui::model::Element::SetId<T> setter(proxyEvent, newName, &model,
+                                         faultTree);
+    setter.redo();
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), newName);
+    TEST_EQ(proxyEvent->id(), newName);
+    TEST_EQ(address->id(), newName);
+    spy.clear();
+
+    setter.undo();
+    TEST_EQ(spy.size(), 1);
+    TEST_EQ(std::get<0>(spy.front()), oldName);
+    TEST_EQ(proxyEvent->id(), oldName);
+    TEST_EQ(address->id(), oldName);
 }
 
 QTEST_APPLESS_MAIN(TestModel)
