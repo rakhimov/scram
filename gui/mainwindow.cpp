@@ -852,6 +852,15 @@ void MainWindow::setupZoomableView(ZoomableView *view)
                         });
                 connect(m_window->m_zoomBox, &QComboBox::currentTextChanged,
                         m_zoomable, [this](QString text) {
+                            // Check if the user editing the box.
+                            if (m_window->m_zoomBox->lineEdit()->isModified())
+                                return;
+                            text.remove(QLatin1Char('%'));
+                            m_zoomable->setZoom(text.toInt());
+                        });
+                connect(m_window->m_zoomBox->lineEdit(),
+                        &QLineEdit::editingFinished, m_zoomable, [this] {
+                            QString text = m_window->m_zoomBox->currentText();
                             text.remove(QLatin1Char('%'));
                             m_zoomable->setZoom(text.toInt());
                         });
@@ -863,6 +872,7 @@ void MainWindow::setupZoomableView(ZoomableView *view)
                         m_zoomable, &ZoomableView::zoomBestFit);
             } else if (event->type() == QEvent::Hide) {
                 setEnabled(false);
+                disconnect(m_window->m_zoomBox->lineEdit(), 0, m_zoomable, 0);
                 disconnect(m_zoomable, 0, m_window->m_zoomBox, 0);
                 disconnect(m_window->m_zoomBox, 0, m_zoomable, 0);
                 disconnect(m_window->ui->actionZoomIn, 0, m_zoomable, 0);
