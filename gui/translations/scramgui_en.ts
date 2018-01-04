@@ -352,7 +352,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Lanuage:</source>
+        <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

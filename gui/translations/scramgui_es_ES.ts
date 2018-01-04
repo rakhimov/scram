@@ -352,7 +352,7 @@
       <translation>Preferencias</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
+      <source>Language:</source>
       <translation>Idioma:</translation>
     </message>
     <message>

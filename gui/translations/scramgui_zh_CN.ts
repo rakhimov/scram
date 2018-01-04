@@ -352,8 +352,8 @@
       <translation type="unfinished">Preferences</translation>
     </message>
     <message>
-      <source>Lanuage:</source>
-      <translation type="unfinished">Lanuage:</translation>
+      <source>Language:</source>
+      <translation type="unfinished">Language:</translation>
     </message>
     <message>
       <source>Undo limit:</source>
