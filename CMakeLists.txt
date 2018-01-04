@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -27,8 +27,8 @@ option(PACKAGE "Package for distribution" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  # Needed for Clang Tooling.
 
-# Default to C++14.
-set(CMAKE_CXX_STANDARD 14)
+# Default to C++17.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -44,16 +44,15 @@ set(CMAKE_CXX_FLAGS_DEBUG
   "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers -Wold-style-cast")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  CHECK_COMPILER_VERSION("4.9")  # TODO: Wpedantic with gcc 4.9 errors with default arg lambdas.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-new-ttp-matching")  # TODO: Boost ICL failure.
+  CHECK_COMPILER_VERSION("7.1")
   set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Wredundant-decls -Wcast-align -Wlogical-op -Wvla -Wuseless-cast -Wunreachable-code")
-
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic -Wmissing-declarations")
-  endif()
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic -Wmissing-declarations")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough=0")  # TODO: Consider explicit fallthrough.
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  CHECK_COMPILER_VERSION("3.6")
+  CHECK_COMPILER_VERSION("5.0")
   set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 
@@ -61,9 +60,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   CHECK_COMPILER_VERSION("6.1")
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  CHECK_COMPILER_VERSION("17.0.2")
-  # TODO: CMAKE_CXX_STANDARD has no effect on icc.
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  CHECK_COMPILER_VERSION("18.0.1")
   # TODO: Warning with overload of private override.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1125")
 endif()
@@ -153,11 +150,9 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
+set(BOOST_MIN_VERSION "1.61.0")
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(BOOST_MIN_VERSION "1.58.0")
-  list(APPEND LIBS ${CMAKE_DL_LIBS})
-else()
-  set(BOOST_MIN_VERSION "1.61.0")
+  list(APPEND LIBS ${CMAKE_DL_LIBS})  # TODO: Use Boost DLL lib instead of POSIX on Linux.
 endif()
 
 if(NOT WIN32)

@@ -73,38 +73,38 @@ or the following commands must be executed after a normal clone.
 Dependencies
 ============
 
-====================   ====================
+====================   ===============
 Package                Minimum Version
-====================   ====================
-CMake                  3.5
-boost                  1.61 (1.58 on Linux)
+====================   ===============
+CMake                  3.8
+boost                  1.61
 libxml2                2.9.1
 Python                 2.7.3 or 3.3
 Qt                     5.2.1
-====================   ====================
+====================   ===============
 
 
 Optional Dependencies
 ---------------------
 
-====================   ==================
+====================   ===============
 Package                Minimum Version
-====================   ==================
+====================   ===============
 TCMalloc               1.7
 JEMalloc               3.6
-====================   ==================
+====================   ===============
 
 
 Compilers
 ---------
 
-====================   ==================
+====================   ===============
 Package                Minimum Version
-====================   ==================
-GCC/G++                4.9
-Clang/LLVM             3.6
-Intel                  17.0.2
-====================   ==================
+====================   ===============
+GCC/G++                7.1
+Clang/LLVM             5.0
+Intel                  18.0.1
+====================   ===============
 
 
 Installing Dependencies
@@ -114,7 +114,7 @@ Ubuntu
 ------
 
 Python and GCC/G++ compiler are assumed to be available on the system.
-The process is tested on Ubuntu 16.04 LTS using ``apt-get`` as the package manager:
+The process is tested on Ubuntu 17.10 using ``apt-get`` as the package manager:
 
 .. code-block:: bash
 

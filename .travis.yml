@@ -24,7 +24,7 @@ env:
         - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
         - QT_QPA_FONTDIR=/usr/share/fonts
         - QT_QPA_PLATFORM=offscreen
-        - GCC_VERSION=4.9
+        - GCC_VERSION=7
     matrix:
         - CONFIG=Debug
         - CONFIG=Release
@@ -32,13 +32,13 @@ env:
 addons:
     apt:
         packages:
-            - gcc-4.9
-            - g++-4.9
-            - libboost-program-options1.58-dev
-            - libboost-math1.58-dev
-            - libboost-random1.58-dev
-            - libboost-filesystem1.58-dev
-            - libboost-date-time1.58-dev
+            - gcc-7
+            - g++-7
+            - libboost-program-options1.61-dev
+            - libboost-math1.61-dev
+            - libboost-random1.61-dev
+            - libboost-filesystem1.61-dev
+            - libboost-date-time1.61-dev
             - libxml2-dev
             - libgoogle-perftools-dev
             - qtbase5-dev
@@ -51,7 +51,7 @@ addons:
             - lcov
         sources: &Sources
             - ubuntu-toolchain-r-test
-            - sourceline: "ppa:kzemek/boost"
+            - sourceline: "ppa:rakhimov/boost"
 
 jobs:
     include:
@@ -76,13 +76,13 @@ jobs:
           addons:
               apt:
                   packages:
-                      - gcc-4.9
-                      - g++-4.9
-                      - libboost-program-options1.58-dev
-                      - libboost-math1.58-dev
-                      - libboost-random1.58-dev
-                      - libboost-filesystem1.58-dev
-                      - libboost-date-time1.58-dev
+                      - gcc-7
+                      - g++-7
+                      - libboost-program-options1.61-dev
+                      - libboost-math1.61-dev
+                      - libboost-random1.61-dev
+                      - libboost-filesystem1.61-dev
+                      - libboost-date-time1.61-dev
                       - libxml2-dev
                       - valgrind
                   sources: *Sources
