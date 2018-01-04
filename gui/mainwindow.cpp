@@ -1065,6 +1065,11 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
         {
             if (event->type() == QEvent::Show) {
                 react(m_removable->selectionModel()->selectedIndexes());
+                connect(
+                    m_removable->model(), &QAbstractItemModel::modelReset,
+                    m_removable, [this] {
+                        react(m_removable->selectionModel()->selectedIndexes());
+                    });
                 connect(m_removable->selectionModel(),
                         &QItemSelectionModel::selectionChanged,
                         m_window->ui->actionRemoveElement,
