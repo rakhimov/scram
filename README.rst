@@ -2,21 +2,18 @@
 SCRAM
 #####
 
-.. image:: https://travis-ci.org/rakhimov/scram.svg?branch=develop
+.. image:: https://badge.fury.io/gh/rakhimov%2fscram.svg
+    :target: http://badge.fury.io/gh/rakhimov%2fscram
+.. image:: https://travis-ci.org/rakhimov/scram.svg?branch=master
     :target: https://travis-ci.org/rakhimov/scram
-.. image:: https://ci.appveyor.com/api/projects/status/d36yu2w3t8hy4ito/branch/develop?svg=true
-    :target: https://ci.appveyor.com/project/rakhimov/scram/branch/develop
+.. image:: https://ci.appveyor.com/api/projects/status/d36yu2w3t8hy4ito/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/rakhimov/scram/branch/master
     :alt: 'Build status'
-.. image:: https://codecov.io/github/rakhimov/scram/coverage.svg?branch=develop
-    :target: https://codecov.io/github/rakhimov/scram?branch=develop
-.. image:: https://scan.coverity.com/projects/2555/badge.svg
-    :target: https://scan.coverity.com/projects/2555
-.. image:: https://landscape.io/github/rakhimov/scram/develop/landscape.svg?style=flat
-    :target: https://landscape.io/github/rakhimov/scram/develop
+.. image:: https://codecov.io/github/rakhimov/scram/coverage.svg?branch=master
+    :target: https://codecov.io/github/rakhimov/scram?branch=master
+.. image:: https://landscape.io/github/rakhimov/scram/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/rakhimov/scram/master
     :alt: Code Health
-.. image:: https://badge.waffle.io/rakhimov/scram.svg?label=In%20Progress&title=in%20progress
-    :target: https://waffle.io/rakhimov/scram
-    :alt: 'Stories in Progress'
 
 |
 
