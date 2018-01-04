@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "src/event.h"
 
+#include "align.h"
 #include "guiassert.h"
 
 namespace scram {
@@ -92,7 +93,7 @@ QVariant ProductTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return {};
     if (role == Qt::TextAlignmentRole && index.column() != 0)
-        return Qt::AlignRight;
+        return ALIGN_NUMBER_IN_TABLE;
     if (role != Qt::DisplayRole)
         return {};
 
