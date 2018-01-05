@@ -24,10 +24,10 @@
 
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "expression.h"
@@ -227,7 +227,7 @@ const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
 class Formula : private boost::noncopyable {
  public:
   /// Event arguments of a formula.
-  using EventArg = boost::variant<Gate*, BasicEvent*, HouseEvent*>;
+  using EventArg = std::variant<Gate*, BasicEvent*, HouseEvent*>;
 
   /// Constructs a formula.
   ///

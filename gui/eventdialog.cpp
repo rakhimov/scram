@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@ bool EventDialog::checkCycle(const mef::Gate *gate)
     for (const mef::Formula::EventArg &arg : gate->formula().event_args()) {
         if (ext::as<const mef::Element *>(arg) == m_event)
             return true;
-        if (boost::apply_visitor(visitor, arg))
+        if (std::visit(visitor, arg))
             return true;
     }
     return false;

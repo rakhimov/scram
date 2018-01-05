@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ void PutId(const core::RiskAnalysis::Result::Id& id,
     }
     xml::StreamElement* report_;
   } extractor{report};
-  boost::apply_visitor(extractor, id.target);
+  std::visit(extractor, id.target);
 
   if (id.context) {
     report->SetAttribute("alignment", id.context->alignment.name());

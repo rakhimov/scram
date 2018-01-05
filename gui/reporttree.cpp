@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,8 +100,7 @@ QVariant ReportTree::data(const QModelIndex &index, int role) const
 
     if (!index.parent().isValid()) {
         GUI_ASSERT(index.row() < m_results.size(), {});
-        return boost::apply_visitor(nameExtractor,
-                                    m_results[index.row()].id.target);
+        return std::visit(nameExtractor, m_results[index.row()].id.target);
     }
     GUI_ASSERT(index.parent().row() < m_results.size(), {});
     const core::RiskAnalysis::Result &result = m_results[index.parent().row()];

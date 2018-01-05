@@ -16,11 +16,11 @@
  */
 
 /// @file
-/// Extra helper functions for boost::variant.
+/// Extra helper functions for std::variant.
 
 #pragma once
 
-#include <boost/variant.hpp>
+#include <variant>
 
 namespace ext {
 
@@ -33,9 +33,8 @@ namespace ext {
 ///
 /// @returns The stored value cast to the type T.
 template <typename T, typename... Ts>
-T as(const boost::variant<Ts...>& var) {
-  return boost::apply_visitor([](auto& arg) { return static_cast<T>(arg); },
-                              var);
+T as(const std::variant<Ts...>& var) {
+  return std::visit([](auto& arg) { return static_cast<T>(arg); }, var);
 }
 
 }  // namespace ext

@@ -64,7 +64,7 @@ inline auto GetNodes(const Formula* connector) {
   return connector->event_args() |
          boost::adaptors::transformed(
              [](const Formula::EventArg& event_args) -> Gate* {
-               if (auto* arg = boost::get<Gate*>(&event_args))
+               if (auto* arg = std::get_if<Gate*>(&event_args))
                  return *arg;
                return nullptr;
              }) |
@@ -182,7 +182,7 @@ inline bool ContinueConnector(Branch* connector,
     decltype(cycle) cycle_;
   } continue_connector{cycle};
 
-  return boost::apply_visitor(continue_connector, connector->target());
+  return std::visit(continue_connector, connector->target());
 }
 
 /// Cycle detection specialization for visitor-based traversal of instructions.
@@ -247,7 +247,7 @@ inline bool ContinueConnector(const EventTree* connector,
                               std::vector<Link*>* cycle) {
   struct {
     void operator()(const Branch* branch) {
-      boost::apply_visitor(*this, branch->target());
+      std::visit(*this, branch->target());
     }
     void operator()(Fork* fork) {
       for (Branch& branch : fork->paths())

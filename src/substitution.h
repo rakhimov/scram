@@ -22,10 +22,10 @@
 
 #include <memory>
 #include <optional>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -37,7 +37,7 @@ namespace mef {
 /// Delete Terms, Recovery Rules, and Exchange Events.
 class Substitution : public Element, private boost::noncopyable {
  public:
-  using Target = boost::variant<BasicEvent*, bool>;  ///< The target type.
+  using Target = std::variant<BasicEvent*, bool>;  ///< The target type.
 
   /// The "traditional" substitution types.
   enum Type { kDeleteTerms, kRecoveryRule, kExchangeEvent };

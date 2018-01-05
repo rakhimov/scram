@@ -22,10 +22,10 @@
 
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "ext/variant.h"
@@ -87,7 +87,7 @@ class NamedBranch;
 class Branch {
  public:
   /// The types of possible branch end-points.
-  using Target = boost::variant<Sequence*, Fork*, NamedBranch*>;
+  using Target = std::variant<Sequence*, Fork*, NamedBranch*>;
 
   /// Sets the instructions to execute at the branch.
   void instructions(std::vector<Instruction*> instructions) {

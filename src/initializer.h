@@ -25,13 +25,13 @@
 #include <string_view>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "alignment.h"
 #include "ccf_group.h"
@@ -93,7 +93,7 @@ class Initializer : private boost::noncopyable {
   /// Container for late defined constructs.
   template <class... Ts>
   using TbdContainer =
-      std::vector<std::pair<boost::variant<Ts*...>, xml::Element>>;
+      std::vector<std::pair<std::variant<Ts*...>, xml::Element>>;
   /// Container with full paths to elements.
   ///
   /// @tparam T  The element type.

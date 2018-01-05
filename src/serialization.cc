@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ void Serialize(const Formula& formula, xml::StreamElement* parent) {
   };
   if (formula.type() == kNull) {
     assert(formula.event_args().size() == 1);
-    boost::apply_visitor(ArgStreamer{parent}, formula.event_args().front());
+    std::visit(ArgStreamer{parent}, formula.event_args().front());
   } else {
     xml::StreamElement type_element = [&formula, &parent] {
       switch (formula.type()) {
@@ -122,7 +122,7 @@ void Serialize(const Formula& formula, xml::StreamElement* parent) {
       }
     }();
     for (const Formula::EventArg& arg : formula.event_args())
-      boost::apply_visitor(ArgStreamer{&type_element}, arg);
+      std::visit(ArgStreamer{&type_element}, arg);
   }
 }
 

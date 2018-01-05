@@ -623,15 +623,15 @@ void Initializer::ProcessTbdElements() {
     }
   }
 
-  for (const auto& tbd_element : tbd_) {
+  for (const auto & [ tbd_element, xml_element ] : tbd_) {
     try {
-      boost::apply_visitor(
-          [this, &tbd_element](auto* tbd_construct) {
-            this->Define(tbd_element.second, tbd_construct);
+      std::visit(
+          [this, &xml_element](auto* tbd_construct) {
+            this->Define(xml_element, tbd_construct);
           },
-          tbd_element.first);
+          tbd_element);
     } catch (ValidityError& err) {
-      err << boost::errinfo_file_name(tbd_element.second.filename());
+      err << boost::errinfo_file_name(xml_element.filename());
       throw;
     }
   }
@@ -1675,7 +1675,7 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
     void operator()(Sequence*) const {}
 
     void operator()(NamedBranch* named_branch) const {
-      boost::apply_visitor(*this, named_branch->target());
+      std::visit(*this, named_branch->target());
     }
 
     void operator()(Fork* fork) const {
@@ -1702,14 +1702,13 @@ void Initializer::CheckFunctionalEventOrder(const Branch& branch) {
     void operator()(Fork* fork) const {
       for (const Path& fork_path : fork->paths()) {
         initializer->CheckFunctionalEventOrder(fork_path);
-        boost::apply_visitor(CheckOrder{fork->functional_event()},
-                             fork_path.target());
+        std::visit(CheckOrder{fork->functional_event()}, fork_path.target());
       }
     }
     Initializer* initializer;
   };
 
-  boost::apply_visitor(OrderValidator{this}, branch.target());
+  std::visit(OrderValidator{this}, branch.target());
 }
 
 void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
@@ -1727,7 +1726,7 @@ void Initializer::EnsureLinksOnlyInSequences(const Branch& branch) {
     void operator()(const Branch* arg_branch) {
       for (const Instruction* instruction : arg_branch->instructions())
         instruction->Accept(&validator);
-      boost::apply_visitor(*this, arg_branch->target());
+      std::visit(*this, arg_branch->target());
     }
 
     void operator()(Fork* fork) {
@@ -1782,7 +1781,7 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
     }
     void operator()(const Branch* arg_branch) {
       CheckInstructions(arg_branch->instructions());
-      boost::apply_visitor(*this, arg_branch->target());
+      std::visit(*this, arg_branch->target());
     }
     void operator()(const Fork* fork) {
       for (const Path& fork_path : fork->paths())
@@ -1801,7 +1800,7 @@ void Initializer::EnsureNoSubstitutionConflicts() {
                          return !substitution->declarative();
                        });
   for (const SubstitutionPtr& origin : substitutions) {
-    const auto* target_ptr = boost::get<BasicEvent*>(&origin->target());
+    const auto* target_ptr = std::get_if<BasicEvent*>(&origin->target());
     for (const SubstitutionPtr& substitution : substitutions) {
       if (target_ptr && boost::count(substitution->source(), *target_ptr))
         SCRAM_THROW(ValidityError(
@@ -1812,7 +1811,7 @@ void Initializer::EnsureNoSubstitutionConflicts() {
       auto in_hypothesis = [&substitution](const BasicEvent* source) {
         return ext::any_of(substitution->hypothesis().event_args(),
                            [source](const Formula::EventArg& arg) {
-                             return boost::get<BasicEvent*>(arg) == source;
+                             return std::get<BasicEvent*>(arg) == source;
                            });
       };
       if (target_ptr && in_hypothesis(*target_ptr))
@@ -1837,11 +1836,11 @@ void Initializer::EnsureNoCcfSubstitutions() {
   auto is_ccf = [](const Substitution& substitution) {
     if (ext::any_of(substitution.hypothesis().event_args(),
                     [](const Formula::EventArg& arg) {
-                      return boost::get<BasicEvent*>(arg)->HasCcf();
+                      return std::get<BasicEvent*>(arg)->HasCcf();
                     }))
       return true;
 
-    const auto* target_ptr = boost::get<BasicEvent*>(&substitution.target());
+    const auto* target_ptr = std::get_if<BasicEvent*>(&substitution.target());
     if (target_ptr && (*target_ptr)->HasCcf())
       return true;
 

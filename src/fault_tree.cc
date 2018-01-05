@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ void FaultTree::MarkNonTopGates(Gate* gate,
 void FaultTree::MarkNonTopGates(const Formula& formula,
                                 const std::unordered_set<Gate*>& gates) {
   for (const Formula::EventArg& event_arg : formula.event_args()) {
-    if (auto* gate = boost::get<Gate*>(&event_arg)) {
+    if (Gate* const* gate = std::get_if<Gate*>(&event_arg)) {
       if (gates.count(*gate)) {
         MarkNonTopGates(*gate, gates);
         (*gate)->mark(NodeMark::kPermanent);  // Any non clear mark can be used.
