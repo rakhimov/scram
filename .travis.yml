@@ -34,6 +34,7 @@ addons:
         packages:
             - gcc-7
             - g++-7
+            - ccache
             - libboost-program-options1.61-dev
             - libboost-math1.61-dev
             - libboost-random1.61-dev
@@ -52,6 +53,7 @@ addons:
         sources: &Sources
             - ubuntu-toolchain-r-test
             - sourceline: "ppa:rakhimov/boost"
+            - sourceline: "ppa:zerebubuth/ccache"
 
 jobs:
     include:
