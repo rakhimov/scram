@@ -151,9 +151,6 @@ list(APPEND LIBS ${LIBXML2_LIBRARIES})
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
 set(BOOST_MIN_VERSION "1.61.0")
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  list(APPEND LIBS ${CMAKE_DL_LIBS})  # TODO: Use Boost DLL lib instead of POSIX on Linux.
-endif()
 
 if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
@@ -165,6 +162,8 @@ find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
 message(STATUS "Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost Library directories: ${Boost_LIBRARY_DIRS}")
 list(APPEND LIBS ${Boost_LIBRARIES})
+
+list(APPEND LIBS ${CMAKE_DL_LIBS})
 
 message(STATUS "Libraries: ${LIBS}")
 
