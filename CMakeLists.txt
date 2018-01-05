@@ -57,7 +57,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  CHECK_COMPILER_VERSION("6.1")
+  CHECK_COMPILER_VERSION("9.0")
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("18.0.1")

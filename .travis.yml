@@ -65,6 +65,7 @@ jobs:
                       - qttools5-dev-tools
         - stage: test
           os: osx  # OS X builds are slow and limited.
+          osx_image: xcode9.2
           compiler: clang
           env: CONFIG=Release
         - stage: test

@@ -126,8 +126,7 @@ macOS
 
 If on a Mac system, homebrew_ is a good package manager to use.
 It is assumed that some dependencies are provided by Xcode (e.g., Python, llvm/clang, make).
-The following instructions are tested on OS X 10.9,
-but it should work for later versions as well:
+The following instructions are tested on OS X 10.12:
 
 .. code-block:: bash
 
