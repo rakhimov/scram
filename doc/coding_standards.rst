@@ -95,7 +95,7 @@ Deviations from the Qt Style
 Additional Coding Conventions
 -----------------------------
 
-- Use *modern C++* (C++14).
+- Use *modern C++* (C++17).
   Refer to `C++ Core Guidelines`_ for best practices.
 
 - Do not use ``inline``
@@ -133,7 +133,7 @@ Additional Coding Conventions
 
 - Prefer implicit dereference in a function call through a pointer.
 
-.. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
+.. _C++ Core Guidelines: https://isocpp.github.io/CppCoreGuidelines
 
 
 Core C++ Code
@@ -155,7 +155,7 @@ Core C++ Code
   they are never null pointers
   unless explicitly specified.
   Null-based logic must be
-  rare, localized, and explicit (consider using ``boost::optional`` instead).
+  rare, localized, and explicit (consider using ``std::optional`` instead).
 
 - Consider supplying a typedef or alias declaration
   for common smart pointers.
