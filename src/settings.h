@@ -22,7 +22,7 @@
 
 #include <cstdint>
 
-#include <boost/utility/string_ref.hpp>
+#include <string_view>
 
 namespace scram {
 namespace core {
@@ -72,7 +72,7 @@ class Settings {
   /// @throws SettingsError  The algorithm is not recognized.
   ///
   /// @returns Reference to this object.
-  Settings& algorithm(boost::string_ref value);
+  Settings& algorithm(std::string_view value);
 
   /// @returns The quantitative analysis approximation.
   Approximation approximation() const { return approximation_; }
@@ -87,7 +87,7 @@ class Settings {
   ///                          or inappropriate for analysis.
   /// @{
   Settings& approximation(Approximation value);
-  Settings& approximation(boost::string_ref value);
+  Settings& approximation(std::string_view value);
   /// @}
 
   /// @returns true if prime implicants are to be calculated

@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -327,7 +328,7 @@ class Initializer : private boost::noncopyable {
   /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidityError  The parameter variable is not reachable.
-  Expression* GetParameter(const xml::string_view& expr_type,
+  Expression* GetParameter(const std::string_view& expr_type,
                            const xml::Element& expr_element,
                            const std::string& base_path);
 

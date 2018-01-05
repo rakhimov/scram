@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ namespace {  // Helper function and wrappers for MEF initializations.
 /// @param[in] s  Non-empty, valid role specifier string.
 ///
 /// @returns Role specifier attribute for elements.
-RoleSpecifier GetRole(const xml::string_view& s) {
+RoleSpecifier GetRole(const std::string_view& s) {
   assert(!s.empty());
   assert(s == "public" || s == "private");
   return s == "public" ? RoleSpecifier::kPublic : RoleSpecifier::kPrivate;
@@ -66,7 +66,7 @@ RoleSpecifier GetRole(const xml::string_view& s) {
 /// @param[in] parent_role  The role to be inherited.
 ///
 /// @returns The role for the element under consideration.
-RoleSpecifier GetRole(const xml::string_view& s, RoleSpecifier parent_role) {
+RoleSpecifier GetRole(const std::string_view& s, RoleSpecifier parent_role) {
   return s.empty() ? parent_role : GetRole(s);
 }
 
@@ -83,7 +83,7 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
                               Element* element) {
   if (boost::optional<xml::Element> label = xml_element.child("label")) {
     assert(element->label().empty() && "Resetting element label.");
-    element->label(label->text().to_string());
+    element->label(std::string(label->text()));
   }
 
   boost::optional<xml::Element> attributes = xml_element.child("attributes");
@@ -92,9 +92,9 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
   for (const xml::Element& attribute : attributes->children()) {
     assert(attribute.name() == "attribute");
     try {
-      element->AddAttribute({attribute.attribute("name").to_string(),
-                             attribute.attribute("value").to_string(),
-                             attribute.attribute("type").to_string()});
+      element->AddAttribute({std::string(attribute.attribute("name")),
+                             std::string(attribute.attribute("value")),
+                             std::string(attribute.attribute("type"))});
     } catch (ValidityError& err) {
       err << boost::errinfo_at_line(attribute.line());
       throw;
@@ -106,7 +106,8 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
 template <class T>
 std::enable_if_t<std::is_base_of<Element, T>::value, std::unique_ptr<T>>
 ConstructElement(const xml::Element& xml_element) {
-  auto element = std::make_unique<T>(xml_element.attribute("name").to_string());
+  auto element =
+      std::make_unique<T>(std::string(xml_element.attribute("name")));
   AttachLabelAndAttributes(xml_element, element.get());
   return element;
 }
@@ -117,7 +118,7 @@ std::enable_if_t<std::is_base_of<Role, T>::value, std::unique_ptr<T>>
 ConstructElement(const xml::Element& xml_element, const std::string& base_path,
                  RoleSpecifier base_role) {
   auto element =
-      std::make_unique<T>(xml_element.attribute("name").to_string(), base_path,
+      std::make_unique<T>(std::string(xml_element.attribute("name")), base_path,
                           GetRole(xml_element.attribute("role"), base_role));
   AttachLabelAndAttributes(xml_element, element.get());
   return element;
@@ -131,7 +132,7 @@ ConstructElement(const xml::Element& xml_element, const std::string& base_path,
 auto GetNonAttributeElements(const xml::Element& xml_element) {
   return xml_element.children() |
          boost::adaptors::filtered([](const xml::Element& child) {
-           xml::string_view name = child.name();
+           std::string_view name = child.name();
            return name != "label" && name != "attributes";
          });
 }
@@ -141,7 +142,7 @@ PhasePtr ConstructElement<Phase>(const xml::Element& xml_element) {
   PhasePtr element;
   try {
     element = std::make_unique<Phase>(
-        xml_element.attribute("name").to_string(),
+        std::string(xml_element.attribute("name")),
         *xml_element.attribute<double>("time-fraction"));
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_element.line());
@@ -299,7 +300,7 @@ Parameter* Initializer::Register(const xml::Element& param_node,
   tbd_.emplace_back(parameter, param_node);
 
   // Attach units.
-  xml::string_view unit = param_node.attribute("unit");
+  std::string_view unit = param_node.attribute("unit");
   if (!unit.empty()) {
     int pos = boost::find(kUnitsToString, unit) - std::begin(kUnitsToString);
     assert(pos < kNumUnits && "Unexpected unit kind.");
@@ -313,7 +314,7 @@ CcfGroup* Initializer::Register(const xml::Element& ccf_node,
                                 const std::string& base_path,
                                 RoleSpecifier container_role) {
   auto ptr = [&]() -> CcfGroupPtr {
-    xml::string_view model = ccf_node.attribute("model");
+    std::string_view model = ccf_node.attribute("model");
     if (model == "beta-factor")
       return ConstructElement<BetaFactorModel>(ccf_node, base_path,
                                                container_role);
@@ -459,7 +460,7 @@ void Initializer::Define(const xml::Element& param_node, Parameter* parameter) {
 template <>
 void Initializer::Define(const xml::Element& ccf_node, CcfGroup* ccf_group) {
   for (const xml::Element& element : ccf_node.children()) {
-    xml::string_view name = element.name();
+    std::string_view name = element.name();
     if (name == "distribution") {
       ccf_group->AddDistribution(
           GetExpression(*element.child(), ccf_group->base_path()));
@@ -501,7 +502,7 @@ void Initializer::Define(const xml::Element& et_node, EventTree* event_tree) {
 template <>
 void Initializer::Define(const xml::Element& xml_node,
                          InitiatingEvent* initiating_event) {
-  std::string event_tree_name = xml_node.attribute("event-tree").to_string();
+  std::string event_tree_name(xml_node.attribute("event-tree"));
   if (!event_tree_name.empty()) {
     if (auto it = ext::find(model_->event_trees(), event_tree_name)) {
       initiating_event->event_tree(it->get());
@@ -557,7 +558,7 @@ void Initializer::Define(const xml::Element& xml_node,
   if (boost::optional<xml::Element> source = xml_node.child("source")) {
     for (const xml::Element& basic_event : source->children()) {
       assert(basic_event.name() == "basic-event");
-      std::string name = basic_event.attribute("name").to_string();
+      std::string name(basic_event.attribute("name"));
       try {
         BasicEvent* event = GetBasicEvent(name, "");
         substitution->Add(event);
@@ -575,7 +576,7 @@ void Initializer::Define(const xml::Element& xml_node,
 
   xml::Element target = xml_node.child("target")->child().value();
   if (target.name() == "basic-event") {
-    std::string name = target.attribute("name").to_string();
+    std::string name(target.attribute("name"));
     try {
       BasicEvent* event = GetBasicEvent(name, "");
       substitution->target(event);
@@ -591,7 +592,7 @@ void Initializer::Define(const xml::Element& xml_node,
 
   try {
     substitution->Validate();
-    xml::string_view type = xml_node.attribute("type");
+    std::string_view type = xml_node.attribute("type");
     if (!type.empty()) {
       boost::optional<Substitution::Type> deduced_type = substitution->type();
       int pos = std::distance(kSubstitutionTypeToString,
@@ -616,7 +617,7 @@ void Initializer::ProcessTbdElements() {
       try {
         DefineExternFunction(node);
       } catch (ValidityError& err) {
-        err << boost::errinfo_file_name(root.filename().to_string());
+        err << boost::errinfo_file_name(root.filename());
         throw;
       }
     }
@@ -630,8 +631,7 @@ void Initializer::ProcessTbdElements() {
           },
           tbd_element.first);
     } catch (ValidityError& err) {
-      err << boost::errinfo_file_name(
-          tbd_element.second.filename().to_string());
+      err << boost::errinfo_file_name(tbd_element.second.filename());
       throw;
     }
   }
@@ -750,15 +750,15 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
       return;
     }
 
-    std::string name = element.attribute("name").to_string();
+    std::string name(element.attribute("name"));
     if (name.empty()) {
       formula->AddArgument(GetFormula(element, base_path));
       return;
     }
 
-    xml::string_view element_type = [&element] {
+    std::string_view element_type = [&element] {
       // This is for the case "<event name="id" type="type"/>".
-      xml::string_view type = element.attribute("type");
+      std::string_view type = element.attribute("type");
       return type.empty() ? element.name() : type;
     }();
 
@@ -778,7 +778,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
       }
     } catch (std::out_of_range&) {
       SCRAM_THROW(ValidityError(
-          "Undefined " + element_type.to_string() + " " + name +
+          "Undefined " + std::string(element_type) + " " + name +
           (base_path.empty() ? "" : " with base path " + base_path)))
           << boost::errinfo_at_line(element.line());
     } catch (DuplicateArgumentError& err) {
@@ -810,11 +810,11 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 void Initializer::DefineBranchTarget(const xml::Element& target_node,
                                      EventTree* event_tree, Branch* branch) {
   if (target_node.name() == "fork") {
-    std::string name = target_node.attribute("functional-event").to_string();
+    std::string name(target_node.attribute("functional-event"));
     if (auto it = ext::find(event_tree->functional_events(), name)) {
       std::vector<Path> paths;
       for (const xml::Element& path_element : target_node.children("path")) {
-        paths.emplace_back(path_element.attribute("state").to_string());
+        paths.emplace_back(std::string(path_element.attribute("state")));
         DefineBranch(path_element.children(), event_tree, &paths.back());
       }
       assert(!paths.empty());
@@ -833,7 +833,7 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
           << boost::errinfo_at_line(target_node.line());
     }
   } else if (target_node.name() == "sequence") {
-    std::string name = target_node.attribute("name").to_string();
+    std::string name(target_node.attribute("name"));
     if (auto it = ext::find(model_->sequences(), name)) {
       branch->target(it->get());
       (*it)->usage(true);
@@ -844,7 +844,7 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
     }
   } else {
     assert(target_node.name() == "branch");
-    std::string name = target_node.attribute("name").to_string();
+    std::string name(target_node.attribute("name"));
     if (auto it = ext::find(event_tree->branches(), name)) {
       branch->target(it->get());
       (*it)->usage(true);
@@ -874,9 +874,9 @@ void Initializer::DefineBranch(const SinglePassRange& xml_nodes,
 }
 
 Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
-  xml::string_view node_name = xml_element.name();
+  std::string_view node_name = xml_element.name();
   if (node_name == "rule") {
-    std::string name = xml_element.attribute("name").to_string();
+    std::string name(xml_element.attribute("name"));
     if (auto it = ext::find(model_->rules(), name)) {
       (*it)->usage(true);
       return it->get();
@@ -894,7 +894,7 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   };
 
   if (node_name == "event-tree") {
-    std::string name = xml_element.attribute("name").to_string();
+    std::string name(xml_element.attribute("name"));
     if (auto it = ext::find(model_->event_trees(), name)) {
       (*it)->usage(true);
       links_.push_back(static_cast<Link*>(
@@ -938,7 +938,7 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   }
 
   if (node_name == "set-house-event") {
-    std::string name = xml_element.attribute("name").to_string();
+    std::string name(xml_element.attribute("name"));
     if (!model_->house_events().count(name)) {
       SCRAM_THROW(ValidityError("House event " + name +
                                 " is not defined in the model."))
@@ -1217,7 +1217,7 @@ const Initializer::ExtractorMap Initializer::kExpressionExtractors_ = {
 
 Expression* Initializer::GetExpression(const xml::Element& expr_element,
                                        const std::string& base_path) {
-  xml::string_view expr_type = expr_element.name();
+  std::string_view expr_type = expr_element.name();
   auto register_expression = [this](std::unique_ptr<Expression> expression) {
     auto* ret_ptr = expression.get();
     model_->Add(std::move(expression));
@@ -1240,17 +1240,17 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
 
   if (expr_type == "test-initiating-event") {
     return register_expression(std::make_unique<TestInitiatingEvent>(
-        expr_element.attribute("name").to_string(), model_->context()));
+        std::string(expr_element.attribute("name")), model_->context()));
   }
   if (expr_type == "test-functional-event") {
     return register_expression(std::make_unique<TestFunctionalEvent>(
-        expr_element.attribute("name").to_string(),
-        expr_element.attribute("state").to_string(), model_->context()));
+        std::string(expr_element.attribute("name")),
+        std::string(expr_element.attribute("state")), model_->context()));
   }
 
   if (expr_type == "extern-function") {
     const ExternFunction<void>* extern_function = [this, &expr_element] {
-      std::string name = expr_element.attribute("name").to_string();
+      std::string name(expr_element.attribute("name"));
       auto it = model_->extern_functions().find(name);
       if (it == model_->extern_functions().end()) {
         SCRAM_THROW(ValidityError("Undefined extern function: " + name))
@@ -1277,7 +1277,7 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
 
   try {
     Expression* expression = register_expression(kExpressionExtractors_.at(
-        expr_type.to_string())(expr_element.children(), base_path, this));
+        std::string(expr_type))(expr_element.children(), base_path, this));
     // Register for late validation after ensuring no cycles.
     expressions_.emplace_back(expression, expr_element);
     return expression;
@@ -1287,11 +1287,11 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
   }
 }
 
-Expression* Initializer::GetParameter(const xml::string_view& expr_type,
+Expression* Initializer::GetParameter(const std::string_view& expr_type,
                                       const xml::Element& expr_element,
                                       const std::string& base_path) {
   auto check_units = [&expr_element](const auto& parameter) {
-    xml::string_view unit = expr_element.attribute("unit");
+    std::string_view unit = expr_element.attribute("unit");
     const char* param_unit = scram::mef::kUnitsToString[parameter.unit()];
     if (!unit.empty() && unit != param_unit) {
       std::stringstream msg;
@@ -1303,7 +1303,7 @@ Expression* Initializer::GetParameter(const xml::string_view& expr_type,
   };
 
   if (expr_type == "parameter") {
-    std::string name = expr_element.attribute("name").to_string();
+    std::string name(expr_element.attribute("name"));
     try {
       Parameter* param = GetParameter(name, base_path);
       param->usage(true);
@@ -1327,7 +1327,7 @@ void Initializer::ProcessCcfMembers(const xml::Element& members_node,
   for (const xml::Element& event_node : members_node.children()) {
     assert("basic-event" == event_node.name());
     auto basic_event =
-        std::make_unique<BasicEvent>(event_node.attribute("name").to_string(),
+        std::make_unique<BasicEvent>(std::string(event_node.attribute("name")),
                                      ccf_group->base_path(), ccf_group->role());
     try {
       ccf_group->AddMember(basic_event.get());
@@ -1441,8 +1441,8 @@ void Initializer::DefineExternLibraries(const xml::Element& xml_node,
   auto library = [&xml_file, &xml_node, &optional_bool] {
     try {
       return std::make_unique<ExternLibrary>(
-          xml_node.attribute("name").to_string(),
-          xml_node.attribute("path").to_string(),
+          std::string(xml_node.attribute("name")),
+          std::string(xml_node.attribute("path")),
           boost::filesystem::path(xml_file).parent_path(),
           optional_bool("system"), optional_bool("decorate"));
     } catch (DLError& err) {
@@ -1481,7 +1481,7 @@ template <class SinglePassRange>
 int Encode(const SinglePassRange& args) noexcept {
   assert(!args.empty());
   auto to_digit = [](const xml::Element& node) -> int {
-    xml::string_view name = node.name();
+    std::string_view name = node.name();
     return static_cast<int>([&name] {
       if (name == "int")
         return ExternParamType::kInt;
@@ -1569,7 +1569,7 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
   }();
 
   const ExternLibrary& library = [this, &xml_element]() -> decltype(auto) {
-    std::string lib_name = xml_element.attribute("library").to_string();
+    std::string lib_name(xml_element.attribute("library"));
     auto it = model_->libraries().find(lib_name);
     if (it == model_->libraries().end())
       SCRAM_THROW(ValidityError("Undefined extern library: " + lib_name))
@@ -1593,8 +1593,8 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
     int encoding = Encode(args);
     try {
       return function_extractors.at(encoding)(
-          xml_element.attribute("name").to_string(),
-          xml_element.attribute("symbol").to_string(), library);
+          std::string(xml_element.attribute("name")),
+          std::string(xml_element.attribute("symbol")), library);
     } catch (ValidityError& err) {
       err << boost::errinfo_at_line(xml_element.line());
       throw;
@@ -1881,7 +1881,7 @@ void Initializer::ValidateExpressions() {
     try {
       expression.first->Validate();
     } catch (ValidityError& err) {
-      err << boost::errinfo_file_name(expression.second.filename().to_string())
+      err << boost::errinfo_file_name(expression.second.filename())
           << boost::errinfo_at_line(expression.second.line());
       throw;
     }
