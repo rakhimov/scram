@@ -17,7 +17,7 @@ os: linux
 
 compiler:
     - gcc
-    - clang
+    # - clang  # Wait till Clang 6 or patched 5 to work w/ libstdc++.
 
 env:
     global:
