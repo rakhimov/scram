@@ -55,7 +55,7 @@ void RiskAnalysisTest::ProcessInputFiles(
 }
 
 void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
-  static xml::Validator validator(Env::report_schema());
+  static xml::Validator validator(env::report_schema());
 
   ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());

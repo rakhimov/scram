@@ -348,7 +348,7 @@ Sequence* Initializer::Register(const xml::Element& xml_node,
 /// @}
 
 void Initializer::ProcessInputFile(const std::string& xml_file) {
-  static xml::Validator validator(Env::input_schema());
+  static xml::Validator validator(env::input_schema());
 
   CLOCK(parse_time);
   LOG(DEBUG3) << "Parsing " << xml_file << " ...";

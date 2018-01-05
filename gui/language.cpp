@@ -36,7 +36,7 @@ namespace gui {
 
 const std::string &translationsPath()
 {
-    static const std::string tsPath(scram::Env::install_dir()
+    static const std::string tsPath(scram::env::install_dir()
                                     + "/share/scram/translations");
     return tsPath;
 }

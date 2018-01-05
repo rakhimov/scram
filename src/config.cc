@@ -54,7 +54,7 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 }  // namespace
 
 Config::Config(const std::string& config_file) {
-  static xml::Validator validator(Env::config_schema());
+  static xml::Validator validator(env::config_schema());
 
   if (fs::exists(config_file) == false) {
     SCRAM_THROW(IOError("The configuration file does not exist."))

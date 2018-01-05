@@ -16,7 +16,11 @@
  */
 
 /// @file
-/// Environmental Variables
+/// SCRAM-specific environment variables.
+///
+/// All paths are absolute, canonical, and POSIX (with '/' separator).
+///
+/// @pre The system follows the Filesystem Hierarchy Standard.
 
 #ifndef SCRAM_SRC_ENV_H_
 #define SCRAM_SRC_ENV_H_
@@ -24,25 +28,21 @@
 #include <string>
 
 namespace scram {
+namespace env {
 
-/// Provides environmental variables.
-class Env {
- public:
-  /// @returns The location of the RELAX NG schema for configuration files.
-  static const std::string& config_schema();
+/// @returns The location of the RELAX NG schema for configuration files.
+const std::string& config_schema();
 
-  /// @returns The location of the RELAX NG schema for input files.
-  static const std::string& input_schema();
+/// @returns The location of the RELAX NG schema for input files.
+const std::string& input_schema();
 
-  /// @returns The location of the RELAX NG schema for output report files.
-  static const std::string& report_schema();
+/// @returns The location of the RELAX NG schema for output report files.
+const std::string& report_schema();
 
-  /// @returns The path to the installation directory.
-  ///
-  /// @pre The main executable is located inside "bin" directory.
-  static const std::string& install_dir();
-};
+/// @returns The path to the installation directory.
+const std::string& install_dir();
 
+}  // namespace env
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ENV_H_

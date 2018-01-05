@@ -288,7 +288,7 @@ bool MainWindow::setConfig(const std::string &configPath,
 
 bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 {
-    static xml::Validator validator(Env::install_dir()
+    static xml::Validator validator(env::install_dir()
                                     + "/share/scram/gui.rng");
 
     if (inputFiles.empty())
@@ -583,7 +583,7 @@ void MainWindow::setupStartPage()
 {
     auto *startPage = new StartPage(this);
     QString examplesDir =
-        QString::fromStdString(Env::install_dir() + "/share/scram/input");
+        QString::fromStdString(env::install_dir() + "/share/scram/input");
     startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
     connect(startPage->newModelButton, &QAbstractButton::clicked,
             ui->actionNewModel, &QAction::trigger);

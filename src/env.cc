@@ -23,26 +23,27 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 
 namespace scram {
+namespace env {
 
-const std::string& Env::config_schema() {
+const std::string& config_schema() {
   static const std::string schema_path =
       install_dir() + "/share/scram/config.rng";
   return schema_path;
 }
 
-const std::string& Env::input_schema() {
+const std::string& input_schema() {
   static const std::string schema_path =
       install_dir() + "/share/scram/input.rng";
   return schema_path;
 }
 
-const std::string& Env::report_schema() {
+const std::string& report_schema() {
   static const std::string schema_path =
       install_dir() + "/share/scram/report.rng";
   return schema_path;
 }
 
-const std::string& Env::install_dir() {
+const std::string& install_dir() {
   static const std::string install_path =
       boost::dll::program_location()  // executable
           .parent_path()  // bin
@@ -51,4 +52,5 @@ const std::string& Env::install_dir() {
   return install_path;
 }
 
+}  // namespace env
 }  // namespace scram

@@ -31,7 +31,7 @@ namespace mef {
 namespace test {
 
 TEST(SerializationTest, InputOutput) {
-  static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
+  static xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
       {"tests/input/fta/correct_tree_input.xml"},
