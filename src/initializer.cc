@@ -1277,7 +1277,7 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
 
   try {
     Expression* expression = register_expression(kExpressionExtractors_.at(
-        std::string(expr_type))(expr_element.children(), base_path, this));
+        expr_type)(expr_element.children(), base_path, this));
     // Register for late validation after ensuring no cycles.
     expressions_.emplace_back(expression, expr_element);
     return expression;

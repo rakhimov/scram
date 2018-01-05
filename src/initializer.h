@@ -89,7 +89,7 @@ class Initializer : private boost::noncopyable {
   using ExtractorFunction = std::unique_ptr<Expression> (*)(
       const xml::Element::Range&, const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
-  using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
+  using ExtractorMap = std::unordered_map<std::string_view, ExtractorFunction>;
   /// Container for late defined constructs.
   template <class... Ts>
   using TbdContainer =
