@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,14 +75,14 @@ TEST(ExternTest, ExternLibraryGet) {
   ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
                       "dummy", kLibRelPath, cwd_dir, false, true));
 
-  EXPECT_NO_THROW(library->get<int (*)()>("foo"));
-  EXPECT_NO_THROW(library->get<double (*)()>("bar"));
-  EXPECT_NO_THROW(library->get<float (*)()>("baz"));
-  EXPECT_THROW(library->get<int (*)()>("foobar"), UndefinedElement);
+  EXPECT_NO_THROW(library->get<int()>("foo"));
+  EXPECT_NO_THROW(library->get<double()>("bar"));
+  EXPECT_NO_THROW(library->get<float()>("baz"));
+  EXPECT_THROW(library->get<int()>("foobar"), UndefinedElement);
 
-  EXPECT_EQ(42, library->get<int (*)()>("foo")());
-  EXPECT_EQ(42, library->get<double (*)()>("bar")());
-  EXPECT_EQ(42, library->get<float (*)()>("baz")());
+  EXPECT_EQ(42, library->get<int()>("foo")());
+  EXPECT_EQ(42, library->get<double()>("bar")());
+  EXPECT_EQ(42, library->get<float()>("baz")());
 }
 
 TEST(ExternTest, ExternFunction) {

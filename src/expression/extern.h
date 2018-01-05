@@ -26,8 +26,12 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/dll/shared_library.hpp>
+#include <boost/exception/errinfo_nested_exception.hpp>
+#include <boost/exception_ptr.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/system/system_error.hpp>
 
 #include "src/element.h"
 #include "src/error.h"
@@ -54,40 +58,26 @@ class ExternLibrary : public Element, public Usage, private boost::noncopyable {
                 const boost::filesystem::path& reference_dir, bool system,
                 bool decorate);
 
-  ~ExternLibrary();  ///< Closes the loaded library.
-
-  /// @tparam F  The C free function pointer type.
+  /// @tparam F  The C free function type.
   ///
   /// @param[in] symbol  The function symbol in the library.
   ///
   /// @returns The function pointer resolved from the symbol.
   ///
   /// @throws UndefinedElement  The symbol is not in the library.
-  ///
-  /// @note The functionality should fail at compile time (UB in C)
-  ///       if the platform doesn't support
-  ///       object pointer to function pointer casts.
   template <typename F>
-  std::enable_if_t<std::is_pointer<F>::value &&
-                       std::is_function<std::remove_pointer_t<F>>::value,
-                   F>
+  std::enable_if_t<std::is_function_v<F>, std::add_pointer_t<F>>
   get(const std::string& symbol) const {
-    return reinterpret_cast<F>(get(symbol.c_str()));
+    try {
+      return lib_handle_.get<F>(symbol);
+    } catch (const boost::system::system_error& err) {
+      SCRAM_THROW(UndefinedElement(err.what()))
+          << boost::errinfo_nested_exception(boost::current_exception());
+    }
   }
 
  private:
-  /// Hides all the cross-platform shared library faculties.
-  /// @todo Remove/refactor after switching to Boost 1.61 on Linux.
-  class Pimpl;
-
-  /// @param[in] symbol  The function symbol in the library.
-  ///
-  /// @returns The function loaded from the library symbol.
-  ///
-  /// @throws UndefinedElement  The symbol is not in the library.
-  void* get(const char* symbol) const;
-
-  Pimpl* pimpl_;  ///< Provides basic implementation for function discovery.
+  boost::dll::shared_library lib_handle_;  ///< Shared Library abstraction.
 };
 
 template <typename R, typename... Args>
@@ -147,7 +137,7 @@ class ExternFunction : public ExternFunctionBase {
   ExternFunction(std::string name, const std::string& symbol,
                  const ExternLibrary& library)
       : ExternFunctionBase(std::move(name)),
-        fptr_(library.get<Pointer>(symbol)) {}
+        fptr_(library.get<R(Args...)>(symbol)) {}
 
   /// Calls the library function with the given numeric arguments.
   R operator()(Args... args) const noexcept { return fptr_(args...); }

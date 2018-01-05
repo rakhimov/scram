@@ -20,56 +20,12 @@
 
 #include "extern.h"
 
-#include <boost/dll/shared_library.hpp>
-#include <boost/exception/errinfo_nested_exception.hpp>
-#include <boost/exception_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/system/system_error.hpp>
-
-#include "src/error.h"
 
 namespace fs = boost::filesystem;
 
 namespace scram {
 namespace mef {
-
-/// Implementation of external library load facilities.
-class ExternLibrary::Pimpl {
- public:
-  /// Loads the library for ExternLibrary.
-  Pimpl(std::string lib_path, const fs::path& reference_dir, bool system,
-        bool decorate) {
-    boost::dll::load_mode::type load_type = boost::dll::load_mode::default_mode;
-    if (decorate)
-      load_type |= boost::dll::load_mode::append_decorations;
-    if (system)
-      load_type |= boost::dll::load_mode::search_system_folders;
-
-    fs::path ref_path = lib_path;
-    if (!system || ref_path.has_parent_path())
-      ref_path = fs::absolute(ref_path, reference_dir);
-
-    try {
-      lib_handle_.load(ref_path, load_type);
-    } catch (const boost::system::system_error& err) {
-      SCRAM_THROW(DLError(err.what()))
-          << boost::errinfo_nested_exception(boost::current_exception());
-    }
-  }
-
-  /// Retrieves the symbol from the loaded library.
-  void* get(const char* symbol) const {
-    try {
-      return reinterpret_cast<void*>(lib_handle_.get<void()>(symbol));
-    } catch (const boost::system::system_error& err) {
-      SCRAM_THROW(UndefinedElement(err.what()))
-          << boost::errinfo_nested_exception(boost::current_exception());
-    }
-  }
-
- private:
-  boost::dll::shared_library lib_handle_;  ///< Shared Library abstraction.
-};
 
 ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
                              const fs::path& reference_dir, bool system,
@@ -88,13 +44,22 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
   }
   // clang-format on
 
-  pimpl_ = new Pimpl(std::move(lib_path), reference_dir, system, decorate);
-}
+  boost::dll::load_mode::type load_type = boost::dll::load_mode::default_mode;
+  if (decorate)
+    load_type |= boost::dll::load_mode::append_decorations;
+  if (system)
+    load_type |= boost::dll::load_mode::search_system_folders;
 
-ExternLibrary::~ExternLibrary() { delete pimpl_; }
+  fs::path ref_path = lib_path;
+  if (!system || ref_path.has_parent_path())
+    ref_path = fs::absolute(ref_path, reference_dir);
 
-void* ExternLibrary::get(const char* symbol) const {
-  return pimpl_->get(symbol);
+  try {
+    lib_handle_.load(ref_path, load_type);
+  } catch (const boost::system::system_error& err) {
+    SCRAM_THROW(DLError(err.what()))
+        << boost::errinfo_nested_exception(boost::current_exception());
+  }
 }
 
 }  // namespace mef
