@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Floating pointing comparison helper functions.
 
-#ifndef SCRAM_SRC_EXT_FLOAT_COMPARE_H_
-#define SCRAM_SRC_EXT_FLOAT_COMPARE_H_
+#pragma once
 
 #include <cassert>
 #include <cmath>
@@ -42,5 +41,3 @@ inline bool is_close(double lhs, double rhs, double tolerance) noexcept {
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_FLOAT_COMPARE_H_

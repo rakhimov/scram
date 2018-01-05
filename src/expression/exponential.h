@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// Expressions and distributions
 /// that are described with exponential formulas.
 
-#ifndef SCRAM_SRC_EXPRESSION_EXPONENTIAL_H_
-#define SCRAM_SRC_EXPRESSION_EXPONENTIAL_H_
+#pragma once
 
 #include <memory>
 
@@ -258,5 +257,3 @@ class PeriodicTest : public Expression {
 
 }  // namespace mef
 }  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_EXPONENTIAL_H_

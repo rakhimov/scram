@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Provides a GraphicsView with zoom in/out and other convenience features.
 
-#ifndef ZOOMABLEVIEW_H
-#define ZOOMABLEVIEW_H
+#pragma once
 
 #include <QGraphicsView>
 #include <QWheelEvent>
@@ -68,5 +67,3 @@ private:
 
 } // namespace gui
 } // namespace scram
-
-#endif // ZOOMABLEVIEW_H

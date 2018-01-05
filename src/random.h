@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Contains helpers for randomness simulations.
 
-#ifndef SCRAM_SRC_RANDOM_H_
-#define SCRAM_SRC_RANDOM_H_
+#pragma once
 
 #include <cassert>
 #include <cmath>
@@ -251,5 +250,3 @@ class Random {
 };
 
 }  // namespace scram
-
-#endif  // SCRAM_SRC_RANDOM_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Exceptions for SCRAM.
 
-#ifndef SCRAM_SRC_ERROR_H_
-#define SCRAM_SRC_ERROR_H_
+#pragma once
 
 #include <exception>
 #include <string>
@@ -160,5 +159,3 @@ using errinfo_element = boost::error_info<struct tag_xml_element, std::string>;
 }  // namespace xml
 
 }  // namespace scram
-
-#endif  // SCRAM_SRC_ERROR_H_

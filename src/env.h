@@ -22,8 +22,7 @@
 ///
 /// @pre The system follows the Filesystem Hierarchy Standard.
 
-#ifndef SCRAM_SRC_ENV_H_
-#define SCRAM_SRC_ENV_H_
+#pragma once
 
 #include <string>
 
@@ -44,5 +43,3 @@ const std::string& install_dir();
 
 }  // namespace env
 }  // namespace scram
-
-#endif  // SCRAM_SRC_ENV_H_

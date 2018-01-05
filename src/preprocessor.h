@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// A collection of PDAG transformation/preprocessing algorithms
 /// that simplify fault trees for analysis.
 
-#ifndef SCRAM_SRC_PREPROCESSOR_H_
-#define SCRAM_SRC_PREPROCESSOR_H_
+#pragma once
 
 #include <memory>
 #include <set>
@@ -1067,5 +1066,3 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
 
 }  // namespace core
 }  // namespace scram
-
-#endif  // SCRAM_SRC_PREPROCESSOR_H_

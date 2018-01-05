@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Implementation of a vector-based map for a small number of entries.
 
-#ifndef SCRAM_SRC_EXT_LINEAR_MAP_H_
-#define SCRAM_SRC_EXT_LINEAR_MAP_H_
+#pragma once
 
 #include <cassert>
 
@@ -429,5 +428,3 @@ class linear_map {
 };
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_LINEAR_MAP_H_

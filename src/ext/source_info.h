@@ -18,8 +18,7 @@
 /// @file
 /// Helper facilities to get source file information.
 
-#ifndef SCRAM_SRC_EXT_SOURCE_INFO_H_
-#define SCRAM_SRC_EXT_SOURCE_INFO_H_
+#pragma once
 
 /// Check if CMake provides required definitions.
 #ifndef PROJECT_SOURCE_DIR
@@ -34,5 +33,3 @@
                   "The source file is not inside the project directory."); \
     return __FILE__ + sizeof(PROJECT_SOURCE_DIR);                          \
   }()
-
-#endif  // SCRAM_SRC_EXT_SOURCE_INFO_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 /// That is, negations must be pushed down to leaves, basic events.
 /// The fault tree should not contain constants or house events.
 
-#ifndef SCRAM_SRC_MOCUS_H_
-#define SCRAM_SRC_MOCUS_H_
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -81,5 +80,3 @@ class Mocus : private boost::noncopyable {
 
 }  // namespace core
 }  // namespace scram
-
-#endif  // SCRAM_SRC_MOCUS_H_

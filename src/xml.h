@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 /// @warning Complex XML features are not handled or expected,
 ///          for example, DTD, namespaces, entries.
 
-#ifndef SCRAM_SRC_XML_H_
-#define SCRAM_SRC_XML_H_
+#pragma once
 
 #include <cmath>
 #include <cstdint>
@@ -476,5 +475,3 @@ class Validator {
 
 }  // namespace xml
 }  // namespace scram
-
-#endif  // SCRAM_SRC_XML_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// Configuration management facilities
 /// to make various setups for analysis possible.
 
-#ifndef SCRAM_SRC_CONFIG_H_
-#define SCRAM_SRC_CONFIG_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -91,5 +90,3 @@ class Config {
 };
 
 }  // namespace scram
-
-#endif  // SCRAM_SRC_CONFIG_H_

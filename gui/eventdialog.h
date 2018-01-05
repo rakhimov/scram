@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Dialog to edit and validate events.
 
-#ifndef EVENTDIALOG_H
-#define EVENTDIALOG_H
+#pragma once
 
 #include <initializer_list>
 #include <memory>
@@ -197,5 +196,3 @@ private:
 
 } // namespace gui
 } // namespace scram
-
-#endif // EVENTDIALOG_H

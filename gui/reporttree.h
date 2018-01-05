@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Report tree model to represent the analysis results.
 
-#ifndef REPORTTREE_H
-#define REPORTTREE_H
+#pragma once
 
 #include <vector>
 
@@ -69,5 +68,3 @@ private:
 
 } // namespace gui
 } // namespace scram
-
-#endif // REPORTTREE_H

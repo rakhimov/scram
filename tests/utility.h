@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Test helper functions.
 
-#ifndef SCRAM_TESTS_UTILITY_H_
-#define SCRAM_TESTS_UTILITY_H_
+#pragma once
 
 #include <string>
 
@@ -38,5 +37,3 @@ inline fs::path GenerateFilePath(const std::string& prefix = "scram_test") {
 
 }  // namespace utility
 }  // namespace scram
-
-#endif  // SCRAM_TESTS_UTILITY_H_

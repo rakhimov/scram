@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// GUI assertions that should not crash the program by default.
 
-#ifndef GUIASSERT_H
-#define GUIASSERT_H
+#pragma once
 
 #include <QMessageBox>
 #include <QString>
@@ -45,5 +44,3 @@
                                        QString::number(__LINE__)));            \
         return ret;                                                            \
     } while (false)
-
-#endif // GUIASSERT_H

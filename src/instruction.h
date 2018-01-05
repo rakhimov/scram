@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Model and event tree modifier instructions.
 
-#ifndef SCRAM_SRC_INSTRUCTION_H_
-#define SCRAM_SRC_INSTRUCTION_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -234,5 +233,3 @@ void Visitable<T>::Accept(InstructionVisitor* visitor) const {
 
 }  // namespace mef
 }  // namespace scram
-
-#endif  // SCRAM_SRC_INSTRUCTION_H_

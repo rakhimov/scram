@@ -18,8 +18,7 @@
 /// @file
 /// Helper workarounds or additions to Qt Test.
 
-#ifndef SCRAM_GUI_TEST_HELP_H
-#define SCRAM_GUI_TEST_HELP_H
+#pragma once
 
 #include <string>
 #include <type_traits>
@@ -100,5 +99,3 @@ auto make_spy(const T *sender, void (U::*sig)(Ts...))
 }
 
 } // namespace ext
-
-#endif // SCRAM_GUI_TEST_HELP_H

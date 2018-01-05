@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Extra helper functions for boost::variant.
 
-#ifndef SCRAM_SRC_EXT_VARIANT_H_
-#define SCRAM_SRC_EXT_VARIANT_H_
+#pragma once
 
 #include <boost/variant.hpp>
 
@@ -40,5 +39,3 @@ T as(const boost::variant<Ts...>& var) {
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_VARIANT_H_

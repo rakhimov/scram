@@ -18,8 +18,7 @@
 /// @file
 /// Facilities to stream data in XML format.
 
-#ifndef SCRAM_SRC_XML_STREAM_H_
-#define SCRAM_SRC_XML_STREAM_H_
+#pragma once
 
 #include <cassert>
 #include <cstdio>
@@ -408,5 +407,3 @@ class Stream {
 
 }  // namespace xml
 }  // namespace scram
-
-#endif  // SCRAM_SRC_XML_STREAM_H_

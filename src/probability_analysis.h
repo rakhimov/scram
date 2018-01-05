@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Contains functionality to do numerical analysis of probabilities.
 
-#ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
-#define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -335,5 +334,3 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
 
 }  // namespace core
 }  // namespace scram
-
-#endif  // SCRAM_SRC_PROBABILITY_ANALYSIS_H_

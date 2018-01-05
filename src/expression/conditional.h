@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Conditional (if-then-else, switch-case) expressions.
 
-#ifndef SCRAM_SRC_EXPRESSION_CONDITIONAL_H_
-#define SCRAM_SRC_EXPRESSION_CONDITIONAL_H_
+#pragma once
 
 #include <vector>
 
@@ -79,5 +78,3 @@ class Switch : public ExpressionFormula<Switch> {
 
 }  // namespace mef
 }  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_CONDITIONAL_H_

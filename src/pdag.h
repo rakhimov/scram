@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 /// the Boolean terminology is preferred.
 /// For example, instead of "children", "arguments" are preferred.
 
-#ifndef SCRAM_SRC_PDAG_H_
-#define SCRAM_SRC_PDAG_H_
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -1218,5 +1217,3 @@ std::ostream& operator<<(std::ostream& os, Pdag* graph);
 
 }  // namespace core
 }  // namespace scram
-
-#endif  // SCRAM_SRC_PDAG_H_

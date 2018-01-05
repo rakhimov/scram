@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@
 
 #include <boost/multi_index_container.hpp>
 
-#ifndef SCRAM_SRC_EXT_MULTI_INDEX_H_
-#define SCRAM_SRC_EXT_MULTI_INDEX_H_
+#pragma once
 
 namespace ext {
 
@@ -56,5 +55,3 @@ T extract(const typename boost::multi_index_container<T, Ts...>::key_type& key,
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_MULTI_INDEX_H_

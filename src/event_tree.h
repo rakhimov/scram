@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Event Tree facilities.
 
-#ifndef SCRAM_SRC_EVENT_TREE_H_
-#define SCRAM_SRC_EVENT_TREE_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -243,5 +242,3 @@ using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
 }  // namespace mef
 }  // namespace scram
-
-#endif  // SCRAM_SRC_EVENT_TREE_H_

@@ -18,10 +18,9 @@
 /// @file
 /// Text alignment common conventions.
 
-#include <Qt>
+#pragma once
 
-#ifndef ALIGN_H
-#define ALIGN_H
+#include <Qt>
 
 namespace scram {
 namespace gui {
@@ -31,5 +30,3 @@ const int ALIGN_NUMBER_IN_TABLE = Qt::AlignRight | Qt::AlignVCenter;
 
 } // namespace gui
 } // namespace scram
-
-#endif // ALIGN_H

@@ -18,8 +18,7 @@
 /// @file
 /// The MEF facilities to call external functions in expressions.
 
-#ifndef SCRAM_SRC_EXPRESSION_EXTERN_H_
-#define SCRAM_SRC_EXPRESSION_EXTERN_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -224,5 +223,3 @@ ExternFunction<R, Args...>::apply(std::vector<Expression*> args) const {
 
 }  // namespace mef
 }  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_EXTERN_H_

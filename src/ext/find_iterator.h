@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Convenience iterator adaptor to wrap find calls and results.
 
-#ifndef SCRAM_SRC_EXT_FIND_ITERATOR_H_
-#define SCRAM_SRC_EXT_FIND_ITERATOR_H_
+#pragma once
 
 #include <utility>
 
@@ -63,5 +62,3 @@ auto find(T&& container, Arg&& arg) {
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_FIND_ITERATOR_H_

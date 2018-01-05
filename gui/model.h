@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Wrapper Model classes for the MEF data.
 
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -723,5 +722,3 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 } // namespace model
 } // namespace gui
 } // namespace scram
-
-#endif // MODEL_H

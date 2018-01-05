@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Graphics classes to draw diagrams.
 
-#ifndef DIAGRAM_H
-#define DIAGRAM_H
+#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -210,5 +209,3 @@ private:
 } // namespace diagram
 } // namespace gui
 } // namespace scram
-
-#endif // DIAGRAM_H

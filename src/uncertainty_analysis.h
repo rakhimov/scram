@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// Provides functionality for uncertainty analysis
 /// with Monte Carlo method.
 
-#ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
-#define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -161,5 +160,3 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
 
 }  // namespace core
 }  // namespace scram
-
-#endif  // SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_

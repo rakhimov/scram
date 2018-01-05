@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCRAM_GUI_TEST_DATA_H
-#define SCRAM_GUI_TEST_DATA_H
+#pragma once
 
 #include <initializer_list>
 
@@ -93,5 +92,3 @@ void populateData(
         detail::RowInitializer<sizeof...(Ts)>{}(QTest::newRow(std::get<0>(row)),
                                                 row);
 }
-
-#endif // SCRAM_GUI_TEST_DATA_H

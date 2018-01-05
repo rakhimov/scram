@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Dialog to manage the application's persistent preferences.
 
-#ifndef PREFERENCESDIALOG_H
-#define PREFERENCESDIALOG_H
+#pragma once
 
 #include <memory>
 
@@ -72,5 +71,3 @@ private:
 
 } // namespace gui
 } // namespace scram
-
-#endif // PREFERENCESDIALOG_H
