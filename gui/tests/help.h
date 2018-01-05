@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,8 +86,6 @@ public:
     {
         connect(sender, sig, this, &SignalSpy::accept, Qt::DirectConnection);
     }
-
-    SignalSpy(SignalSpy &&); ///< Only to enable RVO. Undefined.
 
 private:
     /// Stores the signal arguments.

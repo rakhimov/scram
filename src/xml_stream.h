@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -198,15 +198,6 @@ class StreamElement {
   StreamElement(const char* name, detail::Indenter* indenter,
                 detail::FileStream* out)
       : StreamElement(name, 0, nullptr, indenter, out) {}
-
-  /// Move constructor is only declared
-  /// to make the compiler happy.
-  /// The code must rely on the RVO, NRVO, and copy elision
-  /// instead of this constructor.
-  ///
-  /// The constructor is not defined,
-  /// so the use of this constructor will produce a linker error.
-  StreamElement(StreamElement&&);
 
   /// Puts the closing tag.
   ///
