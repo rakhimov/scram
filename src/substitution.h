@@ -21,10 +21,10 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 #include "element.h"
@@ -96,7 +96,7 @@ class Substitution : public Element, private boost::noncopyable {
   /// @returns The equivalent "traditional" substitution type if any.
   ///
   /// @pre The hypothesis, target, and source are all defined and valid.
-  boost::optional<Type> type() const;
+  std::optional<Type> type() const;
 
  private:
   FormulaPtr hypothesis_;  ///< The formula to be satisfied.

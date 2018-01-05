@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ void Substitution::Validate() const {
   }
 }
 
-boost::optional<Substitution::Type> Substitution::type() const {
+std::optional<Substitution::Type> Substitution::type() const {
   auto in_hypothesis = [this](const BasicEvent* source_arg) {
     return ext::any_of(hypothesis_->event_args(),
                        [source_arg](const Formula::EventArg& arg) {

@@ -38,6 +38,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -47,7 +48,6 @@
 #include <boost/exception/errinfo_file_name.hpp>
 #include <boost/exception/errinfo_file_open_mode.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 
 #include <libxml/parser.h>
@@ -324,7 +324,7 @@ class Element {
   ///
   /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
-  std::enable_if_t<std::is_arithmetic<T>::value, boost::optional<T>>
+  std::enable_if_t<std::is_arithmetic<T>::value, std::optional<T>>
   attribute(const char* name) const {
     std::string_view value = attribute(name);
     if (value.empty())
@@ -364,7 +364,7 @@ class Element {
   ///                  Empty string to request any first child element.
   ///
   /// @returns The first child element (with the given name).
-  boost::optional<Element> child(std::string_view name = "") const {
+  std::optional<Element> child(std::string_view name = "") const {
     for (Element element : children()) {
       if (name.empty() || name == element.name())
         return element;

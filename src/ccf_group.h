@@ -25,13 +25,13 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -130,7 +130,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
-  void AddFactor(Expression* factor, boost::optional<int> level = {});
+  void AddFactor(Expression* factor, std::optional<int> level = {});
 
   /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.

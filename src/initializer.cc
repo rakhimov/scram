@@ -81,12 +81,12 @@ RoleSpecifier GetRole(const std::string_view& s, RoleSpecifier parent_role) {
 /// @throws ValidityError  Invalid attribute setting.
 void AttachLabelAndAttributes(const xml::Element& xml_element,
                               Element* element) {
-  if (boost::optional<xml::Element> label = xml_element.child("label")) {
+  if (std::optional<xml::Element> label = xml_element.child("label")) {
     assert(element->label().empty() && "Resetting element label.");
     element->label(std::string(label->text()));
   }
 
-  boost::optional<xml::Element> attributes = xml_element.child("attributes");
+  std::optional<xml::Element> attributes = xml_element.child("attributes");
   if (!attributes)
     return;
   for (const xml::Element& attribute : attributes->children()) {
@@ -282,7 +282,7 @@ HouseEvent* Initializer::Register(const xml::Element& event_node,
   path_house_events_.insert(house_event);
 
   // Only Boolean xml.
-  if (boost::optional<xml::Element> constant = event_node.child("constant")) {
+  if (std::optional<xml::Element> constant = event_node.child("constant")) {
     house_event->state(*constant->attribute<bool>("value"));
   }
   return house_event;
@@ -555,7 +555,7 @@ void Initializer::Define(const xml::Element& xml_node,
   substitution->hypothesis(
       GetFormula(xml_node.child("hypothesis")->child().value(), ""));
 
-  if (boost::optional<xml::Element> source = xml_node.child("source")) {
+  if (std::optional<xml::Element> source = xml_node.child("source")) {
     for (const xml::Element& basic_event : source->children()) {
       assert(basic_event.name() == "basic-event");
       std::string name(basic_event.attribute("name"));
@@ -594,7 +594,7 @@ void Initializer::Define(const xml::Element& xml_node,
     substitution->Validate();
     std::string_view type = xml_node.attribute("type");
     if (!type.empty()) {
-      boost::optional<Substitution::Type> deduced_type = substitution->type();
+      std::optional<Substitution::Type> deduced_type = substitution->type();
       int pos = std::distance(kSubstitutionTypeToString,
                               boost::find(kSubstitutionTypeToString, type));
       assert(pos < 3 && "Unexpected substitution type string.");
@@ -1435,7 +1435,7 @@ Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
 void Initializer::DefineExternLibraries(const xml::Element& xml_node,
                                         const std::string& xml_file) {
   auto optional_bool = [&xml_node](const char* tag) {
-    boost::optional<bool> attribute = xml_node.attribute<bool>(tag);
+    std::optional<bool> attribute = xml_node.attribute<bool>(tag);
     return attribute ? *attribute : false;
   };
   auto library = [&xml_file, &xml_node, &optional_bool] {

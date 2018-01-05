@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ void CcfGroup::AddDistribution(Expression* distr) {
     member->expression(distribution_);
 }
 
-void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
+void CcfGroup::AddFactor(Expression* factor, std::optional<int> level) {
   int min_level = this->min_level();
   if (!level)
     level = prev_level_ ? (prev_level_ + 1) : min_level;

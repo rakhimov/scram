@@ -68,7 +68,7 @@ Config::Config(const std::string& config_file) {
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);
 
-  if (boost::optional<xml::Element> out = root.child("output-path")) {
+  if (std::optional<xml::Element> out = root.child("output-path")) {
     output_path_ = normalize(std::string(out->text()), base_path);
   }
 
@@ -82,7 +82,7 @@ Config::Config(const std::string& config_file) {
 
 void Config::GatherInputFiles(const xml::Element& root,
                               const fs::path& base_path) {
-  boost::optional<xml::Element> input_files = root.child("input-files");
+  std::optional<xml::Element> input_files = root.child("input-files");
   if (!input_files)
     return;
   for (xml::Element input_file : input_files->children()) {
@@ -93,7 +93,7 @@ void Config::GatherInputFiles(const xml::Element& root,
 }
 
 void Config::GatherOptions(const xml::Element& root) {
-  boost::optional<xml::Element> options_element = root.child("options");
+  std::optional<xml::Element> options_element = root.child("options");
   if (!options_element)
     return;
   // The loop is used instead of query
@@ -119,7 +119,7 @@ void Config::GatherOptions(const xml::Element& root) {
       throw;
     }
   }
-  if (boost::optional<xml::Element> analysis_group =
+  if (std::optional<xml::Element> analysis_group =
           options_element->child("analysis")) {
     try {
       SetAnalysis(*analysis_group);
@@ -132,7 +132,7 @@ void Config::GatherOptions(const xml::Element& root) {
 
 void Config::SetAnalysis(const xml::Element& analysis) {
   auto set_flag = [&analysis](const char* tag, auto setter) {
-    if (boost::optional<bool> flag = analysis.attribute<bool>(tag))
+    if (std::optional<bool> flag = analysis.attribute<bool>(tag))
       setter(*flag);
   };
   set_flag("probability",
