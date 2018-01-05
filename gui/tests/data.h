@@ -18,22 +18,11 @@
 #pragma once
 
 #include <initializer_list>
+#include <utility>
 
 #include <QtTest>
 
 namespace detail {
-
-/// Tuple with implicit constructor for convenience sake.
-///
-/// @todo Not necessary in C++17.
-template <typename... Ts>
-struct tuple : public std::tuple<Ts...>
-{
-    template <typename... Us>
-    constexpr tuple(Us &&... us) : std::tuple<Ts...>(std::forward<Us>(us)...)
-    {
-    }
-};
 
 /// Initializes columns in the test data table.
 ///
@@ -82,9 +71,8 @@ struct RowInitializer<0>
 /// @param[in] columns  The column names.
 /// @param[in] rows  The row name and data.
 template <typename... Ts>
-void populateData(
-    const char *const (&columns)[sizeof...(Ts)],
-    std::initializer_list<detail::tuple<const char *, Ts...>> rows)
+void populateData(const char *const (&columns)[sizeof...(Ts)],
+                  std::initializer_list<std::tuple<const char *, Ts...>> rows)
 {
     detail::initializeColumns<Ts..., void>(columns);
 
