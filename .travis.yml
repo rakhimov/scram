@@ -56,13 +56,13 @@ jobs:
     include:
         - stage: lint
           compiler: clang
-          before_script: mkdir build
           script: .travis/lint.sh
           env: CONFIG=Lint  # Travis does not provide ENV var for stage names :(
           addons:
               apt:
                   packages:
-                      - qttools5-dev-tools
+                      - qt59tools
+                  sources: *Sources
         # - stage: test
         #   os: osx  # OS X builds are slow and limited.
         #   osx_image: xcode9.2 # C++17 not yet fully supported!!!

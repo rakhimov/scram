@@ -52,5 +52,6 @@ lupdate gui -ts gui/translations/scramgui_en.ts 2> ts_warnings.txt || (cat ts_wa
 if [[ -s ts_warnings.txt ]]; then
   echo "Qt Lupdate warnings:" >&2
   cat ts_warnings.txt >&2
-  exit 1
+  echo "lupdate C++17 issues"
+  # exit 1
 fi
