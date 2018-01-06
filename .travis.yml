@@ -41,23 +41,22 @@ addons:
             - libboost-filesystem1.61-dev
             - libxml2-dev
             - libgoogle-perftools-dev
-            - qtbase5-dev
-            - qtbase5-dev-tools
-            - qttools5-dev
-            - qttools5-dev-tools
-            - libqt5svg5-dev
-            - libqt5opengl5-dev
+            - qt59base
+            - qt59tools
+            - qt59svg
             - fontconfig
             - lcov
         sources: &Sources
             - ubuntu-toolchain-r-test
             - sourceline: "ppa:rakhimov/boost"
             - sourceline: "ppa:zerebubuth/ccache"
+            - sourceline: "ppa:beineri/opt-qt593-trusty"
 
 jobs:
     include:
         - stage: lint
           compiler: clang
+          before_script: mkdir build
           script: .travis/lint.sh
           env: CONFIG=Lint  # Travis does not provide ENV var for stage names :(
           addons:
@@ -75,6 +74,7 @@ jobs:
         - stage: test
           compiler: gcc
           env: CONFIG=Memcheck
+          before_script: mkdir build install
           addons:
               apt:
                   packages:
@@ -103,6 +103,7 @@ install:
 
 before_script:
     - mkdir build install
+    - source /opt/qt59/bin/qt59-env.sh
 
 script:
     - .travis/script.sh

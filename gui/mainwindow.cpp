@@ -100,9 +100,8 @@ public:
     explicit WaitDialog(QWidget *parent) : QProgressDialog(parent)
     {
         setFixedSize(size());
-        setWindowFlags(static_cast<Qt::WindowFlags>(
-            windowFlags() | Qt::MSWindowsFixedSizeDialogHint
-            | Qt::FramelessWindowHint));
+        setWindowFlags(windowFlags() | Qt::MSWindowsFixedSizeDialogHint
+                       | Qt::FramelessWindowHint);
         setCancelButton(nullptr);
         setRange(0, 0);
         setMinimumDuration(0);

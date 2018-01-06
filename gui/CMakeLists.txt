@@ -3,7 +3,7 @@ if(APPLE)
   # Qt5 with Homebrew.
   list(APPEND CMAKE_PREFIX_PATH /usr/local/opt/qt5)
 endif()
-find_package(Qt5 "5.2.1" REQUIRED COMPONENTS
+find_package(Qt5 "5.9.1" REQUIRED COMPONENTS
   Core Widgets Svg OpenGL PrintSupport Concurrent
   )
 message(STATUS "Found Qt5")
@@ -15,16 +15,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # TODO: MOC generated code has some useless casts.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-useless-cast")
-  if(Qt5Widgets_VERSION_STRING VERSION_LESS 5.4)  # TODO: Failure on Trusty.
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-declarations")
-  endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # TODO: Qt moc offsetof applied to non-POD types is nonstandard.
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if(Qt5Widgets_VERSION_STRING VERSION_LESS 5.4)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-inconsistent-missing-override")
-  endif()
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

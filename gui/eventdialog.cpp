@@ -273,7 +273,7 @@ void EventDialog::setupData(const model::BasicEvent &element)
 {
     setupData(element, element.data());
     typeBox->setCurrentIndex(ext::one_bit_index(BasicEvent) + element.flavor());
-    auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
+    const mef::BasicEvent &basicEvent = *element.data();
     if (basicEvent.HasExpression()) {
         expressionBox->setChecked(true);
         if (auto *constExpr = dynamic_cast<mef::ConstantExpression *>(
