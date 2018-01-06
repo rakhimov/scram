@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,11 @@
 
 #include "analysis.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 Analysis::Analysis(Settings settings)
     : settings_(std::move(settings)), analysis_time_(0) {}
 
 Analysis::~Analysis() = default;  ///< Pure virtual destructor.
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

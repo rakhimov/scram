@@ -48,8 +48,7 @@ namespace Ui {
 class MainWindow;
 }
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 class EventDialog; ///< @todo Static build issues if the header is included.
 
@@ -305,5 +304,4 @@ private:
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

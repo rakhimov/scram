@@ -40,9 +40,7 @@
 
 #include "command.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// Fault tree container element management assuming normalized model.
 /// @{
@@ -719,6 +717,4 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 }
 /// @}
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

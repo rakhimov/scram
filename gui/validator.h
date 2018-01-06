@@ -22,8 +22,7 @@
 
 #include <QValidator>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// Provider of common validators.
 class Validator
@@ -42,5 +41,4 @@ public:
     static const QValidator *nonNegative();
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

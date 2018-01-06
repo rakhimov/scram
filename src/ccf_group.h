@@ -37,8 +37,7 @@
 #include "event.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 class CcfGroup;  // CCF Events know their own groups.
 
@@ -265,5 +264,4 @@ class PhiFactorModel : public CcfGroup {
   ExpressionMap CalculateProbabilities() override;
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

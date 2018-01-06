@@ -25,8 +25,7 @@
 
 #include <QString>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// @returns The path to SCRAM GUI translations directory.
 const std::string &translationsPath();
@@ -44,5 +43,4 @@ std::vector<std::string> translations();
 /// @pre The locale language is a valid human language (not "C").
 QString nativeLanguageName(const std::string &locale);
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

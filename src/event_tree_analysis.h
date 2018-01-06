@@ -31,8 +31,7 @@
 #include "expression/test_event.h"
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Event tree analysis functionality.
 class EventTreeAnalysis : public Analysis {
@@ -103,5 +102,4 @@ class EventTreeAnalysis : public Analysis {
   mef::Context* context_;  ///< The communication channel with test-events.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

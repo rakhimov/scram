@@ -32,8 +32,7 @@
 
 #include "pdag.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 namespace pdag {
 
@@ -1064,5 +1063,4 @@ class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
   void InvertOrder() noexcept;
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

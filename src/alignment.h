@@ -29,8 +29,7 @@
 #include "element.h"
 #include "instruction.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Phases of alignments the models spends its time fraction.
 class Phase : public Element, private boost::noncopyable {
@@ -88,5 +87,4 @@ class Alignment : public Element, private boost::noncopyable {
 
 using AlignmentPtr = std::unique_ptr<Alignment>;  ///< Unique model alignments.
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

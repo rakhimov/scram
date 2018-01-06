@@ -26,8 +26,7 @@
 
 #include <string>
 
-namespace scram {
-namespace env {
+namespace scram::env {
 
 /// @returns The location of the RELAX NG schema for configuration files.
 const std::string& config_schema();
@@ -41,5 +40,4 @@ const std::string& report_schema();
 /// @returns The path to the installation directory.
 const std::string& install_dir();
 
-}  // namespace env
-}  // namespace scram
+}  // namespace scram::env

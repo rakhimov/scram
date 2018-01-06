@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 #include "guiassert.h"
 #include "overload.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 ModelTree::ModelTree(model::Model *model, QObject *parent)
     : QAbstractItemModel(parent), m_model(model)
@@ -139,5 +138,4 @@ QVariant ModelTree::data(const QModelIndex &index, int role) const
     GUI_ASSERT(false, {});
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

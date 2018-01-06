@@ -47,18 +47,16 @@
 #include "ext/index_map.h"
 #include "ext/linear_map.h"
 
-namespace scram {
-
-namespace mef {  // Declarations to decouple from the initialization code.
+namespace scram::mef {  // Declarations to decouple from the MEF initialization.
 class Model;  // Provider of substitutions.
 class Substitution;
 class Gate;
 class BasicEvent;
 class HouseEvent;
 class Formula;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 class Gate;  // An indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
@@ -1215,5 +1213,4 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 ///          Visit information may get changed.
 std::ostream& operator<<(std::ostream& os, Pdag* graph);
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

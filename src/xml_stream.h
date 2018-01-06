@@ -31,8 +31,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace xml {
+namespace scram::xml {
 
 /// Errors in using XML streaming facilities.
 struct StreamError : public Error {
@@ -405,5 +404,4 @@ class Stream {
   detail::FileStream out_;  ///< The output stream.
 };
 
-}  // namespace xml
-}  // namespace scram
+}  // namespace scram::xml

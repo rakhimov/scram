@@ -28,8 +28,7 @@
 
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Base abstract class for all analysis with settings.
 class Analysis : private boost::noncopyable {
@@ -75,5 +74,4 @@ class Analysis : private boost::noncopyable {
   std::string warnings_;  ///< Generated warnings in analysis.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

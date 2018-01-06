@@ -26,8 +26,7 @@
 #include "ext/algorithm.h"
 #include "ext/variant.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Event::~Event() = default;
 
@@ -140,5 +139,4 @@ void Formula::Validate() const {
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

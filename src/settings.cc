@@ -26,8 +26,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 Settings& Settings::algorithm(Algorithm value) noexcept {
   algorithm_ = value;
@@ -160,5 +159,4 @@ Settings& Settings::safety_integrity_levels(bool flag) {
   return *this;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

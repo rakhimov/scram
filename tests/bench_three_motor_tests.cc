@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 
 #include "risk_analysis_tests.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
 TEST_P(RiskAnalysisTest, ThreeMotor) {
@@ -94,6 +92,4 @@ TEST_F(RiskAnalysisTest, ThreeMotorEventTree) {
   }
 }
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

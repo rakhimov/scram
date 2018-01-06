@@ -37,8 +37,7 @@
 #include "settings.h"
 #include "uncertainty_analysis.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
@@ -156,5 +155,4 @@ class RiskAnalysis : public Analysis {
   std::vector<EtaResult> event_tree_results_;  ///< Grouping of sequences.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

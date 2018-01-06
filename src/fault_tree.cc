@@ -22,8 +22,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Component::Component(std::string name, std::string base_path,
                      RoleSpecifier role)
@@ -152,5 +151,4 @@ void FaultTree::MarkNonTopGates(const Formula& formula,
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

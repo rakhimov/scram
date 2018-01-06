@@ -26,8 +26,7 @@
 
 #include "src/risk_analysis.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The report is organized by its top items as analysis identifiers
 /// and its descendant items as analysis result types.
@@ -66,5 +65,4 @@ private:
     const std::vector<core::RiskAnalysis::Result> &m_results; ///< The data.
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

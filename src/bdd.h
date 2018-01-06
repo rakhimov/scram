@@ -36,8 +36,7 @@
 #include "pdag.h"
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// The default management of BDD vertices.
 ///
@@ -988,5 +987,4 @@ class Bdd : private boost::noncopyable {
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

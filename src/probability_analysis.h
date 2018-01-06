@@ -28,13 +28,11 @@
 #include "fault_tree_analysis.h"
 #include "pdag.h"
 
-namespace scram {
-
-namespace mef {
+namespace scram::mef {
 class MissionTime;
-}
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Safety Integrity Level metrics.
 ///
@@ -332,5 +330,4 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   bool owner_;  ///< Indication that pointers are handles.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

@@ -27,8 +27,7 @@
 #include "random.h"
 #include "zbdd.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 RiskAnalysis::RiskAnalysis(mef::Model* model, const Settings& settings)
     : Analysis(settings), model_(model) {}
@@ -176,5 +175,4 @@ void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
   result->probability_analysis = std::move(pa);
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

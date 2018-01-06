@@ -28,8 +28,7 @@
 #include "element.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Provides units for parameters.
 enum Units : std::uint8_t {
@@ -116,5 +115,4 @@ class Parameter : public Expression, public Id, public NodeMark, public Usage {
 
 using ParameterPtr = std::unique_ptr<Parameter>;  ///< Convenience alias.
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

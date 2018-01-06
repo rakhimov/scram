@@ -28,13 +28,11 @@
 #include "probability_analysis.h"
 #include "settings.h"
 
-namespace scram {
-
-namespace mef {  // Decouple from the implementation dependence.
+namespace scram::mef {  // Decouple from the implementation dependence.
 class Expression;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Uncertainty analysis and statistics
 /// for top event or gate probabilities
@@ -158,5 +156,4 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   return samples;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

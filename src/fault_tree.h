@@ -32,8 +32,7 @@
 #include "event.h"
 #include "parameter.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role, private boost::noncopyable {
@@ -180,5 +179,4 @@ class FaultTree : public Component {
 
 using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

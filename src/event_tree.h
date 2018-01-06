@@ -31,8 +31,7 @@
 #include "ext/variant.h"
 #include "instruction.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Representation of sequences in event trees.
 class Sequence : public Element, public Usage {
@@ -240,5 +239,4 @@ class InitiatingEvent : public Element, public Usage {
 /// Unique initiating events in a model.
 using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

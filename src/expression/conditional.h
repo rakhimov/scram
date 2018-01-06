@@ -24,8 +24,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// If-Then-Else ternary expression.
 class Ite : public ExpressionFormula<Ite> {
@@ -76,5 +75,4 @@ class Switch : public ExpressionFormula<Switch> {
   Expression& default_value_;  ///< The default case value.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

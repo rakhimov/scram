@@ -28,8 +28,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Abstract base class for all deviate expressions.
 /// These expressions provide quantification for uncertainty and sensitivity.
@@ -260,5 +259,4 @@ class Histogram : public RandomDeviate {
   IteratorRange weights_;  ///< Weights of the intervals.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

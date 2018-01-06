@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,7 @@
 #include "error.h"
 #include "ext/algorithm.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Element::Element(std::string name) { Element::name(std::move(name)); }
 
@@ -105,5 +104,4 @@ void Id::id(std::string name) {
   id_ = MakeId(*this);
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

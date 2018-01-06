@@ -23,8 +23,7 @@
 
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 ReportTree::ReportTree(const std::vector<core::RiskAnalysis::Result> *results,
                        QObject *parent)
@@ -120,5 +119,4 @@ QVariant ReportTree::data(const QModelIndex &index, int role) const
     GUI_ASSERT(false && "Unexpected analysis report data", {});
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

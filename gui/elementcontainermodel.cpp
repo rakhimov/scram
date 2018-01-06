@@ -27,9 +27,7 @@
 #include "guiassert.h"
 #include "overload.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 template <class T>
 ElementContainerModel::ElementContainerModel(const T &container, Model *model,
@@ -404,6 +402,4 @@ bool GateSortFilterProxyModel::lessThan(const QModelIndex &lhs,
     return QSortFilterProxyModel::lessThan(lhs, rhs);
 }
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

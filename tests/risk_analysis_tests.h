@@ -26,9 +26,7 @@
 
 #include <boost/range/algorithm.hpp>
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
@@ -142,6 +140,4 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   } result_;
 };
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

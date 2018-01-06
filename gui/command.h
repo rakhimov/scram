@@ -48,8 +48,7 @@
 
 #include <QUndoCommand>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The function inverse is the function itself (i.e., f(f(x)) = id(x)).
 /// In other words, undo and redo codes are exactly the same,
@@ -86,5 +85,4 @@ protected:
     using T::T;
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

@@ -25,8 +25,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// The context for test-event expressions.
 struct Context {
@@ -84,5 +83,4 @@ class TestFunctionalEvent : public TestEvent {
   std::string state_;  ///< The state of the functional event.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

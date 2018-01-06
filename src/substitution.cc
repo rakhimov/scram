@@ -23,8 +23,7 @@
 #include "error.h"
 #include "ext/algorithm.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 void Substitution::Add(BasicEvent* source_event) {
   if (ext::any_of(source_, [source_event](BasicEvent* arg) {
@@ -123,5 +122,4 @@ std::optional<Substitution::Type> Substitution::type() const {
   return {};
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

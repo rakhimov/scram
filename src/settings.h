@@ -24,8 +24,7 @@
 
 #include <string_view>
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Qualitative analysis algorithms.
 enum class Algorithm : std::uint8_t { kBdd = 0, kZbdd, kMocus };
@@ -314,5 +313,4 @@ class Settings {
   double cut_off_ = 1e-8;  ///< The cut-off probability for products.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

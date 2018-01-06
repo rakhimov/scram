@@ -37,8 +37,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The Dialog to create, present, and manipulate event data.
 ///
@@ -194,5 +193,4 @@ private:
     bool m_fixContainerName = false; ///< @todo Implement fault tree change.
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

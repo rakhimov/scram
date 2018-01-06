@@ -32,8 +32,7 @@
 #include "element.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Abstract base class for general fault tree events.
 class Event : public Id, public Usage, private boost::noncopyable {
@@ -296,5 +295,4 @@ class Formula : private boost::noncopyable {
   std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

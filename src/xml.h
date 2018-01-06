@@ -56,8 +56,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace xml {
+namespace scram::xml {
 
 namespace detail {  // Internal XML helper functions.
 
@@ -469,5 +468,4 @@ class Validator {
       valid_ctxt_;
 };
 
-}  // namespace xml
-}  // namespace scram
+}  // namespace scram::xml

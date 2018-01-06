@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,7 @@
 
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 Element::SetLabel::SetLabel(Element *element, QString label)
     : Involution(QObject::tr("Set element '%1' label to '%2'")
@@ -224,6 +222,4 @@ Model::RemoveFaultTree::RemoveFaultTree(mef::FaultTree *faultTree, Model *model)
 {
 }
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

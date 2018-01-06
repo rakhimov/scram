@@ -31,9 +31,7 @@
 
 #include "expression/constant.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 const char kLibName[] = "scram_dummy_extern";
 const char kLibRelPath[] = "build/lib/scram/scram_dummy_extern";
@@ -135,6 +133,4 @@ TEST(ExternTest, ExternFunctionApply) {
   EXPECT_EQ(arg_one.value(), identity->apply({&arg_one})->value());
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

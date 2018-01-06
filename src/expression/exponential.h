@@ -25,8 +25,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Negative exponential distribution
 /// with hourly failure rate and time.
@@ -255,5 +254,4 @@ class PeriodicTest : public Expression {
   std::unique_ptr<Flavor> flavor_;  ///< Specialized flavor of calculations.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

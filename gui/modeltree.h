@@ -29,8 +29,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The tree representation for the Model constructs.
 class ModelTree : public QAbstractItemModel
@@ -88,5 +87,4 @@ private:
     boost::container::flat_set<mef::FaultTree *, NameComparator> m_faultTrees;
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

@@ -33,8 +33,7 @@
 #include "element.h"
 #include "error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Validation domain interval for expression values.
 using Interval = boost::icl::continuous_interval<double>;
@@ -350,5 +349,4 @@ inline void EnsureWithin(Expression* expression, const Interval& interval,
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

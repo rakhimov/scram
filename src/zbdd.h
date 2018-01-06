@@ -36,8 +36,7 @@
 #include "bdd.h"
 #include "pdag.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Representation of non-terminal nodes in ZBDD.
 /// Complement variables are represented with negative indices.
@@ -1006,5 +1005,4 @@ class CutSetContainer : public Zbdd {
 
 }  // namespace zbdd
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

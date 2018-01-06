@@ -26,8 +26,7 @@
 
 namespace fs = boost::filesystem;
 
-namespace scram {
-namespace utility {
+namespace scram::utility {
 
 /// Generate unique file path for temporary files.
 inline fs::path GenerateFilePath(const std::string& prefix = "scram_test") {
@@ -35,5 +34,4 @@ inline fs::path GenerateFilePath(const std::string& prefix = "scram_test") {
   return fs::temp_directory_path() / unique_name;
 }
 
-}  // namespace utility
-}  // namespace scram
+}  // namespace scram::utility

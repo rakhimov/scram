@@ -34,8 +34,7 @@
 #include "settings.h"
 #include "zbdd.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// This class analyzes normalized, preprocessed, and indexed fault trees
 /// to generate minimal cut sets with the MOCUS algorithm.
@@ -78,5 +77,4 @@ class Mocus : private boost::noncopyable {
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

@@ -33,9 +33,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// The base class for models to list elements in a table.
 ///
@@ -215,6 +213,4 @@ protected:
     /// @}
 };
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

@@ -21,8 +21,7 @@
 
 #pragma once
 
-namespace scram {
-namespace version {
+namespace scram::version {
 
 /// @returns Git generated tag recent version.
 const char* describe();
@@ -39,5 +38,4 @@ const char* boost();
 /// @returns The version of the XML C library.
 const char* libxml();
 
-}  // namespace version
-}  // namespace scram
+}  // namespace scram::version

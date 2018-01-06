@@ -35,9 +35,7 @@
 #include "instruction.h"
 #include "parameter.h"
 
-namespace scram {
-namespace mef {
-namespace cycle {
+namespace scram::mef::cycle {
 
 /// Determines the connectors between nodes.
 ///
@@ -333,6 +331,4 @@ void CheckCycle(const SinglePassRange& container, const char* type) {
   }
 }
 
-}  // namespace cycle
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::cycle

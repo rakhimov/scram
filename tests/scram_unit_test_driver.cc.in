@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2015, 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,14 @@
 
 #include "risk_analysis_tests.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 INSTANTIATE_TEST_CASE_P(BDD, RiskAnalysisTest, ::testing::Values("bdd"));
 INSTANTIATE_TEST_CASE_P(PI, RiskAnalysisTest, ::testing::Values("pi"));
 INSTANTIATE_TEST_CASE_P(ZBDD, RiskAnalysisTest, ::testing::Values("zbdd"));
 INSTANTIATE_TEST_CASE_P(MOCUS, RiskAnalysisTest, ::testing::Values("mocus"));
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test
 
 int main(int argc, char* argv[]) {
   boost::system::error_code ret;

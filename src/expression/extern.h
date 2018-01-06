@@ -36,8 +36,7 @@
 #include "src/error.h"
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// The MEF construct to extend expressions with external libraries.
 /// This class dynamically loads and manages libraries.
@@ -221,5 +220,4 @@ ExternFunction<R, Args...>::apply(std::vector<Expression*> args) const {
   return std::make_unique<ExternExpression<R, Args...>>(this, std::move(args));
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

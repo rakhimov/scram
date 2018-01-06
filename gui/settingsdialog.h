@@ -30,8 +30,7 @@ namespace Ui {
 class SettingsDialog;
 }
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The dialog to present and set analysis settings.
 class SettingsDialog : public QDialog
@@ -58,5 +57,4 @@ private:
     std::unique_ptr<Ui::SettingsDialog> ui; ///< The dialog UI.
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

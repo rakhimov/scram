@@ -29,8 +29,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Serializes the model and its data into stream as XML.
 ///
@@ -49,5 +48,4 @@ void Serialize(const Model& model, std::FILE* out);
 ///                  or the write operation has failed.
 void Serialize(const Model& model, const std::string& file);
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

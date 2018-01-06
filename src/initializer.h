@@ -48,8 +48,7 @@
 #include "substitution.h"
 #include "xml.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// This class operates on input files
 /// to initialize analysis constructs
@@ -527,5 +526,4 @@ class Initializer : private boost::noncopyable {
   /// @}
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

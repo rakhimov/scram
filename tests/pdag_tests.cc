@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@
 #include "model.h"
 #include "settings.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 TEST(PdagTest, Print) {
   std::unique_ptr<mef::Initializer> init;
@@ -381,6 +379,4 @@ TEST_CONSTANT_ARG(false, 2, Xor, Null)
 #undef TEST_CONSTANT_ARG_VNUM
 #undef TEST_CONSTANT_ARG
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

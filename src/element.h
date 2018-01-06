@@ -30,8 +30,7 @@
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// This struct allows any attribute.
 struct Attribute {
@@ -317,5 +316,4 @@ class Usage {
   bool usage_ = false;  ///< Elements are assumed to be unused at construction.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

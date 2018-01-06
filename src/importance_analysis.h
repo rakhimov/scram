@@ -27,13 +27,11 @@
 #include "probability_analysis.h"
 #include "settings.h"
 
-namespace scram {
-
-namespace mef {  // Decouple from the analysis code header.
+namespace scram::mef {  // Decouple from the analysis code header.
 class BasicEvent;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
@@ -198,5 +196,4 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase {
   Bdd* bdd_graph_;  ///< Binary decision diagram for the analyzer.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

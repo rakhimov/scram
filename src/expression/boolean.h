@@ -24,8 +24,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 using Not = NaryExpression<std::logical_not<>, 1>;  ///< Logical negation.
 using And = NaryExpression<std::logical_and<>, -1>;  ///< Logical conjunction.
@@ -37,5 +36,4 @@ using Gt = NaryExpression<std::greater<>, 2>;  ///< (>) test.
 using Leq = NaryExpression<std::less_equal<>, 2>;  ///< (<=) test.
 using Geq = NaryExpression<std::greater_equal<>, 2>;  ///< (>=) test.
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

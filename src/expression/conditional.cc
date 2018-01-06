@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include <algorithm>
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Interval Ite::interval() noexcept {
   assert(args().size() == 3);
@@ -56,5 +55,4 @@ Interval Switch::interval() noexcept {
   return Interval::closed(min_value, max_value);
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

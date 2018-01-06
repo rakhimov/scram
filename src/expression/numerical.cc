@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include "src/error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// @cond Doxygen_With_Smart_Using_Declaration
 template <>
@@ -73,5 +72,4 @@ Mean::Mean(std::vector<Expression*> args) : ExpressionFormula(std::move(args)) {
     SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."));
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

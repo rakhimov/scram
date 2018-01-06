@@ -24,8 +24,7 @@
 
 namespace fs = boost::filesystem;
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
                              const fs::path& reference_dir, bool system,
@@ -62,5 +61,4 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

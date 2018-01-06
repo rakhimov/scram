@@ -38,8 +38,7 @@
 #include "model.h"
 #include "substitution.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 void NodeParentManager::AddParent(const GatePtr& gate) {
   assert(!parents_.count(gate->index()) && "Adding an existing parent.");
@@ -988,5 +987,4 @@ std::ostream& operator<<(std::ostream& os, Pdag* graph) {
   return os;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

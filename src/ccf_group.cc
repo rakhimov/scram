@@ -29,8 +29,7 @@
 #include "ext/combination_iterator.h"
 #include "ext/float_compare.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
@@ -290,5 +289,4 @@ CcfGroup::ExpressionMap PhiFactorModel::CalculateProbabilities() {
   return probabilities;
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

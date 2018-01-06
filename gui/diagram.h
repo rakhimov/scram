@@ -31,9 +31,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
-namespace diagram {
+namespace scram::gui::diagram {
 
 /// The base class for probabilistic events in a fault tree.
 ///
@@ -206,6 +204,4 @@ private:
     model::Model *m_model; ///< The proxy model providing change signals.
 };
 
-} // namespace diagram
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::diagram

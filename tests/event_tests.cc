@@ -23,9 +23,7 @@
 #include "error.h"
 #include "expression/constant.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 // Test for Event base class.
 TEST(EventTest, Id) {
@@ -276,6 +274,4 @@ TEST(PrimaryEventTest, HouseProbability) {
   EXPECT_FALSE(primary->state());
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

@@ -30,8 +30,7 @@
 #include "element.h"
 #include "event.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// The general representation for
 /// Delete Terms, Recovery Rules, and Exchange Events.
@@ -110,5 +109,4 @@ using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
 const char* const kSubstitutionTypeToString[] = {
     "delete-terms", "recovery-rule", "exchange-event"};
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

@@ -39,8 +39,7 @@
 #include "parameter.h"
 #include "substitution.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// This class represents a risk analysis model.
 class Model : public Element, private boost::noncopyable {
@@ -190,5 +189,4 @@ class Model : public Element, private boost::noncopyable {
   Context context_;  ///< The context to be used by test-event expressions.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

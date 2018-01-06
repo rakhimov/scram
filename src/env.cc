@@ -22,8 +22,7 @@
 
 #include <boost/dll/runtime_symbol_info.hpp>
 
-namespace scram {
-namespace env {
+namespace scram::env {
 
 const std::string& config_schema() {
   static const std::string schema_path =
@@ -52,5 +51,4 @@ const std::string& install_dir() {
   return install_path;
 }
 
-}  // namespace env
-}  // namespace scram
+}  // namespace scram::env

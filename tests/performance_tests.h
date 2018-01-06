@@ -27,9 +27,7 @@
 #include "probability_analysis.h"
 #include "risk_analysis.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 class PerformanceTest : public ::testing::Test {
  protected:
@@ -81,6 +79,4 @@ class PerformanceTest : public ::testing::Test {
   double delta;  // The range indicator for values.
 };
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

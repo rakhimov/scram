@@ -39,8 +39,7 @@
 #include "overload.h"
 #include "validator.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 QString EventDialog::redBackground(QStringLiteral("background : red;"));
 QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
@@ -508,5 +507,4 @@ void EventDialog::setupArgCompleter()
     addArgLine->setCompleter(completer);
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

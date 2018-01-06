@@ -44,8 +44,7 @@
 #include "ext/find_iterator.h"
 #include "logger.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 namespace {  // Helper function and wrappers for MEF initializations.
 
@@ -1916,5 +1915,4 @@ void Initializer::SetupForAnalysis() {
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

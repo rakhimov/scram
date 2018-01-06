@@ -31,8 +31,7 @@ namespace Ui {
 class PreferencesDialog;
 }
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The dialog to present and manage GUI application preferences.
 ///
@@ -69,5 +68,4 @@ private:
     QSettings *m_preferences; ///< The persistent preferences to be saved.
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

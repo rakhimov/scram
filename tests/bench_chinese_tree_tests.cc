@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 
 #include "risk_analysis_tests.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 // Benchmark Tests for Chinese fault tree from XFTA.
 TEST_P(RiskAnalysisTest, ChineseTree) {
@@ -93,6 +91,4 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
   EXPECT_EQ(distr, ProductDistribution());
 }
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

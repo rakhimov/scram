@@ -30,8 +30,7 @@
 #include "event.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 class InstructionVisitor;
 
@@ -231,5 +230,4 @@ void Visitable<T>::Accept(InstructionVisitor* visitor) const {
   visitor->Visit(static_cast<const T*>(this));
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

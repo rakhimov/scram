@@ -26,9 +26,7 @@
 
 #include "src/importance_analysis.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// Table model wrapping the importance analysis result data.
 ///
@@ -59,6 +57,4 @@ private:
     const std::vector<core::ImportanceRecord> &m_data; ///< The analysis result.
 };
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

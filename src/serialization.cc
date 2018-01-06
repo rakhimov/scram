@@ -33,8 +33,7 @@
 #include "fault_tree.h"
 #include "xml_stream.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 void Serialize(const Model& model, const std::string& file) {
   std::unique_ptr<std::FILE, decltype(&std::fclose)> fp(
@@ -203,5 +202,4 @@ void Serialize(const Model& model, std::FILE* out) {
     Serialize(*house_event, &model_data);
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

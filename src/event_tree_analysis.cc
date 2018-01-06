@@ -23,8 +23,7 @@
 #include "ext/find_iterator.h"
 #include "instruction.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 EventTreeAnalysis::EventTreeAnalysis(
     const mef::InitiatingEvent& initiating_event, const Settings& settings,
@@ -239,5 +238,4 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
   Collector{result, &events_}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

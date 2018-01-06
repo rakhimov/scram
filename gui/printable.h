@@ -22,8 +22,7 @@
 
 #include <QPrinter>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// An abstract mixin class for printable objects.
 class Printable
@@ -42,5 +41,4 @@ private:
     virtual void doPrint(QPrinter *printer) = 0;
 };
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

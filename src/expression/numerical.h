@@ -29,8 +29,7 @@
 #include "constant.h"
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Creates a functor out of function pointer to common cmath functions.
 template <double (*F)(double)>
@@ -189,5 +188,4 @@ inline Interval Sin::interval() noexcept {
 /// @}
 /// @endcond
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

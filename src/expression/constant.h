@@ -22,8 +22,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
@@ -47,5 +46,4 @@ class ConstantExpression : public Expression {
   const double value_;  ///< The universal value to represent int, bool, double.
 };
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

@@ -42,9 +42,7 @@
 #include "guiassert.h"
 #include "overload.h"
 
-namespace scram {
-namespace gui {
-namespace diagram {
+namespace scram::gui::diagram {
 
 const QSizeF Event::m_size = {16, 11};
 const double Event::m_baseHeight = 6.5;
@@ -426,6 +424,4 @@ void DiagramScene::redraw()
         link(m_model->gates().find(entry.first)->get());
 }
 
-} // namespace diagram
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::diagram

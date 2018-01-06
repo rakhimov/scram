@@ -22,11 +22,9 @@
 
 #include <Qt>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// Default alignment of numerical values in tables.
 const int ALIGN_NUMBER_IN_TABLE = Qt::AlignRight | Qt::AlignVCenter;
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

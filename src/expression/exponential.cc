@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@
 
 #include "src/error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 namespace {  // Poisson process probability evaluators.
 
@@ -304,5 +303,4 @@ double PeriodicTest::Complete::Sample() noexcept {
                  sigma_.Sample(), omega_.Sample(), time_.Sample());
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

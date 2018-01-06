@@ -35,15 +35,13 @@
 #include "settings.h"
 #include "zbdd.h"
 
-namespace scram {
-
-namespace mef {  // Decouple from the analysis code.
+namespace scram::mef {  // Decouple from the analysis code.
 class Model;  // Provider of substitutions.
 class Gate;
 class BasicEvent;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Event or its complement
 /// that may appear in products.
@@ -315,5 +313,4 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
 };
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

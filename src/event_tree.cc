@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Path::Path(std::string state) : state_(std::move(state)) {
   if (state_.empty())
@@ -66,5 +65,4 @@ void EventTree::Add(NamedBranchPtr branch) {
                                  "Duplicate named branch: ");
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef
