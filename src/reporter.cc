@@ -20,12 +20,13 @@
 
 #include "reporter.h"
 
+#include <ctime>
+
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/date_time.hpp>
 #include <boost/exception/errinfo_errno.hpp>
 #include <boost/exception/errinfo_file_name.hpp>
 #include <boost/exception/errinfo_file_open_mode.hpp>
@@ -271,9 +272,14 @@ void Reporter::ReportSoftwareInformation(xml::StreamElement* information) {
                                    ? version::describe()
                                    : version::core())
       .SetAttribute("contacts", "https://scram-pra.org");
-  namespace pt = boost::posix_time;
-  information->AddChild("time").AddText(
-      pt::to_iso_extended_string(pt::second_clock::universal_time()));
+
+  std::time_t current_time = std::time(nullptr);
+  char iso_extended[20] = {};
+  auto ret = std::strftime(iso_extended, sizeof(iso_extended),
+                           "%Y-%m-%dT%H:%M:%S", std::gmtime(&current_time));
+  assert(ret && "Time formatting failure. Who is running this in year 10000?");
+  if (ret)  // The user can set the wall-clock year beyond 10k.
+    information->AddChild("time").AddText(iso_extended);
 }
 
 void Reporter::ReportModelFeatures(const mef::Model& model,

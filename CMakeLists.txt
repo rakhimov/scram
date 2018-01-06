@@ -152,7 +152,7 @@ if(NOT WIN32)
 endif()
 
 find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
-  program_options filesystem system date_time random
+  program_options filesystem system random
   )
 message(STATUS "Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost Library directories: ${Boost_LIBRARY_DIRS}")

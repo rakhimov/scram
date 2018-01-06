@@ -39,7 +39,6 @@ addons:
             - libboost-math1.61-dev
             - libboost-random1.61-dev
             - libboost-filesystem1.61-dev
-            - libboost-date-time1.61-dev
             - libxml2-dev
             - libgoogle-perftools-dev
             - qtbase5-dev
@@ -85,7 +84,6 @@ jobs:
                       - libboost-math1.61-dev
                       - libboost-random1.61-dev
                       - libboost-filesystem1.61-dev
-                      - libboost-date-time1.61-dev
                       - libxml2-dev
                       - valgrind
                   sources: *Sources
