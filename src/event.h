@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -174,7 +175,7 @@ class Gate : public Event, public NodeMark {
     return *formula_;
   }
   Formula& formula() {
-    return const_cast<Formula&>(static_cast<const Gate*>(this)->formula());
+    return const_cast<Formula&>(std::as_const(*this).formula());
   }
   /// @}
 

@@ -277,8 +277,7 @@ class linear_map {
   }
 
   mapped_type& at(const key_type& key) {
-    return const_cast<mapped_type&>(
-        static_cast<const linear_map*>(this)->at(key));
+    return const_cast<mapped_type&>(std::as_const(*this).at(key));
   }
   /// @}
 

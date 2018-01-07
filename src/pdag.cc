@@ -692,8 +692,8 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
 
 bool Pdag::IsTrivial() noexcept {
   assert(root_.use_count() == 1 && "Graph gate pointers outside of the graph!");
-  /// @todo Enable the code by decouple the order assignment!
-  /* if (static_cast<const Pdag*>(this)->IsTrivial()) */
+  /// @todo Enable the code by decoupling the order assignment!
+  /* if (std::as_const(*this).IsTrivial()) */
   /*   return true; */
   if (root_->type() != kNull)
     return false;
@@ -722,7 +722,7 @@ bool Pdag::IsTrivial() noexcept {
     /// @todo Decouple the order assignment!
     root_->args<Variable>().begin()->second->order(1);
   }
-  assert(static_cast<const Pdag*>(this)->IsTrivial());
+  assert(std::as_const(*this).IsTrivial());
   return true;
 }
 
