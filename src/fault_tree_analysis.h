@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Fault Tree Analysis.
 
-#ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
-#define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
+#pragma once
 
 #include <cstdlib>
 
@@ -36,15 +35,13 @@
 #include "settings.h"
 #include "zbdd.h"
 
-namespace scram {
-
-namespace mef {  // Decouple from the analysis code.
+namespace scram::mef {  // Decouple from the analysis code.
 class Model;  // Provider of substitutions.
 class Gate;
 class BasicEvent;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Event or its complement
 /// that may appear in products.
@@ -316,7 +313,4 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
+}  // namespace scram::core

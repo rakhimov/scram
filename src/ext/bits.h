@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Helper constexpr functions to make bit operations explicit.
 
-#ifndef SCRAM_SRC_EXT_BITS_H_
-#define SCRAM_SRC_EXT_BITS_H_
+#pragma once
 
 namespace ext {
 
@@ -66,5 +65,3 @@ constexpr int one_bit_index(std::uint64_t bits) noexcept {
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_BITS_H_

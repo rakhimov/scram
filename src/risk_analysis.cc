@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 #include "random.h"
 #include "zbdd.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 RiskAnalysis::RiskAnalysis(mef::Model* model, const Settings& settings)
     : Analysis(settings), model_(model) {}
@@ -50,7 +49,7 @@ void RiskAnalysis::Analyze() noexcept {
   }
 }
 
-void RiskAnalysis::RunAnalysis(boost::optional<Context> context) noexcept {
+void RiskAnalysis::RunAnalysis(std::optional<Context> context) noexcept {
   /// Restores the model after application of the context.
   struct Restorator {
     ~Restorator() {
@@ -176,5 +175,4 @@ void RiskAnalysis::RunAnalysis(FaultTreeAnalyzer<Algorithm>* fta,
   result->probability_analysis = std::move(pa);
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

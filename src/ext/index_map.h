@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Non-zero based Index->Value map adapter on sequential containers.
 
-#ifndef SCRAM_SRC_EXT_INDEX_MAP_H_
-#define SCRAM_SRC_EXT_INDEX_MAP_H_
+#pragma once
 
 #include <vector>
 
@@ -56,5 +55,3 @@ class index_map : public Sequence<T> {
 };
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_INDEX_MAP_H_

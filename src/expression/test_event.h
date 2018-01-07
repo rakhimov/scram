@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,14 @@
 /// @file
 /// Event tree analysis expressions to test functional and initiating events.
 
-#ifndef SCRAM_SRC_EXPRESSION_TEST_EVENT_H_
-#define SCRAM_SRC_EXPRESSION_TEST_EVENT_H_
+#pragma once
 
 #include <string>
 #include <unordered_map>
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// The context for test-event expressions.
 struct Context {
@@ -85,7 +83,4 @@ class TestFunctionalEvent : public TestEvent {
   std::string state_;  ///< The state of the functional event.
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_TEST_EVENT_H_
+}  // namespace scram::mef

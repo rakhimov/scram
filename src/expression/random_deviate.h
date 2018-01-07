@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// A collection of deviate expressions with random distributions
 /// sampled at run-time.
 
-#ifndef SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
-#define SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -29,8 +28,7 @@
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Abstract base class for all deviate expressions.
 /// These expressions provide quantification for uncertainty and sensitivity.
@@ -261,7 +259,4 @@ class Histogram : public RandomDeviate {
   IteratorRange weights_;  ///< Weights of the intervals.
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_RANDOM_DEVIATE_H_
+}  // namespace scram::mef

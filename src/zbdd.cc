@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@
 #include "ext/find_iterator.h"
 #include "logger.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 #ifndef NDEBUG
 /// Runs assertions on ZBDD structure.
@@ -943,5 +942,4 @@ void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
 
 }  // namespace zbdd
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

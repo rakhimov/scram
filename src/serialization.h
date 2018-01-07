@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
 /// @note This facility currently caters only models representable in the GUI.
 /// @todo Implement serialization for all MEF constructs.
 
-#ifndef SCRAM_SRC_SERIALIZATION_H_
-#define SCRAM_SRC_SERIALIZATION_H_
+#pragma once
 
 #include <cstdio>
 
@@ -30,8 +29,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Serializes the model and its data into stream as XML.
 ///
@@ -50,7 +48,4 @@ void Serialize(const Model& model, std::FILE* out);
 ///                  or the write operation has failed.
 void Serialize(const Model& model, const std::string& file);
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_SERIALIZATION_H_
+}  // namespace scram::mef

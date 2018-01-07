@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 #include "ext/find_iterator.h"
 #include "instruction.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 EventTreeAnalysis::EventTreeAnalysis(
     const mef::InitiatingEvent& initiating_event, const Settings& settings,
@@ -89,7 +88,7 @@ Clone(const mef::Formula& formula,
   } cloner{set_instructions, clones};
 
   for (const mef::Formula::EventArg& arg : formula.event_args())
-    new_formula->AddArgument(boost::apply_visitor(cloner, arg));
+    new_formula->AddArgument(std::visit(cloner, arg));
   for (const mef::FormulaPtr& arg : formula.formula_args())
     new_formula->AddArgument(Clone(*arg, set_instructions, clones));
   return new_formula;
@@ -227,7 +226,7 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
       for (const mef::Instruction* instruction : branch->instructions())
         instruction->Accept(&visitor);
 
-      boost::apply_visitor(*this, branch->target());
+      std::visit(*this, branch->target());
     }
 
     SequenceCollector* result_;
@@ -239,5 +238,4 @@ void EventTreeAnalysis::CollectSequences(const mef::Branch& initial_state,
   Collector{result, &events_}(&initial_state);  // NOLINT(whitespace/braces)
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

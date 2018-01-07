@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 MissionTime::MissionTime(double time, Units unit) : unit_(unit), value_(time) {
   value(time);
@@ -42,5 +41,4 @@ void Parameter::expression(Expression* expression) {
   Expression::AddArg(expression);
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

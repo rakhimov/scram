@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include <libxml/xinclude.h>
 
-namespace scram {
-namespace xml {
+namespace scram::xml {
 
 Document::Document(const std::string& file_path, Validator* validator)
     : doc_(nullptr, &xmlFreeDoc) {
@@ -64,5 +63,4 @@ Validator::Validator(const std::string& rng_file)
     SCRAM_THROW(detail::GetError<LogicError>());
 }
 
-}  // namespace xml
-}  // namespace scram
+}  // namespace scram::xml

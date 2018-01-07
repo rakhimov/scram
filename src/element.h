@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// Helper classes, structs, and properties
 /// common to all other classes.
 
-#ifndef SCRAM_SRC_ELEMENT_H_
-#define SCRAM_SRC_ELEMENT_H_
+#pragma once
 
 #include <cstdint>
 
@@ -31,8 +30,7 @@
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// This struct allows any attribute.
 struct Attribute {
@@ -318,7 +316,4 @@ class Usage {
   bool usage_ = false;  ///< Elements are assumed to be unused at construction.
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_ELEMENT_H_
+}  // namespace scram::mef

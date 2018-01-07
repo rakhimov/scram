@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 
 #include <libxml/xmlversion.h>
 
-namespace scram {
-namespace version {
+namespace scram::version {
 
 const char* describe() { return "@core_version@"; }
 
@@ -44,5 +43,4 @@ const char* boost() { return BOOST_LIB_VERSION; }
 
 const char* libxml() { return LIBXML_DOTTED_VERSION; }
 
-}  // namespace version
-}  // namespace scram
+}  // namespace scram::version

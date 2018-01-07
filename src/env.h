@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,34 +16,28 @@
  */
 
 /// @file
-/// Environmental Variables
+/// SCRAM-specific environment variables.
+///
+/// All paths are absolute, canonical, and POSIX (with '/' separator).
+///
+/// @pre The system follows the Filesystem Hierarchy Standard.
 
-#ifndef SCRAM_SRC_ENV_H_
-#define SCRAM_SRC_ENV_H_
+#pragma once
 
 #include <string>
 
-namespace scram {
+namespace scram::env {
 
-/// Provides environmental variables.
-class Env {
- public:
-  /// @returns The location of the RELAX NG schema for configuration files.
-  static std::string config_schema();
+/// @returns The location of the RELAX NG schema for configuration files.
+const std::string& config_schema();
 
-  /// @returns The location of the RELAX NG schema for input files.
-  static std::string input_schema();
+/// @returns The location of the RELAX NG schema for input files.
+const std::string& input_schema();
 
-  /// @returns The location of the RELAX NG schema for output report files.
-  static std::string report_schema();
+/// @returns The location of the RELAX NG schema for output report files.
+const std::string& report_schema();
 
-  /// @returns The path to the installation directory.
-  static const std::string& install_dir() { return kInstallDir_; }
+/// @returns The path to the installation directory.
+const std::string& install_dir();
 
- private:
-  static const std::string kInstallDir_;  ///< Installation directory.
-};
-
-}  // namespace scram
-
-#endif  // SCRAM_SRC_ENV_H_
+}  // namespace scram::env

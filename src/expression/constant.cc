@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,13 +22,11 @@
 
 #include <boost/math/constants/constants.hpp>
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 ConstantExpression ConstantExpression::kOne(1);
 ConstantExpression ConstantExpression::kZero(0);
 ConstantExpression ConstantExpression::kPi(  // This line confuses some linters!
     boost::math::constants::pi<double>());
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

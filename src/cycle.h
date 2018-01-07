@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Validation facilities to detect and print cycles in graphs.
 
-#ifndef SCRAM_SRC_CYCLE_H_
-#define SCRAM_SRC_CYCLE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -36,9 +35,7 @@
 #include "instruction.h"
 #include "parameter.h"
 
-namespace scram {
-namespace mef {
-namespace cycle {
+namespace scram::mef::cycle {
 
 /// Determines the connectors between nodes.
 ///
@@ -65,7 +62,7 @@ inline auto GetNodes(const Formula* connector) {
   return connector->event_args() |
          boost::adaptors::transformed(
              [](const Formula::EventArg& event_args) -> Gate* {
-               if (auto* arg = boost::get<Gate*>(&event_args))
+               if (auto* arg = std::get_if<Gate*>(&event_args))
                  return *arg;
                return nullptr;
              }) |
@@ -183,7 +180,7 @@ inline bool ContinueConnector(Branch* connector,
     decltype(cycle) cycle_;
   } continue_connector{cycle};
 
-  return boost::apply_visitor(continue_connector, connector->target());
+  return std::visit(continue_connector, connector->target());
 }
 
 /// Cycle detection specialization for visitor-based traversal of instructions.
@@ -248,7 +245,7 @@ inline bool ContinueConnector(const EventTree* connector,
                               std::vector<Link*>* cycle) {
   struct {
     void operator()(const Branch* branch) {
-      boost::apply_visitor(*this, branch->target());
+      std::visit(*this, branch->target());
     }
     void operator()(Fork* fork) {
       for (Branch& branch : fork->paths())
@@ -334,8 +331,4 @@ void CheckCycle(const SinglePassRange& container, const char* type) {
   }
 }
 
-}  // namespace cycle
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_CYCLE_H_
+}  // namespace scram::mef::cycle

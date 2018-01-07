@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 
 /// @file
 /// The main entrance to the SCRAM GUI.
-
-#include <csignal>
 
 #include <exception>
 #include <iostream>

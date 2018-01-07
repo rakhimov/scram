@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 
 #include "logger.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 Mocus::Mocus(const Pdag* graph, const Settings& settings)
     : graph_(graph), kSettings_(settings) {
@@ -106,5 +105,4 @@ Mocus::AnalyzeModule(const Gate& gate, const Settings& settings) noexcept {
   return container;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

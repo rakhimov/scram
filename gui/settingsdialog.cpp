@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@
 
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 SettingsDialog::SettingsDialog(const core::Settings &initSettings,
                                QWidget *parent)
@@ -138,5 +137,4 @@ void SettingsDialog::setupConnections()
     });
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

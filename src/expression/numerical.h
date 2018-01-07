@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// A collection of numerical expressions.
 /// @note The PI value is located in constant expressions.
 
-#ifndef SCRAM_SRC_EXPRESSION_NUMERICAL_H_
-#define SCRAM_SRC_EXPRESSION_NUMERICAL_H_
+#pragma once
 
 #include <cmath>
 
@@ -30,8 +29,7 @@
 #include "constant.h"
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Creates a functor out of function pointer to common cmath functions.
 template <double (*F)(double)>
@@ -190,7 +188,4 @@ inline Interval Sin::interval() noexcept {
 /// @}
 /// @endcond
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_NUMERICAL_H_
+}  // namespace scram::mef

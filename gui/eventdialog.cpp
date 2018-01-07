@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,7 @@
 #include "overload.h"
 #include "validator.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 QString EventDialog::redBackground(QStringLiteral("background : red;"));
 QString EventDialog::yellowBackground(QStringLiteral("background : yellow;"));
@@ -211,7 +210,7 @@ bool EventDialog::checkCycle(const mef::Gate *gate)
     for (const mef::Formula::EventArg &arg : gate->formula().event_args()) {
         if (ext::as<const mef::Element *>(arg) == m_event)
             return true;
-        if (boost::apply_visitor(visitor, arg))
+        if (std::visit(visitor, arg))
             return true;
     }
     return false;
@@ -273,7 +272,7 @@ void EventDialog::setupData(const model::BasicEvent &element)
 {
     setupData(element, element.data());
     typeBox->setCurrentIndex(ext::one_bit_index(BasicEvent) + element.flavor());
-    auto &basicEvent = static_cast<const mef::BasicEvent &>(*element.data());
+    const mef::BasicEvent &basicEvent = *element.data();
     if (basicEvent.HasExpression()) {
         expressionBox->setChecked(true);
         if (auto *constExpr = dynamic_cast<mef::ConstantExpression *>(
@@ -508,5 +507,4 @@ void EventDialog::setupArgCompleter()
     addArgLine->setCompleter(completer);
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 #include "ext/combination_iterator.h"
 #include "ext/float_compare.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
@@ -65,7 +64,7 @@ void CcfGroup::AddDistribution(Expression* distr) {
     member->expression(distribution_);
 }
 
-void CcfGroup::AddFactor(Expression* factor, boost::optional<int> level) {
+void CcfGroup::AddFactor(Expression* factor, std::optional<int> level) {
   int min_level = this->min_level();
   if (!level)
     level = prev_level_ ? (prev_level_ + 1) : min_level;
@@ -290,5 +289,4 @@ CcfGroup::ExpressionMap PhiFactorModel::CalculateProbabilities() {
   return probabilities;
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

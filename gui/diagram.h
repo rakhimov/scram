@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Graphics classes to draw diagrams.
 
-#ifndef DIAGRAM_H
-#define DIAGRAM_H
+#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -32,9 +31,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
-namespace diagram {
+namespace scram::gui::diagram {
 
 /// The base class for probabilistic events in a fault tree.
 ///
@@ -207,8 +204,4 @@ private:
     model::Model *m_model; ///< The proxy model providing change signals.
 };
 
-} // namespace diagram
-} // namespace gui
-} // namespace scram
-
-#endif // DIAGRAM_H
+} // namespace scram::gui::diagram

@@ -2,13 +2,12 @@
 execute_process(COMMAND git describe --tags OUTPUT_VARIABLE core_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 configure_file(version.cc.in version.cc @ONLY)
-configure_file(env.cc.in env.cc @ONLY)
 ################### End File Configurations ####################
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_SRC
-  ${CMAKE_CURRENT_BINARY_DIR}/env.cc
+  env.cc
   ${CMAKE_CURRENT_BINARY_DIR}/version.cc
   logger.cc
   random.cc

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include "ext/algorithm.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Expression::Expression(std::vector<Expression*> args)
     : args_(std::move(args)), sampled_value_(0), sampled_(false) {}
@@ -48,5 +47,4 @@ bool Expression::IsDeviate() noexcept {
   return ext::any_of(args_, [](Expression* arg) { return arg->IsDeviate(); });
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

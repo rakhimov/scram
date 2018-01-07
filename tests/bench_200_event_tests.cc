@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 
 #include "risk_analysis_tests.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 // Benchmark Tests for auto-generated 200 event fault tree.
 TEST_P(RiskAnalysisTest, 200Event) {
@@ -37,6 +35,4 @@ TEST_P(RiskAnalysisTest, 200Event) {
   EXPECT_EQ(287, products().size());
 }
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

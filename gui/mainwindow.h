@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// The main application window.
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <array>
 #include <functional>
@@ -49,8 +48,7 @@ namespace Ui {
 class MainWindow;
 }
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 class EventDialog; ///< @todo Static build issues if the header is included.
 
@@ -306,7 +304,4 @@ private:
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // MAINWINDOW_H
+} // namespace scram::gui

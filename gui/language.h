@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,14 @@
 /// @file
 /// Localization and translation facilities.
 
-#ifndef LANGUAGE_H
-#define LANGUAGE_H
+#pragma once
 
 #include <string>
 #include <vector>
 
 #include <QString>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// @returns The path to SCRAM GUI translations directory.
 const std::string &translationsPath();
@@ -45,7 +43,4 @@ std::vector<std::string> translations();
 /// @pre The locale language is a valid human language (not "C").
 QString nativeLanguageName(const std::string &locale);
 
-} // namespace gui
-} // namespace scram
-
-#endif // LANGUAGE_H
+} // namespace scram::gui

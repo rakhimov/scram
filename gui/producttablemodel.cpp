@@ -24,9 +24,7 @@
 #include "align.h"
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 ProductTableModel::ProductTableModel(const core::ProductContainer &products,
                                      bool withProbability, QObject *parent)
@@ -112,6 +110,4 @@ QVariant ProductTableModel::data(const QModelIndex &index, int role) const
     GUI_ASSERT(false && "unexpected column", {});
 }
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

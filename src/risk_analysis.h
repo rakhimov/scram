@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,13 @@
 /// @file
 /// Contains the main system for performing analysis.
 
-#ifndef SCRAM_SRC_RISK_ANALYSIS_H_
-#define SCRAM_SRC_RISK_ANALYSIS_H_
+#pragma once
 
 #include <memory>
+#include <optional>
 #include <utility>
+#include <variant>
 #include <vector>
-
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 #include "alignment.h"
 #include "analysis.h"
@@ -39,8 +37,7 @@
 #include "settings.h"
 #include "uncertainty_analysis.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
@@ -55,10 +52,10 @@ class RiskAnalysis : public Analysis {
   struct Result {
     /// The analysis target type as a unique identifier.
     struct Id {
-      boost::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
-                                                 const mef::Sequence&>>
+      std::variant<const mef::Gate*, std::pair<const mef::InitiatingEvent&,
+                                               const mef::Sequence&>>
           target;  ///< The main input to the analysis.
-      boost::optional<Context> context;  ///< Optional analysis context.
+      std::optional<Context> context;  ///< Optional analysis context.
     };
 
     const Id id;  ///< The main analysis input or target.
@@ -77,7 +74,7 @@ class RiskAnalysis : public Analysis {
   /// @todo Replace with query (group_by).
   struct EtaResult {
     const mef::InitiatingEvent& initiating_event;  ///< Unique event per tree.
-    boost::optional<Context> context;  ///< The alignment context.
+    std::optional<Context> context;  ///< The alignment context.
     /// The holder of the analysis.
     std::unique_ptr<const EventTreeAnalysis> event_tree_analysis;
   };
@@ -121,7 +118,7 @@ class RiskAnalysis : public Analysis {
   /// @pre The model is in pristine.
   ///
   /// @post The model is restored to the original state.
-  void RunAnalysis(boost::optional<Context> context = {}) noexcept;
+  void RunAnalysis(std::optional<Context> context = {}) noexcept;
 
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
@@ -158,7 +155,4 @@ class RiskAnalysis : public Analysis {
   std::vector<EtaResult> event_tree_results_;  ///< Grouping of sequences.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_RISK_ANALYSIS_H_
+}  // namespace scram::core

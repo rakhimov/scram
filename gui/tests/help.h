@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Helper workarounds or additions to Qt Test.
 
-#ifndef SCRAM_GUI_TEST_HELP_H
-#define SCRAM_GUI_TEST_HELP_H
+#pragma once
 
 #include <string>
 #include <type_traits>
@@ -87,8 +86,6 @@ public:
         connect(sender, sig, this, &SignalSpy::accept, Qt::DirectConnection);
     }
 
-    SignalSpy(SignalSpy &&); ///< Only to enable RVO. Undefined.
-
 private:
     /// Stores the signal arguments.
     void accept(Ts... args) { this->emplace_back(args...); }
@@ -102,5 +99,3 @@ auto make_spy(const T *sender, void (U::*sig)(Ts...))
 }
 
 } // namespace ext
-
-#endif // SCRAM_GUI_TEST_HELP_H

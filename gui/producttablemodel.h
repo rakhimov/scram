@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Table model for reporting products.
 
-#ifndef PRODUCTTABLEMODEL_H
-#define PRODUCTTABLEMODEL_H
+#pragma once
 
 #include <vector>
 
@@ -27,9 +26,7 @@
 
 #include "src/fault_tree_analysis.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// The table model for immutable analysis products.
 class ProductTableModel : public QAbstractTableModel
@@ -71,8 +68,4 @@ private:
     bool m_withProbability; ///< The flag for probability data inclusion.
 };
 
-} // namespace model
-} // namespace gui
-} // namespace scram
-
-#endif // PRODUCTTABLEMODEL_H
+} // namespace scram::gui::model

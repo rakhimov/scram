@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,7 @@
 #include "error.h"
 #include "settings.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 // Test if the XML is well formed.
 TEST(InitializerTest, XMLFormatting) {
@@ -426,6 +424,4 @@ TEST(InitializerTest, NonDeclarativeSubstitutionsWithAppproximations) {
   EXPECT_THROW(Initializer({input}, core::Settings()), ValidityError);
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

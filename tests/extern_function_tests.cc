@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,7 @@
 
 #include "expression/constant.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 const char kLibName[] = "scram_dummy_extern";
 const char kLibRelPath[] = "build/lib/scram/scram_dummy_extern";
@@ -75,14 +73,14 @@ TEST(ExternTest, ExternLibraryGet) {
   ASSERT_NO_THROW(library = std::make_unique<ExternLibrary>(
                       "dummy", kLibRelPath, cwd_dir, false, true));
 
-  EXPECT_NO_THROW(library->get<int (*)()>("foo"));
-  EXPECT_NO_THROW(library->get<double (*)()>("bar"));
-  EXPECT_NO_THROW(library->get<float (*)()>("baz"));
-  EXPECT_THROW(library->get<int (*)()>("foobar"), UndefinedElement);
+  EXPECT_NO_THROW(library->get<int()>("foo"));
+  EXPECT_NO_THROW(library->get<double()>("bar"));
+  EXPECT_NO_THROW(library->get<float()>("baz"));
+  EXPECT_THROW(library->get<int()>("foobar"), UndefinedElement);
 
-  EXPECT_EQ(42, library->get<int (*)()>("foo")());
-  EXPECT_EQ(42, library->get<double (*)()>("bar")());
-  EXPECT_EQ(42, library->get<float (*)()>("baz")());
+  EXPECT_EQ(42, library->get<int()>("foo")());
+  EXPECT_EQ(42, library->get<double()>("bar")());
+  EXPECT_EQ(42, library->get<float()>("baz")());
 }
 
 TEST(ExternTest, ExternFunction) {
@@ -135,6 +133,4 @@ TEST(ExternTest, ExternFunctionApply) {
   EXPECT_EQ(arg_one.value(), identity->apply({&arg_one})->value());
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Wrapper Model classes for the MEF data.
 
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -41,9 +40,7 @@
 
 #include "command.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// Fault tree container element management assuming normalized model.
 /// @{
@@ -570,7 +567,7 @@ public:
     template <class T>
     class RemoveEvent : public Inverse<AddEvent<T>>
     {
-        static_assert(std::is_base_of<Element, T>::value, "");
+        static_assert(std::is_base_of_v<Element, T>);
 
     public:
         /// Stores model containers and the existing event for removal.
@@ -589,9 +586,9 @@ public:
     template <class E, class T>
     class ChangeEventType : public QUndoCommand
     {
-        static_assert(!std::is_same<E, T>::value, "");
-        static_assert(std::is_base_of<Element, E>::value, "");
-        static_assert(std::is_base_of<Element, T>::value, "");
+        static_assert(!std::is_same_v<E, T>);
+        static_assert(std::is_base_of_v<Element, E>);
+        static_assert(std::is_base_of_v<Element, T>);
 
     public:
         /// Assumes that events have the same ID.
@@ -720,8 +717,4 @@ inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
 }
 /// @}
 
-} // namespace model
-} // namespace gui
-} // namespace scram
-
-#endif // MODEL_H
+} // namespace scram::gui::model

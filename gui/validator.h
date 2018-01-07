@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,11 @@
 /// @file
 /// Collection of validators.
 
-#ifndef VALIDATOR_H
-#define VALIDATOR_H
+#pragma once
 
 #include <QValidator>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// Provider of common validators.
 class Validator
@@ -43,7 +41,4 @@ public:
     static const QValidator *nonNegative();
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // VALIDATOR_H
+} // namespace scram::gui

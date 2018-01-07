@@ -24,9 +24,7 @@
 #include "align.h"
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 ImportanceTableModel::ImportanceTableModel(
     const std::vector<core::ImportanceRecord> *data, QObject *parent)
@@ -108,6 +106,4 @@ QVariant ImportanceTableModel::data(const QModelIndex &index, int role) const
     GUI_ASSERT(false && "unexpected column", {});
 }
 
-} // namespace model
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::model

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 /// Contains functionality to do numerical analysis
 /// of importance factors.
 
-#ifndef SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
-#define SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
+#pragma once
 
 #include <vector>
 
@@ -28,13 +27,11 @@
 #include "probability_analysis.h"
 #include "settings.h"
 
-namespace scram {
-
-namespace mef {  // Decouple from the analysis code header.
+namespace scram::mef {  // Decouple from the analysis code header.
 class BasicEvent;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
@@ -199,7 +196,4 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase {
   Bdd* bdd_graph_;  ///< Binary decision diagram for the analyzer.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
+}  // namespace scram::core

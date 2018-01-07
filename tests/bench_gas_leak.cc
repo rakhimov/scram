@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 
 #include "risk_analysis_tests.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 TEST_F(RiskAnalysisTest, GasLeakReactive) {
   const char* tree_input = "input/EventTrees/gas_leak/gas_leak_reactive.xml";
@@ -50,6 +48,4 @@ TEST_F(RiskAnalysisTest, GasLeak) {
   EXPECT_EQ(2, analysis->event_tree_results().size());
 }
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

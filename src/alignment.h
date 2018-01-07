@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Mission and phase constructs.
 
-#ifndef SCRAM_SRC_ALIGNMENT_H_
-#define SCRAM_SRC_ALIGNMENT_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -30,8 +29,7 @@
 #include "element.h"
 #include "instruction.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Phases of alignments the models spends its time fraction.
 class Phase : public Element, private boost::noncopyable {
@@ -89,7 +87,4 @@ class Alignment : public Element, private boost::noncopyable {
 
 using AlignmentPtr = std::unique_ptr<Alignment>;  ///< Unique model alignments.
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_ALIGNMENT_H_
+}  // namespace scram::mef

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 // This mock class is used to specify
 // return values and samples in a hard coded way.
@@ -1184,6 +1182,4 @@ TEST(ExpressionTest, Switch) {
   EXPECT_DOUBLE_EQ(10, Switch({}, &arg_three).value());
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

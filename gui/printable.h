@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,11 @@
 /// @file
 /// Interface for printable objects.
 
-#ifndef PRINTABLE_H
-#define PRINTABLE_H
+#pragma once
 
 #include <QPrinter>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// An abstract mixin class for printable objects.
 class Printable
@@ -43,7 +41,4 @@ private:
     virtual void doPrint(QPrinter *printer) = 0;
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // PRINTABLE_H
+} // namespace scram::gui

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,13 @@
 /// @file
 /// Builder for settings.
 
-#ifndef SCRAM_SRC_SETTINGS_H_
-#define SCRAM_SRC_SETTINGS_H_
+#pragma once
 
 #include <cstdint>
 
-#include <boost/utility/string_ref.hpp>
+#include <string_view>
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Qualitative analysis algorithms.
 enum class Algorithm : std::uint8_t { kBdd = 0, kZbdd, kMocus };
@@ -73,7 +71,7 @@ class Settings {
   /// @throws SettingsError  The algorithm is not recognized.
   ///
   /// @returns Reference to this object.
-  Settings& algorithm(boost::string_ref value);
+  Settings& algorithm(std::string_view value);
 
   /// @returns The quantitative analysis approximation.
   Approximation approximation() const { return approximation_; }
@@ -88,7 +86,7 @@ class Settings {
   ///                          or inappropriate for analysis.
   /// @{
   Settings& approximation(Approximation value);
-  Settings& approximation(boost::string_ref value);
+  Settings& approximation(std::string_view value);
   /// @}
 
   /// @returns true if prime implicants are to be calculated
@@ -315,7 +313,4 @@ class Settings {
   double cut_off_ = 1e-8;  ///< The cut-off probability for products.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_SETTINGS_H_
+}  // namespace scram::core

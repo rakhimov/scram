@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 /// the Boolean terminology is preferred.
 /// For example, instead of "children", "arguments" are preferred.
 
-#ifndef SCRAM_SRC_PDAG_H_
-#define SCRAM_SRC_PDAG_H_
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -48,18 +47,16 @@
 #include "ext/index_map.h"
 #include "ext/linear_map.h"
 
-namespace scram {
-
-namespace mef {  // Declarations to decouple from the initialization code.
+namespace scram::mef {  // Declarations to decouple from the MEF initialization.
 class Model;  // Provider of substitutions.
 class Substitution;
 class Gate;
 class BasicEvent;
 class HouseEvent;
 class Formula;
-}  // namespace mef
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 class Gate;  // An indexed gate parent of nodes.
 using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in the graph.
@@ -1216,7 +1213,4 @@ std::ostream& operator<<(std::ostream& os, const GatePtr& gate);
 ///          Visit information may get changed.
 std::ostream& operator<<(std::ostream& os, Pdag* graph);
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_PDAG_H_
+}  // namespace scram::core

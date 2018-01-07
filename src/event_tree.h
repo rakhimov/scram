@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +18,20 @@
 /// @file
 /// Event Tree facilities.
 
-#ifndef SCRAM_SRC_EVENT_TREE_H_
-#define SCRAM_SRC_EVENT_TREE_H_
+#pragma once
 
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "ext/variant.h"
 #include "instruction.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Representation of sequences in event trees.
 class Sequence : public Element, public Usage {
@@ -88,7 +86,7 @@ class NamedBranch;
 class Branch {
  public:
   /// The types of possible branch end-points.
-  using Target = boost::variant<Sequence*, Fork*, NamedBranch*>;
+  using Target = std::variant<Sequence*, Fork*, NamedBranch*>;
 
   /// Sets the instructions to execute at the branch.
   void instructions(std::vector<Instruction*> instructions) {
@@ -241,7 +239,4 @@ class InitiatingEvent : public Element, public Usage {
 /// Unique initiating events in a model.
 using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EVENT_TREE_H_
+}  // namespace scram::mef

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,20 +18,20 @@
 /// @file
 /// A facility that processes input files into analysis constructs.
 
-#ifndef SCRAM_SRC_INITIALIZER_H_
-#define SCRAM_SRC_INITIALIZER_H_
+#pragma once
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "alignment.h"
 #include "ccf_group.h"
@@ -48,8 +48,7 @@
 #include "substitution.h"
 #include "xml.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// This class operates on input files
 /// to initialize analysis constructs
@@ -89,11 +88,11 @@ class Initializer : private boost::noncopyable {
   using ExtractorFunction = std::unique_ptr<Expression> (*)(
       const xml::Element::Range&, const std::string&, Initializer*);
   /// Map of expression names and their extractor functions.
-  using ExtractorMap = std::unordered_map<std::string, ExtractorFunction>;
+  using ExtractorMap = std::unordered_map<std::string_view, ExtractorFunction>;
   /// Container for late defined constructs.
   template <class... Ts>
   using TbdContainer =
-      std::vector<std::pair<boost::variant<Ts*...>, xml::Element>>;
+      std::vector<std::pair<std::variant<Ts*...>, xml::Element>>;
   /// Container with full paths to elements.
   ///
   /// @tparam T  The element type.
@@ -328,7 +327,7 @@ class Initializer : private boost::noncopyable {
   /// @returns nullptr if the expression type is not a parameter.
   ///
   /// @throws ValidityError  The parameter variable is not reachable.
-  Expression* GetParameter(const xml::string_view& expr_type,
+  Expression* GetParameter(const std::string_view& expr_type,
                            const xml::Element& expr_element,
                            const std::string& base_path);
 
@@ -527,7 +526,4 @@ class Initializer : private boost::noncopyable {
   /// @}
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_INITIALIZER_H_
+}  // namespace scram::mef

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Table model for reporting importance factors.
 
-#ifndef IMPORTANCETABLEMODEL_H
-#define IMPORTANCETABLEMODEL_H
+#pragma once
 
 #include <vector>
 
@@ -27,9 +26,7 @@
 
 #include "src/importance_analysis.h"
 
-namespace scram {
-namespace gui {
-namespace model {
+namespace scram::gui::model {
 
 /// Table model wrapping the importance analysis result data.
 ///
@@ -60,8 +57,4 @@ private:
     const std::vector<core::ImportanceRecord> &m_data; ///< The analysis result.
 };
 
-} // namespace model
-} // namespace gui
-} // namespace scram
-
-#endif // IMPORTANCETABLEMODEL_H
+} // namespace scram::gui::model

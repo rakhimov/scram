@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 TEST(PhaseTest, TimeFraction) {
   EXPECT_NO_THROW(Phase("phase", 0.5));
@@ -73,6 +71,4 @@ TEST(AlignmentTest, Validation) {
   EXPECT_THROW(alignment.Validate(), ValidityError);
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

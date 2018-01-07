@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,13 @@
 
 #include "settings.h"
 
+#include <string>
+
 #include <boost/range/algorithm.hpp>
 
 #include "error.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 Settings& Settings::algorithm(Algorithm value) noexcept {
   algorithm_ = value;
@@ -42,11 +43,11 @@ Settings& Settings::algorithm(Algorithm value) noexcept {
   return *this;
 }
 
-Settings& Settings::algorithm(boost::string_ref value) {
+Settings& Settings::algorithm(std::string_view value) {
   auto it = boost::find(kAlgorithmToString, value);
   if (it == std::end(kAlgorithmToString))
     SCRAM_THROW(SettingsError("The qualitative analysis algorithm '" +
-                              value.to_string() + "' is not recognized."));
+                              std::string(value) + "' is not recognized."));
   return algorithm(
       static_cast<Algorithm>(std::distance(kAlgorithmToString, it)));
 }
@@ -59,11 +60,11 @@ Settings& Settings::approximation(Approximation value) {
   return *this;
 }
 
-Settings& Settings::approximation(boost::string_ref value) {
+Settings& Settings::approximation(std::string_view value) {
   auto it = boost::find(kApproximationToString, value);
   if (it == std::end(kApproximationToString))
     SCRAM_THROW(SettingsError("The probability approximation '" +
-                              value.to_string() + "'is not recognized."));
+                              std::string(value) + "'is not recognized."));
   return approximation(
       static_cast<Approximation>(std::distance(kApproximationToString, it)));
 }
@@ -158,5 +159,4 @@ Settings& Settings::safety_integrity_levels(bool flag) {
   return *this;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

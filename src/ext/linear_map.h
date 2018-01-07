@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Implementation of a vector-based map for a small number of entries.
 
-#ifndef SCRAM_SRC_EXT_LINEAR_MAP_H_
-#define SCRAM_SRC_EXT_LINEAR_MAP_H_
+#pragma once
 
 #include <cassert>
 
@@ -278,8 +277,7 @@ class linear_map {
   }
 
   mapped_type& at(const key_type& key) {
-    return const_cast<mapped_type&>(
-        static_cast<const linear_map*>(this)->at(key));
+    return const_cast<mapped_type&>(std::as_const(*this).at(key));
   }
   /// @}
 
@@ -429,5 +427,3 @@ class linear_map {
 };
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_LINEAR_MAP_H_

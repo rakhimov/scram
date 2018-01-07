@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Dialog to manage analysis settings.
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#pragma once
 
 #include <memory>
 
@@ -31,8 +30,7 @@ namespace Ui {
 class SettingsDialog;
 }
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The dialog to present and set analysis settings.
 class SettingsDialog : public QDialog
@@ -59,7 +57,4 @@ private:
     std::unique_ptr<Ui::SettingsDialog> ui; ///< The dialog UI.
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // SETTINGSDIALOG_H
+} // namespace scram::gui

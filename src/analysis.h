@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Common facilities for all analysis classes.
 
-#ifndef SCRAM_SRC_ANALYSIS_H_
-#define SCRAM_SRC_ANALYSIS_H_
+#pragma once
 
 #include <cassert>
 
@@ -29,8 +28,7 @@
 
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Base abstract class for all analysis with settings.
 class Analysis : private boost::noncopyable {
@@ -76,7 +74,4 @@ class Analysis : private boost::noncopyable {
   std::string warnings_;  ///< Generated warnings in analysis.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_ANALYSIS_H_
+}  // namespace scram::core

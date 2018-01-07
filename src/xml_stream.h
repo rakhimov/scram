@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Facilities to stream data in XML format.
 
-#ifndef SCRAM_SRC_XML_STREAM_H_
-#define SCRAM_SRC_XML_STREAM_H_
+#pragma once
 
 #include <cassert>
 #include <cstdio>
@@ -32,8 +31,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace xml {
+namespace scram::xml {
 
 /// Errors in using XML streaming facilities.
 struct StreamError : public Error {
@@ -198,15 +196,6 @@ class StreamElement {
   StreamElement(const char* name, detail::Indenter* indenter,
                 detail::FileStream* out)
       : StreamElement(name, 0, nullptr, indenter, out) {}
-
-  /// Move constructor is only declared
-  /// to make the compiler happy.
-  /// The code must rely on the RVO, NRVO, and copy elision
-  /// instead of this constructor.
-  ///
-  /// The constructor is not defined,
-  /// so the use of this constructor will produce a linker error.
-  StreamElement(StreamElement&&);
 
   /// Puts the closing tag.
   ///
@@ -377,7 +366,10 @@ class Stream {
   ///
   /// @note This output file has clean error state.
   explicit Stream(std::FILE* out, bool indent = true)
-      : indenter_(indent), has_root_(false), out_(out) {
+      : indenter_(indent),
+        has_root_(false),
+        uncaught_exceptions_(std::uncaught_exceptions()),
+        out_(out) {
     assert(!std::ferror(out) && "Unclean error state in output destination.");
     out_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   }
@@ -387,7 +379,7 @@ class Stream {
   /// @post The exception is thrown only if no other exception is on flight.
   ~Stream() noexcept(false) {
     int err = std::ferror(out_.file());
-    if (err && !std::uncaught_exception())
+    if (err && (std::uncaught_exceptions() == uncaught_exceptions_))
       SCRAM_THROW(IOError("FILE error on write")) << boost::errinfo_errno(err);
   }
 
@@ -412,10 +404,8 @@ class Stream {
  private:
   detail::Indenter indenter_;  ///< The indentation manager for the document.
   bool has_root_;  ///< The document has constructed its root.
+  int uncaught_exceptions_;  ///< The balance of exceptions.
   detail::FileStream out_;  ///< The output stream.
 };
 
-}  // namespace xml
-}  // namespace scram
-
-#endif  // SCRAM_SRC_XML_STREAM_H_
+}  // namespace scram::xml

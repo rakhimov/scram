@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Parameter expressions that act like a shareable variable.
 
-#ifndef SCRAM_SRC_PARAMETER_H_
-#define SCRAM_SRC_PARAMETER_H_
+#pragma once
 
 #include <cstdint>
 
@@ -29,8 +28,7 @@
 #include "element.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Provides units for parameters.
 enum Units : std::uint8_t {
@@ -117,7 +115,4 @@ class Parameter : public Expression, public Id, public NodeMark, public Usage {
 
 using ParameterPtr = std::unique_ptr<Parameter>;  ///< Convenience alias.
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_PARAMETER_H_
+}  // namespace scram::mef

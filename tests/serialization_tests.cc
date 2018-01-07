@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,10 @@
 #include "settings.h"
 #include "xml.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 TEST(SerializationTest, InputOutput) {
-  static xml::Validator validator(Env::install_dir() + "/share/scram/gui.rng");
+  static xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
       {"tests/input/fta/correct_tree_input.xml"},
@@ -55,6 +53,4 @@ TEST(SerializationTest, InputOutput) {
   }
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

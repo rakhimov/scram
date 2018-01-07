@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,24 +22,22 @@
 /// with alpha, beta, MGL,
 /// or direct parameter assignment in phi model.
 
-#ifndef SCRAM_SRC_CCF_GROUP_H_
-#define SCRAM_SRC_CCF_GROUP_H_
+#pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
 
 #include "element.h"
 #include "event.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 class CcfGroup;  // CCF Events know their own groups.
 
@@ -131,7 +129,7 @@ class CcfGroup : public Id, private boost::noncopyable {
   /// @throws RedefinitionError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
-  void AddFactor(Expression* factor, boost::optional<int> level = {});
+  void AddFactor(Expression* factor, std::optional<int> level = {});
 
   /// Validates the setup for the CCF model and group.
   /// Checks if the provided distribution is between 0 and 1.
@@ -266,7 +264,4 @@ class PhiFactorModel : public CcfGroup {
   ExpressionMap CalculateProbabilities() override;
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_CCF_GROUP_H_
+}  // namespace scram::mef

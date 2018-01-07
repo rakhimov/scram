@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 #include "error.h"
 #include "ext/float_compare.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Phase::Phase(std::string name, double time_fraction)
     : Element(std::move(name)), time_fraction_(time_fraction) {
@@ -46,5 +45,4 @@ void Alignment::Validate() {
                               "' do not sum to 1."));
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

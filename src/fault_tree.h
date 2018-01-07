@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Fault Tree and Component containers.
 
-#ifndef SCRAM_SRC_FAULT_TREE_H_
-#define SCRAM_SRC_FAULT_TREE_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -33,8 +32,7 @@
 #include "event.h"
 #include "parameter.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role, private boost::noncopyable {
@@ -181,7 +179,4 @@ class FaultTree : public Component {
 
 using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_FAULT_TREE_H_
+}  // namespace scram::mef

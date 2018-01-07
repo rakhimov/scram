@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Zero-Suppressed Binary Decision Diagram facilities.
 
-#ifndef SCRAM_SRC_ZBDD_H_
-#define SCRAM_SRC_ZBDD_H_
+#pragma once
 
 #include <cstdint>
 
@@ -37,8 +36,7 @@
 #include "bdd.h"
 #include "pdag.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Representation of non-terminal nodes in ZBDD.
 /// Complement variables are represented with negative indices.
@@ -1007,7 +1005,4 @@ class CutSetContainer : public Zbdd {
 
 }  // namespace zbdd
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_ZBDD_H_
+}  // namespace scram::core

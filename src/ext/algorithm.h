@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Helpful algorithm facilities as an extension to the STL or Boost.
 
-#ifndef SCRAM_SRC_EXT_ALGORITHM_H_
-#define SCRAM_SRC_EXT_ALGORITHM_H_
+#pragma once
 
 #include <algorithm>
 
@@ -80,5 +79,3 @@ bool all_of(const SinglePassRange& rng, UnaryPredicate pred) {
 /// @}
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_ALGORITHM_H_

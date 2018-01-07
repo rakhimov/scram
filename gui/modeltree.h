@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// The main tree representation of the Model.
 
-#ifndef MODELTREE_H
-#define MODELTREE_H
+#pragma once
 
 #include <QAbstractItemModel>
 
@@ -30,8 +29,7 @@
 
 #include "model.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The tree representation for the Model constructs.
 class ModelTree : public QAbstractItemModel
@@ -89,7 +87,4 @@ private:
     boost::container::flat_set<mef::FaultTree *, NameComparator> m_faultTrees;
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // MODELTREE_H
+} // namespace scram::gui

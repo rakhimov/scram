@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,27 +18,25 @@
 /// @file
 /// The MEF Substitution constructs.
 
-#ifndef SCRAM_SRC_SUBSTITUTION_H_
-#define SCRAM_SRC_SUBSTITUTION_H_
+#pragma once
 
 #include <memory>
+#include <optional>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "event.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// The general representation for
 /// Delete Terms, Recovery Rules, and Exchange Events.
 class Substitution : public Element, private boost::noncopyable {
  public:
-  using Target = boost::variant<BasicEvent*, bool>;  ///< The target type.
+  using Target = std::variant<BasicEvent*, bool>;  ///< The target type.
 
   /// The "traditional" substitution types.
   enum Type { kDeleteTerms, kRecoveryRule, kExchangeEvent };
@@ -97,7 +95,7 @@ class Substitution : public Element, private boost::noncopyable {
   /// @returns The equivalent "traditional" substitution type if any.
   ///
   /// @pre The hypothesis, target, and source are all defined and valid.
-  boost::optional<Type> type() const;
+  std::optional<Type> type() const;
 
  private:
   FormulaPtr hypothesis_;  ///< The formula to be satisfied.
@@ -111,7 +109,4 @@ using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
 const char* const kSubstitutionTypeToString[] = {
     "delete-terms", "recovery-rule", "exchange-event"};
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_SUBSTITUTION_H_
+}  // namespace scram::mef

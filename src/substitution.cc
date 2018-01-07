@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 #include "error.h"
 #include "ext/algorithm.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 void Substitution::Add(BasicEvent* source_event) {
   if (ext::any_of(source_, [source_event](BasicEvent* arg) {
@@ -39,7 +38,7 @@ void Substitution::Add(BasicEvent* source_event) {
 void Substitution::Validate() const {
   assert(hypothesis_ && "Missing substitution hypothesis.");
   if (ext::any_of(hypothesis_->event_args(), [](const Formula::EventArg& arg) {
-        return !boost::get<BasicEvent*>(&arg);
+        return !std::holds_alternative<BasicEvent*>(arg);
       })) {
     SCRAM_THROW(ValidityError(
         "Substitution hypothesis must be built over basic events only."));
@@ -58,7 +57,7 @@ void Substitution::Validate() const {
       default:
         SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."));
     }
-    const bool* constant = boost::get<bool>(&target_);
+    const bool* constant = std::get_if<bool>(&target_);
     if (constant && *constant)
       SCRAM_THROW(ValidityError("Substitution has no effect."));
   } else {  // Non-declarative.
@@ -72,17 +71,17 @@ void Substitution::Validate() const {
             ValidityError("Non-declarative substitution hypotheses only allow "
                           "AND/OR/NULL connectives."));
     }
-    const bool* constant = boost::get<bool>(&target_);
+    const bool* constant = std::get_if<bool>(&target_);
     if (constant && !*constant)
       SCRAM_THROW(ValidityError("Substitution source set is irrelevant."));
   }
 }
 
-boost::optional<Substitution::Type> Substitution::type() const {
+std::optional<Substitution::Type> Substitution::type() const {
   auto in_hypothesis = [this](const BasicEvent* source_arg) {
     return ext::any_of(hypothesis_->event_args(),
                        [source_arg](const Formula::EventArg& arg) {
-                         return boost::get<BasicEvent*>(arg) == source_arg;
+                         return std::get<BasicEvent*>(arg) == source_arg;
                        });
   };
 
@@ -98,17 +97,17 @@ boost::optional<Substitution::Type> Substitution::type() const {
   };
 
   if (source_.empty()) {
-    if (const bool* constant = boost::get<bool>(&target_)) {
+    if (const bool* constant = std::get_if<bool>(&target_)) {
       assert(!*constant && "Substitution has no effect.");
       if (is_mutually_exclusive(*hypothesis_))
         return kDeleteTerms;
-    } else if (boost::get<BasicEvent*>(&target_)) {
+    } else if (std::holds_alternative<BasicEvent*>(target_)) {
       if (hypothesis_->type() == kAnd)
         return kRecoveryRule;
     }
     return {};
   }
-  if (!boost::get<BasicEvent*>(&target_))
+  if (!std::holds_alternative<BasicEvent*>(target_))
     return {};
   if (hypothesis_->type() != kAnd && hypothesis_->type() != kNull)
     return {};
@@ -123,5 +122,4 @@ boost::optional<Substitution::Type> Substitution::type() const {
   return {};
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

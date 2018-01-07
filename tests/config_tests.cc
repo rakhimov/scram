@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015, 2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2015, 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace test {
+namespace scram::test {
 
 // Test with a wrong input.
 TEST(ConfigTest, IOError) {
@@ -105,5 +104,4 @@ TEST(ConfigTest, CanonicalPath) {
             config.input_files().back());
 }
 
-}  // namespace test
-}  // namespace scram
+}  // namespace scram::test

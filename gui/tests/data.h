@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,26 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCRAM_GUI_TEST_DATA_H
-#define SCRAM_GUI_TEST_DATA_H
+#pragma once
 
 #include <initializer_list>
+#include <utility>
 
 #include <QtTest>
 
 namespace detail {
-
-/// Tuple with implicit constructor for convenience sake.
-///
-/// @todo Not necessary in C++17.
-template <typename... Ts>
-struct tuple : public std::tuple<Ts...>
-{
-    template <typename... Us>
-    constexpr tuple(Us &&... us) : std::tuple<Ts...>(std::forward<Us>(us)...)
-    {
-    }
-};
 
 /// Initializes columns in the test data table.
 ///
@@ -83,9 +71,8 @@ struct RowInitializer<0>
 /// @param[in] columns  The column names.
 /// @param[in] rows  The row name and data.
 template <typename... Ts>
-void populateData(
-    const char *const (&columns)[sizeof...(Ts)],
-    std::initializer_list<detail::tuple<const char *, Ts...>> rows)
+void populateData(const char *const (&columns)[sizeof...(Ts)],
+                  std::initializer_list<std::tuple<const char *, Ts...>> rows)
 {
     detail::initializeColumns<Ts..., void>(columns);
 
@@ -93,5 +80,3 @@ void populateData(
         detail::RowInitializer<sizeof...(Ts)>{}(QTest::newRow(std::get<0>(row)),
                                                 row);
 }
-
-#endif // SCRAM_GUI_TEST_DATA_H

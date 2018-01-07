@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,8 +53,7 @@ template class ext::linear_map<KeyClass, std::string, ext::MoveEraser,
                                boost::container::vector>;
 #endif
 
-namespace scram {
-namespace test {
+namespace scram::test {
 
 using IntMap = ext::linear_map<int, int>;
 
@@ -320,5 +319,4 @@ TEST(LinearMapTest, Emplace) {
   EXPECT_EQ(expected, m);
 }
 
-}  // namespace test
-}  // namespace scram
+}  // namespace scram::test

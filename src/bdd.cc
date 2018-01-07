@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@
 #include "logger.h"
 #include "zbdd.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 int GetPrimeNumber(int n) {
   assert(n > 0 && "Only natural numbers.");
@@ -371,5 +370,4 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
   TestStructure(ite.low());
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

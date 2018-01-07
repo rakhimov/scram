@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,22 @@
 /// @file
 /// Contains event classes for fault trees.
 
-#ifndef SCRAM_SRC_EVENT_H_
-#define SCRAM_SRC_EVENT_H_
+#pragma once
 
 #include <cstdint>
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
-#include <boost/variant.hpp>
 
 #include "element.h"
 #include "expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 /// Abstract base class for general fault tree events.
 class Event : public Id, public Usage, private boost::noncopyable {
@@ -176,7 +175,7 @@ class Gate : public Event, public NodeMark {
     return *formula_;
   }
   Formula& formula() {
-    return const_cast<Formula&>(static_cast<const Gate*>(this)->formula());
+    return const_cast<Formula&>(std::as_const(*this).formula());
   }
   /// @}
 
@@ -228,7 +227,7 @@ const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
 class Formula : private boost::noncopyable {
  public:
   /// Event arguments of a formula.
-  using EventArg = boost::variant<Gate*, BasicEvent*, HouseEvent*>;
+  using EventArg = std::variant<Gate*, BasicEvent*, HouseEvent*>;
 
   /// Constructs a formula.
   ///
@@ -297,7 +296,4 @@ class Formula : private boost::noncopyable {
   std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EVENT_H_
+}  // namespace scram::mef

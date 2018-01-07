@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 #include "src/ext/find_iterator.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 double TestInitiatingEvent::value() noexcept {
   return context_.initiating_event == name_;
@@ -35,5 +34,4 @@ double TestFunctionalEvent::value() noexcept {
   return false;
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

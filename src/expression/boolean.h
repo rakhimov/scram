@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,13 @@
 /// @file
 /// Boolean expressions.
 
-#ifndef SCRAM_SRC_EXPRESSION_BOOLEAN_H_
-#define SCRAM_SRC_EXPRESSION_BOOLEAN_H_
+#pragma once
 
 #include <functional>
 
 #include "src/expression.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 using Not = NaryExpression<std::logical_not<>, 1>;  ///< Logical negation.
 using And = NaryExpression<std::logical_and<>, -1>;  ///< Logical conjunction.
@@ -38,7 +36,4 @@ using Gt = NaryExpression<std::greater<>, 2>;  ///< (>) test.
 using Leq = NaryExpression<std::less_equal<>, 2>;  ///< (<=) test.
 using Geq = NaryExpression<std::greater_equal<>, 2>;  ///< (>=) test.
 
-}  // namespace mef
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EXPRESSION_BOOLEAN_H_
+}  // namespace scram::mef

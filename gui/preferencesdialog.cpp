@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,7 @@
 #include "language.h"
 #include "overload.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 PreferencesDialog::PreferencesDialog(QSettings *preferences,
                                      QUndoStack *undoStack,
@@ -137,5 +136,4 @@ void PreferencesDialog::setupAutoSave(QTimer *autoSaveTimer)
             });
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

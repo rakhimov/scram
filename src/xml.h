@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 /// @warning Complex XML features are not handled or expected,
 ///          for example, DTD, namespaces, entries.
 
-#ifndef SCRAM_SRC_XML_H_
-#define SCRAM_SRC_XML_H_
+#pragma once
 
 #include <cmath>
 #include <cstdint>
@@ -39,7 +38,9 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #include <boost/exception/errinfo_at_line.hpp>
@@ -47,9 +48,7 @@
 #include <boost/exception/errinfo_file_name.hpp>
 #include <boost/exception/errinfo_file_open_mode.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
-#include <boost/utility/string_ref.hpp>
 
 #include <libxml/parser.h>
 #include <libxml/relaxng.h>
@@ -57,10 +56,7 @@
 
 #include "error.h"
 
-namespace scram {
-namespace xml {
-
-using string_view = boost::string_ref;  ///< Non-owning, immutable string view.
+namespace scram::xml {
 
 namespace detail {  // Internal XML helper functions.
 
@@ -74,42 +70,42 @@ namespace detail {  // Internal XML helper functions.
 ///
 /// @throws ValidityError  Casting is unsuccessful.
 template <typename T>
-std::enable_if_t<std::is_arithmetic<T>::value, T>
-CastValue(const xml::string_view& value);
+std::enable_if_t<std::is_arithmetic_v<T>, T>
+CastValue(const std::string_view& value);
 
 /// Specialization for integer values.
 template <>
-inline int CastValue<int>(const xml::string_view& value) {
+inline int CastValue<int>(const std::string_view& value) {
   char* end_char = nullptr;
   std::int64_t ret = std::strtoll(value.data(), &end_char, 10);
   int len = end_char - value.data();
   if (len != value.size() || ret > std::numeric_limits<int>::max() ||
       ret < std::numeric_limits<int>::min())
-    SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+    SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
                               "' to 'int'."));
   return ret;
 }
 
 /// Specialization for floating point numbers.
 template <>
-inline double CastValue<double>(const xml::string_view& value) {
+inline double CastValue<double>(const std::string_view& value) {
   char* end_char = nullptr;
   double ret = std::strtod(value.data(), &end_char);
   int len = end_char - value.data();
   if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
-    SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+    SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
                               "' to 'double'."));
   return ret;
 }
 
 /// Specialization for Boolean values.
 template <>
-inline bool CastValue<bool>(const xml::string_view& value) {
+inline bool CastValue<bool>(const std::string_view& value) {
   if (value == "true" || value == "1")
     return true;
   if (value == "false" || value == "0")
     return false;
-  SCRAM_THROW(ValidityError("Failed to interpret '" + value.to_string() +
+  SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
                             "' to 'bool'."));
 }
 
@@ -142,15 +138,15 @@ inline const xmlChar* to_utf8(const char* c_string) noexcept {
 /// @returns View to the trimmed substring.
 ///
 /// @pre The string is normalized by the XML parser.
-inline xml::string_view trim(const xml::string_view& text) noexcept {
+inline std::string_view trim(const std::string_view& text) noexcept {
   auto pos_first = text.find_first_not_of(' ');
-  if (pos_first == xml::string_view::npos)
+  if (pos_first == std::string_view::npos)
     return {};
 
   auto pos_last = text.find_last_not_of(' ');
   auto len = pos_last - pos_first + 1;
 
-  return xml::string_view(text.data() + pos_first, len);
+  return std::string_view(text.data() + pos_first, len);
 }
 
 /// Gets the last XML error converted from the library error codes.
@@ -263,9 +259,7 @@ class Element {
   /// @returns The URI of the file containing the element.
   ///
   /// @pre The document has been loaded from a file.
-  xml::string_view filename() const {
-    return detail::from_utf8(element_->doc->URL);
-  }
+  const char* filename() const { return detail::from_utf8(element_->doc->URL); }
 
   /// @returns The line number of the element.
   int line() const { return XML_GET_LINE(to_node()); }
@@ -273,7 +267,7 @@ class Element {
   /// @returns The name of the XML element.
   ///
   /// @pre The element has a name.
-  xml::string_view name() const { return detail::from_utf8(element_->name); }
+  std::string_view name() const { return detail::from_utf8(element_->name); }
 
   /// Retrieves the XML element's attribute values.
   ///
@@ -284,7 +278,7 @@ class Element {
   ///
   /// @pre XML attributes never contain empty strings.
   /// @pre XML attribute values are simple texts w/o DTD processing.
-  xml::string_view attribute(const char* name) const {
+  std::string_view attribute(const char* name) const {
     const xmlAttr* property = xmlHasProp(to_node(), detail::to_utf8(name));
     if (!property)
       return {};
@@ -309,7 +303,7 @@ class Element {
   /// @returns The XML element's text.
   ///
   /// @pre The Element has text.
-  xml::string_view text() const {
+  std::string_view text() const {
     const xmlNode* text_node = element_->children;
     while (text_node && text_node->type != XML_TEXT_NODE)
       text_node = text_node->next;
@@ -329,17 +323,17 @@ class Element {
   ///
   /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
-  std::enable_if_t<std::is_arithmetic<T>::value, boost::optional<T>>
+  std::enable_if_t<std::is_arithmetic_v<T>, std::optional<T>>
   attribute(const char* name) const {
-    xml::string_view value = attribute(name);
+    std::string_view value = attribute(name);
     if (value.empty())
       return {};
     try {
       return detail::CastValue<T>(value);
     } catch (ValidityError& err) {
-      err << errinfo_element(Element::name().to_string())
+      err << errinfo_element(std::string(Element::name()))
           << errinfo_attribute(name) << boost::errinfo_at_line(line())
-          << boost::errinfo_file_name(filename().to_string());
+          << boost::errinfo_file_name(filename());
       throw;
     }
   }
@@ -354,13 +348,13 @@ class Element {
   ///
   /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
-  std::enable_if_t<std::is_arithmetic<T>::value, T> text() const {
+  std::enable_if_t<std::is_arithmetic_v<T>, T> text() const {
     try {
       return detail::CastValue<T>(text());
     } catch (ValidityError& err) {
-      err << errinfo_element(name().to_string())
+      err << errinfo_element(std::string(name()))
           << boost::errinfo_at_line(line())
-          << boost::errinfo_file_name(filename().to_string());
+          << boost::errinfo_file_name(filename());
       throw;
     }
   }
@@ -369,7 +363,7 @@ class Element {
   ///                  Empty string to request any first child element.
   ///
   /// @returns The first child element (with the given name).
-  boost::optional<Element> child(xml::string_view name = "") const {
+  std::optional<Element> child(std::string_view name = "") const {
     for (Element element : children()) {
       if (name.empty() || name == element.name())
         return element;
@@ -385,7 +379,7 @@ class Element {
   /// @returns The range of Element children with the given name.
   ///
   /// @pre The name must live at least as long as the returned range lives.
-  auto children(xml::string_view name) const {
+  auto children(std::string_view name) const {
     return children() |
            boost::adaptors::filtered([name](const Element& element) {
              return element.name() == name;
@@ -474,7 +468,4 @@ class Validator {
       valid_ctxt_;
 };
 
-}  // namespace xml
-}  // namespace scram
-
-#endif  // SCRAM_SRC_XML_H_
+}  // namespace scram::xml

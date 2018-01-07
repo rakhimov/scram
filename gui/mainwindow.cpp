@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,8 +66,7 @@
 #include "settingsdialog.h"
 #include "validator.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The dialog to set the model name.
 class NameDialog : public QDialog, public Ui::NameDialog
@@ -100,9 +99,8 @@ public:
     explicit WaitDialog(QWidget *parent) : QProgressDialog(parent)
     {
         setFixedSize(size());
-        setWindowFlags(static_cast<Qt::WindowFlags>(
-            windowFlags() | Qt::MSWindowsFixedSizeDialogHint
-            | Qt::FramelessWindowHint));
+        setWindowFlags(windowFlags() | Qt::MSWindowsFixedSizeDialogHint
+                       | Qt::FramelessWindowHint);
         setCancelButton(nullptr);
         setRange(0, 0);
         setMinimumDuration(0);
@@ -288,7 +286,7 @@ bool MainWindow::setConfig(const std::string &configPath,
 
 bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 {
-    static xml::Validator validator(Env::install_dir()
+    static xml::Validator validator(env::install_dir()
                                     + "/share/scram/gui.rng");
 
     if (inputFiles.empty())
@@ -583,7 +581,7 @@ void MainWindow::setupStartPage()
 {
     auto *startPage = new StartPage(this);
     QString examplesDir =
-        QString::fromStdString(Env::install_dir() + "/share/scram/input");
+        QString::fromStdString(env::install_dir() + "/share/scram/input");
     startPage->exampleModelsButton->setEnabled(QDir(examplesDir).exists());
     connect(startPage->newModelButton, &QAbstractButton::clicked,
             ui->actionNewModel, &QAction::trigger);
@@ -890,7 +888,7 @@ void MainWindow::setupZoomableView(ZoomableView *view)
 template <class T>
 void MainWindow::setupPrintableView(T *view)
 {
-    static_assert(std::is_base_of<QObject, T>::value, "Missing QObject");
+    static_assert(std::is_base_of_v<QObject, T>, "Missing QObject");
     struct PrintFilter : public QObject
     {
         PrintFilter(T *printable, MainWindow *window)
@@ -1656,5 +1654,4 @@ void MainWindow::resetReportTree(std::unique_ptr<core::RiskAnalysis> analysis)
     m_analysis = std::move(analysis);
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

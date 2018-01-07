@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,12 +31,11 @@
 
 #include "guiassert.h"
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 const std::string &translationsPath()
 {
-    static const std::string tsPath(scram::Env::install_dir()
+    static const std::string tsPath(scram::env::install_dir()
                                     + "/share/scram/translations");
     return tsPath;
 }
@@ -78,5 +77,4 @@ QString nativeLanguageName(const std::string &locale)
     return language;
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

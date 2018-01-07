@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,9 +42,7 @@
 #include "guiassert.h"
 #include "overload.h"
 
-namespace scram {
-namespace gui {
-namespace diagram {
+namespace scram::gui::diagram {
 
 const QSizeF Event::m_size = {16, 11};
 const double Event::m_baseHeight = 6.5;
@@ -224,7 +222,7 @@ Gate::Gate(model::Gate *event, model::Model *model,
     double linkY = (m_size.height() - 1) * units().height();
     std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
     for (const mef::Formula::EventArg &eventArg : event->args()) {
-        auto *child = boost::apply_visitor(formula_visitor, eventArg);
+        auto *child = std::visit(formula_visitor, eventArg);
         auto *link = new QGraphicsLineItem(0, 0, 0, units().height(), this);
         if (!children.empty())
             m_width += m_space * units().height();
@@ -417,7 +415,7 @@ void DiagramScene::redraw()
         connect(gate, &model::Gate::formulaChanged, this, &DiagramScene::redraw,
                 Qt::UniqueConnection);
         for (const mef::Formula::EventArg &arg : gate->args())
-            boost::apply_visitor(visitor, arg);
+            std::visit(visitor, arg);
     };
 
     /// @todo Finer signal tracking.
@@ -426,6 +424,4 @@ void DiagramScene::redraw()
         link(m_model->gates().find(entry.first)->get());
 }
 
-} // namespace diagram
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui::diagram

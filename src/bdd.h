@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Olzhas Rakhimov
+ * Copyright (C) 2015-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Fault tree analysis with the Binary Decision Diagram algorithms.
 
-#ifndef SCRAM_SRC_BDD_H_
-#define SCRAM_SRC_BDD_H_
+#pragma once
 
 #include <cmath>
 
@@ -37,8 +36,7 @@
 #include "pdag.h"
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// The default management of BDD vertices.
 ///
@@ -989,7 +987,4 @@ class Bdd : private boost::noncopyable {
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_BDD_H_
+}  // namespace scram::core

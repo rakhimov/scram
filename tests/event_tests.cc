@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,7 @@
 #include "error.h"
 #include "expression/constant.h"
 
-namespace scram {
-namespace mef {
-namespace test {
+namespace scram::mef::test {
 
 // Test for Event base class.
 TEST(EventTest, Id) {
@@ -97,11 +95,11 @@ TEST(FormulaTest, EventArguments) {
   // Re-adding a child must cause an error.
   EXPECT_THROW(top->AddArgument(&first_child), ValidityError);
   // Check the contents of the children container.
-  EXPECT_EQ(&first_child, boost::get<BasicEvent*>(top->event_args().front()));
+  EXPECT_EQ(&first_child, std::get<BasicEvent*>(top->event_args().front()));
   // Adding another child.
   EXPECT_NO_THROW(top->AddArgument(&second_child));
   EXPECT_EQ(2, top->event_args().size());
-  EXPECT_EQ(&second_child, boost::get<BasicEvent*>(top->event_args().back()));
+  EXPECT_EQ(&second_child, std::get<BasicEvent*>(top->event_args().back()));
 
   EXPECT_NO_THROW(top->RemoveArgument(&first_child));
   EXPECT_EQ(1, top->num_args());
@@ -276,6 +274,4 @@ TEST(PrimaryEventTest, HouseProbability) {
   EXPECT_FALSE(primary->state());
 }
 
-}  // namespace test
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef::test

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// Contains functionality to do numerical analysis of probabilities.
 
-#ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
-#define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
+#pragma once
 
 #include <utility>
 #include <vector>
@@ -29,13 +28,11 @@
 #include "fault_tree_analysis.h"
 #include "pdag.h"
 
-namespace scram {
-
-namespace mef {
+namespace scram::mef {
 class MissionTime;
-}
+}  // namespace scram::mef
 
-namespace core {
+namespace scram::core {
 
 /// Safety Integrity Level metrics.
 ///
@@ -333,7 +330,4 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   bool owner_;  ///< Indication that pointers are handles.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_PROBABILITY_ANALYSIS_H_
+}  // namespace scram::core

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <cassert>
 
 #include <memory>
+#include <string_view>
 
 #include <boost/predef.h>
 
@@ -54,7 +55,7 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 }  // namespace
 
 Config::Config(const std::string& config_file) {
-  static xml::Validator validator(Env::config_schema());
+  static xml::Validator validator(env::config_schema());
 
   if (fs::exists(config_file) == false) {
     SCRAM_THROW(IOError("The configuration file does not exist."))
@@ -67,8 +68,8 @@ Config::Config(const std::string& config_file) {
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);
 
-  if (boost::optional<xml::Element> out = root.child("output-path")) {
-    output_path_ = normalize(out->text().to_string(), base_path);
+  if (std::optional<xml::Element> out = root.child("output-path")) {
+    output_path_ = normalize(std::string(out->text()), base_path);
   }
 
   try {
@@ -81,17 +82,18 @@ Config::Config(const std::string& config_file) {
 
 void Config::GatherInputFiles(const xml::Element& root,
                               const fs::path& base_path) {
-  boost::optional<xml::Element> input_files = root.child("input-files");
+  std::optional<xml::Element> input_files = root.child("input-files");
   if (!input_files)
     return;
   for (xml::Element input_file : input_files->children()) {
     assert(input_file.name() == "file");
-    input_files_.push_back(normalize(input_file.text().to_string(), base_path));
+    input_files_.push_back(
+        normalize(std::string(input_file.text()), base_path));
   }
 }
 
 void Config::GatherOptions(const xml::Element& root) {
-  boost::optional<xml::Element> options_element = root.child("options");
+  std::optional<xml::Element> options_element = root.child("options");
   if (!options_element)
     return;
   // The loop is used instead of query
@@ -99,7 +101,7 @@ void Config::GatherOptions(const xml::Element& root) {
   // yet this function should not know what the order is.
   for (xml::Element option_group : options_element->children()) {
     try {
-      xml::string_view name = option_group.name();
+      std::string_view name = option_group.name();
       if (name == "algorithm") {
         settings_.algorithm(option_group.attribute("name"));
 
@@ -117,7 +119,7 @@ void Config::GatherOptions(const xml::Element& root) {
       throw;
     }
   }
-  if (boost::optional<xml::Element> analysis_group =
+  if (std::optional<xml::Element> analysis_group =
           options_element->child("analysis")) {
     try {
       SetAnalysis(*analysis_group);
@@ -130,7 +132,7 @@ void Config::GatherOptions(const xml::Element& root) {
 
 void Config::SetAnalysis(const xml::Element& analysis) {
   auto set_flag = [&analysis](const char* tag, auto setter) {
-    if (boost::optional<bool> flag = analysis.attribute<bool>(tag))
+    if (std::optional<bool> flag = analysis.attribute<bool>(tag))
       setter(*flag);
   };
   set_flag("probability",
@@ -146,7 +148,7 @@ void Config::SetAnalysis(const xml::Element& analysis) {
 
 void Config::SetLimits(const xml::Element& limits) {
   for (xml::Element limit : limits.children()) {
-    xml::string_view name = limit.name();
+    std::string_view name = limit.name();
     if (name == "product-order") {
       settings_.limit_order(limit.text<int>());
 

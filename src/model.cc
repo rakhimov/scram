@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,7 @@
 #include "ext/find_iterator.h"
 #include "ext/multi_index.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 const char Model::kDefaultName[] = "__unnamed-model__";
 
@@ -160,5 +159,4 @@ FaultTreePtr Model::Remove(FaultTree* fault_tree) {
   return ext::extract(it, &fault_trees_);
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@
 #include "ext/algorithm.h"
 #include "ext/variant.h"
 
-namespace scram {
-namespace mef {
+namespace scram::mef {
 
 Event::~Event() = default;
 
@@ -56,11 +55,12 @@ void Gate::Validate() const {
   }
   int num_conditional = boost::count_if(
       formula_->event_args(), [](const Formula::EventArg& event) {
-        if (!boost::get<BasicEvent*>(&event))
-          return false;
-        auto& basic_event = boost::get<BasicEvent*>(event);
-        return basic_event->HasAttribute("flavor") &&
-               basic_event->GetAttribute("flavor").value == "conditional";
+        if (BasicEvent* const* basic_event = std::get_if<BasicEvent*>(&event)) {
+          return (*basic_event)->HasAttribute("flavor") &&
+                 (*basic_event)->GetAttribute("flavor").value == "conditional";
+        }
+
+        return false;
       });
   if (num_conditional != 1)
     SCRAM_THROW(ValidityError(Element::name() + " : INHIBIT gate must have" +
@@ -139,5 +139,4 @@ void Formula::Validate() const {
   }
 }
 
-}  // namespace mef
-}  // namespace scram
+}  // namespace scram::mef

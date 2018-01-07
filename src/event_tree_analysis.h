@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,7 @@
 /// @file
 /// Event tree analysis facilities.
 
-#ifndef SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
-#define SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -32,8 +31,7 @@
 #include "expression/test_event.h"
 #include "settings.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 /// Event tree analysis functionality.
 class EventTreeAnalysis : public Analysis {
@@ -104,7 +102,4 @@ class EventTreeAnalysis : public Analysis {
   mef::Context* context_;  ///< The communication channel with test-events.
 };
 
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_SRC_EVENT_TREE_ANALYSIS_H_
+}  // namespace scram::core

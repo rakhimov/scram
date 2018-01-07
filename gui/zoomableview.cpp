@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
 
 #include <QMatrix>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 void ZoomableView::setZoom(int level)
 {
@@ -64,5 +63,4 @@ void ZoomableView::wheelEvent(QWheelEvent *event)
     }
 }
 
-} // namespace gui
-} // namespace scram
+} // namespace scram::gui

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,15 +42,13 @@
 ///    after its corresponding constructive/destructive commands are destroyed
 ///    (e.g., by being popped/removed from the undo stack).
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#pragma once
 
 #include <type_traits>
 
 #include <QUndoCommand>
 
-namespace scram {
-namespace gui {
+namespace scram::gui {
 
 /// The function inverse is the function itself (i.e., f(f(x)) = id(x)).
 /// In other words, undo and redo codes are exactly the same,
@@ -74,7 +72,7 @@ public:
 template <class T>
 class Inverse : public T
 {
-    static_assert(std::is_base_of<QUndoCommand, T>::value, "");
+    static_assert(std::is_base_of_v<QUndoCommand, T>);
 
 public:
     /// Applies the command.
@@ -87,7 +85,4 @@ protected:
     using T::T;
 };
 
-} // namespace gui
-} // namespace scram
-
-#endif // COMMAND_H
+} // namespace scram::gui

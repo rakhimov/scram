@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,7 @@
 #include "reporter.h"
 #include "xml.h"
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 const std::set<std::set<std::string>> RiskAnalysisTest::kUnity = {
     std::set<std::string>{}};
@@ -55,7 +53,7 @@ void RiskAnalysisTest::ProcessInputFiles(
 }
 
 void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
-  static xml::Validator validator(Env::report_schema());
+  static xml::Validator validator(env::report_schema());
 
   ASSERT_NO_THROW(ProcessInputFiles(tree_input));
   ASSERT_NO_THROW(analysis->Analyze());
@@ -631,6 +629,4 @@ TEST_P(RiskAnalysisTest, ExternFunctionProbability) {
   EXPECT_DOUBLE_EQ(0.1, p_total());
 }
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core::test

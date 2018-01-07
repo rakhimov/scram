@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,8 +38,7 @@
 #include "model.h"
 #include "substitution.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 void NodeParentManager::AddParent(const GatePtr& gate) {
   assert(!parents_.count(gate->index()) && "Adding an existing parent.");
@@ -521,7 +520,7 @@ void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
   } formula_visitor{this, ccf, nodes};
 
   for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
-    boost::apply_visitor(formula_visitor, event_arg);
+    std::visit(formula_visitor, event_arg);
   }
 
   for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
@@ -553,7 +552,7 @@ void Pdag::GatherVariables(const mef::Substitution& substitution, bool ccf,
     GatherVariables(*event, ccf, nodes);
   }
 
-  if (auto* target = boost::get<mef::BasicEvent*>(&substitution.target()))
+  if (auto* target = std::get_if<mef::BasicEvent*>(&substitution.target()))
     GatherVariables(**target, ccf, nodes);
 }
 
@@ -621,7 +620,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
   for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
-    boost::apply_visitor(
+    std::visit(
         [&](const auto* event) { this->AddArg(parent, *event, ccf, nodes); },
         event_arg);
   }
@@ -639,10 +638,10 @@ GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,
   auto implication = std::make_shared<Gate>(kOr, this);
   implication->AddArg(ConstructGate(substitution.hypothesis(), ccf, nodes),
                       /*complement=*/true);
-  if (auto* target = boost::get<mef::BasicEvent*>(&substitution.target())) {
+  if (auto* target = std::get_if<mef::BasicEvent*>(&substitution.target())) {
     AddArg(implication, **target, ccf, nodes);
   } else {
-    assert(!*boost::get<bool>(&substitution.target()) && "Invalid delete term");
+    assert(!*std::get_if<bool>(&substitution.target()) && "Not a delete term");
     implication->type(kNull);
   }
   return implication;
@@ -652,10 +651,10 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
                                ProcessedNodes* nodes) noexcept {
   assert(!substitution.declarative() && "Only non-declarative substitutions.");
   int target = [&substitution, &nodes] {
-    if (auto* event = boost::get<mef::BasicEvent*>(&substitution.target()))
+    if (auto* event = std::get_if<mef::BasicEvent*>(&substitution.target()))
       return nodes->variables.find(*event)->second->index();
 
-    assert(*boost::get<bool>(&substitution.target()) && "Invalid delete term");
+    assert(*std::get_if<bool>(&substitution.target()) && "Invalid delete term");
     return 0;
   }();
 
@@ -669,7 +668,7 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
       std::vector<int> args;
       for (const mef::Formula::EventArg& arg :
            substitution.hypothesis().event_args()) {
-        auto* event = boost::get<mef::BasicEvent*>(&arg);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg);
         assert(event);
         args.push_back(nodes->variables.find(*event)->second->index());
       }
@@ -679,7 +678,7 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
     case mef::kOr: {
       for (const mef::Formula::EventArg& arg :
            substitution.hypothesis().event_args()) {
-        auto* event = boost::get<mef::BasicEvent*>(&arg);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg);
         assert(event);
         substitutions_.push_back(
             {{nodes->variables.find(*event)->second->index()}, source, target});
@@ -693,8 +692,8 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
 
 bool Pdag::IsTrivial() noexcept {
   assert(root_.use_count() == 1 && "Graph gate pointers outside of the graph!");
-  /// @todo Enable the code by decouple the order assignment!
-  /* if (static_cast<const Pdag*>(this)->IsTrivial()) */
+  /// @todo Enable the code by decoupling the order assignment!
+  /* if (std::as_const(*this).IsTrivial()) */
   /*   return true; */
   if (root_->type() != kNull)
     return false;
@@ -723,7 +722,7 @@ bool Pdag::IsTrivial() noexcept {
     /// @todo Decouple the order assignment!
     root_->args<Variable>().begin()->second->order(1);
   }
-  assert(static_cast<const Pdag*>(this)->IsTrivial());
+  assert(std::as_const(*this).IsTrivial());
   return true;
 }
 
@@ -988,5 +987,4 @@ std::ostream& operator<<(std::ostream& os, Pdag* graph) {
   return os;
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

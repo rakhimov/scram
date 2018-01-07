@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 /// @file
 /// n-choose-k combination generation facilities.
 
-#ifndef SCRAM_SRC_EXT_COMBINATION_ITERATOR_H_
-#define SCRAM_SRC_EXT_COMBINATION_ITERATOR_H_
+#pragma once
 
 #include <algorithm>
 #include <iterator>
@@ -93,5 +92,3 @@ auto make_combination_generator(int k, Iterator first1, Iterator last1) {
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_COMBINATION_ITERATOR_H_

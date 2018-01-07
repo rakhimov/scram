@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
-#define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
+#pragma once
 
 #include "risk_analysis.h"
 
@@ -27,9 +26,7 @@
 
 #include <boost/range/algorithm.hpp>
 
-namespace scram {
-namespace core {
-namespace test {
+namespace scram::core::test {
 
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
@@ -143,8 +140,4 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   } result_;
 };
 
-}  // namespace test
-}  // namespace core
-}  // namespace scram
-
-#endif  // SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
+}  // namespace scram::core::test

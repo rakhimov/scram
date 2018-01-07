@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,8 +89,7 @@
 #include "ext/find_iterator.h"
 #include "logger.h"
 
-namespace scram {
-namespace core {
+namespace scram::core {
 
 namespace pdag {
 
@@ -2409,5 +2408,4 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
     var->order(shift + var->order());
 }
 
-}  // namespace core
-}  // namespace scram
+}  // namespace scram::core

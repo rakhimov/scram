@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Olzhas Rakhimov
+ * Copyright (C) 2016-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 
 #include <gtest/gtest.h>
 
-namespace scram {
-namespace xml {
-namespace test {
+namespace scram::xml::test {
 
 /// This fixture provides document stream for tests.
 class XmlStreamTest : public ::testing::Test {
@@ -107,6 +105,4 @@ TEST_F(XmlStreamTest, InactiveParent) {
   EXPECT_NO_THROW(el.AddChild("another_child"));
 }
 
-}  // namespace test
-}  // namespace xml
-}  // namespace scram
+}  // namespace scram::xml::test

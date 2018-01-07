@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,11 @@
  */
 
 /// @file
-/// Extra helper functions for boost::variant.
+/// Extra helper functions for std::variant.
 
-#ifndef SCRAM_SRC_EXT_VARIANT_H_
-#define SCRAM_SRC_EXT_VARIANT_H_
+#pragma once
 
-#include <boost/variant.hpp>
+#include <variant>
 
 namespace ext {
 
@@ -34,11 +33,8 @@ namespace ext {
 ///
 /// @returns The stored value cast to the type T.
 template <typename T, typename... Ts>
-T as(const boost::variant<Ts...>& var) {
-  return boost::apply_visitor([](auto& arg) { return static_cast<T>(arg); },
-                              var);
+T as(const std::variant<Ts...>& var) {
+  return std::visit([](auto& arg) { return static_cast<T>(arg); }, var);
 }
 
 }  // namespace ext
-
-#endif  // SCRAM_SRC_EXT_VARIANT_H_
