@@ -366,7 +366,10 @@ class Stream {
   ///
   /// @note This output file has clean error state.
   explicit Stream(std::FILE* out, bool indent = true)
-      : indenter_(indent), has_root_(false), out_(out) {
+      : indenter_(indent),
+        has_root_(false),
+        uncaught_exceptions_(std::uncaught_exceptions()),
+        out_(out) {
     assert(!std::ferror(out) && "Unclean error state in output destination.");
     out_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   }
@@ -376,7 +379,7 @@ class Stream {
   /// @post The exception is thrown only if no other exception is on flight.
   ~Stream() noexcept(false) {
     int err = std::ferror(out_.file());
-    if (err && !std::uncaught_exception())
+    if (err && (std::uncaught_exceptions() == uncaught_exceptions_))
       SCRAM_THROW(IOError("FILE error on write")) << boost::errinfo_errno(err);
   }
 
@@ -401,6 +404,7 @@ class Stream {
  private:
   detail::Indenter indenter_;  ///< The indentation manager for the document.
   bool has_root_;  ///< The document has constructed its root.
+  int uncaught_exceptions_;  ///< The balance of exceptions.
   detail::FileStream out_;  ///< The output stream.
 };
 
