@@ -150,35 +150,36 @@ class ExternFunction : public ExternFunctionBase {
 
 namespace detail {  // Helpers for extern function call with Expression values.
 
+/// Evaluates the argument expressions and marshals the result to function.
 /// Marshaller of expressions to extern function calls.
 ///
 /// @tparam N  The number of arguments.
 ///
+/// @param[in] self  The extern function to be called with the argument values.
+/// @param[in] args  The argument expressions.
+/// @param[in] eval  The evaluator of the expressions.
+/// @param[in] values  The results of expression evaluation.
+///
+/// @returns The result of the function call.
+///
 /// @pre The number of arguments is exactly the same at runtime.
-template <int N>
-struct Marshaller {
-  /// Evaluates the argument expressions and marshals the result to function.
-  template <typename F, typename R, typename... Ts, typename... Args>
-  R operator()(const ExternFunction<R, Args...>& self,
-               const std::vector<Expression*>& args, F&& eval,
-               Ts&&... values) const noexcept {
-    double value = eval(args[N - 1]);
-    return Marshaller<N - 1>()(self, args, std::forward<F>(eval), value,
-                               std::forward<Ts>(values)...);
-  }
-};
+template <int N, typename F, typename R, typename... Ts, typename... Args>
+R Marshal(const ExternFunction<R, Args...>& self,
+          const std::vector<Expression*>& args, F&& eval,
+          Ts&&... values) noexcept {
+  static_assert(N >= 0);
+  assert(args.size() >= N);
 
-/// Specialization to call the extern function with argument values.
-template <>
-struct Marshaller<0> {
-  /// Calls the extern function with the argument values.
-  template <typename F, typename R, typename... Ts, typename... Args>
-  R operator()(const ExternFunction<R, Args...>& self,
-               const std::vector<Expression*>&, F&&, Ts&&... values) const
-      noexcept {
+  if constexpr (N == 0) {
+    assert(args.size() == sizeof...(values) && "Incorrect number of args.");
     return self(std::forward<Ts>(values)...);
+
+  } else {
+    double value = eval(args[N - 1]);
+    return Marshal<N - 1>(self, args, std::forward<F>(eval), value,
+                          std::forward<Ts>(values)...);
   }
-};
+}
 
 }  // namespace detail
 
@@ -206,7 +207,7 @@ class ExternExpression
   /// Computes the extern function with the given evaluator for arguments.
   template <typename F>
   double Compute(F&& eval) noexcept {
-    return detail::Marshaller<sizeof...(Args)>()(
+    return detail::Marshal<sizeof...(Args)>(
         extern_function_, Expression::args(), std::forward<F>(eval));
   }
 
