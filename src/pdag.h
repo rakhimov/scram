@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <iosfwd>
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -370,7 +371,15 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @returns The map container of the gate arguments with the given type.
   template <class T>
-  const ArgMap<T>& args();
+  const ArgMap<T>& args() {
+    if constexpr (std::is_same_v<T, Gate>) {
+      return gate_args_;
+
+    } else {
+      static_assert(std::is_same_v<T, Variable>, "No container for const args");
+      return variable_args_;
+    }
+  }
 
   /// Provides const access to gate arguments
   /// w/o exposing the shared pointers.
@@ -744,18 +753,6 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// nullptr if the gate doesn't have the Constant argument.
   ConstantPtr constant_;
 };
-
-/// @returns The Gate type arguments of a gate.
-template <>
-inline const Gate::ArgMap<Gate>& Gate::args<Gate>() {
-  return gate_args_;
-}
-
-/// @returns The Variable type arguments of a gate.
-template <>
-inline const Gate::ArgMap<Variable>& Gate::args<Variable>() {
-  return variable_args_;
-}
 
 /// Specialization to handle Boolean constants in arguments.
 /// @copydoc Gate::AddArg
