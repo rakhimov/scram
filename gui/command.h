@@ -72,7 +72,7 @@ public:
 template <class T>
 class Inverse : public T
 {
-    static_assert(std::is_base_of<QUndoCommand, T>::value, "");
+    static_assert(std::is_base_of<QUndoCommand, T>::value);
 
 public:
     /// Applies the command.

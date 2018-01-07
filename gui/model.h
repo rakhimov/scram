@@ -567,7 +567,7 @@ public:
     template <class T>
     class RemoveEvent : public Inverse<AddEvent<T>>
     {
-        static_assert(std::is_base_of<Element, T>::value, "");
+        static_assert(std::is_base_of<Element, T>::value);
 
     public:
         /// Stores model containers and the existing event for removal.
@@ -586,9 +586,9 @@ public:
     template <class E, class T>
     class ChangeEventType : public QUndoCommand
     {
-        static_assert(!std::is_same<E, T>::value, "");
-        static_assert(std::is_base_of<Element, E>::value, "");
-        static_assert(std::is_base_of<Element, T>::value, "");
+        static_assert(!std::is_same<E, T>::value);
+        static_assert(std::is_base_of<Element, E>::value);
+        static_assert(std::is_base_of<Element, T>::value);
 
     public:
         /// Assumes that events have the same ID.
