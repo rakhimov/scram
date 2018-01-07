@@ -30,6 +30,7 @@ This project adheres to the following coding styles:
 Deviations from the GCSG
 ------------------------
 
+- Use ``pragma once`` instead of header guards.
 - Exceptions are allowed.
 - Name mutator functions without ``set_`` prefix.
 - Multiple *implementation* inheritance is allowed (mostly for mixins).
@@ -60,36 +61,11 @@ Deviations from the Qt Style
     * Sections are grouped by a blank line.
     * Within each section the includes are ordered alphabetically.
 
-- Class Format:
+- The GCSG-style `declaration order`_ in class definition.
 
-    * Section order:
+- Use ``nullptr`` instead of literal ``0`` or ``NULL``.
 
-        #. ``public:`` member functions
-        #. ``signals:`` (public by default in Qt5)
-        #. ``public slots:``
-        #. ``protected:`` member functions
-        #. ``protected slots:``
-        #. ``private:`` member functions
-        #. ``private slots:``
-        #. ``private:`` all data members
-
-    * No blank lines after access specifiers.
-
-    * One blank line before access specifiers except for the first one.
-
-    * Declaration order (the GCSG style):
-
-        #. Using declarations, Typedefs, Structs/Classes, and Enums.
-        #. Static const data members
-        #. Constructors
-        #. Destructors
-        #. Methods
-        #. Data members
-
-- Automatic connection of signals and slots is forbidden.
-
-- Using literal ``0`` for pointers is forbidden.
-  Only ``nullptr`` is allowed for null pointers.
+.. _declaration order: https://google.github.io/styleguide/cppguide.html#Declaration_Order
 
 
 Additional Coding Conventions
@@ -247,10 +223,6 @@ GUI Code
 
 - Avoid default arguments in signals and slots.
 
-- Prefer Qt5 style connections without ``SIGNAL``/``SLOT`` macros.
-
-- Prefer normalized signatures in connect statements with ``SIGNAL``/``SLOT`` macros.
-
 - Prefer Qt Designer UI forms over hand-coded GUI.
 
 - Common Qt includes may be omitted,
@@ -261,6 +233,8 @@ GUI Code
 
 - Avoid ``qobject_cast`` and its flavors.
   Avoid the RTTI in general.
+
+- Automatic (implicit) connection of signals and slots is forbidden.
 
 
 Monitoring Code Quality
