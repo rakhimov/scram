@@ -103,7 +103,7 @@ void AttachLabelAndAttributes(const xml::Element& xml_element,
 
 /// Constructs Element of type T from an XML element.
 template <class T>
-std::enable_if_t<std::is_base_of<Element, T>::value, std::unique_ptr<T>>
+std::enable_if_t<std::is_base_of_v<Element, T>, std::unique_ptr<T>>
 ConstructElement(const xml::Element& xml_element) {
   auto element =
       std::make_unique<T>(std::string(xml_element.attribute("name")));
@@ -113,7 +113,7 @@ ConstructElement(const xml::Element& xml_element) {
 
 /// Constructs Element of type T with a role from an XML element.
 template <class T>
-std::enable_if_t<std::is_base_of<Role, T>::value, std::unique_ptr<T>>
+std::enable_if_t<std::is_base_of_v<Role, T>, std::unique_ptr<T>>
 ConstructElement(const xml::Element& xml_element, const std::string& base_path,
                  RoleSpecifier base_role) {
   auto element =
@@ -1075,9 +1075,8 @@ constexpr int num_args(std::true_type) {
 }
 
 template <class T>
-constexpr std::enable_if_t<std::is_base_of<Expression, T>::value, int>
-num_args() {
-  static_assert(!std::is_default_constructible<T>::value, "No zero args.");
+constexpr std::enable_if_t<std::is_base_of_v<Expression, T>, int> num_args() {
+  static_assert(!std::is_default_constructible_v<T>, "No zero args.");
   return num_args<T>(std::is_constructible<T, std::vector<Expression*>>());
 }
 /// @}

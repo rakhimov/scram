@@ -888,7 +888,7 @@ void MainWindow::setupZoomableView(ZoomableView *view)
 template <class T>
 void MainWindow::setupPrintableView(T *view)
 {
-    static_assert(std::is_base_of<QObject, T>::value, "Missing QObject");
+    static_assert(std::is_base_of_v<QObject, T>, "Missing QObject");
     struct PrintFilter : public QObject
     {
         PrintFilter(T *printable, MainWindow *window)

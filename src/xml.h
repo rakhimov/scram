@@ -70,7 +70,7 @@ namespace detail {  // Internal XML helper functions.
 ///
 /// @throws ValidityError  Casting is unsuccessful.
 template <typename T>
-std::enable_if_t<std::is_arithmetic<T>::value, T>
+std::enable_if_t<std::is_arithmetic_v<T>, T>
 CastValue(const std::string_view& value);
 
 /// Specialization for integer values.
@@ -323,7 +323,7 @@ class Element {
   ///
   /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
-  std::enable_if_t<std::is_arithmetic<T>::value, std::optional<T>>
+  std::enable_if_t<std::is_arithmetic_v<T>, std::optional<T>>
   attribute(const char* name) const {
     std::string_view value = attribute(name);
     if (value.empty())
@@ -348,7 +348,7 @@ class Element {
   ///
   /// @throws ValidityError  Casting is unsuccessful.
   template <typename T>
-  std::enable_if_t<std::is_arithmetic<T>::value, T> text() const {
+  std::enable_if_t<std::is_arithmetic_v<T>, T> text() const {
     try {
       return detail::CastValue<T>(text());
     } catch (ValidityError& err) {

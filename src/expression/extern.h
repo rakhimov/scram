@@ -119,7 +119,7 @@ using ExternFunctionBase = ExternFunction<void>;  ///< To help Doxygen.
 /// @pre The source dynamic library is loaded as long as this function lives.
 template <typename R, typename... Args>
 class ExternFunction : public ExternFunctionBase {
-  static_assert(std::is_arithmetic<R>::value, "Numeric type functions only.");
+  static_assert(std::is_arithmetic_v<R>, "Numeric type functions only.");
 
   using Pointer = R (*)(Args...);  ///< The function pointer type.
 
