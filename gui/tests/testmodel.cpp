@@ -78,7 +78,7 @@ void TestModel::testElementLabelChange()
     const char *name = "pump";
     mef::BasicEvent event(name);
     gui::model::BasicEvent proxy(&event);
-    auto spy = ext::make_spy(&proxy, &gui::model::Element::labelChanged);
+    auto spy = ext::SignalSpy(&proxy, &gui::model::Element::labelChanged);
 
     TEST_EQ(event.name(), name);
     TEST_EQ(event.id(), name);
@@ -118,7 +118,7 @@ void TestModel::testModelSetName()
     QVERIFY(!model.name().empty());
 
     const char *name = "model";
-    auto spy = ext::make_spy(&proxy, &gui::model::Model::modelNameChanged);
+    auto spy = ext::SignalSpy(&proxy, &gui::model::Model::modelNameChanged);
 
     gui::model::Model::SetName setter(name, &proxy);
     setter.redo();
@@ -151,9 +151,9 @@ void TestModel::testAddFaultTree()
     QVERIFY(model.fault_trees().empty());
     QVERIFY(proxyModel.faultTrees().empty());
 
-    auto spyAdd = ext::make_spy(
+    auto spyAdd = ext::SignalSpy(
         &proxyModel, OVERLOAD(gui::model::Model, added, mef::FaultTree *));
-    auto spyRemove = ext::make_spy(
+    auto spyRemove = ext::SignalSpy(
         &proxyModel, OVERLOAD(gui::model::Model, removed, mef::FaultTree *));
 
     auto *address = faultTree.get();
@@ -188,9 +188,9 @@ void TestModel::testRemoveFaultTree()
     gui::model::Model proxyModel(&model);
     TEST_EQ(proxyModel.faultTrees().size(), 1);
 
-    auto spyAdd = ext::make_spy(
+    auto spyAdd = ext::SignalSpy(
         &proxyModel, OVERLOAD(gui::model::Model, added, mef::FaultTree *));
-    auto spyRemove = ext::make_spy(
+    auto spyRemove = ext::SignalSpy(
         &proxyModel, OVERLOAD(gui::model::Model, removed, mef::FaultTree *));
 
     gui::model::Model::RemoveFaultTree remover(address, &proxyModel);
@@ -310,9 +310,9 @@ void TestModel::testAddEvent()
     QVERIFY(proxyModel.table<T>().empty());
 
     auto spyAdd =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added, T *));
+        ext::SignalSpy(&proxyModel, OVERLOAD(gui::model::Model, added, T *));
     auto spyRemove =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed, T *));
+        ext::SignalSpy(&proxyModel, OVERLOAD(gui::model::Model, removed, T *));
 
     auto event = std::make_unique<E>("pump");
     auto *address = event.get();
@@ -362,9 +362,9 @@ void TestModel::testRemoveEvent()
     QCOMPARE(proxyEvent->data(), address);
 
     auto spyAdd =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, added, T *));
+        ext::SignalSpy(&proxyModel, OVERLOAD(gui::model::Model, added, T *));
     auto spyRemove =
-        ext::make_spy(&proxyModel, OVERLOAD(gui::model::Model, removed, T *));
+        ext::SignalSpy(&proxyModel, OVERLOAD(gui::model::Model, removed, T *));
 
     gui::model::Model::RemoveEvent<T> remover(proxyEvent, &proxyModel,
                                               faultTree);
@@ -396,7 +396,7 @@ void TestModel::testHouseEventState()
     QCOMPARE(proxy.state(), false);
     TEST_EQ(proxy.state<QString>(), "False");
 
-    auto spy = ext::make_spy(&proxy, &gui::model::HouseEvent::stateChanged);
+    auto spy = ext::SignalSpy(&proxy, &gui::model::HouseEvent::stateChanged);
     gui::model::HouseEvent::SetState setter(&proxy, true);
     setter.redo();
     TEST_EQ(spy.size(), 1);
@@ -429,7 +429,7 @@ void TestModel::testBasicEventSetFlavor()
     QVERIFY(event.attributes().empty());
     QCOMPARE(proxy.flavor(), gui::model::BasicEvent::Basic);
 
-    auto spy = ext::make_spy(&proxy, &gui::model::BasicEvent::flavorChanged);
+    auto spy = ext::SignalSpy(&proxy, &gui::model::BasicEvent::flavorChanged);
     auto value = gui::model::BasicEvent::Undeveloped;
     gui::model::BasicEvent::SetFlavor setter(&proxy, value);
     setter.redo();
@@ -477,7 +477,7 @@ void TestModel::testBasicEventSetExpression()
     double value = 0.1;
     mef::ConstantExpression prob(value);
     auto spy =
-        ext::make_spy(&proxy, &gui::model::BasicEvent::expressionChanged);
+        ext::SignalSpy(&proxy, &gui::model::BasicEvent::expressionChanged);
     gui::model::BasicEvent::SetExpression setter(&proxy, &prob);
     setter.redo();
     QCOMPARE(prob.value(), value);
@@ -535,7 +535,7 @@ void TestModel::testGateSetFormula()
 
     auto formula = std::make_unique<mef::Formula>(mef::kNull);
     auto *address = formula.get();
-    auto spy = ext::make_spy(&proxy, &gui::model::Gate::formulaChanged);
+    auto spy = ext::SignalSpy(&proxy, &gui::model::Gate::formulaChanged);
     gui::model::Gate::SetFormula setter(&proxy, std::move(formula));
     setter.redo();
     TEST_EQ(spy.size(), 1);
@@ -597,7 +597,7 @@ void TestModel::testEventSetId()
     TEST_EQ(proxyEvent->id(), oldName);
 
     const char newName[] = "valve";
-    auto spy = ext::make_spy(proxyEvent, &gui::model::Element::idChanged);
+    auto spy = ext::SignalSpy(proxyEvent, &gui::model::Element::idChanged);
     gui::model::Element::SetId<T> setter(proxyEvent, newName, &model,
                                          faultTree);
     setter.redo();
