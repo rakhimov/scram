@@ -36,9 +36,6 @@ namespace scram::core {
 
 namespace pdag {
 
-/// The terminal case for graph transformations.
-inline void Transform(Pdag* /*graph*/) {}
-
 /// Applies graph transformations consecutively.
 ///
 /// @param[in,out] graph  The graph to be transformed.
@@ -48,8 +45,11 @@ template <typename T, typename... Ts>
 void Transform(Pdag* graph, T&& unary_op, Ts&&... unary_ops) noexcept {
   if (graph->IsTrivial())
     return;
+
   unary_op(graph);
-  Transform(graph, std::forward<Ts>(unary_ops)...);
+
+  if constexpr (sizeof...(unary_ops))
+    Transform(graph, std::forward<Ts>(unary_ops)...);
 }
 
 /// Determines the order of traversal for gate arguments.
