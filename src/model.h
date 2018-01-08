@@ -24,8 +24,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "alignment.h"
 #include "ccf_group.h"
 #include "element.h"
@@ -42,7 +40,7 @@
 namespace scram::mef {
 
 /// This class represents a risk analysis model.
-class Model : public Element, private boost::noncopyable {
+class Model : public Element {
  public:
   /// Only Model is allowed to have an optional name,
   /// while all other Elements require names.

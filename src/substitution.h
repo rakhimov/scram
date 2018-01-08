@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "element.h"
 #include "event.h"
 
@@ -34,7 +32,7 @@ namespace scram::mef {
 
 /// The general representation for
 /// Delete Terms, Recovery Rules, and Exchange Events.
-class Substitution : public Element, private boost::noncopyable {
+class Substitution : public Element {
  public:
   using Target = std::variant<BasicEvent*, bool>;  ///< The target type.
 

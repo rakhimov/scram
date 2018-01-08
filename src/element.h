@@ -29,6 +29,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace scram::mef {
 
@@ -43,7 +44,7 @@ struct Attribute {
 /// any element of analysis
 /// that can have extra descriptions,
 /// such as attributes and a label.
-class Element {
+class Element : private boost::noncopyable {
  public:
   /// Constructs an element with an original name.
   /// The name is expected to conform to identifier requirements

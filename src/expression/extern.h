@@ -29,7 +29,6 @@
 #include <boost/exception/errinfo_nested_exception.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/system/system_error.hpp>
 
 #include "src/element.h"
@@ -41,7 +40,7 @@ namespace scram::mef {
 /// The MEF construct to extend expressions with external libraries.
 /// This class dynamically loads and manages libraries.
 /// It supports only very basic interface for C function lookup with its symbol.
-class ExternLibrary : public Element, public Usage, private boost::noncopyable {
+class ExternLibrary : public Element, public Usage {
  public:
   /// @copydoc Element::Element
   ///
@@ -87,8 +86,7 @@ class ExternFunction;  // Forward declaration to specialize abstract base.
 ///
 /// The base acts as a factory for generating expressions with given arguments.
 template <>
-class ExternFunction<void>
-    : public Element, public Usage, private boost::noncopyable {
+class ExternFunction<void> : public Element, public Usage {
  public:
   using Element::Element;
 

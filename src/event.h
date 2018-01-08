@@ -36,7 +36,7 @@
 namespace scram::mef {
 
 /// Abstract base class for general fault tree events.
-class Event : public Id, public Usage, private boost::noncopyable {
+class Event : public Id, public Usage {
  public:
   using Id::Id;
 
