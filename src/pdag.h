@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <iosfwd>
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -370,7 +371,15 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @returns The map container of the gate arguments with the given type.
   template <class T>
-  const ArgMap<T>& args();
+  const ArgMap<T>& args() {
+    if constexpr (std::is_same_v<T, Gate>) {
+      return gate_args_;
+
+    } else {
+      static_assert(std::is_same_v<T, Variable>, "No container for const args");
+      return variable_args_;
+    }
+  }
 
   /// Provides const access to gate arguments
   /// w/o exposing the shared pointers.
@@ -745,18 +754,6 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ConstantPtr constant_;
 };
 
-/// @returns The Gate type arguments of a gate.
-template <>
-inline const Gate::ArgMap<Gate>& Gate::args<Gate>() {
-  return gate_args_;
-}
-
-/// @returns The Variable type arguments of a gate.
-template <>
-inline const Gate::ArgMap<Variable>& Gate::args<Variable>() {
-  return variable_args_;
-}
-
 /// Specialization to handle Boolean constants in arguments.
 /// @copydoc Gate::AddArg
 template <>
@@ -986,9 +983,14 @@ class Pdag : private boost::noncopyable {
   /// @tparam Mark  The kind of the mark.
   template <NodeMark Mark>
   void Clear() noexcept {
-    Clear<kGateMark>();
-    Clear<Mark>(root_);
-    Clear<kGateMark>();
+    if constexpr (Mark == kGateMark) {
+      Clear<kGateMark>(root_);
+
+    } else {
+      Clear<kGateMark>();
+      Clear<Mark>(root_);
+      Clear<kGateMark>();
+    }
   }
 
   /// Determines the proper "clear" state for the graph node mark,
@@ -1148,50 +1150,36 @@ void TraverseNodes(const GatePtr& gate, T&& visit) noexcept {
 }
 /// @}
 
-/// Specializations for various node mark clearance operations.
-///
-/// @param[in,out] gate  The starting gate.
-/// @{
-template <>
-inline void Pdag::Clear<Pdag::kGateMark>(const GatePtr& gate) noexcept {
-  TraverseGates<false>(gate, [](auto&&) {});
-}
-template <>
-inline void Pdag::Clear<Pdag::kVisit>(const GatePtr& gate) noexcept {
-  TraverseNodes(gate, [](auto&& node) {
-    if (node->Visited())
-      node->ClearVisits();
-  });
-}
-template <>
-inline void Pdag::Clear<Pdag::kOptiValue>(const GatePtr& gate) noexcept {
-  TraverseNodes(gate, [](auto&& node) { node->opti_value(0); });
-}
-template <>
-inline void Pdag::Clear<Pdag::kCount>(const GatePtr& gate) noexcept {
-  TraverseNodes(gate, [](auto&& node) { node->ResetCount(); });
-}
-template <>
-inline void Pdag::Clear<Pdag::kDescendant>(const GatePtr& gate) noexcept {
-  TraverseGates(gate, [](const GatePtr& arg) { arg->descendant(0); });
-}
-template <>
-inline void Pdag::Clear<Pdag::kAncestor>(const GatePtr& gate) noexcept {
-  TraverseGates(gate, [](const GatePtr& arg) { arg->ancestor(0); });
-}
-template <>
-inline void Pdag::Clear<Pdag::kOrder>(const GatePtr& gate) noexcept {
-  TraverseNodes(gate, [](auto&& node) {
-    if (node->order())
-      node->order(0);
-  });
-}
-/// @}
+template <Pdag::NodeMark Mark>
+void Pdag::Clear(const GatePtr& gate) noexcept {
+  if constexpr (Mark == kGateMark) {
+    TraverseGates<false>(gate, [](auto&&) {});
 
-/// Specialization to clear the generic mark for the whole graph.
-template <>
-inline void Pdag::Clear<Pdag::kGateMark>() noexcept {
-  Clear<Pdag::kGateMark>(root_);
+  } else if constexpr (Mark == kDescendant) {
+    TraverseGates(gate, [](const GatePtr& arg) { arg->descendant(0); });
+
+  } else if constexpr (Mark == kAncestor) {
+    TraverseGates(gate, [](const GatePtr& arg) { arg->ancestor(0); });
+
+  } else {
+    TraverseNodes(gate, [](auto&& node) {
+      if constexpr (Mark == kVisit) {
+        if (node->Visited())
+          node->ClearVisits();
+
+      } else if constexpr (Mark == kOrder) {
+        if (node->order())
+          node->order(0);
+
+      } else if constexpr (Mark == kOptiValue) {
+        node->opti_value(0);
+
+      } else {
+        static_assert(Mark == kCount, "The node mark is not covered.");
+        node->ResetCount();
+      }
+    });
+  }
 }
 
 /// Prints PDAG nodes in the Aralia format.

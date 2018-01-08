@@ -25,8 +25,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "ccf_group.h"
 #include "element.h"
 #include "event.h"
@@ -35,7 +33,7 @@
 namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public Element, public Role, private boost::noncopyable {
+class Component : public Element, public Role {
  public:
   /// Constructs a component assuming
   /// that it exists within some fault tree.

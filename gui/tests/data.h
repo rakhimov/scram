@@ -31,36 +31,24 @@ template <typename T, typename... Ts>
 void initializeColumns(const char *const *it)
 {
     QTest::addColumn<T>(*it);
-    initializeColumns<Ts...>(++it);
+
+    if constexpr (sizeof...(Ts))
+        initializeColumns<Ts...>(++it);
 }
 
-/// Terminal case for test column initialization.
-template <>
-inline void initializeColumns<void>(const char *const *)
-{
-}
-
+/// Initializes rows in the test data table.
+///
 /// @tparam N  The number of columns to initialize in the row.
-template <int N>
-struct RowInitializer
+template <int N, typename... Ts>
+void initializeRows(QTestData &data, const std::tuple<const char *, Ts...> &row)
 {
-    template <typename... Ts>
-    void operator()(QTestData &data, const std::tuple<const char *, Ts...> &row)
-    {
-        RowInitializer<N - 1>{}(data, row);
+    static_assert(N >= 0);
+
+    if constexpr (N != 0) {
+        initializeRows<N - 1>(data, row);
         data << std::get<N>(row);
     }
-};
-
-/// Terminal case for row initialization.
-template <>
-struct RowInitializer<0>
-{
-    template <typename... Ts>
-    void operator()(QTestData &, const std::tuple<const char *, Ts...> &)
-    {
-    }
-};
+}
 
 } // namespace detail
 
@@ -74,9 +62,9 @@ template <typename... Ts>
 void populateData(const char *const (&columns)[sizeof...(Ts)],
                   std::initializer_list<std::tuple<const char *, Ts...>> rows)
 {
-    detail::initializeColumns<Ts..., void>(columns);
+    detail::initializeColumns<Ts...>(columns);
 
     for (const auto &row : rows)
-        detail::RowInitializer<sizeof...(Ts)>{}(QTest::newRow(std::get<0>(row)),
-                                                row);
+        detail::initializeRows<sizeof...(Ts)>(QTest::newRow(std::get<0>(row)),
+                                              row);
 }

@@ -91,11 +91,4 @@ private:
     void accept(Ts... args) { this->emplace_back(args...); }
 };
 
-/// Convenience function to construct a SignalSpy with deduced types.
-template <class T, class U, typename... Ts>
-auto make_spy(const T *sender, void (U::*sig)(Ts...))
-{
-    return SignalSpy<Ts...>(sender, sig);
-}
-
 } // namespace ext

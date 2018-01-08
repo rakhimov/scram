@@ -27,6 +27,8 @@ The default seed of the PRNG is 5489 (C++ specification),
 but this parameter can be changed by a user,
 for example, to test the analysis tool.
 
+Available statistical distributions are specified in Open-PSA [MEF]_.
+
 .. _MT 19937: https://en.wikipedia.org/wiki/Mersenne_twister
 
 
@@ -43,26 +45,6 @@ Monte Carlo (MC) Simulations
 #. Sensitivity analysis. *Not Supported Yet*
 #. Report the results of analysis:
    mean, sigma, quantiles, probability density histogram.
-
-
-Statistical Distributions
--------------------------
-
-- Uniform
-- Triangular (only via API)
-- Piecewise Linear (only via API)
-- Histogram
-- Discrete (only via API)
-- Normal
-- Log-Normal
-- Poisson (only via API)
-- Binomial (only via API)
-- Beta
-- Gamma
-- Weibull
-- Exponential (only via API)
-- Log-Uniform (only via API)
-- Log-Triangular (only via API)
 
 
 Adjustment of Invalid Samples

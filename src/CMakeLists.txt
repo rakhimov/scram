@@ -10,7 +10,6 @@ set(SCRAM_CORE_SRC
   env.cc
   ${CMAKE_CURRENT_BINARY_DIR}/version.cc
   logger.cc
-  random.cc
   settings.cc
   xml.cc
   config.cc

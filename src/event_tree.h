@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "element.h"
 #include "ext/variant.h"
 #include "instruction.h"
@@ -164,7 +162,7 @@ class Fork {
 };
 
 /// Event Tree representation with MEF constructs.
-class EventTree : public Element, public Usage, private boost::noncopyable {
+class EventTree : public Element, public Usage {
  public:
   using Element::Element;
 

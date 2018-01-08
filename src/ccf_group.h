@@ -31,8 +31,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -85,7 +83,7 @@ class CcfEvent : public BasicEvent {
 };
 
 /// Abstract base class for all common cause failure models.
-class CcfGroup : public Id, private boost::noncopyable {
+class CcfGroup : public Id {
  public:
   using Id::Id;
 

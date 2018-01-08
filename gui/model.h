@@ -215,11 +215,16 @@ public:
 
     /// @returns The probability value of the event.
     ///
-    /// @pre The basic event has expression.
+    /// @pre The basic event has expression or the type has null state.
     template <typename T = double>
     T probability() const
     {
-        return data()->p();
+        if constexpr (std::is_same_v<T, QVariant>) {
+            return data()->HasExpression() ? QVariant(data()->p()) : QVariant();
+
+        } else {
+            return data()->p();
+        }
     }
 
     /// Sets the basic event expression.
@@ -269,11 +274,10 @@ private:
     Flavor m_flavor; ///< The current flavor of the basic event.
 };
 
-/// @returns The optional probability value of the basic event.
-template <>
-inline QVariant BasicEvent::probability<QVariant>() const
+/// Converts Boolean value to a UI string.
+inline QString boolToString(bool value)
 {
-    return data()->HasExpression() ? QVariant(probability()) : QVariant();
+    return value ? QObject::tr("True") : QObject::tr("False");
 }
 
 /// The proxy to manage mef::HouseEvent.
@@ -289,7 +293,12 @@ public:
     template <typename T = bool>
     T state() const
     {
-        return data()->state();
+        if constexpr (std::is_same_v<T, QString>) {
+            return boolToString(state());
+
+        } else {
+            return data()->state();
+        }
     }
 
     /// Flips the house event state.
@@ -311,19 +320,6 @@ signals:
     void stateChanged(bool value);
 };
 
-/// Converts Boolean value to a UI string.
-inline QString boolToString(bool value)
-{
-    return value ? QObject::tr("True") : QObject::tr("False");
-}
-
-/// @returns The string representation of the house event state.
-template <>
-inline QString HouseEvent::state<QString>() const
-{
-    return boolToString(state());
-}
-
 /// The proxy to manage mef::Gate.
 ///
 /// @pre The gate formula is flat.
@@ -339,7 +335,34 @@ public:
     template <typename T = mef::Operator>
     T type() const
     {
-        return data()->formula().type();
+        if constexpr (std::is_same_v<T, QString>) {
+            switch (type()) {
+            case mef::kAnd:
+                return tr("and");
+            case mef::kOr:
+                return tr("or");
+            case mef::kVote:
+                //: Also named as 'vote', 'voting or', 'combination', 'combo'.
+                return tr("at-least %1").arg(voteNumber());
+            case mef::kXor:
+                return tr("xor");
+            case mef::kNot:
+                return tr("not");
+            case mef::kNull:
+                //: This is 'pass-through' or 'no-action' gate type.
+                return tr("null");
+            case mef::kNand:
+                //: not and.
+                return tr("nand");
+            case mef::kNor:
+                //: not or.
+                return tr("nor");
+            }
+            assert(false);
+
+        } else {
+            return data()->formula().type();
+        }
     }
 
     /// @returns The number of gate arguments.
@@ -377,35 +400,6 @@ signals:
     void formulaChanged();
 };
 
-/// @returns The UI string representation for gate connective types.
-template <>
-inline QString Gate::type() const
-{
-    switch (type()) {
-    case mef::kAnd:
-        return tr("and");
-    case mef::kOr:
-        return tr("or");
-    case mef::kVote:
-        //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-        return tr("at-least %1").arg(voteNumber());
-    case mef::kXor:
-        return tr("xor");
-    case mef::kNot:
-        return tr("not");
-    case mef::kNull:
-        //: This is 'pass-through' or 'no-action' gate type.
-        return tr("null");
-    case mef::kNand:
-        //: not and.
-        return tr("nand");
-    case mef::kNor:
-        //: not or.
-        return tr("nor");
-    }
-    assert(false);
-}
-
 /// Table of proxy elements uniquely wrapping the core model element.
 ///
 /// @tparam T  The proxy type.
@@ -437,7 +431,19 @@ public:
 
     /// Generic access to event tables.
     template <class T>
-    ProxyTable<T> &table();
+    ProxyTable<T> &table()
+    {
+        if constexpr (std::is_same_v<T, Gate>) {
+            return m_gates;
+
+        } else if constexpr (std::is_same_v<T, BasicEvent>) {
+            return m_basicEvents;
+
+        } else {
+            static_assert(std::is_same_v<T, HouseEvent>, "Unknown type.");
+            return m_houseEvents;
+        }
+    }
 
     /// @param[in] event  The event defined/registered in the model.
     ///
@@ -697,24 +703,5 @@ private:
     ProxyTable<Gate> m_gates;
     /// @}
 };
-
-/// Specializations for the typed access to the proxy model container.
-/// @{
-template <>
-inline ProxyTable<Gate> &Model::table<Gate>()
-{
-    return m_gates;
-}
-template <>
-inline ProxyTable<BasicEvent> &Model::table<BasicEvent>()
-{
-    return m_basicEvents;
-}
-template <>
-inline ProxyTable<HouseEvent> &Model::table<HouseEvent>()
-{
-    return m_houseEvents;
-}
-/// @}
 
 } // namespace scram::gui::model

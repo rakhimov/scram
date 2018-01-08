@@ -28,13 +28,15 @@
 #include <boost/math/special_functions/beta.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/math/special_functions/gamma.hpp>
+#include <boost/random/beta_distribution.hpp>
 #include <boost/range/algorithm_ext/is_sorted.hpp>
 
 #include "src/error.h"
 #include "src/ext/algorithm.h"
-#include "src/random.h"
 
 namespace scram::mef {
+
+std::mt19937 RandomDeviate::rng_;
 
 UniformDeviate::UniformDeviate(Expression* min, Expression* max)
     : RandomDeviate({min, max}), min_(*min), max_(*max) {}
@@ -47,7 +49,8 @@ void UniformDeviate::Validate() const {
 }
 
 double UniformDeviate::DoSample() noexcept {
-  return Random::UniformRealGenerator(min_.value(), max_.value());
+  return std::uniform_real_distribution(min_.value(),
+                                        max_.value())(RandomDeviate::rng());
 }
 
 NormalDeviate::NormalDeviate(Expression* mean, Expression* sigma)
@@ -60,7 +63,8 @@ void NormalDeviate::Validate() const {
 }
 
 double NormalDeviate::DoSample() noexcept {
-  return Random::NormalGenerator(mean_.value(), sigma_.value());
+  return std::normal_distribution(mean_.value(),
+                                  sigma_.value())(RandomDeviate::rng());
 }
 
 LognormalDeviate::LognormalDeviate(Expression* mean, Expression* ef,
@@ -85,7 +89,8 @@ void LognormalDeviate::Logarithmic::Validate() const {
 }
 
 double LognormalDeviate::DoSample() noexcept {
-  return Random::LognormalGenerator(flavor_->location(), flavor_->scale());
+  return std::lognormal_distribution(flavor_->location(),
+                                     flavor_->scale())(RandomDeviate::rng());
 }
 
 Interval LognormalDeviate::interval() noexcept {
@@ -135,7 +140,8 @@ Interval GammaDeviate::interval() noexcept {
 }
 
 double GammaDeviate::DoSample() noexcept {
-  return Random::GammaGenerator(k_.value(), theta_.value());
+  return std::gamma_distribution(k_.value())(RandomDeviate::rng()) *
+         theta_.value();
 }
 
 BetaDeviate::BetaDeviate(Expression* alpha, Expression* beta)
@@ -160,7 +166,8 @@ Interval BetaDeviate::interval() noexcept {
 }
 
 double BetaDeviate::DoSample() noexcept {
-  return Random::BetaGenerator(alpha_.value(), beta_.value());
+  return boost::random::beta_distribution(alpha_.value(),
+                                          beta_.value())(RandomDeviate::rng());
 }
 
 Histogram::Histogram(std::vector<Expression*> boundaries,
@@ -219,9 +226,12 @@ auto make_sampler(const Iterator& it) {
 }  // namespace
 
 double Histogram::DoSample() noexcept {
-  return Random::HistogramGenerator(make_sampler(boundaries_.begin()),
-                                    make_sampler(boundaries_.end()),
-                                    make_sampler(weights_.begin()));
+  // clang-format off
+  return std::piecewise_constant_distribution<double>(
+      make_sampler(boundaries_.begin()),
+      make_sampler(boundaries_.end()),
+      make_sampler(weights_.begin()))(RandomDeviate::rng());
+  // clang-format on
 }
 
 }  // namespace scram::mef

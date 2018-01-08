@@ -24,15 +24,13 @@
 #include <string>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "element.h"
 #include "instruction.h"
 
 namespace scram::mef {
 
 /// Phases of alignments the models spends its time fraction.
-class Phase : public Element, private boost::noncopyable {
+class Phase : public Element {
  public:
   /// @copydoc Element::Element
   ///
@@ -62,7 +60,7 @@ class Phase : public Element, private boost::noncopyable {
 using PhasePtr = std::unique_ptr<Phase>;  ///< Phases are unique to alignments.
 
 /// Alignment configuration for the whole model per analysis.
-class Alignment : public Element, private boost::noncopyable {
+class Alignment : public Element {
  public:
   using Element::Element;
 

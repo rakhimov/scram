@@ -22,16 +22,12 @@
 #pragma once
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <boost/icl/continuous_interval.hpp>
 #include <boost/noncopyable.hpp>
-
-#include "element.h"
-#include "error.h"
 
 namespace scram::mef {
 
@@ -224,6 +220,17 @@ class NaryExpression<T, 2> : public ExpressionFormula<NaryExpression<T, 2>> {
   }
 };
 
+namespace detail {
+
+/// Ensures the number of args for multivariate expressions.
+///
+/// @param[in] args  Argument expressions.
+///
+/// @throws ValidityError  The number of arguments is fewer than 2.
+void EnsureMultivariateArgs(std::vector<Expression*> args);
+
+}  // namespace detail
+
 /// Multivariate expression.
 template <typename T>
 class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
@@ -235,8 +242,7 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
   /// @throws ValidityError  The number of arguments is fewer than 2.
   explicit NaryExpression(std::vector<Expression*> args)
       : ExpressionFormula<NaryExpression<T, -1>>(std::move(args)) {
-    if (Expression::args().size() < 2)
-      SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."));
+    detail::EnsureMultivariateArgs(Expression::args());
   }
 
   void Validate() const override {}
@@ -280,18 +286,8 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
 /// @param[in] type  The type of probability or fraction for error messages.
 ///
 /// @throws DomainError  The expression is not suited for probability.
-inline void EnsureProbability(Expression* expression,
-                              const std::string& description,
-                              const char* type = "probability") {
-  double value = expression->value();
-  if (value < 0 || value > 1)
-    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " value for " +
-                            description));
-
-  if (IsProbability(expression->interval()) == false)
-    SCRAM_THROW(DomainError("Invalid " + std::string(type) +
-                            " sample domain for " + description));
-}
+void EnsureProbability(Expression* expression, const std::string& description,
+                       const char* type = "probability");
 
 /// Ensures that expression yields positive (> 0) values.
 ///
@@ -299,14 +295,7 @@ inline void EnsureProbability(Expression* expression,
 /// @param[in] description  The addition information for error messages.
 ///
 /// @throws DomainError  The expression is not suited for positive values.
-inline void EnsurePositive(Expression* expression,
-                           const std::string& description) {
-  if (expression->value() <= 0)
-    SCRAM_THROW(DomainError(description + " argument value must be positive."));
-  if (IsPositive(expression->interval()) == false)
-    SCRAM_THROW(
-        DomainError(description + " argument sample domain must be positive."));
-}
+void EnsurePositive(Expression* expression, const std::string& description);
 
 /// Ensures that expression yields non-negative (>= 0) values.
 ///
@@ -314,15 +303,7 @@ inline void EnsurePositive(Expression* expression,
 /// @param[in] description  The addition information for error messages.
 ///
 /// @throws DomainError  The expression is not suited for non-negative values.
-inline void EnsureNonNegative(Expression* expression,
-                              const std::string& description) {
-  if (expression->value() < 0)
-    SCRAM_THROW(
-        DomainError(description + " argument value cannot be negative."));
-  if (IsNonNegative(expression->interval()) == false)
-    SCRAM_THROW(DomainError(description +
-                            " argument sample cannot have negative values."));
-}
+void EnsureNonNegative(Expression* expression, const std::string& description);
 
 /// Ensures that expression values are within the interval.
 ///
@@ -331,22 +312,7 @@ inline void EnsureNonNegative(Expression* expression,
 /// @param[in] type  The type of expression for error messages.
 ///
 /// @throws DomainError  The expression is not suited for non-negative values.
-inline void EnsureWithin(Expression* expression, const Interval& interval,
-                         const char* type) {
-  double arg_value = expression->value();
-  if (!Contains(interval, arg_value)) {
-    std::stringstream ss;
-    ss << type << " argument value [" << arg_value << "] must be in "
-       << interval << ".";
-    SCRAM_THROW(DomainError(ss.str()));
-  }
-  Interval arg_interval = expression->interval();
-  if (!boost::icl::within(arg_interval, interval)) {
-    std::stringstream ss;
-    ss << type << " argument sample domain " << arg_interval << " must be in "
-       << interval << ".";
-    SCRAM_THROW(DomainError(ss.str()));
-  }
-}
+void EnsureWithin(Expression* expression, const Interval& interval,
+                  const char* type);
 
 }  // namespace scram::mef
