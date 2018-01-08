@@ -21,10 +21,10 @@
 #include "risk_analysis.h"
 
 #include "bdd.h"
+#include "expression/random_deviate.h"
 #include "fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
-#include "random.h"
 #include "zbdd.h"
 
 namespace scram::core {
@@ -37,7 +37,7 @@ void RiskAnalysis::Analyze() noexcept {
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the implementation dependent value.
   if (Analysis::settings().seed() >= 0)
-    Random::seed(Analysis::settings().seed());
+    mef::RandomDeviate::seed(Analysis::settings().seed());
 
   if (model_->alignments().empty()) {
     RunAnalysis();

@@ -22,6 +22,7 @@
 #pragma once
 
 #include <memory>
+#include <random>
 #include <vector>
 
 #include <boost/range/iterator_range.hpp>
@@ -32,11 +33,31 @@ namespace scram::mef {
 
 /// Abstract base class for all deviate expressions.
 /// These expressions provide quantification for uncertainty and sensitivity.
+///
+/// @note Only single RNG is embedded for convenience.
+///       All the distributions share this RNG.
+///       This is not suitable for parallelized simulations!!!
+///
+/// @todo Parametrize with RNG (requires mef::Expression interface change).
 class RandomDeviate : public Expression {
  public:
   using Expression::Expression;
 
   bool IsDeviate() noexcept override { return true; }
+
+  /// Sets the seed of the underlying random number generator.
+  ///
+  /// @param[in] seed  The seed for RNGs.
+  ///
+  /// @note This is static! Used by all the deriving deviates.
+  static void seed(unsigned seed) noexcept { rng_.seed(seed); }
+
+ protected:
+  /// @returns RNG to be used by derived classes.
+  std::mt19937& rng() { return rng_; }
+
+ private:
+  static std::mt19937 rng_;  ///< The random number generator.
 };
 
 /// Uniform distribution.
