@@ -48,6 +48,7 @@ set(SCRAM_CORE_SRC
   )
 add_library(scram SHARED ${SCRAM_CORE_SRC})
 target_link_libraries(scram ${LIBS})
+target_compile_options(scram PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 
 install(
   TARGETS scram
@@ -60,6 +61,7 @@ install(
 add_executable(scram-cli scram.cc)
 set_target_properties(scram-cli PROPERTIES OUTPUT_NAME scram)
 target_link_libraries(scram-cli scram ${Boost_LIBRARIES})
+target_compile_options(scram-cli PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 
 install(
   TARGETS scram-cli

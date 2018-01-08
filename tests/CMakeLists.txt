@@ -1,13 +1,6 @@
 # Exclude Debug warnings from the framework.
-set(CURRENT_DEBUG_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-
 set(GTEST_DIR googletest/googletest)
-
 add_subdirectory("${GTEST_DIR}" EXCLUDE_FROM_ALL)
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CURRENT_DEBUG_FLAGS}")  # Restore the original flags.
-
 include_directories(SYSTEM "${GTEST_DIR}/include")
 
 # Include the project headers.
@@ -53,8 +46,8 @@ set(SCRAM_CORE_TEST_SOURCE
 configure_file(scram_unit_test_driver.cc.in scram_unit_test_driver.cc @ONLY)
 
 add_executable(scram_tests ${CMAKE_CURRENT_BINARY_DIR}/scram_unit_test_driver.cc ${SCRAM_CORE_TEST_SOURCE})
-
 target_link_libraries(scram_tests ${LIBS} scram gtest)
+target_compile_options(scram_tests PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 
 install(
   TARGETS scram_tests
@@ -64,6 +57,7 @@ install(
 
 # Create dummy library to test dynamic loading and extern function.
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
+target_compile_options(scram_tests PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 if(WIN32)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 install(

@@ -40,21 +40,25 @@ endfunction()
 
 add_definitions(-DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")  # Needed to print file paths.
 
-set(CMAKE_CXX_FLAGS_DEBUG
-  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor -Wno-missing-field-initializers -Wold-style-cast")
+# Strict debug flags for SCRAM targets (opt-in, must subscribe to quality checks explicitly).
+# NOTE: This is a list unlike CMAKE_CXX_FLAGS.
+set(SCRAM_CXX_FLAGS_DEBUG
+  -Wall -Wextra -Werror -Wno-sign-compare -Wnon-virtual-dtor
+  -Wno-missing-field-initializers -Wold-style-cast
+  )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-new-ttp-matching")  # TODO: Boost ICL failure.
   CHECK_COMPILER_VERSION("7.1")
-  set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wredundant-decls -Wcast-align -Wlogical-op -Wvla -Wuseless-cast -Wunreachable-code")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wshadow -Wpedantic -Wmissing-declarations")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough=0")  # TODO: Consider explicit fallthrough.
+  list(APPEND SCRAM_CXX_FLAGS_DEBUG
+    -Wredundant-decls -Wcast-align -Wlogical-op -Wvla -Wuseless-cast -Wunreachable-code
+    -Wshadow -Wpedantic -Wmissing-declarations
+    -Wimplicit-fallthrough=0  # TODO: Consider explicit fallthrough.
+    )
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   CHECK_COMPILER_VERSION("5.0")
-  set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wno-missing-braces -Wshadow -Wunused-exception-parameter")
+  list(APPEND SCRAM_CXX_FLAGS_DEBUG -Wno-missing-braces -Wshadow -Wunused-exception-parameter)
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   CHECK_COMPILER_VERSION("9.0")
@@ -62,7 +66,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   CHECK_COMPILER_VERSION("18.0.1")
   # TODO: Warning with overload of private override.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1125")
+  list(APPEND SCRAM_CXX_FLAGS_DEBUG -diag-disable=1125)
+endif()
+
+if(WIN32)
+  list(APPEND SCRAM_CXX_FLAGS_DEBUG -Wno-error)
 endif()
 
 if(WITH_COVERAGE)
@@ -71,10 +79,6 @@ endif()
 
 if(WITH_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-endif()
-
-if(WIN32)
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-error")
 endif()
 
 find_program(CCACHE_FOUND ccache)
