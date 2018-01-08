@@ -21,12 +21,10 @@
 #pragma once
 
 #include <cassert>
-#include <cmath>
 
 #include <random>
 
 #include <boost/random/beta_distribution.hpp>
-#include <boost/random/triangle_distribution.hpp>
 
 namespace scram {
 
@@ -59,42 +57,6 @@ class Random {
     return std::uniform_real_distribution<>(lower, upper)(rng_);
   }
 
-  /// RNG from a triangular distribution.
-  ///
-  /// @param[in] lower  Lower bound.
-  /// @param[in] mode  The peak of the distribution.
-  /// @param[in] upper  Upper bound.
-  ///
-  /// @returns A sampled value.
-  static double TriangularGenerator(double lower, double mode,
-                                    double upper) noexcept {
-    assert(lower < mode);
-    assert(mode < upper);
-    return boost::random::triangle_distribution<>(lower, mode, upper)(rng_);
-  }
-
-  /// RNG from a piecewise linear distribution.
-  ///
-  /// @tparam IteratorB  Input iterator of interval boundaries returning double.
-  /// @tparam IteratorW  Input iterator of weights returning double.
-  ///
-  /// @param[in] first_b  The begin of the interval boundaries.
-  /// @param[in] last_b  The sentinel end of the interval boundaries.
-  /// @param[in] first_w  The begin of the interval weights.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @pre Interval points for the distribution must be strictly increasing.
-  ///
-  /// @pre The number of weights must be equal to
-  ///      the number of boundaries.
-  ///      Extra weights are ignored.
-  template <class IteratorB, class IteratorW>
-  static double PiecewiseLinearGenerator(IteratorB first_b, IteratorB last_b,
-                                         IteratorW first_w) noexcept {
-    return std::piecewise_linear_distribution<>(first_b, last_b, first_w)(rng_);
-  }
-
   /// RNG from a histogram distribution.
   ///
   /// @tparam IteratorB  Input iterator of interval boundaries returning double.
@@ -116,29 +78,6 @@ class Random {
                                    IteratorW first_w) noexcept {
     std::piecewise_constant_distribution<> dist(first_b, last_b, first_w);
     return dist(rng_);
-  }
-
-  /// RNG from a discrete distribution.
-  ///
-  /// @tparam Iterator  Input iterator of weights returning double.
-  ///
-  /// @param[in] first1  The begin of the interval weights.
-  /// @param[in] last1  The sentinel end of the interval weights.
-  ///
-  /// @returns Integer in the range [0, n).
-  template <class Iterator>
-  static int DiscreteGenerator(Iterator first1, Iterator last1) noexcept {
-    return std::discrete_distribution<>(first1, last1)(rng_);
-  }
-
-  /// RNG from a Binomial distribution.
-  ///
-  /// @param[in] n  Number of trials.
-  /// @param[in] p  Probability of success.
-  ///
-  /// @returns The number of successes.
-  static int BinomialGenerator(int n, double p) noexcept {
-    return std::binomial_distribution<>(n, p)(rng_);
   }
 
   /// RNG from a normal distribution.
@@ -189,60 +128,6 @@ class Random {
     assert(alpha > 0);
     assert(beta > 0);
     return boost::random::beta_distribution<>(alpha, beta)(rng_);
-  }
-
-  /// RNG from a Weibull distribution.
-  ///
-  /// @param[in] k  Shape parameter of Weibull distribution.
-  /// @param[in] lambda  Scale parameter of Weibull distribution.
-  ///
-  /// @returns A sampled value.
-  static double WeibullGenerator(double k, double lambda) noexcept {
-    assert(k > 0);
-    assert(lambda > 0);
-    return std::weibull_distribution<>(k, lambda)(rng_);
-  }
-
-  /// RNG from an Exponential distribution.
-  ///
-  /// @param[in] lambda  Rate parameter of Exponential distribution.
-  ///
-  /// @returns A sampled value.
-  static double ExponentialGenerator(double lambda) noexcept {
-    assert(lambda > 0);
-    return std::exponential_distribution<>(lambda)(rng_);
-  }
-
-  /// RNG from a Poisson distribution.
-  ///
-  /// @param[in] mean  The mean value for Poisson distribution.
-  ///
-  /// @returns A sampled value.
-  static int PoissonGenerator(int mean) noexcept {
-    assert(mean > 0);
-    return std::poisson_distribution<>(mean)(rng_);
-  }
-
-  /// RNG from a log-uniform distribution.
-  ///
-  /// @param[in] lower  Lower bound.
-  /// @param[in] upper  Upper bound.
-  ///
-  /// @returns A sampled value.
-  static double LogUniformGenerator(double lower, double upper) noexcept {
-    return std::exp(UniformRealGenerator(lower, upper));
-  }
-
-  /// RNG from a log-triangular distribution.
-  ///
-  /// @param[in] lower  Lower bound.
-  /// @param[in] mode  The peak of the distribution.
-  /// @param[in] upper  Upper bound.
-  ///
-  /// @returns A sampled value.
-  static double LogTriangularGenerator(double lower, double mode,
-                                       double upper) noexcept {
-    return std::exp(TriangularGenerator(lower, mode, upper));
   }
 
  private:
