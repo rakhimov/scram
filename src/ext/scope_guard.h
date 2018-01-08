@@ -48,8 +48,8 @@ auto apply(Fn&& fn, Args&& args) noexcept(noexcept(apply_impl(
 
 template <typename Fn, typename... Args>
 class callback {
-  Fn fn;
-  std::tuple<Args...> args;
+  Fn m_fn;
+  std::tuple<Args...> m_args;
 
  public:
   template <typename Fn_, typename... Args_,
@@ -58,14 +58,14 @@ class callback {
   explicit callback(Fn_&& fn, Args_&&... args) noexcept(
       (std::is_nothrow_constructible_v<Fn, Fn_> && ... &&
        std::is_nothrow_constructible_v<Args, Args_>))
-      : fn(std::forward<Fn_>(fn)), args(std::forward<Args_>(args)...) {}
+      : m_fn(std::forward<Fn_>(fn)), m_args(std::forward<Args_>(args)...) {}
 
   template <typename Fn_ = Fn>
   auto operator()() noexcept(noexcept(
-      (void)scope_guard::apply(std::forward<Fn_>(fn), std::move(args))))
-      -> decltype((void)scope_guard::apply(std::forward<Fn_>(fn),
-                                           std::move(args))) {
-    return (void)scope_guard::apply(std::forward<Fn_>(fn), std::move(args));
+      (void)scope_guard::apply(std::forward<Fn_>(m_fn), std::move(m_args))))
+      -> decltype((void)scope_guard::apply(std::forward<Fn_>(m_fn),
+                                           std::move(m_args))) {
+    return (void)scope_guard::apply(std::forward<Fn_>(m_fn), std::move(m_args));
   }
 };
 
