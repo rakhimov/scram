@@ -37,6 +37,7 @@
 
 #include "config.h"
 #include "error.h"
+#include "ext/scope_guard.h"
 #include "initializer.h"
 #include "logger.h"
 #include "reporter.h"
@@ -305,11 +306,7 @@ void RunScram(const po::variables_map& vm) {
 void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
   std::va_list args;
   va_start(args, msg);
-
-  struct VAListCloser {
-    ~VAListCloser() { va_end(args_); }
-    std::va_list& args_;
-  } args_closer{args};
+  SCOPE_EXIT([&args] { va_end(args); });
 
   std::va_list args_for_nchar;  // Only used to determine the string length.
   va_copy(args_for_nchar, args);
@@ -336,11 +333,8 @@ void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
   LIBXML_TEST_VERSION
-
-  struct XmlInit {
-    XmlInit() { xmlInitParser(); }
-    ~XmlInit() { xmlCleanupParser(); }
-  } xml_memory_guard;
+  xmlInitParser();
+  SCOPE_EXIT(&xmlCleanupParser);
 
   xmlGenericErrorFunc xml_error_printer = LogXmlError;
   initGenericErrorDefaultFunc(&xml_error_printer);
