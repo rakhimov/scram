@@ -16,6 +16,7 @@
 #include <utility>
 
 #include <boost/config.hpp>
+#include <boost/preprocessor/cat.hpp>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
@@ -172,5 +173,13 @@ scope_guard_success(Params&&...)
     ->scope_guard_success<detail::scope_guard::unwrap_decay_t<Params>...>;
 
 }  // namespace ext
+
+#define SCOPE_EXIT(fn) ext::scope_guard BOOST_PP_CAT(scope_guard_, __LINE__)(fn)
+
+#define SCOPE_FAIL(fn) \
+  ext::scope_guard_failure BOOST_PP_CAT(scope_fail_, __LINE__)(fn)
+
+#define SCOPE_SUCCESS(fn) \
+  ext::scope_guard_success BOOST_PP_CAT(scope_success_, __LINE__)(fn)
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
