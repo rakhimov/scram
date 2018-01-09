@@ -1467,22 +1467,19 @@ int Encode(const SinglePassRange& args) noexcept {
 }
 
 /// Encodes function parameter types at compile-time.
-/// @{
 template <typename T, typename... Ts>
 constexpr int Encode(int base_power = 1) noexcept {
-  return Encode<T>(base_power) + Encode<Ts...>(base_power * kExternTypeBase);
-}
+  if constexpr (sizeof...(Ts)) {
+    return Encode<T>(base_power) + Encode<Ts...>(base_power * kExternTypeBase);
 
-template <>
-constexpr int Encode<int>(int base_power) noexcept {
-  return base_power * static_cast<int>(ExternParamType::kInt);
-}
+  } else if constexpr (std::is_same_v<T, int>) {
+    return base_power * static_cast<int>(ExternParamType::kInt);
 
-template <>
-constexpr int Encode<double>(int base_power) noexcept {
-  return base_power * static_cast<int>(ExternParamType::kDouble);
+  } else {
+    static_assert(std::is_same_v<T, double>);
+    return base_power * static_cast<int>(ExternParamType::kDouble);
+  }
 }
-/// @}
 
 using ExternFunctionExtractor = ExternFunctionPtr (*)(std::string,
                                                       const std::string&,
@@ -1490,37 +1487,31 @@ using ExternFunctionExtractor = ExternFunctionPtr (*)(std::string,
 using ExternFunctionExtractorMap =
     std::unordered_map<int, ExternFunctionExtractor>;
 
+/// Generates all extractors for extern functions.
+///
 /// @tparam N  The number of parameters.
-template <int N>
-struct ExternFunctionGenerator;
+/// @tparam Ts  The return and parameter types of the extern function.
+///
+/// @param[in,out] function_map  The destination container for extractor.
+template <int N, typename... Ts>
+void GenerateExternFunctionExtractor(ExternFunctionExtractorMap* function_map) {
+  static_assert(N >= 0);
+  static_assert(sizeof...(Ts));
 
-template <>
-struct ExternFunctionGenerator<0> {
-  template <typename... Ts>
-  static void Generate(ExternFunctionExtractorMap* function_map) noexcept {
-    ///< @todo GCC 4.9, 5.4 segfaults on move for lambda arguments.
-    struct Extractor {  // Use instead of lambda!
-      static ExternFunctionPtr Extract(std::string name,
-                                       const std::string& symbol,
-                                       const ExternLibrary& library) {
-        return std::make_unique<ExternFunction<Ts...>>(std::move(name), symbol,
-                                                       library);
-      }
-    };
-    function_map->emplace(Encode<Ts...>(), &Extractor::Extract);
+  if constexpr (N == 0) {
+    function_map->emplace(
+        Encode<Ts...>(),
+        [](std::string name, const std::string& symbol,
+           const ExternLibrary& library) -> ExternFunctionPtr {
+          return std::make_unique<ExternFunction<Ts...>>(std::move(name),
+                                                         symbol, library);
+        });
+  } else {
+    GenerateExternFunctionExtractor<0, Ts...>(function_map);
+    GenerateExternFunctionExtractor<N - 1, Ts..., int>(function_map);
+    GenerateExternFunctionExtractor<N - 1, Ts..., double>(function_map);
   }
-};
-
-template <int N>
-struct ExternFunctionGenerator {
-  template <typename... Ts>
-  static void Generate(ExternFunctionExtractorMap* function_map) noexcept {
-    ExternFunctionGenerator<0>::template Generate<Ts...>(function_map);
-    ExternFunctionGenerator<N - 1>::template Generate<Ts..., int>(function_map);
-    ExternFunctionGenerator<N - 1>::template Generate<Ts..., double>(
-        function_map);
-  }
-};
+}
 
 }  // namespace
 
@@ -1528,8 +1519,8 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
   static const ExternFunctionExtractorMap function_extractors = [] {
     ExternFunctionExtractorMap function_map;
     function_map.reserve(kNumInterfaces);
-    ExternFunctionGenerator<kMaxNumParam>::Generate<int>(&function_map);
-    ExternFunctionGenerator<kMaxNumParam>::Generate<double>(&function_map);
+    GenerateExternFunctionExtractor<kMaxNumParam, int>(&function_map);
+    GenerateExternFunctionExtractor<kMaxNumParam, double>(&function_map);
     assert(function_map.size() == kNumInterfaces);
     return function_map;
   }();
