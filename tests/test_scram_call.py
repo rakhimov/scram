@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Olzhas Rakhimov
+# Copyright (C) 2014-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,124 +17,113 @@
 import os
 from subprocess import call
 
-from nose.tools import assert_equal, assert_not_equal
+import pytest
 
 
 def test_empty_call():
     """Tests a command-line call without any arguments."""
     cmd = ["scram"]
-    yield assert_equal, 1, call(cmd)
+    assert call(cmd) == 1
 
 
-def test_info_calls():
+def test_info_help_calls():
     """Tests general information calls about SCRAM."""
-    # Test help
     cmd = ["scram", "--help"]
-    yield assert_equal, 0, call(cmd)
+    assert call(cmd) == 0
 
-    # Test version information
+
+def test_info_version_calls():
+    """Test version information."""
     cmd = ["scram", "--version"]
-    yield assert_equal, 0, call(cmd)
+    assert call(cmd) == 0
 
 
-def test_fta_no_prob():
+def test_fta_no_prob(tmpdir):
     """Tests calls for fault tree analysis without probability information."""
     fta_no_prob = "./input/fta/correct_tree_input.xml"
     # Test calculation calls
     cmd = ["scram", fta_no_prob]
-    yield assert_equal, 0, call(cmd)
-    out_temp = "./output_temp.xml"
+    assert call(cmd) == 0
+    out_temp = str(tmpdir / "output_temp.xml")
     cmd.append("-o")
     cmd.append(out_temp)
-    yield assert_equal, 0, call(cmd)  # report into an output file
+    assert call(cmd) == 0  # report into an output file
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 
 
-def test_fta_calls():
+@pytest.mark.parametrize(
+    'cmd, status',
+    [
+        (["--validate"], True),
+        # Test the incorrect limit order
+        (["-l", "-1"], False),
+        # Invalid argument type for an option
+        (["-l", "string_for_int"], 1),
+        # Test the limit order no minimal cut sets.
+        # This was an issue #17. This should not throw an error anymore.
+        (["-l", "1"], True),
+        # Test the incorrect cut-off probability
+        (["--cut-off", "-1"], False),
+        (["--cut-off", "10"], False),
+        # Test conflicting algorithms
+        (["--zbdd", "--bdd"], False),
+        # Test the application of the rare event and MCUB at the same time
+        (["--rare-event", "--mcub"], False),
+        # Test the rare event approximation
+        (["--rare-event"], True),
+        # Test the MCUB approximation
+        (["--mcub"], True),
+        # Test the uncertainty
+        (["--uncertainty", "true", "--num-bins", "20", "--num-quantiles", "20"],
+         True),
+        # Test calls for prime implicants
+        (["--prime-implicants", "--mocus"], False),
+        (["--prime-implicants", "--rare-event"], False),
+        (["--prime-implicants", "--mcub"], False)
+    ])
+def test_fta_calls(cmd, status):
     """Tests calls for full fault tree analysis."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
-
-    # Test the validation a fta tree file
-    cmd = ["scram", "--validate", fta_input]
-    yield assert_equal, 0, call(cmd)
-
-    # Test the incorrect limit order
-    cmd = ["scram", fta_input, "-l", "-1"]
-    yield assert_not_equal, 0, call(cmd)
-
-    # Invalid argument type for an option
-    cmd = ["scram", fta_input, "-l", "string_for_int"]
-    yield assert_equal, 1, call(cmd)
-
-    # Test the limit order no minimal cut sets.
-    # This was an issue #17. This should not throw an error anymore.
-    cmd = ["scram", fta_input, "-l", "1"]
-    yield assert_equal, 0, call(cmd)
-
-    # Test the incorrect cut-off probability
-    cmd = ["scram", fta_input, "--cut-off", "-1"]
-    yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "--cut-off", "10"]
-    yield assert_not_equal, 0, call(cmd)
-
-    # Test conflicting algorithms
-    cmd = ["scram", fta_input, "--zbdd", "--bdd"]
-    yield assert_not_equal, 0, call(cmd)
-
-    # Test the application of the rare event and MCUB at the same time
-    cmd = ["scram", fta_input, "--rare-event", "--mcub"]
-    yield assert_not_equal, 0, call(cmd)
-
-    # Test the rare event approximation
-    cmd = ["scram", fta_input, "--rare-event"]
-    yield assert_equal, 0, call(cmd)
-
-    # Test the MCUB approximation
-    cmd = ["scram", fta_input, "--mcub"]
-    yield assert_equal, 0, call(cmd)
-
-    # Test the uncertainty
-    cmd = [
-        "scram", fta_input, "--uncertainty", "true", "--num-bins", "20",
-        "--num-quantiles", "20"
-    ]
-    yield assert_equal, 0, call(cmd)
-
-    # Test calls for prime implicants
-    cmd = ["scram", fta_input, "--prime-implicants", "--mocus"]
-    yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "--prime-implicants", "--rare-event"]
-    yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "--prime-implicants", "--mcub"]
-    yield assert_not_equal, 0, call(cmd)
+    ret = call(["scram", fta_input] + cmd)
+    if not isinstance(status, bool):
+        assert ret == status
+    elif status:
+        assert ret == 0
+    else:
+        assert ret != 0
 
 
-def test_config_file():
+def test_config_file_output(tmpdir):
     """Tests calls with configuration files."""
     # Test with a configuration file
     config_file = "./input/fta/full_configuration.xml"
-    out_temp = "./output_temp.xml"
+    out_temp = str(tmpdir / "output_temp.xml")
     cmd = ["scram", "--config-file", config_file, "-o", out_temp]
-    yield assert_equal, 0, call(cmd)
+    assert call(cmd) == 0
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 
-    # Test the clash of files from configuration and command-line
+
+def test_config_file_clash():
+    """Test the clash of files from configuration and command-line."""
     config_file = "./input/fta/full_configuration.xml"
     cmd = [
         "scram", "--config-file", config_file,
         "input/fta/correct_tree_input_with_probs.xml"
     ]
-    yield assert_not_equal, 0, call(cmd)
+    assert call(cmd) != 0
 
 
-def test_logging():
+@pytest.mark.parametrize('level,status',
+                         [(-1, False), (0, True), (1, True), (2, True),
+                          (3, True), (4, True), (5, True), (6, True), (7, True),
+                          (8, False), (10, False), (100, False), (1e6, False)])
+def test_logging(level, status):
     """Tests invokation with logging."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
-    cmd = ["scram", fta_input, "--verbosity", "-1"]
-    yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "--verbosity", "8"]
-    yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "--verbosity", "7"]
-    yield assert_equal, 0, call(cmd)
+    ret = call(["scram", fta_input, "--verbosity", str(level)])
+    if status:
+        assert ret == 0
+    else:
+        assert ret != 0
