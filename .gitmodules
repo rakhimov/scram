@@ -7,3 +7,6 @@
 [submodule "gui/qtango"]
 	path = gui/qtango
 	url = https://github.com/rakhimov/qtango
+[submodule "tests/catch2"]
+	path = tests/catch2
+	url = https://github.com/catchorg/Catch2
