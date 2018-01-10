@@ -46,6 +46,7 @@ after_build:
 
 test_script:
     - scram_tests
+    - scram_catch
     - scram --version
     - scram input\TwoTrain\two_train.xml
     - cd build

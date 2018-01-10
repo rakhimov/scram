@@ -45,6 +45,7 @@ if [[ "${CONFIG}" == "Coverage" ]]; then
     '*/scram/*' -o $TRACE_FILE
   codecov > /dev/null
 elif [[ "${CONFIG}" == "Memcheck" ]]; then
+  # TODO: Adjust for Catch2.
   # Check for memory leaks with Valgrind
   valgrind --tool=memcheck --leak-check=full --show-leak-kinds=definite \
     --errors-for-leak-kinds=definite --error-exitcode=127 \
