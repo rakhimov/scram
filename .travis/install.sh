@@ -11,7 +11,6 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   brew install ccache
   # brew install python --universal
   sudo pip2 install pytest
-  sudo pip2 install nose  # TODO: Remove dependency on nose.
 fi
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0
@@ -33,7 +32,6 @@ if [[ "${CONFIG}" == "Lint" ]]; then
 fi
 
 pip install --user pytest  # Testing main() requires pytest!
-pip install --user nose  # TODO: Remove dependency on nose.
 
 if [[ "${CONFIG}" == "Coverage" ]]; then
   pip install --user -r requirements-dev.txt
