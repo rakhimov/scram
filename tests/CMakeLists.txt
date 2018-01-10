@@ -3,6 +3,8 @@ set(GTEST_DIR googletest/googletest)
 add_subdirectory("${GTEST_DIR}" EXCLUDE_FROM_ALL)
 include_directories(SYSTEM "${GTEST_DIR}/include")
 
+include_directories(SYSTEM "catch2/single_include")
+
 # Include the project headers.
 include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -54,6 +56,25 @@ install(
   RUNTIME DESTINATION bin
   COMPONENT testing
   )
+
+####################### Catch2 configuration #####################################
+
+set(SCRAM_CATCH_TEST_SOURCE
+  )
+
+# Make tests switch and run in install directory.
+configure_file(scram_catch.cc.in scram_catch.cc @ONLY)  # TODO: Temporary name.
+add_executable(scram_catch ${CMAKE_CURRENT_BINARY_DIR}/scram_catch.cc ${SCRAM_CATCH_TEST_SOURCE})
+target_link_libraries(scram_catch ${LIBS} scram)
+target_compile_options(scram_catch PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
+
+install(
+  TARGETS scram_catch
+  RUNTIME DESTINATION bin
+  COMPONENT testing
+  )
+
+######################## End Catch2 configuration ################################
 
 # Create dummy library to test dynamic loading and extern function.
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
