@@ -9,17 +9,6 @@ find_package(Qt5 "5.9.1" REQUIRED COMPONENTS
 message(STATUS "Found Qt5")
 message(STATUS "Qt5 Version: ${Qt5_VERSION}")
 
-# Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER")
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # TODO: MOC generated code has some useless casts.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-useless-cast")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  # TODO: Qt moc offsetof applied to non-POD types is nonstandard.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -diag-disable=1875")
-endif()
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -66,6 +55,11 @@ add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
 target_link_libraries(scram-gui
   ${LIBS} scram
   Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
+target_compile_options(scram-gui PUBLIC $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG} -Wno-useless-cast>) # TODO: MOC failure.
+# Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
+target_compile_definitions(scram-gui PRIVATE
+  $<$<CONFIG:DEBUG>:QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_BYTEARRAY QT_NO_URL_CAST_FROM_STRING QT_USE_QSTRINGBUILDER>
+  )
 
 add_executable(scram-gui-bin WIN32 main.cpp scram.rc ${SCRAM_GUI_RES})
 set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
@@ -77,24 +71,26 @@ install(
   )
 
 if(UNIX AND NOT APPLE)
-  foreach (size IN ITEMS 32 128)
+  foreach(size IN ITEMS 32 128)
     install(
       FILES       images/scram_solid${size}x${size}.png
       DESTINATION share/icons/hicolor/${size}x${size}/apps
-      COMPONENT gui
+      COMPONENT   gui
       RENAME      scram.png)
-  endforeach ()
+  endforeach()
+
   install(
     FILES       images/scram_solid.svg
     DESTINATION share/icons/hicolor/scalable/apps
-    COMPONENT gui
+    COMPONENT   gui
     RENAME      scram.svg)
 
   # Install a desktop file
   # so that SCRAM appears in the application start menu with an icon.
-  install(FILES scram-gui.desktop
+  install(
+    FILES       scram-gui.desktop
     DESTINATION share/applications
-    COMPONENT gui)
+    COMPONENT   gui)
 endif()
 
 if(PACKAGE)
@@ -112,7 +108,8 @@ if(PACKAGE)
           set(_qt_plugin_dir "plugins")
         endif()
         set(_qt_plugin_dest "${_qt_plugin_dir}/${_qt_plugin_type}")
-        install(FILES "${_qt_plugin_path}"
+        install(
+          FILES "${_qt_plugin_path}"
           DESTINATION "${_qt_plugin_dest}"
           COMPONENT gui)
         set(${_qt_plugins_var}
@@ -134,7 +131,8 @@ if(PACKAGE)
 
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       "[Paths]\nPlugins = ../${_qt_plugin_dir}\nTranslations = ../translations\n")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
+    install(
+      FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       DESTINATION bin
       COMPONENT gui)
   endif()
