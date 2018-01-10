@@ -9,7 +9,7 @@ which scram_tests
 which scram-gui
 
 scram_tests
-nosetests -w ./tests/
+(cd tests && python -m pytest test_scram_call.py)
 (cd build && ctest --verbose)
 
 ./scripts/fault_tree_generator.py -b 200 -a 5
@@ -23,7 +23,8 @@ sleep 5
 kill $!
 
 if [[ "${CONFIG}" == "Coverage" ]]; then
-  nosetests --with-coverage -w scripts test/
+  (cd scripts && python -m pytest --cov=. --cov-config ../.coveragerc test/)
+  mv scripts/.coverage ./
 fi
 
 LD_LIBRARY_PATH=${PWD}/build/lib/scram/:${LD_LIBRARY_PATH} \

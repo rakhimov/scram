@@ -262,13 +262,13 @@ To test the tools in the ``scripts`` directory:
 
 .. code-block:: bash
 
-    nosetests -w scripts/ test/
+    .../scram/scripts$ pythom -m pytest test/
 
 To test the command-line call of SCRAM:
 
 .. code-block:: bash
 
-    nosetests -w tests/
+    .../scram/tests$ python -m pytest test_scram_call.py
 
 
 To run performance tests

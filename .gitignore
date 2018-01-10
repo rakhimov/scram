@@ -20,3 +20,6 @@ build/
 
 # Python compiled files
 *.pyc
+
+# Pytest cache
+.cache

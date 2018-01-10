@@ -313,7 +313,7 @@ The following tools are used for this purpose:
 
 - GoogleTest_
 - `Qt Test`_
-- Nose_
+- Pytest_
 
 These tests are automated,
 and continuous integration is provided by `Travis CI`_ and AppVeyor_.
@@ -324,7 +324,7 @@ to discover bugs, bottlenecks, and assumption failures.
 
 .. _GoogleTest: https://github.com/google/googletest
 .. _Qt Test: http://doc.qt.io/qt-5/qtest-overview.html
-.. _Nose: httpss://nose.readthedocs.io/en/latest/
+.. _Pytest: https://pytest.org
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
 .. _AppVeyor: https://ci.appveyor.com/project/rakhimov/scram
 
