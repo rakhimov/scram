@@ -52,13 +52,7 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-build/complexity_report.txt:
-	@echo "Generating Lizard report..."
-	lizard -i -1 -s cyclomatic_complexity -L 60 -a 5 -EIgnoreAssert -Ens -Ecpre src/ -x '*.h' > build/complexity_report.txt || echo "Lizard Warnings!"
-	@echo
-	@echo "Generated Lizard complexity report."
-
-doxygen: build/complexity_report.txt
+doxygen:
 	@echo "Generating Doxygen docs..."
 	doxygen doxygen.conf
 	doxygen gui_doxygen.conf

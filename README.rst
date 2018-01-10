@@ -30,7 +30,6 @@ sphinx_rtd_theme   0.1.8
 LaTeX
 doxygen            1.8.12
 Graphviz Dot       2.26.3
-Lizard             1.12
 cppdep             0.2.2
 ================   =================
 

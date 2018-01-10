@@ -3,7 +3,7 @@ RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
     texlive texlive-fonts-recommended texlive-latex-extra graphviz
 RUN apt-get install -y git zip doxygen wget python python-pip python-setuptools
-RUN pip install sphinx sphinx_rtd_theme lizard cppdep
+RUN pip install sphinx sphinx_rtd_theme cppdep
 
 ADD . scram/
 WORKDIR scram
