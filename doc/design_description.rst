@@ -95,6 +95,4 @@ API Documentation
 cppdep Component Dependency Report
 ==================================
 
-.. image:: ../build/scram_core.svg
-
 .. literalinclude:: ../build/dep_report.txt
