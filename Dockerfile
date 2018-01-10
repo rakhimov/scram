@@ -8,5 +8,5 @@ RUN pip install sphinx sphinx_rtd_theme cppdep
 ADD . scram/
 WORKDIR scram
 RUN mkdir -p build
-CMD make build/dep_report.txt scram_core.dot 2> /dev/null && \
+CMD make build/dep_report.txt scram_core.dot scram_gui.dot 2> /dev/null && \
     make doxygen html

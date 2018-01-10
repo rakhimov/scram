@@ -52,21 +52,22 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-doxygen:
+doxygen: build/scram_core.svg build/scram_gui.svg
 	@echo "Generating Doxygen docs..."
 	doxygen doxygen.conf
 	doxygen gui_doxygen.conf
 	@echo
 	@echo "Generated Doxygen docs from the C++ source."
 
-build/dep_report.txt scram_core.dot:
+build/dep_report.txt scram_core.dot scram_gui.dot:
 	@echo "Generating cppdep report.."
 	PYTHONOPTIMIZE=1 cppdep > build/dep_report.txt
 	@echo "Generated cppdep report."
 
-build/scram_core.svg: scram_core.dot
+build/scram_core.svg: scram_core.dot scram_gui.dot
 	@echo "Converting the dependency diagram to SVG..."
 	dot -Tsvg -o build/scram_core.svg scram_core.dot
+	dot -Tsvg -o build/scram_gui.svg scram_gui.dot
 	@echo "Generated svg diagram."
 
 scripts/*.rst:
@@ -78,7 +79,7 @@ scripts/*.rst:
 	mv _modules.rst scripts/modules.rst
 	@echo "The scripts docs finishsed."
 
-html: build/dep_report.txt build/scram_core.svg scripts/*.rst
+html: build/dep_report.txt scripts/*.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo "Patching norobot..."
 	python patch_robot.py build/html/_modules/*.html build/html/scripts/*.html
