@@ -10,7 +10,6 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_TEST_SOURCE
-  settings_tests.cc
   config_tests.cc
   element_tests.cc
   event_tests.cc
@@ -59,6 +58,7 @@ install(
 set(SCRAM_CATCH_TEST_SOURCE
   linear_map_tests.cc
   xml_stream_tests.cc
+  settings_tests.cc
   performance_tests.cc
   )
 

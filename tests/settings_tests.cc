@@ -17,109 +17,109 @@
 
 #include "settings.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "error.h"
 
 namespace scram::core::test {
 
-TEST(SettingsTest, IncorrectSetup) {
+TEST_CASE("SettingsTest IncorrectSetup", "[settings]") {
   Settings s;
   // Incorrect algorithm.
-  EXPECT_THROW(s.algorithm("the-best"), SettingsError);
+  CHECK_THROWS_AS(s.algorithm("the-best"), SettingsError);
   // Incorrect approximation argument.
-  EXPECT_THROW(s.approximation("approx"), SettingsError);
+  CHECK_THROWS_AS(s.approximation("approx"), SettingsError);
   // Incorrect limit order for products.
-  EXPECT_THROW(s.limit_order(-1), SettingsError);
+  CHECK_THROWS_AS(s.limit_order(-1), SettingsError);
   // Incorrect cut-off probability.
-  EXPECT_THROW(s.cut_off(-1), SettingsError);
-  EXPECT_THROW(s.cut_off(10), SettingsError);
+  CHECK_THROWS_AS(s.cut_off(-1), SettingsError);
+  CHECK_THROWS_AS(s.cut_off(10), SettingsError);
   // Incorrect number of trials.
-  EXPECT_THROW(s.num_trials(-10), SettingsError);
-  EXPECT_THROW(s.num_trials(0), SettingsError);
+  CHECK_THROWS_AS(s.num_trials(-10), SettingsError);
+  CHECK_THROWS_AS(s.num_trials(0), SettingsError);
   // Incorrect number of quantiles.
-  EXPECT_THROW(s.num_quantiles(-10), SettingsError);
-  EXPECT_THROW(s.num_quantiles(0), SettingsError);
+  CHECK_THROWS_AS(s.num_quantiles(-10), SettingsError);
+  CHECK_THROWS_AS(s.num_quantiles(0), SettingsError);
   // Incorrect number of bins.
-  EXPECT_THROW(s.num_bins(-10), SettingsError);
-  EXPECT_THROW(s.num_bins(0), SettingsError);
+  CHECK_THROWS_AS(s.num_bins(-10), SettingsError);
+  CHECK_THROWS_AS(s.num_bins(0), SettingsError);
   // Incorrect seed.
-  EXPECT_THROW(s.seed(-1), SettingsError);
+  CHECK_THROWS_AS(s.seed(-1), SettingsError);
   // Incorrect mission time.
-  EXPECT_THROW(s.mission_time(-10), SettingsError);
+  CHECK_THROWS_AS(s.mission_time(-10), SettingsError);
   // Incorrect time step.
-  EXPECT_THROW(s.time_step(-1), SettingsError);
+  CHECK_THROWS_AS(s.time_step(-1), SettingsError);
   // The time step is not set for the SIL calculations.
-  EXPECT_THROW(s.safety_integrity_levels(true), SettingsError);
+  CHECK_THROWS_AS(s.safety_integrity_levels(true), SettingsError);
   // Disable time step while the SIL is requested.
-  EXPECT_NO_THROW(s.time_step(1));
-  EXPECT_NO_THROW(s.safety_integrity_levels(true));
-  EXPECT_THROW(s.time_step(0), SettingsError);
+  CHECK_NOTHROW(s.time_step(1));
+  CHECK_NOTHROW(s.safety_integrity_levels(true));
+  CHECK_THROWS_AS(s.time_step(0), SettingsError);
 }
 
-TEST(SettingsTest, CorrectSetup) {
+TEST_CASE("SettingsTest CorrectSetup", "[settings]") {
   Settings s;
   // Correct algorithm.
-  EXPECT_NO_THROW(s.algorithm("mocus"));
-  EXPECT_NO_THROW(s.algorithm("bdd"));
-  EXPECT_NO_THROW(s.algorithm("zbdd"));
+  CHECK_NOTHROW(s.algorithm("mocus"));
+  CHECK_NOTHROW(s.algorithm("bdd"));
+  CHECK_NOTHROW(s.algorithm("zbdd"));
 
   // Correct approximation argument.
-  EXPECT_NO_THROW(s.approximation("rare-event"));
-  EXPECT_NO_THROW(s.approximation("mcub"));
+  CHECK_NOTHROW(s.approximation("rare-event"));
+  CHECK_NOTHROW(s.approximation("mcub"));
 
   // Correct limit order for products.
-  EXPECT_NO_THROW(s.limit_order(1));
-  EXPECT_NO_THROW(s.limit_order(32));
-  EXPECT_NO_THROW(s.limit_order(1e9));
+  CHECK_NOTHROW(s.limit_order(1));
+  CHECK_NOTHROW(s.limit_order(32));
+  CHECK_NOTHROW(s.limit_order(1e9));
 
   // Correct cut-off probability.
-  EXPECT_NO_THROW(s.cut_off(1));
-  EXPECT_NO_THROW(s.cut_off(0));
-  EXPECT_NO_THROW(s.cut_off(0.5));
+  CHECK_NOTHROW(s.cut_off(1));
+  CHECK_NOTHROW(s.cut_off(0));
+  CHECK_NOTHROW(s.cut_off(0.5));
 
   // Correct number of trials.
-  EXPECT_NO_THROW(s.num_trials(1));
-  EXPECT_NO_THROW(s.num_trials(1e6));
+  CHECK_NOTHROW(s.num_trials(1));
+  CHECK_NOTHROW(s.num_trials(1e6));
 
   // Correct number of quantiles.
-  EXPECT_NO_THROW(s.num_quantiles(1));
-  EXPECT_NO_THROW(s.num_quantiles(10));
+  CHECK_NOTHROW(s.num_quantiles(1));
+  CHECK_NOTHROW(s.num_quantiles(10));
 
   // Correct number of bins.
-  EXPECT_NO_THROW(s.num_bins(1));
-  EXPECT_NO_THROW(s.num_bins(10));
+  CHECK_NOTHROW(s.num_bins(1));
+  CHECK_NOTHROW(s.num_bins(10));
 
   // Correct seed.
-  EXPECT_NO_THROW(s.seed(1));
+  CHECK_NOTHROW(s.seed(1));
 
   // Correct mission time.
-  EXPECT_NO_THROW(s.mission_time(0));
-  EXPECT_NO_THROW(s.mission_time(10));
-  EXPECT_NO_THROW(s.mission_time(1e6));
+  CHECK_NOTHROW(s.mission_time(0));
+  CHECK_NOTHROW(s.mission_time(10));
+  CHECK_NOTHROW(s.mission_time(1e6));
 
   // Correct time step.
-  EXPECT_NO_THROW(s.time_step(0));
-  EXPECT_NO_THROW(s.time_step(10));
-  EXPECT_NO_THROW(s.time_step(1e6));
+  CHECK_NOTHROW(s.time_step(0));
+  CHECK_NOTHROW(s.time_step(10));
+  CHECK_NOTHROW(s.time_step(1e6));
 
   // Correct request for the SIL.
-  EXPECT_NO_THROW(s.safety_integrity_levels(true));
-  EXPECT_NO_THROW(s.safety_integrity_levels(false));
+  CHECK_NOTHROW(s.safety_integrity_levels(true));
+  CHECK_NOTHROW(s.safety_integrity_levels(false));
 }
 
-TEST(SettingsTest, SetupForPrimeImplicants) {
+TEST_CASE("SettingsTest SetupForPrimeImplicants", "[settings]") {
   Settings s;
   // Incorrect request for prime implicants.
-  EXPECT_NO_THROW(s.algorithm("mocus"));
-  EXPECT_THROW(s.prime_implicants(true), SettingsError);
+  CHECK_NOTHROW(s.algorithm("mocus"));
+  CHECK_THROWS_AS(s.prime_implicants(true), SettingsError);
   // Correct request for prime implicants.
-  ASSERT_NO_THROW(s.algorithm("bdd"));
-  ASSERT_NO_THROW(s.prime_implicants(true));
+  REQUIRE_NOTHROW(s.algorithm("bdd"));
+  REQUIRE_NOTHROW(s.prime_implicants(true));
   // Prime implicants with quantitative approximations.
-  EXPECT_NO_THROW(s.approximation("none"));
-  EXPECT_THROW(s.approximation("rare-event"), SettingsError);
-  EXPECT_THROW(s.approximation("mcub"), SettingsError);
+  CHECK_NOTHROW(s.approximation("none"));
+  CHECK_THROWS_AS(s.approximation("rare-event"), SettingsError);
+  CHECK_THROWS_AS(s.approximation("mcub"), SettingsError);
 }
 
 }  // namespace scram::core::test
