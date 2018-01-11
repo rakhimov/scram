@@ -40,7 +40,6 @@ set(SCRAM_CORE_TEST_SOURCE
   bench_hipps_tests.cc
   bench_attack.cc
   bench_gas_leak.cc
-  performance_tests.cc
   )
 
 # Make tests switch and run in install directory.
@@ -60,6 +59,7 @@ install(
 
 set(SCRAM_CATCH_TEST_SOURCE
   linear_map_tests.cc
+  performance_tests.cc
   )
 
 # Make tests switch and run in install directory.
