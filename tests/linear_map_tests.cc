@@ -21,7 +21,7 @@
 
 #include <boost/container/vector.hpp>
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 // Explicit instantiations with some common types.
 template class ext::linear_map<int, int>;
@@ -53,270 +53,391 @@ template class ext::linear_map<KeyClass, std::string, ext::MoveEraser,
                                boost::container::vector>;
 #endif
 
+namespace std {
+
+template <typename T1, typename T2>
+std::ostream& operator<<(std::ostream& out, const std::pair<T1, T2>& value) {
+  out << "{" << Catch::StringMaker<T1>::convert(value.first) << ", "
+      << Catch::StringMaker<T2>::convert(value.second) << "}";
+  return out;
+}
+
+}  // namespace std
+
 namespace scram::test {
 
 using IntMap = ext::linear_map<int, int>;
 
-TEST(LinearMapTest, Constructors) {
-  IntMap m_default;
-  EXPECT_EQ(0, m_default.size());
-  EXPECT_TRUE(m_default.empty());
+TEST_CASE("linear map ctors", "[linear_map]") {
+  SECTION("default ctor") {
+    IntMap m_default;
+    CHECK(m_default.size() == 0);
+    CHECK(m_default.empty());
+  }
 
   IntMap m_init_list = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(3, m_init_list.size());
-  EXPECT_FALSE(m_init_list.empty());
+  SECTION("initializer list") {
+    CHECK(m_init_list.size() == 3);
+    CHECK_FALSE(m_init_list.empty());
+  }
 
-  auto m_copy(m_init_list);
-  EXPECT_EQ(3, m_copy.size());
-  EXPECT_FALSE(m_copy.empty());
-  EXPECT_EQ(m_init_list, m_copy);
+  SECTION("copy ctor") {
+    auto m_copy(m_init_list);
+    CHECK(m_copy.size() == 3);
+    CHECK_FALSE(m_copy.empty());
+    CHECK(m_copy == m_init_list);
 
-  // Copy yourself.
-  m_copy = m_copy;
-  EXPECT_EQ(3, m_copy.size());
-  EXPECT_EQ(m_init_list, m_copy);
+    SECTION("copy itself") {
+      m_copy = m_copy;
+      CHECK(m_copy.size() == 3);
+      CHECK(m_copy == m_init_list);
+    }
+  }
 
-  auto construct_extra_copy(m_init_list);
-  auto m_move(std::move(construct_extra_copy));
-  EXPECT_TRUE(construct_extra_copy.empty());
-  EXPECT_EQ(3, m_move.size());
-  EXPECT_FALSE(m_move.empty());
-  EXPECT_EQ(m_init_list, m_move);
+  SECTION("move ctor") {
+    auto construct_extra_copy(m_init_list);
+    auto m_move(std::move(construct_extra_copy));
+    CHECK(construct_extra_copy.empty());
+    CHECK(m_move.size() == 3);
+    CHECK_FALSE(m_move.empty());
+    CHECK(m_move == m_init_list);
+  }
 
-  // Assignments.
-  IntMap m_assign_copy;
-  m_assign_copy = m_init_list;
-  EXPECT_EQ(m_init_list, m_assign_copy);
+  SECTION("copy assignment") {
+    IntMap m_assign_copy;
+    m_assign_copy = m_init_list;
+    CHECK(m_assign_copy == m_init_list);
+  }
 
-  IntMap m_assign_move;
-  auto assign_extra_copy(m_init_list);
-  m_assign_move = std::move(assign_extra_copy);
-  EXPECT_TRUE(assign_extra_copy.empty());
-  EXPECT_EQ(m_init_list, m_assign_move);
+  SECTION("move assignment") {
+    IntMap m_assign_move;
+    auto assign_extra_copy(m_init_list);
+    m_assign_move = std::move(assign_extra_copy);
+    CHECK(assign_extra_copy.empty());
+    CHECK(m_assign_move == m_init_list);
+  }
 
-  IntMap::container_type m_data = {{1, -1}, {2, -2}, {3, -3}, {3, -4}};
-  IntMap m_range(m_data.begin(), m_data.end());
-  EXPECT_EQ(m_init_list, m_range);
+  SECTION("range ctor") {
+    IntMap::container_type m_data = {{1, -1}, {2, -2}, {3, -3}, {3, -4}};
+    IntMap m_range(m_data.begin(), m_data.end());
+    CHECK(m_range == m_init_list);
+  }
 
-  IntMap m_repeat_init{{1, -1}, {2, -2}, {3, -3}, {3, -4}};
-  EXPECT_EQ(m_init_list, m_repeat_init);
+  SECTION("repeat") {
+    IntMap m_repeat_init{{1, -1}, {2, -2}, {3, -3}, {3, -4}};
+    CHECK(m_repeat_init == m_init_list);
+  }
 }
 
-TEST(LinearMapTest, Equality) {
+TEST_CASE("linear map equality", "[linear_map]") {
   IntMap m1;
-  EXPECT_EQ(m1, m1);
+  SECTION("compare to itself") { CHECK(m1 == m1); }
 
   IntMap m2;
-  EXPECT_EQ(m1, m2);
+  SECTION("compare to new") { CHECK(m2 == m1); }
 
   m1 = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(m1, m1);
-  EXPECT_NE(m1, m2);
-  m2 = m1;
-  EXPECT_EQ(m1, m2);
-  m2 = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(m1, m2);
-
-  m2 = {{2, -2}, {1, -1}, {3, -3}};  // Different order.
-  EXPECT_EQ(m1, m2);
-
-  m2 = {{1, -1}, {2, -2}};
-  EXPECT_NE(m1, m2);
-
-  m2 = {{1, 1}, {2, 2}, {3, 3}};  // The same keys, but different values.
-  EXPECT_NE(m1, m2);
+  SECTION("with equal values") {
+    CHECK(m1 == m1);
+    CHECK_FALSE(m2 == m1);
+    SECTION("copy") {
+      m2 = m1;
+      CHECK(m2 == m1);
+    }
+    SECTION("new with the same values") {
+      m2 = {{1, -1}, {2, -2}, {3, -3}};
+      CHECK(m2 == m1);
+    }
+    SECTION("new with different order") {
+      m2 = {{2, -2}, {1, -1}, {3, -3}};
+      CHECK(m2 == m1);
+    }
+  }
+  SECTION("with unequal values") {
+    SECTION("one less") {
+      m2 = {{1, -1}, {2, -2}};
+      CHECK_FALSE(m2 == m1);
+    }
+    SECTION("same keys but different values") {
+      m2 = {{1, 1}, {2, 2}, {3, 3}};
+      CHECK_FALSE(m2 == m1);
+    }
+  }
 }
 
-TEST(LinearMapTest, Iterators) {
+TEST_CASE("linear map iterators", "[linear_map]") {
   IntMap m = {{1, -1}, {2, -2}, {3, -3}};
   IntMap::container_type c = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(std::next(m.begin(), m.size()), m.end());
-  EXPECT_EQ(std::next(m.rbegin(), m.size()), m.rend());
-  EXPECT_EQ(std::next(m.cbegin(), m.size()), m.cend());
-  EXPECT_EQ(std::next(m.crbegin(), m.size()), m.crend());
+  CHECK(std::next(m.begin(), m.size()) == m.end());
+  CHECK(std::next(m.rbegin(), m.size()) == m.rend());
+  CHECK(std::next(m.cbegin(), m.size()) == m.cend());
+  CHECK(std::next(m.crbegin(), m.size()) == m.crend());
 
   const auto& m_ref = m;
-  EXPECT_EQ(std::next(m_ref.begin(), m_ref.size()), m_ref.end());
-  EXPECT_EQ(std::next(m_ref.rbegin(), m_ref.size()), m_ref.rend());
-  EXPECT_EQ(std::next(m_ref.cbegin(), m_ref.size()), m_ref.cend());
-  EXPECT_EQ(std::next(m_ref.crbegin(), m_ref.size()), m_ref.crend());
+  CHECK(std::next(m_ref.begin(), m_ref.size()) == m_ref.end());
+  CHECK(std::next(m_ref.rbegin(), m_ref.size()) == m_ref.rend());
+  CHECK(std::next(m_ref.cbegin(), m_ref.size()) == m_ref.cend());
+  CHECK(std::next(m_ref.crbegin(), m_ref.size()) == m_ref.crend());
 
   auto it_c = c.begin();
   int num_elements = 0;
   int key_sum = 0;
   int value_sum = 0;
   for (const auto& entry : m) {
-    EXPECT_EQ(*it_c++, entry);
+    INFO(std::distance(c.begin(), it_c));
+    CHECK(*it_c++ == entry);
     ++num_elements;
     key_sum += entry.first;
     value_sum += entry.second;
   }
-  EXPECT_EQ(3, num_elements);
-  EXPECT_EQ(6, key_sum);
-  EXPECT_EQ(-6, value_sum);
-  EXPECT_EQ(c, m.data());
+  CHECK(num_elements == 3);
+  CHECK(key_sum == 6);
+  CHECK(value_sum == -6);
+  CHECK(m.data() == c);
 }
 
-TEST(LinearMapTest, Clear) {
-  IntMap m = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_FALSE(m.empty());
-  m.clear();
-  EXPECT_TRUE(m.empty());
+SCENARIO("linear map clear", "[linear_map]") {
+  GIVEN("empty linear map") {
+    IntMap m;
+    REQUIRE(m.empty());
+    REQUIRE(m.capacity() >= m.size());
+    auto init_capacity = m.capacity();
+
+    WHEN("clear") {
+      m.clear();
+      THEN("no change") {
+        CHECK(m.empty());
+        CHECK(m.capacity() == init_capacity);
+      }
+    }
+  }
+
+  GIVEN("non empty linear map") {
+    IntMap m = {{1, -1}, {2, -2}, {3, -3}};
+    CHECK_FALSE(m.empty());
+    REQUIRE(m.capacity() >= m.size());
+    auto init_capacity = m.capacity();
+
+    WHEN("clear") {
+      m.clear();
+      THEN("the map is empty but capacity is not") {
+        CHECK(m.empty());
+        CHECK(m.capacity() == init_capacity);
+      }
+    }
+  }
 }
 
-TEST(LinearMapTest, Reserve) {
-  IntMap m;
-  m.reserve(1000);
-  EXPECT_LE(1000, m.capacity());
+SCENARIO("linear map capacity reserve", "[linear_map]") {
+  GIVEN("A linear map with some items") {
+    IntMap m = {{1, -1}, {2, -2}, {3, -3}};
+
+    REQUIRE(m.size() == 3);
+    REQUIRE(m.capacity() >= 3);
+
+    WHEN("the capacity is increased") {
+      m.reserve(10);
+
+      THEN("the capacity change but not size") {
+        REQUIRE(m.size() == 3);
+        REQUIRE(m.capacity() >= 10);
+      }
+    }
+    WHEN("the capacity is reduced") {
+      m.reserve(0);
+
+      THEN("the size and capacity do not change") {
+        REQUIRE(m.size() == 3);
+        REQUIRE(m.capacity() >= 3);
+      }
+    }
+  }
 }
 
-TEST(LinearMapTest, Swap) {
-  IntMap m1 = {{1, -1}, {2, -2}, {3, -3}};
-  IntMap m2 = {{4, -4}, {5, -5}};
+TEST_CASE("linear map swap", "[linear_map]") {
+  const IntMap m1 = {{1, -1}, {2, -2}, {3, -3}};
+  const IntMap m2 = {{4, -4}, {5, -5}};
   IntMap ms1 = m1;
   IntMap ms2 = m2;
-  ms1.swap(ms2);
-  EXPECT_EQ(m1, ms2);
-  EXPECT_EQ(m2, ms1);
 
-  swap(ms1, ms2);
-  EXPECT_EQ(m1, ms1);
-  EXPECT_EQ(m2, ms2);
+  SECTION("member swap") {
+    ms1.swap(ms2);
+    CHECK(ms2 == m1);
+    CHECK(ms1 == m2);
+  }
+
+  SECTION("ADL swap") {
+    swap(ms1, ms2);
+    CHECK(ms2 == m1);
+    CHECK(ms1 == m2);
+  }
+
+  SECTION("STD swap") {
+    std::swap(ms1, ms2);
+    CHECK(ms2 == m1);
+    CHECK(ms1 == m2);
+  }
 }
 
-TEST(LinearMapTest, DefaultErase) {
+TEST_CASE("linear map default erase", "[linear_map]") {
   IntMap m = {{1, -1}, {2, -2}, {3, -3}};
-  m.erase(1);
   IntMap m_expected = {{2, -2}, {3, -3}};
-  EXPECT_EQ(m_expected, m);
 
-  m.erase(m.begin());
-  m_expected = {{3, -3}};
-  EXPECT_EQ(m_expected, m);
+  SECTION("erase w/ key") {
+    m.erase(1);
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
 
-  m.erase(m.cbegin());
-  EXPECT_TRUE(m.empty());
+  SECTION("erase w/ iterator") {
+    m.erase(m.begin());
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
+
+  SECTION("erase w/ const iterator") {
+    m.erase(m.cbegin());
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
 }
 
-TEST(LinearMapTest, MoveErase) {
+TEST_CASE("linear map move erase", "[linear_map]") {
   using MoveMap = ext::linear_map<int, int, ext::MoveEraser>;
   MoveMap m = {{1, -1}, {2, -2}, {3, -3}};
-  m.erase(1);
   MoveMap m_expected = {{3, -3}, {2, -2}};
-  EXPECT_EQ(m_expected, m);
 
-  m.erase(m.begin());
-  m_expected = {{2, -2}};
-  EXPECT_EQ(m_expected, m);
+  SECTION("erase w/ key") {
+    m.erase(1);
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
 
-  m.erase(m.cbegin());
-  EXPECT_TRUE(m.empty());
+  SECTION("erase w/ iterator") {
+    m.erase(m.begin());
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
+
+  SECTION("erase w/ const iterator") {
+    m.erase(m.cbegin());
+    CHECK(m == m_expected);
+    CHECK(m.data() == m_expected.data());
+  }
 }
 
-TEST(LinearMapTest, Find) {
+TEST_CASE("linear map find", "[linear_map]") {
   IntMap m = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(1, m.count(1));
-  EXPECT_EQ(0, m.count(5));
 
-  EXPECT_EQ(m.begin(), m.find(1));
-  EXPECT_EQ(1, m.find(1)->first);
+  CHECK(m.count(1) == 1);
+  CHECK(m.count(5) == 0);
+
+  CHECK(m.find(1) == m.begin());
+  CHECK(m.find(1)->first == 1);
   int key = 2;
-  EXPECT_EQ(m.begin() + 1, m.find(key));
-  EXPECT_EQ(key, m.find(key)->first);
-  EXPECT_EQ(m.begin() + 2, m.find(3));
-  EXPECT_EQ(m.end(), m.find(5));
+  CHECK(m.find(key) == std::next(m.begin(), 1));
+  CHECK(m.find(key)->first == key);
+  CHECK(m.find(3) == std::next(m.begin(), 2));
+  CHECK(m.find(5) == m.end());
 }
 
-TEST(LinearMapTest, OperatorIndex) {
+TEST_CASE("linear map operator index", "[linear_map]") {
   IntMap m;
   m[1] = -1;
   int k = 2;
   m[k] = -2;
   m[3] = -3;
   IntMap expected = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(expected, m);
+  REQUIRE(m == expected);
 
   m[3] = -4;
   IntMap changed = {{1, -1}, {2, -2}, {3, -4}};
-  EXPECT_EQ(changed, m);
+  REQUIRE(m == changed);
 }
 
-TEST(LinearMapTest, At) {
+TEST_CASE("linear map at", "[linear_map]") {
   IntMap m = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(-1, m.at(1));
-  EXPECT_THROW(m.at(5), std::out_of_range);
+  CHECK(m.at(1) == -1);
+  CHECK_THROWS_AS(m.at(5), std::out_of_range);
 
   const auto& m_ref = m;
-  EXPECT_EQ(-2, m_ref.at(2));
+  CHECK(m_ref.at(2) == -2);
 
   m.at(2) = -4;
   IntMap m_expected = {{1, -1}, {2, -4}, {3, -3}};
-  EXPECT_EQ(m_expected, m);
+  CHECK(m == m_expected);
 }
 
-TEST(LinearMapTest, InsertSingle) {
+TEST_CASE("linear map insert single", "[linear_map]") {
   IntMap m;
   auto ret = m.insert({1, -1});
-  EXPECT_TRUE(ret.second);
-  EXPECT_EQ(m.begin(), ret.first);
-  EXPECT_EQ(1, ret.first->first);
-  EXPECT_EQ(-1, ret.first->second);
+  CHECK(ret.second);
+  REQUIRE_FALSE(ret.first == m.end());
+  CHECK(ret.first == m.begin());
+  CHECK(ret.first->first == 1);
+  CHECK(ret.first->second == -1);
 
   IntMap::value_type v = {2, -2};
   ret = m.insert(v);
-  EXPECT_TRUE(ret.second);
-  EXPECT_EQ(m.begin() + 1, ret.first);
-  EXPECT_EQ(2, ret.first->first);
-  EXPECT_EQ(-2, ret.first->second);
+  CHECK(ret.second);
+  CHECK(ret.first == std::next(m.begin(), 1));
+  CHECK(ret.first->first == 2);
+  CHECK(ret.first->second == -2);
 
   auto repeat = m.insert({2, -3});
-  EXPECT_FALSE(repeat.second);
-  EXPECT_EQ(ret.first, repeat.first);
+  CHECK_FALSE(repeat.second);
+  CHECK(ret.first == repeat.first);
 
   m.insert({3, -3});
   IntMap expected = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(expected, m);
+  CHECK(m == expected);
 }
 
-TEST(LinearMapTest, InsertRange) {
+TEST_CASE("linear map insert range", "[linear_map]") {
   IntMap m;
   std::vector<std::pair<int, int>> data = {{1, -1}, {2, -2}, {3, -3}, {3, -4}};
   IntMap expected = {{1, -1}, {2, -2}, {3, -3}};
 
-  m.insert(data.begin(), data.begin());
-  EXPECT_TRUE(m.empty());
+  SECTION("equal iterators") {
+    m.insert(data.begin(), data.begin());
+    CHECK(m.empty());
+  }
 
-  m.insert(data.begin(), data.begin() + 2);
-  EXPECT_EQ(2, m.size());
+  SECTION("shift two") {
+    m.insert(data.begin(), data.begin() + 2);
+    CHECK(m.size() == 2);
+  }
 
-  m.insert(data.begin(), data.end());
-  EXPECT_EQ(expected.size(), m.size());
-  EXPECT_EQ(expected, m);
+  SECTION("begin to end") {
+    m.insert(data.begin(), data.end());
+    CHECK(m.size() == expected.size());
+    CHECK(m == expected);
+  }
 }
 
-TEST(LinearMapTest, Emplace) {
+TEST_CASE("linear map emplace", "[linear_map]") {
   IntMap m;
   auto ret = m.emplace(1, -1);
-  EXPECT_TRUE(ret.second);
-  EXPECT_EQ(m.begin(), ret.first);
-  EXPECT_EQ(1, ret.first->first);
-  EXPECT_EQ(-1, ret.first->second);
+  CHECK(ret.second);
+  CHECK(ret.first == m.begin());
+  CHECK(ret.first->first == 1);
+  CHECK(ret.first->second == -1);
 
   int k = 2;
   int v = -2;
   ret = m.emplace(k, v);
-  EXPECT_TRUE(ret.second);
-  EXPECT_EQ(m.begin() + 1, ret.first);
-  EXPECT_EQ(2, ret.first->first);
-  EXPECT_EQ(-2, ret.first->second);
+  CHECK(ret.second);
+  CHECK(ret.first == std::next(m.begin()));
+  CHECK(ret.first->first == 2);
+  CHECK(ret.first->second == -2);
 
   auto repeat = m.emplace(2, -3);
-  EXPECT_FALSE(repeat.second);
-  EXPECT_EQ(ret.first, repeat.first);
+  CHECK_FALSE(repeat.second);
+  CHECK(repeat.first == ret.first);
 
   m.emplace(3, -3);
   IntMap expected = {{1, -1}, {2, -2}, {3, -3}};
-  EXPECT_EQ(expected, m);
+  CHECK(m == expected);
 }
 
 }  // namespace scram::test
