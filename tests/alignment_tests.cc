@@ -17,58 +17,58 @@
 
 #include "alignment.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "error.h"
 
 namespace scram::mef::test {
 
-TEST(PhaseTest, TimeFraction) {
-  EXPECT_NO_THROW(Phase("phase", 0.5));
-  EXPECT_NO_THROW(Phase("phase", 0.1));
-  EXPECT_NO_THROW(Phase("phase", 1));
+TEST_CASE("PhaseTest.TimeFraction", "[mef::alignment]") {
+  CHECK_NOTHROW(Phase("phase", 0.5));
+  CHECK_NOTHROW(Phase("phase", 0.1));
+  CHECK_NOTHROW(Phase("phase", 1));
 
-  EXPECT_THROW(Phase("phase", 0), DomainError);
-  EXPECT_THROW(Phase("phase", 1.1), DomainError);
-  EXPECT_THROW(Phase("phase", -0.1), DomainError);
+  CHECK_THROWS_AS(Phase("phase", 0), DomainError);
+  CHECK_THROWS_AS(Phase("phase", 1.1), DomainError);
+  CHECK_THROWS_AS(Phase("phase", -0.1), DomainError);
 }
 
-TEST(AlignmentTest, AddPhase) {
+TEST_CASE("AlignmentTest.AddPhase", "[mef::alignment]") {
   Alignment alignment("mission");
   auto phase_one = std::make_unique<Phase>("one", 0.5);
   auto phase_two = std::make_unique<Phase>("one", 0.1);  // Duplicate name.
   auto phase_three = std::make_unique<Phase>("three", 0.1);
 
-  EXPECT_TRUE(alignment.phases().empty());
+  CHECK(alignment.phases().empty());
   auto* phase_one_address = phase_one.get();
-  ASSERT_NO_THROW(alignment.Add(std::move(phase_one)));
-  EXPECT_EQ(1, alignment.phases().size());
-  EXPECT_EQ(phase_one_address, alignment.phases().begin()->get());
+  REQUIRE_NOTHROW(alignment.Add(std::move(phase_one)));
+  CHECK(alignment.phases().size() == 1);
+  CHECK(alignment.phases().begin()->get() == phase_one_address);
 
-  EXPECT_THROW(alignment.Add(std::move(phase_two)), DuplicateArgumentError);
-  EXPECT_EQ(1, alignment.phases().size());
-  EXPECT_EQ(phase_one_address, alignment.phases().begin()->get());
+  CHECK_THROWS_AS(alignment.Add(std::move(phase_two)), DuplicateArgumentError);
+  CHECK(alignment.phases().size() == 1);
+  CHECK(alignment.phases().begin()->get() == phase_one_address);
 
-  ASSERT_NO_THROW(alignment.Add(std::move(phase_three)));
-  EXPECT_EQ(2, alignment.phases().size());
+  REQUIRE_NOTHROW(alignment.Add(std::move(phase_three)));
+  CHECK(alignment.phases().size() == 2);
 }
 
-TEST(AlignmentTest, Validation) {
+TEST_CASE("AlignmentTest.Validation", "[mef::alignment]") {
   Alignment alignment("mission");
   auto phase_one = std::make_unique<Phase>("one", 0.5);
   auto phase_two = std::make_unique<Phase>("two", 0.5);
   auto phase_three = std::make_unique<Phase>("three", 0.1);
 
-  EXPECT_THROW(alignment.Validate(), ValidityError);
+  CHECK_THROWS_AS(alignment.Validate(), ValidityError);
 
-  ASSERT_NO_THROW(alignment.Add(std::move(phase_one)));
-  EXPECT_THROW(alignment.Validate(), ValidityError);
+  REQUIRE_NOTHROW(alignment.Add(std::move(phase_one)));
+  CHECK_THROWS_AS(alignment.Validate(), ValidityError);
 
-  ASSERT_NO_THROW(alignment.Add(std::move(phase_two)));
-  EXPECT_NO_THROW(alignment.Validate());
+  REQUIRE_NOTHROW(alignment.Add(std::move(phase_two)));
+  CHECK_NOTHROW(alignment.Validate());
 
-  ASSERT_NO_THROW(alignment.Add(std::move(phase_three)));
-  EXPECT_THROW(alignment.Validate(), ValidityError);
+  REQUIRE_NOTHROW(alignment.Add(std::move(phase_three)));
+  CHECK_THROWS_AS(alignment.Validate(), ValidityError);
 }
 
 }  // namespace scram::mef::test

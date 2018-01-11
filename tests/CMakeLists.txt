@@ -10,7 +10,6 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_TEST_SOURCE
-  alignment_tests.cc
   pdag_tests.cc
   initializer_tests.cc
   risk_analysis_tests.cc
@@ -59,6 +58,7 @@ set(SCRAM_CATCH_TEST_SOURCE
   extern_function_tests.cc
   ccf_group_tests.cc
   fault_tree_tests.cc
+  alignment_tests.cc
   performance_tests.cc
   )
 
