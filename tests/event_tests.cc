@@ -17,7 +17,7 @@
 
 #include "event.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "cycle.h"
 #include "error.h"
@@ -26,97 +26,97 @@
 namespace scram::mef::test {
 
 // Test for Event base class.
-TEST(EventTest, Id) {
+TEST_CASE("EventTest.Id", "[mef::event]") {
   BasicEvent event("event_name");
-  EXPECT_EQ(event.id(), "event_name");
+  CHECK("event_name" == event.id());
 }
 
-TEST(BasicEventTest, ExpressionReset) {
+TEST_CASE("BasicEventTest.ExpressionReset", "[mef::event]") {
   BasicEvent event("event");
-  EXPECT_FALSE(event.HasExpression());
+  CHECK_FALSE(event.HasExpression());
   ConstantExpression p_init(0.5);
   event.expression(&p_init);
-  ASSERT_TRUE(event.HasExpression());
-  EXPECT_EQ(0.5, event.p());
+  REQUIRE(event.HasExpression());
+  CHECK(event.p() == 0.5);
 
   ConstantExpression p_change(0.1);
   event.expression(&p_change);
-  ASSERT_TRUE(event.HasExpression());
-  EXPECT_EQ(0.1, event.p());
+  REQUIRE(event.HasExpression());
+  CHECK(event.p() == 0.1);
 }
 
-TEST(BasicEventTest, Validate) {
+TEST_CASE("BasicEventTest.Validate", "[mef::event]") {
   BasicEvent event("event");
-  EXPECT_FALSE(event.HasExpression());
+  CHECK_FALSE(event.HasExpression());
   ConstantExpression p_valid(0.5);
   event.expression(&p_valid);
-  ASSERT_TRUE(event.HasExpression());
-  EXPECT_NO_THROW(event.Validate());
+  REQUIRE(event.HasExpression());
+  CHECK_NOTHROW(event.Validate());
 
   ConstantExpression p_negative(-0.1);
   event.expression(&p_negative);
-  ASSERT_TRUE(event.HasExpression());
-  EXPECT_THROW(event.Validate(), ValidityError);
+  REQUIRE(event.HasExpression());
+  CHECK_THROWS_AS(event.Validate(), ValidityError);
 
   ConstantExpression p_large(1.1);
   event.expression(&p_large);
-  ASSERT_TRUE(event.HasExpression());
-  EXPECT_THROW(event.Validate(), ValidityError);
+  REQUIRE(event.HasExpression());
+  CHECK_THROWS_AS(event.Validate(), ValidityError);
 }
 
-TEST(FormulaTest, VoteNumber) {
+TEST_CASE("FormulaTest.VoteNumber", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
-  EXPECT_EQ(kAnd, top->type());
+  CHECK(top->type() == kAnd);
   // Setting a vote number for non-Vote formula is an error.
-  EXPECT_THROW(top->vote_number(2), LogicError);
+  CHECK_THROWS_AS(top->vote_number(2), LogicError);
   // Resetting to VOTE formula.
   top = FormulaPtr(new Formula(kVote));
-  EXPECT_EQ(kVote, top->type());
+  CHECK(top->type() == kVote);
   // No vote number.
-  EXPECT_THROW(top->vote_number(), LogicError);
+  CHECK_THROWS_AS(top->vote_number(), LogicError);
   // Illegal vote number.
-  EXPECT_THROW(top->vote_number(-2), ValidityError);
+  CHECK_THROWS_AS(top->vote_number(-2), ValidityError);
   // Legal vote number.
-  EXPECT_NO_THROW(top->vote_number(2));
+  CHECK_NOTHROW(top->vote_number(2));
   // Trying to reset the vote number.
-  EXPECT_THROW(top->vote_number(2), LogicError);
+  CHECK_THROWS_AS(top->vote_number(2), LogicError);
   // Requesting the vote number should succeed.
-  ASSERT_NO_THROW(top->vote_number());
-  EXPECT_EQ(2, top->vote_number());
+  REQUIRE_NOTHROW(top->vote_number());
+  CHECK(top->vote_number() == 2);
 }
 
-TEST(FormulaTest, EventArguments) {
+TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   BasicEvent first_child("first");
   BasicEvent second_child("second");
-  EXPECT_EQ(0, top->num_args());
+  CHECK(top->num_args() == 0);
   // Adding first child.
-  EXPECT_NO_THROW(top->AddArgument(&first_child));
+  CHECK_NOTHROW(top->AddArgument(&first_child));
   // Re-adding a child must cause an error.
-  EXPECT_THROW(top->AddArgument(&first_child), ValidityError);
+  CHECK_THROWS_AS(top->AddArgument(&first_child), ValidityError);
   // Check the contents of the children container.
-  EXPECT_EQ(&first_child, std::get<BasicEvent*>(top->event_args().front()));
+  CHECK(std::get<BasicEvent*>(top->event_args().front()) == &first_child);
   // Adding another child.
-  EXPECT_NO_THROW(top->AddArgument(&second_child));
-  EXPECT_EQ(2, top->event_args().size());
-  EXPECT_EQ(&second_child, std::get<BasicEvent*>(top->event_args().back()));
+  CHECK_NOTHROW(top->AddArgument(&second_child));
+  CHECK(top->event_args().size() == 2);
+  CHECK(std::get<BasicEvent*>(top->event_args().back()) == &second_child);
 
-  EXPECT_NO_THROW(top->RemoveArgument(&first_child));
-  EXPECT_EQ(1, top->num_args());
-  EXPECT_THROW(top->RemoveArgument(&first_child), LogicError);
+  CHECK_NOTHROW(top->RemoveArgument(&first_child));
+  CHECK(top->num_args() == 1);
+  CHECK_THROWS_AS(top->RemoveArgument(&first_child), LogicError);
 }
 
-TEST(FormulaTest, FormulaArguments) {
+TEST_CASE("FormulaTest.FormulaArguments", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   FormulaPtr arg(new Formula(kOr));
-  EXPECT_EQ(0, top->num_args());
+  CHECK(top->num_args() == 0);
   Formula* shadow = arg.get();
   // Adding first child.
-  EXPECT_NO_THROW(top->AddArgument(std::move(arg)));  // arg is gone.
-  EXPECT_EQ(shadow, top->formula_args().begin()->get());
+  CHECK_NOTHROW(top->AddArgument(std::move(arg)));  // arg is gone.
+  CHECK(top->formula_args().begin()->get() == shadow);
 }
 
-TEST(MEFGateTest, Cycle) {
+TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   Gate root("root");  // Should not appear in the cycle.
   Gate top("Top");
   Gate middle("Middle");
@@ -138,97 +138,97 @@ TEST(MEFGateTest, Cycle) {
 
   std::vector<Gate*> cycle;
   bool ret = cycle::DetectCycle(&root, &cycle);
-  EXPECT_TRUE(ret);
+  CHECK(ret);
   std::vector<Gate*> print_cycle = {&top, &bottom, &middle, &top};
-  EXPECT_EQ(print_cycle, cycle);
-  EXPECT_EQ("Top->Middle->Bottom->Top", cycle::PrintCycle(cycle));
+  CHECK(cycle == print_cycle);
+  CHECK(cycle::PrintCycle(cycle) == "Top->Middle->Bottom->Top");
 }
 
 // Test gate type validation.
-TEST(FormulaTest, Validate) {
+TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   BasicEvent arg_one("a");
   BasicEvent arg_two("b");
   BasicEvent arg_three("c");
 
   // AND Formula tests.
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
 
   // OR Formula tests.
   top = FormulaPtr(new Formula(kOr));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
 
   // NOT Formula tests.
   top = FormulaPtr(new Formula(kNot));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // NULL Formula tests.
   top = FormulaPtr(new Formula(kNull));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // NOR Formula tests.
   top = FormulaPtr(new Formula(kNor));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
 
   // NAND Formula tests.
   top = FormulaPtr(new Formula(kNand));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
 
   // XOR Formula tests.
   top = FormulaPtr(new Formula(kXor));
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   top->AddArgument(&arg_three);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // VOTE/ATLEAST formula tests.
   top = FormulaPtr(new Formula(kVote));
   top->vote_number(2);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_three);
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
 }
 
-TEST(MEFGateTest, Inhibit) {
+TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
   BasicEvent arg_one("a");
   BasicEvent arg_two("b");
   BasicEvent arg_three("c");
@@ -239,14 +239,14 @@ TEST(MEFGateTest, Inhibit) {
   GatePtr top(new Gate("top"));
   top->formula(FormulaPtr(new Formula(kAnd)));
   top->AddAttribute(inh_attr);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->formula().AddArgument(&arg_one);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->formula().AddArgument(&arg_two);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   top->formula().AddArgument(&arg_three);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   top = GatePtr(new Gate("top"));
   top->formula(FormulaPtr(new Formula(kAnd)));
@@ -258,20 +258,20 @@ TEST(MEFGateTest, Inhibit) {
   arg_three.AddAttribute(cond);
   top->formula().AddArgument(&arg_one);  // Basic event.
   top->formula().AddArgument(&arg_three);  // Conditional event.
-  EXPECT_NO_THROW(top->Validate());
+  CHECK_NOTHROW(top->Validate());
   arg_one.AddAttribute(cond);
-  EXPECT_THROW(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
 }
 
-TEST(PrimaryEventTest, HouseProbability) {
+TEST_CASE("PrimaryEventTest.HouseProbability", "[mef::event]") {
   // House primary event.
   HouseEventPtr primary(new HouseEvent("valve"));
-  EXPECT_FALSE(primary->state());  // Default state.
+  CHECK_FALSE(primary->state());  // Default state.
   // Setting with a valid values.
-  EXPECT_NO_THROW(primary->state(true));
-  EXPECT_TRUE(primary->state());
-  EXPECT_NO_THROW(primary->state(false));
-  EXPECT_FALSE(primary->state());
+  CHECK_NOTHROW(primary->state(true));
+  CHECK(primary->state());
+  CHECK_NOTHROW(primary->state(false));
+  CHECK_FALSE(primary->state());
 }
 
 }  // namespace scram::mef::test
