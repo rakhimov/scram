@@ -17,7 +17,7 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -26,82 +26,84 @@
 namespace scram::test {
 
 // Test with a wrong input.
-TEST(ConfigTest, IOError) {
+TEST_CASE("ConfigTest.IOError", "[config]") {
   std::string config_file = "./nonexistent_configurations.xml";
-  ASSERT_THROW(Config config(config_file), IOError);
+  REQUIRE_THROWS_AS(Config(config_file), IOError);
 }
 
 // Test with XML content validation issues.
-TEST(ConfigTest, ValidityError) {
+TEST_CASE("ConfigTest.ValidityError", "[config]") {
   std::string config_file = "tests/input/fta/invalid_configuration.xml";
-  ASSERT_THROW(Config config(config_file), xml::ValidityError);
+  REQUIRE_THROWS_AS(Config(config_file), xml::ValidityError);
 }
 
 // Test with XML content numerical issues.
-TEST(ConfigTest, NumericalErrors) {
+TEST_CASE("ConfigTest.NumericalErrors", "[config]") {
   std::string config_file = "tests/input/fta/int_overflow_config.xml";
-  ASSERT_THROW(Config config(config_file), xml::ValidityError);
+  REQUIRE_THROWS_AS(Config(config_file), xml::ValidityError);
 }
 
 // Tests all settings with one file.
-TEST(ConfigTest, FullSettings) {
+TEST_CASE("ConfigTest.FullSettings", "[config]") {
   std::string config_file = "tests/input/fta/full_configuration.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
-  EXPECT_EQ(config.input_files().size(), 1);
+  CHECK(config.input_files().size() == 1);
   if (!config.input_files().empty()) {
-    EXPECT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
-              config.input_files().back());
+    auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
+    CHECK(config.input_files().back() == prob);
   }
   // Check the output destination.
-  EXPECT_EQ(cwd + "/tests/input/fta/./temp_results.xml", config.output_path());
+  auto out_dest = cwd + "/tests/input/fta/./temp_results.xml";
+  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
-  EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
-  EXPECT_FALSE(settings.prime_implicants());
-  EXPECT_TRUE(settings.probability_analysis());
-  EXPECT_TRUE(settings.importance_analysis());
-  EXPECT_TRUE(settings.uncertainty_analysis());
-  EXPECT_TRUE(settings.ccf_analysis());
-  EXPECT_TRUE(settings.safety_integrity_levels());
-  EXPECT_EQ(core::Approximation::kRareEvent, settings.approximation());
-  EXPECT_EQ(11, settings.limit_order());
-  EXPECT_EQ(48, settings.mission_time());
-  EXPECT_EQ(1, settings.time_step());
-  EXPECT_EQ(0.009, settings.cut_off());
-  EXPECT_EQ(777, settings.num_trials());
-  EXPECT_EQ(13, settings.num_quantiles());
-  EXPECT_EQ(31, settings.num_bins());
-  EXPECT_EQ(97531, settings.seed());
+  CHECK(settings.algorithm() == core::Algorithm::kBdd);
+  CHECK_FALSE(settings.prime_implicants());
+  CHECK(settings.probability_analysis());
+  CHECK(settings.importance_analysis());
+  CHECK(settings.uncertainty_analysis());
+  CHECK(settings.ccf_analysis());
+  CHECK(settings.safety_integrity_levels());
+  CHECK(settings.approximation() == core::Approximation::kRareEvent);
+  CHECK(settings.limit_order() == 11);
+  CHECK(settings.mission_time() == 48);
+  CHECK(settings.time_step() == 1);
+  CHECK(settings.cut_off() == 0.009);
+  CHECK(settings.num_trials() == 777);
+  CHECK(settings.num_quantiles() == 13);
+  CHECK(settings.num_bins() == 31);
+  CHECK(settings.seed() == 97531);
 }
 
-TEST(ConfigTest, PrimeImplicantsSettings) {
+TEST_CASE("ConfigTest.PrimeImplicantsSettings", "[config]") {
   std::string config_file = "tests/input/fta/pi_configuration.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
-  EXPECT_EQ(config.input_files().size(), 1);
+  CHECK(config.input_files().size() == 1);
   if (!config.input_files().empty()) {
-    EXPECT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
-              config.input_files().back());
+    auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
+    CHECK(config.input_files().back() == prob);
   }
   // Check the output destination.
-  EXPECT_EQ(cwd + "/tests/input/fta/temp_results.xml", config.output_path());
+  auto out_dest = cwd + "/tests/input/fta/temp_results.xml";
+  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
-  EXPECT_EQ(core::Algorithm::kBdd, settings.algorithm());
-  EXPECT_TRUE(settings.prime_implicants());
+  CHECK(settings.algorithm() == core::Algorithm::kBdd);
+  CHECK(settings.prime_implicants());
 }
 
-TEST(ConfigTest, CanonicalPath) {
+TEST_CASE("ConfigTest.CanonicalPath", "[config]") {
   std::string config_file = "tests/input/win_path_in_config.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
   Config config(config_file);
   // Check the input files.
-  ASSERT_EQ(config.input_files().size(), 1);
-  ASSERT_EQ(cwd + "/tests/input/fta/correct_tree_input_with_probs.xml",
-            config.input_files().back());
+  REQUIRE(config.input_files().size() == 1);
+  auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
+  REQUIRE(config.input_files().back() == prob);
 }
 
 }  // namespace scram::test
