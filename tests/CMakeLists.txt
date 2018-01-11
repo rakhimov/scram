@@ -10,7 +10,6 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_CORE_TEST_SOURCE
-  fault_tree_tests.cc
   alignment_tests.cc
   pdag_tests.cc
   initializer_tests.cc
@@ -57,9 +56,10 @@ set(SCRAM_CATCH_TEST_SOURCE
   element_tests.cc
   event_tests.cc
   expression_tests.cc
-  performance_tests.cc
   extern_function_tests.cc
   ccf_group_tests.cc
+  fault_tree_tests.cc
+  performance_tests.cc
   )
 
 # Make tests switch and run in install directory.
