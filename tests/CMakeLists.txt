@@ -12,7 +12,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(SCRAM_CORE_TEST_SOURCE
   initializer_tests.cc
   risk_analysis_tests.cc
-  serialization_tests.cc
   bench_core_tests.cc
   bench_two_train_tests.cc
   bench_lift_tests.cc
@@ -59,6 +58,7 @@ set(SCRAM_CATCH_TEST_SOURCE
   fault_tree_tests.cc
   alignment_tests.cc
   pdag_tests.cc
+  serialization_tests.cc
   performance_tests.cc
   )
 
