@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-project(SCRAM VERSION 0.16.1 LANGUAGES CXX)
+project(SCRAM VERSION 0.16.2 LANGUAGES CXX)
 
 ####################### Begin Options ###################
 
