@@ -283,7 +283,7 @@ To run all performance tests (may take considerable time):
 
 .. code-block:: bash
 
-    scram_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
+    scram_tests [.perf]
 
 
 To run GUI tests

@@ -6,11 +6,9 @@ set -ev
 # And this script is called from the root directory.
 which scram
 which scram_tests
-which scram_catch
 which scram-gui
 
 scram_tests
-scram_catch
 (cd tests && python -m pytest test_scram_call.py)
 (cd build && ctest --verbose)
 

@@ -311,7 +311,7 @@ full test coverage is attempted
 through unit, integration, regression, and benchmarking tests.
 The following tools are used for this purpose:
 
-- GoogleTest_
+- Catch2_
 - `Qt Test`_
 - Pytest_
 
@@ -322,7 +322,7 @@ Guided fuzz testing is performed
 with auto-generated analysis input files
 to discover bugs, bottlenecks, and assumption failures.
 
-.. _GoogleTest: https://github.com/google/googletest
+.. _Catch2: https://github.com/catchorg/Catch2
 .. _Qt Test: http://doc.qt.io/qt-5/qtest-overview.html
 .. _Pytest: https://pytest.org
 .. _Travis CI: https://travis-ci.org/rakhimov/scram

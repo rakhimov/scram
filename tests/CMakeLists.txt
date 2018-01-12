@@ -1,15 +1,11 @@
-# Exclude Debug warnings from the framework.
-set(GTEST_DIR googletest/googletest)
-add_subdirectory("${GTEST_DIR}" EXCLUDE_FROM_ALL)
-include_directories(SYSTEM "${GTEST_DIR}/include")
-
 include_directories(SYSTEM "catch2/single_include")
 
 # Include the project headers.
 include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(SCRAM_CORE_TEST_SOURCE
+# TODO: Transition to Catch.
+set(SCRAM_GTEST_TEST_SOURCE
   risk_analysis_tests.cc
   bench_core_tests.cc
   bench_two_train_tests.cc
@@ -29,22 +25,7 @@ set(SCRAM_CORE_TEST_SOURCE
   bench_gas_leak.cc
   )
 
-# Make tests switch and run in install directory.
-configure_file(scram_unit_test_driver.cc.in scram_unit_test_driver.cc @ONLY)
-
-add_executable(scram_tests ${CMAKE_CURRENT_BINARY_DIR}/scram_unit_test_driver.cc ${SCRAM_CORE_TEST_SOURCE})
-target_link_libraries(scram_tests ${LIBS} scram gtest)
-target_compile_options(scram_tests PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
-
-install(
-  TARGETS scram_tests
-  RUNTIME DESTINATION bin
-  COMPONENT testing
-  )
-
-####################### Catch2 configuration #####################################
-
-set(SCRAM_CATCH_TEST_SOURCE
+set(SCRAM_CORE_TEST_SOURCE
   linear_map_tests.cc
   xml_stream_tests.cc
   settings_tests.cc
@@ -63,22 +44,21 @@ set(SCRAM_CATCH_TEST_SOURCE
   )
 
 # Make tests switch and run in install directory.
-configure_file(scram_catch.cc.in scram_catch.cc @ONLY)  # TODO: Temporary name.
-add_executable(scram_catch ${CMAKE_CURRENT_BINARY_DIR}/scram_catch.cc ${SCRAM_CATCH_TEST_SOURCE})
-target_link_libraries(scram_catch ${LIBS} scram)
-target_compile_options(scram_catch PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
+configure_file(scram_unit_test_driver.cc.in scram_unit_test_driver.cc @ONLY)
+
+add_executable(scram_tests ${CMAKE_CURRENT_BINARY_DIR}/scram_unit_test_driver.cc ${SCRAM_CORE_TEST_SOURCE})
+target_link_libraries(scram_tests ${LIBS} scram)
+target_compile_options(scram_tests PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 
 install(
-  TARGETS scram_catch
+  TARGETS scram_tests
   RUNTIME DESTINATION bin
   COMPONENT testing
   )
 
-######################## End Catch2 configuration ################################
-
 # Create dummy library to test dynamic loading and extern function.
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
-target_compile_options(scram_tests PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
+target_compile_options(scram_dummy_extern PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
 if(WIN32)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 install(
