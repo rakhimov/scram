@@ -6,7 +6,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # TODO: Transition to Catch.
 set(SCRAM_GTEST_TEST_SOURCE
-  risk_analysis_tests.cc
   bench_core_tests.cc
   bench_two_train_tests.cc
   bench_lift_tests.cc
@@ -40,6 +39,7 @@ set(SCRAM_CORE_TEST_SOURCE
   pdag_tests.cc
   initializer_tests.cc
   serialization_tests.cc
+  risk_analysis_tests.cc
   performance_tests.cc
   )
 

@@ -22,21 +22,29 @@
 #include <set>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include <boost/range/algorithm.hpp>
 
+/// Transitional macros from GoogleTest.
+#define TEST_F(Fixture, Name) \
+  TEST_CASE_METHOD(Fixture, #Fixture "." #Name, "[risk]")
+/// Parametrized tests by the by analysis algorithms.
+#define TEST_P(Fixture, Name) \
+  TEST_CASE_METHOD(Fixture, #Fixture "." #Name, "[risk][bdd][pi][mocus][zbdd]")
+
 namespace scram::core::test {
 
-class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
- protected:
+class RiskAnalysisTest {
+ public:
   using ImportanceContainer =
       std::vector<std::pair<std::string, ImportanceFactors>>;
 
   static const std::set<std::set<std::string>> kUnity;  ///< Special unity set.
 
-  void SetUp() override;
+  RiskAnalysisTest();
 
+ protected:
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files,
                          bool allow_extern = false);
@@ -92,12 +100,12 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   void TestImportance(const ImportanceContainer& expected) {
-#define IMP_EQ(field) \
-  EXPECT_NEAR(test.field, result.field, (1e-3 * result.field)) << entry.first
+#define IMP_EQ(field) CHECK(result.field == Approx(test.field).epsilon(1e-3))
     for (const auto& entry : expected) {
+      INFO("event: " + entry.first);
       const ImportanceFactors& result = importance(entry.first);
       const ImportanceFactors& test = entry.second;
-      EXPECT_EQ(test.occurrence, result.occurrence) << entry.first;
+      CHECK(result.occurrence == test.occurrence);
       IMP_EQ(mif);
       IMP_EQ(cif);
       IMP_EQ(dif);
@@ -133,6 +141,12 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   /// into readable and testable strings.
   /// Complements are communicated with "not" prefix.
   std::set<std::string> Convert(const Product& product);
+
+  /// @todo Provide parametrized tests.
+  /// @{
+  bool HasParam() { return false; }
+  std::string GetParam() { return "bdd"; }
+  /// @}
 
   struct Result {
     std::map<std::set<std::string>, double> product_probability;
