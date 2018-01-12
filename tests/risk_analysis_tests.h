@@ -42,9 +42,14 @@
 #define EXPECT_TRUE CHECK
 #define ASSERT_TRUE REQUIRE
 
+int main(int argc, char* argv[]);  ///< Sets the parameter.
+
 namespace scram::core::test {
 
 class RiskAnalysisTest {
+  friend int ::main(int argc, char* argv[]);  ///< Sets the parameter.
+  static const char* parameter_;  ///< Algorithm parameter.
+
  public:
   using ImportanceContainer =
       std::vector<std::pair<std::string, ImportanceFactors>>;
@@ -153,8 +158,8 @@ class RiskAnalysisTest {
 
   /// @todo Provide parametrized tests.
   /// @{
-  bool HasParam() { return false; }
-  std::string GetParam() { return "bdd"; }
+  bool HasParam() { return parameter_; }
+  const char* GetParam() { return parameter_; }
   /// @}
 
   struct Result {

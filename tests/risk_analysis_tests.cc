@@ -29,17 +29,19 @@
 
 namespace scram::core::test {
 
+const char* scram::core::test::RiskAnalysisTest::parameter_ = nullptr;
+
 const std::set<std::set<std::string>> RiskAnalysisTest::kUnity = {
     std::set<std::string>{}};
 
 RiskAnalysisTest::RiskAnalysisTest() {
   if (HasParam()) {
-    std::string param = GetParam();
+    std::string_view param = GetParam();
     if (param == "pi") {
       settings.algorithm("bdd");
       settings.prime_implicants(true);
     } else {
-      settings.algorithm(GetParam());
+      settings.algorithm(param);
     }
   }
 }

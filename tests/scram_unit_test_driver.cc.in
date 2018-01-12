@@ -20,10 +20,39 @@
 #include <boost/filesystem.hpp>
 #include <catch.hpp>
 
-/// @todo Parametrized test for "bdd", "pi", "zbdd", "mocus".
+#include "risk_analysis_tests.h"
+
+/// @todo Provide proper parametrized tests.
 int main(int argc, char* argv[]) {
   boost::system::error_code ret;
   boost::filesystem::current_path("@CMAKE_SOURCE_DIR@", ret);
   assert(ret == 0);
-  return Catch::Session().run(argc, argv) > 0;  // Catch abuses exit codes.
+  auto announce = [] {
+    Catch::cout() << "#################### Running with: "
+                  << scram::core::test::RiskAnalysisTest::parameter_
+                  << " ####################" << std::endl;
+  };
+
+  Catch::Session session;
+
+  // Workaround for parametrized tests.
+  scram::core::test::RiskAnalysisTest::parameter_ = "bdd";
+  announce();
+  bool code = session.run(argc, argv) > 0;  // Catch abuses exit codes.
+  std::vector<char*> extra_args(argv, argv + argc);
+  extra_args.push_back(const_cast<char*>("[pi]"));
+  scram::core::test::RiskAnalysisTest::parameter_ = "pi";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+
+  extra_args.back() = const_cast<char*>("[mocus]");
+  scram::core::test::RiskAnalysisTest::parameter_ = "mocus";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+
+  extra_args.back() = const_cast<char*>("[zbdd]");
+  scram::core::test::RiskAnalysisTest::parameter_ = "zbdd";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+  return code;
 }
