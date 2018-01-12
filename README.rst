@@ -60,7 +60,7 @@ Building and Installing
 Git Submodules
 ==============
 
-Some dependencies are provided with git submodules (e.g., Google Test).
+Some dependencies are provided with git submodules (e.g., Catch2).
 In order to initialize all the submodules,
 this repository must be cloned recursively with ``git clone --recursive``,
 or the following commands must be executed after a normal clone.
