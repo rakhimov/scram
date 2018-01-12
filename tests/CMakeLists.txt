@@ -4,26 +4,6 @@ include_directories(SYSTEM "catch2/single_include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# TODO: Transition to Catch.
-set(SCRAM_GTEST_TEST_SOURCE
-  bench_core_tests.cc
-  bench_two_train_tests.cc
-  bench_lift_tests.cc
-  bench_ne574_tests.cc
-  bench_theatre_tests.cc
-  bench_three_motor_tests.cc
-  bench_200_event_tests.cc
-  bench_small_tree_tests.cc
-  bench_bscu_tests.cc
-  bench_chinese_tree_tests.cc
-  bench_baobab1_tests.cc
-  bench_baobab2_tests.cc
-  bench_CEA9601_tests.cc
-  bench_hipps_tests.cc
-  bench_attack.cc
-  bench_gas_leak.cc
-  )
-
 set(SCRAM_CORE_TEST_SOURCE
   linear_map_tests.cc
   xml_stream_tests.cc
@@ -40,6 +20,22 @@ set(SCRAM_CORE_TEST_SOURCE
   initializer_tests.cc
   serialization_tests.cc
   risk_analysis_tests.cc
+  bench_core_tests.cc
+  bench_two_train_tests.cc
+  bench_lift_tests.cc
+  bench_ne574_tests.cc
+  bench_theatre_tests.cc
+  bench_three_motor_tests.cc
+  bench_200_event_tests.cc
+  bench_small_tree_tests.cc
+  bench_bscu_tests.cc
+  bench_chinese_tree_tests.cc
+  bench_baobab1_tests.cc
+  bench_baobab2_tests.cc
+  bench_CEA9601_tests.cc
+  bench_hipps_tests.cc
+  bench_attack.cc
+  bench_gas_leak.cc
   performance_tests.cc
   )
 

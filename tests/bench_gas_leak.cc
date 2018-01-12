@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
-
 #include "risk_analysis_tests.h"
 
 namespace scram::core::test {
@@ -33,8 +31,9 @@ TEST_F(RiskAnalysisTest, GasLeakReactive) {
   const auto& results = sequences();
   ASSERT_EQ(8, results.size());
   for (const auto& result : expected) {
-    ASSERT_TRUE(results.count(result.first)) << result.first;
-    EXPECT_NEAR(result.second, results.at(result.first), 1e-5) << result.first;
+    INFO("seq: " + result.first);
+    ASSERT_TRUE(results.count(result.first));
+    EXPECT_NEAR(result.second, results.at(result.first), 1e-5);
   }
 }
 

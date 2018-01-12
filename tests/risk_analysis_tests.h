@@ -32,6 +32,15 @@
 /// Parametrized tests by the by analysis algorithms.
 #define TEST_P(Fixture, Name) \
   TEST_CASE_METHOD(Fixture, #Fixture "." #Name, "[risk][bdd][pi][mocus][zbdd]")
+#define ASSERT_NO_THROW REQUIRE_NOTHROW
+#define EXPECT_NEAR(expected, value, delta) \
+  CHECK((value) == Approx(expected).margin(delta))
+#define EXPECT_EQ(expected, value) CHECK((value) == (expected))
+#define EXPECT_DOUBLE_EQ(expected, value) CHECK((value) == Approx(expected))
+#define ASSERT_EQ(expected, value) REQUIRE((value) == (expected))
+#define ASSERT_DOUBLE_EQ(expected, value) REQUIRE((value) == Approx(expected))
+#define EXPECT_TRUE CHECK
+#define ASSERT_TRUE REQUIRE
 
 namespace scram::core::test {
 
