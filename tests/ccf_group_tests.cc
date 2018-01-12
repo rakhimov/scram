@@ -17,33 +17,33 @@
 
 #include "ccf_group.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "error.h"
 #include "expression/constant.h"
 
 namespace scram::mef::test {
 
-TEST(CcfGroupTest, AddMemberRepeated) {
+TEST_CASE("CcfGroupTest.AddMemberRepeated", "[mef::ccf_group]") {
   BetaFactorModel ccf_group("general");
   BasicEvent member("id");
-  ASSERT_NO_THROW(ccf_group.AddMember(&member));
-  EXPECT_THROW(ccf_group.AddMember(&member), ValidityError);
+  REQUIRE_NOTHROW(ccf_group.AddMember(&member));
+  CHECK_THROWS_AS(ccf_group.AddMember(&member), ValidityError);
 }
 
-TEST(CcfGroupTest, AddMemberAfterDistribution) {
+TEST_CASE("CcfGroupTest.AddMemberAfterDistribution", "[mef::ccf_group]") {
   BetaFactorModel ccf_group("general");
 
   BasicEvent member_one("id");
-  ASSERT_NO_THROW(ccf_group.AddMember(&member_one));
+  REQUIRE_NOTHROW(ccf_group.AddMember(&member_one));
 
   BasicEvent member_two("two");
-  EXPECT_NO_THROW(ccf_group.AddMember(&member_two));
+  CHECK_NOTHROW(ccf_group.AddMember(&member_two));
 
-  ASSERT_NO_THROW(ccf_group.AddDistribution(&ConstantExpression::kOne));
+  REQUIRE_NOTHROW(ccf_group.AddDistribution(&ConstantExpression::kOne));
 
   BasicEvent member_three("three");
-  EXPECT_THROW(ccf_group.AddMember(&member_three), LogicError);
+  CHECK_THROWS_AS(ccf_group.AddMember(&member_three), LogicError);
 }
 
 }  // namespace scram::mef::test

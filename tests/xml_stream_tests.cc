@@ -17,92 +17,97 @@
 
 #include "xml_stream.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 namespace scram::xml::test {
 
 /// This fixture provides document stream for tests.
-class XmlStreamTest : public ::testing::Test {
+class XmlStreamTest {
  public:
+  XmlStreamTest() : xml_stream_(stderr) {}
   ~XmlStreamTest() noexcept {}
 
  protected:
-  XmlStreamTest() : xml_stream_(stderr) {}
   Stream xml_stream_;  ///< The stream to add elements into per test case.
 };
 
-TEST_F(XmlStreamTest, ElementConstructor) {
-  EXPECT_THROW(xml_stream_.root(""), StreamError);
-  EXPECT_NO_THROW(xml_stream_.root("element"));
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement ctor", "[xml_stream]") {
+  CHECK_THROWS_AS(xml_stream_.root(""), StreamError);
+  CHECK_NOTHROW(xml_stream_.root("element"));
 }
 
-TEST_F(XmlStreamTest, StreamConstructor) {
-  EXPECT_NO_THROW(xml_stream_.root("root"));
-  EXPECT_THROW(xml_stream_.root("root"), StreamError);
+TEST_CASE_METHOD(XmlStreamTest, "xml::Stream ctor", "[xml_stream]") {
+  CHECK_NOTHROW(xml_stream_.root("root"));
+  CHECK_THROWS_AS(xml_stream_.root("root"), StreamError);
 }
 
-TEST_F(XmlStreamTest, SetAttribute) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement SetAttribute",
+                 "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
-  EXPECT_THROW(el.SetAttribute("", "value"), StreamError);
-  EXPECT_NO_THROW(el.SetAttribute("attr1", "value"));
-  EXPECT_NO_THROW(el.SetAttribute("attr2", ""));
-  EXPECT_NO_THROW(el.SetAttribute("attr3", 7));
+  CHECK_THROWS_AS(el.SetAttribute("", "value"), StreamError);
+  CHECK_NOTHROW(el.SetAttribute("attr1", "value"));
+  CHECK_NOTHROW(el.SetAttribute("attr2", ""));
+  CHECK_NOTHROW(el.SetAttribute("attr3", 7));
 }
 
-TEST_F(XmlStreamTest, AddText) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement AddText", "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
-  EXPECT_NO_THROW(el.AddText("text"));
-  EXPECT_NO_THROW(el.AddText(7));
+  CHECK_NOTHROW(el.AddText("text"));
+  CHECK_NOTHROW(el.AddText(7));
 }
 
-TEST_F(XmlStreamTest, AddChild) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement AddChild", "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
-  EXPECT_THROW(el.AddChild(""), StreamError);
-  EXPECT_NO_THROW(el.AddChild("child"));
+  CHECK_THROWS_AS(el.AddChild(""), StreamError);
+  CHECK_NOTHROW(el.AddChild("child"));
 }
 
-TEST_F(XmlStreamTest, StateAfterSetAttribute) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement StateAfterSetAttribute",
+                 "[xml_stream]") {
   StreamElement root = xml_stream_.root("root");
   {
     StreamElement el = root.AddChild("element");
-    EXPECT_NO_THROW(el.SetAttribute("attr", "value"));
-    EXPECT_NO_THROW(el.AddText("text"));
+    CHECK_NOTHROW(el.SetAttribute("attr", "value"));
+    CHECK_NOTHROW(el.AddText("text"));
   }
   {
     StreamElement el = root.AddChild("element");
-    EXPECT_NO_THROW(el.SetAttribute("attr", "value"));
-    EXPECT_NO_THROW(el.AddChild("child"));
+    CHECK_NOTHROW(el.SetAttribute("attr", "value"));
+    CHECK_NOTHROW(el.AddChild("child"));
   }
 }
 
-TEST_F(XmlStreamTest, StateAfterAddText) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement StateAfterAddText",
+                 "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
-  EXPECT_NO_THROW(el.AddText("text"));  // Locks on text.
-  EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
-  EXPECT_THROW(el.AddChild("another_child"), StreamError);
-  EXPECT_NO_THROW(el.AddText(" and continuation..."));
+  CHECK_NOTHROW(el.AddText("text"));  // Locks on text.
+  CHECK_THROWS_AS(el.SetAttribute("attr", "value"), StreamError);
+  CHECK_THROWS_AS(el.AddChild("another_child"), StreamError);
+  CHECK_NOTHROW(el.AddText(" and continuation..."));
 }
 
-TEST_F(XmlStreamTest, StateAfterAddChild) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement StateAfterAddChild",
+                 "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
-  EXPECT_NO_THROW(el.AddChild("child"));  // Locks on elements.
-  EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
-  EXPECT_THROW(el.AddText("text"), StreamError);
-  EXPECT_NO_THROW(el.AddChild("another_child"));
+  CHECK_NOTHROW(el.AddChild("child"));  // Locks on elements.
+  CHECK_THROWS_AS(el.SetAttribute("attr", "value"), StreamError);
+  CHECK_THROWS_AS(el.AddText("text"), StreamError);
+  CHECK_NOTHROW(el.AddChild("another_child"));
 }
 
-TEST_F(XmlStreamTest, InactiveParent) {
+TEST_CASE_METHOD(XmlStreamTest, "xml::StreamElement InactiveParent",
+                 "[xml_stream]") {
   StreamElement el = xml_stream_.root("element");
   {
     StreamElement child = el.AddChild("child");  // Make the parent inactive.
-    EXPECT_THROW(el.SetAttribute("attr", "value"), StreamError);
-    EXPECT_THROW(el.AddText("text"), StreamError);
-    EXPECT_THROW(el.AddChild("another_child"), StreamError);
+    CHECK_THROWS_AS(el.SetAttribute("attr", "value"), StreamError);
+    CHECK_THROWS_AS(el.AddText("text"), StreamError);
+    CHECK_THROWS_AS(el.AddChild("another_child"), StreamError);
     // Child must be active without problems.
-    EXPECT_NO_THROW(child.SetAttribute("sub_attr", "value"));
-    EXPECT_NO_THROW(child.AddChild("sub_child"));
+    CHECK_NOTHROW(child.SetAttribute("sub_attr", "value"));
+    CHECK_NOTHROW(child.AddChild("sub_child"));
   }  // Lock is off at the scope exit.
-  EXPECT_NO_THROW(el.AddChild("another_child"));
+  CHECK_NOTHROW(el.AddChild("another_child"));
 }
 
 }  // namespace scram::xml::test

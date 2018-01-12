@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "fault_tree_analysis.h"
 #include "initializer.h"
@@ -29,15 +29,14 @@
 
 namespace scram::core::test {
 
-class PerformanceTest : public ::testing::Test {
- protected:
-  void SetUp() override {
+class PerformanceTest {
+ public:
+  PerformanceTest() {
     settings.algorithm("mocus");
     delta = 0.10;  // % variation of values.
   }
 
-  void TearDown() override {}
-
+ protected:
   // Convenient function to manage analysis of one model in input files.
   void Analyze(const std::vector<std::string>& input_files) {
     {

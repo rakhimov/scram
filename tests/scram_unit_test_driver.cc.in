@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015, 2017-2018 Olzhas Rakhimov
+ * Copyright (C) 2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,25 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define CATCH_CONFIG_RUNNER
+
 #include <boost/filesystem.hpp>
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "risk_analysis_tests.h"
 
-namespace scram::core::test {
-
-INSTANTIATE_TEST_CASE_P(BDD, RiskAnalysisTest, ::testing::Values("bdd"));
-INSTANTIATE_TEST_CASE_P(PI, RiskAnalysisTest, ::testing::Values("pi"));
-INSTANTIATE_TEST_CASE_P(ZBDD, RiskAnalysisTest, ::testing::Values("zbdd"));
-INSTANTIATE_TEST_CASE_P(MOCUS, RiskAnalysisTest, ::testing::Values("mocus"));
-
-}  // namespace scram::core::test
-
+/// @todo Provide proper parametrized tests.
 int main(int argc, char* argv[]) {
   boost::system::error_code ret;
   boost::filesystem::current_path("@CMAKE_SOURCE_DIR@", ret);
   assert(ret == 0);
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  auto announce = [] {
+    Catch::cout() << "#################### Running with: "
+                  << scram::core::test::RiskAnalysisTest::parameter_
+                  << " ####################" << std::endl;
+  };
+
+  Catch::Session session;
+
+  // Workaround for parametrized tests.
+  scram::core::test::RiskAnalysisTest::parameter_ = "bdd";
+  announce();
+  bool code = session.run(argc, argv) > 0;  // Catch abuses exit codes.
+  std::vector<char*> extra_args(argv, argv + argc);
+  extra_args.push_back(const_cast<char*>("[pi]"));
+  scram::core::test::RiskAnalysisTest::parameter_ = "pi";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+
+  extra_args.back() = const_cast<char*>("[mocus]");
+  scram::core::test::RiskAnalysisTest::parameter_ = "mocus";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+
+  extra_args.back() = const_cast<char*>("[zbdd]");
+  scram::core::test::RiskAnalysisTest::parameter_ = "zbdd";
+  announce();
+  code |= session.run(extra_args.size(), extra_args.data()) > 0;
+  return code;
 }

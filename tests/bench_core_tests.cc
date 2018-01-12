@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
-
 #include "risk_analysis_tests.h"
 
 namespace scram::core::test {

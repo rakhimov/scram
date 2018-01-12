@@ -17,7 +17,7 @@
 
 #include "serialization.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "utility.h"
 
@@ -28,8 +28,10 @@
 
 namespace scram::mef::test {
 
-TEST(SerializationTest, InputOutput) {
-  static xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
+static int i = 0;
+
+TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
+  xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
       {"tests/input/fta/correct_tree_input.xml"},
@@ -41,14 +43,16 @@ TEST(SerializationTest, InputOutput) {
       {"tests/input/fta/correct_formulas.xml"},
       {"input/Theatre/theatre.xml"},
       {"input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"}};
+
+  std::shared_ptr<Model> model;
   for (const auto& input : inputs) {
-    std::shared_ptr<Model> model;
-    ASSERT_NO_THROW(model = mef::Initializer(input, core::Settings{}).model());
+    INFO("inputs: " +
+         Catch::StringMaker<std::vector<std::string>>::convert(input))
+    REQUIRE_NOTHROW(model = mef::Initializer(input, core::Settings{}).model());
     fs::path temp_file = utility::GenerateFilePath();
-    ASSERT_NO_THROW(Serialize(*model, temp_file.string()))
-        << input.front() << " => " << temp_file;
-    ASSERT_NO_THROW(xml::Document(temp_file.string(), &validator))
-        << input.front() << " => " << temp_file;
+    INFO("temp file: " + temp_file.string());
+    REQUIRE_NOTHROW(Serialize(*model, temp_file.string()));
+    REQUIRE_NOTHROW(xml::Document(temp_file.string(), &validator));
     fs::remove(temp_file);
   }
 }

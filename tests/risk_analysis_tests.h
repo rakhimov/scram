@@ -22,21 +22,43 @@
 #include <set>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include <boost/range/algorithm.hpp>
 
+/// Transitional macros from GoogleTest.
+#define TEST_F(Fixture, Name) \
+  TEST_CASE_METHOD(Fixture, #Fixture "." #Name, "[risk]")
+/// Parametrized tests by the by analysis algorithms.
+#define TEST_P(Fixture, Name) \
+  TEST_CASE_METHOD(Fixture, #Fixture "." #Name, "[risk][bdd][pi][mocus][zbdd]")
+#define ASSERT_NO_THROW REQUIRE_NOTHROW
+#define EXPECT_NEAR(expected, value, delta) \
+  CHECK((value) == Approx(expected).margin(delta))
+#define EXPECT_EQ(expected, value) CHECK((value) == (expected))
+#define EXPECT_DOUBLE_EQ(expected, value) CHECK((value) == Approx(expected))
+#define ASSERT_EQ(expected, value) REQUIRE((value) == (expected))
+#define ASSERT_DOUBLE_EQ(expected, value) REQUIRE((value) == Approx(expected))
+#define EXPECT_TRUE CHECK
+#define ASSERT_TRUE REQUIRE
+
+int main(int argc, char* argv[]);  ///< Sets the parameter.
+
 namespace scram::core::test {
 
-class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
- protected:
+class RiskAnalysisTest {
+  friend int ::main(int argc, char* argv[]);  ///< Sets the parameter.
+  static const char* parameter_;  ///< Algorithm parameter.
+
+ public:
   using ImportanceContainer =
       std::vector<std::pair<std::string, ImportanceFactors>>;
 
   static const std::set<std::set<std::string>> kUnity;  ///< Special unity set.
 
-  void SetUp() override;
+  RiskAnalysisTest();
 
+ protected:
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files,
                          bool allow_extern = false);
@@ -92,12 +114,12 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   void TestImportance(const ImportanceContainer& expected) {
-#define IMP_EQ(field) \
-  EXPECT_NEAR(test.field, result.field, (1e-3 * result.field)) << entry.first
+#define IMP_EQ(field) CHECK(result.field == Approx(test.field).epsilon(1e-3))
     for (const auto& entry : expected) {
+      INFO("event: " + entry.first);
       const ImportanceFactors& result = importance(entry.first);
       const ImportanceFactors& test = entry.second;
-      EXPECT_EQ(test.occurrence, result.occurrence) << entry.first;
+      CHECK(result.occurrence == test.occurrence);
       IMP_EQ(mif);
       IMP_EQ(cif);
       IMP_EQ(dif);
@@ -133,6 +155,12 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   /// into readable and testable strings.
   /// Complements are communicated with "not" prefix.
   std::set<std::string> Convert(const Product& product);
+
+  /// @todo Provide parametrized tests.
+  /// @{
+  bool HasParam() { return parameter_; }
+  const char* GetParam() { return parameter_; }
+  /// @}
 
   struct Result {
     std::map<std::set<std::string>, double> product_probability;

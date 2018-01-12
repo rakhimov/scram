@@ -17,7 +17,7 @@
 
 #include "element.h"
 
-#include <gtest/gtest.h>
+#include <catch.hpp>
 
 #include "error.h"
 
@@ -32,86 +32,86 @@ class NamedElement : public Element {
 
 }  // namespace
 
-TEST(ElementTest, Name) {
-  EXPECT_THROW(NamedElement(""), LogicError);
+TEST_CASE("ElementTest.Name", "[mef::element]") {
+  CHECK_THROWS_AS(NamedElement(""), LogicError);
 
-  EXPECT_THROW(NamedElement(".name"), ValidityError);
-  EXPECT_THROW(NamedElement("na.me"), ValidityError);
-  EXPECT_THROW(NamedElement("name."), ValidityError);
+  CHECK_THROWS_AS(NamedElement(".name"), ValidityError);
+  CHECK_THROWS_AS(NamedElement("na.me"), ValidityError);
+  CHECK_THROWS_AS(NamedElement("name."), ValidityError);
 
-  EXPECT_NO_THROW(NamedElement("name"));
+  CHECK_NOTHROW(NamedElement("name"));
   NamedElement el("name");
-  EXPECT_EQ("name", el.name());
+  CHECK(el.name() == "name");
 
   // Illegal names by MEF.
   // However, this names don't mess with class and reference invariants.
-  EXPECT_NO_THROW(NamedElement("na me"));
-  EXPECT_NO_THROW(NamedElement("na\nme"));
-  EXPECT_NO_THROW(NamedElement("\tname"));
-  EXPECT_NO_THROW(NamedElement("name?"));
+  CHECK_NOTHROW(NamedElement("na me"));
+  CHECK_NOTHROW(NamedElement("na\nme"));
+  CHECK_NOTHROW(NamedElement("\tname"));
+  CHECK_NOTHROW(NamedElement("name?"));
 }
 
-TEST(ElementTest, Label) {
+TEST_CASE("ElementTest.Label", "[mef::element]") {
   NamedElement el("name");
-  EXPECT_EQ("", el.label());
-  EXPECT_NO_THROW(el.label(""));
-  ASSERT_NO_THROW(el.label("label"));
-  EXPECT_EQ("label", el.label());
-  EXPECT_NO_THROW(el.label("new_label"));
-  EXPECT_NO_THROW(el.label(""));
+  CHECK(el.label() == "");
+  CHECK_NOTHROW(el.label(""));
+  REQUIRE_NOTHROW(el.label("label"));
+  CHECK(el.label() == "label");
+  CHECK_NOTHROW(el.label("new_label"));
+  CHECK_NOTHROW(el.label(""));
 }
 
-TEST(ElementTest, AddAttribute) {
-  NamedElement el("name");
-  Attribute attr;
-  attr.name = "impact";
-  attr.value = "0.1";
-  attr.type = "float";
-  EXPECT_THROW(el.GetAttribute(attr.name), LogicError);
-  ASSERT_NO_THROW(el.AddAttribute(attr));
-  EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
-  ASSERT_TRUE(el.HasAttribute(attr.name));
-  ASSERT_NO_THROW(el.GetAttribute(attr.name));
-  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
-  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
-}
-
-TEST(ElementTest, SetAttribute) {
+TEST_CASE("ElementTest.AddAttribute", "[mef::element]") {
   NamedElement el("name");
   Attribute attr;
   attr.name = "impact";
   attr.value = "0.1";
   attr.type = "float";
-  EXPECT_THROW(el.GetAttribute(attr.name), LogicError);
-  ASSERT_NO_THROW(el.SetAttribute(attr));
-  EXPECT_THROW(el.AddAttribute(attr), DuplicateArgumentError);
-  ASSERT_TRUE(el.HasAttribute(attr.name));
-  ASSERT_NO_THROW(el.GetAttribute(attr.name));
-  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
-  EXPECT_EQ(attr.name, el.GetAttribute(attr.name).name);
+  CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
+  REQUIRE_NOTHROW(el.AddAttribute(attr));
+  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
+  REQUIRE(el.HasAttribute(attr.name));
+  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
+  CHECK(el.GetAttribute(attr.name).value == attr.value);
+  CHECK(el.GetAttribute(attr.name).name == attr.name);
+}
+
+TEST_CASE("ElementTest.SetAttribute", "[mef::element]") {
+  NamedElement el("name");
+  Attribute attr;
+  attr.name = "impact";
+  attr.value = "0.1";
+  attr.type = "float";
+  CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
+  REQUIRE_NOTHROW(el.SetAttribute(attr));
+  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
+  REQUIRE(el.HasAttribute(attr.name));
+  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
+  CHECK(el.GetAttribute(attr.name).value == attr.value);
+  CHECK(el.GetAttribute(attr.name).name == attr.name);
 
   attr.value = "0.2";
-  ASSERT_NO_THROW(el.SetAttribute(attr));
-  EXPECT_EQ(1, el.attributes().size());
-  ASSERT_NO_THROW(el.GetAttribute(attr.name));
-  EXPECT_EQ(attr.value, el.GetAttribute(attr.name).value);
+  REQUIRE_NOTHROW(el.SetAttribute(attr));
+  CHECK(el.attributes().size() == 1);
+  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
+  CHECK(el.GetAttribute(attr.name).value == attr.value);
 }
 
-TEST(ElementTest, RemoveAttribute) {
+TEST_CASE("ElementTest.RemoveAttribute", "[mef::element]") {
   NamedElement el("name");
   Attribute attr;
   attr.name = "impact";
   attr.value = "0.1";
   attr.type = "float";
 
-  EXPECT_FALSE(el.HasAttribute(attr.name));
-  EXPECT_TRUE(el.attributes().empty());
-  EXPECT_FALSE(el.RemoveAttribute(attr.name));
+  CHECK_FALSE(el.HasAttribute(attr.name));
+  CHECK(el.attributes().empty());
+  CHECK_FALSE(el.RemoveAttribute(attr.name));
 
-  ASSERT_NO_THROW(el.AddAttribute(attr));
-  EXPECT_TRUE(el.RemoveAttribute(attr.name));
-  EXPECT_FALSE(el.HasAttribute(attr.name));
-  EXPECT_TRUE(el.attributes().empty());
+  REQUIRE_NOTHROW(el.AddAttribute(attr));
+  CHECK(el.RemoveAttribute(attr.name));
+  CHECK_FALSE(el.HasAttribute(attr.name));
+  CHECK(el.attributes().empty());
 }
 
 namespace {
@@ -123,13 +123,13 @@ class TestRole : public Role {
 
 }  // namespace
 
-TEST(ElementTest, Role) {
-  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, ".ref"), ValidityError);
-  EXPECT_THROW(TestRole(RoleSpecifier::kPublic, "ref."), ValidityError);
-  EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
+TEST_CASE("ElementTest.Role", "[mef::element]") {
+  CHECK_THROWS_AS(TestRole(RoleSpecifier::kPublic, ".ref"), ValidityError);
+  CHECK_THROWS_AS(TestRole(RoleSpecifier::kPublic, "ref."), ValidityError);
+  CHECK_NOTHROW(TestRole(RoleSpecifier::kPublic, "ref.name"));
 
-  EXPECT_THROW(TestRole(RoleSpecifier::kPrivate, ""), ValidityError);
-  EXPECT_NO_THROW(TestRole(RoleSpecifier::kPublic, ""));
+  CHECK_THROWS_AS(TestRole(RoleSpecifier::kPrivate, ""), ValidityError);
+  CHECK_NOTHROW(TestRole(RoleSpecifier::kPublic, ""));
 }
 
 namespace {
@@ -141,27 +141,27 @@ class NameId : public Id {
 
 }  // namespace
 
-TEST(ElementTest, Id) {
-  EXPECT_THROW(NameId(""), LogicError);
-  EXPECT_NO_THROW(NameId("name"));
-  EXPECT_THROW(NameId("name", "", RoleSpecifier::kPrivate), ValidityError);
+TEST_CASE("ElementTest.Id", "[mef::element]") {
+  CHECK_THROWS_AS(NameId(""), LogicError);
+  CHECK_NOTHROW(NameId("name"));
+  CHECK_THROWS_AS(NameId("name", "", RoleSpecifier::kPrivate), ValidityError);
 
   NameId id_public("name");
-  EXPECT_EQ(id_public.id(), id_public.name());
+  CHECK(id_public.name() == id_public.id());
 
   NameId id_private("name", "path", RoleSpecifier::kPrivate);
-  EXPECT_EQ("path.name", id_private.id());
-  EXPECT_NE(id_private.id(), id_private.name());
+  CHECK(id_private.id() == "path.name");
+  CHECK_FALSE(id_private.name() == id_private.id());
 
-  EXPECT_NE(id_public.id(), id_private.id());
+  CHECK_FALSE(id_private.id() == id_public.id());
 
   // Reset.
   id_public.id("id");
-  EXPECT_EQ("id", id_public.id());
-  EXPECT_EQ("id", id_public.name());
+  CHECK(id_public.id() == "id");
+  CHECK(id_public.name() == "id");
   id_private.id("id");
-  EXPECT_EQ("path.id", id_private.id());
-  EXPECT_EQ("id", id_private.name());
+  CHECK(id_private.id() == "path.id");
+  CHECK(id_private.name() == "id");
 }
 
 }  // namespace scram::mef::test

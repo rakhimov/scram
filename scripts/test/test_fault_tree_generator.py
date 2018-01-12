@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Olzhas Rakhimov
+# Copyright (C) 2014-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,97 +22,120 @@ from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
 from lxml import etree
-from nose.tools import assert_equal, assert_true, assert_is_not_none, \
-    assert_less, assert_raises
+import pytest
 
 from fault_tree_generator import FactorError, Factors, generate_fault_tree, \
     write_info, write_summary, main
 
+# pylint: disable=redefined-outer-name
 
-class FactorsTestCase(TestCase):
-    """Tests for correct setting and calculation of factors."""
 
-    def setUp(self):
-        """Creates partially constructed factors collection."""
-        self.factors = Factors()
+@pytest.fixture()
+def factors():
+    """Creates partially constructed factors collection."""
+    return Factors()
 
-    def test_min_max_prob(self):
-        """Tests setting of probability factors."""
-        assert_raises(FactorError, self.factors.set_min_max_prob, -0.1, 0.5)
-        assert_raises(FactorError, self.factors.set_min_max_prob, 1.1, 0.5)
-        assert_raises(FactorError, self.factors.set_min_max_prob, 0.1, -0.5)
-        assert_raises(FactorError, self.factors.set_min_max_prob, 0.1, 1.5)
-        assert_raises(FactorError, self.factors.set_min_max_prob, 0.5, 0.1)
-        self.factors.set_min_max_prob(0.1, 0.5)
-        assert_equal(0.1, self.factors.min_prob)
-        assert_equal(0.5, self.factors.max_prob)
 
-    def test_set_common_event_factors(self):
-        """Tests setting of probability factors."""
-        self.factors.set_common_event_factors(0.1, 0.1, 2, 2)  # no fail
-        assert_raises(FactorError, self.factors.set_common_event_factors, -0.1,
-                      0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 1.0,
-                      0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      -0.5, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      1.0, 2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0, 0,
-                      2, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      0.1, 1, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      0.1, 101, 2)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      0.1, 2, 1)
-        assert_raises(FactorError, self.factors.set_common_event_factors, 0.1,
-                      0.1, 2, 101)
-        self.factors.set_common_event_factors(0.4, 0.2, 3, 4)
-        assert_equal(0.4, self.factors.common_b)
-        assert_equal(0.2, self.factors.common_g)
-        assert_equal(3, self.factors.parents_b)
-        assert_equal(4, self.factors.parents_g)
+def test_min_max_prob_valid(factors):
+    """Tests setting of valid probability min-max factors."""
+    factors.set_min_max_prob(0.1, 0.5)
+    assert factors.min_prob == 0.1
+    assert factors.max_prob == 0.5
 
-    def test_set_num_factors(self):
-        """Tests setting of size factors."""
-        self.factors.set_num_factors(3, 100, 5, 4)
-        assert_equal(3, self.factors.num_args)
-        assert_equal(100, self.factors.num_basic)
-        assert_equal(5, self.factors.num_house)
-        assert_equal(4, self.factors.num_ccf)
-        # Invalid values.
-        assert_raises(FactorError, self.factors.set_num_factors, 1.5, 100)
-        assert_raises(FactorError, self.factors.set_num_factors, 3, 0)
-        assert_raises(FactorError, self.factors.set_num_factors, 3, 100, -5)
-        assert_raises(FactorError, self.factors.set_num_factors, 3, 100, 0, -4)
+
+@pytest.mark.parametrize("min_value,max_value",
+                         [(-0.1, 0.5), (1.1, 0.5), (0.1, -0.5), (0.1, 1.5),
+                          (0.5, 0.1)])
+def test_min_max_prob_fail(factors, min_value, max_value):
+    """Tests setting of invalid probability min-max factors."""
+    with pytest.raises(FactorError):
+        factors.set_min_max_prob(min_value, max_value)
+
+
+def test_set_common_event_valid(factors):
+    """Tests valid common event factors."""
+    factors.set_common_event_factors(0.4, 0.2, 3, 4)
+    assert factors.common_b == 0.4
+    assert factors.common_g == 0.2
+    assert factors.parents_b == 3
+    assert factors.parents_g == 4
+
+
+@pytest.mark.parametrize(
+    "args", [(-0.1, 0.5, 2, 2), (1.0, 0.5, 2, 2), (0.1, -0.5, 2, 2),
+             (0.1, 1.0, 2, 2), (0, 0, 2, 2), (0.1, 0.1, 1, 2),
+             (0.1, 0.1, 101, 2), (0.1, 0.1, 2, 1), (0.1, 0.1, 2, 101)])
+def test_set_common_event_fail(factors, args):
+    """Tests setting of invalid common event factors."""
+    factors.set_common_event_factors(0.1, 0.1, 2, 2)  # no fail
+    with pytest.raises(FactorError):
+        factors.set_common_event_factors(*args)
+
+
+def test_set_num_factors_valid(factors):
+    """Tests setting of valid size factors."""
+    factors.set_num_factors(3, 100, 5, 4)
+    assert factors.num_args == 3
+    assert factors.num_basic == 100
+    assert factors.num_house == 5
+    assert factors.num_ccf == 4
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        (1.5, 100),
+        (3, 0),
+        (3, 100, -5),
+        (3, 100, 0, -4),
         # Too many house events.
-        assert_raises(FactorError, self.factors.set_num_factors, 3, 5, 5)
+        (3, 5, 5),
         # Too many CCF groups.
-        assert_raises(FactorError, self.factors.set_num_factors, 5, 50, 0, 11)
+        (5, 50, 0, 11)
+    ])
+def test_set_num_factors_fail(factors, args):
+    """Tests setting of invalid size factors."""
+    with pytest.raises(FactorError):
+        factors.set_num_factors(*args)
 
-    def test_set_gate_weights(self):
-        """Tests the setting of gate weights."""
-        assert_raises(FactorError, self.factors.set_gate_weights, [])
-        assert_raises(FactorError, self.factors.set_gate_weights, [-1, 2, 3])
-        assert_raises(FactorError, self.factors.set_gate_weights, [0, 0, 0])
+
+@pytest.mark.parametrize(
+    "args,expected",
+    [
+        ([5, 8, 4, 2, 1], [5, 8, 4, 2, 1]),
+        ([5, 8, 4], [5, 8, 4, 0, 0])  # for padding with 0s
+    ])
+def test_set_gate_weights_valid(factors, args, expected):
+    """Tests the setting of valid gate weights."""
+    factors.set_gate_weights(args)
+    assert factors.get_gate_weights() == expected
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        [],
+        [-1, 2, 3],
+        [0, 0, 0],
         # Too many weights.
-        assert_raises(FactorError, self.factors.set_gate_weights,
-                      [1, 2, 3, 4, 5, 6])
+        [1, 2, 3, 4, 5, 6],
         # XOR or NOT only.
-        assert_raises(FactorError, self.factors.set_gate_weights,
-                      [0, 0, 0, 1, 2])
-        self.factors.set_gate_weights([5, 8, 4, 2, 1])
-        assert_equal([5, 8, 4, 2, 1], self.factors.get_gate_weights())
-        self.factors.set_gate_weights([5, 8, 4])  # for padding with 0s
-        assert_equal([5, 8, 4, 0, 0], self.factors.get_gate_weights())
+        [0, 0, 0, 1, 2],
+    ])
+def test_set_gate_weights_fail(factors, args):
+    """Tests the setting of invalid gate weights."""
+    with pytest.raises(FactorError):
+        factors.set_gate_weights(args)
 
-    def test_constrain_num_gates(self):
-        """Checks invalid setup for constraining gate numbers."""
-        assert_raises(FactorError, self.factors.constrain_num_gate, 0)
-        self.factors.num_args = 4
-        self.factors.num_basic = 400
-        assert_raises(FactorError, self.factors.constrain_num_gate, 50)
+
+def test_constrain_num_gates(factors):
+    """Checks invalid setup for constraining gate numbers."""
+    with pytest.raises(FactorError):
+        factors.constrain_num_gate(0)
+    factors.num_args = 4
+    factors.num_basic = 400
+    with pytest.raises(FactorError):
+        factors.constrain_num_gate(50)  # unsatisfiable
 
 
 class FaultTreeGeneratorTestCase(TestCase):
@@ -136,7 +159,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.num_ccf = 10
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
-        assert_is_not_none(fault_tree)
+        assert fault_tree is not None
         write_info(fault_tree, self.output, 123)
         write_summary(fault_tree, self.output)
         self.output.write(fault_tree.to_xml(1))
@@ -145,7 +168,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         relaxng = etree.RelaxNG(relaxng_doc)
         with open(self.output.name, "r") as test_file:
             doc = etree.parse(test_file)
-            assert_true(relaxng.validate(doc))
+            assert relaxng.validate(doc)
 
     def test_aralia_output(self):
         """Checks if the Aralia format output passes validation."""
@@ -154,12 +177,12 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.num_ccf = 10
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
-        assert_is_not_none(fault_tree)
+        assert fault_tree is not None
         self.output.write(fault_tree.to_aralia())
         self.output.file.flush()
         tmp = NamedTemporaryFile(mode="w+")
         cmd = ["./translators/aralia.py", self.output.name, "-o", tmp.name]
-        assert_equal(0, call(cmd))
+        assert call(cmd) == 0
 
     def test_constrain_num_gates(self):
         """Checks the case of the constrained number of gates."""
@@ -168,8 +191,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.constrain_num_gate(200)
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
-        assert_is_not_none(fault_tree)
-        assert_less(abs(1 - len(fault_tree.gates) / 200), 0.1)
+        assert fault_tree is not None
+        assert abs(1 - len(fault_tree.gates) / 200) < 0.1
 
 
 def test_main():
@@ -180,11 +203,11 @@ def test_main():
     relaxng = etree.RelaxNG(relaxng_doc)
     with open(tmp.name, "r") as test_file:
         doc = etree.parse(test_file)
-        assert_true(relaxng.validate(doc))
+        assert relaxng.validate(doc)
 
     main(["-b", "200", "-g", "200", "-o", tmp.name, "--aralia"])
     cmd = [
         "./translators/aralia.py", tmp.name, "-o",
         NamedTemporaryFile(mode="w+").name
     ]
-    assert_equal(0, call(cmd))
+    assert call(cmd) == 0
