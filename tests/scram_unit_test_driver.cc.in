@@ -25,5 +25,5 @@ int main(int argc, char* argv[]) {
   boost::system::error_code ret;
   boost::filesystem::current_path("@CMAKE_SOURCE_DIR@", ret);
   assert(ret == 0);
-  return Catch::Session().run(argc, argv);
+  return Catch::Session().run(argc, argv) > 0;  // Catch abuses exit codes.
 }
