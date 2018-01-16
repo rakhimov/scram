@@ -92,24 +92,10 @@
 </and>
 </define-gate>
 <define-gate name="g67">
-<and>
-<gate name="g67a"/>
-<not>
-<gate name="g67b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g67b">
-<and>
+<xor>
 <gate name="g69"/>
 <gate name="g68"/>
-</and>
-</define-gate>
-<define-gate name="g67a">
-<or>
-<gate name="g69"/>
-<gate name="g68"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g68">
 <or>
@@ -138,24 +124,10 @@
 </atleast>
 </define-gate>
 <define-gate name="g72">
-<and>
-<gate name="g72a"/>
-<not>
-<gate name="g72b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g72b">
-<and>
+<xor>
 <gate name="g73"/>
 <gate name="g74"/>
-</and>
-</define-gate>
-<define-gate name="g72a">
-<or>
-<gate name="g73"/>
-<gate name="g74"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g74">
 <or>
@@ -177,24 +149,10 @@
 </or>
 </define-gate>
 <define-gate name="g77">
-<and>
-<not>
-<gate name="g77b"/>
-</not>
-<gate name="g77a"/>
-</and>
-</define-gate>
-<define-gate name="g77a">
-<or>
+<xor>
 <gate name="g78"/>
 <gate name="g79"/>
-</or>
-</define-gate>
-<define-gate name="g77b">
-<and>
-<gate name="g78"/>
-<gate name="g79"/>
-</and>
+</xor>
 </define-gate>
 <define-gate name="g79">
 <or>
@@ -319,44 +277,16 @@
 </and>
 </define-gate>
 <define-gate name="g87">
-<and>
-<gate name="g87a"/>
-<not>
-<gate name="g87b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g87b">
-<and>
+<xor>
 <gate name="g88"/>
 <gate name="g89"/>
-</and>
-</define-gate>
-<define-gate name="g87a">
-<or>
-<gate name="g88"/>
-<gate name="g89"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g82">
-<and>
-<not>
-<gate name="g82b"/>
-</not>
-<gate name="g82a"/>
-</and>
-</define-gate>
-<define-gate name="g82a">
-<or>
+<xor>
 <gate name="g84"/>
 <gate name="g83"/>
-</or>
-</define-gate>
-<define-gate name="g82b">
-<and>
-<gate name="g84"/>
-<gate name="g83"/>
-</and>
+</xor>
 </define-gate>
 <define-gate name="g83">
 <or>
@@ -410,24 +340,10 @@
 </or>
 </define-gate>
 <define-gate name="g92">
-<and>
-<not>
-<gate name="g92b"/>
-</not>
-<gate name="g92a"/>
-</and>
-</define-gate>
-<define-gate name="g92a">
-<or>
+<xor>
 <gate name="g94"/>
 <gate name="g93"/>
-</or>
-</define-gate>
-<define-gate name="g92b">
-<and>
-<gate name="g94"/>
-<gate name="g93"/>
-</and>
+</xor>
 </define-gate>
 <define-gate name="g93">
 <or>
@@ -526,24 +442,10 @@
 </and>
 </define-gate>
 <define-gate name="g102">
-<and>
-<not>
-<gate name="g102b"/>
-</not>
-<gate name="g102a"/>
-</and>
-</define-gate>
-<define-gate name="g102a">
-<or>
+<xor>
 <gate name="g103"/>
 <gate name="g104"/>
-</or>
-</define-gate>
-<define-gate name="g102b">
-<and>
-<gate name="g103"/>
-<gate name="g104"/>
-</and>
+</xor>
 </define-gate>
 <define-gate name="g251">
 <or>
@@ -552,24 +454,10 @@
 </or>
 </define-gate>
 <define-gate name="g107">
-<and>
-<gate name="g107a"/>
-<not>
-<gate name="g107b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g107b">
-<and>
+<xor>
 <gate name="g109"/>
 <gate name="g108"/>
-</and>
-</define-gate>
-<define-gate name="g107a">
-<or>
-<gate name="g109"/>
-<gate name="g108"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g108">
 <or>
@@ -636,24 +524,10 @@
 </or>
 </define-gate>
 <define-gate name="g97">
-<and>
-<gate name="g97a"/>
-<not>
-<gate name="g97b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g97b">
-<and>
+<xor>
 <gate name="g98"/>
 <gate name="g99"/>
-</and>
-</define-gate>
-<define-gate name="g97a">
-<or>
-<gate name="g98"/>
-<gate name="g99"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g103">
 <or>
@@ -748,24 +622,10 @@
 </and>
 </define-gate>
 <define-gate name="g117">
-<and>
-<gate name="g117a"/>
-<not>
-<gate name="g117b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g117b">
-<and>
+<xor>
 <gate name="g119"/>
 <gate name="g118"/>
-</and>
-</define-gate>
-<define-gate name="g117a">
-<or>
-<gate name="g119"/>
-<gate name="g118"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g259">
 <and>
@@ -780,24 +640,10 @@
 </or>
 </define-gate>
 <define-gate name="g122">
-<and>
-<gate name="g122a"/>
-<not>
-<gate name="g122b"/>
-</not>
-</and>
-</define-gate>
-<define-gate name="g122b">
-<and>
+<xor>
 <gate name="g123"/>
 <gate name="g124"/>
-</and>
-</define-gate>
-<define-gate name="g122a">
-<or>
-<gate name="g123"/>
-<gate name="g124"/>
-</or>
+</xor>
 </define-gate>
 <define-gate name="g124">
 <or>
@@ -1203,24 +1049,10 @@
 </or>
 </define-gate>
 <define-gate name="g112">
-<and>
-<not>
-<gate name="g112b"/>
-</not>
-<gate name="g112a"/>
-</and>
-</define-gate>
-<define-gate name="g112a">
-<or>
+<xor>
 <gate name="g113"/>
 <gate name="g114"/>
-</or>
-</define-gate>
-<define-gate name="g112b">
-<and>
-<gate name="g113"/>
-<gate name="g114"/>
-</and>
+</xor>
 </define-gate>
 <define-gate name="g119">
 <or>
