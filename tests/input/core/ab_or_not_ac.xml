@@ -3,15 +3,21 @@
   <define-fault-tree name="AB_OR_NOT_AC">
     <define-gate name="SystemFail">
       <or>
-        <and>
-          <basic-event name="A"/>
-          <basic-event name="B"/>
-        </and>
-        <and>
-          <not><basic-event name="A"/></not>
-          <basic-event name="C"/>
-        </and>
+        <gate name="g1"/>
+        <gate name="g2"/>
       </or>
+    </define-gate>
+    <define-gate name="g1">
+      <and>
+        <basic-event name="A"/>
+        <basic-event name="B"/>
+      </and>
+    </define-gate>
+    <define-gate name="g2">
+      <and>
+        <not><basic-event name="A"/></not>
+        <basic-event name="C"/>
+      </and>
     </define-gate>
     <define-basic-event name="A">
       <float value="0.1"/>

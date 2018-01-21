@@ -62,9 +62,14 @@ TEST_CASE("InitializerTest.PassTheSameFileTwice", "[mef::initializer]") {
 // This is trusted to XML libraries and the correctness of the RELAX NG schema,
 // so the test is very basic calls.
 TEST_CASE("InitializerTest.FailSchemaValidation", "[mef::initializer]") {
-  CHECK_THROWS_AS(
-      Initializer({"tests/input/schema_fail.xml"}, core::Settings()),
-      xml::ValidityError);
+  std::string dir = "tests/input/";
+  const char* incorrect_inputs[] = {"schema_fail.xml",
+                                    "fta/nested_formula.xml"};
+  for (const auto& input : incorrect_inputs) {
+    CAPTURE(input);
+    CHECK_THROWS_AS(Initializer({dir + input}, core::Settings()),
+                    xml::ValidityError);
+  }
 }
 
 // Unsupported operations.
@@ -184,7 +189,6 @@ TEST_CASE("InitializerTest.CorrectFtaInputs", "[mef::initializer]") {
                                   "missing_ccf_level_number.xml",
                                   "non_top_gate.xml",
                                   "unused_parameter.xml",
-                                  "nested_formula.xml",
                                   "null_gate_with_label.xml",
                                   "case_sensitivity.xml",
                                   "weibull_lnorm_deviate_2p.xml",

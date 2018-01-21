@@ -12,11 +12,9 @@ The fault tree contains a cycle through a formula.
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <or>
+        <not>
           <gate name= "TrainTwo"/>  <!-- Cycle link -->
-          <basic-event name="ValveTwo"/>
-          <event name="PumpTwo"/>
-        </or>
+        </not>
         <basic-event name="ValveOne"/>
         <event name="PumpOne"/>
       </or>

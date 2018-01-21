@@ -246,14 +246,16 @@ TEST_P(RiskAnalysisTest, EnforceExactProbability) {
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
-  std::string nested_input = "tests/input/fta/nested_formula.xml";
-  std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
-                                         {"PumpOne", "ValveTwo"},
-                                         {"PumpTwo", "ValveOne"},
-                                         {"ValveOne", "ValveTwo"}};
+  std::string nested_input = "tests/input/fta/nested_not.xml";
   REQUIRE_NOTHROW(ProcessInputFiles({nested_input}));
   REQUIRE_NOTHROW(analysis->Analyze());
-  CHECK(products() == mcs);
+
+  auto sets = [this]() -> std::set<std::set<std::string>> {
+    if (settings.prime_implicants())
+      return {{"not PumpOne", "ValveTwo", "PumpTwo", "not ValveOne"}};
+    return {{"ValveTwo", "PumpTwo"}};
+  }();
+  CHECK(products() == sets);
 }
 
 TEST_F(RiskAnalysisTest, ImportanceDefault) {

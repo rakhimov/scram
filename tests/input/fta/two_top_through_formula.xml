@@ -6,10 +6,9 @@ The tree contains two top events, and the nested formulas are used.
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
-        <or>
+        <not>
           <gate name="TrainOne"/>
-          <event name="ValveTwo"/>
-        </or>
+        </not>
         <event name="PumpOne"/>
       </and>
     </define-gate>

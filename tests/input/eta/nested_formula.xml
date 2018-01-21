@@ -50,9 +50,7 @@
     </define-gate>
     <define-gate name="G2">
       <not>
-        <not>
-          <event name="B"/>
-        </not>
+        <gate name="G1"/>
       </not>
     </define-gate>
   </define-fault-tree>
