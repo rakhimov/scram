@@ -41,7 +41,7 @@ TEST_CASE("PdagTest.Print", "[mef::pdag]") {
   graph.Print();
 }
 
-static_assert(kNumOperators == 8, "New gate types are not considered!");
+static_assert(kNumConnectives == 8, "New gate types are not considered!");
 
 class GateTest {
  public:
@@ -62,7 +62,7 @@ class GateTest {
   ///
   /// @note The setup is not for one-arg gates (NOT/NULL).
   /// @note For K/N gates, K is set to 2 by default.
-  void DefineGate(Operator type, int num_vars) {
+  void DefineGate(Connective type, int num_vars) {
     assert(num_vars < 6);
     assert(!(type == kVote && num_vars < 2));
 
@@ -94,7 +94,7 @@ class GateTest {
 /// for addition of an existing argument to a gate.
 ///
 /// @param short_type  Short name of the gate, i.e., 'And'.
-///                    It must have the same root in Operator, i.e., 'kAnd'.
+///                    It must have the same root in Connective, i.e., 'kAnd'.
 /// @param num_vars  The number of variables to initialize the gate.
 #define ADD_ARG_IGNORE_TEST(short_type, num_vars) \
   DefineGate(k##short_type, num_vars);            \
@@ -244,7 +244,7 @@ TEST_CASE_METHOD(GateTest, "pdag.DuplicateArgVoteToOrWithTwoClones", "[pdag]") {
 /// for addition of the complement of an existing argument to a gate.
 ///
 /// @param short_type  Short name of the gate, i.e., 'And'.
-///                    It must have the same root in Operator, i.e., 'kAnd'.
+///                    It must have the same root in Connective, i.e., 'kAnd'.
 /// @param const_state  The notion of Boolean constant in the gate (TRUE/FALSE).
 #define TEST_ADD_COMPLEMENT_ARG(short_type, const_state)             \
   TEST_CASE_METHOD(GateTest, "pdag." STR(ComplementArg##short_type), \

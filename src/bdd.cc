@@ -198,7 +198,7 @@ std::pair<int, int> Bdd::GetMinMaxId(const VertexPtr& arg_one,
   return {min_id, max_id};
 }
 
-/// Specialization of Apply for AND operator with BDD vertices.
+/// Specialization of Apply for AND connective with BDD vertices.
 template <>
 Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
                                const VertexPtr& arg_two, bool complement_one,
@@ -229,7 +229,7 @@ Bdd::Function Bdd::Apply<kAnd>(const VertexPtr& arg_one,
   return result;
 }
 
-/// Specialization of Apply for OR operator with BDD vertices.
+/// Specialization of Apply for OR connective with BDD vertices.
 template <>
 Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
                               const VertexPtr& arg_two, bool complement_one,
@@ -260,7 +260,7 @@ Bdd::Function Bdd::Apply<kOr>(const VertexPtr& arg_one,
   return result;
 }
 
-template <Operator Type>
+template <Connective Type>
 Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
                          bool complement_two) noexcept {
   if (ite_one->order() > ite_two->order()) {
@@ -295,14 +295,14 @@ Bdd::Function Bdd::Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
   return high;
 }
 
-Bdd::Function Bdd::Apply(Operator type, const VertexPtr& arg_one,
+Bdd::Function Bdd::Apply(Connective type, const VertexPtr& arg_one,
                          const VertexPtr& arg_two, bool complement_one,
                          bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
   if (type == kAnd) {
     return Apply<kAnd>(arg_one, arg_two, complement_one, complement_two);
   }
-  assert(type == kOr && "Unsupported operator.");
+  assert(type == kOr && "Unsupported connective.");
   return Apply<kOr>(arg_one, arg_two, complement_one, complement_two);
 }
 

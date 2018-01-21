@@ -861,9 +861,9 @@ class Bdd : private boost::noncopyable {
 
   /// Applies Boolean operation to BDD graphs.
   /// This is the main function for the operation.
-  /// The application is specialized with the operator.
+  /// The application is specialized with the connective.
   ///
-  /// @tparam Type  The operator enum.
+  /// @tparam Type  The connective enum.
   ///
   /// @param[in] arg_one  First argument function graph.
   /// @param[in] arg_two  Second argument function graph.
@@ -872,14 +872,14 @@ class Bdd : private boost::noncopyable {
   ///
   /// @returns The BDD function as a result of operation.
   ///
-  /// @note The order of arguments does not matter for two variable operators.
-  template <Operator Type>
+  /// @note The order of arguments does not matter for two variable connectives.
+  template <Connective Type>
   Function Apply(const VertexPtr& arg_one, const VertexPtr& arg_two,
                  bool complement_one, bool complement_two) noexcept;
 
   /// Applies Boolean operation to BDD ITE graphs.
   ///
-  /// @tparam Type  The operator enum.
+  /// @tparam Type  The connective enum.
   ///
   /// @param[in] ite_one  First argument function graph.
   /// @param[in] ite_two  Second argument function graph.
@@ -887,15 +887,15 @@ class Bdd : private boost::noncopyable {
   /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns The BDD function as a result of operation.
-  template <Operator Type>
+  template <Connective Type>
   Function Apply(ItePtr ite_one, ItePtr ite_two, bool complement_one,
                  bool complement_two) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   /// This is a convenience function
-  /// if the operator type cannot be determined at compile time.
+  /// if the connective type cannot be determined at compile time.
   ///
-  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] type  The connective or type of the gate.
   /// @param[in] arg_one  First argument function graph.
   /// @param[in] arg_two  Second argument function graph.
   /// @param[in] complement_one  Interpretation of arg_one as complement.
@@ -903,10 +903,10 @@ class Bdd : private boost::noncopyable {
   ///
   /// @returns The BDD function as a result of operation.
   ///
-  /// @pre The operator is either AND or OR.
+  /// @pre The connective is either AND or OR.
   ///
-  /// @note The order of arguments does not matter for two variable operators.
-  Function Apply(Operator type, const VertexPtr& arg_one,
+  /// @note The order of arguments does not matter for two variable connectives.
+  Function Apply(Connective type, const VertexPtr& arg_one,
                  const VertexPtr& arg_two, bool complement_one,
                  bool complement_two) noexcept;
 

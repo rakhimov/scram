@@ -247,19 +247,19 @@ using NodePtr = std::shared_ptr<Node>;  ///< Shared base nodes in the graph.
 using ConstantPtr = std::shared_ptr<Constant>;  ///< Shared Boolean constants.
 using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 
-/// Boolean operators of gates
+/// Boolean connectives of gates
 /// for representation, preprocessing, and analysis purposes.
-/// The operator defines a type and logic of a gate.
+/// The connective defines a type and logic of a gate.
 ///
-/// @warning If a new operator is added,
+/// @warning If a new connective is added,
 ///          all the preprocessing and PDAG algorithms
 ///          must be reviewed and updated.
 ///          The algorithms may assume
 ///          for performance and simplicity reasons
-///          that these are the only kinds of operators possible.
-enum Operator : std::uint8_t {
-  kAnd = 0,  ///< Simple AND gate.
-  kOr,  ///< Simple OR gate.
+///          that these are the only kinds of connectives possible.
+enum Connective : std::uint8_t {
+  kAnd = 0,  ///< AND gate.
+  kOr,  ///< OR gate.
   kVote,  ///< Combination, K/N, or Vote gate representation.
   kXor,  ///< Exclusive OR gate with two inputs.
   kNot,  ///< Boolean negation.
@@ -268,9 +268,9 @@ enum Operator : std::uint8_t {
   kNull  ///< Special pass-through or NULL gate. This is not NULL set.
 };
 
-/// The number of operators in the enum.
+/// The number of connectives in the enum.
 /// This number is useful for optimizations and algorithms.
-const int kNumOperators = 8;  // Update this number if operators change.
+const int kNumConnectives = 8;  // Update this number if connectives change.
 
 /// An indexed gate for use in a PDAG.
 /// Initially this gate can represent any type of gate or logic;
@@ -313,7 +313,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] type  The type of this gate.
   /// @param[in,out] graph  The host PDAG.
-  Gate(Operator type, Pdag* graph) noexcept;
+  Gate(Connective type, Pdag* graph) noexcept;
 
   /// Destructs parent information from the arguments.
   ~Gate() noexcept {
@@ -333,7 +333,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   GatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  Operator type() const { return type_; }
+  Connective type() const { return type_; }
 
   /// Changes the logic of the gate.
   /// Depending on the original and new type of the gate,
@@ -344,7 +344,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @pre The new logic is compatible with the existing arguments
   ///      and preserves the gate invariants.
   /// @pre The previous type is not equal to the new one.
-  void type(Operator type);
+  void type(Connective type);
 
   /// @returns Vote number.
   ///
@@ -726,13 +726,13 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] target_type  The logic compatible with the current one.
   /// @param[in] num_args  The number of required arguments.
-  void ReduceLogic(Operator target_type, int num_args = 1) noexcept {
+  void ReduceLogic(Connective target_type, int num_args = 1) noexcept {
     assert(!args_.empty());
     if (args_.size() == num_args)
       type(target_type);
   }
 
-  Operator type_;  ///< Type of this gate.
+  Connective type_;  ///< Type of this gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
@@ -1050,7 +1050,7 @@ class Pdag : private boost::noncopyable {
   ///
   /// @returns Pointer to the newly created indexed gate.
   ///
-  /// @pre The Operator enum in the MEF is the same as in PDAG.
+  /// @pre The Connective enum in the MEF is the same as in PDAG.
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
 

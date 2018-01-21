@@ -427,7 +427,7 @@ class Zbdd : private boost::noncopyable {
   /// Applies Boolean operation to two vertices representing sets.
   /// This is the main function for the operation.
   ///
-  /// @tparam Type  The operator enum.
+  /// @tparam Type  The connective enum.
   ///
   /// @param[in] arg_one  First argument ZBDD set.
   /// @param[in] arg_two  Second argument ZBDD set.
@@ -436,30 +436,30 @@ class Zbdd : private boost::noncopyable {
   /// @returns The resulting ZBDD vertex.
   ///
   /// @post The limit on the set order is guaranteed.
-  template <Operator Type>
+  template <Connective Type>
   VertexPtr Apply(const VertexPtr& arg_one, const VertexPtr& arg_two,
                   int limit_order) noexcept;
 
   /// Applies Boolean operation to two vertices representing sets.
   /// This is a convenience function
-  /// if the operator type cannot be determined at compile time.
+  /// if the connective type cannot be determined at compile time.
   ///
-  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] type  The connective or type of the gate.
   /// @param[in] arg_one  First argument ZBDD set.
   /// @param[in] arg_two  Second argument ZBDD set.
   /// @param[in] limit_order  The limit on the order for the computations.
   ///
   /// @returns The resulting ZBDD vertex.
   ///
-  /// @pre The operator is either AND or OR.
+  /// @pre The connective is either AND or OR.
   ///
   /// @post The limit on the set order is guaranteed.
-  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
+  VertexPtr Apply(Connective type, const VertexPtr& arg_one,
                   const VertexPtr& arg_two, int limit_order) noexcept;
 
   /// Applies Boolean operation to ZBDD graph non-terminal vertices.
   ///
-  /// @tparam Type  The operator enum.
+  /// @tparam Type  The connective enum.
   ///
   /// @param[in] arg_one  First argument set vertex.
   /// @param[in] arg_two  Second argument set vertex.
@@ -468,7 +468,7 @@ class Zbdd : private boost::noncopyable {
   /// @returns The resulting ZBDD vertex.
   ///
   /// @pre Argument vertices are ordered.
-  template <Operator Type>
+  template <Connective Type>
   VertexPtr Apply(const SetNodePtr& arg_one, const SetNodePtr& arg_two,
                   int limit_order) noexcept;
 

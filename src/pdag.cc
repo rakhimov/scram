@@ -56,7 +56,7 @@ Node::Node(Pdag* graph) noexcept
 
 Node::~Node() = default;
 
-Gate::Gate(Operator type, Pdag* graph) noexcept
+Gate::Gate(Connective type, Pdag* graph) noexcept
     : Node(graph),
       type_(type),
       mark_(false),
@@ -68,7 +68,7 @@ Gate::Gate(Operator type, Pdag* graph) noexcept
       min_time_(0),
       max_time_(0) {}
 
-void Gate::type(Operator type) {  // Don't use in Gate constructor!
+void Gate::type(Connective type) {  // Don't use in Gate constructor!
   /// @todo Find the inefficient resets.
   /* assert(type_ != type && "Attribute reset: Operation with no effect."); */
   type_ = type;
@@ -489,16 +489,16 @@ void Pdag::Print() {
 }
 
 namespace {
-/// Compares operator enums from mef::Connective and core::Operator
-#define OPERATOR_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
+/// Compares connective enums from mef::Connective and core::Connective
+#define CONNECTIVE_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
 
-/// @returns true if mef::Connective enum maps exactly to core::Operator enum.
-constexpr bool CheckOperatorEnums() {
-  return OPERATOR_EQ(kAnd) && OPERATOR_EQ(kOr) && OPERATOR_EQ(kVote) &&
-         OPERATOR_EQ(kXor) && OPERATOR_EQ(kNot) && OPERATOR_EQ(kNand) &&
-         OPERATOR_EQ(kNor) && OPERATOR_EQ(kNull);
+/// @returns true if mef::Connective enum maps exactly to core::Connective enum.
+constexpr bool CheckConnectiveEnums() {
+  return CONNECTIVE_EQ(kAnd) && CONNECTIVE_EQ(kOr) && CONNECTIVE_EQ(kVote) &&
+         CONNECTIVE_EQ(kXor) && CONNECTIVE_EQ(kNot) && CONNECTIVE_EQ(kNand) &&
+         CONNECTIVE_EQ(kNor) && CONNECTIVE_EQ(kNull);
 }
-#undef OPERATOR_EQ
+#undef CONNECTIVE_EQ
 }  // namespace
 
 void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
@@ -593,11 +593,13 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
 
 GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
                             ProcessedNodes* nodes) noexcept {
-  static_assert(kNumOperators == 8, "Unspecified formula operators.");
-  static_assert(kNumOperators == mef::kNumConnectives, "Operator mismatch.");
-  static_assert(CheckOperatorEnums(), "mef::Connective must map to Operator.");
+  static_assert(kNumConnectives == 8, "Unspecified formula connectives.");
+  static_assert(kNumConnectives == mef::kNumConnectives,
+                "MEF and Core connective mismatch.");
+  static_assert(CheckConnectiveEnums(),
+                "mef::Connective must map to core::Connective.");
 
-  Operator type = static_cast<Operator>(formula.type());
+  Connective type = static_cast<Connective>(formula.type());
   auto parent = std::make_shared<Gate>(type, this);
 
   if (type != kOr && type != kAnd)
@@ -815,7 +817,7 @@ struct GraphLogger {
 
   int num_modules = 0;  ///< The number of module gates.
   std::unordered_set<int> gates;  ///< Collection of gates.
-  std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
+  std::array<int, kNumConnectives> gate_types{};  ///< Gate type counts.
   std::unordered_set<int> variables;  ///< Collection of variables.
 };
 
