@@ -91,19 +91,19 @@ TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
   BasicEvent second_child("second");
   CHECK(top->args().size() == 0);
   // Adding first child.
-  CHECK_NOTHROW(top->AddArgument(&first_child));
+  CHECK_NOTHROW(top->Add(&first_child));
   // Re-adding a child must cause an error.
-  CHECK_THROWS_AS(top->AddArgument(&first_child), ValidityError);
+  CHECK_THROWS_AS(top->Add(&first_child), ValidityError);
   // Check the contents of the children container.
   CHECK(std::get<BasicEvent*>(top->args().front().event) == &first_child);
   // Adding another child.
-  CHECK_NOTHROW(top->AddArgument(&second_child));
+  CHECK_NOTHROW(top->Add(&second_child));
   CHECK(top->args().size() == 2);
   CHECK(std::get<BasicEvent*>(top->args().back().event) == &second_child);
 
-  CHECK_NOTHROW(top->RemoveArgument(&first_child));
+  CHECK_NOTHROW(top->Remove(&first_child));
   CHECK(top->args().size() == 1);
-  CHECK_THROWS_AS(top->RemoveArgument(&first_child), LogicError);
+  CHECK_THROWS_AS(top->Remove(&first_child), LogicError);
 }
 
 TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
@@ -113,15 +113,15 @@ TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   Gate bottom("Bottom");
 
   FormulaPtr formula_root(new Formula(kNot));
-  formula_root->AddArgument(&top);
+  formula_root->Add(&top);
   root.formula(std::move(formula_root));
 
   FormulaPtr formula_one(new Formula(kNot));
-  formula_one->AddArgument(&middle);
+  formula_one->Add(&middle);
   FormulaPtr formula_two(new Formula(kNot));
-  formula_two->AddArgument(&bottom);
+  formula_two->Add(&bottom);
   FormulaPtr formula_three(new Formula(kNot));
-  formula_three->AddArgument(&top);  // Looping here.
+  formula_three->Add(&top);  // Looping here.
   top.formula(std::move(formula_one));
   middle.formula(std::move(formula_two));
   bottom.formula(std::move(formula_three));
@@ -143,78 +143,78 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
 
   // AND Formula tests.
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_NOTHROW(top->Validate());
 
   // OR Formula tests.
   top = FormulaPtr(new Formula(kOr));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_NOTHROW(top->Validate());
 
   // NOT Formula tests.
   top = FormulaPtr(new Formula(kNot));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // NULL Formula tests.
   top = FormulaPtr(new Formula(kNull));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // NOR Formula tests.
   top = FormulaPtr(new Formula(kNor));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_NOTHROW(top->Validate());
 
   // NAND Formula tests.
   top = FormulaPtr(new Formula(kNand));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_NOTHROW(top->Validate());
 
   // XOR Formula tests.
   top = FormulaPtr(new Formula(kXor));
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   // ATLEAST formula tests.
   top = FormulaPtr(new Formula(kAtleast));
   top->min_number(2);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
+  top->Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
+  top->Add(&arg_two);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_three);
+  top->Add(&arg_three);
   CHECK_NOTHROW(top->Validate());
 }
 
@@ -230,12 +230,12 @@ TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
   top->formula(FormulaPtr(new Formula(kAnd)));
   top->AddAttribute(inh_attr);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->formula().AddArgument(&arg_one);
+  top->formula().Add(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->formula().AddArgument(&arg_two);
+  top->formula().Add(&arg_two);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
-  top->formula().AddArgument(&arg_three);
+  top->formula().Add(&arg_three);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
   top = GatePtr(new Gate("top"));
@@ -246,8 +246,8 @@ TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
   cond.name = "flavor";
   cond.value = "conditional";
   arg_three.AddAttribute(cond);
-  top->formula().AddArgument(&arg_one);  // Basic event.
-  top->formula().AddArgument(&arg_three);  // Conditional event.
+  top->formula().Add(&arg_one);  // Basic event.
+  top->formula().Add(&arg_three);  // Conditional event.
   CHECK_NOTHROW(top->Validate());
   arg_one.AddAttribute(cond);
   CHECK_THROWS_AS(top->Validate(), ValidityError);

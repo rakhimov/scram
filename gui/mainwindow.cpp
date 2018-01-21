@@ -1132,11 +1132,11 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 
     for (const std::string &arg : dialog.arguments()) {
         try {
-            formula->AddArgument(m_model->GetEvent(arg));
+            formula->Add(m_model->GetEvent(arg));
         } catch (const mef::UndefinedElement &) {
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
-            formula->AddArgument(argEvent.get());
+            formula->Add(argEvent.get());
             /// @todo Add into the parent undo.
             m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
                 std::move(argEvent), m_guiModel.get()));

@@ -290,7 +290,7 @@ auto makeDefaultEvent<mef::Gate>(std::string name)
 {
     auto gate = std::make_unique<mef::Gate>(name);
     gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().AddArgument(&mef::HouseEvent::kTrue);
+    gate->formula().Add(&mef::HouseEvent::kTrue);
     return gate;
 }
 
@@ -565,7 +565,7 @@ void TestModel::testEventParents()
     auto gate = std::make_unique<mef::Gate>("parent");
     auto *parent = gate.get();
     gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().AddArgument(address);
+    gate->formula().Add(address);
 
     QVERIFY(proxy.parents(address).empty());
     gui::model::Model::AddEvent<gui::model::Gate>(std::move(gate), &proxy)

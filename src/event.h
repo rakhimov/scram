@@ -270,10 +270,10 @@ class Formula : private boost::noncopyable {
   /// @throws DuplicateArgumentError  The argument event is duplicate.
   ///
   /// @todo Validate negation via NULL/NOT.
-  void AddArgument(EventArg event_arg, bool complement = false);
+  void Add(EventArg event_arg, bool complement = false);
 
   /// Overload to add formula argument with a structure.
-  void AddArgument(Arg arg) { AddArgument(arg.event, arg.complement); }
+  void Add(Arg arg) { Add(arg.event, arg.complement); }
 
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
@@ -283,14 +283,14 @@ class Formula : private boost::noncopyable {
   /// @pre Formula is single nested 'NOT'.
   ///
   /// @todo Remove.
-  void AddArgument(FormulaPtr formula);
+  void Add(FormulaPtr formula);
 
   /// Removes an event from the formula.
   ///
   /// @param[in] event_arg  The argument event of this formula.
   ///
   /// @throws LogicError  The argument does not belong to this formula.
-  void RemoveArgument(EventArg event_arg);
+  void Remove(EventArg event_arg);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///

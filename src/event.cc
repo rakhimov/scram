@@ -95,7 +95,7 @@ void Formula::min_number(int number) {
   min_number_ = number;
 }
 
-void Formula::AddArgument(EventArg event_arg, bool complement) {
+void Formula::Add(EventArg event_arg, bool complement) {
   Event* event = ext::as<Event*>(event_arg);
   if (ext::any_of(args_, [&event](const Arg& arg) {
         return ext::as<Event*>(arg.event)->id() == event->id();
@@ -107,14 +107,14 @@ void Formula::AddArgument(EventArg event_arg, bool complement) {
     event->usage(true);
 }
 
-void Formula::AddArgument(FormulaPtr formula) {
+void Formula::Add(FormulaPtr formula) {
   assert(formula->connective() == kNot);
   assert(formula->args().size() == 1);
   assert(formula->args().front().complement == false);
-  AddArgument(formula->args().front().event, /*complement=*/true);
+  Add(formula->args().front().event, /*complement=*/true);
 }
 
-void Formula::RemoveArgument(EventArg event_arg) {
+void Formula::Remove(EventArg event_arg) {
   auto it = boost::find_if(
       args_, [&event_arg](const Arg& arg) { return arg.event == event_arg; });
   if (it == args_.end())

@@ -743,15 +743,14 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
   auto add_arg = [this, &formula, &base_path](const xml::Element& element) {
     if (element.name() == "constant") {
-      formula->AddArgument(*element.attribute<bool>("value")
-                               ? &HouseEvent::kTrue
-                               : &HouseEvent::kFalse);
+      formula->Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
+                                                     : &HouseEvent::kFalse);
       return;
     }
 
     std::string name(element.attribute("name"));
     if (name.empty()) {
-      formula->AddArgument(GetFormula(element, base_path));
+      formula->Add(GetFormula(element, base_path));
       return;
     }
 
@@ -763,17 +762,17 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
     try {
       if (element_type == "event") {  // Undefined type yet.
-        formula->AddArgument(GetEvent(name, base_path));
+        formula->Add(GetEvent(name, base_path));
 
       } else if (element_type == "gate") {
-        formula->AddArgument(GetGate(name, base_path));
+        formula->Add(GetGate(name, base_path));
 
       } else if (element_type == "basic-event") {
-        formula->AddArgument(GetBasicEvent(name, base_path));
+        formula->Add(GetBasicEvent(name, base_path));
 
       } else {
         assert(element_type == "house-event");
-        formula->AddArgument(GetHouseEvent(name, base_path));
+        formula->Add(GetHouseEvent(name, base_path));
       }
     } catch (std::out_of_range&) {
       SCRAM_THROW(ValidityError(

@@ -642,8 +642,8 @@ public:
                     add(nextAddress->data(), self.m_faultTree);
                 }
                 for (Gate *gate : self.m_gates) {
-                    gate->data()->formula().RemoveArgument(m_address->data());
-                    gate->data()->formula().AddArgument(nextAddress->data());
+                    gate->data()->formula().Remove(m_address->data());
+                    gate->data()->formula().Add(nextAddress->data());
                 }
                 for (Gate *gate : self.m_gates)
                     emit gate->formulaChanged();
