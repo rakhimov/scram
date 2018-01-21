@@ -38,7 +38,7 @@ Minor
 - Quantitative analysis with BDD w/o qualitative analysis. *Moderate*
 - Event-tree analysis shadow-variables optimizations. *High*
 - Incorporation of cut-offs (probability, contribution, dynamic) for ZBDD. *Moderate*
-- Advanced variable ordering and reordering heuristics for BDD. *Moderate*
+- Advanced variable ordering and reordering heuristics for BDD. *Low*
 - Joint importance reliability factor. *Low*
 - Analysis for all system gates (qualitative and quantitative).
   Multi-rooted graph analysis. *Low*

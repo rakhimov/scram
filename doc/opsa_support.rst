@@ -22,7 +22,7 @@ The initiative deals with the following issues in the current PSA:
 - No universal format for industry data
 
 In order to facilitate information exchange and quality assurance,
-The Open-PSA community has developed a model exchange format([MEF]_) for PSA
+the Open-PSA community has developed a model exchange format([MEF]_) for PSA
 that covers most needs to describe the analysis input for PSA tools.
 Moreover, the MEF defines the following requirements
 for its development and use:

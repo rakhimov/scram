@@ -32,7 +32,7 @@ Core
    The constructs and analyses are initialized according to the configurations
    supplied from the configuration file and command-line.
    After the initialization step,
-   it is not expected that constructs of the analysis change.
+   it is not expected that the analysis constructs change.
 
 #. The Model container is the top-most container
    that owns uniquely (non-shared) every object defined and registered in the model
@@ -80,7 +80,7 @@ Core
    to specified files or streams in XML format.
 
 #. Support components:
-   Logger, XML stream, and library extensions in the ext namespace.
+   Logger, XML stream, and library extensions in the ``ext`` namespace.
 
 .. _Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
 .. _Policy-based design: https://en.wikipedia.org/wiki/Policy-based_design

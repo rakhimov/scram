@@ -160,7 +160,7 @@ while each AND gate adds additional elements
 into one specific set or group of sets inside the set of sets.
 
 To generate all cut sets,
-the fault tree is traversed from the top to basic events,
+a fault tree is traversed from the top to basic events,
 In this step, the analysis may cancel cut sets
 if the fault tree is non-coherent and contains complements.
 In addition,
@@ -218,9 +218,9 @@ the ZBDD representation directly.
 UNITY and NULL Cases
 ********************
 
-The analyzed products may result in NULL(empty) or UNITY(base) sets,
+The analyzed products may result in NULL (empty) or UNITY (base) sets,
 which may indicate guaranteed success or failure.
 These cases are handled as special
 and given appropriate messages and probabilities.
-UNITY(base) set shows only one empty product of order 1 and probability 1.
-NULL(empty) set has probability 0 and shows no products.
+UNITY (base) set shows only one empty product of order 1 and probability 1.
+NULL (empty) set has probability 0 and shows no products.
