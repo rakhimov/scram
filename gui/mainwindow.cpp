@@ -1396,8 +1396,8 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
         if (element->numArgs() != dialogArgs.size())
             return true;
         auto it = dialogArgs.begin();
-        for (const mef::Formula::EventArg &arg : element->args()) {
-            if (*it != ext::as<const mef::Event *>(arg)->id())
+        for (const mef::Formula::Arg &arg : element->args()) {
+            if (*it != ext::as<const mef::Event *>(arg.event)->id())
                 return true;
             ++it;
         }

@@ -1086,10 +1086,11 @@ class Pdag : private boost::noncopyable {
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
   /// @param[in] event  The event argument of the formula.
+  /// @param[in] complement  The flag to negate the argument.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
   template <typename T>
-  void AddArg(const GatePtr& parent, const T& event, bool ccf,
+  void AddArg(const GatePtr& parent, const T& event, bool complement, bool ccf,
               ProcessedNodes* nodes) noexcept;
 
   /// Propagate NULL type gates bottom-up.

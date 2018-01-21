@@ -519,13 +519,8 @@ void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
     ProcessedNodes* nodes;
   } formula_visitor{this, ccf, nodes};
 
-  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
-    std::visit(formula_visitor, event_arg);
-  }
-
-  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
-    GatherVariables(*sub_form, ccf, nodes);
-  }
+  for (const mef::Formula::Arg& arg : formula.args())
+    std::visit(formula_visitor, arg.event);
 }
 
 void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
@@ -559,35 +554,36 @@ void Pdag::GatherVariables(const mef::Substitution& substitution, bool ccf,
 /// Specialization for HouseEvent arguments.
 template <>
 void Pdag::AddArg(const GatePtr& parent, const mef::HouseEvent& house_event,
-                  bool /*ccf*/, ProcessedNodes* /*nodes*/) noexcept {
+                  bool complement, bool /*ccf*/,
+                  ProcessedNodes* /*nodes*/) noexcept {
   // Create unique pass-through gates to hold the construction invariant.
   auto null_gate = std::make_shared<Gate>(kNull, this);
-  null_gate->AddArg(constant_, !house_event.state());
+  null_gate->AddArg(constant_, complement ^ !house_event.state());
   parent->AddArg(null_gate);
   null_gates_.push_back(null_gate);
 }
 
 /// Specialization for Gate arguments.
 template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                  ProcessedNodes* nodes) noexcept {
+void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool complement,
+                  bool ccf, ProcessedNodes* nodes) noexcept {
   GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
   if (!pdag_gate) {
     pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
   }
-  parent->AddArg(pdag_gate);
+  parent->AddArg(pdag_gate, complement);
 }
 
 /// Specialization for BasicEvent arguments.
 template <>
 void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-                  bool ccf, ProcessedNodes* nodes) noexcept {
+                  bool complement, bool ccf, ProcessedNodes* nodes) noexcept {
   if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
+    AddArg(parent, basic_event.ccf_gate(), complement, ccf, nodes);
   } else {
     VariablePtr& var = nodes->variables.find(&basic_event)->second;
     assert(var && "Uninitialized variable.");
-    parent->AddArg(var);
+    parent->AddArg(var, complement);
   }
 }
 
@@ -621,16 +617,17 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
+  for (const mef::Formula::Arg& arg : formula.args()) {
+    if (arg.complement)
+      coherent_ = false;
+
     std::visit(
-        [&](const auto* event) { this->AddArg(parent, *event, ccf, nodes); },
-        event_arg);
+        [&](const auto* event) {
+          AddArg(parent, *event, arg.complement, ccf, nodes);
+        },
+        arg.event);
   }
 
-  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
-    GatePtr new_gate = ConstructGate(*sub_form, ccf, nodes);
-    parent->AddArg(new_gate);
-  }
   return parent;
 }
 
@@ -641,7 +638,7 @@ GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,
   implication->AddArg(ConstructGate(substitution.hypothesis(), ccf, nodes),
                       /*complement=*/true);
   if (auto* target = std::get_if<mef::BasicEvent*>(&substitution.target())) {
-    AddArg(implication, **target, ccf, nodes);
+    AddArg(implication, **target, /*complement=*/false, ccf, nodes);
   } else {
     assert(!*std::get_if<bool>(&substitution.target()) && "Not a delete term");
     implication->type(kNull);
@@ -668,9 +665,9 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
     case mef::kNull:
     case mef::kAnd: {
       std::vector<int> args;
-      for (const mef::Formula::EventArg& arg :
-           substitution.hypothesis().event_args()) {
-        auto* event = std::get_if<mef::BasicEvent*>(&arg);
+      for (const mef::Formula::Arg& arg : substitution.hypothesis().args()) {
+        assert(!arg.complement);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg.event);
         assert(event);
         args.push_back(nodes->variables.find(*event)->second->index());
       }
@@ -678,9 +675,9 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
       break;
     }
     case mef::kOr: {
-      for (const mef::Formula::EventArg& arg :
-           substitution.hypothesis().event_args()) {
-        auto* event = std::get_if<mef::BasicEvent*>(&arg);
+      for (const mef::Formula::Arg& arg : substitution.hypothesis().args()) {
+        assert(!arg.complement);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg.event);
         assert(event);
         substitutions_.push_back(
             {{nodes->variables.find(*event)->second->index()}, source, target});

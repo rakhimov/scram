@@ -221,8 +221,9 @@ Gate::Gate(model::Gate *event, model::Model *model,
     } formula_visitor{this, model, transfer};
     double linkY = (m_size.height() - 1) * units().height();
     std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
-    for (const mef::Formula::EventArg &eventArg : event->args()) {
-        auto *child = std::visit(formula_visitor, eventArg);
+    for (const mef::Formula::Arg &arg : event->args()) {
+        GUI_ASSERT(!arg.complement, );
+        auto *child = std::visit(formula_visitor, arg.event);
         auto *link = new QGraphicsLineItem(0, 0, 0, units().height(), this);
         if (!children.empty())
             m_width += m_space * units().height();
@@ -413,8 +414,10 @@ void DiagramScene::redraw()
     auto link = [this, &visitor](model::Gate *gate) {
         connect(gate, &model::Gate::formulaChanged, this, &DiagramScene::redraw,
                 Qt::UniqueConnection);
-        for (const mef::Formula::EventArg &arg : gate->args())
-            std::visit(visitor, arg);
+        for (const mef::Formula::Arg &arg : gate->args()) {
+            GUI_ASSERT(!arg.complement, );
+            std::visit(visitor, arg.event);
+        }
     };
 
     /// @todo Finer signal tracking.

@@ -165,13 +165,6 @@ class FaultTree : public Component {
   /// @param[in] gates  Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(Gate* gate, const std::unordered_set<Gate*>& gates);
 
-  /// Recursively marks descendant gates in formulas as "non-top"
-  ///
-  /// @param[in] formula  The formula of a gate or another formula.
-  /// @param[in] gates  Gates belonging to the whole fault tree with components.
-  void MarkNonTopGates(const Formula& formula,
-                       const std::unordered_set<Gate*>& gates);
-
   std::vector<const Gate*> top_events_;  ///< Top events of this fault tree.
 };
 

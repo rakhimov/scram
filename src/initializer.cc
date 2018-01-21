@@ -1766,9 +1766,9 @@ void Initializer::EnsureNoSubstitutionConflicts() {
       if (origin == substitution)
         continue;
       auto in_hypothesis = [&substitution](const BasicEvent* source) {
-        return ext::any_of(substitution->hypothesis().event_args(),
-                           [source](const Formula::EventArg& arg) {
-                             return std::get<BasicEvent*>(arg) == source;
+        return ext::any_of(substitution->hypothesis().args(),
+                           [source](const Formula::Arg& arg) {
+                             return std::get<BasicEvent*>(arg.event) == source;
                            });
       };
       if (target_ptr && in_hypothesis(*target_ptr))
@@ -1791,9 +1791,9 @@ void Initializer::EnsureNoCcfSubstitutions() {
                          return !substitution->declarative();
                        });
   auto is_ccf = [](const Substitution& substitution) {
-    if (ext::any_of(substitution.hypothesis().event_args(),
-                    [](const Formula::EventArg& arg) {
-                      return std::get<BasicEvent*>(arg)->HasCcf();
+    if (ext::any_of(substitution.hypothesis().args(),
+                    [](const Formula::Arg& arg) {
+                      return std::get<BasicEvent*>(arg.event)->HasCcf();
                     }))
       return true;
 

@@ -37,16 +37,18 @@ void Substitution::Add(BasicEvent* source_event) {
 
 void Substitution::Validate() const {
   assert(hypothesis_ && "Missing substitution hypothesis.");
-  if (ext::any_of(hypothesis_->event_args(), [](const Formula::EventArg& arg) {
-        return !std::holds_alternative<BasicEvent*>(arg);
+  if (ext::any_of(hypothesis_->args(), [](const Formula::Arg& arg) {
+        return !std::holds_alternative<BasicEvent*>(arg.event);
       })) {
     SCRAM_THROW(ValidityError(
         "Substitution hypothesis must be built over basic events only."));
   }
-  if (hypothesis_->formula_args().empty() == false) {
-    SCRAM_THROW(
-        ValidityError("Substitution hypothesis formula cannot be nested."));
+
+  if (ext::any_of(hypothesis_->args(),
+                  [](const Formula::Arg& arg) { return arg.complement; })) {
+    SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."));
   }
+
   if (declarative()) {
     switch (hypothesis_->connective()) {
       case kNull:
@@ -79,9 +81,9 @@ void Substitution::Validate() const {
 
 std::optional<Substitution::Type> Substitution::type() const {
   auto in_hypothesis = [this](const BasicEvent* source_arg) {
-    return ext::any_of(hypothesis_->event_args(),
-                       [source_arg](const Formula::EventArg& arg) {
-                         return std::get<BasicEvent*>(arg) == source_arg;
+    return ext::any_of(hypothesis_->args(),
+                       [source_arg](const Formula::Arg& arg) {
+                         return std::get<BasicEvent*>(arg.event) == source_arg;
                        });
   };
 
@@ -90,7 +92,7 @@ std::optional<Substitution::Type> Substitution::type() const {
       case kAtleast:
         return formula.min_number() == 2;
       case kAnd:
-        return formula.event_args().size() == 2;
+        return formula.args().size() == 2;
       default:
         return false;
     }
@@ -112,7 +114,7 @@ std::optional<Substitution::Type> Substitution::type() const {
   if (hypothesis_->connective() != kAnd && hypothesis_->connective() != kNull)
     return {};
 
-  if (source_.size() == hypothesis_->event_args().size()) {
+  if (source_.size() == hypothesis_->args().size()) {
     if (ext::all_of(source_, in_hypothesis))
       return kRecoveryRule;
   } else if (source_.size() == 1) {

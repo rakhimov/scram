@@ -49,13 +49,17 @@ void Gate::Validate() const {
       Element::GetAttribute("flavor").value != "inhibit") {
     return;
   }
-  if (formula_->num_args() != 2) {
+  if (formula_->args().size() != 2) {
     SCRAM_THROW(ValidityError(Element::name() +
-                              "INHIBIT gate must have only 2 children"));
+                              "INHIBIT gate must have only 2 arguments"));
   }
-  int num_conditional = boost::count_if(
-      formula_->event_args(), [](const Formula::EventArg& event) {
-        if (BasicEvent* const* basic_event = std::get_if<BasicEvent*>(&event)) {
+  int num_conditional =
+      boost::count_if(formula_->args(), [](const Formula::Arg& arg) {
+        if (arg.complement)
+          return false;
+
+        if (BasicEvent* const* basic_event =
+                std::get_if<BasicEvent*>(&arg.event)) {
           return (*basic_event)->HasAttribute("flavor") &&
                  (*basic_event)->GetAttribute("flavor").value == "conditional";
         }
@@ -91,23 +95,31 @@ void Formula::min_number(int number) {
   min_number_ = number;
 }
 
-void Formula::AddArgument(EventArg event_arg) {
+void Formula::AddArgument(EventArg event_arg, bool complement) {
   Event* event = ext::as<Event*>(event_arg);
-  if (ext::any_of(event_args_, [&event](const EventArg& arg) {
-        return ext::as<Event*>(arg)->id() == event->id();
+  if (ext::any_of(args_, [&event](const Arg& arg) {
+        return ext::as<Event*>(arg.event)->id() == event->id();
       })) {
     SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + event->name()));
   }
-  event_args_.push_back(event_arg);
+  args_.push_back({complement, event_arg});
   if (!event->usage())
     event->usage(true);
 }
 
+void Formula::AddArgument(FormulaPtr formula) {
+  assert(formula->connective() == kNot);
+  assert(formula->args().size() == 1);
+  assert(formula->args().front().complement == false);
+  AddArgument(formula->args().front().event, /*complement=*/true);
+}
+
 void Formula::RemoveArgument(EventArg event_arg) {
-  auto it = boost::find(event_args_, event_arg);
-  if (it == event_args_.end())
+  auto it = boost::find_if(
+      args_, [&event_arg](const Arg& arg) { return arg.event == event_arg; });
+  if (it == args_.end())
     SCRAM_THROW(LogicError("The argument doesn't belong to this formula."));
-  event_args_.erase(it);
+  args_.erase(it);
 }
 
 void Formula::Validate() const {
@@ -116,25 +128,25 @@ void Formula::Validate() const {
     case kOr:
     case kNand:
     case kNor:
-      if (num_args() < 2)
+      if (args_.size() < 2)
         SCRAM_THROW(
             ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
                           "\" formula must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
-      if (num_args() != 1)
+      if (args_.size() != 1)
         SCRAM_THROW(
             ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
                           "\" formula must have only one argument."));
       break;
     case kXor:
-      if (num_args() != 2)
+      if (args_.size() != 2)
         SCRAM_THROW(
             ValidityError("\"xor\" formula must have exactly 2 arguments."));
       break;
     case kAtleast:
-      if (num_args() <= min_number_)
+      if (args_.size() <= min_number_)
         SCRAM_THROW(
             ValidityError("\"atleast\" formula must have more arguments "
                           "than its min number " +

@@ -89,31 +89,21 @@ TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   BasicEvent first_child("first");
   BasicEvent second_child("second");
-  CHECK(top->num_args() == 0);
+  CHECK(top->args().size() == 0);
   // Adding first child.
   CHECK_NOTHROW(top->AddArgument(&first_child));
   // Re-adding a child must cause an error.
   CHECK_THROWS_AS(top->AddArgument(&first_child), ValidityError);
   // Check the contents of the children container.
-  CHECK(std::get<BasicEvent*>(top->event_args().front()) == &first_child);
+  CHECK(std::get<BasicEvent*>(top->args().front().event) == &first_child);
   // Adding another child.
   CHECK_NOTHROW(top->AddArgument(&second_child));
-  CHECK(top->event_args().size() == 2);
-  CHECK(std::get<BasicEvent*>(top->event_args().back()) == &second_child);
+  CHECK(top->args().size() == 2);
+  CHECK(std::get<BasicEvent*>(top->args().back().event) == &second_child);
 
   CHECK_NOTHROW(top->RemoveArgument(&first_child));
-  CHECK(top->num_args() == 1);
+  CHECK(top->args().size() == 1);
   CHECK_THROWS_AS(top->RemoveArgument(&first_child), LogicError);
-}
-
-TEST_CASE("FormulaTest.FormulaArguments", "[mef::event]") {
-  FormulaPtr top(new Formula(kAnd));
-  FormulaPtr arg(new Formula(kOr));
-  CHECK(top->num_args() == 0);
-  Formula* shadow = arg.get();
-  // Adding first child.
-  CHECK_NOTHROW(top->AddArgument(std::move(arg)));  // arg is gone.
-  CHECK(top->formula_args().begin()->get() == shadow);
 }
 
 TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {

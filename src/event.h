@@ -229,6 +229,12 @@ class Formula : private boost::noncopyable {
   /// Event arguments of a formula.
   using EventArg = std::variant<Gate*, BasicEvent*, HouseEvent*>;
 
+  /// Formula argument with a complement flag.
+  struct Arg {
+    bool complement;  ///< Negation of the argument event.
+    EventArg event;  ///< The event in the formula.
+  };
+
   /// Constructs a formula.
   ///
   /// @param[in] connective  The logical connective for this Boolean formula.
@@ -254,28 +260,30 @@ class Formula : private boost::noncopyable {
   void min_number(int number);
 
   /// @returns The arguments of this formula.
-  /// @{
-  const std::vector<EventArg>& event_args() const { return event_args_; }
-  const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
-  /// @}
-
-  /// @returns The number of arguments.
-  int num_args() const { return event_args_.size() + formula_args_.size(); }
+  const std::vector<Arg>& args() const { return args_; }
 
   /// Adds an event into the arguments list.
   ///
   /// @param[in] event_arg  An argument event.
+  /// @param[in] complement  Indicate the negation of the argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  void AddArgument(EventArg event_arg);
+  ///
+  /// @todo Validate negation via NULL/NOT.
+  void AddArgument(EventArg event_arg, bool complement = false);
+
+  /// Overload to add formula argument with a structure.
+  void AddArgument(Arg arg) { AddArgument(arg.event, arg.complement); }
 
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
   ///
   /// @param[in] formula  A pointer to an argument formula.
-  void AddArgument(FormulaPtr formula) {
-    formula_args_.emplace_back(std::move(formula));
-  }
+  ///
+  /// @pre Formula is single nested 'NOT'.
+  ///
+  /// @todo Remove.
+  void AddArgument(FormulaPtr formula);
 
   /// Removes an event from the formula.
   ///
@@ -292,8 +300,7 @@ class Formula : private boost::noncopyable {
  private:
   Connective connective_;  ///< Logical connective.
   int min_number_;  ///< Min number for "atleast" connective.
-  std::vector<EventArg> event_args_;  ///< All event arguments.
-  std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
+  std::vector<Arg> args_;  ///< All events.
 };
 
 }  // namespace scram::mef

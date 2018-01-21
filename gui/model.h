@@ -366,7 +366,7 @@ public:
     }
 
     /// @returns The number of gate arguments.
-    int numArgs() const { return data()->formula().num_args(); }
+    int numArgs() const { return args().size(); }
 
     /// @returns The min number of the gate formula.
     ///
@@ -374,9 +374,9 @@ public:
     int minNumber() const { return data()->formula().min_number(); }
 
     /// @returns Event arguments of the gate.
-    const std::vector<mef::Formula::EventArg> &args() const
+    const std::vector<mef::Formula::Arg> &args() const
     {
-        return data()->formula().event_args();
+        return data()->formula().args();
     }
 
     /// Formula modification commands.
