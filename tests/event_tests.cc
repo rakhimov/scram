@@ -66,12 +66,12 @@ TEST_CASE("BasicEventTest.Validate", "[mef::event]") {
 
 TEST_CASE("FormulaTest.VoteNumber", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
-  CHECK(top->type() == kAnd);
+  CHECK(top->connective() == kAnd);
   // Setting a vote number for non-Vote formula is an error.
   CHECK_THROWS_AS(top->vote_number(2), LogicError);
   // Resetting to VOTE formula.
   top = FormulaPtr(new Formula(kVote));
-  CHECK(top->type() == kVote);
+  CHECK(top->connective() == kVote);
   // No vote number.
   CHECK_THROWS_AS(top->vote_number(), LogicError);
   // Illegal vote number.
@@ -144,7 +144,7 @@ TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   CHECK(cycle::PrintCycle(cycle) == "Top->Middle->Bottom->Top");
 }
 
-// Test gate type validation.
+// Test gate connective validation.
 TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   BasicEvent arg_one("a");

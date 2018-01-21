@@ -45,7 +45,7 @@ void BasicEvent::Validate() const {
 void Gate::Validate() const {
   assert(formula_ && "The gate formula is missing.");
   // Detect inhibit flavor.
-  if (formula_->type() != kAnd || !Element::HasAttribute("flavor") ||
+  if (formula_->connective() != kAnd || !Element::HasAttribute("flavor") ||
       Element::GetAttribute("flavor").value != "inhibit") {
     return;
   }
@@ -67,7 +67,8 @@ void Gate::Validate() const {
                               " exactly one conditional event."));
 }
 
-Formula::Formula(Connective type) : type_(type), vote_number_(0) {}
+Formula::Formula(Connective connective)
+    : connective_(connective), vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_)
@@ -76,11 +77,11 @@ int Formula::vote_number() const {
 }
 
 void Formula::vote_number(int number) {
-  if (type_ != kVote) {
+  if (connective_ != kVote) {
     SCRAM_THROW(LogicError(
         "The vote number can only be defined for 'atleast' formulas. "
         "The connective of this formula is '" +
-        std::string(kConnectiveToString[type_]) + "'."));
+        std::string(kConnectiveToString[connective_]) + "'."));
   }
   if (number < 2)
     SCRAM_THROW(ValidityError("Vote number cannot be less than 2."));
@@ -110,22 +111,22 @@ void Formula::RemoveArgument(EventArg event_arg) {
 }
 
 void Formula::Validate() const {
-  switch (type_) {
+  switch (connective_) {
     case kAnd:
     case kOr:
     case kNand:
     case kNor:
       if (num_args() < 2)
-        SCRAM_THROW(ValidityError("\"" +
-                                  std::string(kConnectiveToString[type_]) +
-                                  "\" formula must have 2 or more arguments."));
+        SCRAM_THROW(
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" formula must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
       if (num_args() != 1)
-        SCRAM_THROW(ValidityError("\"" +
-                                  std::string(kConnectiveToString[type_]) +
-                                  "\" formula must have only one argument."));
+        SCRAM_THROW(
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" formula must have only one argument."));
       break;
     case kXor:
       if (num_args() != 2)

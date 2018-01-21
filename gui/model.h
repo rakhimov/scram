@@ -361,7 +361,7 @@ public:
             assert(false);
 
         } else {
-            return data()->formula().type();
+            return data()->formula().connective();
         }
     }
 

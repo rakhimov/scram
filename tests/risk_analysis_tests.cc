@@ -140,15 +140,13 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   REQUIRE(gates().count("TopEvent"));
   mef::Gate* top = gates().find("TopEvent")->get();
   CHECK(top->id() == "TopEvent");
-  REQUIRE_NOTHROW(top->formula().type());
-  CHECK(top->formula().type() == mef::kAnd);
+  CHECK(top->formula().connective() == mef::kAnd);
   CHECK(top->formula().event_args().size() == 2);
 
   REQUIRE(gates().count("TrainOne"));
   mef::Gate* inter = gates().find("TrainOne")->get();
   CHECK(inter->id() == "TrainOne");
-  REQUIRE_NOTHROW(inter->formula().type());
-  CHECK(inter->formula().type() == mef::kOr);
+  CHECK(inter->formula().connective() == mef::kOr);
   CHECK(inter->formula().event_args().size() == 2);
 
   REQUIRE(basic_events().count("ValveOne"));

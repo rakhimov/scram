@@ -1127,7 +1127,7 @@ template <>
 mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
     auto formula = std::make_unique<mef::Formula>(dialog.connective());
-    if (formula->type() == mef::kVote)
+    if (formula->connective() == mef::kVote)
         formula->vote_number(dialog.voteNumber());
 
     for (const std::string &arg : dialog.arguments()) {

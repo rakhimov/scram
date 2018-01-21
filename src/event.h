@@ -231,11 +231,11 @@ class Formula : private boost::noncopyable {
 
   /// Constructs a formula.
   ///
-  /// @param[in] type  The logical connective for this Boolean formula.
-  explicit Formula(Connective type);
+  /// @param[in] connective  The logical connective for this Boolean formula.
+  explicit Formula(Connective connective);
 
-  /// @returns The type of this formula.
-  Connective type() const { return type_; }
+  /// @returns The connective of this formula.
+  Connective connective() const { return connective_; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///
@@ -253,7 +253,7 @@ class Formula : private boost::noncopyable {
   ///       outside of this class.
   void vote_number(int number);
 
-  /// @returns The arguments of this formula of specific type.
+  /// @returns The arguments of this formula.
   /// @{
   const std::vector<EventArg>& event_args() const { return event_args_; }
   const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
@@ -290,7 +290,7 @@ class Formula : private boost::noncopyable {
   void Validate() const;
 
  private:
-  Connective type_;  ///< Logical connective.
+  Connective connective_;  ///< Logical connective.
   int vote_number_;  ///< Vote number for "atleast" connective.
   std::vector<EventArg> event_args_;  ///< All event arguments.
   std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.

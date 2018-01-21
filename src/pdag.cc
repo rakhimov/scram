@@ -599,7 +599,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
   static_assert(CheckConnectiveEnums(),
                 "mef::Connective must map to core::Connective.");
 
-  Connective type = static_cast<Connective>(formula.type());
+  Connective type = static_cast<Connective>(formula.connective());
   auto parent = std::make_shared<Gate>(type, this);
 
   if (type != kOr && type != kAnd)
@@ -664,7 +664,7 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
   for (const mef::BasicEvent* event : substitution.source())
     source.push_back(nodes->variables.find(event)->second->index());
 
-  switch (substitution.hypothesis().type()) {
+  switch (substitution.hypothesis().connective()) {
     case mef::kNull:
     case mef::kAnd: {
       std::vector<int> args;

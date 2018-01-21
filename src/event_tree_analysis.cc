@@ -36,7 +36,7 @@ namespace {  // The model cloning functions.
 
 /// Clones the formula without any instruction application.
 std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
-  auto new_formula = std::make_unique<mef::Formula>(formula.type());
+  auto new_formula = std::make_unique<mef::Formula>(formula.connective());
   for (const mef::Formula::EventArg& arg : formula.event_args())
     new_formula->AddArgument(arg);
   for (const mef::FormulaPtr& arg : formula.formula_args())
@@ -55,7 +55,7 @@ std::unique_ptr<mef::Formula>
 Clone(const mef::Formula& formula,
       const std::unordered_map<std::string, bool>& set_instructions,
       std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
-  auto new_formula = std::make_unique<mef::Formula>(formula.type());
+  auto new_formula = std::make_unique<mef::Formula>(formula.connective());
   struct {
     mef::Formula::EventArg operator()(mef::BasicEvent* arg) { return arg; }
     mef::Formula::EventArg operator()(mef::HouseEvent* arg) {

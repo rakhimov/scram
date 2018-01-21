@@ -48,7 +48,7 @@ void Substitution::Validate() const {
         ValidityError("Substitution hypothesis formula cannot be nested."));
   }
   if (declarative()) {
-    switch (hypothesis_->type()) {
+    switch (hypothesis_->connective()) {
       case kNull:
       case kAnd:
       case kVote:
@@ -61,7 +61,7 @@ void Substitution::Validate() const {
     if (constant && *constant)
       SCRAM_THROW(ValidityError("Substitution has no effect."));
   } else {  // Non-declarative.
-    switch (hypothesis_->type()) {
+    switch (hypothesis_->connective()) {
       case kNull:
       case kAnd:
       case kOr:
@@ -86,7 +86,7 @@ std::optional<Substitution::Type> Substitution::type() const {
   };
 
   auto is_mutually_exclusive = [](const Formula& formula) {
-    switch (formula.type()) {
+    switch (formula.connective()) {
       case kVote:
         return formula.vote_number() == 2;
       case kAnd:
@@ -102,14 +102,14 @@ std::optional<Substitution::Type> Substitution::type() const {
       if (is_mutually_exclusive(*hypothesis_))
         return kDeleteTerms;
     } else if (std::holds_alternative<BasicEvent*>(target_)) {
-      if (hypothesis_->type() == kAnd)
+      if (hypothesis_->connective() == kAnd)
         return kRecoveryRule;
     }
     return {};
   }
   if (!std::holds_alternative<BasicEvent*>(target_))
     return {};
-  if (hypothesis_->type() != kAnd && hypothesis_->type() != kNull)
+  if (hypothesis_->connective() != kAnd && hypothesis_->connective() != kNull)
     return {};
 
   if (source_.size() == hypothesis_->event_args().size()) {

@@ -92,12 +92,12 @@ void Serialize(const Formula& formula, xml::StreamElement* parent) {
 
     xml::StreamElement* xml;
   };
-  if (formula.type() == kNull) {
+  if (formula.connective() == kNull) {
     assert(formula.event_args().size() == 1);
     std::visit(ArgStreamer{parent}, formula.event_args().front());
   } else {
     xml::StreamElement type_element = [&formula, &parent] {
-      switch (formula.type()) {
+      switch (formula.connective()) {
         case kNot:
           return parent->AddChild("not");
         case kAnd:
