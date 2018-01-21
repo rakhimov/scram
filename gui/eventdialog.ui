@@ -340,7 +340,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QSpinBox" name="voteNumberBox">
+          <widget class="QSpinBox" name="minNumberBox">
            <property name="enabled">
             <bool>false</bool>
            </property>
@@ -482,7 +482,7 @@
   <tabstop>constantValue</tabstop>
   <tabstop>exponentialRate</tabstop>
   <tabstop>connectiveBox</tabstop>
-  <tabstop>voteNumberBox</tabstop>
+  <tabstop>minNumberBox</tabstop>
   <tabstop>addArgLine</tabstop>
   <tabstop>addArgButton</tabstop>
   <tabstop>argsList</tabstop>

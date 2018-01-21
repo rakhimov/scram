@@ -96,15 +96,15 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         {nameLine, constantValue, exponentialRate, containerFaultTreeName});
     connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
-                voteNumberBox->setEnabled(index == mef::kAtleast);
+                minNumberBox->setEnabled(index == mef::kAtleast);
                 validate();
             });
     connect(this, &EventDialog::formulaArgsChanged, [this] {
         int numArgs = argsList->count();
         int newMax = numArgs > 2 ? (numArgs - 1) : 2;
-        if (voteNumberBox->value() > newMax)
-            voteNumberBox->setValue(newMax);
-        voteNumberBox->setMaximum(newMax);
+        if (minNumberBox->value() > newMax)
+            minNumberBox->setValue(newMax);
+        minNumberBox->setMaximum(newMax);
         validate();
     });
     connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
@@ -311,7 +311,7 @@ void EventDialog::setupData(const model::Gate &element)
 
     connectiveBox->setCurrentIndex(element.type());
     if (element.type() == mef::kAtleast)
-        voteNumberBox->setValue(element.minNumber());
+        minNumberBox->setValue(element.minNumber());
     for (const mef::Formula::EventArg &arg : element.args())
         argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
@@ -416,8 +416,8 @@ void EventDialog::validate()
             }
             break;
         case mef::kAtleast:
-            if (numArgs <= voteNumberBox->value()) {
-                int numReqArgs = voteNumberBox->value() + 1;
+            if (numArgs <= minNumberBox->value()) {
+                int numReqArgs = minNumberBox->value() + 1;
                 m_errorBar->showMessage(
                     //: The number of required arguments is always more than 2.
                     tr("%1 connective requires at-least %n arguments.", "",

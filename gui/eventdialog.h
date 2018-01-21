@@ -109,8 +109,8 @@ public:
         return static_cast<mef::Connective>(connectiveBox->currentIndex());
     }
 
-    /// @returns The value for the vote number for formulas.
-    int voteNumber() const { return voteNumberBox->value(); }
+    /// @returns The value for the min number for formulas.
+    int minNumber() const { return minNumberBox->value(); }
 
     /// @returns The set of formula argument ids.
     std::vector<std::string> arguments() const;
