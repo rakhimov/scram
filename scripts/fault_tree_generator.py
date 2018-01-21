@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2017 Olzhas Rakhimov
+# Copyright (C) 2014-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -959,16 +959,11 @@ def manage_cmd_args(argv=None):
         help="apply the Aralia format to the output")
     parser.add_argument(
         "--nest",
-        type=int,
-        default=0,
-        metavar="int",
-        help="nestedness of Boolean formulae in the XML output")
+        action="store_true",
+        help="nest NOT connectives in Boolean formulae")
     args = parser.parse_args(argv)
-    if args.nest < 0:
-        raise ap.ArgumentTypeError("The nesting factor cannot be negative")
-    if args.aralia:
-        if args.out == "fault_tree.xml":
-            args.out = "fault_tree.txt"
+    if args.aralia and args.out == "fault_tree.xml":
+        args.out = "fault_tree.txt"
     return args
 
 
