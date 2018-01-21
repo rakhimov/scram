@@ -68,27 +68,27 @@ void Gate::Validate() const {
 }
 
 Formula::Formula(Connective connective)
-    : connective_(connective), vote_number_(0) {}
+    : connective_(connective), min_number_(0) {}
 
-int Formula::vote_number() const {
-  if (!vote_number_)
-    SCRAM_THROW(LogicError("Vote number is not set."));
-  return vote_number_;
+int Formula::min_number() const {
+  if (!min_number_)
+    SCRAM_THROW(LogicError("Min number is not set."));
+  return min_number_;
 }
 
-void Formula::vote_number(int number) {
-  if (connective_ != kVote) {
-    SCRAM_THROW(LogicError(
-        "The vote number can only be defined for 'atleast' formulas. "
-        "The connective of this formula is '" +
-        std::string(kConnectiveToString[connective_]) + "'."));
+void Formula::min_number(int number) {
+  if (connective_ != kAtleast) {
+    SCRAM_THROW(
+        LogicError("The min number can only be defined for 'atleast' formulas. "
+                   "The connective of this formula is '" +
+                   std::string(kConnectiveToString[connective_]) + "'."));
   }
   if (number < 2)
-    SCRAM_THROW(ValidityError("Vote number cannot be less than 2."));
-  if (vote_number_)
-    SCRAM_THROW(LogicError("Trying to re-assign a vote number"));
+    SCRAM_THROW(ValidityError("Min number cannot be less than 2."));
+  if (min_number_)
+    SCRAM_THROW(LogicError("Trying to re-assign a min number"));
 
-  vote_number_ = number;
+  min_number_ = number;
 }
 
 void Formula::AddArgument(EventArg event_arg) {
@@ -133,12 +133,12 @@ void Formula::Validate() const {
         SCRAM_THROW(
             ValidityError("\"xor\" formula must have exactly 2 arguments."));
       break;
-    case kVote:
-      if (num_args() <= vote_number_)
+    case kAtleast:
+      if (num_args() <= min_number_)
         SCRAM_THROW(
             ValidityError("\"atleast\" formula must have more arguments "
-                          "than its vote number " +
-                          std::to_string(vote_number_) + "."));
+                          "than its min number " +
+                          std::to_string(min_number_) + "."));
   }
 }
 

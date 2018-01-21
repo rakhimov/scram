@@ -51,7 +51,7 @@ void Substitution::Validate() const {
     switch (hypothesis_->connective()) {
       case kNull:
       case kAnd:
-      case kVote:
+      case kAtleast:
       case kOr:
         break;
       default:
@@ -87,8 +87,8 @@ std::optional<Substitution::Type> Substitution::type() const {
 
   auto is_mutually_exclusive = [](const Formula& formula) {
     switch (formula.connective()) {
-      case kVote:
-        return formula.vote_number() == 2;
+      case kAtleast:
+        return formula.min_number() == 2;
       case kAnd:
         return formula.event_args().size() == 2;
       default:

@@ -62,7 +62,7 @@ Gate::Gate(Connective type, Pdag* graph) noexcept
       mark_(false),
       module_(false),
       coherent_(false),
-      vote_number_(0),
+      min_number_(0),
       descendant_(0),
       ancestor_(0),
       min_time_(0),
@@ -81,7 +81,7 @@ GatePtr Gate::Clone() noexcept {
   assert(!constant() && type_ != kNull);
   auto clone = std::make_shared<Gate>(type_, &Node::graph());  // The same type.
   clone->coherent_ = coherent_;
-  clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
+  clone->min_number_ = min_number_;  // Copy min number in case it is K/N.
   // Getting arguments copied.
   clone->args_ = args_;
   clone->gate_args_ = gate_args_;
@@ -119,11 +119,11 @@ void Gate::AddConstantArg<true>() noexcept {
       assert(args_.size() == 1);
       type(kNot);
       break;
-    case kVote:  // (K - 1) / (N - 1).
+    case kAtleast:  // (K - 1) / (N - 1).
       assert(args_.size() >= 2);
-      assert(vote_number_ > 0);
-      --vote_number_;
-      if (vote_number_ == 1)
+      assert(min_number_ > 0);
+      --min_number_;
+      if (min_number_ == 1)
         type(kOr);
       break;
   }
@@ -151,9 +151,9 @@ void Gate::AddConstantArg<false>() noexcept {
       assert(args_.size() == 1);
       type(kNull);
       break;
-    case kVote:  // K / (N - 1).
+    case kAtleast:  // K / (N - 1).
       assert(args_.size() >= 2);
-      ReduceLogic(kAnd, vote_number_);
+      ReduceLogic(kAnd, min_number_);
       break;
   }
 }
@@ -333,8 +333,8 @@ void Gate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
-  if (type_ == kVote)
-    return ProcessVoteGateDuplicateArg(index);
+  if (type_ == kAtleast)
+    return ProcessAtleastGateDuplicateArg(index);
 
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
@@ -357,27 +357,27 @@ void Gate::ProcessDuplicateArg(int index) noexcept {
   }
 }
 
-void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
+void Gate::ProcessAtleastGateDuplicateArg(int index) noexcept {
   LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
-  assert(type_ == kVote);
+  assert(type_ == kAtleast);
   // This is a very special handling of K/N duplicates.
   // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
-  assert(vote_number_ > 1);
-  assert(args_.size() >= vote_number_);
+  assert(min_number_ > 1);
+  assert(args_.size() >= min_number_);
   if (args_.size() == 2) {  // @(2, [x, x, z]) = x
-    assert(vote_number_ == 2);
+    assert(min_number_ == 2);
     this->EraseArg(index);
     this->type(kNull);
     return;
   }
-  if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
-    assert(vote_number_ > 2 && "Corrupted number of gate arguments.");
+  if (min_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
+    assert(min_number_ > 2 && "Corrupted number of gate arguments.");
     GatePtr clone_two = this->Clone();
-    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+    clone_two->min_number(min_number_ - 2);  // @(k-2, [y_i])
     this->EraseArgs();
     this->type(kAnd);
     clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
-    if (clone_two->vote_number() == 1)
+    if (clone_two->min_number() == 1)
       clone_two->type(kOr);
     this->AddArg(clone_two);
     return;
@@ -388,7 +388,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   this->EraseArgs();  // The main gate turns into OR with x.
   type(kOr);
   this->AddArg(clone_one);
-  if (vote_number_ == 2) {  // No need for the second K/N gate.
+  if (min_number_ == 2) {  // No need for the second K/N gate.
     clone_one->TransferArg(index, shared_from_this());  // Transferred the x.
     assert(this->args_.size() == 2);
   } else {
@@ -397,18 +397,18 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     this->AddArg(and_gate);
     clone_one->TransferArg(index, and_gate);  // Transferred the x.
 
-    // Have to create the second K/N for vote_number > 2.
+    // Have to create the second K/N for min_number > 2.
     GatePtr clone_two = clone_one->Clone();
-    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-    if (clone_two->vote_number() == 1)
+    clone_two->min_number(min_number_ - 2);  // @(k-2, [y_i])
+    if (clone_two->min_number() == 1)
       clone_two->type(kOr);
     and_gate->AddArg(clone_two);
 
     assert(and_gate->args().size() == 2);
     assert(this->args_.size() == 2);
   }
-  assert(clone_one->vote_number() <= clone_one->args().size());
-  if (clone_one->args().size() == clone_one->vote_number())
+  assert(clone_one->min_number() <= clone_one->args().size());
+  if (clone_one->args().size() == clone_one->min_number())
     clone_one->type(kAnd);
 }
 
@@ -426,18 +426,18 @@ void Gate::ProcessComplementArg(int index) noexcept {
     case kOr:
       MakeConstant(true);
       break;
-    case kVote:
+    case kAtleast:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
-      assert(vote_number_ > 1 && "Vote number is wrong.");
-      assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
+      assert(min_number_ > 1 && "Min number is wrong.");
+      assert((args_.size() + 1) > min_number_ && "Malformed K/N gate.");
       // @(k, [x, x', y_i]) = @(k-1, [y_i])
       EraseArg(-index);
-      --vote_number_;
+      --min_number_;
       if (args_.size() == 1) {
         type(kNull);
-      } else if (vote_number_ == 1) {
+      } else if (min_number_ == 1) {
         type(kOr);
-      } else if (vote_number_ == args_.size()) {
+      } else if (min_number_ == args_.size()) {
         type(kAnd);
       }
       break;
@@ -494,7 +494,7 @@ namespace {
 
 /// @returns true if mef::Connective enum maps exactly to core::Connective enum.
 constexpr bool CheckConnectiveEnums() {
-  return CONNECTIVE_EQ(kAnd) && CONNECTIVE_EQ(kOr) && CONNECTIVE_EQ(kVote) &&
+  return CONNECTIVE_EQ(kAnd) && CONNECTIVE_EQ(kOr) && CONNECTIVE_EQ(kAtleast) &&
          CONNECTIVE_EQ(kXor) && CONNECTIVE_EQ(kNot) && CONNECTIVE_EQ(kNand) &&
          CONNECTIVE_EQ(kNor) && CONNECTIVE_EQ(kNull);
 }
@@ -612,8 +612,8 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     case kXor:
       coherent_ = false;
       break;
-    case kVote:
-      parent->vote_number(formula.vote_number());
+    case kAtleast:
+      parent->min_number(formula.min_number());
       break;
     case kNull:
       null_gates_.push_back(parent);
@@ -842,8 +842,8 @@ void Pdag::Log() noexcept {
       << "AND gates: " << logger.gate_types[kAnd];
   BLOG(DEBUG5, logger.gate_types[kOr])
       << "OR gates: " << logger.gate_types[kOr];
-  BLOG(DEBUG5, logger.gate_types[kVote])
-      << "K/N gates: " << logger.gate_types[kVote];
+  BLOG(DEBUG5, logger.gate_types[kAtleast])
+      << "K/N gates: " << logger.gate_types[kAtleast];
   BLOG(DEBUG5, logger.gate_types[kXor])
       << "XOR gates: " << logger.gate_types[kXor];
   BLOG(DEBUG5, logger.gate_types[kNot])
@@ -914,8 +914,8 @@ FormulaSig GetFormulaSig(const Gate& gate) {
       sig.begin = "";  // No need for the parentheses.
       sig.end = "";
       break;
-    case kVote:
-      sig.begin = "@(" + std::to_string(gate.vote_number()) + ", [";
+    case kAtleast:
+      sig.begin = "@(" + std::to_string(gate.min_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";
       break;

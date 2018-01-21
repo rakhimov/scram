@@ -795,8 +795,8 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
   }
 
   try {
-    if (formula_type == kVote)
-      formula->vote_number(*formula_node.attribute<int>("min"));
+    if (formula_type == kAtleast)
+      formula->min_number(*formula_node.attribute<int>("min"));
 
     formula->Validate();
   } catch (ValidityError& err) {

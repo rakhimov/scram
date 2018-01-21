@@ -232,7 +232,7 @@ class Preprocessor::GateSet {
       assert(lhs->type() == rhs->type());
       if (lhs->args() != rhs->args())
         return false;
-      if (lhs->type() == kVote && lhs->vote_number() != rhs->vote_number())
+      if (lhs->type() == kAtleast && lhs->min_number() != rhs->min_number())
         return false;
       return true;
     }
@@ -289,9 +289,9 @@ class TestGateStructure {
       case kXor:
         assert(gate.args().size() == 2 && "Malformed XOR gate!");
         break;
-      case kVote:
-        assert(gate.vote_number() > 1 && "K/N has wrong K!");
-        assert(gate.args().size() > gate.vote_number() && "K/N has wrong N!");
+      case kAtleast:
+        assert(gate.min_number() > 1 && "K/N has wrong K!");
+        assert(gate.args().size() > gate.min_number() && "K/N has wrong N!");
         break;
       default:
         assert(gate.args().size() > 1 && "Missing arguments!");
@@ -492,7 +492,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
       graph_->complement() ^= true;
       break;
     default:  // All other types keep the sign of the root.
-      assert((type == kAnd || type == kOr || type == kVote || type == kXor ||
+      assert((type == kAnd || type == kOr || type == kAtleast || type == kXor ||
               type == kNull) &&
              "Update the logic if new gate types are introduced.");
   }
@@ -543,11 +543,11 @@ void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
       if (full)
         NormalizeXorGate(gate);
       break;
-    case kVote:
+    case kAtleast:
       assert(gate->args().size() > 2);
-      assert(gate->vote_number() > 1);
+      assert(gate->min_number() > 1);
       if (full)
-        NormalizeVoteGate(gate);
+        NormalizeAtleastGate(gate);
       break;
     case kNot:
       assert(gate->args().size() == 1);
@@ -582,16 +582,16 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   gate->AddArg(gate_two);
 }
 
-void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
-  assert(gate->type() == kVote);
-  int vote_number = gate->vote_number();
+void Preprocessor::NormalizeAtleastGate(const GatePtr& gate) noexcept {
+  assert(gate->type() == kAtleast);
+  int min_number = gate->min_number();
 
-  assert(vote_number > 0);  // Vote number can be 1 for special OR gates.
+  assert(min_number > 0);  // Min number can be 1 for special OR gates.
   assert(gate->args().size() > 1);
-  if (gate->args().size() == vote_number) {
+  if (gate->args().size() == min_number) {
     gate->type(kAnd);
     return;
-  } else if (vote_number == 1) {
+  } else if (min_number == 1) {
     gate->type(kOr);
     return;
   }
@@ -603,12 +603,12 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   auto first_arg = std::make_shared<Gate>(kAnd, graph_);
   gate->TransferArg(*it, first_arg);
 
-  auto grand_arg = std::make_shared<Gate>(kVote, graph_);
+  auto grand_arg = std::make_shared<Gate>(kAtleast, graph_);
   first_arg->AddArg(grand_arg);
-  grand_arg->vote_number(vote_number - 1);
+  grand_arg->min_number(min_number - 1);
 
-  auto second_arg = std::make_shared<Gate>(kVote, graph_);
-  second_arg->vote_number(vote_number);
+  auto second_arg = std::make_shared<Gate>(kAtleast, graph_);
+  second_arg->min_number(min_number);
 
   for (int index : gate->args()) {
     gate->ShareArg(index, grand_arg);
@@ -624,8 +624,8 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   gate->AddArg(first_arg);
   gate->AddArg(second_arg);
 
-  NormalizeVoteGate(grand_arg);
-  NormalizeVoteGate(second_arg);
+  NormalizeAtleastGate(grand_arg);
+  NormalizeAtleastGate(second_arg);
 }
 
 void Preprocessor::PropagateComplements(
@@ -1962,10 +1962,10 @@ void Preprocessor::DetermineGateState(const GatePtr& gate, int num_failure,
     case kAnd:
       gate->opti_value(compute_state(gate->args().size(), 1));
       break;
-    case kVote:
-      assert(gate->args().size() > gate->vote_number());
+    case kAtleast:
+      assert(gate->args().size() > gate->min_number());
       gate->opti_value(compute_state(
-          gate->vote_number(), gate->args().size() - gate->vote_number() + 1));
+          gate->min_number(), gate->args().size() - gate->min_number() + 1));
       break;
     case kXor:
       if (num_failure == 1 && num_success == 1) {

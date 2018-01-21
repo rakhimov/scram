@@ -341,9 +341,9 @@ public:
                 return tr("and");
             case mef::kOr:
                 return tr("or");
-            case mef::kVote:
+            case mef::kAtleast:
                 //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-                return tr("at-least %1").arg(voteNumber());
+                return tr("at-least %1").arg(minNumber());
             case mef::kXor:
                 return tr("xor");
             case mef::kNot:
@@ -368,10 +368,10 @@ public:
     /// @returns The number of gate arguments.
     int numArgs() const { return data()->formula().num_args(); }
 
-    /// @returns The vote number of the gate formula.
+    /// @returns The min number of the gate formula.
     ///
-    /// @pre The vote number is appropriate for the formula type.
-    int voteNumber() const { return data()->formula().vote_number(); }
+    /// @pre The min number is appropriate for the formula type.
+    int minNumber() const { return data()->formula().min_number(); }
 
     /// @returns Event arguments of the gate.
     const std::vector<mef::Formula::EventArg> &args() const

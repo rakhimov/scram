@@ -96,7 +96,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         {nameLine, constantValue, exponentialRate, containerFaultTreeName});
     connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
-                voteNumberBox->setEnabled(index == mef::kVote);
+                voteNumberBox->setEnabled(index == mef::kAtleast);
                 validate();
             });
     connect(this, &EventDialog::formulaArgsChanged, [this] {
@@ -310,8 +310,8 @@ void EventDialog::setupData(const model::Gate &element)
     }
 
     connectiveBox->setCurrentIndex(element.type());
-    if (element.type() == mef::kVote)
-        voteNumberBox->setValue(element.voteNumber());
+    if (element.type() == mef::kAtleast)
+        voteNumberBox->setValue(element.minNumber());
     for (const mef::Formula::EventArg &arg : element.args())
         argsList->addItem(
             QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
@@ -415,7 +415,7 @@ void EventDialog::validate()
                 return;
             }
             break;
-        case mef::kVote:
+        case mef::kAtleast:
             if (numArgs <= voteNumberBox->value()) {
                 int numReqArgs = voteNumberBox->value() + 1;
                 m_errorBar->showMessage(

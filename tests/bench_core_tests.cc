@@ -78,7 +78,7 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
 }
 
 // Simple verification tests for K/N gate fault tree.
-TEST_P(RiskAnalysisTest, Vote) {
+TEST_P(RiskAnalysisTest, Atleast) {
   std::string tree_input = "tests/input/core/atleast.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));

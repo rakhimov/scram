@@ -64,25 +64,25 @@ TEST_CASE("BasicEventTest.Validate", "[mef::event]") {
   CHECK_THROWS_AS(event.Validate(), ValidityError);
 }
 
-TEST_CASE("FormulaTest.VoteNumber", "[mef::event]") {
+TEST_CASE("FormulaTest.MinNumber", "[mef::event]") {
   FormulaPtr top(new Formula(kAnd));
   CHECK(top->connective() == kAnd);
-  // Setting a vote number for non-Vote formula is an error.
-  CHECK_THROWS_AS(top->vote_number(2), LogicError);
-  // Resetting to VOTE formula.
-  top = FormulaPtr(new Formula(kVote));
-  CHECK(top->connective() == kVote);
-  // No vote number.
-  CHECK_THROWS_AS(top->vote_number(), LogicError);
-  // Illegal vote number.
-  CHECK_THROWS_AS(top->vote_number(-2), ValidityError);
-  // Legal vote number.
-  CHECK_NOTHROW(top->vote_number(2));
-  // Trying to reset the vote number.
-  CHECK_THROWS_AS(top->vote_number(2), LogicError);
-  // Requesting the vote number should succeed.
-  REQUIRE_NOTHROW(top->vote_number());
-  CHECK(top->vote_number() == 2);
+  // Setting a min number for non-Atleast formula is an error.
+  CHECK_THROWS_AS(top->min_number(2), LogicError);
+  // Resetting to ATLEAST formula.
+  top = FormulaPtr(new Formula(kAtleast));
+  CHECK(top->connective() == kAtleast);
+  // No min number.
+  CHECK_THROWS_AS(top->min_number(), LogicError);
+  // Illegal min number.
+  CHECK_THROWS_AS(top->min_number(-2), ValidityError);
+  // Legal min number.
+  CHECK_NOTHROW(top->min_number(2));
+  // Trying to reset the min number.
+  CHECK_THROWS_AS(top->min_number(2), LogicError);
+  // Requesting the min number should succeed.
+  REQUIRE_NOTHROW(top->min_number());
+  CHECK(top->min_number() == 2);
 }
 
 TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
@@ -216,9 +216,9 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   top->AddArgument(&arg_three);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
-  // VOTE/ATLEAST formula tests.
-  top = FormulaPtr(new Formula(kVote));
-  top->vote_number(2);
+  // ATLEAST formula tests.
+  top = FormulaPtr(new Formula(kAtleast));
+  top->min_number(2);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
   top->AddArgument(&arg_one);
   CHECK_THROWS_AS(top->Validate(), ValidityError);

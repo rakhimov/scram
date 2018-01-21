@@ -517,11 +517,11 @@ void TestModel::testGateType()
     gate.formula(std::make_unique<mef::Formula>(mef::kNand));
     TEST_EQ(proxy.type<QString>(), "nand");
 
-    auto vote = std::make_unique<mef::Formula>(mef::kVote);
-    vote->vote_number(2);
+    auto vote = std::make_unique<mef::Formula>(mef::kAtleast);
+    vote->min_number(2);
     gate.formula(std::move(vote));
     TEST_EQ(proxy.type<QString>(), "at-least 2");
-    QCOMPARE(proxy.voteNumber(), 2);
+    QCOMPARE(proxy.minNumber(), 2);
 }
 
 void TestModel::testGateSetFormula()

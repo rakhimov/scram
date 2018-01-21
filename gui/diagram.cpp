@@ -275,7 +275,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
         paintPath.lineTo(0, maxHeight);
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
-    case mef::kVote: {
+    case mef::kAtleast: {
         double h = m_maxSize.height() * units().height();
         double a = h / sqrt(3);
         auto polygon =
@@ -286,10 +286,9 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
                                                               {-a / 2, h},
                                                               {-a, h / 2}}});
         auto *gate = static_cast<model::Gate *>(m_event);
-        auto *text = new QGraphicsTextItem(QStringLiteral("%1/%2")
-                                               .arg(gate->voteNumber())
-                                               .arg(gate->numArgs()),
-                                           polygon.get());
+        auto *text = new QGraphicsTextItem(
+            QStringLiteral("%1/%2").arg(gate->minNumber()).arg(gate->numArgs()),
+            polygon.get());
         QFont font = text->font();
         font.setPointSizeF(1.5 * font.pointSizeF());
         text->setFont(font);

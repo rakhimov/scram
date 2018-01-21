@@ -260,7 +260,7 @@ using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 enum Connective : std::uint8_t {
   kAnd = 0,  ///< AND gate.
   kOr,  ///< OR gate.
-  kVote,  ///< Combination, K/N, or Vote gate representation.
+  kAtleast,  ///< Combination, K/N, or Vote gate representation.
   kXor,  ///< Exclusive OR gate with two inputs.
   kNot,  ///< Boolean negation.
   kNand,  ///< NAND gate.
@@ -346,18 +346,18 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @pre The previous type is not equal to the new one.
   void type(Connective type);
 
-  /// @returns Vote number.
+  /// @returns Min number.
   ///
-  /// @pre The vote number is relevant to the gate logic.
-  int vote_number() const { return vote_number_; }
+  /// @pre The min number is relevant to the gate logic.
+  int min_number() const { return min_number_; }
 
-  /// Sets the vote number for this gate.
+  /// Sets the min number for this gate.
   /// This function is used for K/N gates.
   ///
-  /// @param[in] number  The vote number of VOTE gate.
+  /// @param[in] number  The min number of ATLEAST gate.
   ///
-  /// @pre The vote number is appropriate for the gate logic and arguments.
-  void vote_number(int number) { vote_number_ = number; }
+  /// @pre The min number is appropriate for the gate logic and arguments.
+  void min_number(int number) { min_number_ = number; }
 
   /// @returns true if this gate has become constant.
   bool constant() const { return constant_ != nullptr; }
@@ -535,7 +535,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          Depending on the logic of the gate,
   ///          new gates may be introduced
   ///          instead of the existing arguments.
-  /// @warning Complex logic gates like VOTE and XOR
+  /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
@@ -547,7 +547,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     assert(!constant_);
     assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
     assert(!(type_ == kXor && args_.size() > 1));
-    assert(vote_number_ >= 0);
+    assert(min_number_ >= 0);
 
     if (args_.count(index))
       return ProcessDuplicateArg(index);
@@ -708,7 +708,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @param[in] index  Positive or negative index of the existing argument.
   ///
   /// @warning New gates may be introduced.
-  void ProcessVoteGateDuplicateArg(int index) noexcept;
+  void ProcessAtleastGateDuplicateArg(int index) noexcept;
 
   /// Process an addition of a complement of an existing argument.
   ///
@@ -736,7 +736,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
-  int vote_number_;  ///< Vote number for VOTE gate.
+  int min_number_;  ///< Min number for ATLEAST gate.
   int descendant_;  ///< Mark by descendant indices.
   int ancestor_;  ///< Mark by ancestor indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.

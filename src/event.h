@@ -206,7 +206,7 @@ class Gate : public Event, public NodeMark {
 enum Connective : std::uint8_t {
   kAnd = 0,
   kOr,
-  kVote,  ///< Combination, K/N, atleast, or Vote gate representation.
+  kAtleast,  ///< Combination, K/N, atleast, or Vote gate representation.
   kXor,  ///< Exclusive OR gate with two inputs only.
   kNot,  ///< Boolean negation.
   kNand,  ///< Not AND.
@@ -237,21 +237,21 @@ class Formula : private boost::noncopyable {
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
 
-  /// @returns The vote number if and only if the formula is "atleast".
+  /// @returns The min number if and only if the formula is "atleast".
   ///
-  /// @throws LogicError  The vote number is not yet assigned.
-  int vote_number() const;
+  /// @throws LogicError  The min number is not yet assigned.
+  int min_number() const;
 
-  /// Sets the vote number only for an "atleast" formula.
+  /// Sets the min number only for an "atleast" formula.
   ///
-  /// @param[in] number  The vote number.
+  /// @param[in] number  The min number.
   ///
-  /// @throws ValidityError  The vote number is invalid.
-  /// @throws LogicError  The vote number is assigned illegally.
+  /// @throws ValidityError  The min number is invalid.
+  /// @throws LogicError  The min number is assigned illegally.
   ///
-  /// @note (Children number > vote number) should be checked
+  /// @note (Children number > min number) should be checked
   ///       outside of this class.
-  void vote_number(int number);
+  void min_number(int number);
 
   /// @returns The arguments of this formula.
   /// @{
@@ -291,7 +291,7 @@ class Formula : private boost::noncopyable {
 
  private:
   Connective connective_;  ///< Logical connective.
-  int vote_number_;  ///< Vote number for "atleast" connective.
+  int min_number_;  ///< Min number for "atleast" connective.
   std::vector<EventArg> event_args_;  ///< All event arguments.
   std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };
