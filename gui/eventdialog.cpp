@@ -386,7 +386,7 @@ void EventDialog::validate()
 
     if (!tabFormula->isHidden()) {
         int numArgs = argsList->count();
-        switch (static_cast<mef::Operator>(connectiveBox->currentIndex())) {
+        switch (static_cast<mef::Connective>(connectiveBox->currentIndex())) {
         case mef::kNot:
         case mef::kNull:
             if (numArgs != 1) {

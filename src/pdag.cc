@@ -489,10 +489,10 @@ void Pdag::Print() {
 }
 
 namespace {
-/// Compares operator enums from mef::Operator and core::Operator
+/// Compares operator enums from mef::Connective and core::Operator
 #define OPERATOR_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
 
-/// @returns true if mef::Operator enum maps exactly to core::Operator enum.
+/// @returns true if mef::Connective enum maps exactly to core::Operator enum.
 constexpr bool CheckOperatorEnums() {
   return OPERATOR_EQ(kAnd) && OPERATOR_EQ(kOr) && OPERATOR_EQ(kVote) &&
          OPERATOR_EQ(kXor) && OPERATOR_EQ(kNot) && OPERATOR_EQ(kNand) &&
@@ -594,8 +594,8 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
 GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
                             ProcessedNodes* nodes) noexcept {
   static_assert(kNumOperators == 8, "Unspecified formula operators.");
-  static_assert(kNumOperators == mef::kNumOperators, "Operator mismatch.");
-  static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
+  static_assert(kNumOperators == mef::kNumConnectives, "Operator mismatch.");
+  static_assert(CheckOperatorEnums(), "mef::Connective must map to Operator.");
 
   Operator type = static_cast<Operator>(formula.type());
   auto parent = std::make_shared<Gate>(type, this);

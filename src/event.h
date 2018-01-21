@@ -201,9 +201,9 @@ class Gate : public Event, public NodeMark {
   FormulaPtr formula_;  ///< Boolean formula of this gate.
 };
 
-/// Operators for formulas.
-/// The ordering is the same as analysis operators in the PDAG.
-enum Operator : std::uint8_t {
+/// Logical connectives for formulas.
+/// The ordering is the same as analysis connectives in the PDAG.
+enum Connective : std::uint8_t {
   kAnd = 0,
   kOr,
   kVote,  ///< Combination, K/N, atleast, or Vote gate representation.
@@ -214,15 +214,15 @@ enum Operator : std::uint8_t {
   kNull  ///< Single argument pass-through without logic.
 };
 
-/// The number of operators in the enum.
-const int kNumOperators = 8;
+/// The number of connectives in the enum.
+const int kNumConnectives = 8;
 
-/// String representations of the operators.
-/// The ordering is the same as the Operator enum.
-const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
-                                         "not", "nand", "nor",     "null"};
+/// String representations of the connectives.
+/// The ordering is the same as the Connective enum.
+const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
+                                           "not", "nand", "nor",     "null"};
 
-/// Boolean formula with operators and arguments.
+/// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.
 class Formula : private boost::noncopyable {
  public:
@@ -231,11 +231,11 @@ class Formula : private boost::noncopyable {
 
   /// Constructs a formula.
   ///
-  /// @param[in] type  The logical operator for this Boolean formula.
-  explicit Formula(Operator type);
+  /// @param[in] type  The logical connective for this Boolean formula.
+  explicit Formula(Connective type);
 
   /// @returns The type of this formula.
-  Operator type() const { return type_; }
+  Connective type() const { return type_; }
 
   /// @returns The vote number if and only if the formula is "atleast".
   ///
@@ -286,12 +286,12 @@ class Formula : private boost::noncopyable {
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
-  /// @throws ValidityError  Problems with the operator or arguments.
+  /// @throws ValidityError  Problems with the connective or arguments.
   void Validate() const;
 
  private:
-  Operator type_;  ///< Logical operator.
-  int vote_number_;  ///< Vote number for "atleast" operator.
+  Connective type_;  ///< Logical connective.
+  int vote_number_;  ///< Vote number for "atleast" connective.
   std::vector<EventArg> event_args_;  ///< All event arguments.
   std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
 };

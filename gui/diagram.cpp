@@ -243,9 +243,9 @@ Gate::Gate(model::Gate *event, model::Model *model,
                               children.back().first->pos().x(), linkY, this);
 }
 
-std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
+std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
 {
-    static_assert(mef::kNumOperators == 8, "Unexpected operator changes");
+    static_assert(mef::kNumConnectives == 8, "Unexpected connective changes");
     switch (type) {
     case mef::kNull:
         return std::make_unique<QGraphicsLineItem>(

@@ -67,7 +67,7 @@ void Gate::Validate() const {
                               " exactly one conditional event."));
 }
 
-Formula::Formula(Operator type) : type_(type), vote_number_(0) {}
+Formula::Formula(Connective type) : type_(type), vote_number_(0) {}
 
 int Formula::vote_number() const {
   if (!vote_number_)
@@ -79,8 +79,8 @@ void Formula::vote_number(int number) {
   if (type_ != kVote) {
     SCRAM_THROW(LogicError(
         "The vote number can only be defined for 'atleast' formulas. "
-        "The operator of this formula is '" +
-        std::string(kOperatorToString[type_]) + "'."));
+        "The connective of this formula is '" +
+        std::string(kConnectiveToString[type_]) + "'."));
   }
   if (number < 2)
     SCRAM_THROW(ValidityError("Vote number cannot be less than 2."));
@@ -116,13 +116,15 @@ void Formula::Validate() const {
     case kNand:
     case kNor:
       if (num_args() < 2)
-        SCRAM_THROW(ValidityError("\"" + std::string(kOperatorToString[type_]) +
+        SCRAM_THROW(ValidityError("\"" +
+                                  std::string(kConnectiveToString[type_]) +
                                   "\" formula must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
       if (num_args() != 1)
-        SCRAM_THROW(ValidityError("\"" + std::string(kOperatorToString[type_]) +
+        SCRAM_THROW(ValidityError("\"" +
+                                  std::string(kConnectiveToString[type_]) +
                                   "\" formula must have only one argument."));
       break;
     case kXor:

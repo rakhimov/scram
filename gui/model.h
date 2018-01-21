@@ -331,8 +331,8 @@ public:
     /// @param[in,out] gate  The MEF gate with a flat formula.
     explicit Gate(mef::Gate *gate) : Element(gate) {}
 
-    /// @returns The current operator type of the gate.
-    template <typename T = mef::Operator>
+    /// @returns The current connective of the gate.
+    template <typename T = mef::Connective>
     T type() const
     {
         if constexpr (std::is_same_v<T, QString>) {

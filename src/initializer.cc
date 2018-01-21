@@ -730,13 +730,13 @@ void Initializer::ProcessModelData(const xml::Element& model_data) {
 
 FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
                                    const std::string& base_path) {
-  Operator formula_type = [&formula_node]() {
+  Connective formula_type = [&formula_node]() {
     if (formula_node.has_attribute("name") || formula_node.name() == "constant")
       return kNull;
-    int pos = boost::find(kOperatorToString, formula_node.name()) -
-              std::begin(kOperatorToString);
-    assert(pos < kNumOperators && "Unexpected operator type.");
-    return static_cast<Operator>(pos);
+    int pos = boost::find(kConnectiveToString, formula_node.name()) -
+              std::begin(kConnectiveToString);
+    assert(pos < kNumConnectives && "Unexpected connective.");
+    return static_cast<Connective>(pos);
   }();
 
   FormulaPtr formula(new Formula(formula_type));
