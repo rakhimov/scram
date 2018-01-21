@@ -56,9 +56,7 @@ Design Constraints
 
 - Efficiency and Performance (Soft = 50ms)
 
-- Continuous validation and verification.
-  Guaranteed validity upon model construction
-  so that there is no need for delayed validation.
+- Correct by construction (guaranteed validity upon model construction).
 
 
 Design Assumptions
