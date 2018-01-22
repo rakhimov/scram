@@ -741,23 +741,10 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
   FormulaPtr formula(new Formula(formula_type));
 
-  auto add_arg = [this, &formula, &base_path](const xml::Element& element) {
-    if (element.name() == "constant") {
-      formula->Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
-                                                     : &HouseEvent::kFalse);
-      return;
-    }
-
+  auto add_event = [this, &formula, &base_path](const xml::Element& element,
+                                                bool complement) {
     std::string name(element.attribute("name"));
-    if (name.empty()) {
-      auto arg_formula = GetFormula(element, base_path);
-      assert(arg_formula->connective() == kNot);
-      assert(arg_formula->args().size() == 1);
-      assert(arg_formula->args().front().complement == false);
-      formula->Add(arg_formula->args().front().event, /*complement=*/true);
-      return;
-    }
-
+    assert(!name.empty() && "Not an appropriate XML element for arg Event.");
     std::string_view element_type = [&element] {
       // This is for the case "<event name="id" type="type"/>".
       std::string_view type = element.attribute("type");
@@ -765,19 +752,23 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     }();
 
     try {
-      if (element_type == "event") {  // Undefined type yet.
-        formula->Add(GetEvent(name, base_path));
+      auto arg_event = [this, &element_type, &name,
+                        &base_path]() -> Formula::ArgEvent {
+        if (element_type == "event") {  // Undefined type yet.
+          return GetEvent(name, base_path);
 
-      } else if (element_type == "gate") {
-        formula->Add(GetGate(name, base_path));
+        } else if (element_type == "gate") {
+          return GetGate(name, base_path);
 
-      } else if (element_type == "basic-event") {
-        formula->Add(GetBasicEvent(name, base_path));
+        } else if (element_type == "basic-event") {
+          return GetBasicEvent(name, base_path);
 
-      } else {
-        assert(element_type == "house-event");
-        formula->Add(GetHouseEvent(name, base_path));
-      }
+        } else {
+          assert(element_type == "house-event");
+          return GetHouseEvent(name, base_path);
+        }
+      }();
+      formula->Add(arg_event, complement);
     } catch (std::out_of_range&) {
       SCRAM_THROW(ValidityError(
           "Undefined " + std::string(element_type) + " " + name +
@@ -786,6 +777,22 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     } catch (DuplicateArgumentError& err) {
       err << boost::errinfo_at_line(element.line());
       throw;
+    }
+  };
+
+  auto add_arg = [this, &formula, &base_path,
+                  &add_event](const xml::Element& element) {
+    if (element.name() == "constant") {
+      formula->Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
+                                                     : &HouseEvent::kFalse);
+      return;
+    }
+
+    if (element.name() == "not") {
+      assert(element.children().size() == 1);
+      add_event(element.child().value(), /*complement=*/true);
+    } else {
+      add_event(element, /*complement=*/false);
     }
   };
 
