@@ -628,6 +628,11 @@
           <ref name="argument"/>
         </oneOrMore>
       </element>
+      <element name="iff">
+        <oneOrMore>
+          <ref name="argument"/>
+        </oneOrMore>
+      </element>
       <element name="nand">
         <oneOrMore>
           <ref name="argument"/>
