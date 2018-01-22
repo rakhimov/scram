@@ -750,7 +750,11 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
     std::string name(element.attribute("name"));
     if (name.empty()) {
-      formula->Add(GetFormula(element, base_path));
+      auto arg_formula = GetFormula(element, base_path);
+      assert(arg_formula->connective() == kNot);
+      assert(arg_formula->args().size() == 1);
+      assert(arg_formula->args().front().complement == false);
+      formula->Add(arg_formula->args().front().event, /*complement=*/true);
       return;
     }
 

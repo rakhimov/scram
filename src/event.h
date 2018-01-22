@@ -275,16 +275,6 @@ class Formula : private boost::noncopyable {
   /// Overload to add formula argument with a structure.
   void Add(Arg arg) { Add(arg.event, arg.complement); }
 
-  /// Adds a formula into the arguments list.
-  /// Formulas are unique.
-  ///
-  /// @param[in] formula  A pointer to an argument formula.
-  ///
-  /// @pre Formula is single nested 'NOT'.
-  ///
-  /// @todo Remove.
-  void Add(FormulaPtr formula);
-
   /// Removes an event from the formula.
   ///
   /// @param[in] event  The argument event of this formula.

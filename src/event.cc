@@ -107,13 +107,6 @@ void Formula::Add(ArgEvent event, bool complement) {
     base->usage(true);
 }
 
-void Formula::Add(FormulaPtr formula) {
-  assert(formula->connective() == kNot);
-  assert(formula->args().size() == 1);
-  assert(formula->args().front().complement == false);
-  Add(formula->args().front().event, /*complement=*/true);
-}
-
 void Formula::Remove(ArgEvent event) {
   auto it = boost::find_if(
       args_, [&event](const Arg& arg) { return arg.event == event; });
