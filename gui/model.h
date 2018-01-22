@@ -448,7 +448,7 @@ public:
     /// @param[in] event  The event defined/registered in the model.
     ///
     /// @returns The parent gates of an event.
-    std::vector<Gate *> parents(mef::Formula::EventArg event) const;
+    std::vector<Gate *> parents(mef::Formula::ArgEvent event) const;
 
     /// Sets the optional name of the model.
     ///

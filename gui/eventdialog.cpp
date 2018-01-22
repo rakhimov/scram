@@ -225,7 +225,7 @@ mef::FaultTree *EventDialog::getFaultTree(const T *event) const
             auto it_arg = boost::find_if(
                 gate->formula().args(), [&event](const mef::Formula::Arg &arg) {
                     return arg.event
-                           == mef::Formula::EventArg(const_cast<T *>(event));
+                           == mef::Formula::ArgEvent(const_cast<T *>(event));
                 });
             return it_arg != gate->formula().args().end();
         });

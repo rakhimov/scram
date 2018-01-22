@@ -168,7 +168,7 @@ void Model::normalize(mef::Model *model)
     }
 }
 
-std::vector<Gate *> Model::parents(mef::Formula::EventArg event) const
+std::vector<Gate *> Model::parents(mef::Formula::ArgEvent event) const
 {
     std::vector<Gate *> result;
     for (const std::unique_ptr<Gate> &gate : m_gates) {

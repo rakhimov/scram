@@ -95,16 +95,16 @@ void Formula::min_number(int number) {
   min_number_ = number;
 }
 
-void Formula::Add(EventArg event_arg, bool complement) {
-  Event* event = ext::as<Event*>(event_arg);
-  if (ext::any_of(args_, [&event](const Arg& arg) {
-        return ext::as<Event*>(arg.event)->id() == event->id();
+void Formula::Add(ArgEvent event, bool complement) {
+  Event* base = ext::as<Event*>(event);
+  if (ext::any_of(args_, [&base](const Arg& arg) {
+        return ext::as<Event*>(arg.event)->id() == base->id();
       })) {
-    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + event->name()));
+    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + base->name()));
   }
-  args_.push_back({complement, event_arg});
-  if (!event->usage())
-    event->usage(true);
+  args_.push_back({complement, event});
+  if (!base->usage())
+    base->usage(true);
 }
 
 void Formula::Add(FormulaPtr formula) {
@@ -114,9 +114,9 @@ void Formula::Add(FormulaPtr formula) {
   Add(formula->args().front().event, /*complement=*/true);
 }
 
-void Formula::Remove(EventArg event_arg) {
+void Formula::Remove(ArgEvent event) {
   auto it = boost::find_if(
-      args_, [&event_arg](const Arg& arg) { return arg.event == event_arg; });
+      args_, [&event](const Arg& arg) { return arg.event == event; });
   if (it == args_.end())
     SCRAM_THROW(LogicError("The argument doesn't belong to this formula."));
   args_.erase(it);

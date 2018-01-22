@@ -79,7 +79,7 @@ void SerializeElement(const Element& element, xml::StreamElement* xml_element) {
 }
 
 void Serialize(const Formula& formula, xml::StreamElement* parent) {
-  auto stream_event = [](const Formula::EventArg& event,
+  auto stream_event = [](const Formula::ArgEvent& event,
                          xml::StreamElement* xml) {
     xml->AddChild("event").SetAttribute(
         "name", ext::as<const mef::Event*>(event)->name());

@@ -55,8 +55,8 @@ Clone(const mef::Formula& formula,
       std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
   auto new_formula = std::make_unique<mef::Formula>(formula.connective());
   struct {
-    mef::Formula::EventArg operator()(mef::BasicEvent* arg) { return arg; }
-    mef::Formula::EventArg operator()(mef::HouseEvent* arg) {
+    mef::Formula::ArgEvent operator()(mef::BasicEvent* arg) { return arg; }
+    mef::Formula::ArgEvent operator()(mef::HouseEvent* arg) {
       if (auto it = ext::find(set_house, arg->id())) {
         if (it->second == arg->state())
           return arg;
@@ -70,7 +70,7 @@ Clone(const mef::Formula& formula,
       }
       return arg;
     }
-    mef::Formula::EventArg operator()(mef::Gate* arg) {
+    mef::Formula::ArgEvent operator()(mef::Gate* arg) {
       if (set_house.empty())
         return arg;
       auto clone = std::make_unique<mef::Gate>(

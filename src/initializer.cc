@@ -1374,7 +1374,7 @@ T* Initializer::GetEntity(const std::string& entity_reference,
       return &**it;                                                  \
   } while (false)
 
-Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
+Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
                                         const std::string& base_path) {
   // Do not implement this in terms of
   // GetGate, GetBasicEvent, or GetHouseEvent.

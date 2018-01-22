@@ -226,13 +226,13 @@ const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
 /// Formulas are not expected to be shared.
 class Formula : private boost::noncopyable {
  public:
-  /// Event arguments of a formula.
-  using EventArg = std::variant<Gate*, BasicEvent*, HouseEvent*>;
+  /// Argument events of a formula.
+  using ArgEvent = std::variant<Gate*, BasicEvent*, HouseEvent*>;
 
   /// Formula argument with a complement flag.
   struct Arg {
     bool complement;  ///< Negation of the argument event.
-    EventArg event;  ///< The event in the formula.
+    ArgEvent event;  ///< The event in the formula.
   };
 
   /// Constructs a formula.
@@ -264,13 +264,13 @@ class Formula : private boost::noncopyable {
 
   /// Adds an event into the arguments list.
   ///
-  /// @param[in] event_arg  An argument event.
+  /// @param[in] event  An argument event.
   /// @param[in] complement  Indicate the negation of the argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
   ///
   /// @todo Validate negation via NULL/NOT.
-  void Add(EventArg event_arg, bool complement = false);
+  void Add(ArgEvent event, bool complement = false);
 
   /// Overload to add formula argument with a structure.
   void Add(Arg arg) { Add(arg.event, arg.complement); }
@@ -287,10 +287,10 @@ class Formula : private boost::noncopyable {
 
   /// Removes an event from the formula.
   ///
-  /// @param[in] event_arg  The argument event of this formula.
+  /// @param[in] event  The argument event of this formula.
   ///
   /// @throws LogicError  The argument does not belong to this formula.
-  void Remove(EventArg event_arg);
+  void Remove(ArgEvent event);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///

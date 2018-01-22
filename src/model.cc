@@ -110,7 +110,7 @@ void Model::Add(ExternFunctionPtr extern_function) {
                                      "Redefinition of extern function: ");
 }
 
-Formula::EventArg Model::GetEvent(const std::string& id) {
+Formula::ArgEvent Model::GetEvent(const std::string& id) {
   if (auto it = ext::find(basic_events(), id))
     return it->get();
   if (auto it = ext::find(gates(), id))
