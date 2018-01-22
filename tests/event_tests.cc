@@ -106,6 +106,45 @@ TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
   CHECK_THROWS_AS(top->Remove(&first_child), LogicError);
 }
 
+TEST_CASE("FormulaTest.InvalidComplementArguments", "[mef::event]") {
+  BasicEvent arg_event("first");
+  SECTION("NULL connective with complement") {
+    Formula top(kNull);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), LogicError);
+    CHECK(top.args().empty());
+  }
+  SECTION("NOT connective with complement") {
+    Formula top(kNot);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), LogicError);
+    CHECK(top.args().empty());
+  }
+}
+
+TEST_CASE("FormulaTest.DuplicateViaComplement", "[mef::event]") {
+  Formula top(kAnd);
+  BasicEvent arg_event("first");
+  SECTION("Complement first") {
+    REQUIRE_NOTHROW(top.Add(&arg_event, true));
+    CHECK(top.args().size() == 1);
+    REQUIRE_THROWS_AS(top.Add(&arg_event), DuplicateArgumentError);
+  }
+  SECTION("Complement second") {
+    REQUIRE_NOTHROW(top.Add(&arg_event));
+    CHECK(top.args().size() == 1);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), DuplicateArgumentError);
+  }
+}
+
+TEST_CASE("FormulaTest.InvalidConstantArguments", "[mef::event]") {
+  Formula top(kNot);
+  SECTION("Constant True event") {
+    REQUIRE_THROWS_AS(top.Add(&HouseEvent::kTrue), LogicError);
+  }
+  SECTION("Constant False event") {
+    REQUIRE_THROWS_AS(top.Add(&HouseEvent::kFalse), LogicError);
+  }
+}
+
 TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   Gate root("root");  // Should not appear in the cycle.
   Gate top("Top");

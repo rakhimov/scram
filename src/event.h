@@ -268,8 +268,7 @@ class Formula : private boost::noncopyable {
   /// @param[in] complement  Indicate the negation of the argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  ///
-  /// @todo Validate negation via NULL/NOT.
+  /// @throws LogicError  Invalid nesting of complement or constant args.
   void Add(ArgEvent event, bool complement = false);
 
   /// Overload to add formula argument with a structure.

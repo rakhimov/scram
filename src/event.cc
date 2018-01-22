@@ -96,6 +96,17 @@ void Formula::min_number(int number) {
 }
 
 void Formula::Add(ArgEvent event, bool complement) {
+  if (complement) {
+    if (connective_ == kNull || connective_ == kNot)
+      SCRAM_THROW(LogicError("Invalid nesting of a complement arg."));
+  }
+  if (connective_ == kNot) {
+    if (event == ArgEvent(&HouseEvent::kTrue) ||
+        event == ArgEvent(&HouseEvent::kFalse)) {
+      SCRAM_THROW(LogicError("Invalid nesting of a constant arg."));
+    }
+  }
+
   Event* base = ext::as<Event*>(event);
   if (ext::any_of(args_, [&base](const Arg& arg) {
         return ext::as<Event*>(arg.event)->id() == base->id();

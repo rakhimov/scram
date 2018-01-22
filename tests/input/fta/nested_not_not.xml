@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<opsa-mef name="ShortModel">
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpTwo"/>
+        <not>
+          <event name="PumpOne"/>
+        </not>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <not>
+        <not>
+          <basic-event name="ValveOne"/>
+        </not>
+      </not>
+    </define-gate>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>
