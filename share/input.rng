@@ -624,14 +624,12 @@
         </oneOrMore>
       </element>
       <element name="xor">
-        <oneOrMore>
-          <ref name="argument"/>
-        </oneOrMore>
+        <ref name="argument"/>
+        <ref name="argument"/>
       </element>
       <element name="iff">
-        <oneOrMore>
-          <ref name="argument"/>
-        </oneOrMore>
+        <ref name="argument"/>
+        <ref name="argument"/>
       </element>
       <element name="nand">
         <oneOrMore>
