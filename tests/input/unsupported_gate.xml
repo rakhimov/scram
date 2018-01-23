@@ -6,10 +6,10 @@ The gate formula is not supported.
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
 
-      <imply>  <!-- Here -->
+      <xnor>  <!-- Here -->
         <gate name="TrainOne"/>
         <gate name="TrainTwo"/>
-      </imply>
+      </xnor>
 
     </define-gate>
     <define-gate name="TrainOne">

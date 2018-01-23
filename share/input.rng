@@ -647,6 +647,10 @@
           <ref name="argument"/>
         </oneOrMore>
       </element>
+      <element name="imply">
+        <ref name="argument"/>
+        <ref name="argument"/>
+      </element>
     </choice>
   </define>
 
