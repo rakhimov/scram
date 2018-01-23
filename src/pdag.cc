@@ -551,39 +551,35 @@ void Pdag::GatherVariables(const mef::Substitution& substitution, bool ccf,
     GatherVariables(**target, ccf, nodes);
 }
 
-/// Specialization for HouseEvent arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::HouseEvent& house_event,
-                  bool complement, bool /*ccf*/,
-                  ProcessedNodes* /*nodes*/) noexcept {
-  // Create unique pass-through gates to hold the construction invariant.
-  auto null_gate = std::make_shared<Gate>(kNull, this);
-  null_gate->AddArg(constant_, complement ^ !house_event.state());
-  parent->AddArg(null_gate);
-  null_gates_.push_back(null_gate);
-}
-
-/// Specialization for Gate arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool complement,
+template <class T>
+void Pdag::AddArg(const GatePtr& parent, const T& event, bool complement,
                   bool ccf, ProcessedNodes* nodes) noexcept {
-  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
-  if (!pdag_gate) {
-    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
-  }
-  parent->AddArg(pdag_gate, complement);
-}
+  if constexpr (std::is_same_v<T, mef::HouseEvent>) {
+    (void)ccf;
+    (void)nodes;
+    // Create unique pass-through gates to hold the construction invariant.
+    auto null_gate = std::make_shared<Gate>(kNull, this);
+    null_gate->AddArg(constant_, complement ^ !event.state());
+    parent->AddArg(null_gate);
+    null_gates_.push_back(null_gate);
 
-/// Specialization for BasicEvent arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
-                  bool complement, bool ccf, ProcessedNodes* nodes) noexcept {
-  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    AddArg(parent, basic_event.ccf_gate(), complement, ccf, nodes);
+  } else if constexpr (std::is_same_v<T, mef::Gate>) {  // NOLINT
+    GatePtr& pdag_gate = nodes->gates.find(&event)->second;
+    if (!pdag_gate) {
+      pdag_gate = ConstructGate(event.formula(), ccf, nodes);
+    }
+    parent->AddArg(pdag_gate, complement);
+
   } else {
-    VariablePtr& var = nodes->variables.find(&basic_event)->second;
-    assert(var && "Uninitialized variable.");
-    parent->AddArg(var, complement);
+    static_assert(std::is_same_v<T, mef::BasicEvent>);
+
+    if (ccf && event.HasCcf()) {  // Replace with a CCF gate.
+      AddArg(parent, event.ccf_gate(), complement, ccf, nodes);
+    } else {
+      VariablePtr& var = nodes->variables.find(&event)->second;
+      assert(var && "Uninitialized variable.");
+      parent->AddArg(var, complement);
+    }
   }
 }
 
@@ -634,12 +630,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
   for (const mef::Formula::Arg& arg : formula.args()) {
     if (arg.complement)
       coherent_ = false;
-
-    std::visit(
-        [&](const auto* event) {
-          AddArg(parent, *event, arg.complement, ccf, nodes);
-        },
-        arg.event);
+    AddArg(parent, arg.event, arg.complement, ccf, nodes);
   }
 
   return parent;
@@ -657,11 +648,7 @@ GatePtr Pdag::ConstructComplexGate(const mef::Formula& formula, bool ccf,
       auto arg_gate = std::make_shared<Gate>(kXor, this);
 
       for (const mef::Formula::Arg& arg : formula.args()) {
-        std::visit(
-            [&](const auto* event) {
-              AddArg(arg_gate, *event, arg.complement, ccf, nodes);
-            },
-            arg.event);
+        AddArg(arg_gate, arg.event, arg.complement, ccf, nodes);
       }
       parent->AddArg(arg_gate, /*complement=*/true);
       null_gates_.push_back(parent);

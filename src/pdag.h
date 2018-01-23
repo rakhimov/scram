@@ -1106,7 +1106,7 @@ class Pdag : private boost::noncopyable {
   /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @{
-  template <typename T>
+  template <class T>
   void AddArg(const GatePtr& parent, const T& event, bool complement, bool ccf,
               ProcessedNodes* nodes) noexcept;
   void AddArg(
