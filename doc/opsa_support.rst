@@ -91,6 +91,8 @@ to identify the supported and unsupported features.
 Deviations from the Open-PSA MEF
 ================================
 
+- Arbitrary nesting of Boolean formulae is `not allowed <https://github.com/open-psa/mef/pull/58>`_.
+- XOR and IFF connectives `require exactly 2 arguments <https://github.com/open-psa/mef/pull/59>`_.
 - Extern function and library are implemented following
   `the new proposal <https://github.com/open-psa/mef/pull/53>`_.
 - `XInclude instead of the 'include' directive <https://github.com/open-psa/mef/pull/47>`_.
