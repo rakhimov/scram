@@ -587,6 +587,17 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
   }
 }
 
+void Pdag::AddArg(
+    const GatePtr& parent,
+    const std::variant<mef::Gate*, mef::BasicEvent*, mef::HouseEvent*>& event,
+    bool complement, bool ccf, ProcessedNodes* nodes) noexcept {
+  std::visit(
+      [&](const auto* arg_event) {
+        AddArg(parent, *arg_event, complement, ccf, nodes);
+      },
+      event);
+}
+
 GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
                             ProcessedNodes* nodes) noexcept {
   static_assert(kNumConnectives == 8, "Unspecified formula connectives.");
@@ -637,24 +648,37 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
 GatePtr Pdag::ConstructComplexGate(const mef::Formula& formula, bool ccf,
                                    ProcessedNodes* nodes) noexcept {
   assert(formula.connective() >= kNumConnectives);
-  assert(formula.connective() == mef::kIff);
-  assert(formula.args().size() == 2);
-  // Processing IFF connective.
   coherent_ = false;
-  normal_ = false;
-  auto parent = std::make_shared<Gate>(kNull, this);
-  auto arg_gate = std::make_shared<Gate>(kXor, this);
+  switch (formula.connective()) {
+    case mef::kIff: {
+      assert(formula.args().size() == 2);
+      normal_ = false;
+      auto parent = std::make_shared<Gate>(kNull, this);
+      auto arg_gate = std::make_shared<Gate>(kXor, this);
 
-  for (const mef::Formula::Arg& arg : formula.args()) {
-    std::visit(
-        [&](const auto* event) {
-          AddArg(arg_gate, *event, arg.complement, ccf, nodes);
-        },
-        arg.event);
+      for (const mef::Formula::Arg& arg : formula.args()) {
+        std::visit(
+            [&](const auto* event) {
+              AddArg(arg_gate, *event, arg.complement, ccf, nodes);
+            },
+            arg.event);
+      }
+      parent->AddArg(arg_gate, /*complement=*/true);
+      null_gates_.push_back(parent);
+      return parent;
+    }
+    case mef::kImply: {
+      assert(formula.args().size() == 2);
+      auto parent = std::make_shared<Gate>(kOr, this);
+      AddArg(parent, formula.args().front().event,
+             !formula.args().front().complement, ccf, nodes);
+      AddArg(parent, formula.args().back().event,
+             formula.args().back().complement, ccf, nodes);
+      return parent;
+    }
+    default:
+      assert(false && "Unexpected connective for complex gates.");
   }
-  parent->AddArg(arg_gate, /*complement=*/true);
-  null_gates_.push_back(parent);
-  return parent;
 }
 
 GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,

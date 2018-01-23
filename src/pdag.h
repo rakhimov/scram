@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
@@ -1103,9 +1104,16 @@ class Pdag : private boost::noncopyable {
   /// @param[in] complement  The flag to negate the argument.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
+  ///
+  /// @{
   template <typename T>
   void AddArg(const GatePtr& parent, const T& event, bool complement, bool ccf,
               ProcessedNodes* nodes) noexcept;
+  void AddArg(
+      const GatePtr& parent,
+      const std::variant<mef::Gate*, mef::BasicEvent*, mef::HouseEvent*>& event,
+      bool complement, bool ccf, ProcessedNodes* nodes) noexcept;
+  /// @}
 
   /// Propagate NULL type gates bottom-up.
   /// This is a helper function for algorithms

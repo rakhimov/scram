@@ -146,6 +146,7 @@ void Formula::Validate() const {
       break;
     case kXor:
     case kIff:
+    case kImply:
       if (args_.size() != 2)
         SCRAM_THROW(
             ValidityError("\"" + std::string(kConnectiveToString[connective_]) +

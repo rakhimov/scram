@@ -376,6 +376,29 @@ TEST_P(RiskAnalysisTest, IffABC) {
   }
 }
 
+// Benchmark Tests for [A => (B => C)] fault tree.
+TEST_P(RiskAnalysisTest, ImplyABC) {
+  std::string tree_input = "tests/input/core/imply.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  if (settings.approximation() == Approximation::kRareEvent) {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.986, p_total());
+  }
+
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {{"not A"}, {"not B"}, {"C"}};
+    EXPECT_EQ(3, products().size());
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
+    EXPECT_EQ(1, products().size());
+    CHECK(products().begin()->empty());
+  }
+}
+
 // Checks for top gate of NOT with a single basic event child.
 TEST_P(RiskAnalysisTest, NotA) {
   std::string tree_input = "tests/input/core/not_a.xml";
