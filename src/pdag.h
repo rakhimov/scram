@@ -1054,6 +1054,20 @@ class Pdag : private boost::noncopyable {
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
 
+  /// Processes complex Boolean connectives
+  /// that are not supported by PDAG directly.
+  /// In effect, it rewrites complex formulas with PDAG connectives.
+  ///
+  /// @param[in] formula  The complex Boolean formula to be processed.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  ///
+  /// @pre The formula connective is not supported by PDAG.
+  GatePtr ConstructComplexGate(const mef::Formula& formula, bool ccf,
+                               ProcessedNodes* nodes) noexcept;
+
   /// Processes declarative substitutions into corresponding implication gates.
   ///
   /// @param[in] substitution  The declarative substitution.

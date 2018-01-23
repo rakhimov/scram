@@ -135,24 +135,26 @@ void Formula::Validate() const {
       if (args_.size() < 2)
         SCRAM_THROW(
             ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
-                          "\" formula must have 2 or more arguments."));
+                          "\" connective must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
       if (args_.size() != 1)
         SCRAM_THROW(
             ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
-                          "\" formula must have only one argument."));
+                          "\" connective must have only one argument."));
       break;
     case kXor:
+    case kIff:
       if (args_.size() != 2)
         SCRAM_THROW(
-            ValidityError("\"xor\" formula must have exactly 2 arguments."));
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" connective must have exactly 2 arguments."));
       break;
     case kAtleast:
       if (args_.size() <= min_number_)
         SCRAM_THROW(
-            ValidityError("\"atleast\" formula must have more arguments "
+            ValidityError("\"atleast\" connective must have more arguments "
                           "than its min number " +
                           std::to_string(min_number_) + "."));
   }

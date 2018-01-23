@@ -211,16 +211,19 @@ enum Connective : std::uint8_t {
   kNot,  ///< Boolean negation.
   kNand,  ///< Not AND.
   kNor,  ///< Not OR.
-  kNull  ///< Single argument pass-through without logic.
+  kNull,  ///< Single argument pass-through without logic.
+
+  // Rarely used connectives specific to the MEF.
+  kIff  ///< Equality with two inputs only.
 };
 
 /// The number of connectives in the enum.
-const int kNumConnectives = 8;
+const int kNumConnectives = 9;
 
 /// String representations of the connectives.
 /// The ordering is the same as the Connective enum.
-const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
-                                           "not", "nand", "nor",     "null"};
+const char* const kConnectiveToString[] = {
+    "and", "or", "atleast", "xor", "not", "nand", "nor", "null", "iff"};
 
 /// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.

@@ -246,7 +246,7 @@ Gate::Gate(model::Gate *event, model::Model *model,
 
 std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
 {
-    static_assert(mef::kNumConnectives == 8, "Unexpected connective changes");
+    static_assert(mef::kNumConnectives > 8, "Unexpected connective changes");
     switch (type) {
     case mef::kNull:
         return std::make_unique<QGraphicsLineItem>(
@@ -340,8 +340,9 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
         andItem.release()->setParentItem(circle.get());
         return std::move(circle);
     }
+    default:
+        GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
-    GUI_ASSERT(false && "Unexpected gate type", nullptr);
 }
 
 double Gate::width() const

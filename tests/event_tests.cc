@@ -245,6 +245,16 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   top->Add(&arg_three);
   CHECK_THROWS_AS(top->Validate(), ValidityError);
 
+  // IFF Formula tests.
+  top = FormulaPtr(new Formula(kIff));
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  top->Add(&arg_one);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  top->Add(&arg_two);
+  CHECK_NOTHROW(top->Validate());
+  top->Add(&arg_three);
+  CHECK_THROWS_AS(top->Validate(), ValidityError);
+
   // ATLEAST formula tests.
   top = FormulaPtr(new Formula(kAtleast));
   top->min_number(2);

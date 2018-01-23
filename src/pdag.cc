@@ -590,10 +590,13 @@ void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
 GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
                             ProcessedNodes* nodes) noexcept {
   static_assert(kNumConnectives == 8, "Unspecified formula connectives.");
-  static_assert(kNumConnectives == mef::kNumConnectives,
+  static_assert(kNumConnectives < mef::kNumConnectives,
                 "MEF and Core connective mismatch.");
   static_assert(CheckConnectiveEnums(),
                 "mef::Connective must map to core::Connective.");
+
+  if (formula.connective() >= kNumConnectives)
+    return ConstructComplexGate(formula, ccf, nodes);
 
   Connective type = static_cast<Connective>(formula.connective());
   auto parent = std::make_shared<Gate>(type, this);
@@ -628,6 +631,29 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
         arg.event);
   }
 
+  return parent;
+}
+
+GatePtr Pdag::ConstructComplexGate(const mef::Formula& formula, bool ccf,
+                                   ProcessedNodes* nodes) noexcept {
+  assert(formula.connective() >= kNumConnectives);
+  assert(formula.connective() == mef::kIff);
+  assert(formula.args().size() == 2);
+  // Processing IFF connective.
+  coherent_ = false;
+  normal_ = false;
+  auto parent = std::make_shared<Gate>(kNull, this);
+  auto arg_gate = std::make_shared<Gate>(kXor, this);
+
+  for (const mef::Formula::Arg& arg : formula.args()) {
+    std::visit(
+        [&](const auto* event) {
+          AddArg(arg_gate, *event, arg.complement, ccf, nodes);
+        },
+        arg.event);
+  }
+  parent->AddArg(arg_gate, /*complement=*/true);
+  null_gates_.push_back(parent);
   return parent;
 }
 

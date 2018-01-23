@@ -357,8 +357,9 @@ public:
             case mef::kNor:
                 //: not or.
                 return tr("nor");
+            default:
+                assert(false && "Unsupported connectives.");
             }
-            assert(false);
 
         } else {
             return data()->formula().connective();
