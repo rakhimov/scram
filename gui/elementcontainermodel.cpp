@@ -369,7 +369,8 @@ QVariant GateContainerModel::data(const QModelIndex &index, int role) const
     if (value & m_parentMask) {
         auto *parent = reinterpret_cast<Gate *>(value & ~m_parentMask);
         return QString::fromStdString(
-            ext::as<const mef::Event *>(parent->args().at(index.row()))->id());
+            ext::as<const mef::Event *>(parent->args().at(index.row()).event)
+                ->id());
     }
 
     auto *gate = static_cast<Gate *>(index.internalPointer());

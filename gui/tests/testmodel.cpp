@@ -290,7 +290,7 @@ auto makeDefaultEvent<mef::Gate>(std::string name)
 {
     auto gate = std::make_unique<mef::Gate>(name);
     gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().AddArgument(&mef::HouseEvent::kTrue);
+    gate->formula().Add(&mef::HouseEvent::kTrue);
     return gate;
 }
 
@@ -517,11 +517,11 @@ void TestModel::testGateType()
     gate.formula(std::make_unique<mef::Formula>(mef::kNand));
     TEST_EQ(proxy.type<QString>(), "nand");
 
-    auto vote = std::make_unique<mef::Formula>(mef::kVote);
-    vote->vote_number(2);
+    auto vote = std::make_unique<mef::Formula>(mef::kAtleast);
+    vote->min_number(2);
     gate.formula(std::move(vote));
     TEST_EQ(proxy.type<QString>(), "at-least 2");
-    QCOMPARE(proxy.voteNumber(), 2);
+    QCOMPARE(proxy.minNumber(), 2);
 }
 
 void TestModel::testGateSetFormula()
@@ -565,7 +565,7 @@ void TestModel::testEventParents()
     auto gate = std::make_unique<mef::Gate>("parent");
     auto *parent = gate.get();
     gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().AddArgument(address);
+    gate->formula().Add(address);
 
     QVERIFY(proxy.parents(address).empty());
     gui::model::Model::AddEvent<gui::model::Gate>(std::move(gate), &proxy)

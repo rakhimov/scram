@@ -201,99 +201,100 @@ class Gate : public Event, public NodeMark {
   FormulaPtr formula_;  ///< Boolean formula of this gate.
 };
 
-/// Operators for formulas.
-/// The ordering is the same as analysis operators in the PDAG.
-enum Operator : std::uint8_t {
+/// Logical connectives for formulas.
+/// The ordering is the same as analysis connectives in the PDAG.
+enum Connective : std::uint8_t {
   kAnd = 0,
   kOr,
-  kVote,  ///< Combination, K/N, atleast, or Vote gate representation.
+  kAtleast,  ///< Combination, K/N, atleast, or Vote gate representation.
   kXor,  ///< Exclusive OR gate with two inputs only.
   kNot,  ///< Boolean negation.
   kNand,  ///< Not AND.
   kNor,  ///< Not OR.
-  kNull  ///< Single argument pass-through without logic.
+  kNull,  ///< Single argument pass-through without logic.
+
+  // Rarely used connectives specific to the MEF.
+  kIff,  ///< Equality with two inputs only.
+  kImply  ///< Implication with two inputs only.
 };
 
-/// The number of operators in the enum.
-const int kNumOperators = 8;
+/// The number of connectives in the enum.
+const int kNumConnectives = 10;
 
-/// String representations of the operators.
-/// The ordering is the same as the Operator enum.
-const char* const kOperatorToString[] = {"and", "or",   "atleast", "xor",
-                                         "not", "nand", "nor",     "null"};
+/// String representations of the connectives.
+/// The ordering is the same as the Connective enum.
+const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
+                                           "not", "nand", "nor",     "null",
+                                           "iff", "imply"};
 
-/// Boolean formula with operators and arguments.
+/// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.
 class Formula : private boost::noncopyable {
  public:
-  /// Event arguments of a formula.
-  using EventArg = std::variant<Gate*, BasicEvent*, HouseEvent*>;
+  /// Argument events of a formula.
+  using ArgEvent = std::variant<Gate*, BasicEvent*, HouseEvent*>;
+
+  /// Formula argument with a complement flag.
+  struct Arg {
+    bool complement;  ///< Negation of the argument event.
+    ArgEvent event;  ///< The event in the formula.
+  };
 
   /// Constructs a formula.
   ///
-  /// @param[in] type  The logical operator for this Boolean formula.
-  explicit Formula(Operator type);
+  /// @param[in] connective  The logical connective for this Boolean formula.
+  explicit Formula(Connective connective);
 
-  /// @returns The type of this formula.
-  Operator type() const { return type_; }
+  /// @returns The connective of this formula.
+  Connective connective() const { return connective_; }
 
-  /// @returns The vote number if and only if the formula is "atleast".
+  /// @returns The min number if and only if the formula is "atleast".
   ///
-  /// @throws LogicError  The vote number is not yet assigned.
-  int vote_number() const;
+  /// @throws LogicError  The min number is not yet assigned.
+  int min_number() const;
 
-  /// Sets the vote number only for an "atleast" formula.
+  /// Sets the min number only for an "atleast" formula.
   ///
-  /// @param[in] number  The vote number.
+  /// @param[in] number  The min number.
   ///
-  /// @throws ValidityError  The vote number is invalid.
-  /// @throws LogicError  The vote number is assigned illegally.
+  /// @throws ValidityError  The min number is invalid.
+  /// @throws LogicError  The min number is assigned illegally.
   ///
-  /// @note (Children number > vote number) should be checked
+  /// @note (Children number > min number) should be checked
   ///       outside of this class.
-  void vote_number(int number);
+  void min_number(int number);
 
-  /// @returns The arguments of this formula of specific type.
-  /// @{
-  const std::vector<EventArg>& event_args() const { return event_args_; }
-  const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
-  /// @}
-
-  /// @returns The number of arguments.
-  int num_args() const { return event_args_.size() + formula_args_.size(); }
+  /// @returns The arguments of this formula.
+  const std::vector<Arg>& args() const { return args_; }
 
   /// Adds an event into the arguments list.
   ///
-  /// @param[in] event_arg  An argument event.
+  /// @param[in] event  An argument event.
+  /// @param[in] complement  Indicate the negation of the argument event.
   ///
   /// @throws DuplicateArgumentError  The argument event is duplicate.
-  void AddArgument(EventArg event_arg);
+  /// @throws LogicError  Invalid nesting of complement or constant args.
+  void Add(ArgEvent event, bool complement = false);
 
-  /// Adds a formula into the arguments list.
-  /// Formulas are unique.
-  ///
-  /// @param[in] formula  A pointer to an argument formula.
-  void AddArgument(FormulaPtr formula) {
-    formula_args_.emplace_back(std::move(formula));
-  }
+  /// Overload to add formula argument with a structure.
+  void Add(Arg arg) { Add(arg.event, arg.complement); }
 
   /// Removes an event from the formula.
   ///
-  /// @param[in] event_arg  The argument event of this formula.
+  /// @param[in] event  The argument event of this formula.
   ///
   /// @throws LogicError  The argument does not belong to this formula.
-  void RemoveArgument(EventArg event_arg);
+  void Remove(ArgEvent event);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
-  /// @throws ValidityError  Problems with the operator or arguments.
+  /// @throws ValidityError  Problems with the connective or arguments.
   void Validate() const;
 
  private:
-  Operator type_;  ///< Logical operator.
-  int vote_number_;  ///< Vote number for "atleast" operator.
-  std::vector<EventArg> event_args_;  ///< All event arguments.
-  std::vector<FormulaPtr> formula_args_;  ///< Nested formula arguments.
+  Connective connective_;  ///< Logical connective.
+  int min_number_;  ///< Min number for "atleast" connective.
+  std::vector<Arg> args_;  ///< All events.
 };
 
 }  // namespace scram::mef

@@ -64,56 +64,88 @@ TEST_CASE("BasicEventTest.Validate", "[mef::event]") {
   CHECK_THROWS_AS(event.Validate(), ValidityError);
 }
 
-TEST_CASE("FormulaTest.VoteNumber", "[mef::event]") {
-  FormulaPtr top(new Formula(kAnd));
-  CHECK(top->type() == kAnd);
-  // Setting a vote number for non-Vote formula is an error.
-  CHECK_THROWS_AS(top->vote_number(2), LogicError);
-  // Resetting to VOTE formula.
-  top = FormulaPtr(new Formula(kVote));
-  CHECK(top->type() == kVote);
-  // No vote number.
-  CHECK_THROWS_AS(top->vote_number(), LogicError);
-  // Illegal vote number.
-  CHECK_THROWS_AS(top->vote_number(-2), ValidityError);
-  // Legal vote number.
-  CHECK_NOTHROW(top->vote_number(2));
-  // Trying to reset the vote number.
-  CHECK_THROWS_AS(top->vote_number(2), LogicError);
-  // Requesting the vote number should succeed.
-  REQUIRE_NOTHROW(top->vote_number());
-  CHECK(top->vote_number() == 2);
+TEST_CASE("FormulaTest.MinNumber", "[mef::event]") {
+  SECTION("Invalid connective") {
+    Formula top(kAnd);
+    CHECK(top.connective() == kAnd);
+    CHECK_THROWS_AS(top.min_number(2), LogicError);
+  }
+
+  SECTION("Atleast") {
+    Formula top(kAtleast);
+    CHECK(top.connective() == kAtleast);
+    // No min number.
+    CHECK_THROWS_AS(top.min_number(), LogicError);
+    // Illegal min number.
+    CHECK_THROWS_AS(top.min_number(-2), ValidityError);
+    // Legal min number.
+    CHECK_NOTHROW(top.min_number(2));
+    // Trying to reset the min number.
+    CHECK_THROWS_AS(top.min_number(2), LogicError);
+    // Requesting the min number should succeed.
+    REQUIRE_NOTHROW(top.min_number());
+    CHECK(top.min_number() == 2);
+  }
 }
 
 TEST_CASE("FormulaTest.EventArguments", "[mef::event]") {
-  FormulaPtr top(new Formula(kAnd));
+  Formula top(kAnd);
   BasicEvent first_child("first");
   BasicEvent second_child("second");
-  CHECK(top->num_args() == 0);
+  CHECK(top.args().size() == 0);
   // Adding first child.
-  CHECK_NOTHROW(top->AddArgument(&first_child));
+  CHECK_NOTHROW(top.Add(&first_child));
   // Re-adding a child must cause an error.
-  CHECK_THROWS_AS(top->AddArgument(&first_child), ValidityError);
+  CHECK_THROWS_AS(top.Add(&first_child), ValidityError);
   // Check the contents of the children container.
-  CHECK(std::get<BasicEvent*>(top->event_args().front()) == &first_child);
+  CHECK(std::get<BasicEvent*>(top.args().front().event) == &first_child);
   // Adding another child.
-  CHECK_NOTHROW(top->AddArgument(&second_child));
-  CHECK(top->event_args().size() == 2);
-  CHECK(std::get<BasicEvent*>(top->event_args().back()) == &second_child);
+  CHECK_NOTHROW(top.Add(&second_child));
+  CHECK(top.args().size() == 2);
+  CHECK(std::get<BasicEvent*>(top.args().back().event) == &second_child);
 
-  CHECK_NOTHROW(top->RemoveArgument(&first_child));
-  CHECK(top->num_args() == 1);
-  CHECK_THROWS_AS(top->RemoveArgument(&first_child), LogicError);
+  CHECK_NOTHROW(top.Remove(&first_child));
+  CHECK(top.args().size() == 1);
+  CHECK_THROWS_AS(top.Remove(&first_child), LogicError);
 }
 
-TEST_CASE("FormulaTest.FormulaArguments", "[mef::event]") {
-  FormulaPtr top(new Formula(kAnd));
-  FormulaPtr arg(new Formula(kOr));
-  CHECK(top->num_args() == 0);
-  Formula* shadow = arg.get();
-  // Adding first child.
-  CHECK_NOTHROW(top->AddArgument(std::move(arg)));  // arg is gone.
-  CHECK(top->formula_args().begin()->get() == shadow);
+TEST_CASE("FormulaTest.InvalidComplementArguments", "[mef::event]") {
+  BasicEvent arg_event("first");
+  SECTION("NULL connective with complement") {
+    Formula top(kNull);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), LogicError);
+    CHECK(top.args().empty());
+  }
+  SECTION("NOT connective with complement") {
+    Formula top(kNot);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), LogicError);
+    CHECK(top.args().empty());
+  }
+}
+
+TEST_CASE("FormulaTest.DuplicateViaComplement", "[mef::event]") {
+  Formula top(kAnd);
+  BasicEvent arg_event("first");
+  SECTION("Complement first") {
+    REQUIRE_NOTHROW(top.Add(&arg_event, true));
+    CHECK(top.args().size() == 1);
+    REQUIRE_THROWS_AS(top.Add(&arg_event), DuplicateArgumentError);
+  }
+  SECTION("Complement second") {
+    REQUIRE_NOTHROW(top.Add(&arg_event));
+    CHECK(top.args().size() == 1);
+    REQUIRE_THROWS_AS(top.Add(&arg_event, true), DuplicateArgumentError);
+  }
+}
+
+TEST_CASE("FormulaTest.InvalidConstantArguments", "[mef::event]") {
+  Formula top(kNot);
+  SECTION("Constant True event") {
+    REQUIRE_THROWS_AS(top.Add(&HouseEvent::kTrue), LogicError);
+  }
+  SECTION("Constant False event") {
+    REQUIRE_THROWS_AS(top.Add(&HouseEvent::kFalse), LogicError);
+  }
 }
 
 TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
@@ -123,15 +155,15 @@ TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   Gate bottom("Bottom");
 
   FormulaPtr formula_root(new Formula(kNot));
-  formula_root->AddArgument(&top);
+  formula_root->Add(&top);
   root.formula(std::move(formula_root));
 
   FormulaPtr formula_one(new Formula(kNot));
-  formula_one->AddArgument(&middle);
+  formula_one->Add(&middle);
   FormulaPtr formula_two(new Formula(kNot));
-  formula_two->AddArgument(&bottom);
+  formula_two->Add(&bottom);
   FormulaPtr formula_three(new Formula(kNot));
-  formula_three->AddArgument(&top);  // Looping here.
+  formula_three->Add(&top);  // Looping here.
   top.formula(std::move(formula_one));
   middle.formula(std::move(formula_two));
   bottom.formula(std::move(formula_three));
@@ -144,88 +176,60 @@ TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   CHECK(cycle::PrintCycle(cycle) == "Top->Middle->Bottom->Top");
 }
 
-// Test gate type validation.
+// Test gate connective validation.
 TEST_CASE("FormulaTest.Validate", "[mef::event]") {
-  FormulaPtr top(new Formula(kAnd));
   BasicEvent arg_one("a");
   BasicEvent arg_two("b");
   BasicEvent arg_three("c");
 
-  // AND Formula tests.
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
-  CHECK_NOTHROW(top->Validate());
+  for (Connective nary : {kAnd, kOr, kNand, kNor}) {
+    CAPTURE(nary);
+    INFO(kConnectiveToString[nary]);
+    Formula top(nary);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_one);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_two);
+    CHECK_NOTHROW(top.Validate());
+    top.Add(&arg_three);
+    CHECK_NOTHROW(top.Validate());
+  }
 
-  // OR Formula tests.
-  top = FormulaPtr(new Formula(kOr));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
-  CHECK_NOTHROW(top->Validate());
+  for (Connective unary : {kNot, kNull}) {
+    CAPTURE(unary);
+    INFO(kConnectiveToString[unary]);
+    Formula top(unary);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_one);
+    CHECK_NOTHROW(top.Validate());
+    top.Add(&arg_two);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+  }
 
-  // NOT Formula tests.
-  top = FormulaPtr(new Formula(kNot));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_two);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  for (Connective binary : {kXor, kImply, kIff}) {
+    CAPTURE(binary);
+    INFO(kConnectiveToString[binary]);
+    Formula top(binary);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_one);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_two);
+    CHECK_NOTHROW(top.Validate());
+    top.Add(&arg_three);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+  }
 
-  // NULL Formula tests.
-  top = FormulaPtr(new Formula(kNull));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_two);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-
-  // NOR Formula tests.
-  top = FormulaPtr(new Formula(kNor));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
-  CHECK_NOTHROW(top->Validate());
-
-  // NAND Formula tests.
-  top = FormulaPtr(new Formula(kNand));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
-  CHECK_NOTHROW(top->Validate());
-
-  // XOR Formula tests.
-  top = FormulaPtr(new Formula(kXor));
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_NOTHROW(top->Validate());
-  top->AddArgument(&arg_three);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-
-  // VOTE/ATLEAST formula tests.
-  top = FormulaPtr(new Formula(kVote));
-  top->vote_number(2);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_two);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->AddArgument(&arg_three);
-  CHECK_NOTHROW(top->Validate());
+  SECTION("ATLEAST connective") {
+    Formula top(kAtleast);
+    top.min_number(2);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_one);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_two);
+    CHECK_THROWS_AS(top.Validate(), ValidityError);
+    top.Add(&arg_three);
+    CHECK_NOTHROW(top.Validate());
+  }
 }
 
 TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
@@ -233,45 +237,39 @@ TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
   BasicEvent arg_two("b");
   BasicEvent arg_three("c");
   // INHIBIT Gate tests.
-  Attribute inh_attr;
-  inh_attr.name = "flavor";
-  inh_attr.value = "inhibit";
-  GatePtr top(new Gate("top"));
-  top->formula(FormulaPtr(new Formula(kAnd)));
-  top->AddAttribute(inh_attr);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->formula().AddArgument(&arg_one);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
-  top->formula().AddArgument(&arg_two);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  Attribute inh_attr{"flavor", "inhibit"};
+  Gate top("top");
+  top.formula(FormulaPtr(new Formula(kAnd)));
+  top.AddAttribute(inh_attr);
+  CHECK_THROWS_AS(top.Validate(), ValidityError);
+  top.formula().Add(&arg_one);
+  CHECK_THROWS_AS(top.Validate(), ValidityError);
+  top.formula().Add(&arg_two);
+  CHECK_THROWS_AS(top.Validate(), ValidityError);
 
-  top->formula().AddArgument(&arg_three);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  top.formula().Add(&arg_three);
+  CHECK_THROWS_AS(top.Validate(), ValidityError);
 
-  top = GatePtr(new Gate("top"));
-  top->formula(FormulaPtr(new Formula(kAnd)));
-  top->AddAttribute(inh_attr);
+  top.formula(FormulaPtr(new Formula(kAnd)));
 
-  Attribute cond;
-  cond.name = "flavor";
-  cond.value = "conditional";
+  Attribute cond{"flavor", "conditional"};
   arg_three.AddAttribute(cond);
-  top->formula().AddArgument(&arg_one);  // Basic event.
-  top->formula().AddArgument(&arg_three);  // Conditional event.
-  CHECK_NOTHROW(top->Validate());
+  top.formula().Add(&arg_one);  // Basic event.
+  top.formula().Add(&arg_three);  // Conditional event.
+  CHECK_NOTHROW(top.Validate());
   arg_one.AddAttribute(cond);
-  CHECK_THROWS_AS(top->Validate(), ValidityError);
+  CHECK_THROWS_AS(top.Validate(), ValidityError);
 }
 
 TEST_CASE("PrimaryEventTest.HouseProbability", "[mef::event]") {
   // House primary event.
-  HouseEventPtr primary(new HouseEvent("valve"));
-  CHECK_FALSE(primary->state());  // Default state.
+  HouseEvent primary("valve");
+  CHECK_FALSE(primary.state());  // Default state.
   // Setting with a valid values.
-  CHECK_NOTHROW(primary->state(true));
-  CHECK(primary->state());
-  CHECK_NOTHROW(primary->state(false));
-  CHECK_FALSE(primary->state());
+  CHECK_NOTHROW(primary.state(true));
+  CHECK(primary.state());
+  CHECK_NOTHROW(primary.state(false));
+  CHECK_FALSE(primary.state());
 }
 
 }  // namespace scram::mef::test

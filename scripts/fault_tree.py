@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Olzhas Rakhimov
+# Copyright (C) 2014-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -143,14 +143,13 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
         self.b_arguments = set()
         self.h_arguments = set()
         self.u_arguments = set()
-        self.complement_arguments = set()
 
     def num_arguments(self):
         """Returns the number of arguments."""
         return (len(self.b_arguments) + len(self.h_arguments) +
                 len(self.g_arguments) + len(self.u_arguments))
 
-    def add_argument(self, argument, complement=False):
+    def add_argument(self, argument):
         """Adds argument into a collection of gate arguments.
 
         Note that this function also updates the parent set of the argument.
@@ -162,10 +161,7 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
 
         Args:
             argument: Gate, HouseEvent, BasicEvent, or Event argument.
-            complement: Flag to treat the argument as a complement.
         """
-        if complement:
-            self.complement_arguments.add(argument)
         argument.parents.add(self)
         if isinstance(argument, Gate):
             self.g_arguments.add(argument)
@@ -192,29 +188,22 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
                 parents.extend(parent.parents)
         return ancestors
 
-    def to_xml(self, nest=0):
+    def to_xml(self, nest=False):
         """Produces the Open-PSA MEF XML definition of the gate.
 
         Args:
-            nest: The level for nesting formulas of argument gates.
+            nest: Nesting of NOT connectives in formulas.
         """
 
-        def args_to_xml(type_str, container, gate, converter=None):
-            """Produces XML string representation of arguments."""
-            mef_xml = ""
-            for arg in container:
-                complement = arg in gate.complement_arguments
-                if complement:
-                    mef_xml += "<not>\n"
-                if converter:
-                    mef_xml += converter(arg)
-                else:
-                    mef_xml += "<%s name=\"%s\"/>\n" % (type_str, arg.name)
-                if complement:
-                    mef_xml += "</not>\n"
-            return mef_xml
+        def arg_to_xml(type_str, arg):
+            """Produces XML string representation of an argument."""
+            return "<%s name=\"%s\"/>\n" % (type_str, arg.name)
 
-        def convert_formula(gate, nest):
+        def args_to_xml(type_str, args):
+            """Produces XML string representation of arguments."""
+            return "".join(arg_to_xml(type_str, arg) for arg in args)
+
+        def convert_formula(gate, nest=False):
             """Converts the formula of a gate into XML representation."""
             mef_xml = ""
             if gate.operator != "null":
@@ -222,15 +211,20 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
                 if gate.operator == "atleast":
                     mef_xml += " min=\"" + str(gate.k_num) + "\""
                 mef_xml += ">\n"
-            mef_xml += args_to_xml("house-event", gate.h_arguments, gate)
-            mef_xml += args_to_xml("basic-event", gate.b_arguments, gate)
-            mef_xml += args_to_xml("event", gate.u_arguments, gate)
+            mef_xml += args_to_xml("house-event", gate.h_arguments)
+            mef_xml += args_to_xml("basic-event", gate.b_arguments)
+            mef_xml += args_to_xml("event", gate.u_arguments)
 
-            if nest > 0:
-                mef_xml += args_to_xml("gate", gate.g_arguments, gate,
-                                       lambda x: convert_formula(x, nest - 1))
+            def converter(arg_gate):
+                """Converter for single nesting NOT connective."""
+                if arg_gate.operator == "not":
+                    return convert_formula(arg_gate)
+                return arg_to_xml("gate", arg_gate)
+
+            if nest:
+                mef_xml += "".join(converter(x) for x in gate.g_arguments)
             else:
-                mef_xml += args_to_xml("gate", gate.g_arguments, gate)
+                mef_xml += args_to_xml("gate", gate.g_arguments)
 
             if gate.operator != "null":
                 mef_xml += "</" + gate.operator + ">\n"
@@ -250,7 +244,6 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
         Raises:
             KeyError: The gate operator is not supported.
         """
-        assert not self.complement_arguments
         assert not self.u_arguments
 
         def get_format(operator):

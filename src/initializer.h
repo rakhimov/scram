@@ -369,7 +369,7 @@ class Initializer : private boost::noncopyable {
                             const std::string& base_path);
   Gate* GetGate(const std::string& entity_reference,
                 const std::string& base_path);
-  Formula::EventArg GetEvent(const std::string& entity_reference,
+  Formula::ArgEvent GetEvent(const std::string& entity_reference,
                              const std::string& base_path);
   /// @}
 

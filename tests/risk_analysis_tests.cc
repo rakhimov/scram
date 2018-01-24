@@ -140,16 +140,14 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   REQUIRE(gates().count("TopEvent"));
   mef::Gate* top = gates().find("TopEvent")->get();
   CHECK(top->id() == "TopEvent");
-  REQUIRE_NOTHROW(top->formula().type());
-  CHECK(top->formula().type() == mef::kAnd);
-  CHECK(top->formula().event_args().size() == 2);
+  CHECK(top->formula().connective() == mef::kAnd);
+  CHECK(top->formula().args().size() == 2);
 
   REQUIRE(gates().count("TrainOne"));
   mef::Gate* inter = gates().find("TrainOne")->get();
   CHECK(inter->id() == "TrainOne");
-  REQUIRE_NOTHROW(inter->formula().type());
-  CHECK(inter->formula().type() == mef::kOr);
-  CHECK(inter->formula().event_args().size() == 2);
+  CHECK(inter->formula().connective() == mef::kOr);
+  CHECK(inter->formula().args().size() == 2);
 
   REQUIRE(basic_events().count("ValveOne"));
   mef::BasicEvent* primary = basic_events().find("ValveOne")->get();
@@ -248,14 +246,16 @@ TEST_P(RiskAnalysisTest, EnforceExactProbability) {
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
-  std::string nested_input = "tests/input/fta/nested_formula.xml";
-  std::set<std::set<std::string>> mcs = {{"PumpOne", "PumpTwo"},
-                                         {"PumpOne", "ValveTwo"},
-                                         {"PumpTwo", "ValveOne"},
-                                         {"ValveOne", "ValveTwo"}};
+  std::string nested_input = "tests/input/fta/nested_not.xml";
   REQUIRE_NOTHROW(ProcessInputFiles({nested_input}));
   REQUIRE_NOTHROW(analysis->Analyze());
-  CHECK(products() == mcs);
+
+  auto sets = [this]() -> std::set<std::set<std::string>> {
+    if (settings.prime_implicants())
+      return {{"not PumpOne", "ValveTwo", "PumpTwo", "not ValveOne"}};
+    return {{"ValveTwo", "PumpTwo"}};
+  }();
+  CHECK(products() == sets);
 }
 
 TEST_F(RiskAnalysisTest, ImportanceDefault) {

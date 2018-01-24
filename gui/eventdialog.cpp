@@ -96,15 +96,15 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         {nameLine, constantValue, exponentialRate, containerFaultTreeName});
     connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
             [this](int index) {
-                voteNumberBox->setEnabled(index == mef::kVote);
+                minNumberBox->setEnabled(index == mef::kAtleast);
                 validate();
             });
     connect(this, &EventDialog::formulaArgsChanged, [this] {
         int numArgs = argsList->count();
         int newMax = numArgs > 2 ? (numArgs - 1) : 2;
-        if (voteNumberBox->value() > newMax)
-            voteNumberBox->setValue(newMax);
-        voteNumberBox->setMaximum(newMax);
+        if (minNumberBox->value() > newMax)
+            minNumberBox->setValue(newMax);
+        minNumberBox->setMaximum(newMax);
         validate();
     });
     connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
@@ -207,10 +207,10 @@ bool EventDialog::checkCycle(const mef::Gate *gate)
         EventDialog *m_self;
     } visitor{this};
 
-    for (const mef::Formula::EventArg &arg : gate->formula().event_args()) {
-        if (ext::as<const mef::Element *>(arg) == m_event)
+    for (const mef::Formula::Arg &arg : gate->formula().args()) {
+        if (ext::as<const mef::Element *>(arg.event) == m_event)
             return true;
-        if (std::visit(visitor, arg))
+        if (std::visit(visitor, arg.event))
             return true;
     }
     return false;
@@ -222,9 +222,12 @@ mef::FaultTree *EventDialog::getFaultTree(const T *event) const
     // Find the fault tree of the first parent gate.
     auto it =
         boost::find_if(m_model->gates(), [&event](const mef::GatePtr &gate) {
-            return boost::find(gate->formula().event_args(),
-                               mef::Formula::EventArg(const_cast<T *>(event)))
-                   != gate->formula().event_args().end();
+            auto it_arg = boost::find_if(
+                gate->formula().args(), [&event](const mef::Formula::Arg &arg) {
+                    return arg.event
+                           == mef::Formula::ArgEvent(const_cast<T *>(event));
+                });
+            return it_arg != gate->formula().args().end();
         });
     if (it == m_model->gates().end())
         return nullptr;
@@ -310,11 +313,11 @@ void EventDialog::setupData(const model::Gate &element)
     }
 
     connectiveBox->setCurrentIndex(element.type());
-    if (element.type() == mef::kVote)
-        voteNumberBox->setValue(element.voteNumber());
-    for (const mef::Formula::EventArg &arg : element.args())
-        argsList->addItem(
-            QString::fromStdString(ext::as<const mef::Event *>(arg)->id()));
+    if (element.type() == mef::kAtleast)
+        minNumberBox->setValue(element.minNumber());
+    for (const mef::Formula::Arg &arg : element.args())
+        argsList->addItem(QString::fromStdString(
+            ext::as<const mef::Event *>(arg.event)->id()));
     emit formulaArgsChanged(); ///< @todo Bogus signal order conflicts.
 }
 
@@ -386,7 +389,7 @@ void EventDialog::validate()
 
     if (!tabFormula->isHidden()) {
         int numArgs = argsList->count();
-        switch (static_cast<mef::Operator>(connectiveBox->currentIndex())) {
+        switch (static_cast<mef::Connective>(connectiveBox->currentIndex())) {
         case mef::kNot:
         case mef::kNull:
             if (numArgs != 1) {
@@ -415,9 +418,9 @@ void EventDialog::validate()
                 return;
             }
             break;
-        case mef::kVote:
-            if (numArgs <= voteNumberBox->value()) {
-                int numReqArgs = voteNumberBox->value() + 1;
+        case mef::kAtleast:
+            if (numArgs <= minNumberBox->value()) {
+                int numReqArgs = minNumberBox->value() + 1;
                 m_errorBar->showMessage(
                     //: The number of required arguments is always more than 2.
                     tr("%1 connective requires at-least %n arguments.", "",

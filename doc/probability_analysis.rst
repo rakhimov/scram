@@ -16,26 +16,6 @@ and uniform, normal, log-normal distributions.
 Bellow is a brief description.
 For more information, please take a look at the [MEF]_ format documentation.
 
-P-model
-    The probability of an event occurring
-    when the time to failure is unknown or unpredictable.
-
-Lambda-model or Exponential with Two Parameters
-    The probability that a primary event will occur within given time (:math:`t`).
-    Appropriate for events within systems
-    that are continuously operating and
-    have a known probability of failure during a unit time period (:math:`\lambda`).
-
-    .. math::
-
-        P = 1-e^{-\lambda \cdot t}
-
-    For small lambda and time, the approximation is
-
-    .. math::
-
-        P \approx \lambda \cdot t
-
 
 ************************
 Probability Calculations
@@ -72,7 +52,7 @@ appropriate warnings are given in the final report.
 The Rare-Event Approximation
 ----------------------------
 
-Given that the probabilities of events are very small value less than 0.1,
+Given that the probabilities of events are very small value (less than 0.1),
 only the first series in the Sylvester-Poincaré formula may be used
 as a conservative (upper-bound) approximation;
 that is, the total probability is the sum of all probabilities of minimal cut sets.
@@ -124,8 +104,8 @@ Safety Integrity Levels
 
 [IEC_61508]_ standard metrics and Safety Integrity Levels [SIL]_
 are approximated with quantitative analysis on fault trees [DR05]_.
-Time fractions spent in every SIL bucket
-for PFD and PFH is reported with a histogram,
+Time fractions spent in every SIL bucket for PFD and PFH
+are reported with a histogram,
 as suggested by [DRS08]_.
 Note that these computations require probability analysis over a period of time.
 

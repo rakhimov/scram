@@ -1127,16 +1127,16 @@ template <>
 mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
     auto formula = std::make_unique<mef::Formula>(dialog.connective());
-    if (formula->type() == mef::kVote)
-        formula->vote_number(dialog.voteNumber());
+    if (formula->connective() == mef::kAtleast)
+        formula->min_number(dialog.minNumber());
 
     for (const std::string &arg : dialog.arguments()) {
         try {
-            formula->AddArgument(m_model->GetEvent(arg));
+            formula->Add(m_model->GetEvent(arg));
         } catch (const mef::UndefinedElement &) {
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
-            formula->AddArgument(argEvent.get());
+            formula->Add(argEvent.get());
             /// @todo Add into the parent undo.
             m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
                 std::move(argEvent), m_guiModel.get()));
@@ -1389,15 +1389,15 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
     bool formulaChanged = [&dialog, &element] {
         if (dialog->connective() != element->type())
             return true;
-        if (element->type() == mef::kVote
-            && dialog->voteNumber() != element->voteNumber())
+        if (element->type() == mef::kAtleast
+            && dialog->minNumber() != element->minNumber())
             return true;
         std::vector<std::string> dialogArgs = dialog->arguments();
         if (element->numArgs() != dialogArgs.size())
             return true;
         auto it = dialogArgs.begin();
-        for (const mef::Formula::EventArg &arg : element->args()) {
-            if (*it != ext::as<const mef::Event *>(arg)->id())
+        for (const mef::Formula::Arg &arg : element->args()) {
+            if (*it != ext::as<const mef::Event *>(arg.event)->id())
                 return true;
             ++it;
         }

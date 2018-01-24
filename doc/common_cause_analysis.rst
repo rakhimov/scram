@@ -26,7 +26,7 @@ Common Cause Failure
       If a factor for any level is omitted,
       it is not implicitly assumed to be 0.
       The factors must be set to 0 explicitly.
-      The exception is the factors that are above the last input level.
+      An exception is the factors that are above the last input level.
       In other words, only the provided factors are used
       without requiring exactly maximum possible number of factors.
 

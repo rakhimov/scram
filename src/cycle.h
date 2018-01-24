@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -59,13 +60,12 @@ inline const EventTree* GetConnector(Link* node) { return &node->event_tree(); }
 ///
 /// @{
 inline auto GetNodes(const Formula* connector) {
-  return connector->event_args() |
-         boost::adaptors::transformed(
-             [](const Formula::EventArg& event_args) -> Gate* {
-               if (auto* arg = std::get_if<Gate*>(&event_args))
-                 return *arg;
-               return nullptr;
-             }) |
+  return connector->args() |
+         boost::adaptors::transformed([](const Formula::Arg& arg) -> Gate* {
+           if (auto* arg_gate = std::get_if<Gate*>(&arg.event))
+             return *arg_gate;
+           return nullptr;
+         }) |
          boost::adaptors::filtered([](auto* ptr) { return ptr != nullptr; });
 }
 inline auto GetNodes(Expression* connector) {
@@ -84,9 +84,8 @@ inline auto GetNodes(Expression* connector) {
 ///
 /// @{
 inline auto GetConnectors(const Formula* connector) {
-  return connector->formula_args() |
-         boost::adaptors::transformed(
-             [](const FormulaPtr& ptr) { return ptr.get(); });
+  (void)connector;
+  return std::array<const Formula*, 0>();  // Empty range.
 }
 inline auto GetConnectors(Expression* connector) {
   return connector->args() | boost::adaptors::filtered([](Expression* arg) {

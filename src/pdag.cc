@@ -56,19 +56,19 @@ Node::Node(Pdag* graph) noexcept
 
 Node::~Node() = default;
 
-Gate::Gate(Operator type, Pdag* graph) noexcept
+Gate::Gate(Connective type, Pdag* graph) noexcept
     : Node(graph),
       type_(type),
       mark_(false),
       module_(false),
       coherent_(false),
-      vote_number_(0),
+      min_number_(0),
       descendant_(0),
       ancestor_(0),
       min_time_(0),
       max_time_(0) {}
 
-void Gate::type(Operator type) {  // Don't use in Gate constructor!
+void Gate::type(Connective type) {  // Don't use in Gate constructor!
   /// @todo Find the inefficient resets.
   /* assert(type_ != type && "Attribute reset: Operation with no effect."); */
   type_ = type;
@@ -81,7 +81,7 @@ GatePtr Gate::Clone() noexcept {
   assert(!constant() && type_ != kNull);
   auto clone = std::make_shared<Gate>(type_, &Node::graph());  // The same type.
   clone->coherent_ = coherent_;
-  clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
+  clone->min_number_ = min_number_;  // Copy min number in case it is K/N.
   // Getting arguments copied.
   clone->args_ = args_;
   clone->gate_args_ = gate_args_;
@@ -119,11 +119,11 @@ void Gate::AddConstantArg<true>() noexcept {
       assert(args_.size() == 1);
       type(kNot);
       break;
-    case kVote:  // (K - 1) / (N - 1).
+    case kAtleast:  // (K - 1) / (N - 1).
       assert(args_.size() >= 2);
-      assert(vote_number_ > 0);
-      --vote_number_;
-      if (vote_number_ == 1)
+      assert(min_number_ > 0);
+      --min_number_;
+      if (min_number_ == 1)
         type(kOr);
       break;
   }
@@ -151,9 +151,9 @@ void Gate::AddConstantArg<false>() noexcept {
       assert(args_.size() == 1);
       type(kNull);
       break;
-    case kVote:  // K / (N - 1).
+    case kAtleast:  // K / (N - 1).
       assert(args_.size() >= 2);
-      ReduceLogic(kAnd, vote_number_);
+      ReduceLogic(kAnd, min_number_);
       break;
   }
 }
@@ -333,8 +333,8 @@ void Gate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNot && type_ != kNull);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
-  if (type_ == kVote)
-    return ProcessVoteGateDuplicateArg(index);
+  if (type_ == kAtleast)
+    return ProcessAtleastGateDuplicateArg(index);
 
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
@@ -357,27 +357,27 @@ void Gate::ProcessDuplicateArg(int index) noexcept {
   }
 }
 
-void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
+void Gate::ProcessAtleastGateDuplicateArg(int index) noexcept {
   LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
-  assert(type_ == kVote);
+  assert(type_ == kAtleast);
   // This is a very special handling of K/N duplicates.
   // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
-  assert(vote_number_ > 1);
-  assert(args_.size() >= vote_number_);
+  assert(min_number_ > 1);
+  assert(args_.size() >= min_number_);
   if (args_.size() == 2) {  // @(2, [x, x, z]) = x
-    assert(vote_number_ == 2);
+    assert(min_number_ == 2);
     this->EraseArg(index);
     this->type(kNull);
     return;
   }
-  if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
-    assert(vote_number_ > 2 && "Corrupted number of gate arguments.");
+  if (min_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
+    assert(min_number_ > 2 && "Corrupted number of gate arguments.");
     GatePtr clone_two = this->Clone();
-    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+    clone_two->min_number(min_number_ - 2);  // @(k-2, [y_i])
     this->EraseArgs();
     this->type(kAnd);
     clone_two->TransferArg(index, shared_from_this());  // Transferred the x.
-    if (clone_two->vote_number() == 1)
+    if (clone_two->min_number() == 1)
       clone_two->type(kOr);
     this->AddArg(clone_two);
     return;
@@ -388,7 +388,7 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
   this->EraseArgs();  // The main gate turns into OR with x.
   type(kOr);
   this->AddArg(clone_one);
-  if (vote_number_ == 2) {  // No need for the second K/N gate.
+  if (min_number_ == 2) {  // No need for the second K/N gate.
     clone_one->TransferArg(index, shared_from_this());  // Transferred the x.
     assert(this->args_.size() == 2);
   } else {
@@ -397,18 +397,18 @@ void Gate::ProcessVoteGateDuplicateArg(int index) noexcept {
     this->AddArg(and_gate);
     clone_one->TransferArg(index, and_gate);  // Transferred the x.
 
-    // Have to create the second K/N for vote_number > 2.
+    // Have to create the second K/N for min_number > 2.
     GatePtr clone_two = clone_one->Clone();
-    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-    if (clone_two->vote_number() == 1)
+    clone_two->min_number(min_number_ - 2);  // @(k-2, [y_i])
+    if (clone_two->min_number() == 1)
       clone_two->type(kOr);
     and_gate->AddArg(clone_two);
 
     assert(and_gate->args().size() == 2);
     assert(this->args_.size() == 2);
   }
-  assert(clone_one->vote_number() <= clone_one->args().size());
-  if (clone_one->args().size() == clone_one->vote_number())
+  assert(clone_one->min_number() <= clone_one->args().size());
+  if (clone_one->args().size() == clone_one->min_number())
     clone_one->type(kAnd);
 }
 
@@ -426,18 +426,18 @@ void Gate::ProcessComplementArg(int index) noexcept {
     case kOr:
       MakeConstant(true);
       break;
-    case kVote:
+    case kAtleast:
       LOG(DEBUG5) << "Handling special case of K/N complement argument!";
-      assert(vote_number_ > 1 && "Vote number is wrong.");
-      assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
+      assert(min_number_ > 1 && "Min number is wrong.");
+      assert((args_.size() + 1) > min_number_ && "Malformed K/N gate.");
       // @(k, [x, x', y_i]) = @(k-1, [y_i])
       EraseArg(-index);
-      --vote_number_;
+      --min_number_;
       if (args_.size() == 1) {
         type(kNull);
-      } else if (vote_number_ == 1) {
+      } else if (min_number_ == 1) {
         type(kOr);
-      } else if (vote_number_ == args_.size()) {
+      } else if (min_number_ == args_.size()) {
         type(kAnd);
       }
       break;
@@ -489,16 +489,16 @@ void Pdag::Print() {
 }
 
 namespace {
-/// Compares operator enums from mef::Operator and core::Operator
-#define OPERATOR_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
+/// Compares connective enums from mef::Connective and core::Connective
+#define CONNECTIVE_EQ(op) static_cast<int>(op) == static_cast<int>(mef::op)
 
-/// @returns true if mef::Operator enum maps exactly to core::Operator enum.
-constexpr bool CheckOperatorEnums() {
-  return OPERATOR_EQ(kAnd) && OPERATOR_EQ(kOr) && OPERATOR_EQ(kVote) &&
-         OPERATOR_EQ(kXor) && OPERATOR_EQ(kNot) && OPERATOR_EQ(kNand) &&
-         OPERATOR_EQ(kNor) && OPERATOR_EQ(kNull);
+/// @returns true if mef::Connective enum maps exactly to core::Connective enum.
+constexpr bool CheckConnectiveEnums() {
+  return CONNECTIVE_EQ(kAnd) && CONNECTIVE_EQ(kOr) && CONNECTIVE_EQ(kAtleast) &&
+         CONNECTIVE_EQ(kXor) && CONNECTIVE_EQ(kNot) && CONNECTIVE_EQ(kNand) &&
+         CONNECTIVE_EQ(kNor) && CONNECTIVE_EQ(kNull);
 }
-#undef OPERATOR_EQ
+#undef CONNECTIVE_EQ
 }  // namespace
 
 void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
@@ -519,13 +519,8 @@ void Pdag::GatherVariables(const mef::Formula& formula, bool ccf,
     ProcessedNodes* nodes;
   } formula_visitor{this, ccf, nodes};
 
-  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
-    std::visit(formula_visitor, event_arg);
-  }
-
-  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
-    GatherVariables(*sub_form, ccf, nodes);
-  }
+  for (const mef::Formula::Arg& arg : formula.args())
+    std::visit(formula_visitor, arg.event);
 }
 
 void Pdag::GatherVariables(const mef::BasicEvent& basic_event, bool ccf,
@@ -556,48 +551,61 @@ void Pdag::GatherVariables(const mef::Substitution& substitution, bool ccf,
     GatherVariables(**target, ccf, nodes);
 }
 
-/// Specialization for HouseEvent arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::HouseEvent& house_event,
-                  bool /*ccf*/, ProcessedNodes* /*nodes*/) noexcept {
-  // Create unique pass-through gates to hold the construction invariant.
-  auto null_gate = std::make_shared<Gate>(kNull, this);
-  null_gate->AddArg(constant_, !house_event.state());
-  parent->AddArg(null_gate);
-  null_gates_.push_back(null_gate);
-}
-
-/// Specialization for Gate arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::Gate& gate, bool ccf,
-                  ProcessedNodes* nodes) noexcept {
-  GatePtr& pdag_gate = nodes->gates.find(&gate)->second;
-  if (!pdag_gate) {
-    pdag_gate = ConstructGate(gate.formula(), ccf, nodes);
-  }
-  parent->AddArg(pdag_gate);
-}
-
-/// Specialization for BasicEvent arguments.
-template <>
-void Pdag::AddArg(const GatePtr& parent, const mef::BasicEvent& basic_event,
+template <class T>
+void Pdag::AddArg(const GatePtr& parent, const T& event, bool complement,
                   bool ccf, ProcessedNodes* nodes) noexcept {
-  if (ccf && basic_event.HasCcf()) {  // Replace with a CCF gate.
-    AddArg(parent, basic_event.ccf_gate(), ccf, nodes);
+  if constexpr (std::is_same_v<T, mef::HouseEvent>) {
+    (void)ccf;
+    (void)nodes;
+    // Create unique pass-through gates to hold the construction invariant.
+    auto null_gate = std::make_shared<Gate>(kNull, this);
+    null_gate->AddArg(constant_, complement ^ !event.state());
+    parent->AddArg(null_gate);
+    null_gates_.push_back(null_gate);
+
+  } else if constexpr (std::is_same_v<T, mef::Gate>) {  // NOLINT
+    GatePtr& pdag_gate = nodes->gates.find(&event)->second;
+    if (!pdag_gate) {
+      pdag_gate = ConstructGate(event.formula(), ccf, nodes);
+    }
+    parent->AddArg(pdag_gate, complement);
+
   } else {
-    VariablePtr& var = nodes->variables.find(&basic_event)->second;
-    assert(var && "Uninitialized variable.");
-    parent->AddArg(var);
+    static_assert(std::is_same_v<T, mef::BasicEvent>);
+
+    if (ccf && event.HasCcf()) {  // Replace with a CCF gate.
+      AddArg(parent, event.ccf_gate(), complement, ccf, nodes);
+    } else {
+      VariablePtr& var = nodes->variables.find(&event)->second;
+      assert(var && "Uninitialized variable.");
+      parent->AddArg(var, complement);
+    }
   }
+}
+
+void Pdag::AddArg(
+    const GatePtr& parent,
+    const std::variant<mef::Gate*, mef::BasicEvent*, mef::HouseEvent*>& event,
+    bool complement, bool ccf, ProcessedNodes* nodes) noexcept {
+  std::visit(
+      [&](const auto* arg_event) {
+        AddArg(parent, *arg_event, complement, ccf, nodes);
+      },
+      event);
 }
 
 GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
                             ProcessedNodes* nodes) noexcept {
-  static_assert(kNumOperators == 8, "Unspecified formula operators.");
-  static_assert(kNumOperators == mef::kNumOperators, "Operator mismatch.");
-  static_assert(CheckOperatorEnums(), "mef::Operator doesn't map to Operator.");
+  static_assert(kNumConnectives == 8, "Unspecified formula connectives.");
+  static_assert(kNumConnectives < mef::kNumConnectives,
+                "MEF and Core connective mismatch.");
+  static_assert(CheckConnectiveEnums(),
+                "mef::Connective must map to core::Connective.");
 
-  Operator type = static_cast<Operator>(formula.type());
+  if (formula.connective() >= kNumConnectives)
+    return ConstructComplexGate(formula, ccf, nodes);
+
+  Connective type = static_cast<Connective>(formula.connective());
   auto parent = std::make_shared<Gate>(type, this);
 
   if (type != kOr && type != kAnd)
@@ -610,8 +618,8 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     case kXor:
       coherent_ = false;
       break;
-    case kVote:
-      parent->vote_number(formula.vote_number());
+    case kAtleast:
+      parent->min_number(formula.min_number());
       break;
     case kNull:
       null_gates_.push_back(parent);
@@ -619,17 +627,45 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
     default:
       assert((type == kOr || type == kAnd) && "Unexpected gate type.");
   }
-  for (const mef::Formula::EventArg& event_arg : formula.event_args()) {
-    std::visit(
-        [&](const auto* event) { this->AddArg(parent, *event, ccf, nodes); },
-        event_arg);
+  for (const mef::Formula::Arg& arg : formula.args()) {
+    if (arg.complement)
+      coherent_ = false;
+    AddArg(parent, arg.event, arg.complement, ccf, nodes);
   }
 
-  for (const mef::FormulaPtr& sub_form : formula.formula_args()) {
-    GatePtr new_gate = ConstructGate(*sub_form, ccf, nodes);
-    parent->AddArg(new_gate);
-  }
   return parent;
+}
+
+GatePtr Pdag::ConstructComplexGate(const mef::Formula& formula, bool ccf,
+                                   ProcessedNodes* nodes) noexcept {
+  assert(formula.connective() >= kNumConnectives);
+  coherent_ = false;
+  switch (formula.connective()) {
+    case mef::kIff: {
+      assert(formula.args().size() == 2);
+      normal_ = false;
+      auto parent = std::make_shared<Gate>(kNull, this);
+      auto arg_gate = std::make_shared<Gate>(kXor, this);
+
+      for (const mef::Formula::Arg& arg : formula.args()) {
+        AddArg(arg_gate, arg.event, arg.complement, ccf, nodes);
+      }
+      parent->AddArg(arg_gate, /*complement=*/true);
+      null_gates_.push_back(parent);
+      return parent;
+    }
+    case mef::kImply: {
+      assert(formula.args().size() == 2);
+      auto parent = std::make_shared<Gate>(kOr, this);
+      AddArg(parent, formula.args().front().event,
+             !formula.args().front().complement, ccf, nodes);
+      AddArg(parent, formula.args().back().event,
+             formula.args().back().complement, ccf, nodes);
+      return parent;
+    }
+    default:
+      assert(false && "Unexpected connective for complex gates.");
+  }
 }
 
 GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,
@@ -639,7 +675,7 @@ GatePtr Pdag::ConstructSubstitution(const mef::Substitution& substitution,
   implication->AddArg(ConstructGate(substitution.hypothesis(), ccf, nodes),
                       /*complement=*/true);
   if (auto* target = std::get_if<mef::BasicEvent*>(&substitution.target())) {
-    AddArg(implication, **target, ccf, nodes);
+    AddArg(implication, **target, /*complement=*/false, ccf, nodes);
   } else {
     assert(!*std::get_if<bool>(&substitution.target()) && "Not a delete term");
     implication->type(kNull);
@@ -662,13 +698,13 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
   for (const mef::BasicEvent* event : substitution.source())
     source.push_back(nodes->variables.find(event)->second->index());
 
-  switch (substitution.hypothesis().type()) {
+  switch (substitution.hypothesis().connective()) {
     case mef::kNull:
     case mef::kAnd: {
       std::vector<int> args;
-      for (const mef::Formula::EventArg& arg :
-           substitution.hypothesis().event_args()) {
-        auto* event = std::get_if<mef::BasicEvent*>(&arg);
+      for (const mef::Formula::Arg& arg : substitution.hypothesis().args()) {
+        assert(!arg.complement);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg.event);
         assert(event);
         args.push_back(nodes->variables.find(*event)->second->index());
       }
@@ -676,9 +712,9 @@ void Pdag::CollectSubstitution(const mef::Substitution& substitution,
       break;
     }
     case mef::kOr: {
-      for (const mef::Formula::EventArg& arg :
-           substitution.hypothesis().event_args()) {
-        auto* event = std::get_if<mef::BasicEvent*>(&arg);
+      for (const mef::Formula::Arg& arg : substitution.hypothesis().args()) {
+        assert(!arg.complement);
+        auto* event = std::get_if<mef::BasicEvent*>(&arg.event);
         assert(event);
         substitutions_.push_back(
             {{nodes->variables.find(*event)->second->index()}, source, target});
@@ -815,7 +851,7 @@ struct GraphLogger {
 
   int num_modules = 0;  ///< The number of module gates.
   std::unordered_set<int> gates;  ///< Collection of gates.
-  std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
+  std::array<int, kNumConnectives> gate_types{};  ///< Gate type counts.
   std::unordered_set<int> variables;  ///< Collection of variables.
 };
 
@@ -840,8 +876,8 @@ void Pdag::Log() noexcept {
       << "AND gates: " << logger.gate_types[kAnd];
   BLOG(DEBUG5, logger.gate_types[kOr])
       << "OR gates: " << logger.gate_types[kOr];
-  BLOG(DEBUG5, logger.gate_types[kVote])
-      << "K/N gates: " << logger.gate_types[kVote];
+  BLOG(DEBUG5, logger.gate_types[kAtleast])
+      << "K/N gates: " << logger.gate_types[kAtleast];
   BLOG(DEBUG5, logger.gate_types[kXor])
       << "XOR gates: " << logger.gate_types[kXor];
   BLOG(DEBUG5, logger.gate_types[kNot])
@@ -912,8 +948,8 @@ FormulaSig GetFormulaSig(const Gate& gate) {
       sig.begin = "";  // No need for the parentheses.
       sig.end = "";
       break;
-    case kVote:
-      sig.begin = "@(" + std::to_string(gate.vote_number()) + ", [";
+    case kAtleast:
+      sig.begin = "@(" + std::to_string(gate.min_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";
       break;

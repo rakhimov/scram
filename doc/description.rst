@@ -8,8 +8,8 @@ Command-line Usage
 The user supplies a configuration file, input files,
 and analysis configurations via command-line.
 Various types of analyses can be performed on the model,
-for example, fault tree, event tree, uncertainty, etc.
-The user must specify the kinds of analysis
+for example, fault tree, event tree, uncertainty.
+The user must specify kinds of analysis
 and appropriate parameters for the analyses.
 For example, if FTA is requested (the default option),
 the maximum order of products can be specified for faster analysis.
@@ -25,7 +25,7 @@ there is no fine-grained analysis configuration per target.
 - Run ``scram --help`` to see all the flags and options for analysis.
 
 - All XML files are validated against the RELAX NG schema
-  before any initialization and validation of analysis specific constructs.
+  before any initialization and validation of analysis-specific constructs.
   This automatic validation may give unpleasant, cryptic, low-level error messages
   for invalid XML files.
 

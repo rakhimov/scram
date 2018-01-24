@@ -140,7 +140,7 @@ class Model : public Element {
   /// @returns The event with its type encoded in variant suitable for formulas.
   ///
   /// @throws UndefinedElement  The event with the given ID is not in the model.
-  Formula::EventArg GetEvent(const std::string& id);
+  Formula::ArgEvent GetEvent(const std::string& id);
 
   /// Removes MEF constructs from the model container.
   ///

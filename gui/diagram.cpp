@@ -221,8 +221,9 @@ Gate::Gate(model::Gate *event, model::Model *model,
     } formula_visitor{this, model, transfer};
     double linkY = (m_size.height() - 1) * units().height();
     std::vector<std::pair<Event *, QGraphicsLineItem *>> children;
-    for (const mef::Formula::EventArg &eventArg : event->args()) {
-        auto *child = std::visit(formula_visitor, eventArg);
+    for (const mef::Formula::Arg &arg : event->args()) {
+        GUI_ASSERT(!arg.complement, );
+        auto *child = std::visit(formula_visitor, arg.event);
         auto *link = new QGraphicsLineItem(0, 0, 0, units().height(), this);
         if (!children.empty())
             m_width += m_space * units().height();
@@ -243,9 +244,9 @@ Gate::Gate(model::Gate *event, model::Model *model,
                               children.back().first->pos().x(), linkY, this);
 }
 
-std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
+std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
 {
-    static_assert(mef::kNumOperators == 8, "Unexpected operator changes");
+    static_assert(mef::kNumConnectives > 8, "Unexpected connective changes");
     switch (type) {
     case mef::kNull:
         return std::make_unique<QGraphicsLineItem>(
@@ -275,7 +276,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         paintPath.lineTo(0, maxHeight);
         return std::make_unique<QGraphicsPathItem>(paintPath);
     }
-    case mef::kVote: {
+    case mef::kAtleast: {
         double h = m_maxSize.height() * units().height();
         double a = h / sqrt(3);
         auto polygon =
@@ -286,10 +287,9 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
                                                               {-a / 2, h},
                                                               {-a, h / 2}}});
         auto *gate = static_cast<model::Gate *>(m_event);
-        auto *text = new QGraphicsTextItem(QStringLiteral("%1/%2")
-                                               .arg(gate->voteNumber())
-                                               .arg(gate->numArgs()),
-                                           polygon.get());
+        auto *text = new QGraphicsTextItem(
+            QStringLiteral("%1/%2").arg(gate->minNumber()).arg(gate->numArgs()),
+            polygon.get());
         QFont font = text->font();
         font.setPointSizeF(1.5 * font.pointSizeF());
         text->setFont(font);
@@ -340,8 +340,9 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Operator type)
         andItem.release()->setParentItem(circle.get());
         return std::move(circle);
     }
+    default:
+        GUI_ASSERT(false && "Unexpected gate type", nullptr);
     }
-    GUI_ASSERT(false && "Unexpected gate type", nullptr);
 }
 
 double Gate::width() const
@@ -414,8 +415,10 @@ void DiagramScene::redraw()
     auto link = [this, &visitor](model::Gate *gate) {
         connect(gate, &model::Gate::formulaChanged, this, &DiagramScene::redraw,
                 Qt::UniqueConnection);
-        for (const mef::Formula::EventArg &arg : gate->args())
-            std::visit(visitor, arg);
+        for (const mef::Formula::Arg &arg : gate->args()) {
+            GUI_ASSERT(!arg.complement, );
+            std::visit(visitor, arg.event);
+        }
     };
 
     /// @todo Finer signal tracking.

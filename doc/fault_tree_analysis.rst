@@ -5,7 +5,7 @@ Fault Tree Analysis
 ###################
 
 Fault tree analysis [FTA]_ is one of the core analyses.
-Other analyses may require or depend on the fault tree results or constructs.
+Other analyses may require or depend on the fault-tree analysis results or constructs.
 Fault trees employ various types of gates (Boolean connectives) and events
 to represent Boolean formulas and to model systems for analysis.
 SCRAM automatically discovers top-events (graph roots)
@@ -18,7 +18,7 @@ and their respective control parameters (knobs).
    - Cut-off probability for products. *Unused*
    - Maximum order for products for faster calculations.
 
-#. Find the total probability of the top event
+#. Find the total probability of a top event
    and importance values for basic events. *Only if probability input is provided*
 
    - Cut-off probability for products. *Unused*
@@ -45,7 +45,7 @@ Supported Gate Types
 - XOR
 - NULL
 - INHIBIT
-- VOTE
+- ATLEAST
 
 
 Supported Event Types

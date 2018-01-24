@@ -1,28 +1,22 @@
 <?xml version="1.0"?>
-<!--
-The tree contains two top events, and the nested formulas are used.
--->
-<opsa-mef>
+<opsa-mef name="ShortModel">
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
+        <gate name="TrainOne"/>
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpTwo"/>
         <not>
-          <gate name="TrainOne"/>
+          <event name="PumpOne"/>
         </not>
-        <event name="PumpOne"/>
       </and>
     </define-gate>
     <define-gate name="TrainOne">
-      <or>
-        <event name="ValveOne"/>
-        <event name="PumpOne"/>
-      </or>
-    </define-gate>
-    <define-gate name="TrainTwo">  <!-- This gate is top as well -->
-      <or>
-        <event name="ValveTwo"/>
-        <event name="PumpTwo"/>
-      </or>
+      <not>
+        <not>
+          <basic-event name="ValveOne"/>
+        </not>
+      </not>
     </define-gate>
     <define-basic-event name="ValveOne"/>
     <define-basic-event name="ValveTwo"/>

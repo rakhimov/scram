@@ -232,13 +232,13 @@ class Preprocessor::GateSet {
       assert(lhs->type() == rhs->type());
       if (lhs->args() != rhs->args())
         return false;
-      if (lhs->type() == kVote && lhs->vote_number() != rhs->vote_number())
+      if (lhs->type() == kAtleast && lhs->min_number() != rhs->min_number())
         return false;
       return true;
     }
   };
   /// Container of gates grouped by their types.
-  std::array<std::unordered_set<GatePtr, Hash, Equal>, kNumOperators> table_;
+  std::array<std::unordered_set<GatePtr, Hash, Equal>, kNumConnectives> table_;
 };
 
 namespace {  // PDAG structure verification tools.
@@ -289,9 +289,9 @@ class TestGateStructure {
       case kXor:
         assert(gate.args().size() == 2 && "Malformed XOR gate!");
         break;
-      case kVote:
-        assert(gate.vote_number() > 1 && "K/N has wrong K!");
-        assert(gate.args().size() > gate.vote_number() && "K/N has wrong N!");
+      case kAtleast:
+        assert(gate.min_number() > 1 && "K/N has wrong K!");
+        assert(gate.args().size() > gate.min_number() && "K/N has wrong N!");
         break;
       default:
         assert(gate.args().size() > 1 && "Missing arguments!");
@@ -484,7 +484,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
     pdag::TopologicalOrder(graph_);  // K/N gates need order.
 
   const GatePtr& root_gate = graph_->root();
-  Operator type = root_gate->type();
+  Connective type = root_gate->type();
   switch (type) {  // Handle special case for the root gate.
     case kNor:
     case kNand:
@@ -492,7 +492,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
       graph_->complement() ^= true;
       break;
     default:  // All other types keep the sign of the root.
-      assert((type == kAnd || type == kOr || type == kVote || type == kXor ||
+      assert((type == kAnd || type == kOr || type == kAtleast || type == kXor ||
               type == kNull) &&
              "Update the logic if new gate types are introduced.");
   }
@@ -543,11 +543,11 @@ void Preprocessor::NormalizeGate(const GatePtr& gate, bool full) noexcept {
       if (full)
         NormalizeXorGate(gate);
       break;
-    case kVote:
+    case kAtleast:
       assert(gate->args().size() > 2);
-      assert(gate->vote_number() > 1);
+      assert(gate->min_number() > 1);
       if (full)
-        NormalizeVoteGate(gate);
+        NormalizeAtleastGate(gate);
       break;
     case kNot:
       assert(gate->args().size() == 1);
@@ -582,16 +582,16 @@ void Preprocessor::NormalizeXorGate(const GatePtr& gate) noexcept {
   gate->AddArg(gate_two);
 }
 
-void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
-  assert(gate->type() == kVote);
-  int vote_number = gate->vote_number();
+void Preprocessor::NormalizeAtleastGate(const GatePtr& gate) noexcept {
+  assert(gate->type() == kAtleast);
+  int min_number = gate->min_number();
 
-  assert(vote_number > 0);  // Vote number can be 1 for special OR gates.
+  assert(min_number > 0);  // Min number can be 1 for special OR gates.
   assert(gate->args().size() > 1);
-  if (gate->args().size() == vote_number) {
+  if (gate->args().size() == min_number) {
     gate->type(kAnd);
     return;
-  } else if (vote_number == 1) {
+  } else if (min_number == 1) {
     gate->type(kOr);
     return;
   }
@@ -603,12 +603,12 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   auto first_arg = std::make_shared<Gate>(kAnd, graph_);
   gate->TransferArg(*it, first_arg);
 
-  auto grand_arg = std::make_shared<Gate>(kVote, graph_);
+  auto grand_arg = std::make_shared<Gate>(kAtleast, graph_);
   first_arg->AddArg(grand_arg);
-  grand_arg->vote_number(vote_number - 1);
+  grand_arg->min_number(min_number - 1);
 
-  auto second_arg = std::make_shared<Gate>(kVote, graph_);
-  second_arg->vote_number(vote_number);
+  auto second_arg = std::make_shared<Gate>(kAtleast, graph_);
+  second_arg->min_number(min_number);
 
   for (int index : gate->args()) {
     gate->ShareArg(index, grand_arg);
@@ -624,8 +624,8 @@ void Preprocessor::NormalizeVoteGate(const GatePtr& gate) noexcept {
   gate->AddArg(first_arg);
   gate->AddArg(second_arg);
 
-  NormalizeVoteGate(grand_arg);
-  NormalizeVoteGate(second_arg);
+  NormalizeAtleastGate(grand_arg);
+  NormalizeAtleastGate(second_arg);
 }
 
 void Preprocessor::PropagateComplements(
@@ -652,9 +652,9 @@ void Preprocessor::PropagateComplements(
       assert(it->second->mark());
       continue;  // Existing complements are already processed.
     }
-    Operator type = arg_gate->type();
+    Connective type = arg_gate->type();
     assert(type == kAnd || type == kOr);
-    Operator complement_type = type == kOr ? kAnd : kOr;
+    Connective complement_type = type == kOr ? kAnd : kOr;
     GatePtr complement;
     if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
       arg_gate->type(complement_type);
@@ -696,7 +696,7 @@ bool Preprocessor::CoalesceGates(const GatePtr& gate, bool common) noexcept {
   if (gate->mark())
     return false;
   gate->mark(true);
-  Operator target_type = kNull;  // What kind of arg gate are we searching for?
+  Connective target_type = kNull;  // What kind of arg gate are we looking for?
   switch (gate->type()) {
     case kNand:
     case kAnd:
@@ -1110,12 +1110,12 @@ bool Preprocessor::MergeCommonArgs() noexcept {
   return changed;
 }
 
-bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
+bool Preprocessor::MergeCommonArgs(Connective op) noexcept {
   assert(op == kAnd || op == kOr);
   graph_->Clear<Pdag::kCount>();
   graph_->Clear<Pdag::kGateMark>();
   // Gather and group gates
-  // by their operator types and common arguments.
+  // by their connective types and common arguments.
   MarkCommonArgs(graph_->root(), op);
   graph_->Clear<Pdag::kGateMark>();
   std::vector<GateWeakPtr> modules = GatherModules();
@@ -1157,7 +1157,7 @@ bool Preprocessor::MergeCommonArgs(Operator op) noexcept {
   return changed;
 }
 
-void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
+void Preprocessor::MarkCommonArgs(const GatePtr& gate, Connective op) noexcept {
   if (gate->mark())
     return;
   gate->mark(true);
@@ -1181,7 +1181,7 @@ void Preprocessor::MarkCommonArgs(const GatePtr& gate, Operator op) noexcept {
   assert(!gate->constant());
 }
 
-void Preprocessor::GatherCommonArgs(const GatePtr& gate, Operator op,
+void Preprocessor::GatherCommonArgs(const GatePtr& gate, Connective op,
                                     MergeTable::Candidates* group) noexcept {
   if (gate->mark())
     return;
@@ -1528,7 +1528,7 @@ bool Preprocessor::DetectDistributivity(const GatePtr& gate) noexcept {
   gate->mark(true);
   assert(!gate->constant());
   bool changed = false;
-  Operator distr_type = kNull;  // Implicit flag of no operation!
+  Connective distr_type = kNull;  // Implicit flag of no operation!
   switch (gate->type()) {
     case kAnd:
     case kNand:
@@ -1561,7 +1561,7 @@ bool Preprocessor::DetectDistributivity(const GatePtr& gate) noexcept {
 }
 
 bool Preprocessor::HandleDistributiveArgs(
-    const GatePtr& gate, Operator distr_type,
+    const GatePtr& gate, Connective distr_type,
     std::vector<GatePtr>* candidates) noexcept {
   if (candidates->empty())
     return false;
@@ -1707,7 +1707,7 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
 }
 
 void Preprocessor::TransformDistributiveArgs(
-    const GatePtr& gate, Operator distr_type,
+    const GatePtr& gate, Connective distr_type,
     MergeTable::MergeGroup* group) noexcept {
   if (group->empty())
     return;
@@ -1962,10 +1962,10 @@ void Preprocessor::DetermineGateState(const GatePtr& gate, int num_failure,
     case kAnd:
       gate->opti_value(compute_state(gate->args().size(), 1));
       break;
-    case kVote:
-      assert(gate->args().size() > gate->vote_number());
+    case kAtleast:
+      assert(gate->args().size() > gate->min_number());
       gate->opti_value(compute_state(
-          gate->vote_number(), gate->args().size() - gate->vote_number() + 1));
+          gate->min_number(), gate->args().size() - gate->min_number() + 1));
       break;
     case kXor:
       if (num_failure == 1 && num_success == 1) {
@@ -2024,7 +2024,7 @@ void Preprocessor::CollectRedundantParents(
     if (parent->opti_value()) {
       assert(parent->opti_value() == 1 || parent->opti_value() == -1);
       if (auto it = ext::find(*destinations, parent->index())) {
-        Operator type = parent->opti_value() == 1 ? kOr : kAnd;
+        Connective type = parent->opti_value() == 1 ? kOr : kAnd;
         if (parent->type() == type &&
             parent->opti_value() == parent->GetArgSign(node)) {
           destinations->erase(it);
@@ -2059,7 +2059,7 @@ void Preprocessor::ProcessStateDestinations(
     GatePtr target = ptr.second.lock();
     assert(!target->mark());
     assert(target->opti_value() == 1 || target->opti_value() == -1);
-    Operator type = target->opti_value() == 1 ? kOr : kAnd;
+    Connective type = target->opti_value() == 1 ? kOr : kAnd;
     if (target->type() == type) {  // Reuse of an existing gate.
       if (target->constant())
         continue;  // No need to process.
@@ -2140,7 +2140,7 @@ bool Preprocessor::DecompositionProcessor::operator()(  // clang-format confuse?
   preprocessor_ = preprocessor;
   assert(!preprocessor_->graph_->HasNullGates());
   // Determines whether decomposition is possible with a given type.
-  auto is_decomposition_type = [](Operator type) {
+  auto is_decomposition_type = [](Connective type) {
     switch (type) {
       case kAnd:
       case kNand:

@@ -392,7 +392,7 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
                                  int limit_order) noexcept;
 /// @}
 
-/// Specialization of Apply for AND operator for non-terminal ZBDD vertices.
+/// Specialization of Apply for AND connective for non-terminal ZBDD vertices.
 template <>
 Zbdd::VertexPtr Zbdd::Apply<kAnd>(const SetNodePtr& arg_one,
                                   const SetNodePtr& arg_two,
@@ -428,7 +428,7 @@ Zbdd::VertexPtr Zbdd::Apply<kAnd>(const SetNodePtr& arg_one,
   return Minimize(GetReducedVertex(arg_one, high, low));
 }
 
-/// Specialization of Apply for AND operator for any ZBDD vertices.
+/// Specialization of Apply for AND connective for any ZBDD vertices.
 template <>
 Zbdd::VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one,
                                   const VertexPtr& arg_two,
@@ -466,7 +466,7 @@ Zbdd::VertexPtr Zbdd::Apply<kAnd>(const VertexPtr& arg_one,
   return result;
 }
 
-/// Specialization of Apply for OR operator for non-terminal ZBDD vertices.
+/// Specialization of Apply for OR connective for non-terminal ZBDD vertices.
 template <>
 Zbdd::VertexPtr Zbdd::Apply<kOr>(const SetNodePtr& arg_one,
                                  const SetNodePtr& arg_two,
@@ -496,7 +496,7 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const SetNodePtr& arg_one,
   return Minimize(GetReducedVertex(arg_one, high, low));
 }
 
-/// Specialization of Apply for OR operator for any ZBDD vertices.
+/// Specialization of Apply for OR connective for any ZBDD vertices.
 template <>
 Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
                                  const VertexPtr& arg_two,
@@ -534,7 +534,7 @@ Zbdd::VertexPtr Zbdd::Apply<kOr>(const VertexPtr& arg_one,
   return result;
 }
 
-Zbdd::VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
+Zbdd::VertexPtr Zbdd::Apply(Connective type, const VertexPtr& arg_one,
                             const VertexPtr& arg_two,
                             int limit_order) noexcept {
   if (type == kAnd)

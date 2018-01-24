@@ -23,24 +23,30 @@
     <define-gate name="TrainOne">
       <or>
         <event name="ValveOne"/>
-        <and>
-          <event name="PumpOne"/>
-          <not>
-            <house-event name="PumpOneMaintenance"/>
-          </not>
-        </and>
+        <gate name="TrainOneMaintenance"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
         <event name="ValveTwo"/>
-        <and>
-          <event name="PumpTwo"/>
-          <not>
-            <house-event name="PumpTwoMaintenance"/>
-          </not>
-        </and>
+        <gate name="TrainTwoMaintenance"/>
       </or>
+    </define-gate>
+    <define-gate name="TrainTwoMaintenance">
+      <and>
+        <event name="PumpTwo"/>
+        <not>
+          <house-event name="PumpTwoMaintenance"/>
+        </not>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOneMaintenance">
+      <and>
+        <event name="PumpOne"/>
+        <not>
+          <house-event name="PumpOneMaintenance"/>
+        </not>
+      </and>
     </define-gate>
     <define-house-event name="PumpOneMaintenance">
       <constant value="false"/>

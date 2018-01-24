@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
@@ -247,20 +248,20 @@ using NodePtr = std::shared_ptr<Node>;  ///< Shared base nodes in the graph.
 using ConstantPtr = std::shared_ptr<Constant>;  ///< Shared Boolean constants.
 using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
 
-/// Boolean operators of gates
+/// Boolean connectives of gates
 /// for representation, preprocessing, and analysis purposes.
-/// The operator defines a type and logic of a gate.
+/// The connective defines a type and logic of a gate.
 ///
-/// @warning If a new operator is added,
+/// @warning If a new connective is added,
 ///          all the preprocessing and PDAG algorithms
 ///          must be reviewed and updated.
 ///          The algorithms may assume
 ///          for performance and simplicity reasons
-///          that these are the only kinds of operators possible.
-enum Operator : std::uint8_t {
-  kAnd = 0,  ///< Simple AND gate.
-  kOr,  ///< Simple OR gate.
-  kVote,  ///< Combination, K/N, or Vote gate representation.
+///          that these are the only kinds of connectives possible.
+enum Connective : std::uint8_t {
+  kAnd = 0,  ///< AND gate.
+  kOr,  ///< OR gate.
+  kAtleast,  ///< Combination, K/N, or Vote gate representation.
   kXor,  ///< Exclusive OR gate with two inputs.
   kNot,  ///< Boolean negation.
   kNand,  ///< NAND gate.
@@ -268,9 +269,9 @@ enum Operator : std::uint8_t {
   kNull  ///< Special pass-through or NULL gate. This is not NULL set.
 };
 
-/// The number of operators in the enum.
+/// The number of connectives in the enum.
 /// This number is useful for optimizations and algorithms.
-const int kNumOperators = 8;  // Update this number if operators change.
+const int kNumConnectives = 8;  // Update this number if connectives change.
 
 /// An indexed gate for use in a PDAG.
 /// Initially this gate can represent any type of gate or logic;
@@ -313,7 +314,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] type  The type of this gate.
   /// @param[in,out] graph  The host PDAG.
-  Gate(Operator type, Pdag* graph) noexcept;
+  Gate(Connective type, Pdag* graph) noexcept;
 
   /// Destructs parent information from the arguments.
   ~Gate() noexcept {
@@ -333,7 +334,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   GatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  Operator type() const { return type_; }
+  Connective type() const { return type_; }
 
   /// Changes the logic of the gate.
   /// Depending on the original and new type of the gate,
@@ -344,20 +345,20 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @pre The new logic is compatible with the existing arguments
   ///      and preserves the gate invariants.
   /// @pre The previous type is not equal to the new one.
-  void type(Operator type);
+  void type(Connective type);
 
-  /// @returns Vote number.
+  /// @returns Min number.
   ///
-  /// @pre The vote number is relevant to the gate logic.
-  int vote_number() const { return vote_number_; }
+  /// @pre The min number is relevant to the gate logic.
+  int min_number() const { return min_number_; }
 
-  /// Sets the vote number for this gate.
+  /// Sets the min number for this gate.
   /// This function is used for K/N gates.
   ///
-  /// @param[in] number  The vote number of VOTE gate.
+  /// @param[in] number  The min number of ATLEAST gate.
   ///
-  /// @pre The vote number is appropriate for the gate logic and arguments.
-  void vote_number(int number) { vote_number_ = number; }
+  /// @pre The min number is appropriate for the gate logic and arguments.
+  void min_number(int number) { min_number_ = number; }
 
   /// @returns true if this gate has become constant.
   bool constant() const { return constant_ != nullptr; }
@@ -535,7 +536,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///          Depending on the logic of the gate,
   ///          new gates may be introduced
   ///          instead of the existing arguments.
-  /// @warning Complex logic gates like VOTE and XOR
+  /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
@@ -547,7 +548,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
     assert(!constant_);
     assert(!((type_ == kNot || type_ == kNull) && !args_.empty()));
     assert(!(type_ == kXor && args_.size() > 1));
-    assert(vote_number_ >= 0);
+    assert(min_number_ >= 0);
 
     if (args_.count(index))
       return ProcessDuplicateArg(index);
@@ -708,7 +709,7 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   /// @param[in] index  Positive or negative index of the existing argument.
   ///
   /// @warning New gates may be introduced.
-  void ProcessVoteGateDuplicateArg(int index) noexcept;
+  void ProcessAtleastGateDuplicateArg(int index) noexcept;
 
   /// Process an addition of a complement of an existing argument.
   ///
@@ -726,17 +727,17 @@ class Gate : public Node, public std::enable_shared_from_this<Gate> {
   ///
   /// @param[in] target_type  The logic compatible with the current one.
   /// @param[in] num_args  The number of required arguments.
-  void ReduceLogic(Operator target_type, int num_args = 1) noexcept {
+  void ReduceLogic(Connective target_type, int num_args = 1) noexcept {
     assert(!args_.empty());
     if (args_.size() == num_args)
       type(target_type);
   }
 
-  Operator type_;  ///< Type of this gate.
+  Connective type_;  ///< Type of this gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
   bool module_;  ///< Indication of an independent module gate.
   bool coherent_;  ///< Indication of a coherent graph.
-  int vote_number_;  ///< Vote number for VOTE gate.
+  int min_number_;  ///< Min number for ATLEAST gate.
   int descendant_;  ///< Mark by descendant indices.
   int ancestor_;  ///< Mark by ancestor indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
@@ -1050,9 +1051,23 @@ class Pdag : private boost::noncopyable {
   ///
   /// @returns Pointer to the newly created indexed gate.
   ///
-  /// @pre The Operator enum in the MEF is the same as in PDAG.
+  /// @pre The Connective enum in the MEF is the same as in PDAG.
   GatePtr ConstructGate(const mef::Formula& formula, bool ccf,
                         ProcessedNodes* nodes) noexcept;
+
+  /// Processes complex Boolean connectives
+  /// that are not supported by PDAG directly.
+  /// In effect, it rewrites complex formulas with PDAG connectives.
+  ///
+  /// @param[in] formula  The complex Boolean formula to be processed.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  ///
+  /// @pre The formula connective is not supported by PDAG.
+  GatePtr ConstructComplexGate(const mef::Formula& formula, bool ccf,
+                               ProcessedNodes* nodes) noexcept;
 
   /// Processes declarative substitutions into corresponding implication gates.
   ///
@@ -1086,11 +1101,19 @@ class Pdag : private boost::noncopyable {
   ///
   /// @param[in,out] parent  The parent gate to own the arguments.
   /// @param[in] event  The event argument of the formula.
+  /// @param[in] complement  The flag to negate the argument.
   /// @param[in] ccf  A flag to replace basic events with CCF gates.
   /// @param[in,out] nodes  The mapping of processed nodes.
-  template <typename T>
-  void AddArg(const GatePtr& parent, const T& event, bool ccf,
+  ///
+  /// @{
+  template <class T>
+  void AddArg(const GatePtr& parent, const T& event, bool complement, bool ccf,
               ProcessedNodes* nodes) noexcept;
+  void AddArg(
+      const GatePtr& parent,
+      const std::variant<mef::Gate*, mef::BasicEvent*, mef::HouseEvent*>& event,
+      bool complement, bool ccf, ProcessedNodes* nodes) noexcept;
+  /// @}
 
   /// Propagate NULL type gates bottom-up.
   /// This is a helper function for algorithms

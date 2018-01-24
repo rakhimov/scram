@@ -228,9 +228,9 @@ class Preprocessor : private boost::noncopyable {
   /// @note This is a helper function for NormalizeGate.
   void NormalizeXorGate(const GatePtr& gate) noexcept;
 
-  /// Normalizes a VOTE gate with a vote number.
+  /// Normalizes a ATLEAST gate with a atleast number.
   /// The gate is turned into an OR gate of
-  /// recursively normalized VOTE and AND arg gates
+  /// recursively normalized ATLEAST and AND arg gates
   /// according to the formula
   /// K/N(x, y_i) = OR(AND(x, K-1/N-1(y_i)), K/N-1(y_i)))
   /// with y_i being the rest of formula arguments,
@@ -241,11 +241,11 @@ class Preprocessor : private boost::noncopyable {
   /// which is OR of AND gates of combinations.
   /// Normalization of K/N gates is aware of variable ordering.
   ///
-  /// @param[in,out] gate  The VOTE gate to normalize.
+  /// @param[in,out] gate  The ATLEAST gate to normalize.
   ///
   /// @pre Variable ordering is assigned to arguments.
   /// @pre This helper function is called from NormalizeGate.
-  void NormalizeVoteGate(const GatePtr& gate) noexcept;
+  void NormalizeAtleastGate(const GatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
   /// according to the De Morgan's law
@@ -443,31 +443,31 @@ class Preprocessor : private boost::noncopyable {
   bool MergeCommonArgs() noexcept;
 
   /// Merges common arguments for a specific group of gates.
-  /// The gates are grouped by their operators.
+  /// The gates are grouped by their connectives.
   /// This is a helper function
   /// that divides the main merging technique by the gate types.
   ///
-  /// @param[in] op  The operator that defines the group.
+  /// @param[in] op  The connective that defines the group.
   ///
   /// @returns true if common args are merged into gates.
   ///
-  /// @note The operator or logic of the gates must allow merging.
-  ///       OR/AND operators are expected.
+  /// @note The connective or logic of the gates must allow merging.
+  ///       OR/AND connectives are expected.
   ///
   /// @warning Gate marks are used for traversal.
   /// @warning Node counts are used for common node detection.
-  bool MergeCommonArgs(Operator op) noexcept;
+  bool MergeCommonArgs(Connective op) noexcept;
 
-  /// Marks common arguments of gates with a specific operator.
+  /// Marks common arguments of gates with a specific connective.
   ///
   /// @param[in] gate  The gate to start the traversal.
-  /// @param[in] op  The operator of gates
+  /// @param[in] op  The connective of gates
   ///                which arguments must be marked.
   ///
   /// @note Node count information is used to mark the common arguments.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void MarkCommonArgs(const GatePtr& gate, Operator op) noexcept;
+  void MarkCommonArgs(const GatePtr& gate, Connective op) noexcept;
 
   /// Helper struct for algorithms
   /// that must make an optimal decision
@@ -491,12 +491,12 @@ class Preprocessor : private boost::noncopyable {
   };
 
   /// Gathers common arguments of the gates
-  /// in the group of a specific operator.
+  /// in the group of a specific connective.
   /// The common arguments must be marked
   /// by the second visit exit time.
   ///
   /// @param[in] gate  The gate to start the traversal.
-  /// @param[in] op  The operator of gates in the group.
+  /// @param[in] op  The connective of gates in the group.
   /// @param[out] group  The group of the gates with their common arguments.
   ///
   /// @note The common arguments are sorted.
@@ -505,7 +505,7 @@ class Preprocessor : private boost::noncopyable {
   ///       because they don't have common args with the supermodule.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void GatherCommonArgs(const GatePtr& gate, Operator op,
+  void GatherCommonArgs(const GatePtr& gate, Connective op,
                         MergeTable::Candidates* group) noexcept;
 
   /// Filters merge candidates and their shared arguments
@@ -640,7 +640,7 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in,out] candidates  Candidates for distributivity check.
   ///
   /// @returns true if transformations are performed.
-  bool HandleDistributiveArgs(const GatePtr& gate, Operator distr_type,
+  bool HandleDistributiveArgs(const GatePtr& gate, Connective distr_type,
                               std::vector<GatePtr>* candidates) noexcept;
 
   /// Detects relationships between the gate and its distributive arguments
@@ -676,7 +676,7 @@ class Preprocessor : private boost::noncopyable {
   /// @param[in,out] gate  The parent gate of all the distributive arguments.
   /// @param[in] distr_type  The type of distributive arguments.
   /// @param[in,out] group  Group of distributive args options for manipulation.
-  void TransformDistributiveArgs(const GatePtr& gate, Operator distr_type,
+  void TransformDistributiveArgs(const GatePtr& gate, Connective distr_type,
                                  MergeTable::MergeGroup* group) noexcept;
 
   /// Propagates failures of common nodes to detect redundancy.

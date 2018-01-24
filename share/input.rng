@@ -612,42 +612,55 @@
 
   <define name="formula">
     <choice>
-      <ref name="event"/>
-      <ref name="Boolean-constant"/>
+      <ref name="argument"/>
       <element name="and">
         <oneOrMore>
-          <ref name="formula"/>
+          <ref name="argument"/>
         </oneOrMore>
       </element>
       <element name="or">
         <oneOrMore>
-          <ref name="formula"/>
+          <ref name="argument"/>
         </oneOrMore>
-      </element>
-      <element name="not">
-        <ref name="formula"/>
       </element>
       <element name="xor">
-        <oneOrMore>
-          <ref name="formula"/>
-        </oneOrMore>
+        <ref name="argument"/>
+        <ref name="argument"/>
+      </element>
+      <element name="iff">
+        <ref name="argument"/>
+        <ref name="argument"/>
       </element>
       <element name="nand">
         <oneOrMore>
-          <ref name="formula"/>
+          <ref name="argument"/>
         </oneOrMore>
       </element>
       <element name="nor">
         <oneOrMore>
-          <ref name="formula"/>
+          <ref name="argument"/>
         </oneOrMore>
       </element>
       <element name="atleast">
         <attribute name="min"> <data type="nonNegativeInteger"/> </attribute>
         <oneOrMore>
-          <ref name="formula"/>
+          <ref name="argument"/>
         </oneOrMore>
       </element>
+      <element name="imply">
+        <ref name="argument"/>
+        <ref name="argument"/>
+      </element>
+    </choice>
+  </define>
+
+  <define name="argument">
+    <choice>
+      <ref name="event"/>
+      <element name="not">
+        <ref name="event"/>
+      </element>
+      <ref name="Boolean-constant"/>
     </choice>
   </define>
 

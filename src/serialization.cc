@@ -30,6 +30,7 @@
 #include "expression.h"
 #include "expression/constant.h"
 #include "expression/exponential.h"
+#include "ext/variant.h"
 #include "fault_tree.h"
 #include "xml_stream.h"
 
@@ -78,27 +79,29 @@ void SerializeElement(const Element& element, xml::StreamElement* xml_element) {
 }
 
 void Serialize(const Formula& formula, xml::StreamElement* parent) {
-  assert(formula.formula_args().empty());
-  struct ArgStreamer {
-    void operator()(const Gate* gate) const {
-      xml->AddChild("gate").SetAttribute("name", gate->name());
-    }
-    void operator()(const BasicEvent* basic_event) const {
-      xml->AddChild("basic-event").SetAttribute("name", basic_event->name());
-    }
-    void operator()(const HouseEvent* house_event) const {
-      xml->AddChild("house-event").SetAttribute("name", house_event->name());
-    }
-
-    xml::StreamElement* xml;
+  auto stream_event = [](const Formula::ArgEvent& event,
+                         xml::StreamElement* xml) {
+    xml->AddChild("event").SetAttribute(
+        "name", ext::as<const mef::Event*>(event)->name());
   };
-  if (formula.type() == kNull) {
-    assert(formula.event_args().size() == 1);
-    std::visit(ArgStreamer{parent}, formula.event_args().front());
+  auto stream_arg = [&stream_event](const Formula::Arg& arg,
+                                    xml::StreamElement* xml) {
+    if (arg.complement) {
+      xml::StreamElement not_parent = xml->AddChild("not");
+      stream_event(arg.event, &not_parent);
+    } else {
+      stream_event(arg.event, xml);
+    }
+  };
+  if (formula.connective() == kNull) {
+    assert(formula.args().size() == 1);
+    assert(formula.args().front().complement == false);
+    stream_event(formula.args().front().event, parent);
   } else {
     xml::StreamElement type_element = [&formula, &parent] {
-      switch (formula.type()) {
+      switch (formula.connective()) {
         case kNot:
+          assert(formula.args().front().complement == false);
           return parent->AddChild("not");
         case kAnd:
           return parent->AddChild("and");
@@ -110,18 +113,18 @@ void Serialize(const Formula& formula, xml::StreamElement* parent) {
           return parent->AddChild("nor");
         case kXor:
           return parent->AddChild("xor");
-        case kVote:
+        case kAtleast:
           return [&formula, &parent] {
             xml::StreamElement atleast = parent->AddChild("atleast");
-            atleast.SetAttribute("min", formula.vote_number());
+            atleast.SetAttribute("min", formula.min_number());
             return atleast;
           }();  // Wrap NRVO into RVO for GCC.
         default:
           assert(false && "Unexpected formula");
       }
     }();
-    for (const Formula::EventArg& arg : formula.event_args())
-      std::visit(ArgStreamer{&type_element}, arg);
+    for (const Formula::Arg& arg : formula.args())
+      stream_arg(arg, &type_element);
   }
 }
 

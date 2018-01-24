@@ -159,7 +159,7 @@ public:
          QGraphicsItem *parent = nullptr);
 
     /// Constructs graphics object representing the given gate type.
-    std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Operator type);
+    std::unique_ptr<QGraphicsItem> getGateGraphicsType(mef::Connective type);
 
     double width() const override;
 

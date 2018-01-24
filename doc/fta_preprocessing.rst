@@ -11,10 +11,10 @@ before initiating other fault tree analysis algorithms.
 
 The preprocessing algorithms deal with
 transformations of propositional directed acyclic graphs ([PDAG]_)
-to reduce the complexity and divide-and-conquer the problem.
+to reduce the complexity and to divide-and-conquer the problem.
 There are many proposed algorithms,
 and successful application of preprocessing techniques helps reduce substantially
-the complexity of analysis of large graphs in some cases.
+the analysis complexity of large graphs in some cases.
 However, the ordering of preprocessing algorithms is not always clear
 due to their side-effects,
 and the performance gain is not guaranteed (may even be negative).
@@ -29,7 +29,7 @@ House or external events are treated as Boolean constants
 and propagated according to the Boolean logic
 before other more complex and expensive preprocessing steps [NR99]_ [Rau03]_.
 This procedure prunes the PDAG.
-Null and unity branches are removed from the PDAG
+Null and unity branches are removed from the PDAG,
 leaving only variables and gates.
 
 
@@ -37,7 +37,7 @@ Gate Normalization
 ==================
 
 The PDAG is simplified to contain only *AND* and *OR* gates
-by rewriting complex gates like *VOTE* and *XOR* with *AND* and *OR* gates
+by rewriting complex gates like *ATLEAST* and *XOR* with *AND* and *OR* gates
 [Nie94]_ [Rau03]_.
 After this operation,
 the graph is in normal form.

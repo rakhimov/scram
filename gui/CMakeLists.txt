@@ -71,16 +71,16 @@ install(
   )
 
 if(UNIX AND NOT APPLE)
-  foreach(size IN ITEMS 32 128)
+  foreach(size IN ITEMS 32 64 128)
     install(
-      FILES       images/scram_solid${size}x${size}.png
+      FILES       images/scram${size}x${size}.png
       DESTINATION share/icons/hicolor/${size}x${size}/apps
       COMPONENT   gui
       RENAME      scram.png)
   endforeach()
 
   install(
-    FILES       images/scram_solid.svg
+    FILES       images/scram_motif.svg
     DESTINATION share/icons/hicolor/scalable/apps
     COMPONENT   gui
     RENAME      scram.svg)
@@ -91,6 +91,12 @@ if(UNIX AND NOT APPLE)
     FILES       scram-gui.desktop
     DESTINATION share/applications
     COMPONENT   gui)
+  # Install appdata for software center.
+  install(
+    FILES       scram-gui.appdata.xml
+    DESTINATION share/metainfo
+    COMPONENT   gui
+    )
 endif()
 
 if(PACKAGE)

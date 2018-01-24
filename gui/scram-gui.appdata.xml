@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>scram-gui</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+
+  <description>
+    <p>
+      SCRAM is a probabilistic risk analysis (PRA) tool.
+      It can perform event tree analysis, static fault tree analysis,
+      analysis with common cause failure models,
+      probability calculations with importance analysis,
+      and uncertainty analysis with Monte Carlo simulations.
+      This tool can handle non-coherent fault trees, containing NOT logic.
+    </p>
+    <p>
+      SCRAM works with PRA models and constructs described
+      in the Open-PSA Model Exchange Format.
+    </p>
+    <p>
+      A complementary GUI front-end is provided
+      for visualization and manipulation of risk analysis models and reports.
+    </p>
+  </description>
+
+  <x-launchable type="desktop-id">scram-gui.desktop</x-launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The GUI front-end</caption>
+      <image>https://screenshots.debian.net/screenshots/000/015/701/large.png</image>
+    </screenshot>
+    <screenshot type="default">
+      <caption>The command-line usage</caption>
+      <image>https://screenshots.debian.net/screenshots/000/015/589/large.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://scram-pra.org</url>
+
+  <provides>
+    <binary>scram-gui</binary>
+    <binary>scram</binary>
+  </provides>
+
+  <categories>
+    <category>Science</category>
+    <category>Engineering</category>
+    <category>Education</category>
+  </categories>
+</component>

@@ -168,11 +168,16 @@ void Model::normalize(mef::Model *model)
     }
 }
 
-std::vector<Gate *> Model::parents(mef::Formula::EventArg event) const
+std::vector<Gate *> Model::parents(mef::Formula::ArgEvent event) const
 {
     std::vector<Gate *> result;
     for (const std::unique_ptr<Gate> &gate : m_gates) {
-        if (boost::find(gate->args(), event) != gate->args().end())
+        auto it = boost::find_if(gate->args(),
+                                 [&event](const mef::Formula::Arg &arg) {
+                                     return arg.event == event;
+                                 });
+
+        if (it != gate->args().end())
             result.push_back(gate.get());
     }
     return result;

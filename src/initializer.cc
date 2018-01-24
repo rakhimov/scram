@@ -730,31 +730,21 @@ void Initializer::ProcessModelData(const xml::Element& model_data) {
 
 FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
                                    const std::string& base_path) {
-  Operator formula_type = [&formula_node]() {
+  Connective formula_type = [&formula_node]() {
     if (formula_node.has_attribute("name") || formula_node.name() == "constant")
       return kNull;
-    int pos = boost::find(kOperatorToString, formula_node.name()) -
-              std::begin(kOperatorToString);
-    assert(pos < kNumOperators && "Unexpected operator type.");
-    return static_cast<Operator>(pos);
+    int pos = boost::find(kConnectiveToString, formula_node.name()) -
+              std::begin(kConnectiveToString);
+    assert(pos < kNumConnectives && "Unexpected connective.");
+    return static_cast<Connective>(pos);
   }();
 
   FormulaPtr formula(new Formula(formula_type));
 
-  auto add_arg = [this, &formula, &base_path](const xml::Element& element) {
-    if (element.name() == "constant") {
-      formula->AddArgument(*element.attribute<bool>("value")
-                               ? &HouseEvent::kTrue
-                               : &HouseEvent::kFalse);
-      return;
-    }
-
+  auto add_event = [this, &formula, &base_path](const xml::Element& element,
+                                                bool complement) {
     std::string name(element.attribute("name"));
-    if (name.empty()) {
-      formula->AddArgument(GetFormula(element, base_path));
-      return;
-    }
-
+    assert(!name.empty() && "Not an appropriate XML element for arg Event.");
     std::string_view element_type = [&element] {
       // This is for the case "<event name="id" type="type"/>".
       std::string_view type = element.attribute("type");
@@ -762,19 +752,23 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     }();
 
     try {
-      if (element_type == "event") {  // Undefined type yet.
-        formula->AddArgument(GetEvent(name, base_path));
+      auto arg_event = [this, &element_type, &name,
+                        &base_path]() -> Formula::ArgEvent {
+        if (element_type == "event") {  // Undefined type yet.
+          return GetEvent(name, base_path);
 
-      } else if (element_type == "gate") {
-        formula->AddArgument(GetGate(name, base_path));
+        } else if (element_type == "gate") {
+          return GetGate(name, base_path);
 
-      } else if (element_type == "basic-event") {
-        formula->AddArgument(GetBasicEvent(name, base_path));
+        } else if (element_type == "basic-event") {
+          return GetBasicEvent(name, base_path);
 
-      } else {
-        assert(element_type == "house-event");
-        formula->AddArgument(GetHouseEvent(name, base_path));
-      }
+        } else {
+          assert(element_type == "house-event");
+          return GetHouseEvent(name, base_path);
+        }
+      }();
+      formula->Add(arg_event, complement);
     } catch (std::out_of_range&) {
       SCRAM_THROW(ValidityError(
           "Undefined " + std::string(element_type) + " " + name +
@@ -783,6 +777,22 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     } catch (DuplicateArgumentError& err) {
       err << boost::errinfo_at_line(element.line());
       throw;
+    }
+  };
+
+  auto add_arg = [this, &formula, &base_path,
+                  &add_event](const xml::Element& element) {
+    if (element.name() == "constant") {
+      formula->Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
+                                                     : &HouseEvent::kFalse);
+      return;
+    }
+
+    if (element.name() == "not") {
+      assert(element.children().size() == 1);
+      add_event(element.child().value(), /*complement=*/true);
+    } else {
+      add_event(element, /*complement=*/false);
     }
   };
 
@@ -795,8 +805,8 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
   }
 
   try {
-    if (formula_type == kVote)
-      formula->vote_number(*formula_node.attribute<int>("min"));
+    if (formula_type == kAtleast)
+      formula->min_number(*formula_node.attribute<int>("min"));
 
     formula->Validate();
   } catch (ValidityError& err) {
@@ -1375,7 +1385,7 @@ T* Initializer::GetEntity(const std::string& entity_reference,
       return &**it;                                                  \
   } while (false)
 
-Formula::EventArg Initializer::GetEvent(const std::string& entity_reference,
+Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
                                         const std::string& base_path) {
   // Do not implement this in terms of
   // GetGate, GetBasicEvent, or GetHouseEvent.
@@ -1766,9 +1776,9 @@ void Initializer::EnsureNoSubstitutionConflicts() {
       if (origin == substitution)
         continue;
       auto in_hypothesis = [&substitution](const BasicEvent* source) {
-        return ext::any_of(substitution->hypothesis().event_args(),
-                           [source](const Formula::EventArg& arg) {
-                             return std::get<BasicEvent*>(arg) == source;
+        return ext::any_of(substitution->hypothesis().args(),
+                           [source](const Formula::Arg& arg) {
+                             return std::get<BasicEvent*>(arg.event) == source;
                            });
       };
       if (target_ptr && in_hypothesis(*target_ptr))
@@ -1791,9 +1801,9 @@ void Initializer::EnsureNoCcfSubstitutions() {
                          return !substitution->declarative();
                        });
   auto is_ccf = [](const Substitution& substitution) {
-    if (ext::any_of(substitution.hypothesis().event_args(),
-                    [](const Formula::EventArg& arg) {
-                      return std::get<BasicEvent*>(arg)->HasCcf();
+    if (ext::any_of(substitution.hypothesis().args(),
+                    [](const Formula::Arg& arg) {
+                      return std::get<BasicEvent*>(arg.event)->HasCcf();
                     }))
       return true;
 

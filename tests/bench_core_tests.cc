@@ -78,7 +78,7 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
 }
 
 // Simple verification tests for K/N gate fault tree.
-TEST_P(RiskAnalysisTest, Vote) {
+TEST_P(RiskAnalysisTest, Atleast) {
   std::string tree_input = "tests/input/core/atleast.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
@@ -347,6 +347,55 @@ TEST_P(RiskAnalysisTest, XorABC) {
     std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
     EXPECT_EQ(3, products().size());
     EXPECT_EQ(mcs, products());
+  }
+}
+
+// Benchmark Tests for [A <=> B <=> C] fault tree.
+TEST_P(RiskAnalysisTest, IffABC) {
+  std::string tree_input = "tests/input/core/iff.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  if (settings.approximation() == Approximation::kRareEvent) {
+    EXPECT_DOUBLE_EQ(0.6, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.404, p_total());
+  }
+
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {{"A", "B", "C"},
+                                          {"A", "not B", "not C"},
+                                          {"not A", "B", "not C"},
+                                          {"not A", "not B", "C"}};
+    EXPECT_EQ(4, products().size());
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
+    EXPECT_EQ(3, products().size());
+    EXPECT_EQ(mcs, products());
+  }
+}
+
+// Benchmark Tests for [A => (B => C)] fault tree.
+TEST_P(RiskAnalysisTest, ImplyABC) {
+  std::string tree_input = "tests/input/core/imply.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  if (settings.approximation() == Approximation::kRareEvent) {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.986, p_total());
+  }
+
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {{"not A"}, {"not B"}, {"C"}};
+    EXPECT_EQ(3, products().size());
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
+    EXPECT_EQ(1, products().size());
+    CHECK(products().begin()->empty());
   }
 }
 

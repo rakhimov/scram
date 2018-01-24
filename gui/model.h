@@ -331,8 +331,8 @@ public:
     /// @param[in,out] gate  The MEF gate with a flat formula.
     explicit Gate(mef::Gate *gate) : Element(gate) {}
 
-    /// @returns The current operator type of the gate.
-    template <typename T = mef::Operator>
+    /// @returns The current connective of the gate.
+    template <typename T = mef::Connective>
     T type() const
     {
         if constexpr (std::is_same_v<T, QString>) {
@@ -341,9 +341,9 @@ public:
                 return tr("and");
             case mef::kOr:
                 return tr("or");
-            case mef::kVote:
+            case mef::kAtleast:
                 //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-                return tr("at-least %1").arg(voteNumber());
+                return tr("at-least %1").arg(minNumber());
             case mef::kXor:
                 return tr("xor");
             case mef::kNot:
@@ -357,26 +357,27 @@ public:
             case mef::kNor:
                 //: not or.
                 return tr("nor");
+            default:
+                assert(false && "Unsupported connectives.");
             }
-            assert(false);
 
         } else {
-            return data()->formula().type();
+            return data()->formula().connective();
         }
     }
 
     /// @returns The number of gate arguments.
-    int numArgs() const { return data()->formula().num_args(); }
+    int numArgs() const { return args().size(); }
 
-    /// @returns The vote number of the gate formula.
+    /// @returns The min number of the gate formula.
     ///
-    /// @pre The vote number is appropriate for the formula type.
-    int voteNumber() const { return data()->formula().vote_number(); }
+    /// @pre The min number is appropriate for the formula type.
+    int minNumber() const { return data()->formula().min_number(); }
 
     /// @returns Event arguments of the gate.
-    const std::vector<mef::Formula::EventArg> &args() const
+    const std::vector<mef::Formula::Arg> &args() const
     {
-        return data()->formula().event_args();
+        return data()->formula().args();
     }
 
     /// Formula modification commands.
@@ -448,7 +449,7 @@ public:
     /// @param[in] event  The event defined/registered in the model.
     ///
     /// @returns The parent gates of an event.
-    std::vector<Gate *> parents(mef::Formula::EventArg event) const;
+    std::vector<Gate *> parents(mef::Formula::ArgEvent event) const;
 
     /// Sets the optional name of the model.
     ///
@@ -642,8 +643,8 @@ public:
                     add(nextAddress->data(), self.m_faultTree);
                 }
                 for (Gate *gate : self.m_gates) {
-                    gate->data()->formula().RemoveArgument(m_address->data());
-                    gate->data()->formula().AddArgument(nextAddress->data());
+                    gate->data()->formula().Remove(m_address->data());
+                    gate->data()->formula().Add(nextAddress->data());
                 }
                 for (Gate *gate : self.m_gates)
                     emit gate->formulaChanged();

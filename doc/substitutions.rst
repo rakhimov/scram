@@ -3,7 +3,7 @@ Substitutions
 #############
 
 With the notion of Substitutions,
-The Model Exchange Format [MEF]_ provides a general way to express
+the Model Exchange Format [MEF]_ provides a general way to express
 Delete Terms, Recovery Rules, and Exchange Events.
 As noted in the MEF specification,
 *non-declarative* substitutions (e.g., Exchange Events) should be avoided

@@ -2,7 +2,7 @@
 Configuration Files
 ###################
 
-In order to analyze complex analysis models
+In order to analyze complex models
 with several input files and tailored configurations,
 it is more convenient to use a configuration file than command-line arguments.
 Additional command-line options can be provided
