@@ -10,6 +10,8 @@ SCRAM is licensed under the GPLv3_.
 The `release notes`_, `source code`_, and `issue/bug`_ tracker
 are located at `GitHub <https://github.com/rakhimov/scram/tree/develop>`_.
 
+SCRAM logo is designed by `Nikash SINGH <http://nikashsingh.org>`_.
+
 .. rubric:: Code documentation:
 
 - `C++ core code <api/index.xhtml>`_
