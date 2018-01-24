@@ -24,7 +24,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="res.qrc">
-    <normaloff>:/images/scram_solid128x128.png</normaloff>:/images/scram_solid128x128.png</iconset>
+    <normaloff>:/images/scram128x128.png</normaloff>:/images/scram128x128.png</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>

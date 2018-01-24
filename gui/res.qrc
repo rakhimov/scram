@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/scram_solid128x128.png</file>
+        <file>images/scram128x128.png</file>
     </qresource>
 </RCC>
