@@ -16,14 +16,16 @@ environment:
 
 configuration:
     # - Debug
-    # - Release
-    - RelWithDebInfo
+    - Release
+    # - RelWithDebInfo
 
 install:
     - git submodule update --init --recursive
     - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
     - pacman --noconfirm -Syu
-    - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
+    - pacman --noconfirm -S mingw-w64-x86_64-cmake
+    - pacman --noconfirm -S mingw-w64-x86_64-drmingw
+    # - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
     - pacman --noconfirm -S mingw-w64-x86_64-boost
     - pacman --noconfirm -S mingw-w64-x86_64-libxml2
     - pacman --noconfirm -S mingw-w64-x86_64-qt5
@@ -35,6 +37,8 @@ before_build:
 
 build_script:
     - ccache -s
+    - where cmake
+    - where make
     - cd build
     - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_FLAGS="-O3" -DBUILD_TESTING=ON -DCMAKE_VERBOSE_MAKEFILE=ON
     - make install/strip -j 2
@@ -45,9 +49,9 @@ after_build:
     - set PATH=%PATH%;%CD%\install\bin
 
 test_script:
-    - scram_tests
-    - scram --version
-    - scram input\TwoTrain\two_train.xml
+    - catchsegv scram_tests
+    - catchsegv scram --version
+    - catchsegv scram input\TwoTrain\two_train.xml
     - cd build
     - ctest --verbose
     - cd ..
