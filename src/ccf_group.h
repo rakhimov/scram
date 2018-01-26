@@ -53,8 +53,11 @@ class CcfEvent : public BasicEvent {
   /// are saved for reporting.
   ///
   /// @param[in] name  The identifying name of this CCF event.
+  /// @param[in] members  The members that this CCF event
+  ///                     represents as multiple failure.
   /// @param[in] ccf_group  The CCF group that created this event.
-  CcfEvent(std::string name, const CcfGroup* ccf_group);
+  CcfEvent(std::string name, std::vector<Gate*> members,
+           const CcfGroup* ccf_group);
 
   /// @returns The CCF group that created this CCF event.
   const CcfGroup& ccf_group() const { return ccf_group_; }
@@ -62,20 +65,6 @@ class CcfEvent : public BasicEvent {
   /// @returns Members of this CCF event.
   ///          The members also own this CCF event through parentship.
   const std::vector<Gate*>& members() const { return members_; }
-
-  /// Sets the member parents.
-  ///
-  /// @param[in] members  The members that this CCF event
-  ///                     represents as multiple failure.
-  ///
-  /// @note The reason for late setting of members
-  ///       instead of in the constructor is moveability.
-  ///       The container of member gates can only move
-  ///       after the creation of the event.
-  void members(std::vector<Gate*> members) {
-    assert(members_.empty() && "Resetting members.");
-    members_ = std::move(members);
-  }
 
  private:
   const CcfGroup& ccf_group_;  ///< The originating CCF group.

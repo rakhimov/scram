@@ -36,9 +36,11 @@
 
 namespace scram::mef {
 
-CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
+CcfEvent::CcfEvent(std::string name, std::vector<Gate*> members,
+                   const CcfGroup* ccf_group)
     : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
-      ccf_group_(*ccf_group) {}
+      ccf_group_(*ccf_group),
+      members_(std::move(members)) {}
 
 void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
@@ -167,8 +169,8 @@ void CcfGroup::ApplyModel() {
       for (const std::pair<Gate*, Formula::ArgSet>& gate : combination_range)
         combination.push_back(gate.first);
 
-      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
-      ccf_event->members(std::move(combination));  // Move, at last.
+      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination),
+                                                  std::move(combination), this);
 
       for (std::pair<Gate*, Formula::ArgSet>& gate : combination_range)
         gate.second.Add(ccf_event.get());
