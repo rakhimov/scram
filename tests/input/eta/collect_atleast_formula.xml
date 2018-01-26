@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<opsa-mef>
+  <define-initiating-event name="I" event-tree="EventTree"/>
+  <define-event-tree name="EventTree">
+    <define-functional-event name="F"/>
+    <define-sequence name="S"/>
+    <initial-state>
+      <fork functional-event="F">
+        <path state="on">
+          <collect-formula>
+            <atleast min="2">
+              <basic-event name="A"/>
+              <basic-event name="B"/>
+              <basic-event name="C"/>
+            </atleast>
+          </collect-formula>
+          <sequence name="S"/>
+        </path>
+      </fork>
+    </initial-state>
+  </define-event-tree>
+  <model-data>
+    <define-basic-event name="A">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.5"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

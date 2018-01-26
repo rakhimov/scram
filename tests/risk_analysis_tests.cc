@@ -405,6 +405,14 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   compare_fractions(pfh_fractions, prob_an.sil().pfh_fractions, "PFH");
 }
 
+TEST_F(RiskAnalysisTest, EventTreeCollectAtleastFormula) {
+  const char* tree_input = "tests/input/eta/collect_atleast_formula.xml";
+  settings.probability_analysis(true);
+  REQUIRE_NOTHROW(ProcessInputFiles({tree_input}));
+  REQUIRE_NOTHROW(analysis->Analyze());
+  CHECK(analysis->event_tree_results().size() == 1);
+}
+
 TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   const char* tree_input = "input/EventTrees/bcd.xml";
   settings.probability_analysis(true);
