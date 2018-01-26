@@ -287,9 +287,10 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
                                                               {-a / 2, h},
                                                               {-a, h / 2}}});
         auto *gate = static_cast<model::Gate *>(m_event);
-        auto *text = new QGraphicsTextItem(
-            QStringLiteral("%1/%2").arg(gate->minNumber()).arg(gate->numArgs()),
-            polygon.get());
+        auto *text = new QGraphicsTextItem(QStringLiteral("%1/%2")
+                                               .arg(gate->minNumber().value())
+                                               .arg(gate->numArgs()),
+                                           polygon.get());
         QFont font = text->font();
         font.setPointSizeF(1.5 * font.pointSizeF());
         text->setFont(font);

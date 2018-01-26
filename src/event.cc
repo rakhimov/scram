@@ -151,10 +151,10 @@ Formula::Formula(Connective connective, ArgSet args,
     ValidateNesting(arg);
 }
 
-int Formula::min_number() const {
-  if (!min_number_)
-    SCRAM_THROW(LogicError("Min number is not set."));
-  return min_number_;
+std::optional<int> Formula::min_number() const {
+  if (connective_ == kAtleast)
+    return min_number_;
+  return {};
 }
 
 void Formula::min_number(int number) {

@@ -21,6 +21,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -343,7 +344,7 @@ public:
                 return tr("or");
             case mef::kAtleast:
                 //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-                return tr("at-least %1").arg(minNumber());
+                return tr("at-least %1").arg(*minNumber());
             case mef::kXor:
                 return tr("xor");
             case mef::kNot:
@@ -370,9 +371,10 @@ public:
     int numArgs() const { return args().size(); }
 
     /// @returns The min number of the gate formula.
-    ///
-    /// @pre The min number is appropriate for the formula type.
-    int minNumber() const { return data()->formula().min_number(); }
+    std::optional<int> minNumber() const
+    {
+        return data()->formula().min_number();
+    }
 
     /// @returns Event arguments of the gate.
     const std::vector<mef::Formula::Arg> &args() const

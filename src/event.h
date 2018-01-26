@@ -307,10 +307,8 @@ class Formula : private boost::noncopyable {
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
 
-  /// @returns The min number if and only if the formula is "atleast".
-  ///
-  /// @throws LogicError  The min number is not yet assigned.
-  int min_number() const;
+  /// @returns The min number for "atleast" connective.
+  std::optional<int> min_number() const;
 
   /// Sets the min number only for an "atleast" formula.
   ///

@@ -1389,8 +1389,8 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
     bool formulaChanged = [&dialog, &element] {
         if (dialog->connective() != element->type())
             return true;
-        if (element->type() == mef::kAtleast
-            && dialog->minNumber() != element->minNumber())
+        if (element->minNumber()
+            && dialog->minNumber() != *element->minNumber())
             return true;
         std::vector<std::string> dialogArgs = dialog->arguments();
         if (element->numArgs() != dialogArgs.size())

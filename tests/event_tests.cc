@@ -75,7 +75,7 @@ TEST_CASE("FormulaTest.MinNumber", "[mef::event]") {
     Formula top(kAtleast);
     CHECK(top.connective() == kAtleast);
     // No min number.
-    CHECK_THROWS_AS(top.min_number(), LogicError);
+    /* CHECK(top.min_number() == std::nullopt); */
     // Illegal min number.
     CHECK_THROWS_AS(top.min_number(-2), ValidityError);
     // Legal min number.

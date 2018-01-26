@@ -313,8 +313,8 @@ void EventDialog::setupData(const model::Gate &element)
     }
 
     connectiveBox->setCurrentIndex(element.type());
-    if (element.type() == mef::kAtleast)
-        minNumberBox->setValue(element.minNumber());
+    if (element.minNumber())
+        minNumberBox->setValue(*element.minNumber());
     for (const mef::Formula::Arg &arg : element.args())
         argsList->addItem(QString::fromStdString(
             ext::as<const mef::Event *>(arg.event)->id()));

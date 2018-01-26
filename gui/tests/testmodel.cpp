@@ -521,7 +521,7 @@ void TestModel::testGateType()
     vote->min_number(2);
     gate.formula(std::move(vote));
     TEST_EQ(proxy.type<QString>(), "at-least 2");
-    QCOMPARE(proxy.minNumber(), 2);
+    QCOMPARE(proxy.minNumber().value(), 2);
 }
 
 void TestModel::testGateSetFormula()

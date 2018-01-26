@@ -619,7 +619,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
       coherent_ = false;
       break;
     case kAtleast:
-      parent->min_number(formula.min_number());
+      parent->min_number(*formula.min_number());
       break;
     case kNull:
       null_gates_.push_back(parent);
