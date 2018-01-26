@@ -156,12 +156,17 @@ void CcfGroup::ApplyModel() {
   for (auto& entry : probabilities) {
     int level = entry.first;
     Expression* prob = entry.second;
-    for (auto combination : ext::make_combination_generator(
+
+    for (auto combination_range : ext::make_combination_generator(
              level, proxy_gates.begin(), proxy_gates.end())) {
+      std::vector<Gate*> combination(combination_range.begin(),
+                                     combination_range.end());
       auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
       ccf_event->expression(prob);
+
       for (Gate* gate : combination)
         gate->formula().Add(ccf_event.get());
+
       ccf_event->members(std::move(combination));  // Move, at last.
       ccf_events_.emplace_back(std::move(ccf_event));
     }
