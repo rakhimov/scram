@@ -308,17 +308,6 @@ class Formula : private boost::noncopyable {
   /// @returns The min number for "atleast" connective.
   std::optional<int> min_number() const;
 
-  /// Sets the min number only for an "atleast" formula.
-  ///
-  /// @param[in] number  The min number.
-  ///
-  /// @throws ValidityError  The min number is invalid.
-  /// @throws LogicError  The min number is assigned illegally.
-  ///
-  /// @note (Children number > min number) should be checked
-  ///       outside of this class.
-  void min_number(int number);
-
   /// @returns The arguments of this formula.
   const std::vector<Arg>& args() const { return args_.data(); }
 

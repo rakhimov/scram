@@ -1126,23 +1126,32 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
 template <>
 mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 {
-    auto formula = std::make_unique<mef::Formula>(dialog.connective());
-    if (formula->connective() == mef::kAtleast)
-        formula->min_number(dialog.minNumber());
-
-    for (const std::string &arg : dialog.arguments()) {
+    auto getEvent = [this](const std::string &arg) -> mef::Formula::ArgEvent {
         try {
-            formula->Add(m_model->GetEvent(arg));
+            return m_model->GetEvent(arg);
         } catch (const mef::UndefinedElement &) {
             auto argEvent = std::make_unique<mef::BasicEvent>(arg);
             argEvent->AddAttribute({"flavor", "undeveloped", ""});
-            formula->Add(argEvent.get());
+            auto *address = argEvent.get();
             /// @todo Add into the parent undo.
             m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
                 std::move(argEvent), m_guiModel.get()));
+            return address;
         }
-    }
-    return formula;
+    };
+
+    mef::Formula::ArgSet arg_set;
+    for (const std::string &arg : dialog.arguments())
+        arg_set.Add(getEvent(arg));
+
+    mef::Connective connective = dialog.connective();
+    auto minNumber = [&connective, &dialog]() -> std::optional<int> {
+        if (connective == mef::kAtleast)
+            dialog.minNumber();
+        return {};
+    }();
+    return std::make_unique<mef::Formula>(connective, std::move(arg_set),
+                                          minNumber);
 }
 
 /// Specialization to construct basic event out of event editor data.

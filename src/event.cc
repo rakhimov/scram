@@ -157,21 +157,6 @@ std::optional<int> Formula::min_number() const {
   return {};
 }
 
-void Formula::min_number(int number) {
-  if (connective_ != kAtleast) {
-    SCRAM_THROW(
-        LogicError("The min number can only be defined for 'atleast' formulas. "
-                   "The connective of this formula is '" +
-                   std::string(kConnectiveToString[connective_]) + "'."));
-  }
-  if (number < 2)
-    SCRAM_THROW(ValidityError("Min number cannot be less than 2."));
-  if (min_number_)
-    SCRAM_THROW(LogicError("Trying to re-assign a min number"));
-
-  min_number_ = number;
-}
-
 void Formula::Add(ArgEvent event, bool complement) {
   ValidateNesting({complement, event});
   args_.Add(event, complement);

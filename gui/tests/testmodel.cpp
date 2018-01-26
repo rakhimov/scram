@@ -502,24 +502,27 @@ void TestModel::testGateType()
 {
     mef::Gate gate("pump");
     gui::model::Gate proxy(&gate);
-    gate.formula(std::make_unique<mef::Formula>(mef::kNull));
+    mef::BasicEvent one("one"), two("two"), three("three");
+    using ArgSet = mef::Formula::ArgSet;
+
+    gate.formula(std::make_unique<mef::Formula>(mef::kNull, ArgSet{&one}));
     TEST_EQ(proxy.type<QString>(), "null");
-    gate.formula(std::make_unique<mef::Formula>(mef::kAnd));
+    gate.formula(std::make_unique<mef::Formula>(mef::kAnd, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "and");
-    gate.formula(std::make_unique<mef::Formula>(mef::kOr));
+    gate.formula(std::make_unique<mef::Formula>(mef::kOr, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "or");
-    gate.formula(std::make_unique<mef::Formula>(mef::kXor));
+    gate.formula(std::make_unique<mef::Formula>(mef::kXor, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "xor");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNor));
+    gate.formula(std::make_unique<mef::Formula>(mef::kNor, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "nor");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    gate.formula(std::make_unique<mef::Formula>(mef::kNot, ArgSet{&one}));
     TEST_EQ(proxy.type<QString>(), "not");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNand));
+    gate.formula(
+        std::make_unique<mef::Formula>(mef::kNand, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "nand");
 
-    auto vote = std::make_unique<mef::Formula>(mef::kAtleast);
-    vote->min_number(2);
-    gate.formula(std::move(vote));
+    gate.formula(std::make_unique<mef::Formula>(mef::kAtleast,
+                                                ArgSet{&one, &two, &three}, 2));
     TEST_EQ(proxy.type<QString>(), "at-least 2");
     QCOMPARE(proxy.minNumber().value(), 2);
 }
