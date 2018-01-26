@@ -34,14 +34,6 @@ EventTreeAnalysis::EventTreeAnalysis(
 
 namespace {  // The model cloning functions.
 
-/// Clones the formula without any instruction application.
-std::unique_ptr<mef::Formula> Clone(const mef::Formula& formula) noexcept {
-  auto new_formula = std::make_unique<mef::Formula>(formula.connective());
-  for (const mef::Formula::Arg& arg : formula.args())
-    new_formula->Add(arg);
-  return new_formula;
-}
-
 /// Clones the formula by applying the set-instructions.
 ///
 /// @param[in] formula  The formula to be deep-cloned.
@@ -53,7 +45,6 @@ std::unique_ptr<mef::Formula>
 Clone(const mef::Formula& formula,
       const std::unordered_map<std::string, bool>& set_instructions,
       std::vector<std::unique_ptr<mef::Event>>* clones) noexcept {
-  auto new_formula = std::make_unique<mef::Formula>(formula.connective());
   struct {
     mef::Formula::ArgEvent operator()(mef::BasicEvent* arg) { return arg; }
     mef::Formula::ArgEvent operator()(mef::HouseEvent* arg) {
@@ -85,9 +76,12 @@ Clone(const mef::Formula& formula,
     std::vector<std::unique_ptr<mef::Event>>* event_register;
   } cloner{set_instructions, clones};
 
+  mef::Formula::ArgSet arg_set;
   for (const mef::Formula::Arg& arg : formula.args())
-    new_formula->Add(std::visit(cloner, arg.event), arg.complement);
-  return new_formula;
+    arg_set.Add(std::visit(cloner, arg.event), arg.complement);
+
+  return std::make_unique<mef::Formula>(
+      formula.connective(), std::move(arg_set), formula.min_number());
 }
 
 }  // namespace
@@ -95,7 +89,7 @@ Clone(const mef::Formula& formula,
 EventTreeAnalysis::PathCollector::PathCollector(const PathCollector& other)
     : expressions(other.expressions), set_instructions(other.set_instructions) {
   for (const mef::FormulaPtr& formula : other.formulas)
-    formulas.push_back(core::Clone(*formula));
+    formulas.push_back(std::make_unique<mef::Formula>(*formula));
 }
 
 void EventTreeAnalysis::Analyze() noexcept {
