@@ -282,8 +282,6 @@ class Formula : private boost::noncopyable {
     void Remove(ArgEvent event);
 
     /// @returns The underlying container with the data.
-    ///
-    /// @todo Provide proper container iterators instead.
     const std::vector<Arg>& data() const { return args_; }
 
     /// @returns The number of arguments in the set.
