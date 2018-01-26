@@ -18,6 +18,7 @@
 #include "ext/linear_map.h"
 
 #include <string>
+#include <type_traits>
 
 #include <boost/container/vector.hpp>
 
@@ -67,6 +68,11 @@ std::ostream& operator<<(std::ostream& out, const std::pair<T1, T2>& value) {
 namespace scram::test {
 
 using IntMap = ext::linear_map<int, int>;
+
+static_assert(std::is_move_constructible_v<IntMap>);
+static_assert(std::is_move_assignable_v<IntMap>);
+static_assert(std::is_copy_constructible_v<IntMap>);
+static_assert(std::is_copy_assignable_v<IntMap>);
 
 TEST_CASE("linear map ctors", "[linear_map]") {
   SECTION("default ctor") {
