@@ -22,6 +22,7 @@
 
 #include <cstdint>
 
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <string>
@@ -244,6 +245,24 @@ class Formula : private boost::noncopyable {
   /// The set of formula arguments.
   class ArgSet {
    public:
+    /// Default constructor of an empty argument set.
+    ArgSet() = default;
+
+    /// Constructors from initializer lists and iterator ranges of args.
+    /// @{
+    ArgSet(std::initializer_list<Arg> init_list)
+        : ArgSet(init_list.begin(), init_list.end()) {}
+
+    ArgSet(std::initializer_list<ArgEvent> init_list)
+        : ArgSet(init_list.begin(), init_list.end()) {}
+
+    template <typename Iterator>
+    ArgSet(Iterator first1, Iterator last1) {
+      for (; first1 != last1; ++first1)
+        Add(*first1);
+    }
+    /// @}
+
     /// Adds an event into the arguments set.
     ///
     /// @param[in] event  An argument event.
