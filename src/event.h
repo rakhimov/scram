@@ -241,6 +241,39 @@ class Formula : private boost::noncopyable {
     ArgEvent event;  ///< The event in the formula.
   };
 
+  /// The set of formula arguments.
+  class ArgSet {
+   public:
+    /// Adds an event into the arguments set.
+    ///
+    /// @param[in] event  An argument event.
+    /// @param[in] complement  Indicate the negation of the argument event.
+    ///
+    /// @throws DuplicateArgumentError  The argument event is duplicate.
+    void Add(ArgEvent event, bool complement = false);
+
+    /// Overload to add formula argument with a structure.
+    void Add(Arg arg) { Add(arg.event, arg.complement); }
+
+    /// Removes an event from the formula.
+    ///
+    /// @param[in] event  The argument event of this formula.
+    ///
+    /// @throws LogicError  The argument is not in the set.
+    void Remove(ArgEvent event);
+
+    /// @returns The underlying container with the data.
+    ///
+    /// @todo Provide proper container iterators instead.
+    const std::vector<Arg>& data() const { return args_; }
+
+    /// @returns The number of arguments in the set.
+    std::size_t size() const { return args_.size(); }
+
+   private:
+    std::vector<Arg> args_;  ///< The underlying data container.
+  };
+
   /// Constructs a formula.
   ///
   /// @param[in] connective  The logical connective for this Boolean formula.
@@ -249,7 +282,7 @@ class Formula : private boost::noncopyable {
   /// @param[in] connective  The logical connective for this Boolean formula.
   /// @param[in] args  The arguments of the formula.
   /// @param[in] min_number  The min number relevant to the connective.
-  Formula(Connective connective, std::vector<Arg> args,
+  Formula(Connective connective, ArgSet args,
           std::optional<int> min_number = {});
 
   /// @returns The connective of this formula.
@@ -272,7 +305,7 @@ class Formula : private boost::noncopyable {
   void min_number(int number);
 
   /// @returns The arguments of this formula.
-  const std::vector<Arg>& args() const { return args_; }
+  const std::vector<Arg>& args() const { return args_.data(); }
 
   /// Adds an event into the arguments list.
   ///
@@ -291,7 +324,7 @@ class Formula : private boost::noncopyable {
   /// @param[in] event  The argument event of this formula.
   ///
   /// @throws LogicError  The argument does not belong to this formula.
-  void Remove(ArgEvent event);
+  void Remove(ArgEvent event) { return args_.Remove(event); }
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
@@ -301,7 +334,7 @@ class Formula : private boost::noncopyable {
  private:
   Connective connective_;  ///< Logical connective.
   int min_number_;  ///< Min number for "atleast" connective.
-  std::vector<Arg> args_;  ///< All events.
+  ArgSet args_;  ///< All events.
 };
 
 }  // namespace scram::mef

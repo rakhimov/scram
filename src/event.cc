@@ -71,10 +71,30 @@ void Gate::Validate() const {
                               " exactly one conditional event."));
 }
 
+void Formula::ArgSet::Add(ArgEvent event, bool complement) {
+  Event* base = ext::as<Event*>(event);
+  if (ext::any_of(args_, [&base](const Arg& arg) {
+        return ext::as<Event*>(arg.event)->id() == base->id();
+      })) {
+    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + base->name()));
+  }
+  args_.push_back({complement, event});
+  if (!base->usage())
+    base->usage(true);
+}
+
+void Formula::ArgSet::Remove(ArgEvent event) {
+  auto it = boost::find_if(
+      args_, [&event](const Arg& arg) { return arg.event == event; });
+  if (it == args_.end())
+    SCRAM_THROW(LogicError("The event is not in the argument set."));
+  args_.erase(it);
+}
+
 Formula::Formula(Connective connective)
     : connective_(connective), min_number_(0) {}
 
-Formula::Formula(Connective connective, std::vector<Arg> args,
+Formula::Formula(Connective connective, ArgSet args,
                  std::optional<int> min_number)
     : connective_(connective),
       min_number_(min_number ? min_number.value() : 0),
@@ -160,24 +180,7 @@ void Formula::Add(ArgEvent event, bool complement) {
       SCRAM_THROW(LogicError("Invalid nesting of a constant arg."));
     }
   }
-
-  Event* base = ext::as<Event*>(event);
-  if (ext::any_of(args_, [&base](const Arg& arg) {
-        return ext::as<Event*>(arg.event)->id() == base->id();
-      })) {
-    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + base->name()));
-  }
-  args_.push_back({complement, event});
-  if (!base->usage())
-    base->usage(true);
-}
-
-void Formula::Remove(ArgEvent event) {
-  auto it = boost::find_if(
-      args_, [&event](const Arg& arg) { return arg.event == event; });
-  if (it == args_.end())
-    SCRAM_THROW(LogicError("The argument doesn't belong to this formula."));
-  args_.erase(it);
+  args_.Add(event, complement);
 }
 
 void Formula::Validate() const {
