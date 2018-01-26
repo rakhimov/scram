@@ -74,6 +74,60 @@ void Gate::Validate() const {
 Formula::Formula(Connective connective)
     : connective_(connective), min_number_(0) {}
 
+Formula::Formula(Connective connective, std::vector<Arg> args,
+                 std::optional<int> min_number)
+    : connective_(connective),
+      min_number_(min_number ? min_number.value() : 0),
+      args_(std::move(args)) {
+  if (min_number && connective_ != kAtleast) {
+    SCRAM_THROW(LogicError(
+        "The min number can only be defined for 'atleast' connective. "
+        "The connective of this formula is '" +
+        std::string(kConnectiveToString[connective_]) + "'."));
+  }
+
+  switch (connective_) {
+    case kAnd:
+    case kOr:
+    case kNand:
+    case kNor:
+      if (args_.size() < 2)
+        SCRAM_THROW(
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" connective must have 2 or more arguments."));
+      break;
+    case kNot:
+    case kNull:
+      if (args_.size() != 1)
+        SCRAM_THROW(
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" connective must have only one argument."));
+      break;
+    case kXor:
+    case kIff:
+    case kImply:
+      if (args_.size() != 2)
+        SCRAM_THROW(
+            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
+                          "\" connective must have exactly 2 arguments."));
+      break;
+    case kAtleast:
+      if (!min_number)
+        SCRAM_THROW(ValidityError(
+            "'atleast' connective requires min number for its args."));
+
+      if (min_number_ < 2)
+        SCRAM_THROW(ValidityError("Min number cannot be less than 2."));
+
+      if (args_.size() <= min_number_) {
+        SCRAM_THROW(
+            ValidityError("'atleast' connective must have more arguments "
+                          "than its min number " +
+                          std::to_string(min_number_) + "."));
+      }
+  }
+}
+
 int Formula::min_number() const {
   if (!min_number_)
     SCRAM_THROW(LogicError("Min number is not set."));

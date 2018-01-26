@@ -23,6 +23,7 @@
 #include <cstdint>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
@@ -244,6 +245,12 @@ class Formula : private boost::noncopyable {
   ///
   /// @param[in] connective  The logical connective for this Boolean formula.
   explicit Formula(Connective connective);
+
+  /// @param[in] connective  The logical connective for this Boolean formula.
+  /// @param[in] args  The arguments of the formula.
+  /// @param[in] min_number  The min number relevant to the connective.
+  Formula(Connective connective, std::vector<Arg> args,
+          std::optional<int> min_number = {});
 
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
