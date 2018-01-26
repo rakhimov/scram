@@ -22,6 +22,9 @@
 
 #include <cmath>
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+
 #include "error.h"
 #include "expression/constant.h"
 #include "expression/numerical.h"
@@ -126,13 +129,13 @@ namespace {
 ///
 /// @returns A uniquely mangled string for the combination.
 std::string JoinNames(const std::vector<Gate*>& combination) {
-  std::string name = "[";
-  for (auto it = combination.begin(), it_end = std::prev(combination.end());
-       it != it_end; ++it) {
-    name += (*it)->name() + " ";
-  }
-  name += combination.back()->name() + "]";
-  return name;
+  return "[" +
+         boost::join(combination | boost::adaptors::transformed(
+                                       [](const Gate* gate) -> decltype(auto) {
+                                         return gate->name();
+                                       }),
+                     " ") +
+         "]";
 }
 
 }  // namespace
