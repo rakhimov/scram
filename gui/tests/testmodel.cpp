@@ -289,8 +289,8 @@ template <>
 auto makeDefaultEvent<mef::Gate>(std::string name)
 {
     auto gate = std::make_unique<mef::Gate>(name);
-    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().Add(&mef::HouseEvent::kTrue);
+    gate->formula(std::make_unique<mef::Formula>(
+        mef::kNull, mef::Formula::ArgSet{&mef::HouseEvent::kTrue}));
     return gate;
 }
 
@@ -530,13 +530,16 @@ void TestModel::testGateType()
 void TestModel::testGateSetFormula()
 {
     mef::Gate gate("pump");
+    mef::BasicEvent one("one");
     QVERIFY(!gate.HasFormula());
-    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    gate.formula(
+        std::make_unique<mef::Formula>(mef::kNot, mef::Formula::ArgSet{&one}));
     auto *initFormula = &gate.formula();
     gui::model::Gate proxy(&gate);
     QCOMPARE(proxy.type(), mef::kNot);
 
-    auto formula = std::make_unique<mef::Formula>(mef::kNull);
+    auto formula =
+        std::make_unique<mef::Formula>(mef::kNull, mef::Formula::ArgSet{&one});
     auto *address = formula.get();
     auto spy = ext::SignalSpy(&proxy, &gui::model::Gate::formulaChanged);
     gui::model::Gate::SetFormula setter(&proxy, std::move(formula));
@@ -545,8 +548,7 @@ void TestModel::testGateSetFormula()
     QCOMPARE(proxy.type(), mef::kNull);
     QVERIFY(gate.HasFormula());
     QCOMPARE(&gate.formula(), address);
-    QCOMPARE(proxy.numArgs(), 0);
-    QVERIFY(proxy.args().empty());
+    QCOMPARE(proxy.numArgs(), 1);
     spy.clear();
 
     setter.undo();
@@ -567,8 +569,8 @@ void TestModel::testEventParents()
 
     auto gate = std::make_unique<mef::Gate>("parent");
     auto *parent = gate.get();
-    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().Add(address);
+    gate->formula(std::make_unique<mef::Formula>(
+        mef::kNull, mef::Formula::ArgSet{address}));
 
     QVERIFY(proxy.parents(address).empty());
     gui::model::Model::AddEvent<gui::model::Gate>(std::move(gate), &proxy)
