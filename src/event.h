@@ -30,8 +30,6 @@
 #include <variant>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-
 #include "element.h"
 #include "expression.h"
 
@@ -231,7 +229,7 @@ const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
 
 /// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.
-class Formula : private boost::noncopyable {
+class Formula {
  public:
   /// Argument events of a formula.
   using ArgEvent = std::variant<Gate*, BasicEvent*, HouseEvent*>;
@@ -301,6 +299,14 @@ class Formula : private boost::noncopyable {
   /// @param[in] min_number  The min number relevant to the connective.
   Formula(Connective connective, ArgSet args,
           std::optional<int> min_number = {});
+
+  /// Copyable semantics.
+  /// @{
+  Formula(const Formula&) = default;
+  Formula& operator=(const Formula&) = default;
+  Formula(Formula&&) = delete;
+  Formula& operator=(Formula&&) = delete;
+  /// @}
 
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
