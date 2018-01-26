@@ -739,9 +739,9 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     return static_cast<Connective>(pos);
   }();
 
-  FormulaPtr formula(new Formula(formula_type));
+  Formula::ArgSet arg_set;
 
-  auto add_event = [this, &formula, &base_path](const xml::Element& element,
+  auto add_event = [this, &arg_set, &base_path](const xml::Element& element,
                                                 bool complement) {
     std::string name(element.attribute("name"));
     assert(!name.empty() && "Not an appropriate XML element for arg Event.");
@@ -768,7 +768,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
           return GetHouseEvent(name, base_path);
         }
       }();
-      formula->Add(arg_event, complement);
+      arg_set.Add(arg_event, complement);
     } catch (std::out_of_range&) {
       SCRAM_THROW(ValidityError(
           "Undefined " + std::string(element_type) + " " + name +
@@ -780,11 +780,10 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
     }
   };
 
-  auto add_arg = [this, &formula, &base_path,
-                  &add_event](const xml::Element& element) {
+  auto add_arg = [this, &arg_set, &add_event](const xml::Element& element) {
     if (element.name() == "constant") {
-      formula->Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
-                                                     : &HouseEvent::kFalse);
+      arg_set.Add(*element.attribute<bool>("value") ? &HouseEvent::kTrue
+                                                    : &HouseEvent::kFalse);
       return;
     }
 
@@ -805,15 +804,12 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
   }
 
   try {
-    if (formula_type == kAtleast)
-      formula->min_number(*formula_node.attribute<int>("min"));
-
-    formula->Validate();
+    return std::make_unique<Formula>(formula_type, std::move(arg_set),
+                                     formula_node.attribute<int>("min"));
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(formula_node.line());
     throw;
   }
-  return formula;
 }
 
 void Initializer::DefineBranchTarget(const xml::Element& target_node,
