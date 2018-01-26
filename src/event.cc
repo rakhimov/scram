@@ -91,9 +91,6 @@ void Formula::ArgSet::Remove(ArgEvent event) {
   args_.erase(it);
 }
 
-Formula::Formula(Connective connective)
-    : connective_(connective), min_number_(0) {}
-
 Formula::Formula(Connective connective, ArgSet args,
                  std::optional<int> min_number)
     : connective_(connective),

@@ -289,14 +289,12 @@ class Formula {
     std::vector<Arg> args_;  ///< The underlying data container.
   };
 
-  /// Constructs a formula.
-  ///
-  /// @param[in] connective  The logical connective for this Boolean formula.
-  explicit Formula(Connective connective);
-
   /// @param[in] connective  The logical connective for this Boolean formula.
   /// @param[in] args  The arguments of the formula.
   /// @param[in] min_number  The min number relevant to the connective.
+  ///
+  /// @throws ValidityError  Invalid arguments or setup for the connective.
+  /// @throws LogicError  Invalid nesting of complement or constant args.
   Formula(Connective connective, ArgSet args,
           std::optional<int> min_number = {});
 
