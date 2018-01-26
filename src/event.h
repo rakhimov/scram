@@ -341,11 +341,6 @@ class Formula : private boost::noncopyable {
   /// @throws LogicError  The argument does not belong to this formula.
   void Remove(ArgEvent event) { return args_.Remove(event); }
 
-  /// Checks if a formula is initialized correctly with the number of arguments.
-  ///
-  /// @throws ValidityError  Problems with the connective or arguments.
-  void Validate() const;
-
  private:
   /// Checks if the formula argument results in invalid nesting.
   ///
