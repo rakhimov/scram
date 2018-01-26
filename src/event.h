@@ -351,6 +351,13 @@ class Formula : private boost::noncopyable {
   void Validate() const;
 
  private:
+  /// Checks if the formula argument results in invalid nesting.
+  ///
+  /// @param[in] arg  The argument in the formula.
+  ///
+  /// @throws LogicError  Invalid nesting of complement or constant args.
+  void ValidateNesting(const Arg& arg);
+
   Connective connective_;  ///< Logical connective.
   int min_number_;  ///< Min number for "atleast" connective.
   ArgSet args_;  ///< All events.

@@ -146,6 +146,9 @@ Formula::Formula(Connective connective, ArgSet args,
                           std::to_string(min_number_) + "."));
       }
   }
+
+  for (const Arg& arg : args_.data())
+    ValidateNesting(arg);
 }
 
 int Formula::min_number() const {
@@ -170,17 +173,21 @@ void Formula::min_number(int number) {
 }
 
 void Formula::Add(ArgEvent event, bool complement) {
-  if (complement) {
+  ValidateNesting({complement, event});
+  args_.Add(event, complement);
+}
+
+void Formula::ValidateNesting(const Arg& arg) {
+  if (arg.complement) {
     if (connective_ == kNull || connective_ == kNot)
       SCRAM_THROW(LogicError("Invalid nesting of a complement arg."));
   }
   if (connective_ == kNot) {
-    if (event == ArgEvent(&HouseEvent::kTrue) ||
-        event == ArgEvent(&HouseEvent::kFalse)) {
+    if (arg.event == ArgEvent(&HouseEvent::kTrue) ||
+        arg.event == ArgEvent(&HouseEvent::kFalse)) {
       SCRAM_THROW(LogicError("Invalid nesting of a constant arg."));
     }
   }
-  args_.Add(event, complement);
 }
 
 void Formula::Validate() const {
