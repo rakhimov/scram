@@ -644,10 +644,10 @@ public:
                     remove(m_address->data(), self.m_faultTree);
                     add(nextAddress->data(), self.m_faultTree);
                 }
-                for (Gate *gate : self.m_gates) {
-                    gate->data()->formula().Remove(m_address->data());
-                    gate->data()->formula().Add(nextAddress->data());
-                }
+                for (Gate *gate : self.m_gates)
+                    gate->data()->formula().Swap(m_address->data(),
+                                                 nextAddress->data());
+
                 for (Gate *gate : self.m_gates)
                     emit gate->formulaChanged();
 

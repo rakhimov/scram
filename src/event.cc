@@ -154,9 +154,27 @@ std::optional<int> Formula::min_number() const {
   return {};
 }
 
-void Formula::Add(ArgEvent event, bool complement) {
-  ValidateNesting({complement, event});
-  args_.Add(event, complement);
+void Formula::Swap(ArgEvent current, ArgEvent other) {
+  auto it = boost::find_if(args_.data(), [&current](const Arg& arg) {
+    return arg.event == current;
+  });
+  if (it == args_.data().end())
+    SCRAM_THROW(LogicError("The current event is not in the formula."));
+
+  Event* base = ext::as<Event*>(other);
+  if (ext::any_of(args_.data(), [&current, &base](const Arg& arg) {
+        return arg.event != current &&
+               ext::as<Event*>(arg.event)->id() == base->id();
+      })) {
+    SCRAM_THROW(DuplicateArgumentError("Duplicate argument " + base->name()));
+  }
+
+  ValidateNesting({it->complement, other});
+
+  if (!base->usage())
+    base->usage(true);
+
+  it->event.swap(other);
 }
 
 void Formula::ValidateNesting(const Arg& arg) {

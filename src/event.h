@@ -280,7 +280,10 @@ class Formula {
     void Remove(ArgEvent event);
 
     /// @returns The underlying container with the data.
+    /// @{
     const std::vector<Arg>& data() const { return args_; }
+    std::vector<Arg>& data() { return args_; }
+    /// @}
 
     /// @returns The number of arguments in the set.
     std::size_t size() const { return args_.size(); }
@@ -298,12 +301,10 @@ class Formula {
   Formula(Connective connective, ArgSet args,
           std::optional<int> min_number = {});
 
-  /// Copyable semantics.
+  /// Copy semantics only.
   /// @{
   Formula(const Formula&) = default;
   Formula& operator=(const Formula&) = default;
-  Formula(Formula&&) = delete;
-  Formula& operator=(Formula&&) = delete;
   /// @}
 
   /// @returns The connective of this formula.
@@ -315,24 +316,19 @@ class Formula {
   /// @returns The arguments of this formula.
   const std::vector<Arg>& args() const { return args_.data(); }
 
-  /// Adds an event into the arguments list.
+  /// Swaps an argument event with another one.
   ///
-  /// @param[in] event  An argument event.
-  /// @param[in] complement  Indicate the negation of the argument event.
+  /// @param[in] current  The current argument event in this formula.
+  /// @param[in] other  The replacement argument event.
   ///
-  /// @throws DuplicateArgumentError  The argument event is duplicate.
-  /// @throws LogicError  Invalid nesting of complement or constant args.
-  void Add(ArgEvent event, bool complement = false);
-
-  /// Overload to add formula argument with a structure.
-  void Add(Arg arg) { Add(arg.event, arg.complement); }
-
-  /// Removes an event from the formula.
+  /// @post Strong exception safety guarantees.
+  /// @post The complement flag is preserved.
+  /// @post The position is preserved.
   ///
-  /// @param[in] event  The argument event of this formula.
-  ///
-  /// @throws LogicError  The argument does not belong to this formula.
-  void Remove(ArgEvent event) { return args_.Remove(event); }
+  /// @throws DuplicateArgumentError  The replacement argument is duplicate.
+  /// @throws LogicError  The current argument does not belong to this formula.
+  /// @throws LogicError  The replacement would result in invalid setup.
+  void Swap(ArgEvent current, ArgEvent other);
 
  private:
   /// Checks if the formula argument results in invalid nesting.
@@ -346,5 +342,11 @@ class Formula {
   int min_number_;  ///< Min number for "atleast" connective.
   ArgSet args_;  ///< All events.
 };
+
+/// Comparison of formula arguments.
+inline bool operator==(const Formula::Arg& lhs,
+                       const Formula::Arg& rhs) noexcept {
+  return lhs.complement == rhs.complement && lhs.event == rhs.event;
+}
 
 }  // namespace scram::mef

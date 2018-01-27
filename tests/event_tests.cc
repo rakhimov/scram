@@ -149,6 +149,52 @@ TEST_CASE("FormulaTest.InvalidConstantArguments", "[mef::event]") {
   }
 }
 
+TEST_CASE("FormulaTest.Swap", "[mef::event]") {
+  BasicEvent one("one"), two("two"), three("three"), four("four");
+  Formula formula(kAnd, {{true, &one}, {false, &two}});
+  const Formula orig(formula);
+  auto check_orig = [ orig = formula, &formula ] {
+    CHECK(formula.connective() == orig.connective());
+    CHECK(formula.args() == orig.args());
+    CHECK(formula.min_number() == orig.min_number());
+  };
+
+  SECTION("Correct") {
+    REQUIRE_NOTHROW(formula.Swap(&one, &three));
+    CHECK(three.usage());
+    CHECK(formula.args().front().event == Formula::ArgEvent(&three));
+    CHECK(formula.args().front().complement);
+
+    REQUIRE_NOTHROW(formula.Swap(&two, &one));
+    CHECK(formula.args().back().event == Formula::ArgEvent(&one));
+    CHECK(formula.args().back().complement == false);
+  }
+
+  SECTION("Duplicate") {
+    REQUIRE_THROWS_AS(formula.Swap(&one, &two), DuplicateArgumentError);
+    REQUIRE_THROWS_AS(formula.Swap(&two, &one), DuplicateArgumentError);
+    check_orig();
+  }
+
+  SECTION("Nonexistent") {
+    REQUIRE_THROWS_AS(formula.Swap(&three, &four), LogicError);
+    REQUIRE_THROWS_AS(formula.Swap(&three, &three), LogicError);
+    check_orig();
+  }
+
+  SECTION("The same arg") {
+    REQUIRE_NOTHROW(formula.Swap(&one, &one));
+    REQUIRE_NOTHROW(formula.Swap(&two, &two));
+    check_orig();
+  }
+
+  SECTION("Invalid constant") {
+    formula = Formula(kNot, {&one});
+    REQUIRE_THROWS_AS(formula.Swap(&one, &HouseEvent::kTrue), LogicError);
+    REQUIRE_THROWS_AS(formula.Swap(&one, &HouseEvent::kFalse), LogicError);
+  }
+}
+
 TEST_CASE("MEFGateTest.Cycle", "[mef::event]") {
   Gate root("root");  // Should not appear in the cycle.
   Gate top("Top");
