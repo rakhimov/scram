@@ -20,6 +20,8 @@
 
 #include "event.h"
 
+#include <limits>
+
 #include <boost/range/algorithm.hpp>
 
 #include "error.h"
@@ -92,16 +94,12 @@ void Formula::ArgSet::Remove(ArgEvent event) {
 }
 
 Formula::Formula(Connective connective, ArgSet args,
-                 std::optional<int> min_number)
+                 std::optional<int> min_number, std::optional<int> max_number)
     : connective_(connective),
-      min_number_(min_number ? min_number.value() : 0),
+      min_number_(min_number.value_or(0)),
+      max_number_(max_number.value_or(0)),
       args_(std::move(args)) {
-  if (min_number && connective_ != kAtleast) {
-    SCRAM_THROW(LogicError(
-        "The min number can only be defined for 'atleast' connective. "
-        "The connective of this formula is '" +
-        std::string(kConnectiveToString[connective_]) + "'."));
-  }
+  ValidateMinMaxNumber(min_number, max_number);
 
   switch (connective_) {
     case kAnd:
@@ -142,6 +140,27 @@ Formula::Formula(Connective connective, ArgSet args,
                           "than its min number " +
                           std::to_string(min_number_) + "."));
       }
+      break;
+    case kCardinality:
+      if (!min_number || !max_number)
+        SCRAM_THROW(ValidityError(
+            "'cardinality' connective requires min and max number for args."));
+
+      if (min_number_ > max_number_)
+        SCRAM_THROW(ValidityError("\"cardinality\" connective min number (" +
+                                  std::to_string(min_number_) +
+                                  ") cannot be greater than max number (" +
+                                  std::to_string(max_number_) + ")."));
+      if (args_.empty())
+        SCRAM_THROW(ValidityError(
+            "\"cardinality\" connective requires one or more arguments."));
+
+      if (args_.size() < max_number_)
+        SCRAM_THROW(
+            ValidityError("\"cardinality\" connective max number (" +
+                          std::to_string(max_number_) +
+                          ") cannot be greater than the number of arguments (" +
+                          std::to_string(args_.size()) + ")"));
   }
 
   for (const Arg& arg : args_.data())
@@ -149,8 +168,14 @@ Formula::Formula(Connective connective, ArgSet args,
 }
 
 std::optional<int> Formula::min_number() const {
-  if (connective_ == kAtleast)
+  if (connective_ == kAtleast || connective_ == kCardinality)
     return min_number_;
+  return {};
+}
+
+std::optional<int> Formula::max_number() const {
+  if (connective_ == kCardinality)
+    return max_number_;
   return {};
 }
 
@@ -175,6 +200,38 @@ void Formula::Swap(ArgEvent current, ArgEvent other) {
     base->usage(true);
 
   it->event.swap(other);
+}
+
+void Formula::ValidateMinMaxNumber(std::optional<int> min_number,
+                                   std::optional<int> max_number) {
+  assert(!min_number ||
+         std::numeric_limits<decltype(min_number_)>::max() >= *min_number);
+  assert(!max_number ||
+         std::numeric_limits<decltype(max_number_)>::max() >= *max_number);
+
+  if (min_number) {
+    if (*min_number < 0)
+      SCRAM_THROW(LogicError("The min number cannot be negative."));
+
+    if (connective_ != kAtleast && connective_ != kCardinality) {
+      SCRAM_THROW(LogicError(
+          "The min number can only be defined for 'atleast' "
+          "or 'cardinality' connective. The connective of this formula is '" +
+          std::string(kConnectiveToString[connective_]) + "'."));
+    }
+  }
+
+  if (max_number) {
+    if (*max_number < 0)
+      SCRAM_THROW(LogicError("The max number cannot be negative."));
+
+    if (connective_ != kCardinality) {
+      SCRAM_THROW(LogicError(
+          "The max number can only be defined for 'cardinality' connective. "
+          "The connective of this formula is '" +
+          std::string(kConnectiveToString[connective_]) + "'."));
+    }
+  }
 }
 
 void Formula::ValidateNesting(const Arg& arg) {

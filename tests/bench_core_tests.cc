@@ -393,9 +393,33 @@ TEST_P(RiskAnalysisTest, ImplyABC) {
     EXPECT_EQ(3, products().size());
     EXPECT_EQ(pi, products());
   } else {
-    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
     EXPECT_EQ(1, products().size());
     CHECK(products().begin()->empty());
+  }
+}
+
+// Benchmark Tests for cardinality #(1, 2, [A,  B, C]) fault tree.
+TEST_P(RiskAnalysisTest, CardinalityABC) {
+  std::string tree_input = "tests/input/core/cardinality.xml";
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles({tree_input}));
+  ASSERT_NO_THROW(analysis->Analyze());
+  if (settings.approximation() == Approximation::kRareEvent) {
+    EXPECT_DOUBLE_EQ(0.6, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.49, p_total());
+  }
+
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {{"B", "not A"}, {"C", "not B"},
+                                          {"A", "not C"}, {"C", "not A"},
+                                          {"A", "not B"}, {"B", "not C"}};
+    EXPECT_EQ(6, products().size());
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{"A"}, {"B"}, {"C"}};
+    EXPECT_EQ(3, products().size());
+    EXPECT_EQ(mcs, products());
   }
 }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="Cardinality">
+    <define-gate name="TopEvent">
+      <cardinality min="2" max="1">
+        <event name="A" type="basic-event"/>
+        <event name="B" type="basic-event"/>
+        <event name="C" type="basic-event"/>
+      </cardinality>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.2"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.3"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

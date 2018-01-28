@@ -215,17 +215,18 @@ enum Connective : std::uint8_t {
 
   // Rarely used connectives specific to the MEF.
   kIff,  ///< Equality with two inputs only.
-  kImply  ///< Implication with two inputs only.
+  kImply,  ///< Implication with two inputs only.
+  kCardinality  ///< General quantifier of events.
 };
 
 /// The number of connectives in the enum.
-const int kNumConnectives = 10;
+const int kNumConnectives = 11;
 
 /// String representations of the connectives.
 /// The ordering is the same as the Connective enum.
-const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
-                                           "not", "nand", "nor",     "null",
-                                           "iff", "imply"};
+const char* const kConnectiveToString[] = {"and", "or",    "atleast",    "xor",
+                                           "not", "nand",  "nor",        "null",
+                                           "iff", "imply", "cardinality"};
 
 /// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.
@@ -288,6 +289,9 @@ class Formula {
     /// @returns The number of arguments in the set.
     std::size_t size() const { return args_.size(); }
 
+    /// @return true if the set is empty.
+    bool empty() const { return args_.empty(); }
+
    private:
     std::vector<Arg> args_;  ///< The underlying data container.
   };
@@ -295,11 +299,14 @@ class Formula {
   /// @param[in] connective  The logical connective for this Boolean formula.
   /// @param[in] args  The arguments of the formula.
   /// @param[in] min_number  The min number relevant to the connective.
+  /// @param[in] max_number  The max number relevant to the connective.
   ///
   /// @throws ValidityError  Invalid arguments or setup for the connective.
   /// @throws LogicError  Invalid nesting of complement or constant args.
+  /// @throws LogicError  Negative values for min or max number.
   Formula(Connective connective, ArgSet args,
-          std::optional<int> min_number = {});
+          std::optional<int> min_number = {},
+          std::optional<int> max_number = {});
 
   /// Copy semantics only.
   /// @{
@@ -310,8 +317,11 @@ class Formula {
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
 
-  /// @returns The min number for "atleast" connective.
+  /// @returns The min number for "atleast"/"cardinality" connective.
   std::optional<int> min_number() const;
+
+  /// @returns The max number of "cardinality" connective.
+  std::optional<int> max_number() const;
 
   /// @returns The arguments of this formula.
   const std::vector<Arg>& args() const { return args_.data(); }
@@ -331,6 +341,15 @@ class Formula {
   void Swap(ArgEvent current, ArgEvent other);
 
  private:
+  /// Validates the min and max numbers relevant to the connective.
+  ///
+  /// @param[in] min_number  The number to be used for connective min number.
+  /// @param[in] max_number  The number to be used for connective max number.
+  ///
+  /// @throws LogicError  The min or max number is invalid or not applicable.
+  void ValidateMinMaxNumber(std::optional<int> min_number,
+                            std::optional<int> max_number);
+
   /// Checks if the formula argument results in invalid nesting.
   ///
   /// @param[in] arg  The argument in the formula.
@@ -339,7 +358,8 @@ class Formula {
   void ValidateNesting(const Arg& arg);
 
   Connective connective_;  ///< Logical connective.
-  int min_number_;  ///< Min number for "atleast" connective.
+  std::uint16_t min_number_;  ///< Min number for "atleast"/"cardinality".
+  std::uint16_t max_number_;  ///< Max number for "cardinality".
   ArgSet args_;  ///< All events.
 };
 

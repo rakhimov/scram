@@ -64,17 +64,19 @@ TEST_CASE("BasicEventTest.Validate", "[mef::event]") {
   CHECK_THROWS_AS(event.Validate(), ValidityError);
 }
 
-TEST_CASE("FormulaTest.MinNumber", "[mef::event]") {
+TEST_CASE("FormulaTest.MinMaxNumber", "[mef::event]") {
   BasicEvent first_child("first");
   BasicEvent second_child("second");
 
   SECTION("Invalid connective") {
     Formula::ArgSet arg_set = {&first_child, &second_child};
     CHECK_THROWS_AS(Formula(kAnd, arg_set, 2), LogicError);
+    CHECK_THROWS_AS(Formula(kAnd, arg_set, 2, 3), LogicError);
 
     Formula top(kAnd, arg_set);
     CHECK(top.connective() == kAnd);
     CHECK(top.min_number() == std::nullopt);
+    CHECK(top.max_number() == std::nullopt);
   }
 
   SECTION("Atleast") {
@@ -85,12 +87,40 @@ TEST_CASE("FormulaTest.MinNumber", "[mef::event]") {
     CHECK(top.min_number() == 2);
     // No min number.
     CHECK_THROWS_AS(Formula(kAtleast, arg_set), ValidityError);
+    // Redundant max number.
+    CHECK_THROWS_AS(Formula(kAtleast, arg_set, 2, 3), LogicError);
+    CHECK_THROWS_AS(Formula(kAtleast, arg_set, {}, 3), LogicError);
     // Illegal min number.
-    CHECK_THROWS_AS(Formula(kAtleast, arg_set, -2), ValidityError);
+    CHECK_THROWS_AS(Formula(kAtleast, arg_set, -2), LogicError);
     CHECK_THROWS_AS(Formula(kAtleast, arg_set, 1), ValidityError);
     CHECK_THROWS_AS(Formula(kAtleast, arg_set, 0), ValidityError);
     CHECK_THROWS_AS(Formula(kAtleast, arg_set, 3), ValidityError);
     CHECK_THROWS_AS(Formula(kAtleast, arg_set, 4), ValidityError);
+  }
+
+  SECTION("Cardinality") {
+    BasicEvent third_child("third");
+    Formula::ArgSet arg_set = {&first_child, &second_child, &third_child};
+    Formula top(kCardinality, arg_set, 2, 3);
+    CHECK(top.connective() == kCardinality);
+    CHECK(top.min_number() == 2);
+    CHECK(top.max_number() == 3);
+
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set), ValidityError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, 2), ValidityError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, {}, 2), ValidityError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, -2, 3), LogicError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, 2, -3), LogicError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, 2, 4), ValidityError);
+    CHECK_THROWS_AS(Formula(kCardinality, arg_set, 2, 1), ValidityError);
+
+    CHECK_NOTHROW(Formula(kCardinality, arg_set, 0, 0));
+    CHECK_NOTHROW(Formula(kCardinality, arg_set, 0, 2));
+    CHECK_NOTHROW(Formula(kCardinality, arg_set, 2, 2));
+
+    // Empty args.
+    CHECK_THROWS_AS(Formula(kCardinality, {}, 0, 0), ValidityError);
+    CHECK_THROWS_AS(Formula(kCardinality, {}, 0, 1), ValidityError);
   }
 }
 

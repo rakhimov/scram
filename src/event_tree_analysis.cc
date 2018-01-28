@@ -81,7 +81,8 @@ Clone(const mef::Formula& formula,
     arg_set.Add(std::visit(cloner, arg.event), arg.complement);
 
   return std::make_unique<mef::Formula>(
-      formula.connective(), std::move(arg_set), formula.min_number());
+      formula.connective(), std::move(arg_set), formula.min_number(),
+      formula.max_number());
 }
 
 }  // namespace

@@ -41,6 +41,68 @@ TEST_CASE("PdagTest.Print", "[mef::pdag]") {
   graph.Print();
 }
 
+TEST_CASE("PdagTest.Cardinality", "[mef::pdag]") {
+  mef::BasicEvent one("one"), two("two");
+  mef::Formula::ArgSet arg_set = {&one, &two};
+  mef::Gate root("root");
+
+  SECTION("Zero & zero") {
+    root.formula(
+        std::make_unique<mef::Formula>(mef::kCardinality, arg_set, 0, 2));
+    Pdag pdag(root);
+    pdag.RemoveNullGates();
+    CHECK(pdag.IsTrivial());
+    CHECK(pdag.root()->type() == kNull);
+    CHECK(pdag.root()->constant());
+    CHECK(pdag.root()->args().size() == 1);
+    CHECK(*pdag.root()->args().begin() == 1);
+  }
+  SECTION("and & zero") {
+    root.formula(
+        std::make_unique<mef::Formula>(mef::kCardinality, arg_set, 2, 2));
+    Pdag pdag(root);
+    pdag.RemoveNullGates();
+    CHECK(!pdag.IsTrivial());
+    CHECK(pdag.root()->type() == kAnd);
+    CHECK(pdag.root()->args().size() == 2);
+    CHECK(pdag.root()->args().count(2));
+    CHECK(pdag.root()->args().count(3));
+  }
+  SECTION("zero & and") {
+    root.formula(
+        std::make_unique<mef::Formula>(mef::kCardinality, arg_set, 0, 0));
+    Pdag pdag(root);
+    pdag.RemoveNullGates();
+    CHECK(!pdag.IsTrivial());
+    CHECK(pdag.root()->type() == kAnd);
+    CHECK(pdag.root()->args().size() == 2);
+    CHECK(pdag.root()->args().count(-2));
+    CHECK(pdag.root()->args().count(-3));
+  }
+  SECTION("or & zero") {
+    root.formula(
+        std::make_unique<mef::Formula>(mef::kCardinality, arg_set, 1, 2));
+    Pdag pdag(root);
+    pdag.RemoveNullGates();
+    CHECK(!pdag.IsTrivial());
+    CHECK(pdag.root()->type() == kOr);
+    CHECK(pdag.root()->args().size() == 2);
+    CHECK(pdag.root()->args().count(2));
+    CHECK(pdag.root()->args().count(3));
+  }
+  SECTION("zero & or") {
+    root.formula(
+        std::make_unique<mef::Formula>(mef::kCardinality, arg_set, 0, 1));
+    Pdag pdag(root);
+    pdag.RemoveNullGates();
+    CHECK(!pdag.IsTrivial());
+    CHECK(pdag.root()->type() == kOr);
+    CHECK(pdag.root()->args().size() == 2);
+    CHECK(pdag.root()->args().count(-2));
+    CHECK(pdag.root()->args().count(-3));
+  }
+}
+
 static_assert(kNumConnectives == 8, "New gate types are not considered!");
 
 class GateTest {

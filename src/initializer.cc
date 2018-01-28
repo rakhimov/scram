@@ -805,7 +805,8 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
 
   try {
     return std::make_unique<Formula>(formula_type, std::move(arg_set),
-                                     formula_node.attribute<int>("min"));
+                                     formula_node.attribute<int>("min"),
+                                     formula_node.attribute<int>("max"));
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(formula_node.line());
     throw;

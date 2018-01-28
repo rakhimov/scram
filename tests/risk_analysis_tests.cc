@@ -413,6 +413,14 @@ TEST_F(RiskAnalysisTest, EventTreeCollectAtleastFormula) {
   CHECK(analysis->event_tree_results().size() == 1);
 }
 
+TEST_F(RiskAnalysisTest, EventTreeCollectCardinalityFormula) {
+  const char* tree_input = "tests/input/eta/collect_cardinality_formula.xml";
+  settings.probability_analysis(true);
+  REQUIRE_NOTHROW(ProcessInputFiles({tree_input}));
+  REQUIRE_NOTHROW(analysis->Analyze());
+  CHECK(analysis->event_tree_results().size() == 1);
+}
+
 TEST_P(RiskAnalysisTest, AnalyzeEventTree) {
   const char* tree_input = "input/EventTrees/bcd.xml";
   settings.probability_analysis(true);
