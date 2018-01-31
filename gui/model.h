@@ -183,7 +183,7 @@ class BasicEvent : public Element, public Proxy<BasicEvent, mef::BasicEvent>
 
 public:
     /// Basic event flavors.
-    enum Flavor { Basic = 0, Undeveloped, Conditional };
+    enum Flavor { Basic = 0, Undeveloped };
 
     /// Converts a basic event flavor to a UI string.
     static QString flavorToString(Flavor flavor)
@@ -193,10 +193,6 @@ public:
             return tr("Basic");
         case Undeveloped:
             return tr("Undeveloped");
-        case Conditional:
-            //: Actually, this is 'conditioning'
-            //: since the event is the condition for some sub-tree.
-            return tr("Conditional");
         }
         assert(false);
     }

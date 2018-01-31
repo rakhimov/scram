@@ -419,7 +419,6 @@ void TestModel::testBasicEventFlavorToString()
     using namespace gui::model;
     TEST_EQ(BasicEvent::flavorToString(BasicEvent::Basic), "Basic");
     TEST_EQ(BasicEvent::flavorToString(BasicEvent::Undeveloped), "Undeveloped");
-    TEST_EQ(BasicEvent::flavorToString(BasicEvent::Conditional), "Conditional");
 }
 
 void TestModel::testBasicEventSetFlavor()
@@ -462,7 +461,7 @@ void TestModel::testBasicEventConstructWithFlavor()
     {
         event.SetAttribute({"flavor", "conditional"});
         QCOMPARE(gui::model::BasicEvent(&event).flavor(),
-                 gui::model::BasicEvent::Conditional);
+                 gui::model::BasicEvent::Basic);
     }
 }
 

@@ -49,11 +49,8 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
 {
     if (basicEvent->HasAttribute("flavor")) {
         const mef::Attribute &flavor = basicEvent->GetAttribute("flavor");
-        if (flavor.value == "undeveloped") {
+        if (flavor.value == "undeveloped")
             m_flavor = Flavor::Undeveloped;
-        } else if (flavor.value == "conditional") {
-            m_flavor = Flavor::Conditional;
-        }
     }
 }
 
@@ -97,9 +94,6 @@ void BasicEvent::SetFlavor::redo()
         break;
     case Undeveloped:
         mefEvent->SetAttribute({"flavor", "undeveloped", ""});
-        break;
-    case Conditional:
-        mefEvent->SetAttribute({"flavor", "conditional", ""});
         break;
     }
     m_basicEvent->m_flavor = m_flavor;

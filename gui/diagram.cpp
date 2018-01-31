@@ -150,15 +150,6 @@ UndevelopedEvent::UndevelopedEvent(model::BasicEvent *event,
     Event::setTypeGraphics(diamond);
 }
 
-ConditionalEvent::ConditionalEvent(model::BasicEvent *event,
-                                   QGraphicsItem *parent)
-    : Event(event, parent)
-{
-    double d = int(m_size.height() - m_baseHeight) * units().height();
-    double minor = 0.70 * d;
-    Event::setTypeGraphics(new QGraphicsEllipseItem(-d / 2, 0, d, minor));
-}
-
 TransferIn::TransferIn(model::Gate *event, QGraphicsItem *parent)
     : Event(event, parent)
 {
@@ -192,8 +183,6 @@ Gate::Gate(model::Gate *event, model::Model *model,
                 return new BasicEvent(proxyEvent, m_parent);
             case model::BasicEvent::Undeveloped:
                 return new UndevelopedEvent(proxyEvent, m_parent);
-            case model::BasicEvent::Conditional:
-                return new ConditionalEvent(proxyEvent, m_parent);
             }
             GUI_ASSERT(false && "Unexpected event flavor", nullptr);
         }

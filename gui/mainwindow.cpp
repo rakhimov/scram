@@ -1167,9 +1167,6 @@ mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
     case EventDialog::Undeveloped:
         basicEvent->AddAttribute({"flavor", "undeveloped", ""});
         break;
-    case EventDialog::Conditional:
-        basicEvent->AddAttribute({"flavor", "conditional", ""});
-        break;
     default:
         GUI_ASSERT(false && "unexpected event type", nullptr);
     }
@@ -1215,7 +1212,6 @@ void MainWindow::addElement()
         break;
     case EventDialog::BasicEvent:
     case EventDialog::Undeveloped:
-    case EventDialog::Conditional:
         m_undoStack->push(new model::Model::AddEvent<model::BasicEvent>(
             extract<mef::BasicEvent>(dialog), m_guiModel.get()));
         break;
@@ -1273,7 +1269,6 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
         return;
     case EventDialog::BasicEvent:
     case EventDialog::Undeveloped:
-    case EventDialog::Conditional:
         break;
     case EventDialog::Gate:
         m_undoStack->push(
@@ -1318,8 +1313,6 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
             return EventDialog::BasicEvent;
         case model::BasicEvent::Undeveloped:
             return EventDialog::Undeveloped;
-        case model::BasicEvent::Conditional:
-            return EventDialog::Conditional;
         }
         assert(false);
     };
@@ -1333,9 +1326,6 @@ void MainWindow::editElement(EventDialog *dialog, model::BasicEvent *element)
             case EventDialog::Undeveloped:
                 return new model::BasicEvent::SetFlavor(
                     element, model::BasicEvent::Undeveloped);
-            case EventDialog::Conditional:
-                return new model::BasicEvent::SetFlavor(
-                    element, model::BasicEvent::Conditional);
             default:
                 GUI_ASSERT(false && "Unexpected event type", nullptr);
             }
@@ -1351,7 +1341,6 @@ void MainWindow::editElement(EventDialog *dialog, model::HouseEvent *element)
         break;
     case EventDialog::BasicEvent:
     case EventDialog::Undeveloped:
-    case EventDialog::Conditional:
         m_undoStack->push(new model::Model::ChangeEventType<model::HouseEvent,
                                                             model::BasicEvent>(
             element, extract<mef::BasicEvent>(*dialog), m_guiModel.get(),
@@ -1383,7 +1372,6 @@ void MainWindow::editElement(EventDialog *dialog, model::Gate *element)
         return;
     case EventDialog::BasicEvent:
     case EventDialog::Undeveloped:
-    case EventDialog::Conditional:
         m_undoStack->push(
             new model::Model::ChangeEventType<model::Gate, model::BasicEvent>(
                 element, extract<mef::BasicEvent>(*dialog), m_guiModel.get(),

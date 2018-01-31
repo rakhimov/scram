@@ -139,11 +139,6 @@
        </item>
        <item>
         <property name="text">
-         <string extracomment="Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)">Conditional</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string extracomment="The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.">Gate</string>
         </property>
        </item>
