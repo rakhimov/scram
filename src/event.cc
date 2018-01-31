@@ -44,35 +44,6 @@ void BasicEvent::Validate() const {
   EnsureProbability(expression_, Event::name());
 }
 
-void Gate::Validate() const {
-  assert(formula_ && "The gate formula is missing.");
-  // Detect inhibit flavor.
-  if (formula_->connective() != kAnd || !Element::HasAttribute("flavor") ||
-      Element::GetAttribute("flavor").value != "inhibit") {
-    return;
-  }
-  if (formula_->args().size() != 2) {
-    SCRAM_THROW(ValidityError(Element::name() +
-                              "INHIBIT gate must have only 2 arguments"));
-  }
-  int num_conditional =
-      boost::count_if(formula_->args(), [](const Formula::Arg& arg) {
-        if (arg.complement)
-          return false;
-
-        if (BasicEvent* const* basic_event =
-                std::get_if<BasicEvent*>(&arg.event)) {
-          return (*basic_event)->HasAttribute("flavor") &&
-                 (*basic_event)->GetAttribute("flavor").value == "conditional";
-        }
-
-        return false;
-      });
-  if (num_conditional != 1)
-    SCRAM_THROW(ValidityError(Element::name() + " : INHIBIT gate must have" +
-                              " exactly one conditional event."));
-}
-
 void Formula::ArgSet::Add(ArgEvent event, bool complement) {
   Event* base = ext::as<Event*>(event);
   if (ext::any_of(args_, [&base](const Arg& arg) {

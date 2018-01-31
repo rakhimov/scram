@@ -44,7 +44,6 @@ Supported Gate Types
 - NAND
 - XOR
 - NULL
-- INHIBIT
 - ATLEAST
 
 
@@ -56,7 +55,6 @@ Supported Event Types
 - Basic
 - House
 - Undeveloped
-- Conditional
 
 .. note:: Top and intermediate events are gates of an acyclic "fault-tree" graph ([PDAG]_).
 
@@ -67,23 +65,14 @@ Supported Event Types
     since the "fault-tree" is properly treated as a graph/container.
 
 
-Representation of INHIBIT, Undeveloped, and Conditional
-=======================================================
+Representation of Undeveloped
+=============================
 
-These gate and event types are not directly supported
-by the input format based on the Open-PSA [MEF]_.
-Indeed, these types are treated just like AND gate and Basic event respectively;
-therefore, the description of these types
-can be given through the Open-PSA MEF "attribute" element for gates and events.
-The attribute name "flavor" is used to indicate
-the different representation of an event as shown in the description bellow.
-
-
-INHIBIT
--------
-
-Add this XML line to AND gate description:
-:literal:`<attributes> <attribute name="flavor" value="inhibit"/> </attributes>`
+SCRAM currently "abuses" the Open-PSA [MEF]_ attributes mechanism
+to add inessential (for analysis) meta-information.
+This approach still ensures that the input file is portable across tools.
+Attribute "flavor" is used to indicate
+different representations of an event as shown in the description bellow.
 
 
 Undeveloped
@@ -91,10 +80,3 @@ Undeveloped
 
 Add this XML line to basic event description:
 :literal:`<attributes> <attribute name="flavor" value="undeveloped"/> </attributes>`
-
-
-Conditional
------------
-
-Add this XML line to basic event description:
-:literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`

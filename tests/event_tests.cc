@@ -285,25 +285,6 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   }
 }
 
-TEST_CASE("MEFGateTest.Inhibit", "[mef::event]") {
-  BasicEvent arg_one("a");
-  BasicEvent arg_two("b");
-  BasicEvent arg_three("c");
-  // INHIBIT Gate tests.
-  Gate top("top");
-  top.AddAttribute({"flavor", "inhibit"});
-  top.formula(FormulaPtr(new Formula(kAnd, {&arg_one, &arg_two})));
-  CHECK_THROWS_AS(top.Validate(), ValidityError);
-  arg_one.AddAttribute({"flavor", "conditional"});
-  CHECK_NOTHROW(top.Validate());
-  arg_two.AddAttribute({"flavor", "conditional"});
-  CHECK_THROWS_AS(top.Validate(), ValidityError);
-  arg_two.RemoveAttribute("flavor");
-  CHECK_NOTHROW(top.Validate());
-  top.formula(FormulaPtr(new Formula(kAnd, {&arg_one, &arg_two, &arg_three})));
-  CHECK_THROWS_AS(top.Validate(), ValidityError);
-}
-
 TEST_CASE("PrimaryEventTest.HouseProbability", "[mef::event]") {
   // House primary event.
   HouseEvent primary("valve");

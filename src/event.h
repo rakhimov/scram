@@ -190,13 +190,6 @@ class Gate : public Event, public NodeMark {
     return formula;
   }
 
-  /// Checks if a gate is initialized correctly.
-  ///
-  /// @pre The gate formula is set.
-  ///
-  /// @throws ValidityError  Errors in the gate's logic or setup.
-  void Validate() const;
-
  private:
   FormulaPtr formula_;  ///< Boolean formula of this gate.
 };

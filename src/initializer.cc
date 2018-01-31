@@ -429,12 +429,6 @@ void Initializer::Define(const xml::Element& gate_node, Gate* gate) {
   assert(!formulas.empty() && ++formulas.begin() == formulas.end());
   assert(!gate->HasFormula() && "Resetting gate formula");
   gate->formula(GetFormula(*formulas.begin(), gate->base_path()));
-  try {
-    gate->Validate();
-  } catch (ValidityError& err) {
-    err << boost::errinfo_at_line(gate_node.line());
-    throw;
-  }
 }
 
 template <>
