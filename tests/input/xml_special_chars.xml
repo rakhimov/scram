@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <model-data>
+    <define-basic-event name="e1">
+      <label>Label with "'&quot;&amp;&lt;&gt;&apos;></label>
+      <attributes>
+        <attribute name="label" value="'&quot;&amp;&lt;>&gt;&apos;"/>
+      </attributes>
+      <float value="0.1"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>

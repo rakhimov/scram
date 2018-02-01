@@ -116,6 +116,7 @@ class FileStream {
   /// @{
   void write(const std::string& value) { write(value.c_str()); }
   void write(const char* value) { std::fputs(value, file_); }
+  void write(const char value) { std::fputc(value, file_); }
   void write(int value) {
     if (value < 0) {
       std::fputc('-', file_);
@@ -164,17 +165,13 @@ FileStream& operator<<(FileStream& file, T&& value) {
 ///
 /// @pre All strings are UTF-8 encoded.
 ///
-/// @note The stream is designed to prevent mixing XML text and elements
+/// @note The stream is not designed to mix XML text and elements
 ///       due to the absence of the use case or need.
-///       However, there's no fundamental design or technical issue
-///       restricting the introduction of this feature.
-///       As a workaround, markup elements in the text (e.g., ``<br/>``)
-///       can be fed directly as a raw text.
 ///
-/// @warning The names of elements and contents of XML data
-///          are NOT fully validated to be proper XML.
+/// @warning The names of elements and attributes
+///          are NOT validated to be proper XML NCName.
 ///          It is up to the caller
-///          to sanitize the input text (<, >, &, ", ').
+///          to sanitize the names (<, >, &, ", ', :, etc.).
 ///
 /// @warning The API works with C strings,
 ///          but this class does not manage the string lifetime.
@@ -232,6 +229,8 @@ class StreamElement {
   ///
   /// @returns The reference to this element.
   ///
+  /// @post &, <, " chars are escaped in the value text.
+  ///
   /// @throws StreamError  Invalid setup for the attribute.
   template <typename T>
   StreamElement& SetAttribute(const char* name, T&& value) {
@@ -242,7 +241,9 @@ class StreamElement {
     if (*name == '\0')
       throw StreamError("Attribute name can't be empty.");
 
-    out_ << " " << name << "=\"" << std::forward<T>(value) << "\"";
+    out_ << " " << name << "=\"";
+    PutValue(std::forward<T>(value));
+    out_ << "\"";
     return *this;
   }
 
@@ -252,12 +253,15 @@ class StreamElement {
   ///
   /// @param[in] text  Non-empty text.
   ///
+  /// @returns The reference to this element.
+  ///
   /// @post No more elements or attributes can be added.
   /// @post More text can be added.
+  /// @post &, <, " chars are escaped in the text.
   ///
   /// @throws StreamError  Invalid setup or state for text addition.
   template <typename T>
-  void AddText(T&& text) {
+  StreamElement& AddText(T&& text) {
     if (!active_)
       throw StreamError("The element is inactive.");
     if (!accept_text_)
@@ -269,7 +273,8 @@ class StreamElement {
       accept_attributes_ = false;
       out_ << ">";
     }
-    out_ << std::forward<T>(text);
+    PutValue(std::forward<T>(text));
+    return *this;
   }
 
   /// Adds a child element to the element.
@@ -338,6 +343,51 @@ class StreamElement {
     assert(kIndent_ >= 0 && "Negative XML indentation.");
     out_ << indenter_(kIndent_) << "<" << kName_;
   }
+
+  /// Puts the value as text escaping the required XML special characters.
+  /// @{
+  void PutValue(int value) { out_ << value; }
+  void PutValue(double value) { out_ << value; }
+  void PutValue(std::size_t value) { out_ << value; }
+  void PutValue(bool value) { out_ << (value ? "true" : "false"); }
+  void PutValue(const std::string& value) { PutValue(value.c_str()); }
+  void PutValue(const char* value) {
+    bool has_special_chars = [value]() mutable {  // 2x faster than strpbrk.
+      for (;; ++value) {
+        switch (*value) {
+          case '\0':
+            return false;
+          case '&':
+          case '<':
+          case '"':
+            return true;
+        }
+      }
+    }();
+
+    if (!has_special_chars) {  // The most common case.
+      out_ << value;
+    } else {
+      for (;; ++value) {
+        switch (*value) {
+          case '\0':
+            return;
+          case '&':
+            out_ << "&amp;";
+            break;
+          case '<':
+            out_ << "&lt;";
+            break;
+          case '"':
+            out_ << "&quot;";
+            break;
+          default:
+            out_ << *value;
+        }
+      }
+    }
+  }
+  /// @}
 
   const char* kName_;  ///< The name of the element.
   const int kIndent_;  ///< Indentation for tags.

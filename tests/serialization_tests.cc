@@ -34,6 +34,7 @@ TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
   xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
 
   std::vector<std::vector<std::string>> inputs = {
+      {"tests/input/xml_special_chars.xml"},
       {"tests/input/fta/correct_tree_input.xml"},
       {"tests/input/fta/correct_tree_input_with_probs.xml"},
       {"tests/input/fta/missing_bool_constant.xml"},
