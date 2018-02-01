@@ -47,17 +47,14 @@ class CcfEvent : public BasicEvent {
  public:
   /// Constructs CCF event with specific name
   /// that is used for internal purposes.
-  /// This name is formatted by the CcfGroup.
-  /// The creator CCF group
-  /// and names of the member events of this specific CCF event
+  /// This name is formatted with the CcfGroup.
+  /// The creator CCF group and the member events of this specific CCF event
   /// are saved for reporting.
   ///
-  /// @param[in] name  The identifying name of this CCF event.
   /// @param[in] members  The members that this CCF event
   ///                     represents as multiple failure.
   /// @param[in] ccf_group  The CCF group that created this event.
-  CcfEvent(std::string name, std::vector<Gate*> members,
-           const CcfGroup* ccf_group);
+  CcfEvent(std::vector<Gate*> members, const CcfGroup* ccf_group);
 
   /// @returns The CCF group that created this CCF event.
   const CcfGroup& ccf_group() const { return ccf_group_; }
@@ -67,6 +64,14 @@ class CcfEvent : public BasicEvent {
   const std::vector<Gate*>& members() const { return members_; }
 
  private:
+  /// Creates a mangled name
+  /// that is specific to CCF events and unique per model.
+  ///
+  /// @param[in] members  The members that this CCF event represents.
+  ///
+  /// @returns The name string valid only for internal uses.
+  static std::string MakeName(const std::vector<Gate*>& members);
+
   const CcfGroup& ccf_group_;  ///< The originating CCF group.
   std::vector<Gate*> members_;  ///< Member parent gates of this CCF event.
 };

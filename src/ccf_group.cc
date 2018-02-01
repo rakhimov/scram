@@ -36,11 +36,20 @@
 
 namespace scram::mef {
 
-CcfEvent::CcfEvent(std::string name, std::vector<Gate*> members,
-                   const CcfGroup* ccf_group)
-    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
+CcfEvent::CcfEvent(std::vector<Gate*> members, const CcfGroup* ccf_group)
+    : BasicEvent(MakeName(members), ccf_group->base_path(), ccf_group->role()),
       ccf_group_(*ccf_group),
       members_(std::move(members)) {}
+
+std::string CcfEvent::MakeName(const std::vector<Gate*>& members) {
+  return "[" +
+         boost::join(members | boost::adaptors::transformed(
+                                   [](const Gate* gate) -> decltype(auto) {
+                                     return gate->name();
+                                   }),
+                     " ") +
+         "]";
+}
 
 void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
@@ -124,26 +133,6 @@ void CcfGroup::Validate() const {
   this->DoValidate();
 }
 
-namespace {
-
-/// Joins CCF combination proxy gate names
-/// to create a distinct name for a new CCF event.
-///
-/// @param[in] combination  The combination of events.
-///
-/// @returns A uniquely mangled string for the combination.
-std::string JoinNames(const std::vector<Gate*>& combination) {
-  return "[" +
-         boost::join(combination | boost::adaptors::transformed(
-                                       [](const Gate* gate) -> decltype(auto) {
-                                         return gate->name();
-                                       }),
-                     " ") +
-         "]";
-}
-
-}  // namespace
-
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
   std::vector<std::pair<Gate*, Formula::ArgSet>> proxy_gates;
@@ -167,8 +156,7 @@ void CcfGroup::ApplyModel() {
       for (auto it = it_begin; it != it_end; ++it)
         combination.push_back(it->first);
 
-      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination),
-                                                  std::move(combination), this);
+      auto ccf_event = std::make_unique<CcfEvent>(std::move(combination), this);
 
       for (auto it = it_begin; it != it_end; ++it)
         it->second.Add(ccf_event.get());
