@@ -31,7 +31,7 @@
 #include "expression/constant.h"
 #include "expression/numerical.h"
 #include "ext/algorithm.h"
-#include "ext/combination_iterator.h"
+#include "ext/combination.h"
 #include "ext/float_compare.h"
 
 namespace scram::mef {
@@ -159,25 +159,28 @@ void CcfGroup::ApplyModel() {
   assert(probabilities.size() > 1);
 
   // Generate CCF events.
-  for (auto& entry : probabilities) {
-    int level = entry.first;
-    Expression* prob = entry.second;
-
-    for (auto combination_range : ext::make_combination_generator(
-             level, proxy_gates.begin(), proxy_gates.end())) {
+  for (auto & [ level, prob ] : probabilities) {
+    using Iterator = decltype(proxy_gates)::iterator;
+    auto combination_visitor = [this, prob](Iterator it_begin,
+                                            Iterator it_end) {
       std::vector<Gate*> combination;
-      for (const std::pair<Gate*, Formula::ArgSet>& gate : combination_range)
-        combination.push_back(gate.first);
+      for (auto it = it_begin; it != it_end; ++it)
+        combination.push_back(it->first);
 
       auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination),
                                                   std::move(combination), this);
 
-      for (std::pair<Gate*, Formula::ArgSet>& gate : combination_range)
-        gate.second.Add(ccf_event.get());
+      for (auto it = it_begin; it != it_end; ++it)
+        it->second.Add(ccf_event.get());
 
       ccf_event->expression(prob);
       ccf_events_.emplace_back(std::move(ccf_event));
-    }
+
+      return false;
+    };
+    ext::for_each_combination(proxy_gates.begin(),
+                              std::next(proxy_gates.begin(), level),
+                              proxy_gates.end(), combination_visitor);
   }
 
   // Assign formulas to the proxy gates.
