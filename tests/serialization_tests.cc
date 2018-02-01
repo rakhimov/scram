@@ -17,18 +17,18 @@
 
 #include "serialization.h"
 
-#include <catch.hpp>
+#include <boost/filesystem.hpp>
 
-#include "utility.h"
+#include <catch.hpp>
 
 #include "env.h"
 #include "initializer.h"
 #include "settings.h"
 #include "xml.h"
 
-namespace scram::mef::test {
+namespace fs = boost::filesystem;
 
-static int i = 0;
+namespace scram::mef::test {
 
 TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
   xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
@@ -49,7 +49,8 @@ TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
     INFO("inputs: " +
          Catch::StringMaker<std::vector<std::string>>::convert(input))
     REQUIRE_NOTHROW(model = mef::Initializer(input, core::Settings{}).model());
-    fs::path temp_file = utility::GenerateFilePath();
+    fs::path unique_name = "scram_test-" + fs::unique_path().string();
+    fs::path temp_file = fs::temp_directory_path() / unique_name;
     INFO("temp file: " + temp_file.string());
     REQUIRE_NOTHROW(Serialize(*model, temp_file.string()));
     REQUIRE_NOTHROW(xml::Document(temp_file.string(), &validator));
