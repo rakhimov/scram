@@ -647,6 +647,13 @@
           <ref name="argument"/>
         </oneOrMore>
       </element>
+      <element name="cardinality">
+        <attribute name="min"> <data type="nonNegativeInteger"/> </attribute>
+        <attribute name="max"> <data type="nonNegativeInteger"/> </attribute>
+        <oneOrMore>
+          <ref name="argument"/>
+        </oneOrMore>
+      </element>
       <element name="imply">
         <ref name="argument"/>
         <ref name="argument"/>

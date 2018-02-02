@@ -34,67 +34,18 @@ Analysis Algorithms
 - :ref:`probability_analysis`
 
 
-Supported Gate Types
-====================
+Supported Gate and Event Types
+==============================
 
-- AND
-- OR
-- NOT
-- NOR
-- NAND
-- XOR
-- NULL
-- INHIBIT
-- ATLEAST
-
-
-Supported Event Types
-=====================
-
-- Top
-- Intermediate
-- Basic
-- House
-- Undeveloped
-- Conditional
-
-.. note:: Top and intermediate events are gates of an acyclic "fault-tree" graph ([PDAG]_).
-
-.. note::
-    Transfer-in and Transfer-out symbols,
-    mostly employed by graphical front-ends,
-    are unnecessary with an input format based on the Open-PSA MEF
-    since the "fault-tree" is properly treated as a graph/container.
-
-
-Representation of INHIBIT, Undeveloped, and Conditional
-=======================================================
-
-These gate and event types are not directly supported
-by the input format based on the Open-PSA [MEF]_.
-Indeed, these types are treated just like AND gate and Basic event respectively;
-therefore, the description of these types
-can be given through the Open-PSA MEF "attribute" element for gates and events.
-The attribute name "flavor" is used to indicate
-the different representation of an event as shown in the description bellow.
-
-
-INHIBIT
--------
-
-Add this XML line to AND gate description:
-:literal:`<attributes> <attribute name="flavor" value="inhibit"/> </attributes>`
+All the event types and Boolean connectives described in the Open-PSA [MEF]_ are supported.
+In addition,
+SCRAM currently "abuses" the Open-PSA [MEF]_ attributes mechanism
+to add inessential (for analysis) information or flavors to events.
+This approach still ensures that the input file is portable across tools.
 
 
 Undeveloped
 -----------
 
-Add this XML line to basic event description:
+Add this XML line to a basic event description:
 :literal:`<attributes> <attribute name="flavor" value="undeveloped"/> </attributes>`
-
-
-Conditional
------------
-
-Add this XML line to basic event description:
-:literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`

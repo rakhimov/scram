@@ -22,18 +22,34 @@
 
 #include <cmath>
 
+#include <utility>
+
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+
 #include "error.h"
 #include "expression/constant.h"
 #include "expression/numerical.h"
 #include "ext/algorithm.h"
-#include "ext/combination_iterator.h"
+#include "ext/combination.h"
 #include "ext/float_compare.h"
 
 namespace scram::mef {
 
-CcfEvent::CcfEvent(std::string name, const CcfGroup* ccf_group)
-    : BasicEvent(std::move(name), ccf_group->base_path(), ccf_group->role()),
-      ccf_group_(*ccf_group) {}
+CcfEvent::CcfEvent(std::vector<Gate*> members, const CcfGroup* ccf_group)
+    : BasicEvent(MakeName(members), ccf_group->base_path(), ccf_group->role()),
+      ccf_group_(*ccf_group),
+      members_(std::move(members)) {}
+
+std::string CcfEvent::MakeName(const std::vector<Gate*>& members) {
+  return "[" +
+         boost::join(members | boost::adaptors::transformed(
+                                   [](const Gate* gate) -> decltype(auto) {
+                                     return gate->name();
+                                   }),
+                     " ") +
+         "]";
+}
 
 void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (distribution_ || factors_.empty() == false) {
@@ -117,54 +133,48 @@ void CcfGroup::Validate() const {
   this->DoValidate();
 }
 
-namespace {
-
-/// Joins CCF combination proxy gate names
-/// to create a distinct name for a new CCF event.
-///
-/// @param[in] combination  The combination of events.
-///
-/// @returns A uniquely mangled string for the combination.
-std::string JoinNames(const std::vector<Gate*>& combination) {
-  std::string name = "[";
-  for (auto it = combination.begin(), it_end = std::prev(combination.end());
-       it != it_end; ++it) {
-    name += (*it)->name() + " ";
-  }
-  name += combination.back()->name() + "]";
-  return name;
-}
-
-}  // namespace
-
 void CcfGroup::ApplyModel() {
   // Construct replacement proxy gates for member basic events.
-  std::vector<Gate*> proxy_gates;
+  std::vector<std::pair<Gate*, Formula::ArgSet>> proxy_gates;
   for (BasicEvent* member : members_) {
     auto new_gate = std::make_unique<Gate>(member->name(), member->base_path(),
                                            member->role());
     assert(member->id() == new_gate->id());
-    new_gate->formula(std::make_unique<Formula>(kOr));
-
-    proxy_gates.push_back(new_gate.get());
+    proxy_gates.push_back({new_gate.get(), {}});
     member->ccf_gate(std::move(new_gate));
   }
 
   ExpressionMap probabilities = this->CalculateProbabilities();
   assert(probabilities.size() > 1);
 
-  for (auto& entry : probabilities) {
-    int level = entry.first;
-    Expression* prob = entry.second;
-    for (auto combination : ext::make_combination_generator(
-             level, proxy_gates.begin(), proxy_gates.end())) {
-      auto ccf_event = std::make_unique<CcfEvent>(JoinNames(combination), this);
+  // Generate CCF events.
+  for (auto & [ level, prob ] : probabilities) {
+    using Iterator = decltype(proxy_gates)::iterator;
+    auto combination_visitor = [this, prob](Iterator it_begin,
+                                            Iterator it_end) {
+      std::vector<Gate*> combination;
+      for (auto it = it_begin; it != it_end; ++it)
+        combination.push_back(it->first);
+
+      auto ccf_event = std::make_unique<CcfEvent>(std::move(combination), this);
+
+      for (auto it = it_begin; it != it_end; ++it)
+        it->second.Add(ccf_event.get());
+
       ccf_event->expression(prob);
-      for (Gate* gate : combination)
-        gate->formula().Add(ccf_event.get());
-      ccf_event->members(std::move(combination));  // Move, at last.
       ccf_events_.emplace_back(std::move(ccf_event));
-    }
+
+      return false;
+    };
+    ext::for_each_combination(proxy_gates.begin(),
+                              std::next(proxy_gates.begin(), level),
+                              proxy_gates.end(), combination_visitor);
+  }
+
+  // Assign formulas to the proxy gates.
+  for (std::pair<Gate*, Formula::ArgSet>& gate : proxy_gates) {
+    assert(gate.second.size() >= 2);
+    gate.first->formula(std::make_unique<Formula>(kOr, std::move(gate.second)));
   }
 }
 

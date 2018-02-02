@@ -47,14 +47,14 @@ class CcfEvent : public BasicEvent {
  public:
   /// Constructs CCF event with specific name
   /// that is used for internal purposes.
-  /// This name is formatted by the CcfGroup.
-  /// The creator CCF group
-  /// and names of the member events of this specific CCF event
+  /// This name is formatted with the CcfGroup.
+  /// The creator CCF group and the member events of this specific CCF event
   /// are saved for reporting.
   ///
-  /// @param[in] name  The identifying name of this CCF event.
+  /// @param[in] members  The members that this CCF event
+  ///                     represents as multiple failure.
   /// @param[in] ccf_group  The CCF group that created this event.
-  CcfEvent(std::string name, const CcfGroup* ccf_group);
+  CcfEvent(std::vector<Gate*> members, const CcfGroup* ccf_group);
 
   /// @returns The CCF group that created this CCF event.
   const CcfGroup& ccf_group() const { return ccf_group_; }
@@ -63,21 +63,15 @@ class CcfEvent : public BasicEvent {
   ///          The members also own this CCF event through parentship.
   const std::vector<Gate*>& members() const { return members_; }
 
-  /// Sets the member parents.
-  ///
-  /// @param[in] members  The members that this CCF event
-  ///                     represents as multiple failure.
-  ///
-  /// @note The reason for late setting of members
-  ///       instead of in the constructor is moveability.
-  ///       The container of member gates can only move
-  ///       after the creation of the event.
-  void members(std::vector<Gate*> members) {
-    assert(members_.empty() && "Resetting members.");
-    members_ = std::move(members);
-  }
-
  private:
+  /// Creates a mangled name
+  /// that is specific to CCF events and unique per model.
+  ///
+  /// @param[in] members  The members that this CCF event represents.
+  ///
+  /// @returns The name string valid only for internal uses.
+  static std::string MakeName(const std::vector<Gate*>& members);
+
   const CcfGroup& ccf_group_;  ///< The originating CCF group.
   std::vector<Gate*> members_;  ///< Member parent gates of this CCF event.
 };

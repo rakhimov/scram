@@ -619,7 +619,7 @@ GatePtr Pdag::ConstructGate(const mef::Formula& formula, bool ccf,
       coherent_ = false;
       break;
     case kAtleast:
-      parent->min_number(formula.min_number());
+      parent->min_number(*formula.min_number());
       break;
     case kNull:
       null_gates_.push_back(parent);
@@ -661,6 +661,36 @@ GatePtr Pdag::ConstructComplexGate(const mef::Formula& formula, bool ccf,
              !formula.args().front().complement, ccf, nodes);
       AddArg(parent, formula.args().back().event,
              formula.args().back().complement, ccf, nodes);
+      return parent;
+    }
+    case mef::kCardinality: {
+      assert(formula.args().size() >= *formula.max_number());
+      assert(*formula.min_number() <= *formula.max_number());
+      normal_ = false;
+      auto parent = std::make_shared<Gate>(kAnd, this);
+      auto first_arg = std::make_shared<Gate>(kAtleast, this);
+      first_arg->min_number(*formula.min_number());
+      for (const mef::Formula::Arg& arg : formula.args()) {
+        AddArg(first_arg, arg.event, arg.complement, ccf, nodes);
+      }
+      auto second_arg = first_arg->Clone();
+      second_arg->NegateArgs();
+      second_arg->min_number(formula.args().size() - *formula.max_number());
+
+      auto well_form = [](Gate* atleast) {
+        if (atleast->min_number() == 0) {
+          atleast->MakeConstant(true);
+        } else if (atleast->min_number() == 1) {
+          atleast->type(kOr);
+        } else if (atleast->min_number() == atleast->args().size()) {
+          atleast->type(kAnd);
+        }
+      };
+      well_form(first_arg.get());
+      well_form(second_arg.get());
+
+      parent->AddArg(first_arg);
+      parent->AddArg(second_arg);
       return parent;
     }
     default:

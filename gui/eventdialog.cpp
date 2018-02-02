@@ -66,7 +66,6 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                     break;
                 case BasicEvent:
                 case Undeveloped:
-                case Conditional:
                     stackedWidgetType->setCurrentWidget(tabExpression);
                     break;
                 case Gate:
@@ -307,14 +306,12 @@ void EventDialog::setupData(const model::Gate &element)
         static_cast<QListView *>(typeBox->view())
             ->setRowHidden(ext::one_bit_index(BasicEvent), true);
         static_cast<QListView *>(typeBox->view())
-            ->setRowHidden(ext::one_bit_index(Conditional), true);
-        static_cast<QListView *>(typeBox->view())
             ->setRowHidden(ext::one_bit_index(Undeveloped), true);
     }
 
     connectiveBox->setCurrentIndex(element.type());
-    if (element.type() == mef::kAtleast)
-        minNumberBox->setValue(element.minNumber());
+    if (element.minNumber())
+        minNumberBox->setValue(*element.minNumber());
     for (const mef::Formula::Arg &arg : element.args())
         argsList->addItem(QString::fromStdString(
             ext::as<const mef::Event *>(arg.event)->id()));

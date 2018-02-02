@@ -21,6 +21,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -182,7 +183,7 @@ class BasicEvent : public Element, public Proxy<BasicEvent, mef::BasicEvent>
 
 public:
     /// Basic event flavors.
-    enum Flavor { Basic = 0, Undeveloped, Conditional };
+    enum Flavor { Basic = 0, Undeveloped };
 
     /// Converts a basic event flavor to a UI string.
     static QString flavorToString(Flavor flavor)
@@ -192,10 +193,6 @@ public:
             return tr("Basic");
         case Undeveloped:
             return tr("Undeveloped");
-        case Conditional:
-            //: Actually, this is 'conditioning'
-            //: since the event is the condition for some sub-tree.
-            return tr("Conditional");
         }
         assert(false);
     }
@@ -343,7 +340,7 @@ public:
                 return tr("or");
             case mef::kAtleast:
                 //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-                return tr("at-least %1").arg(minNumber());
+                return tr("at-least %1").arg(*minNumber());
             case mef::kXor:
                 return tr("xor");
             case mef::kNot:
@@ -370,9 +367,10 @@ public:
     int numArgs() const { return args().size(); }
 
     /// @returns The min number of the gate formula.
-    ///
-    /// @pre The min number is appropriate for the formula type.
-    int minNumber() const { return data()->formula().min_number(); }
+    std::optional<int> minNumber() const
+    {
+        return data()->formula().min_number();
+    }
 
     /// @returns Event arguments of the gate.
     const std::vector<mef::Formula::Arg> &args() const
@@ -642,10 +640,10 @@ public:
                     remove(m_address->data(), self.m_faultTree);
                     add(nextAddress->data(), self.m_faultTree);
                 }
-                for (Gate *gate : self.m_gates) {
-                    gate->data()->formula().Remove(m_address->data());
-                    gate->data()->formula().Add(nextAddress->data());
-                }
+                for (Gate *gate : self.m_gates)
+                    gate->data()->formula().Swap(m_address->data(),
+                                                 nextAddress->data());
+
                 for (Gate *gate : self.m_gates)
                     emit gate->formulaChanged();
 

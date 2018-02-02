@@ -19,13 +19,15 @@
 
 #include <utility>
 
-#include "utility.h"
+#include <boost/filesystem.hpp>
 
 #include "env.h"
 #include "error.h"
 #include "initializer.h"
 #include "reporter.h"
 #include "xml.h"
+
+namespace fs = boost::filesystem;
 
 namespace scram::core::test {
 
@@ -59,7 +61,8 @@ void RiskAnalysisTest::CheckReport(const std::vector<std::string>& tree_input) {
 
   REQUIRE_NOTHROW(ProcessInputFiles(tree_input));
   REQUIRE_NOTHROW(analysis->Analyze());
-  fs::path temp_file = utility::GenerateFilePath();
+  fs::path unique_name = "scram_report_test-" + fs::unique_path().string();
+  fs::path temp_file = fs::temp_directory_path() / unique_name;
   INFO("input: " + tree_input.front());
   INFO("output: " + temp_file.string());
   REQUIRE_NOTHROW(Reporter().Report(*analysis, temp_file.string()));
@@ -403,6 +406,22 @@ TEST_P(RiskAnalysisTest, AnalyzeSil) {
   };
   compare_fractions(pfd_fractions, prob_an.sil().pfd_fractions, "PFD");
   compare_fractions(pfh_fractions, prob_an.sil().pfh_fractions, "PFH");
+}
+
+TEST_F(RiskAnalysisTest, EventTreeCollectAtleastFormula) {
+  const char* tree_input = "tests/input/eta/collect_atleast_formula.xml";
+  settings.probability_analysis(true);
+  REQUIRE_NOTHROW(ProcessInputFiles({tree_input}));
+  REQUIRE_NOTHROW(analysis->Analyze());
+  CHECK(analysis->event_tree_results().size() == 1);
+}
+
+TEST_F(RiskAnalysisTest, EventTreeCollectCardinalityFormula) {
+  const char* tree_input = "tests/input/eta/collect_cardinality_formula.xml";
+  settings.probability_analysis(true);
+  REQUIRE_NOTHROW(ProcessInputFiles({tree_input}));
+  REQUIRE_NOTHROW(analysis->Analyze());
+  CHECK(analysis->event_tree_results().size() == 1);
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeEventTree) {

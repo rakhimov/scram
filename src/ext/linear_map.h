@@ -183,7 +183,7 @@ class linear_map {
   using difference_type = typename container_type::difference_type;
   /// @}
 
-  /// Standard constructors and assignment operators.
+  /// Standard constructors (copy and move are implicit).
   /// @{
   linear_map() = default;
   linear_map(std::initializer_list<value_type> init_list) {
@@ -193,18 +193,6 @@ class linear_map {
   template <typename Iterator>
   linear_map(Iterator first1, Iterator last1) {
     linear_map::insert(first1, last1);
-  }
-
-  linear_map(const linear_map& lm) : map_(lm.map_) {}
-  linear_map(linear_map&& lm) noexcept : map_(std::move(lm.map_)) {}
-
-  linear_map& operator=(const linear_map& lm) {
-    map_ = lm.map_;
-    return *this;
-  }
-  linear_map& operator=(linear_map&& lm) noexcept {
-    map_ = std::move(lm.map_);
-    return *this;
   }
   /// @}
 

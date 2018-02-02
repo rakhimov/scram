@@ -126,15 +126,6 @@ public:
                               QGraphicsItem *parent = nullptr);
 };
 
-/// The event used in Inhibit gates.
-class ConditionalEvent : public Event
-{
-public:
-    /// @copydoc Event::Event
-    explicit ConditionalEvent(model::BasicEvent *event,
-                              QGraphicsItem *parent = nullptr);
-};
-
 /// An alias pointer to a gate.
 class TransferIn : public Event
 {

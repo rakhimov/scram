@@ -272,6 +272,7 @@ TEST_CASE("InitializerTest.IncorrectFtaInputs", "[mef::initializer]") {
       "def_clash_basic_house.xml",
       "def_clash_house_basic.xml",
       "atleast_gate.xml",
+      "invalid_min_max_cardinality.xml",
       "cyclic_tree.xml",
       "cyclic_formula.xml",
       "cyclic_parameter.xml",

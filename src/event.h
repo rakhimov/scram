@@ -22,13 +22,13 @@
 
 #include <cstdint>
 
+#include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
 #include <vector>
-
-#include <boost/noncopyable.hpp>
 
 #include "element.h"
 #include "expression.h"
@@ -190,13 +190,6 @@ class Gate : public Event, public NodeMark {
     return formula;
   }
 
-  /// Checks if a gate is initialized correctly.
-  ///
-  /// @pre The gate formula is set.
-  ///
-  /// @throws ValidityError  Errors in the gate's logic or setup.
-  void Validate() const;
-
  private:
   FormulaPtr formula_;  ///< Boolean formula of this gate.
 };
@@ -215,21 +208,22 @@ enum Connective : std::uint8_t {
 
   // Rarely used connectives specific to the MEF.
   kIff,  ///< Equality with two inputs only.
-  kImply  ///< Implication with two inputs only.
+  kImply,  ///< Implication with two inputs only.
+  kCardinality  ///< General quantifier of events.
 };
 
 /// The number of connectives in the enum.
-const int kNumConnectives = 10;
+const int kNumConnectives = 11;
 
 /// String representations of the connectives.
 /// The ordering is the same as the Connective enum.
-const char* const kConnectiveToString[] = {"and", "or",   "atleast", "xor",
-                                           "not", "nand", "nor",     "null",
-                                           "iff", "imply"};
+const char* const kConnectiveToString[] = {"and", "or",    "atleast",    "xor",
+                                           "not", "nand",  "nor",        "null",
+                                           "iff", "imply", "cardinality"};
 
 /// Boolean formula with connectives and arguments.
 /// Formulas are not expected to be shared.
-class Formula : private boost::noncopyable {
+class Formula {
  public:
   /// Argument events of a formula.
   using ArgEvent = std::variant<Gate*, BasicEvent*, HouseEvent*>;
@@ -240,61 +234,132 @@ class Formula : private boost::noncopyable {
     ArgEvent event;  ///< The event in the formula.
   };
 
-  /// Constructs a formula.
-  ///
+  /// The set of formula arguments.
+  class ArgSet {
+   public:
+    /// Default constructor of an empty argument set.
+    ArgSet() = default;
+
+    /// Constructors from initializer lists and iterator ranges of args.
+    /// @{
+    ArgSet(std::initializer_list<Arg> init_list)
+        : ArgSet(init_list.begin(), init_list.end()) {}
+
+    ArgSet(std::initializer_list<ArgEvent> init_list)
+        : ArgSet(init_list.begin(), init_list.end()) {}
+
+    template <typename Iterator>
+    ArgSet(Iterator first1, Iterator last1) {
+      for (; first1 != last1; ++first1)
+        Add(*first1);
+    }
+    /// @}
+
+    /// Adds an event into the arguments set.
+    ///
+    /// @param[in] event  An argument event.
+    /// @param[in] complement  Indicate the negation of the argument event.
+    ///
+    /// @throws DuplicateArgumentError  The argument event is duplicate.
+    void Add(ArgEvent event, bool complement = false);
+
+    /// Overload to add formula argument with a structure.
+    void Add(Arg arg) { Add(arg.event, arg.complement); }
+
+    /// Removes an event from the formula.
+    ///
+    /// @param[in] event  The argument event of this formula.
+    ///
+    /// @throws LogicError  The argument is not in the set.
+    void Remove(ArgEvent event);
+
+    /// @returns The underlying container with the data.
+    /// @{
+    const std::vector<Arg>& data() const { return args_; }
+    std::vector<Arg>& data() { return args_; }
+    /// @}
+
+    /// @returns The number of arguments in the set.
+    std::size_t size() const { return args_.size(); }
+
+    /// @return true if the set is empty.
+    bool empty() const { return args_.empty(); }
+
+   private:
+    std::vector<Arg> args_;  ///< The underlying data container.
+  };
+
   /// @param[in] connective  The logical connective for this Boolean formula.
-  explicit Formula(Connective connective);
+  /// @param[in] args  The arguments of the formula.
+  /// @param[in] min_number  The min number relevant to the connective.
+  /// @param[in] max_number  The max number relevant to the connective.
+  ///
+  /// @throws ValidityError  Invalid arguments or setup for the connective.
+  /// @throws LogicError  Invalid nesting of complement or constant args.
+  /// @throws LogicError  Negative values for min or max number.
+  Formula(Connective connective, ArgSet args,
+          std::optional<int> min_number = {},
+          std::optional<int> max_number = {});
+
+  /// Copy semantics only.
+  /// @{
+  Formula(const Formula&) = default;
+  Formula& operator=(const Formula&) = default;
+  /// @}
 
   /// @returns The connective of this formula.
   Connective connective() const { return connective_; }
 
-  /// @returns The min number if and only if the formula is "atleast".
-  ///
-  /// @throws LogicError  The min number is not yet assigned.
-  int min_number() const;
+  /// @returns The min number for "atleast"/"cardinality" connective.
+  std::optional<int> min_number() const;
 
-  /// Sets the min number only for an "atleast" formula.
-  ///
-  /// @param[in] number  The min number.
-  ///
-  /// @throws ValidityError  The min number is invalid.
-  /// @throws LogicError  The min number is assigned illegally.
-  ///
-  /// @note (Children number > min number) should be checked
-  ///       outside of this class.
-  void min_number(int number);
+  /// @returns The max number of "cardinality" connective.
+  std::optional<int> max_number() const;
 
   /// @returns The arguments of this formula.
-  const std::vector<Arg>& args() const { return args_; }
+  const std::vector<Arg>& args() const { return args_.data(); }
 
-  /// Adds an event into the arguments list.
+  /// Swaps an argument event with another one.
   ///
-  /// @param[in] event  An argument event.
-  /// @param[in] complement  Indicate the negation of the argument event.
+  /// @param[in] current  The current argument event in this formula.
+  /// @param[in] other  The replacement argument event.
   ///
-  /// @throws DuplicateArgumentError  The argument event is duplicate.
-  /// @throws LogicError  Invalid nesting of complement or constant args.
-  void Add(ArgEvent event, bool complement = false);
-
-  /// Overload to add formula argument with a structure.
-  void Add(Arg arg) { Add(arg.event, arg.complement); }
-
-  /// Removes an event from the formula.
+  /// @post Strong exception safety guarantees.
+  /// @post The complement flag is preserved.
+  /// @post The position is preserved.
   ///
-  /// @param[in] event  The argument event of this formula.
-  ///
-  /// @throws LogicError  The argument does not belong to this formula.
-  void Remove(ArgEvent event);
-
-  /// Checks if a formula is initialized correctly with the number of arguments.
-  ///
-  /// @throws ValidityError  Problems with the connective or arguments.
-  void Validate() const;
+  /// @throws DuplicateArgumentError  The replacement argument is duplicate.
+  /// @throws LogicError  The current argument does not belong to this formula.
+  /// @throws LogicError  The replacement would result in invalid setup.
+  void Swap(ArgEvent current, ArgEvent other);
 
  private:
+  /// Validates the min and max numbers relevant to the connective.
+  ///
+  /// @param[in] min_number  The number to be used for connective min number.
+  /// @param[in] max_number  The number to be used for connective max number.
+  ///
+  /// @throws LogicError  The min or max number is invalid or not applicable.
+  void ValidateMinMaxNumber(std::optional<int> min_number,
+                            std::optional<int> max_number);
+
+  /// Checks if the formula argument results in invalid nesting.
+  ///
+  /// @param[in] arg  The argument in the formula.
+  ///
+  /// @throws LogicError  Invalid nesting of complement or constant args.
+  void ValidateNesting(const Arg& arg);
+
   Connective connective_;  ///< Logical connective.
-  int min_number_;  ///< Min number for "atleast" connective.
-  std::vector<Arg> args_;  ///< All events.
+  std::uint16_t min_number_;  ///< Min number for "atleast"/"cardinality".
+  std::uint16_t max_number_;  ///< Max number for "cardinality".
+  ArgSet args_;  ///< All events.
 };
+
+/// Comparison of formula arguments.
+inline bool operator==(const Formula::Arg& lhs,
+                       const Formula::Arg& rhs) noexcept {
+  return lhs.complement == rhs.complement && lhs.event == rhs.event;
+}
 
 }  // namespace scram::mef

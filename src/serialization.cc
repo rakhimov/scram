@@ -116,7 +116,7 @@ void Serialize(const Formula& formula, xml::StreamElement* parent) {
         case kAtleast:
           return [&formula, &parent] {
             xml::StreamElement atleast = parent->AddChild("atleast");
-            atleast.SetAttribute("min", formula.min_number());
+            atleast.SetAttribute("min", *formula.min_number());
             return atleast;
           }();  // Wrap NRVO into RVO for GCC.
         default:

@@ -289,8 +289,8 @@ template <>
 auto makeDefaultEvent<mef::Gate>(std::string name)
 {
     auto gate = std::make_unique<mef::Gate>(name);
-    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().Add(&mef::HouseEvent::kTrue);
+    gate->formula(std::make_unique<mef::Formula>(
+        mef::kNull, mef::Formula::ArgSet{&mef::HouseEvent::kTrue}));
     return gate;
 }
 
@@ -419,7 +419,6 @@ void TestModel::testBasicEventFlavorToString()
     using namespace gui::model;
     TEST_EQ(BasicEvent::flavorToString(BasicEvent::Basic), "Basic");
     TEST_EQ(BasicEvent::flavorToString(BasicEvent::Undeveloped), "Undeveloped");
-    TEST_EQ(BasicEvent::flavorToString(BasicEvent::Conditional), "Conditional");
 }
 
 void TestModel::testBasicEventSetFlavor()
@@ -462,7 +461,7 @@ void TestModel::testBasicEventConstructWithFlavor()
     {
         event.SetAttribute({"flavor", "conditional"});
         QCOMPARE(gui::model::BasicEvent(&event).flavor(),
-                 gui::model::BasicEvent::Conditional);
+                 gui::model::BasicEvent::Basic);
     }
 }
 
@@ -502,38 +501,44 @@ void TestModel::testGateType()
 {
     mef::Gate gate("pump");
     gui::model::Gate proxy(&gate);
-    gate.formula(std::make_unique<mef::Formula>(mef::kNull));
+    mef::BasicEvent one("one"), two("two"), three("three");
+    using ArgSet = mef::Formula::ArgSet;
+
+    gate.formula(std::make_unique<mef::Formula>(mef::kNull, ArgSet{&one}));
     TEST_EQ(proxy.type<QString>(), "null");
-    gate.formula(std::make_unique<mef::Formula>(mef::kAnd));
+    gate.formula(std::make_unique<mef::Formula>(mef::kAnd, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "and");
-    gate.formula(std::make_unique<mef::Formula>(mef::kOr));
+    gate.formula(std::make_unique<mef::Formula>(mef::kOr, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "or");
-    gate.formula(std::make_unique<mef::Formula>(mef::kXor));
+    gate.formula(std::make_unique<mef::Formula>(mef::kXor, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "xor");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNor));
+    gate.formula(std::make_unique<mef::Formula>(mef::kNor, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "nor");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    gate.formula(std::make_unique<mef::Formula>(mef::kNot, ArgSet{&one}));
     TEST_EQ(proxy.type<QString>(), "not");
-    gate.formula(std::make_unique<mef::Formula>(mef::kNand));
+    gate.formula(
+        std::make_unique<mef::Formula>(mef::kNand, ArgSet{&one, &two}));
     TEST_EQ(proxy.type<QString>(), "nand");
 
-    auto vote = std::make_unique<mef::Formula>(mef::kAtleast);
-    vote->min_number(2);
-    gate.formula(std::move(vote));
+    gate.formula(std::make_unique<mef::Formula>(mef::kAtleast,
+                                                ArgSet{&one, &two, &three}, 2));
     TEST_EQ(proxy.type<QString>(), "at-least 2");
-    QCOMPARE(proxy.minNumber(), 2);
+    QCOMPARE(proxy.minNumber().value(), 2);
 }
 
 void TestModel::testGateSetFormula()
 {
     mef::Gate gate("pump");
+    mef::BasicEvent one("one");
     QVERIFY(!gate.HasFormula());
-    gate.formula(std::make_unique<mef::Formula>(mef::kNot));
+    gate.formula(
+        std::make_unique<mef::Formula>(mef::kNot, mef::Formula::ArgSet{&one}));
     auto *initFormula = &gate.formula();
     gui::model::Gate proxy(&gate);
     QCOMPARE(proxy.type(), mef::kNot);
 
-    auto formula = std::make_unique<mef::Formula>(mef::kNull);
+    auto formula =
+        std::make_unique<mef::Formula>(mef::kNull, mef::Formula::ArgSet{&one});
     auto *address = formula.get();
     auto spy = ext::SignalSpy(&proxy, &gui::model::Gate::formulaChanged);
     gui::model::Gate::SetFormula setter(&proxy, std::move(formula));
@@ -542,8 +547,7 @@ void TestModel::testGateSetFormula()
     QCOMPARE(proxy.type(), mef::kNull);
     QVERIFY(gate.HasFormula());
     QCOMPARE(&gate.formula(), address);
-    QCOMPARE(proxy.numArgs(), 0);
-    QVERIFY(proxy.args().empty());
+    QCOMPARE(proxy.numArgs(), 1);
     spy.clear();
 
     setter.undo();
@@ -564,8 +568,8 @@ void TestModel::testEventParents()
 
     auto gate = std::make_unique<mef::Gate>("parent");
     auto *parent = gate.get();
-    gate->formula(std::make_unique<mef::Formula>(mef::kNull));
-    gate->formula().Add(address);
+    gate->formula(std::make_unique<mef::Formula>(
+        mef::kNull, mef::Formula::ArgSet{address}));
 
     QVERIFY(proxy.parents(address).empty());
     gui::model::Model::AddEvent<gui::model::Gate>(std::move(gate), &proxy)
