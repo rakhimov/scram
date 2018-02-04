@@ -126,7 +126,6 @@ void PreferencesDialog::setupAutoSave(QTimer *autoSaveTimer)
             autoSaveTimer->start(intervalMs);
         else
             autoSaveTimer->stop();
-
     };
     connect(ui->autoSaveBox, OVERLOAD(QSpinBox, valueChanged, int),
             autoSaveTimer, setAutoSave);

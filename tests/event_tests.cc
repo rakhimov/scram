@@ -183,7 +183,7 @@ TEST_CASE("FormulaTest.Swap", "[mef::event]") {
   BasicEvent one("one"), two("two"), three("three"), four("four");
   Formula formula(kAnd, {{true, &one}, {false, &two}});
   const Formula orig(formula);
-  auto check_orig = [ orig = formula, &formula ] {
+  auto check_orig = [orig = formula, &formula] {
     CHECK(formula.connective() == orig.connective());
     CHECK(formula.args() == orig.args());
     CHECK(formula.min_number() == orig.min_number());

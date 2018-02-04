@@ -616,7 +616,7 @@ void Initializer::ProcessTbdElements() {
     }
   }
 
-  for (const auto & [ tbd_element, xml_element ] : tbd_) {
+  for (const auto& [tbd_element, xml_element] : tbd_) {
     try {
       std::visit(
           [this, &xml_element](auto* tbd_construct) {

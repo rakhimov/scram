@@ -148,7 +148,7 @@ void CcfGroup::ApplyModel() {
   assert(probabilities.size() > 1);
 
   // Generate CCF events.
-  for (auto & [ level, prob ] : probabilities) {
+  for (auto& [level, prob] : probabilities) {
     using Iterator = decltype(proxy_gates)::iterator;
     auto combination_visitor = [this, prob](Iterator it_begin,
                                             Iterator it_end) {

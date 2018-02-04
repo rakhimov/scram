@@ -54,7 +54,7 @@ void RiskAnalysis::RunAnalysis(std::optional<Context> context) noexcept {
   std::vector<std::pair<mef::HouseEvent*, bool>> house_events;
   /// Restores the model after application of the context.
   ext::scope_guard restorator(
-      [&house_events, this, init_time = model_->mission_time().value() ] {
+      [&house_events, this, init_time = model_->mission_time().value()] {
         model_->mission_time().value(init_time);
         Analysis::settings().mission_time(init_time);
 
