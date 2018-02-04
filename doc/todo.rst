@@ -50,8 +50,6 @@ Minor
 Code
 ====
 
-- Python front-end. *Moderate*
-
 - More tests for expressions. *Moderate*
 
 - More tests for preprocessing techniques. *High*
