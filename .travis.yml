@@ -56,13 +56,16 @@ jobs:
     include:
         - stage: lint
           compiler: clang
+          before_script: mkdir build
           script: .travis/lint.sh
-          env: CONFIG=Lint  # Travis does not provide ENV var for stage names :(
+          env: CONFIG=Lint CLANG_VERSION=6.0
           addons:
               apt:
                   packages:
-                      - qt59tools
-                  sources: *Sources
+                      - clang-format-6.0
+                  sources:
+                      - ubuntu-toolchain-r-test
+                      - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
         # - stage: test
         #   os: osx  # OS X builds are slow and limited.
         #   osx_image: xcode9.2 # C++17 not yet fully supported!!!
