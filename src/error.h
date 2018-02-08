@@ -17,6 +17,11 @@
 
 /// @file
 /// Exceptions for SCRAM.
+/// Exceptions are designed with boost::exception;
+/// that is, exception classes act like tags.
+/// No new data members shall ever be added to derived exception classes
+/// (no slicing upon copy or change of exception type!).
+/// Instead, all the data are carried with boost::error_info mechanism.
 
 #pragma once
 
@@ -43,17 +48,19 @@
 namespace scram {
 
 /// The Error class is the base class
-/// for common exceptions specific to the SCRAM code.
+/// for all exceptions specific to the SCRAM code.
+///
+/// @note The copy constructor is not noexcept as required by std::exception.
+///       However, this class (and boost::exception)
+///       may only throw std::bad_alloc upon copy,
+///       which may be produced anyway
+///       even if the copy constructor were noexcept.
 class Error : virtual public std::exception, virtual public boost::exception {
  public:
   /// Constructs a new error with a provided message.
   ///
   /// @param[in] msg  The message to be passed with this error.
   explicit Error(std::string msg) : msg_(std::move(msg)) {}
-
-  Error(const Error&) = default;  ///< Explicit declaration.
-
-  virtual ~Error() noexcept = default;
 
   /// @returns The formatted error message to be printed.
   const char* what() const noexcept final { return msg_.c_str(); }
