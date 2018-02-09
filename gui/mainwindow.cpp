@@ -229,19 +229,24 @@ void displayError(const scram::Error &err, const QString &title,
         }
     }
     if (const std::string *container =
-            boost::get_error_info<scram::mef::errinfo_container>(err)) {
+            boost::get_error_info<mef::errinfo_container_id>(err)) {
         info.append(QObject::tr("MEF Container: %1")
                         .arg(QString::fromStdString(*container)));
         newLine();
+        auto *type = boost::get_error_info<mef::errinfo_container_type>(err);
+        GUI_ASSERT(type, );
+        info.append(QObject::tr("MEF Container type: %1")
+                        .arg(QString::fromLatin1(*type)));
+        newLine();
     }
     if (const std::string *xml_element =
-            boost::get_error_info<scram::xml::errinfo_element>(err)) {
+            boost::get_error_info<xml::errinfo_element>(err)) {
         info.append(QObject::tr("XML element: %1")
                         .arg(QString::fromStdString(*xml_element)));
         newLine();
     }
     if (const std::string *xml_attribute =
-            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+            boost::get_error_info<xml::errinfo_attribute>(err)) {
         info.append(QObject::tr("XML attribute: %1")
                         .arg(QString::fromStdString(*xml_attribute)));
         newLine();

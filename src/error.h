@@ -101,7 +101,14 @@ struct SettingsError : public Error {
 namespace mef {  // MEF specific errors.
 
 /// The MEF container element as namespace.
-using errinfo_container = boost::error_info<struct tag_contianer, std::string>;
+/// @{
+using errinfo_container_id =
+    boost::error_info<struct tag_contianer_id, std::string>;
+using errinfo_container_type =
+    boost::error_info<struct tag_container_type, const char*>;
+using errinfo_container =
+    boost::tuple<errinfo_container_id, errinfo_container_type>;
+/// @}
 
 /// The MEF element identifier data in errors.
 /// @{

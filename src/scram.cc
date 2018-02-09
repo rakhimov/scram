@@ -391,8 +391,12 @@ int main(int argc, char* argv[]) {
       std::cerr << "MEF Element type: " << *type << "\n";
     }
     if (const std::string* container =
-            boost::get_error_info<scram::mef::errinfo_container>(err)) {
+            boost::get_error_info<scram::mef::errinfo_container_id>(err)) {
       std::cerr << "MEF Container: " << *container << "\n";
+      auto* type =
+          boost::get_error_info<scram::mef::errinfo_container_type>(err);
+      assert(type);
+      std::cerr << "MEF Container type: " << *type << "\n";
     }
     if (const std::string* xml_element =
             boost::get_error_info<scram::xml::errinfo_element>(err)) {

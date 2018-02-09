@@ -807,7 +807,7 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
         event_tree->Add(std::move(fork));
         (*it)->usage(true);
       } catch (ValidityError& err) {
-        err << errinfo_container("Event tree '" + event_tree->name() + "'");
+        err << errinfo_container(event_tree->name(), "event tree");
         throw;
       }
     } else {
@@ -1557,7 +1557,7 @@ void Initializer::ValidateInitialization() {
     try {
       cycle::CheckCycle<NamedBranch>(event_tree->branches(), "branch");
     } catch (CycleError& err) {
-      err << errinfo_container("Event tree '" + event_tree->name() + "'");
+      err << errinfo_container(event_tree->name(), "event tree");
       throw;
     }
   }
@@ -1572,7 +1572,7 @@ void Initializer::ValidateInitialization() {
       CheckFunctionalEventOrder(event_tree->initial_state());
       EnsureLinksOnlyInSequences(event_tree->initial_state());
     } catch (ValidityError& err) {
-      err << errinfo_container("Event tree '" + event_tree->name() + "'");
+      err << errinfo_container(event_tree->name(), "event tree");
       throw;
     }
   }
@@ -1588,7 +1588,7 @@ void Initializer::ValidateInitialization() {
       }
       EnsureHomogeneousEventTree(event_tree->initial_state());
     } catch (ValidityError& err) {
-      err << errinfo_container("Event tree '" + event_tree->name() + "'");
+      err << errinfo_container(event_tree->name(), "event tree");
       throw;
     }
   }
