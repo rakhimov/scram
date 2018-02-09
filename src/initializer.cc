@@ -173,30 +173,13 @@ void Initializer::CheckFileExistence(
 void Initializer::CheckDuplicateFiles(
     const std::vector<std::string>& xml_files) {
   namespace fs = boost::filesystem;
-  using File = std::pair<fs::path, std::string>;  // Path mapping.
   // Collection of input file locations in canonical path.
-  std::vector<File> files;
-  auto comparator = [](const File& lhs, const File& rhs) {
-    return lhs.first < rhs.first;
-  };
-
-  for (auto& xml_file : xml_files)
-    files.emplace_back(fs::canonical(xml_file), xml_file);
-
-  auto it = boost::adjacent_find(
-      boost::sort(files, comparator),  // NOLINT(build/include_what_you_use)
-      [](const File& lhs, const File& rhs) { return lhs.first == rhs.first; });
-
-  if (it != files.end()) {
-    std::stringstream msg;
-    msg << "Duplicate input files:\n";
-    const File& file_path = *it;
-    auto it_end = std::upper_bound(it, files.end(), file_path, comparator);
-    for (; it != it_end; ++it) {
-      msg << "    " << it->second << "\n";
-    }
-    msg << "  POSIX Path: " << file_path.first.c_str();
-    SCRAM_THROW(IOError(msg.str()));
+  std::unordered_set<std::string> full_paths;
+  for (auto& xml_file : xml_files) {
+    auto [it, is_unique] = full_paths.emplace(fs::canonical(xml_file).string());
+    if (!is_unique)
+      SCRAM_THROW(IOError("Duplicate input file"))
+          << boost::errinfo_file_name(*it);
   }
 }
 
