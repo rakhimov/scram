@@ -75,7 +75,7 @@ class Element : private boost::noncopyable {
   ///
   /// @param[in] attr  Unique attribute of this element.
   ///
-  /// @throws DuplicateArgumentError  A member attribute with the same name
+  /// @throws DuplicateElementError  A member attribute with the same name
   ///                                 already exists.
   ///
   /// @post Pointers or references

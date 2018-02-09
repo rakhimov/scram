@@ -260,7 +260,7 @@ class Formula {
     /// @param[in] event  An argument event.
     /// @param[in] complement  Indicate the negation of the argument event.
     ///
-    /// @throws DuplicateArgumentError  The argument event is duplicate.
+    /// @throws DuplicateElementError  The argument event is duplicate.
     void Add(ArgEvent event, bool complement = false);
 
     /// Overload to add formula argument with a structure.
@@ -328,7 +328,7 @@ class Formula {
   /// @post The complement flag is preserved.
   /// @post The position is preserved.
   ///
-  /// @throws DuplicateArgumentError  The replacement argument is duplicate.
+  /// @throws DuplicateElementError  The replacement argument is duplicate.
   /// @throws LogicError  The current argument does not belong to this formula.
   /// @throws LogicError  The replacement would result in invalid setup.
   void Swap(ArgEvent current, ArgEvent other);

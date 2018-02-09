@@ -77,7 +77,7 @@ class Substitution : public Element {
   ///
   /// @param[in] source_event  The event to be replaced by the target event.
   ///
-  /// @throws DuplicateArgumentError  The source event is duplicate.
+  /// @throws DuplicateElementError  The source event is duplicate.
   void Add(BasicEvent* source_event);
 
   /// Checks if the substitution is setup correctly.

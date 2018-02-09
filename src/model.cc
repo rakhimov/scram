@@ -33,50 +33,52 @@ Model::Model(std::string name)
       mission_time_(std::make_unique<MissionTime>()) {}
 
 void Model::Add(InitiatingEventPtr initiating_event) {
-  mef::AddElement<RedefinitionError>(std::move(initiating_event),
-                                     &initiating_events_,
-                                     "Redefinition of initiating event: ");
+  mef::AddElement<DuplicateElementError>(std::move(initiating_event),
+                                         &initiating_events_,
+                                         "Redefinition of initiating event: ");
 }
 
 void Model::Add(EventTreePtr event_tree) {
-  mef::AddElement<RedefinitionError>(std::move(event_tree), &event_trees_,
-                                     "Redefinition of event tree: ");
+  mef::AddElement<DuplicateElementError>(std::move(event_tree), &event_trees_,
+                                         "Redefinition of event tree: ");
 }
 
 void Model::Add(SequencePtr sequence) {
-  mef::AddElement<RedefinitionError>(std::move(sequence), &sequences_,
-                                     "Redefinition of sequence: ");
+  mef::AddElement<DuplicateElementError>(std::move(sequence), &sequences_,
+                                         "Redefinition of sequence: ");
 }
 
 void Model::Add(RulePtr rule) {
-  mef::AddElement<RedefinitionError>(std::move(rule), &rules_,
-                                     "Redefinition of rule: ");
+  mef::AddElement<DuplicateElementError>(std::move(rule), &rules_,
+                                         "Redefinition of rule: ");
 }
 
 void Model::Add(FaultTreePtr fault_tree) {
-  mef::AddElement<RedefinitionError>(std::move(fault_tree), &fault_trees_,
-                                     "Redefinition of fault tree: ");
+  mef::AddElement<DuplicateElementError>(std::move(fault_tree), &fault_trees_,
+                                         "Redefinition of fault tree: ");
 }
 
 void Model::Add(AlignmentPtr alignment) {
-  mef::AddElement<RedefinitionError>(std::move(alignment), &alignments_,
-                                     "Redefinition of alignment: ");
+  mef::AddElement<DuplicateElementError>(std::move(alignment), &alignments_,
+                                         "Redefinition of alignment: ");
 }
 
 void Model::Add(SubstitutionPtr substitution) {
-  mef::AddElement<RedefinitionError>(std::move(substitution), &substitutions_,
-                                     "Redefinition of substitution: ");
+  mef::AddElement<DuplicateElementError>(std::move(substitution),
+                                         &substitutions_,
+                                         "Redefinition of substitution: ");
 }
 
 void Model::Add(ParameterPtr parameter) {
-  mef::AddElement<RedefinitionError>(std::move(parameter), &parameters_,
-                                     "Redefinition of parameter: ");
+  mef::AddElement<DuplicateElementError>(std::move(parameter), &parameters_,
+                                         "Redefinition of parameter: ");
 }
 
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
   if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
-    SCRAM_THROW(RedefinitionError("Redefinition of event: " + id));
+    SCRAM_THROW(DuplicateElementError("Redefinition Error"))
+        << errinfo_element(id, "event");
 }
 
 void Model::Add(HouseEventPtr house_event) {
@@ -95,19 +97,19 @@ void Model::Add(GatePtr gate) {
 }
 
 void Model::Add(CcfGroupPtr ccf_group) {
-  mef::AddElement<RedefinitionError>(std::move(ccf_group), &ccf_groups_,
-                                     "Redefinition of CCF group: ");
+  mef::AddElement<DuplicateElementError>(std::move(ccf_group), &ccf_groups_,
+                                         "Redefinition of CCF group: ");
 }
 
 void Model::Add(std::unique_ptr<ExternLibrary> library) {
-  mef::AddElement<RedefinitionError>(std::move(library), &libraries_,
-                                     "Redefinition of extern library: ");
+  mef::AddElement<DuplicateElementError>(std::move(library), &libraries_,
+                                         "Redefinition of extern library: ");
 }
 
 void Model::Add(ExternFunctionPtr extern_function) {
-  mef::AddElement<RedefinitionError>(std::move(extern_function),
-                                     &extern_functions_,
-                                     "Redefinition of extern function: ");
+  mef::AddElement<DuplicateElementError>(std::move(extern_function),
+                                         &extern_functions_,
+                                         "Redefinition of extern function: ");
 }
 
 Formula::ArgEvent Model::GetEvent(const std::string& id) {

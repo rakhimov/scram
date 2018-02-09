@@ -117,13 +117,8 @@ struct ValidityError : public Error {
   using Error::Error;
 };
 
-/// For cases when events or practically anything is redefined.
-struct RedefinitionError : public ValidityError {
-  using ValidityError::ValidityError;
-};
-
-/// This error indicates that arguments must be unique.
-struct DuplicateArgumentError : public ValidityError {
+/// This error indicates that elements must be unique.
+struct DuplicateElementError : public ValidityError {
   using ValidityError::ValidityError;
 };
 

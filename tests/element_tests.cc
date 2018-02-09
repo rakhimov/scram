@@ -69,7 +69,7 @@ TEST_CASE("ElementTest.AddAttribute", "[mef::element]") {
   attr.type = "float";
   CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
   REQUIRE_NOTHROW(el.AddAttribute(attr));
-  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
+  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateElementError);
   REQUIRE(el.HasAttribute(attr.name));
   REQUIRE_NOTHROW(el.GetAttribute(attr.name));
   CHECK(el.GetAttribute(attr.name).value == attr.value);
@@ -84,7 +84,7 @@ TEST_CASE("ElementTest.SetAttribute", "[mef::element]") {
   attr.type = "float";
   CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
   REQUIRE_NOTHROW(el.SetAttribute(attr));
-  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
+  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateElementError);
   REQUIRE(el.HasAttribute(attr.name));
   REQUIRE_NOTHROW(el.GetAttribute(attr.name));
   CHECK(el.GetAttribute(attr.name).value == attr.value);

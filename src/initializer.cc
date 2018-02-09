@@ -196,7 +196,7 @@ void Initializer::CheckDuplicateFiles(
       msg << "    " << it->second << "\n";
     }
     msg << "  POSIX Path: " << file_path.first.c_str();
-    SCRAM_THROW(DuplicateArgumentError(msg.str()));
+    SCRAM_THROW(DuplicateElementError(msg.str()));
   }
 }
 
@@ -559,7 +559,7 @@ void Initializer::Define(const xml::Element& xml_node,
       } catch (std::out_of_range&) {
         SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
             << boost::errinfo_at_line(basic_event.line());
-      } catch (DuplicateArgumentError& err) {
+      } catch (DuplicateElementError& err) {
         err << boost::errinfo_at_line(basic_event.line());
         throw;
       }
@@ -768,7 +768,7 @@ FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
           "Undefined " + std::string(element_type) + " " + name +
           (base_path.empty() ? "" : " with base path " + base_path)))
           << boost::errinfo_at_line(element.line());
-    } catch (DuplicateArgumentError& err) {
+    } catch (DuplicateElementError& err) {
       err << boost::errinfo_at_line(element.line());
       throw;
     }
@@ -1298,7 +1298,7 @@ void Initializer::ProcessCcfMembers(const xml::Element& members_node,
                                      ccf_group->base_path(), ccf_group->role());
     try {
       ccf_group->AddMember(basic_event.get());
-    } catch (DuplicateArgumentError& err) {
+    } catch (DuplicateElementError& err) {
       err << boost::errinfo_at_line(event_node.line());
       throw;
     }

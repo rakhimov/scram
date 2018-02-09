@@ -66,7 +66,7 @@ class Initializer : private boost::noncopyable {
   /// @param[in] settings  Analysis settings.
   /// @param[in] allow_extern  Allow external libraries in the input.
   ///
-  /// @throws DuplicateArgumentError  Input contains duplicate files.
+  /// @throws DuplicateElementError  Input contains duplicate files.
   /// @throws ValidityError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
   ///
@@ -140,14 +140,14 @@ class Initializer : private boost::noncopyable {
   ///
   /// @pre All input files exist on the system.
   ///
-  /// @throws DuplicateArgumentError  There are duplicate input files.
+  /// @throws DuplicateElementError  There are duplicate input files.
   void CheckDuplicateFiles(const std::vector<std::string>& xml_files);
 
   /// @copybrief Initializer::Initializer
   ///
   /// @param[in] xml_files  The formatted XML input files.
   ///
-  /// @throws DuplicateArgumentError  Input contains duplicate files.
+  /// @throws DuplicateElementError  Input contains duplicate files.
   /// @throws ValidityError  The input contains errors.
   /// @throws IOError  One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);

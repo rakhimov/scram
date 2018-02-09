@@ -108,7 +108,7 @@ class Model : public Element {
   ///
   /// @param[in] element  An element defined in this model.
   ///
-  /// @throws RedefinitionError  The element is already defined in the model.
+  /// @throws DuplicateElementError  The element is already in the model.
   ///
   /// @{
   void Add(InitiatingEventPtr element);
@@ -161,7 +161,7 @@ class Model : public Element {
   ///
   /// @param[in] event  The event to be tested for duplicate before insertion.
   ///
-  /// @throws RedefinitionError  The element is already defined in the model.
+  /// @throws DuplicateElementError  The element is already in the model.
   void CheckDuplicateEvent(const Event& event);
 
   /// A collection of defined constructs in the model.

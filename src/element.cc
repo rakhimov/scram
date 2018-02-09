@@ -39,7 +39,7 @@ void Element::name(std::string name) {
 
 void Element::AddAttribute(Attribute attr) {
   if (HasAttribute(attr.name)) {
-    SCRAM_THROW(DuplicateArgumentError(
+    SCRAM_THROW(DuplicateElementError(
         "Trying to overwrite an existing attribute {event: " + name_ +
         ", attr: " + attr.name + "} "));
   }

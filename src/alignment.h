@@ -71,7 +71,7 @@ class Alignment : public Element {
   ///
   /// @param[in] phase  One of the unique phases for the alignment.
   ///
-  /// @throws DuplicateArgumentError  The phase is duplicate.
+  /// @throws DuplicateElementError  The phase is duplicate.
   void Add(PhasePtr phase);
 
   /// Ensures that all phases add up to be valid for the alignment.

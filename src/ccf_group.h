@@ -91,7 +91,7 @@ class CcfGroup : public Id {
   ///
   /// @param[in] basic_event  A member basic event.
   ///
-  /// @throws DuplicateArgumentError  The basic event is already in the group.
+  /// @throws DuplicateElementError  The basic event is already in the group.
   /// @throws LogicError  The probability distribution or factors
   ///                     for this CCF group are already defined.
   ///                     No more members are accepted.
@@ -118,7 +118,7 @@ class CcfGroup : public Id {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidityError  The level is invalid.
-  /// @throws RedefinitionError  The factor for the level already exists.
+  /// @throws DuplicateElementError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
   void AddFactor(Expression* factor, std::optional<int> level = {});

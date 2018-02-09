@@ -45,7 +45,7 @@ TEST_CASE("AlignmentTest.AddPhase", "[mef::alignment]") {
   CHECK(alignment.phases().size() == 1);
   CHECK(alignment.phases().begin()->get() == phase_one_address);
 
-  CHECK_THROWS_AS(alignment.Add(std::move(phase_two)), DuplicateArgumentError);
+  CHECK_THROWS_AS(alignment.Add(std::move(phase_two)), DuplicateElementError);
   CHECK(alignment.phases().size() == 1);
   CHECK(alignment.phases().begin()->get() == phase_one_address);
 
