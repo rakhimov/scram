@@ -75,7 +75,7 @@ class Component : public Element, public Role {
   ///
   /// @param[in] element  The element to be added to the container.
   ///
-  /// @throws ValidityError  The element is already in this container.
+  /// @throws DuplicateElementError  The element is already in this container.
   ///
   /// @{
   void Add(Gate* element);
@@ -115,7 +115,7 @@ class Component : public Element, public Role {
   /// @param[in] event  The event to be added to this component.
   /// @param[in,out] container  The destination container.
   ///
-  /// @throws ValidityError  The event is already in this container.
+  /// @throws DuplicateElementError  The event is already in this container.
   template <class T, class Container>
   void AddEvent(T* event, Container* container);
 

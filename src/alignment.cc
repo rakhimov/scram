@@ -32,8 +32,7 @@ Phase::Phase(std::string name, double time_fraction)
 }
 
 void Alignment::Add(PhasePtr phase) {
-  AddElement<DuplicateElementError>(std::move(phase), &phases_,
-                                    "Duplicate phase: ");
+  AddElement(std::move(phase), &phases_, "phase");
 }
 
 void Alignment::Validate() {

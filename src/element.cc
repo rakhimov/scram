@@ -22,7 +22,6 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "error.h"
 #include "ext/algorithm.h"
 
 namespace scram::mef {

@@ -185,7 +185,7 @@ class EventTree : public Element, public Usage {
   ///
   /// @param[in] element  A unique element defined in this event tree.
   ///
-  /// @throws ValidityError  The element is already in this container.
+  /// @throws DuplicateElementError  The element is already in this container.
   ///
   /// @{
   void Add(Sequence* element);
