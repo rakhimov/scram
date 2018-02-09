@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -382,6 +382,13 @@ int main(int argc, char* argv[]) {
       std::cerr << "File: " << *filename << "\n";
       if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
         std::cerr << "Line: " << *line << "\n";
+    }
+    if (const std::string* id =
+            boost::get_error_info<scram::mef::errinfo_element_id>(err)) {
+      std::cerr << "MEF Element ID: " << *id << "\n";
+      auto* type = boost::get_error_info<scram::mef::errinfo_element_type>(err);
+      assert(type);
+      std::cerr << "MEF Element type: " << *type << "\n";
     }
     if (const std::string* container =
             boost::get_error_info<scram::mef::errinfo_container>(err)) {

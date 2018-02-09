@@ -31,6 +31,7 @@
 #include <boost/current_function.hpp>
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
+#include <boost/exception/info_tuple.hpp>
 
 #include "ext/source_info.h"
 
@@ -101,6 +102,15 @@ namespace mef {  // MEF specific errors.
 
 /// The MEF container element as namespace.
 using errinfo_container = boost::error_info<struct tag_contianer, std::string>;
+
+/// The MEF element identifier data in errors.
+/// @{
+using errinfo_element_id =
+    boost::error_info<struct tag_element_id, std::string>;
+using errinfo_element_type =
+    boost::error_info<struct tag_element_type, const char*>;
+using errinfo_element = boost::tuple<errinfo_element_id, errinfo_element_type>;
+/// @}
 
 /// For validating input parameters or user arguments.
 struct ValidityError : public Error {
