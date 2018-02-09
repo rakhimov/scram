@@ -82,10 +82,6 @@ class Initializer : private boost::noncopyable {
   /// @returns The model built from the input files.
   std::shared_ptr<Model> model() const { return model_; }
 
-  /// @returns The parsed & validated XML DOM documents
-  ///          corresponding to the input files (the same order).
-  const std::vector<xml::Document>& documents() const { return documents_; }
-
  private:
   /// Convenience alias for expression extractor function types.
   using ExtractorFunction = std::unique_ptr<Expression> (*)(
