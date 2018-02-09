@@ -65,6 +65,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_files  The MEF XML input files.
   /// @param[in] settings  Analysis settings.
   /// @param[in] allow_extern  Allow external libraries in the input.
+  /// @param[in] extra_validator  Additional XML validator to be run
+  ///                             after the MEF validator.
   ///
   /// @throws ValidityError  The input contains errors.
   /// @throws IOError  Input contains duplicate files.
@@ -74,7 +76,8 @@ class Initializer : private boost::noncopyable {
   ///          It allows loading and executing arbitrary code during analysis.
   ///          Enable this feature for trusted input files and libraries only.
   Initializer(const std::vector<std::string>& xml_files,
-              core::Settings settings, bool allow_extern = false);
+              core::Settings settings, bool allow_extern = false,
+              xml::Validator* extra_validator = nullptr);
 
   /// @returns The model built from the input files.
   std::shared_ptr<Model> model() const { return model_; }
@@ -491,6 +494,7 @@ class Initializer : private boost::noncopyable {
   std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
+  xml::Validator* extra_validator_;  ///< The optional extra XML validation.
 
   /// Saved XML documents to keep elements alive.
   std::vector<xml::Document> documents_;

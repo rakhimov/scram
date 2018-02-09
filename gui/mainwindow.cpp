@@ -301,9 +301,8 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
         std::vector<std::string> allInput = m_inputFiles;
         allInput.insert(allInput.end(), inputFiles.begin(), inputFiles.end());
         std::shared_ptr<mef::Model> newModel = [this, &allInput] {
-            mef::Initializer init(allInput, m_settings);
-            for (int i = m_inputFiles.size(); i < allInput.size(); ++i)
-                validator.validate(init.documents()[i]);
+            mef::Initializer init(allInput, m_settings, /*allow_extern=*/false,
+                                  &validator);
             return init.model();
         }();
 

@@ -154,8 +154,11 @@ PhasePtr ConstructElement<Phase>(const xml::Element& xml_element) {
 }  // namespace
 
 Initializer::Initializer(const std::vector<std::string>& xml_files,
-                         core::Settings settings, bool allow_extern)
-    : settings_(std::move(settings)), allow_extern_(allow_extern) {
+                         core::Settings settings, bool allow_extern,
+                         xml::Validator* extra_validator)
+    : settings_(std::move(settings)),
+      allow_extern_(allow_extern),
+      extra_validator_(extra_validator) {
   BLOG(WARNING, allow_extern_) << "Enabling external dynamic libraries";
   ProcessInputFiles(xml_files);
 }
@@ -336,6 +339,8 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   CLOCK(parse_time);
   LOG(DEBUG3) << "Parsing " << xml_file << " ...";
   xml::Document document(xml_file, &validator);
+  if (extra_validator_)
+    extra_validator_->validate(document);
   LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
 
   xml::Element root = document.root();
