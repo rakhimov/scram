@@ -66,8 +66,8 @@ class Initializer : private boost::noncopyable {
   /// @param[in] settings  Analysis settings.
   /// @param[in] allow_extern  Allow external libraries in the input.
   ///
-  /// @throws DuplicateElementError  Input contains duplicate files.
   /// @throws ValidityError  The input contains errors.
+  /// @throws IOError  Input contains duplicate files.
   /// @throws IOError  One of the input files is not accessible.
   ///
   /// @warning Processing external libraries from XML input is **UNSAFE**.

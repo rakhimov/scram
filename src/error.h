@@ -119,7 +119,7 @@ struct ValidityError : public Error {
 
 /// This error indicates that elements must be unique.
 struct DuplicateElementError : public ValidityError {
-  using ValidityError::ValidityError;
+  DuplicateElementError() : ValidityError("Duplicate Element Error") {}
 };
 
 /// The error for undefined elements in a model.

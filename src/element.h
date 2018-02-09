@@ -77,8 +77,8 @@ class Element : private boost::noncopyable {
   ///
   /// @param[in] attr  Unique attribute of this element.
   ///
-  /// @throws DuplicateElementError  A member attribute with the same name
-  ///                                 already exists.
+  /// @throws ValidityError  A member attribute with the same name
+  ///                        already exists.
   ///
   /// @post Pointers or references
   ///       to existing attributes may get invalidated.
@@ -272,10 +272,8 @@ using IdTable = boost::multi_index_container<
 template <class T, class Table>
 void AddElement(T&& element, Table* table, const char* type) {
   const std::string& name = Id::unique_name(*element);  // Get id before move.
-  if (table->insert(std::forward<T>(element)).second == false) {  // Move!
-    SCRAM_THROW(DuplicateElementError("Duplicate Element Error"))
-        << errinfo_element(name, type);
-  }
+  if (table->insert(std::forward<T>(element)).second == false)  // Move!
+    SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, type);
 }
 
 /// Mixin class for providing marks for graph nodes.

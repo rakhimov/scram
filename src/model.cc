@@ -68,8 +68,7 @@ void Model::Add(ParameterPtr parameter) {
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
   if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
-    SCRAM_THROW(DuplicateElementError("Duplicate Element Error"))
-        << errinfo_element(id, "event");
+    SCRAM_THROW(DuplicateElementError()) << errinfo_element(id, "event");
 }
 
 void Model::Add(HouseEventPtr house_event) {

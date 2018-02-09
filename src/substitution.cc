@@ -29,8 +29,8 @@ void Substitution::Add(BasicEvent* source_event) {
   if (ext::any_of(source_, [source_event](BasicEvent* arg) {
         return arg->id() == source_event->id();
       })) {
-    SCRAM_THROW(
-        DuplicateElementError("Duplicate source event: " + source_event->id()));
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(source_event->id(), "source event");
   }
   source_.push_back(source_event);
 }

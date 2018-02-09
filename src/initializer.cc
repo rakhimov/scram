@@ -196,7 +196,7 @@ void Initializer::CheckDuplicateFiles(
       msg << "    " << it->second << "\n";
     }
     msg << "  POSIX Path: " << file_path.first.c_str();
-    SCRAM_THROW(DuplicateElementError(msg.str()));
+    SCRAM_THROW(IOError(msg.str()));
   }
 }
 

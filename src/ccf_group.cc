@@ -60,9 +60,8 @@ void CcfGroup::AddMember(BasicEvent* basic_event) {
   if (ext::any_of(members_, [&basic_event](BasicEvent* member) {
         return member->name() == basic_event->name();
       })) {
-    SCRAM_THROW(DuplicateElementError("Duplicate member " +
-                                      basic_event->name() + " in " +
-                                      Element::name() + " CCF group."));
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(basic_event->name(), "CCF group event");
   }
   members_.push_back(basic_event);
 }
@@ -103,9 +102,9 @@ void CcfGroup::AddFactor(Expression* factor, std::optional<int> level) {
 
   int index = *level - min_level;
   if (index < factors_.size() && factors_[index].second != nullptr) {
-    SCRAM_THROW(DuplicateElementError("Redefinition of CCF factor for level " +
-                                      std::to_string(*level) + " in " +
-                                      Element::name() + " CCF group."));
+    SCRAM_THROW(ValidityError("Redefinition of CCF factor for level " +
+                              std::to_string(*level) + " in " +
+                              Element::name() + " CCF group."));
   }
   if (index >= factors_.size())
     factors_.resize(index + 1);

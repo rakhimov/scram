@@ -118,7 +118,7 @@ class CcfGroup : public Id {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidityError  The level is invalid.
-  /// @throws DuplicateElementError  The factor for the level already exists.
+  /// @throws ValidityError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
   void AddFactor(Expression* factor, std::optional<int> level = {});

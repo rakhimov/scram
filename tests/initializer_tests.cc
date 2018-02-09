@@ -55,7 +55,7 @@ TEST_CASE("InitializerTest.PassTheSameFileTwice", "[mef::initializer]") {
   std::string the_same_path =  // Path obfuscation.
       "tests/../tests/input/fta/correct_tree_input.xml";
   CHECK_THROWS_AS(Initializer({input_correct, the_same_path}, core::Settings()),
-                  ValidityError);
+                  IOError);
 }
 
 // Test if the schema catches errors.

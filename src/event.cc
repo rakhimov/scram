@@ -49,7 +49,8 @@ void Formula::ArgSet::Add(ArgEvent event, bool complement) {
   if (ext::any_of(args_, [&base](const Arg& arg) {
         return ext::as<Event*>(arg.event)->id() == base->id();
       })) {
-    SCRAM_THROW(DuplicateElementError("Duplicate argument " + base->name()));
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(base->id(), "event");
   }
   args_.push_back({complement, event});
   if (!base->usage())
@@ -162,7 +163,8 @@ void Formula::Swap(ArgEvent current, ArgEvent other) {
         return arg.event != current &&
                ext::as<Event*>(arg.event)->id() == base->id();
       })) {
-    SCRAM_THROW(DuplicateElementError("Duplicate argument " + base->name()));
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(base->id(), "event");
   }
 
   ValidateNesting({it->complement, other});
