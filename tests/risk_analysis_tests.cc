@@ -50,8 +50,7 @@ RiskAnalysisTest::RiskAnalysisTest() {
 
 void RiskAnalysisTest::ProcessInputFiles(
     const std::vector<std::string>& input_files, bool allow_extern) {
-  mef::Initializer init(input_files, settings, allow_extern);
-  model = init.model();
+  model = mef::Initializer(input_files, settings, allow_extern).model();
   analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
   result_ = Result();
 }

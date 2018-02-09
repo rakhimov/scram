@@ -147,7 +147,7 @@ class RiskAnalysisTest {
 
   // Members
   std::unique_ptr<RiskAnalysis> analysis;
-  std::shared_ptr<mef::Model> model;
+  std::unique_ptr<mef::Model> model;
   Settings settings;
 
  private:

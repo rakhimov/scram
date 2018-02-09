@@ -299,7 +299,7 @@ private:
 
     std::vector<std::string> m_inputFiles;    ///< The project model files.
     core::Settings m_settings;                ///< The analysis settings.
-    std::shared_ptr<mef::Model> m_model;      ///< The analysis model.
+    std::unique_ptr<mef::Model> m_model;      ///< The analysis model.
     std::unique_ptr<model::Model> m_guiModel; ///< The GUI Model wrapper.
     std::unique_ptr<core::RiskAnalysis> m_analysis; ///< Report container.
 };

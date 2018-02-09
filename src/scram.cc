@@ -270,7 +270,7 @@ void RunScram(const po::variables_map& vm) {
   // Process input files
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
-  std::shared_ptr<scram::mef::Model> model =
+  std::unique_ptr<scram::mef::Model> model =
       scram::mef::Initializer(input_files, settings, vm.count("allow-extern"))
           .model();
 #ifndef NDEBUG

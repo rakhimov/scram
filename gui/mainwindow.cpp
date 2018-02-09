@@ -300,10 +300,10 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
     try {
         std::vector<std::string> allInput = m_inputFiles;
         allInput.insert(allInput.end(), inputFiles.begin(), inputFiles.end());
-        std::shared_ptr<mef::Model> newModel = [this, &allInput] {
-            mef::Initializer init(allInput, m_settings, /*allow_extern=*/false,
-                                  &validator);
-            return init.model();
+        std::unique_ptr<mef::Model> newModel = [this, &allInput] {
+            return mef::Initializer(allInput, m_settings,
+                                    /*allow_extern=*/false, &validator)
+                .model();
         }();
 
         for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
@@ -636,7 +636,7 @@ void MainWindow::createNewModel()
     }
 
     m_inputFiles.clear();
-    m_model = std::make_shared<mef::Model>();
+    m_model = std::make_unique<mef::Model>();
 
     emit configChanged();
 }

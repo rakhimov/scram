@@ -80,7 +80,7 @@ class Initializer : private boost::noncopyable {
               xml::Validator* extra_validator = nullptr);
 
   /// @returns The model built from the input files.
-  std::shared_ptr<Model> model() const { return model_; }
+  std::unique_ptr<Model> model() && { return std::move(model_); }
 
  private:
   /// Convenience alias for expression extractor function types.
@@ -487,7 +487,7 @@ class Initializer : private boost::noncopyable {
   /// @todo Research non-declarative substitutions with exact algorithms.
   void EnsureSubstitutionsWithApproximations();
 
-  std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
+  std::unique_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
   xml::Validator* extra_validator_;  ///< The optional extra XML validation.

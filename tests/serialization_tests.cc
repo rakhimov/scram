@@ -45,7 +45,7 @@ TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
       {"input/Theatre/theatre.xml"},
       {"input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"}};
 
-  std::shared_ptr<Model> model;
+  std::unique_ptr<Model> model;
   for (const auto& input : inputs) {
     INFO("inputs: " +
          Catch::StringMaker<std::vector<std::string>>::convert(input))
