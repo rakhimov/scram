@@ -61,7 +61,7 @@ public:
         HouseEvent = 1 << 0,
         BasicEvent = 1 << 1,
         Undeveloped = 1 << 2,
-        Gate = 1 << 4
+        Gate = 1 << 3
     };
 
     /// Creates a dialog for the definition of a new event.
