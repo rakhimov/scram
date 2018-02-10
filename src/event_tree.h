@@ -34,6 +34,9 @@ namespace scram::mef {
 /// Representation of sequences in event trees.
 class Sequence : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "sequence";
+
   using Element::Element;
 
   /// @param[in] instructions  Zero or more instructions for the sequence.
@@ -58,19 +61,20 @@ class EventTree;  // Manages the order assignment to functional events.
 
 /// Representation of functional events in event trees.
 class FunctionalEvent : public Element, public Usage {
-  friend class EventTree;
-
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "functional event";
+
   using Element::Element;
 
   /// @returns The order of the functional event in the event tree.
   /// @returns 0 if no order has been assigned.
   int order() const { return order_; }
 
- private:
   /// Sets the functional event order.
   void order(int order) { order_ = order; }
 
+ private:
   int order_ = 0;  ///< The order of the functional event.
 };
 
@@ -118,6 +122,8 @@ class NamedBranch : public Element,
                     public NodeMark,
                     public Usage {
  public:
+  static constexpr const char* kTypeString = "branch";  ///< For error message.
+
   using Element::Element;
 };
 
@@ -162,8 +168,15 @@ class Fork {
 };
 
 /// Event Tree representation with MEF constructs.
-class EventTree : public Element, public Usage {
+class EventTree : public Element,
+                  public Usage,
+                  public Composite<Container<EventTree, Sequence, false>,
+                                   Container<EventTree, FunctionalEvent>,
+                                   Container<EventTree, NamedBranch>> {
  public:
+  /// Container and element type string for error messages.
+  static constexpr const char* kTypeString = "event tree";
+
   using Element::Element;
 
   /// @returns The initial state branch of the event tree.
@@ -175,36 +188,29 @@ class EventTree : public Element, public Usage {
   /// @returns The container of event tree constructs of specific kind
   ///          with construct original names as keys.
   /// @{
+  const ElementTable<Sequence*>& sequances() const { return table<Sequence>(); }
   const ElementTable<FunctionalEventPtr>& functional_events() const {
-    return functional_events_;
+    return table<FunctionalEvent>();
   }
-  const ElementTable<NamedBranchPtr>& branches() const { return branches_; }
+  const ElementTable<NamedBranchPtr>& branches() const {
+    return table<NamedBranch>();
+  }
   /// @}
+
+  using Composite::Add;
+  using Composite::Remove;
 
   /// Adds event tree constructs into the container.
   ///
   /// @param[in] element  A unique element defined in this event tree.
   ///
   /// @throws DuplicateElementError  The element is already in this container.
-  ///
-  /// @{
-  void Add(Sequence* element);
-  void Add(FunctionalEventPtr element);
-  void Add(NamedBranchPtr element);
   void Add(std::unique_ptr<Fork> element) {
     forks_.push_back(std::move(element));
   }
-  /// @}
 
  private:
   Branch initial_state_;  ///< The starting point.
-
-  /// Containers for unique event tree constructs defined in this event tree.
-  /// @{
-  ElementTable<Sequence*> sequences_;
-  ElementTable<FunctionalEventPtr> functional_events_;
-  ElementTable<NamedBranchPtr> branches_;
-  /// @}
   std::vector<std::unique_ptr<Fork>> forks_;  ///< Lifetime management of forks.
 };
 

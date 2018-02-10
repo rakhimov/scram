@@ -625,7 +625,9 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
         if (node.name() == "define-branch") {
           event_tree->Add(ConstructElement<NamedBranch>(node));
         } else if (node.name() == "define-functional-event") {
-          event_tree->Add(ConstructElement<FunctionalEvent>(node));
+          FunctionalEventPtr event = ConstructElement<FunctionalEvent>(node);
+          event->order(event_tree->functional_events().size() + 1);
+          event_tree->Add(std::move(event));
         }
       } catch (ValidityError& err) {
         err << boost::errinfo_at_line(node.line());
