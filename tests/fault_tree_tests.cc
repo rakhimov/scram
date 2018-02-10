@@ -57,7 +57,7 @@ TEST_CASE("FaultTreeTest.AddCcfGroup", "[mef::fault_tree]") {
   FaultTree ft("never_fail");
   BetaFactorModel group("Golden");
   CHECK_NOTHROW(ft.Add(&group));
-  CHECK_THROWS_AS(ft.Add(&group), ValidityError);  // Trying to re-add.
+  CHECK_THROWS_AS(ft.Add(&group), DuplicateElementError);  // Trying to re-add.
 
   BetaFactorModel group_two("Iron");
   CHECK_NOTHROW(ft.Add(&group_two));

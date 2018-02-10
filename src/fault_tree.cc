@@ -59,14 +59,6 @@ void Component::Add(CcfGroup* ccf_group) {
   ccf_groups_.insert(ccf_group);
 }
 
-void Component::Add(std::unique_ptr<Component> component) {
-  if (components_.count(component->name())) {
-    SCRAM_THROW(DuplicateElementError())
-        << errinfo_element(component->name(), "component");
-  }
-  components_.insert(std::move(component));
-}
-
 namespace {
 
 /// Helper function to remove events from component containers.
@@ -96,18 +88,18 @@ void Component::Remove(Gate* element) { return RemoveEvent(element, &gates_); }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
   gates->insert(gates_.begin(), gates_.end());
-  for (const ComponentPtr& component : components_)
+  for (const ComponentPtr& component : components())
     component->GatherGates(gates);
 }
 
-template <class T, class Container>
-void Component::AddEvent(T* event, Container* container) {
+template <class T, class Table>
+void Component::AddEvent(T* event, Table* table) {
   const std::string& name = event->name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
     SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, "event");
   }
-  container->insert(event);
+  table->insert(event);
 }
 
 FaultTree::FaultTree(const std::string& name) : Component(name) {}

@@ -33,8 +33,13 @@
 namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public Element, public Role {
+class Component : public Element,
+                  public Role,
+                  public Container<Component, Component, true, false> {
  public:
+  /// Type identifier string for error messages.
+  static constexpr const char* kTypeString = "component/fault tree";
+
   /// Constructs a component assuming
   /// that it exists within some fault tree.
   /// The public or private role of a component is not
@@ -67,9 +72,12 @@ class Component : public Element, public Role {
   const ElementTable<Parameter*>& parameters() const { return parameters_; }
   const ElementTable<CcfGroup*>& ccf_groups() const { return ccf_groups_; }
   const ElementTable<std::unique_ptr<Component>>& components() const {
-    return components_;
+    return Container::table();
   }
   /// @}
+
+  using Container::Add;
+  using Container::Remove;
 
   /// Adds MEF constructs into this component container.
   ///
@@ -83,7 +91,6 @@ class Component : public Element, public Role {
   void Add(HouseEvent* element);
   void Add(Parameter* element);
   void Add(CcfGroup* element);
-  void Add(std::unique_ptr<Component> element);
   /// @}
 
   /// Removes Event from the component container.
@@ -107,26 +114,24 @@ class Component : public Element, public Role {
   void GatherGates(std::unordered_set<Gate*>* gates);
 
  private:
-  /// Adds an event into this component container.
+  /// Adds an event into this component table.
   ///
   /// @tparam T  The event type.
-  /// @tparam Container  Map with the event's original name as the key.
+  /// @tparam Table  Map with the event's original name as the key.
   ///
   /// @param[in] event  The event to be added to this component.
-  /// @param[in,out] container  The destination container.
+  /// @param[in,out] table  The destination table.
   ///
-  /// @throws DuplicateElementError  The event is already in this container.
-  template <class T, class Container>
-  void AddEvent(T* event, Container* container);
+  /// @throws DuplicateElementError  The event is already in this table.
+  template <class T, class Table>
+  void AddEvent(T* event, Table* table);
 
   /// Container for component constructs with original names as keys.
   /// @{
   ElementTable<Gate*> gates_;
   ElementTable<BasicEvent*> basic_events_;
   ElementTable<HouseEvent*> house_events_;
-  ElementTable<Parameter*> parameters_;
   ElementTable<CcfGroup*> ccf_groups_;
-  ElementTable<std::unique_ptr<Component>> components_;
   /// @}
 };
 
