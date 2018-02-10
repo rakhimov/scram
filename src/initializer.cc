@@ -231,9 +231,10 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
 }
 
 template <class T>
-void Initializer::Register(T&& element, const xml::Element& xml_element) {
+void Initializer::Register(std::unique_ptr<T> element,
+                           const xml::Element& xml_element) {
   try {
-    model_->Add(std::forward<T>(element));
+    model_->Add(std::move(element));
   } catch (ValidityError& err) {
     err << boost::errinfo_at_line(xml_element.line());
     throw;

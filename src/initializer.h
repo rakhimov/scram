@@ -179,14 +179,14 @@ class Initializer : private boost::noncopyable {
 
   /// Registers an element into the model.
   ///
-  /// @tparam T  A pointer type to the element.
+  /// @tparam T  The element type.
   ///
   /// @param[in] element  The initialized element ready to be added into models.
   /// @param[in] xml_element  The related XML element for error messages.
   ///
   /// @throws ValidityError  Issues with adding the element into the model.
   template <class T>
-  void Register(T&& element, const xml::Element& xml_element);
+  void Register(std::unique_ptr<T> element, const xml::Element& xml_element);
 
   /// Constructs and registers an element in the model.
   ///
