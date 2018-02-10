@@ -297,6 +297,8 @@ template <class Self, class T, bool Ownership = true,
           bool ById = std::is_base_of_v<Id, T>>
 class Container {
  public:
+  /// The MEF Element type.
+  using ElementType = T;
   /// The pointer type (owning or not) to store in the table.
   using Pointer = std::conditional_t<Ownership, std::unique_ptr<T>, T*>;
   /// The table indexed by id or name.
@@ -360,6 +362,53 @@ class Container {
 
  private:
   TableType table_;  ///< Unique table with the elements.
+};
+
+namespace detail {  // Composite container helper facilities.
+
+/// Implementation of container_of to deal w/ empty type list.
+template <class E, class T, class... Ts>
+struct container_of_impl {
+  /// The type of the container with elements of type T.
+  using type = std::conditional_t<std::is_same_v<E, typename T::ElementType>, T,
+                                  typename container_of_impl<E, Ts...>::type>;
+};
+
+/// Specialization for an empty type list.
+template <class E>
+struct container_of_impl<E, void> {
+  using type = void;  ///< The indicator of not-found.
+};
+
+/// Finds the container type for the given element type.
+///
+/// @tparam E  The mef::Element type.
+/// @tparam T  The mef::Container type.
+/// @tparam Ts  Other mef::Container types in the type list.
+template <class E, class T, class... Ts>
+struct container_of : public container_of_impl<E, T, Ts..., void> {};
+
+}  // namespace detail
+
+/// The composition of multiple mef::Containers.
+///
+/// @tparam Ts  Container types.
+template <typename... Ts>
+class Composite : public Ts... {
+ public:
+  using Ts::Add...;
+  using Ts::Remove...;
+
+  /// @tparam T  The mef::Element type in the composite container.
+  ///
+  /// @returns The table containing the elements of the given type.
+  template <class T>
+  decltype(auto) table() const {
+    using ContainerType = typename detail::container_of<T, Ts...>::type;
+    static_assert(!std::is_same_v<ContainerType, void>,
+                  "No container with elements of type T.");
+    return ContainerType::table();
+  }
 };
 
 /// Adds a unique element into a table,
