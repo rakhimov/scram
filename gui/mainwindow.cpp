@@ -296,6 +296,8 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 
     if (inputFiles.empty())
         return true;
+    if (isWindowModified() && !saveModel())
+        return false;
 
     try {
         std::vector<std::string> allInput = m_inputFiles;
@@ -628,11 +630,8 @@ void MainWindow::createNewModel()
 
         if (answer == QMessageBox::Cancel)
             return;
-        if (answer == QMessageBox::Save) {
-            saveModel();
-            if (isWindowModified())
-                return;
-        }
+        if (answer == QMessageBox::Save && !saveModel())
+            return;
     }
 
     m_inputFiles.clear();
@@ -663,28 +662,28 @@ void MainWindow::autoSaveModel()
     saveToFile(m_inputFiles.front());
 }
 
-void MainWindow::saveModel()
+bool MainWindow::saveModel()
 {
     if (m_inputFiles.empty() || m_inputFiles.size() > 1)
         return saveModelAs();
-    saveToFile(m_inputFiles.front());
+    return saveToFile(m_inputFiles.front());
 }
 
-void MainWindow::saveModelAs()
+bool MainWindow::saveModelAs()
 {
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Model As"), QDir::homePath(),
         QStringLiteral("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
-        return;
-    saveToFile(filename.toStdString());
+        return false;
+    return saveToFile(filename.toStdString());
 }
 
-void MainWindow::saveToFile(std::string destination)
+bool MainWindow::saveToFile(std::string destination)
 {
-    GUI_ASSERT(!destination.empty(), );
-    GUI_ASSERT(m_model, );
+    GUI_ASSERT(!destination.empty(), false);
+    GUI_ASSERT(m_model, false);
 
     namespace fs = boost::filesystem;
     fs::path temp_file = destination + "." + fs::unique_path().string();
@@ -700,11 +699,12 @@ void MainWindow::saveToFile(std::string destination)
         }
     } catch (const IOError &err) {
         displayError(err, tr("Save error", "error on saving to file"), this);
-        return;
+        return false;
     }
     m_undoStack->setClean();
     m_inputFiles.clear();
     m_inputFiles.push_back(std::move(destination));
+    return true;
 }
 
 void MainWindow::updateRecentFiles(QStringList filePaths)
@@ -759,8 +759,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (answer == QMessageBox::Discard)
         return event->accept();
 
-    saveModel();
-    return isWindowModified() ? event->ignore() : event->accept();
+    return saveModel() ? event->accept() : event->ignore();
 }
 
 void MainWindow::closeTab(int index)
