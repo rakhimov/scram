@@ -23,7 +23,9 @@
 
 #include <cstdint>
 
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <boost/multi_index/hashed_index.hpp>
@@ -32,8 +34,33 @@
 #include <boost/noncopyable.hpp>
 
 #include "error.h"
+#include "ext/multi_index.h"
 
 namespace scram::mef {
+
+class Element;
+
+/// Elements in MEF containers.
+class ContainerElement {
+  template <class, class, bool, bool>
+  friend class Container;  // Only containers manage their elements.
+
+ protected:
+  /// @returns The pointer to the parent container.
+  ///          nullptr if no container is provided.
+  const Element* container() const { return container_; }
+
+ private:
+  /// @param[in] element  The element that is the parent container.
+  ///                     nullptr if no container.
+  void container(const Element* element) { container_ = element; }
+
+  /// The optional reference to the parent container element
+  /// that this element is a member of.
+  ///
+  /// @note Attributes are inherited from the parent container.
+  const Element* container_ = nullptr;
+};
 
 /// This struct allows any attribute.
 struct Attribute {
@@ -46,7 +73,7 @@ struct Attribute {
 /// any element of analysis
 /// that can have extra descriptions,
 /// such as attributes and a label.
-class Element : private boost::noncopyable {
+class Element : public ContainerElement, private boost::noncopyable {
  public:
   /// Constructs an element with an original name.
   /// The name is expected to conform to identifier requirements
@@ -130,11 +157,13 @@ class Element : private boost::noncopyable {
   std::string name_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
 
-  /// Container of attributes ordered by insertion time.
+  /// Element attributes ordered by insertion time.
   /// The attributes are unique by their names.
   ///
+  /// @note The element attributes override its inherited attributes.
+  ///
   /// @note Using a hash table incurs a huge memory overhead (~400B / element).
-  /// @note Elements are expected to have few attributes,
+  /// @note Elements are expected to have very few attributes,
   ///       complex containers may be overkill.
   std::vector<Attribute> attributes_;
 };
@@ -257,6 +286,81 @@ using IdTable = boost::multi_index_container<
     T,
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
         boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
+
+/// The MEF Container of unique elements.
+///
+/// @tparam Self  The deriving MEF container type for the CRTP.
+/// @tparam T  The MEF element type stored in the container.
+/// @tparam Ownership  True if the container takes ownership over the elements.
+/// @tparam ById  The indexation strategy (ID or name) to keep elements unique.
+template <class Self, class T, bool Ownership = true,
+          bool ById = std::is_base_of_v<Id, T>>
+class Container {
+ public:
+  /// The pointer type (owning or not) to store in the table.
+  using Pointer = std::conditional_t<Ownership, std::unique_ptr<T>, T*>;
+  /// The table indexed by id or name.
+  using TableType =
+      std::conditional_t<ById, IdTable<Pointer>, ElementTable<Pointer>>;
+
+  /// @returns The underlying table with the elements.
+  const TableType& table() const { return table_; }
+
+  /// Adds a unique element into the container,
+  /// ensuring no duplicated entries.
+  ///
+  /// @param[in] element  The pointer to the unique element.
+  ///
+  /// @throws DuplicateElementError  The element is already in the container.
+  void Add(Pointer element) {
+    T& stable_ref = *element;  // The pointer will be moved later.
+    if (table_.insert(std::move(element)).second == false) {
+      SCRAM_THROW(DuplicateElementError())
+          << errinfo_element(Id::unique_name(stable_ref), T::kTypeString)
+          << errinfo_container(Id::unique_name(static_cast<Self&>(*this)),
+                               Self::kTypeString);
+    }
+    stable_ref.container(static_cast<const Self*>(this));
+  }
+
+  /// Removes MEF elements from the container.
+  ///
+  /// @param[in] element  An element defined in this container.
+  ///
+  /// @returns The removed element.
+  ///
+  /// @throws UndefinedElement  The element cannot be found in the container.
+  /// @throws LogicError  The element in the container is not the same object.
+  Pointer Remove(T* element) {
+    const std::string& key = [element]() -> decltype(auto) {
+      if constexpr (ById) {
+        return element->id();
+      } else {
+        return element->name();
+      }
+    }();
+
+    auto it = table_.find(key);
+
+    try {
+      if (it == table_.end())
+        SCRAM_THROW(UndefinedElement("Undefined Element"));
+      if (&**it != element)
+        SCRAM_THROW(LogicError("Duplicate element with different address."));
+
+    } catch (Error& err) {
+      err << errinfo_element(Id::unique_name(*element), T::kTypeString)
+          << errinfo_container(Id::unique_name(static_cast<Self&>(*this)),
+                               Self::kTypeString);
+      throw;
+    }
+    element->container(nullptr);
+    return ext::extract(it, &table_);  // no-throw.
+  }
+
+ private:
+  TableType table_;  ///< Unique table with the elements.
+};
 
 /// Adds a unique element into a table,
 /// ensuring no duplicated entries.
