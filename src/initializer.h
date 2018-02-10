@@ -68,9 +68,11 @@ class Initializer : private boost::noncopyable {
   /// @param[in] extra_validator  Additional XML validator to be run
   ///                             after the MEF validator.
   ///
-  /// @throws ValidityError  The input contains errors.
   /// @throws IOError  Input contains duplicate files.
   /// @throws IOError  One of the input files is not accessible.
+  /// @throws xml::Error  The xml files contain errors or malformed.
+  /// @throws xml::ValidityError  The xml files are not valid for schema.
+  /// @throws mef::ValidityError  The input model contains errors.
   ///
   /// @warning Processing external libraries from XML input is **UNSAFE**.
   ///          It allows loading and executing arbitrary code during analysis.
@@ -146,26 +148,27 @@ class Initializer : private boost::noncopyable {
   ///
   /// @param[in] xml_files  The formatted XML input files.
   ///
-  /// @throws DuplicateElementError  Input contains duplicate files.
-  /// @throws ValidityError  The input contains errors.
+  /// @throws xml::Error  The xml files are erroneous or malformed.
+  /// @throws xml::ValidityError The xml files do not pass validation.
+  /// @throws mef::ValidityError  The input model contains errors.
   /// @throws IOError  One of the input files is not accessible.
+  /// @throws IOError  Input contains duplicate files.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
-  /// Reads one input file with the structure of analysis entities.
-  /// Initializes the analysis from the given input file.
+  /// Reads one input XML file document with the structure of analysis entities.
+  /// Initializes the analysis from the given document.
   /// Puts all events into their appropriate containers.
   /// This function mostly registers element definitions,
   /// but it may leave them to be defined later
   /// because of possible undefined dependencies of those elements.
   ///
-  /// @param[in] xml_file  The formatted XML input file.
+  /// @param[in] document  The XML DOM document from a model input file.
   ///
-  /// @pre The input file has not been passed before.
+  /// @pre The document has not been passed before.
   ///
-  /// @throws ValidityError  The input contains errors.
-  /// @throws IOError  The input file is not accessible.
+  /// @throws ValidityError  The input model contains errors.
   /// @throws IllegalOperation  Loading external libraries is disallowed.
-  void ProcessInputFile(const std::string& xml_file);
+  void ProcessInputFile(const xml::Document& document);
 
   /// Processes definitions of elements
   /// that are left to be determined later.
@@ -395,11 +398,9 @@ class Initializer : private boost::noncopyable {
   /// Defines and loads extern libraries.
   ///
   /// @param[in] xml_node  The XML element with the data.
-  /// @param[in] xml_file  The XML file path.
   ///
   /// @throws ValidityError  The initialization contains validity errors.
-  void DefineExternLibraries(const xml::Element& xml_node,
-                             const std::string& xml_file);
+  void DefineExternLibraries(const xml::Element& xml_node);
 
   /// Defines extern function.
   ///

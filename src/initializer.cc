@@ -187,21 +187,32 @@ void Initializer::CheckDuplicateFiles(
 }
 
 void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
+  static xml::Validator validator(env::input_schema());
+
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
   CheckFileExistence(xml_files);
   CheckDuplicateFiles(xml_files);
   for (const auto& xml_file : xml_files) {
+    CLOCK(parse_time);
+    LOG(DEBUG3) << "Parsing " << xml_file << " ...";
+    xml::Document document(xml_file, &validator);
+    if (extra_validator_)
+      extra_validator_->validate(document);
+    documents_.emplace_back(std::move(document));
+    LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
+  }
+  CLOCK(def_time);
+  for (const xml::Document& document : documents_) {
     try {
-      ProcessInputFile(xml_file);
+      ProcessInputFile(document);
     } catch (ValidityError& err) {
-      err << boost::errinfo_file_name(xml_file);
+      err << boost::errinfo_file_name(document.root().filename());
       throw;
     }
   }
-  CLOCK(def_time);
   ProcessTbdElements();
-  LOG(DEBUG2) << "TBD Element definition time " << DUR(def_time);
+  LOG(DEBUG2) << "Element definition time " << DUR(def_time);
   LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   CLOCK(valid_time);
@@ -333,16 +344,7 @@ Sequence* Initializer::Register(const xml::Element& xml_node,
 }
 /// @}
 
-void Initializer::ProcessInputFile(const std::string& xml_file) {
-  static xml::Validator validator(env::input_schema());
-
-  CLOCK(parse_time);
-  LOG(DEBUG3) << "Parsing " << xml_file << " ...";
-  xml::Document document(xml_file, &validator);
-  if (extra_validator_)
-    extra_validator_->validate(document);
-  LOG(DEBUG3) << "Parsed " << xml_file << " in " << DUR(parse_time);
-
+void Initializer::ProcessInputFile(const xml::Document& document) {
   xml::Element root = document.root();
   assert(root.name() == "opsa-mef");
 
@@ -393,14 +395,12 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
       if (!allow_extern_) {
         SCRAM_THROW(
             IllegalOperation("Loading external libraries is disallowed!"))
-            << boost::errinfo_file_name(xml_file)
+            << boost::errinfo_file_name(node.filename())
             << boost::errinfo_at_line(node.line());
       }
-      DefineExternLibraries(node, xml_file);
+      DefineExternLibraries(node);
     }
   }
-
-  documents_.emplace_back(std::move(document));
 }
 
 /// Specializations for elements defined after registration.
@@ -1374,21 +1374,20 @@ Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
 
 #undef GET_EVENT
 
-void Initializer::DefineExternLibraries(const xml::Element& xml_node,
-                                        const std::string& xml_file) {
+void Initializer::DefineExternLibraries(const xml::Element& xml_node) {
   auto optional_bool = [&xml_node](const char* tag) {
     std::optional<bool> attribute = xml_node.attribute<bool>(tag);
     return attribute ? *attribute : false;
   };
-  auto library = [&xml_file, &xml_node, &optional_bool] {
+  auto library = [&xml_node, &optional_bool] {
     try {
       return std::make_unique<ExternLibrary>(
           std::string(xml_node.attribute("name")),
           std::string(xml_node.attribute("path")),
-          boost::filesystem::path(xml_file).parent_path(),
+          boost::filesystem::path(xml_node.filename()).parent_path(),
           optional_bool("system"), optional_bool("decorate"));
     } catch (DLError& err) {
-      err << boost::errinfo_file_name(xml_file)
+      err << boost::errinfo_file_name(xml_node.filename())
           << boost::errinfo_at_line(xml_node.line());
       throw;
     } catch (ValidityError& err) {
