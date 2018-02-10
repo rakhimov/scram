@@ -351,59 +351,54 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     model_->mission_time().value(settings_.mission_time());
   }
 
-  for (const xml::Element& child : root.children("define-initiating-event")) {
-    InitiatingEventPtr initiating_event =
-        ConstructElement<InitiatingEvent>(child);
-    auto* ref_ptr = initiating_event.get();
-    Register(std::move(initiating_event), child);
-    tbd_.emplace_back(ref_ptr, child);
-  }
+  for (const xml::Element& node : root.children()) {
+    if (node.name() == "define-initiating-event") {
+      InitiatingEventPtr initiating_event =
+          ConstructElement<InitiatingEvent>(node);
+      auto* ref_ptr = initiating_event.get();
+      Register(std::move(initiating_event), node);
+      tbd_.emplace_back(ref_ptr, node);
 
-  for (const xml::Element& child : root.children("define-rule")) {
-    RulePtr rule = ConstructElement<Rule>(child);
-    auto* ref_ptr = rule.get();
-    Register(std::move(rule), child);
-    tbd_.emplace_back(ref_ptr, child);
-  }
+    } else if (node.name() == "define-rule") {
+      RulePtr rule = ConstructElement<Rule>(node);
+      auto* ref_ptr = rule.get();
+      Register(std::move(rule), node);
+      tbd_.emplace_back(ref_ptr, node);
 
-  for (const xml::Element& node : root.children("define-event-tree")) {
-    DefineEventTree(node);
-  }
+    } else if (node.name() == "define-event-tree") {
+      DefineEventTree(node);
 
-  for (const xml::Element& node : root.children("define-fault-tree")) {
-    DefineFaultTree(node);
-  }
+    } else if (node.name() == "define-fault-tree") {
+      DefineFaultTree(node);
 
-  for (const xml::Element& node : root.children("define-CCF-group")) {
-    Register<CcfGroup>(node, "", RoleSpecifier::kPublic);
-  }
+    } else if (node.name() == "define-CCF-group") {
+      Register<CcfGroup>(node, "", RoleSpecifier::kPublic);
 
-  for (const xml::Element& child : root.children("define-alignment")) {
-    AlignmentPtr alignment = ConstructElement<Alignment>(child);
-    auto* address = alignment.get();
-    Register(std::move(alignment), child);
-    tbd_.emplace_back(address, child);
-  }
+    } else if (node.name() == "define-alignment") {
+      AlignmentPtr alignment = ConstructElement<Alignment>(node);
+      auto* address = alignment.get();
+      Register(std::move(alignment), node);
+      tbd_.emplace_back(address, node);
 
-  for (const xml::Element& child : root.children("define-substitution")) {
-    SubstitutionPtr substitution = ConstructElement<Substitution>(child);
-    auto* address = substitution.get();
-    Register(std::move(substitution), child);
-    tbd_.emplace_back(address, child);
-  }
+    } else if (node.name() == "define-substitution") {
+      SubstitutionPtr substitution = ConstructElement<Substitution>(node);
+      auto* address = substitution.get();
+      Register(std::move(substitution), node);
+      tbd_.emplace_back(address, node);
 
-  for (const xml::Element& node : root.children("model-data")) {
-    ProcessModelData(node);
-  }
+    } else if (node.name() == "model-data") {
+      ProcessModelData(node);
 
-  auto extern_libraries = root.children("define-extern-library");
-  if (!allow_extern_ && !extern_libraries.empty()) {
-    SCRAM_THROW(IllegalOperation("Loading external libraries is disallowed!"))
-        << boost::errinfo_file_name(xml_file)
-        << boost::errinfo_at_line(extern_libraries.begin()->line());
+    } else if (node.name() == "define-extern-library") {
+      if (!allow_extern_) {
+        SCRAM_THROW(
+            IllegalOperation("Loading external libraries is disallowed!"))
+            << boost::errinfo_file_name(xml_file)
+            << boost::errinfo_at_line(node.line());
+      }
+      DefineExternLibraries(node, xml_file);
+    }
   }
-  for (const xml::Element& node : extern_libraries)
-    DefineExternLibraries(node, xml_file);
 
   documents_.emplace_back(std::move(document));
 }
@@ -620,24 +615,21 @@ void Initializer::ProcessTbdElements() {
 
 void Initializer::DefineEventTree(const xml::Element& et_node) {
   EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
-  for (const xml::Element& node : et_node.children("define-functional-event")) {
-    try {
-      event_tree->Add(ConstructElement<FunctionalEvent>(node));
-    } catch (ValidityError& err) {
-      err << boost::errinfo_at_line(node.line());
-      throw;
-    }
-  }
-  for (const xml::Element& node : et_node.children("define-sequence")) {
-    event_tree->Add(
-        Register<Sequence>(node, event_tree->name(), RoleSpecifier::kPublic));
-  }
-  for (const xml::Element& node : et_node.children("define-branch")) {
-    try {
-      event_tree->Add(ConstructElement<NamedBranch>(node));
-    } catch (ValidityError& err) {
-      err << boost::errinfo_at_line(node.line());
-      throw;
+  for (const xml::Element& node : et_node.children()) {
+    if (node.name() == "define-sequence") {
+      event_tree->Add(
+          Register<Sequence>(node, event_tree->name(), RoleSpecifier::kPublic));
+    } else {
+      try {
+        if (node.name() == "define-branch") {
+          event_tree->Add(ConstructElement<NamedBranch>(node));
+        } else if (node.name() == "define-functional-event") {
+          event_tree->Add(ConstructElement<FunctionalEvent>(node));
+        }
+      } catch (ValidityError& err) {
+        err << boost::errinfo_at_line(node.line());
+        throw;
+      }
     }
   }
   EventTree* tbd_element = event_tree.get();
@@ -665,48 +657,43 @@ ComponentPtr Initializer::DefineComponent(const xml::Element& component_node,
 void Initializer::RegisterFaultTreeData(const xml::Element& ft_node,
                                         const std::string& base_path,
                                         Component* component) {
-  for (const xml::Element& node : ft_node.children("define-house-event")) {
-    component->Add(Register<HouseEvent>(node, base_path, component->role()));
-  }
-  CLOCK(basic_time);
-  for (const xml::Element& node : ft_node.children("define-basic-event")) {
-    component->Add(Register<BasicEvent>(node, base_path, component->role()));
-  }
-  LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
-  for (const xml::Element& node : ft_node.children("define-parameter")) {
-    component->Add(Register<Parameter>(node, base_path, component->role()));
-  }
+  for (const xml::Element& node : ft_node.children()) {
+    if (node.name() == "define-basic-event") {
+      component->Add(Register<BasicEvent>(node, base_path, component->role()));
 
-  CLOCK(gate_time);
-  for (const xml::Element& node : ft_node.children("define-gate")) {
-    component->Add(Register<Gate>(node, base_path, component->role()));
-  }
-  LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
-  for (const xml::Element& node : ft_node.children("define-CCF-group")) {
-    component->Add(Register<CcfGroup>(node, base_path, component->role()));
-  }
-  for (const xml::Element& node : ft_node.children("define-component")) {
-    ComponentPtr sub = DefineComponent(node, base_path, component->role());
-    try {
-      component->Add(std::move(sub));
-    } catch (ValidityError& err) {
-      err << boost::errinfo_at_line(node.line());
-      throw;
+    } else if (node.name() == "define-parameter") {
+      component->Add(Register<Parameter>(node, base_path, component->role()));
+
+    } else if (node.name() == "define-gate") {
+      component->Add(Register<Gate>(node, base_path, component->role()));
+
+    } else if (node.name() == "define-house-event") {
+      component->Add(Register<HouseEvent>(node, base_path, component->role()));
+
+    } else if (node.name() == "define-CCF-group") {
+      component->Add(Register<CcfGroup>(node, base_path, component->role()));
+
+    } else if (node.name() == "define-component") {
+      ComponentPtr sub = DefineComponent(node, base_path, component->role());
+      try {
+        component->Add(std::move(sub));
+      } catch (ValidityError& err) {
+        err << boost::errinfo_at_line(node.line());
+        throw;
+      }
     }
   }
 }
 
 void Initializer::ProcessModelData(const xml::Element& model_data) {
-  for (const xml::Element& node : model_data.children("define-house-event")) {
-    Register<HouseEvent>(node, "", RoleSpecifier::kPublic);
-  }
-  CLOCK(basic_time);
-  for (const xml::Element& node : model_data.children("define-basic-event")) {
-    Register<BasicEvent>(node, "", RoleSpecifier::kPublic);
-  }
-  LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
-  for (const xml::Element& node : model_data.children("define-parameter")) {
-    Register<Parameter>(node, "", RoleSpecifier::kPublic);
+  for (const xml::Element& node : model_data.children()) {
+    if (node.name() == "define-basic-event") {
+      Register<BasicEvent>(node, "", RoleSpecifier::kPublic);
+    } else if (node.name() == "define-parameter") {
+      Register<Parameter>(node, "", RoleSpecifier::kPublic);
+    } else if (node.name() == "define-house-event") {
+      Register<HouseEvent>(node, "", RoleSpecifier::kPublic);
+    }
   }
 }
 
