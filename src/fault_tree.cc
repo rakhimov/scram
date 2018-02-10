@@ -28,18 +28,19 @@ Component::Component(std::string name, std::string base_path,
                      RoleSpecifier role)
     : Element(std::move(name)), Role(role, std::move(base_path)) {}
 
-void Component::Add(Gate* gate) { AddEvent(gate, &gates_); }
+void Component::Add(Gate* gate) {
+  CheckDuplicateEvent(*gate);
+  gates_.insert(gate);
+}
 
 void Component::Add(BasicEvent* basic_event) {
-  AddEvent(basic_event, &basic_events_);
+  CheckDuplicateEvent(*basic_event);
+  basic_events_.insert(basic_event);
 }
 
 void Component::Add(HouseEvent* house_event) {
-  AddEvent(house_event, &house_events_);
-}
-
-void Component::Add(Parameter* parameter) {
-  mef::AddElement(parameter, &parameters_, "parameter");
+  CheckDuplicateEvent(*house_event);
+  house_events_.insert(house_event);
 }
 
 void Component::Add(CcfGroup* ccf_group) {
@@ -92,14 +93,12 @@ void Component::GatherGates(std::unordered_set<Gate*>* gates) {
     component->GatherGates(gates);
 }
 
-template <class T, class Table>
-void Component::AddEvent(T* event, Table* table) {
-  const std::string& name = event->name();
+void Component::CheckDuplicateEvent(const Event& event) {
+  const std::string& name = event.name();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
     SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, "event");
   }
-  table->insert(event);
 }
 
 FaultTree::FaultTree(const std::string& name) : Component(name) {}

@@ -33,9 +33,11 @@
 namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public Element,
-                  public Role,
-                  public Container<Component, Component, true, false> {
+class Component
+    : public Element,
+      public Role,
+      public Composite<Container<Component, Component, true, false>,
+                       Container<Component, Parameter, false, false>> {
  public:
   /// Type identifier string for error messages.
   static constexpr const char* kTypeString = "component/fault tree";
@@ -69,15 +71,17 @@ class Component : public Element,
   const ElementTable<HouseEvent*>& house_events() const {
     return house_events_;
   }
-  const ElementTable<Parameter*>& parameters() const { return parameters_; }
+  const ElementTable<Parameter*>& parameters() const {
+    return table<Parameter>();
+  }
   const ElementTable<CcfGroup*>& ccf_groups() const { return ccf_groups_; }
   const ElementTable<std::unique_ptr<Component>>& components() const {
-    return Container::table();
+    return table<Component>();
   }
   /// @}
 
-  using Container::Add;
-  using Container::Remove;
+  using Composite::Add;
+  using Composite::Remove;
 
   /// Adds MEF constructs into this component container.
   ///
@@ -89,7 +93,6 @@ class Component : public Element,
   void Add(Gate* element);
   void Add(BasicEvent* element);
   void Add(HouseEvent* element);
-  void Add(Parameter* element);
   void Add(CcfGroup* element);
   /// @}
 
@@ -114,17 +117,12 @@ class Component : public Element,
   void GatherGates(std::unordered_set<Gate*>* gates);
 
  private:
-  /// Adds an event into this component table.
+  /// Checks if an event with the same id is already in the component.
   ///
-  /// @tparam T  The event type.
-  /// @tparam Table  Map with the event's original name as the key.
+  /// @param[in] event  The event to be tested for duplicate before insertion.
   ///
-  /// @param[in] event  The event to be added to this component.
-  /// @param[in,out] table  The destination table.
-  ///
-  /// @throws DuplicateElementError  The event is already in this table.
-  template <class T, class Table>
-  void AddEvent(T* event, Table* table);
+  /// @throws DuplicateElementError  The element is already in the model.
+  void CheckDuplicateEvent(const Event& event);
 
   /// Container for component constructs with original names as keys.
   /// @{

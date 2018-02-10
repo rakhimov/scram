@@ -86,6 +86,9 @@ class MissionTime : public Expression {
 /// It is both expression and element description.
 class Parameter : public Expression, public Id, public NodeMark, public Usage {
  public:
+  /// Type string for errors.
+  static constexpr const char* kTypeString = "parameter";
+
   using Id::Id;
 
   /// Sets the expression of this parameter.
