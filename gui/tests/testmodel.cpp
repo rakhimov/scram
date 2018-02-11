@@ -435,7 +435,7 @@ void TestModel::testBasicEventSetFlavor()
     TEST_EQ(spy.size(), 1);
     QCOMPARE(std::get<0>(spy.front()), value);
     QCOMPARE(proxy.flavor(), value);
-    QVERIFY(event.HasAttribute("flavor"));
+    QVERIFY(event.GetAttribute("flavor"));
     spy.clear();
 
     setter.undo();

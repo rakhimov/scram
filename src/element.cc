@@ -39,18 +39,29 @@ void Element::AddAttribute(Attribute attr) {
   }
 }
 
-void Element::SetAttribute(Attribute attr) {
+void Element::SetAttribute(Attribute attr) noexcept {
   auto [it, success] = attributes_.insert(std::move(attr));
   if (!success)
     *it = std::move(attr);
 }
 
-const Attribute& Element::GetAttribute(const std::string& name) const {
+const Attribute* Element::GetAttribute(const std::string& name) const noexcept {
   auto it = attributes_.find(name);
-  if (it == attributes_.end())
-    SCRAM_THROW(LogicError("Element does not have attribute: " + name));
+  if (it != attributes_.end())
+    return &*it;
 
-  return *it;
+  return container() ? container()->GetAttribute(name) : nullptr;
+}
+
+std::optional<Attribute>
+Element::RemoveAttribute(const std::string& name) noexcept {
+  std::optional<Attribute> attr;
+  auto it = attributes_.find(name);
+  if (it != attributes_.end()) {
+    attr = std::move(*it);
+    attributes_.erase(it);
+  }
+  return attr;
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)

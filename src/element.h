@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -123,12 +124,29 @@ class Attribute {
   std::string type_;  ///< Optional type of the attribute.
 };
 
-/// Mixin class that represents
-/// any element of analysis
-/// that can have extra descriptions,
-/// such as attributes and a label.
+/// The MEF Element
+/// with attributes and a label.
+/// This is a base/mixin class for most of the MEF constructs.
+///
+/// @note The class is not polymorphic.
 class Element : public ContainerElement, private boost::noncopyable {
+  /// Attribute key extractor.
+  struct AttributeKey {
+    /// Attributes are keyed by their names.
+    const std::string& operator()(const Attribute& attribute) const {
+      return attribute.name();
+    }
+  };
+
  public:
+  /// Unique attribute map keyed with the attribute names.
+  ///
+  /// @note Elements are expected to have very few attributes,
+  ///       complex containers may be overkill.
+  /// @note Using a multi-index or other tables incurs
+  ///       a huge memory overhead in common usage (up to 400B / attribute).
+  using AttributeMap = ext::linear_set<Attribute, AttributeKey>;
+
   /// Constructs an element with an original name.
   /// The name is expected to conform to identifier requirements
   /// described in the MEF documentation and additions.
@@ -146,25 +164,26 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @returns Empty string if the label has not been set.
   const std::string& label() const { return label_; }
 
-  /// Sets the label.
+  /// Sets the element label.
   ///
-  /// @param[in] label  The label text to be set.
+  /// @param[in] label  The extra description for the element.
   void label(std::string label) { label_ = std::move(label); }
 
-  /// @returns The current set of element attributes.
-  const std::vector<Attribute>& attributes() const {
-    return attributes_.data();
-  }
+  /// @returns The current set of element attributes (non-inherited!).
+  ///
+  /// @note The element attributes override its inherited attributes.
+  ///       However, the inherited attributes are not copied into the map.
+  ///       The precedence is followed upon lookup.
+  const AttributeMap& attributes() const { return attributes_; }
 
-  /// Adds an attribute to the attribute map.
+  /// Adds an attribute to the attribute map of this element.
   ///
-  /// @param[in] attr  Unique attribute of this element.
+  /// @param[in] attr  An attribute of this element.
   ///
-  /// @throws ValidityError  A member attribute with the same name
-  ///                        already exists.
+  /// @throws ValidityError  The attribute is duplicate.
   ///
-  /// @post Pointers or references
-  ///       to existing attributes may get invalidated.
+  /// @warning Pointers or references
+  ///          to existing attributes may get invalidated.
   void AddAttribute(Attribute attr);
 
   /// Sets an attribute to the attribute map.
@@ -173,34 +192,29 @@ class Element : public ContainerElement, private boost::noncopyable {
   ///
   /// @param[in] attr  An attribute of this element.
   ///
-  /// @post Pointers or references
-  ///       to existing attributes may get invalidated.
-  void SetAttribute(Attribute attr);
+  /// @warning Pointers or references
+  ///          to existing attributes may get invalidated.
+  void SetAttribute(Attribute attr) noexcept;
 
-  /// Checks if the element has a given attribute.
+  /// @param[in] name  The name of the attribute.
+  ///
+  /// @returns The attribute with the given name.
+  ///          nullptr if no attribute is found.
+  ///
+  /// @warning Attribute addresses are not stable.
+  ///          Do not store the returned pointer.
+  ///
+  /// @note Attributes can be inherited from parent containers.
+  const Attribute* GetAttribute(const std::string& name) const noexcept;
+
+  /// Removes an attribute of this element.
   ///
   /// @param[in] name  The identifying name of the attribute.
   ///
-  /// @returns true if this element has an attribute with the given name.
-  bool HasAttribute(const std::string& name) const {
-    return attributes_.count(name);
-  }
-
-  /// @returns A member attribute with the given name.
+  /// @returns The removed attribute if any.
   ///
-  /// @param[in] name  The id name of the attribute.
-  ///
-  /// @throws LogicError  There is no such attribute.
-  const Attribute& GetAttribute(const std::string& name) const;
-
-  /// Removes the attribute of the element.
-  ///
-  /// @param[in] name  The identifying name of the attribute.
-  ///
-  /// @returns false No such attribute to remove.
-  bool RemoveAttribute(const std::string& name) {
-    return attributes_.erase(name);
-  }
+  /// @post No inherited attributes are affected.
+  std::optional<Attribute> RemoveAttribute(const std::string& name) noexcept;
 
  protected:
   ~Element() = default;
@@ -217,23 +231,9 @@ class Element : public ContainerElement, private boost::noncopyable {
   std::string name_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
 
-  /// Attribute equality predicate for unique entries.
-  struct AttributeKey {
-    /// Tests attribute equality with attribute names.
-    const std::string& operator()(const Attribute& attribute) const {
-      return attribute.name();
-    }
-  };
-
   /// Element attributes ordered by insertion time.
   /// The attributes are unique by their names.
-  ///
-  /// @note The element attributes override its inherited attributes.
-  ///
-  /// @note Using a hash table incurs a huge memory overhead (~400B / element).
-  /// @note Elements are expected to have very few attributes,
-  ///       complex containers may be overkill.
-  ext::linear_set<Attribute, AttributeKey> attributes_;
+  AttributeMap attributes_;
 };
 
 /// Table of elements with unique names.
