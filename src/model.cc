@@ -32,23 +32,25 @@ Model::Model(std::string name)
 
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
-  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
-    SCRAM_THROW(DuplicateElementError()) << errinfo_element(id, "event");
+  if (gates().count(id) || basic_events().count(id) || house_events().count(id))
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(id, "event")
+        << errinfo_container(Element::name(), kTypeString);
 }
 
 void Model::Add(HouseEventPtr house_event) {
   CheckDuplicateEvent(*house_event);
-  house_events_.insert(std::move(house_event));
+  Composite::Add(std::move(house_event));
 }
 
 void Model::Add(BasicEventPtr basic_event) {
   CheckDuplicateEvent(*basic_event);
-  basic_events_.insert(std::move(basic_event));
+  Composite::Add(std::move(basic_event));
 }
 
 void Model::Add(GatePtr gate) {
   CheckDuplicateEvent(*gate);
-  gates_.insert(std::move(gate));
+  Composite::Add(std::move(gate));
 }
 
 Formula::ArgEvent Model::GetEvent(const std::string& id) {
@@ -60,33 +62,5 @@ Formula::ArgEvent Model::GetEvent(const std::string& id) {
     return it->get();
   SCRAM_THROW(UndefinedElement("The event " + id + " is not in the model."));
 }
-
-namespace {
-
-/// Helper function to remove events from containers.
-template <class T, class Table>
-std::unique_ptr<T> RemoveEvent(T* event, Table* table) {
-  auto it = table->find(event->id());
-  if (it == table->end())
-    SCRAM_THROW(
-        UndefinedElement("Event " + event->id() + " is not in the model."));
-
-  if (it->get() != event)
-    SCRAM_THROW(UndefinedElement("Duplicate event " + event->id() +
-                                 " does not belong to the model."));
-  return ext::extract(it, table);
-}
-
-}  // namespace
-
-HouseEventPtr Model::Remove(HouseEvent* house_event) {
-  return RemoveEvent(house_event, &house_events_);
-}
-
-BasicEventPtr Model::Remove(BasicEvent* basic_event) {
-  return RemoveEvent(basic_event, &basic_events_);
-}
-
-GatePtr Model::Remove(Gate* gate) { return RemoveEvent(gate, &gates_); }
 
 }  // namespace scram::mef

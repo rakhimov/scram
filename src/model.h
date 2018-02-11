@@ -40,15 +40,16 @@
 namespace scram::mef {
 
 /// This class represents a risk analysis model.
-class Model
-    : public Element,
-      public Composite<
-          Container<Model, InitiatingEvent>, Container<Model, EventTree>,
-          Container<Model, Sequence>, Container<Model, Rule>,
-          Container<Model, Alignment>, Container<Model, Substitution>,
-          Container<Model, FaultTree>, Container<Model, Parameter>,
-          Container<Model, CcfGroup>, Container<Model, ExternLibrary>,
-          Container<Model, ExternFunction<void>>> {
+class Model : public Element,
+              public Composite<
+                  Container<Model, InitiatingEvent>,
+                  Container<Model, EventTree>, Container<Model, Sequence>,
+                  Container<Model, Rule>, Container<Model, Alignment>,
+                  Container<Model, Substitution>, Container<Model, FaultTree>,
+                  Container<Model, BasicEvent>, Container<Model, Gate>,
+                  Container<Model, HouseEvent>, Container<Model, Parameter>,
+                  Container<Model, CcfGroup>, Container<Model, ExternLibrary>,
+                  Container<Model, ExternFunction<void>>> {
  public:
   /// Container type identifier string for error messages.
   static constexpr const char* kTypeString = "model";
@@ -111,9 +112,13 @@ class Model
   const IdTable<ParameterPtr>& parameters() const { return table<Parameter>(); }
   const MissionTime& mission_time() const { return *mission_time_; }
   MissionTime& mission_time() { return *mission_time_; }
-  const IdTable<HouseEventPtr>& house_events() const { return house_events_; }
-  const IdTable<BasicEventPtr>& basic_events() const { return basic_events_; }
-  const IdTable<GatePtr>& gates() const { return gates_; }
+  const IdTable<HouseEventPtr>& house_events() const {
+    return table<HouseEvent>();
+  }
+  const IdTable<BasicEventPtr>& basic_events() const {
+    return table<BasicEvent>();
+  }
+  const IdTable<GatePtr>& gates() const { return table<Gate>(); }
   const IdTable<CcfGroupPtr>& ccf_groups() const { return table<CcfGroup>(); }
   const ElementTable<std::unique_ptr<ExternLibrary>>& libraries() const {
     return table<ExternLibrary>();
@@ -153,19 +158,6 @@ class Model
   /// @throws UndefinedElement  The event with the given ID is not in the model.
   Formula::ArgEvent GetEvent(const std::string& id);
 
-  /// Removes MEF constructs from the model container.
-  ///
-  /// @param[in] element  An element defined in this model.
-  ///
-  /// @returns The removed element.
-  ///
-  /// @throws UndefinedElement  The element cannot be found.
-  /// @{
-  HouseEventPtr Remove(HouseEvent* element);
-  BasicEventPtr Remove(BasicEvent* element);
-  GatePtr Remove(Gate* element);
-  /// @}
-
  private:
   /// Checks if an event with the same id is already in the model.
   ///
@@ -176,9 +168,6 @@ class Model
 
   /// A collection of defined constructs in the model.
   /// @{
-  IdTable<GatePtr> gates_;
-  IdTable<HouseEventPtr> house_events_;
-  IdTable<BasicEventPtr> basic_events_;
   std::unique_ptr<MissionTime> mission_time_;
   std::vector<std::unique_ptr<Expression>> expressions_;
   std::vector<std::unique_ptr<Instruction>> instructions_;
