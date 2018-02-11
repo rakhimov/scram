@@ -141,6 +141,9 @@ using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 /// detection of top events.
 class FaultTree : public Component {
  public:
+  /// Type identifier string for error messages.
+  static constexpr const char* kTypeString = "fault tree";
+
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///

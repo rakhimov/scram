@@ -34,6 +34,9 @@ namespace scram::mef {
 /// Delete Terms, Recovery Rules, and Exchange Events.
 class Substitution : public Element {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "substitution";
+
   using Target = std::variant<BasicEvent*, bool>;  ///< The target type.
 
   /// The "traditional" substitution types.

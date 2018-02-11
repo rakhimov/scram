@@ -219,6 +219,9 @@ using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in a model.
 /// Event-tree Initiating Event.
 class InitiatingEvent : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "initiating event";
+
   using Element::Element;
 
   /// Associates an event tree to the initiating event.

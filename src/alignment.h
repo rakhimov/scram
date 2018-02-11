@@ -62,6 +62,9 @@ using PhasePtr = std::unique_ptr<Phase>;  ///< Phases are unique to alignments.
 /// Alignment configuration for the whole model per analysis.
 class Alignment : public Element {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "alignment";
+
   using Element::Element;
 
   /// @returns The phases defined in the alignment.

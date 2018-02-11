@@ -40,13 +40,24 @@
 namespace scram::mef {
 
 /// This class represents a risk analysis model.
-class Model : public Element {
+class Model
+    : public Element,
+      public Composite<
+          Container<Model, InitiatingEvent>, Container<Model, EventTree>,
+          Container<Model, Sequence>, Container<Model, Rule>,
+          Container<Model, Alignment>, Container<Model, Substitution>,
+          Container<Model, FaultTree>, Container<Model, Parameter>,
+          Container<Model, CcfGroup>, Container<Model, ExternLibrary>,
+          Container<Model, ExternFunction<void>>> {
  public:
+  /// Container type identifier string for error messages.
+  static constexpr const char* kTypeString = "model";
+
   /// Only Model is allowed to have an optional name,
   /// while all other Elements require names.
   /// An empty name is an error for Element class invariants as well.
   /// This leads to a nasty magic string based optional name for a model.
-  static const char kDefaultName[];
+  static constexpr const char kDefaultName[] = "__unnamed-model__";
 
   /// Creates a model container.
   ///
@@ -79,30 +90,41 @@ class Model : public Element {
   /// @returns Defined constructs in the model.
   /// @{
   const ElementTable<InitiatingEventPtr>& initiating_events() const {
-    return initiating_events_;
+    return table<InitiatingEvent>();
   }
-  const ElementTable<EventTreePtr>& event_trees() const { return event_trees_; }
-  const ElementTable<SequencePtr>& sequences() const { return sequences_; }
-  const ElementTable<RulePtr>& rules() const { return rules_; }
-  const ElementTable<FaultTreePtr>& fault_trees() const { return fault_trees_; }
-  const ElementTable<AlignmentPtr>& alignments() const { return alignments_; }
+  const ElementTable<EventTreePtr>& event_trees() const {
+    return table<EventTree>();
+  }
+  const ElementTable<SequencePtr>& sequences() const {
+    return table<Sequence>();
+  }
+  const ElementTable<RulePtr>& rules() const { return table<Rule>(); }
+  const ElementTable<FaultTreePtr>& fault_trees() const {
+    return table<FaultTree>();
+  }
+  const ElementTable<AlignmentPtr>& alignments() const {
+    return table<Alignment>();
+  }
   const ElementTable<SubstitutionPtr>& substitutions() const {
-    return substitutions_;
+    return table<Substitution>();
   }
-  const IdTable<ParameterPtr>& parameters() const { return parameters_; }
+  const IdTable<ParameterPtr>& parameters() const { return table<Parameter>(); }
   const MissionTime& mission_time() const { return *mission_time_; }
   MissionTime& mission_time() { return *mission_time_; }
   const IdTable<HouseEventPtr>& house_events() const { return house_events_; }
   const IdTable<BasicEventPtr>& basic_events() const { return basic_events_; }
   const IdTable<GatePtr>& gates() const { return gates_; }
-  const IdTable<CcfGroupPtr>& ccf_groups() const { return ccf_groups_; }
+  const IdTable<CcfGroupPtr>& ccf_groups() const { return table<CcfGroup>(); }
   const ElementTable<std::unique_ptr<ExternLibrary>>& libraries() const {
-    return libraries_;
+    return table<ExternLibrary>();
   }
   const ElementTable<ExternFunctionPtr>& extern_functions() const {
-    return extern_functions_;
+    return table<ExternFunction<void>>();
   }
   /// @}
+
+  using Composite::Add;
+  using Composite::Remove;
 
   /// Adds MEF constructs into the model container.
   ///
@@ -111,26 +133,15 @@ class Model : public Element {
   /// @throws DuplicateElementError  The element is already in the model.
   ///
   /// @{
-  void Add(InitiatingEventPtr element);
-  void Add(EventTreePtr element);
-  void Add(SequencePtr element);
-  void Add(RulePtr element);
-  void Add(FaultTreePtr element);
-  void Add(AlignmentPtr element);
-  void Add(SubstitutionPtr element);
-  void Add(ParameterPtr element);
   void Add(HouseEventPtr element);
   void Add(BasicEventPtr element);
   void Add(GatePtr element);
-  void Add(CcfGroupPtr element);
   void Add(std::unique_ptr<Expression> element) {
     expressions_.emplace_back(std::move(element));
   }
   void Add(std::unique_ptr<Instruction> element) {
     instructions_.emplace_back(std::move(element));
   }
-  void Add(std::unique_ptr<ExternLibrary> element);
-  void Add(ExternFunctionPtr element);
   /// @}
 
   /// Convenience function to retrieve an event with its ID.
@@ -153,7 +164,6 @@ class Model : public Element {
   HouseEventPtr Remove(HouseEvent* element);
   BasicEventPtr Remove(BasicEvent* element);
   GatePtr Remove(Gate* element);
-  FaultTreePtr Remove(FaultTree* element);
   /// @}
 
  private:
@@ -166,21 +176,10 @@ class Model : public Element {
 
   /// A collection of defined constructs in the model.
   /// @{
-  ElementTable<InitiatingEventPtr> initiating_events_;
-  ElementTable<EventTreePtr> event_trees_;
-  ElementTable<SequencePtr> sequences_;
-  ElementTable<RulePtr> rules_;
-  ElementTable<FaultTreePtr> fault_trees_;
-  ElementTable<AlignmentPtr> alignments_;
-  ElementTable<SubstitutionPtr> substitutions_;
   IdTable<GatePtr> gates_;
   IdTable<HouseEventPtr> house_events_;
   IdTable<BasicEventPtr> basic_events_;
-  IdTable<ParameterPtr> parameters_;
-  ElementTable<std::unique_ptr<ExternLibrary>> libraries_;
-  ElementTable<ExternFunctionPtr> extern_functions_;
   std::unique_ptr<MissionTime> mission_time_;
-  IdTable<CcfGroupPtr> ccf_groups_;
   std::vector<std::unique_ptr<Expression>> expressions_;
   std::vector<std::unique_ptr<Instruction>> instructions_;
   /// @}

@@ -79,6 +79,9 @@ class CcfEvent : public BasicEvent {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Id {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "CCF group";
+
   using Id::Id;
 
   virtual ~CcfGroup() = default;

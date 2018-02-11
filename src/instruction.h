@@ -148,6 +148,8 @@ class Rule : public Element,
              public NodeMark,
              public Usage {
  public:
+  static constexpr const char* kTypeString = "rule";  ///< For error messages.
+
   using Element::Element;
 
   /// @param[in] instructions  One or more instructions for the sequence.

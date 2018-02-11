@@ -42,6 +42,9 @@ namespace scram::mef {
 /// It supports only very basic interface for C function lookup with its symbol.
 class ExternLibrary : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "extern library";
+
   /// @copydoc Element::Element
   ///
   /// @param[in] lib_path  The library path with its name.
@@ -88,6 +91,9 @@ class ExternFunction;  // Forward declaration to specialize abstract base.
 template <>
 class ExternFunction<void> : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "extern function";
+
   using Element::Element;
 
   virtual ~ExternFunction() = default;
