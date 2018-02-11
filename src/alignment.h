@@ -32,6 +32,8 @@ namespace scram::mef {
 /// Phases of alignments the models spends its time fraction.
 class Phase : public Element {
  public:
+  static constexpr const char* kTypeString = "phase";  ///< For error messages.
+
   /// @copydoc Element::Element
   ///
   /// @param[in] time_fraction  The fraction of mission-time spent in the phase.
@@ -60,7 +62,7 @@ class Phase : public Element {
 using PhasePtr = std::unique_ptr<Phase>;  ///< Phases are unique to alignments.
 
 /// Alignment configuration for the whole model per analysis.
-class Alignment : public Element {
+class Alignment : public Element, public Container<Alignment, Phase> {
  public:
   /// Type string for error messages.
   static constexpr const char* kTypeString = "alignment";
@@ -68,22 +70,12 @@ class Alignment : public Element {
   using Element::Element;
 
   /// @returns The phases defined in the alignment.
-  const ElementTable<PhasePtr>& phases() const { return phases_; }
-
-  /// Adds a phase into alignment.
-  ///
-  /// @param[in] phase  One of the unique phases for the alignment.
-  ///
-  /// @throws DuplicateElementError  The phase is duplicate.
-  void Add(PhasePtr phase);
+  const ElementTable<PhasePtr>& phases() const { return Container::table(); }
 
   /// Ensures that all phases add up to be valid for the alignment.
   ///
   /// @throws ValidityError  Phases are incomplete (e.g., don't sum to 1).
   void Validate();
-
- private:
-  ElementTable<PhasePtr> phases_;  ///< The partitioning of the alignment.
 };
 
 using AlignmentPtr = std::unique_ptr<Alignment>;  ///< Unique model alignments.
