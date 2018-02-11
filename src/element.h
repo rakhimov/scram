@@ -16,8 +16,8 @@
  */
 
 /// @file
-/// Helper classes, structs, and properties
-/// common to all other classes.
+/// Base/mixin classes, structs, and properties
+/// common to all MEF classes/constructs.
 
 #pragma once
 
@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
@@ -354,6 +355,64 @@ using IdTable = boost::multi_index_container<
     T,
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
         boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
+
+/// Wraps the element container tables into ranges of plain references
+/// to hide the memory smart or raw pointers.
+///
+/// This range is used to enforce const correctness
+/// by not leaking modifiable elements in the const containers of pointers.
+///
+/// @tparam T  Const or non-const associative container type.
+template <class T>
+class TableRange {
+  /// Types inferred from the container.
+  /// @{
+  using pointer = typename T::value_type;
+  using deref_type = std::decay_t<decltype(*pointer(nullptr))>;
+  using value_type =
+      std::conditional_t<std::is_const_v<T>, std::add_const_t<deref_type>,
+                         deref_type>;
+  using key_type = typename T::key_type;
+  /// @}
+
+  static_assert(std::is_const_v<T> == std::is_const_v<value_type>);
+
+  /// The proxy forward iterator to extract values instead of pointers.
+  class iterator : public boost::iterator_facade<iterator, value_type,
+                                                 boost::forward_traversal_tag> {
+    friend class boost::iterator_core_access;
+
+   public:
+    /// @param[in] it  The iterator of the T container.
+    /*explicit*/ iterator(typename T::const_iterator it) : it_(it) {}  // NOLINT
+
+   private:
+    /// Standard forward iterator functionality.
+    /// @{
+    void increment() { ++it_; }
+    bool equal(const iterator& other) const { return it_ == other.it_; }
+    value_type& dereference() const { return **it_; }
+    /// @}
+
+    typename T::const_iterator it_;  ///< The iterator of value pointers.
+  };
+
+ public:
+  /// @param[in] table  The associative container of pointers.
+  explicit TableRange(T& table) : table_(table) {}
+
+  /// The proxy members for the common functionality of the associative table T.
+  /// @{
+  std::size_t size() const { return table_.size(); }
+  std::size_t count(const key_type& key) const { return table_.count(key); }
+  iterator find(const key_type& key) const { return table_.find(key); }
+  iterator begin() const { return table_.begin(); }
+  iterator end() const { return table_.end(); }
+  /// @}
+
+ private:
+  T& table_;  ///< The associative table being wrapped by this range.
+};
 
 /// The MEF Container of unique elements.
 ///
