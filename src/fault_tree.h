@@ -37,6 +37,9 @@ class Component
     : public Element,
       public Role,
       public Composite<Container<Component, Component, true, false>,
+                       Container<Component, BasicEvent, false, false>,
+                       Container<Component, HouseEvent, false, false>,
+                       Container<Component, Gate, false, false>,
                        Container<Component, Parameter, false, false>> {
  public:
   /// Type identifier string for error messages.
@@ -64,12 +67,12 @@ class Component
   /// @returns The container of component constructs of specific kind
   ///          with construct original names as keys.
   /// @{
-  const ElementTable<Gate*>& gates() const { return gates_; }
+  const ElementTable<Gate*>& gates() const { return table<Gate>(); }
   const ElementTable<BasicEvent*>& basic_events() const {
-    return basic_events_;
+    return table<BasicEvent>();
   }
   const ElementTable<HouseEvent*>& house_events() const {
-    return house_events_;
+    return table<HouseEvent>();
   }
   const ElementTable<Parameter*>& parameters() const {
     return table<Parameter>();
@@ -96,18 +99,6 @@ class Component
   void Add(CcfGroup* element);
   /// @}
 
-  /// Removes Event from the component container.
-  ///
-  /// @param[in] element  An element defined in this model.
-  ///
-  /// @throws UndefinedElement  The element doesn't belong to this container.
-  ///
-  /// @{
-  void Remove(HouseEvent* element);
-  void Remove(BasicEvent* element);
-  void Remove(Gate* element);
-  /// @}
-
  protected:
   /// Recursively traverses components
   /// to gather gates relevant to the whole component.
@@ -125,12 +116,7 @@ class Component
   void CheckDuplicateEvent(const Event& event);
 
   /// Container for component constructs with original names as keys.
-  /// @{
-  ElementTable<Gate*> gates_;
-  ElementTable<BasicEvent*> basic_events_;
-  ElementTable<HouseEvent*> house_events_;
   ElementTable<CcfGroup*> ccf_groups_;
-  /// @}
 };
 
 using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.

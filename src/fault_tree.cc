@@ -30,17 +30,17 @@ Component::Component(std::string name, std::string base_path,
 
 void Component::Add(Gate* gate) {
   CheckDuplicateEvent(*gate);
-  gates_.insert(gate);
+  Composite::Add(gate);
 }
 
 void Component::Add(BasicEvent* basic_event) {
   CheckDuplicateEvent(*basic_event);
-  basic_events_.insert(basic_event);
+  Composite::Add(basic_event);
 }
 
 void Component::Add(HouseEvent* house_event) {
   CheckDuplicateEvent(*house_event);
-  house_events_.insert(house_event);
+  Composite::Add(house_event);
 }
 
 void Component::Add(CcfGroup* ccf_group) {
@@ -48,56 +48,28 @@ void Component::Add(CcfGroup* ccf_group) {
     SCRAM_THROW(DuplicateElementError())
         << errinfo_element(ccf_group->name(), "CCF group");
   }
-  for (BasicEvent* member : ccf_group->members()) {
-    const std::string& name = member->name();
-    if (gates_.count(name) || basic_events_.count(name) ||
-        house_events_.count(name)) {
-      SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, "event");
-    }
-  }
-  for (const auto& member : ccf_group->members())
-    basic_events_.insert(member);
+  for (BasicEvent* member : ccf_group->members())
+    CheckDuplicateEvent(*member);
+
+  for (auto* member : ccf_group->members())
+    Composite::Add(member);
+
   ccf_groups_.insert(ccf_group);
 }
 
-namespace {
-
-/// Helper function to remove events from component containers.
-template <class T>
-void RemoveEvent(T* event, ElementTable<T*>* table) {
-  auto it = table->find(event->name());
-  if (it == table->end())
-    SCRAM_THROW(
-        UndefinedElement("Event " + event->id() + " is not in the component."));
-  if (*it != event)
-    SCRAM_THROW(UndefinedElement("Duplicate event " + event->id() +
-                                 " does not belong to the component."));
-  table->erase(it);
-}
-
-}  // namespace
-
-void Component::Remove(HouseEvent* element) {
-  return RemoveEvent(element, &house_events_);
-}
-
-void Component::Remove(BasicEvent* element) {
-  return RemoveEvent(element, &basic_events_);
-}
-
-void Component::Remove(Gate* element) { return RemoveEvent(element, &gates_); }
-
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  gates->insert(gates_.begin(), gates_.end());
+  gates->insert(table<Gate>().begin(), table<Gate>().end());
   for (const ComponentPtr& component : components())
     component->GatherGates(gates);
 }
 
 void Component::CheckDuplicateEvent(const Event& event) {
   const std::string& name = event.name();
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
-    SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, "event");
+  if (gates().count(name) || basic_events().count(name) ||
+      house_events().count(name)) {
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(name, "event")
+        << errinfo_container(Element::name(), kTypeString);
   }
 }
 

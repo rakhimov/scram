@@ -38,6 +38,8 @@ namespace scram::mef {
 /// Abstract base class for general fault tree events.
 class Event : public Id, public Usage {
  public:
+  static constexpr const char* kTypeString = "event";  ///< For error messages.
+
   using Id::Id;
 
   virtual ~Event() = 0;  ///< Abstract class.
