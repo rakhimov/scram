@@ -34,6 +34,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "error.h"
+#include "ext/linear_set.h"
 #include "ext/multi_index.h"
 
 namespace scram::mef {
@@ -98,7 +99,9 @@ class Element : public ContainerElement, private boost::noncopyable {
   void label(std::string label) { label_ = std::move(label); }
 
   /// @returns The current set of element attributes.
-  const std::vector<Attribute>& attributes() const { return attributes_; }
+  const std::vector<Attribute>& attributes() const {
+    return attributes_.data();
+  }
 
   /// Adds an attribute to the attribute map.
   ///
@@ -126,7 +129,9 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @param[in] name  The identifying name of the attribute.
   ///
   /// @returns true if this element has an attribute with the given name.
-  bool HasAttribute(const std::string& name) const;
+  bool HasAttribute(const std::string& name) const {
+    return attributes_.count(name);
+  }
 
   /// @returns A member attribute with the given name.
   ///
@@ -140,7 +145,9 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @param[in] name  The identifying name of the attribute.
   ///
   /// @returns false No such attribute to remove.
-  bool RemoveAttribute(const std::string& name);
+  bool RemoveAttribute(const std::string& name) {
+    return attributes_.erase(name);
+  }
 
  protected:
   ~Element() = default;
@@ -157,6 +164,14 @@ class Element : public ContainerElement, private boost::noncopyable {
   std::string name_;  ///< The original name of the element.
   std::string label_;  ///< The label text for the element.
 
+  /// Attribute equality predicate for unique entries.
+  struct AttributeKey {
+    /// Tests attribute equality with attribute names.
+    const std::string& operator()(const Attribute& attribute) const {
+      return attribute.name;
+    }
+  };
+
   /// Element attributes ordered by insertion time.
   /// The attributes are unique by their names.
   ///
@@ -165,7 +180,7 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @note Using a hash table incurs a huge memory overhead (~400B / element).
   /// @note Elements are expected to have very few attributes,
   ///       complex containers may be overkill.
-  std::vector<Attribute> attributes_;
+  ext::linear_set<Attribute, AttributeKey> attributes_;
 };
 
 /// Table of elements with unique names.

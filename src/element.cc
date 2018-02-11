@@ -20,10 +20,6 @@
 
 #include "element.h"
 
-#include <boost/range/algorithm.hpp>
-
-#include "ext/algorithm.h"
-
 namespace scram::mef {
 
 Element::Element(std::string name) { Element::name(std::move(name)); }
@@ -37,50 +33,27 @@ void Element::name(std::string name) {
 }
 
 void Element::AddAttribute(Attribute attr) {
-  if (HasAttribute(attr.name)) {
+  if (attributes_.insert(std::move(attr)).second == false) {
     SCRAM_THROW(ValidityError(
         "Trying to overwrite an existing attribute {event: " + name_ +
         ", attr: " + attr.name + "} "));
   }
-  attributes_.emplace_back(std::move(attr));
 }
 
 void Element::SetAttribute(Attribute attr) {
-  auto it = boost::find_if(attributes_, [&attr](const Attribute& member) {
-    return attr.name == member.name;
-  });
-  if (it != attributes_.end()) {
+  auto [it, success] = attributes_.insert(std::move(attr));
+  if (!success) {
     it->value = std::move(attr.value);
     it->type = std::move(attr.type);
-  } else {
-    attributes_.emplace_back(std::move(attr));
   }
 }
 
-bool Element::HasAttribute(const std::string& name) const {
-  return ext::any_of(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
-}
-
 const Attribute& Element::GetAttribute(const std::string& name) const {
-  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
+  auto it = attributes_.find(name);
   if (it == attributes_.end())
     SCRAM_THROW(LogicError("Element does not have attribute: " + name));
 
   return *it;
-}
-
-bool Element::RemoveAttribute(const std::string& name) {
-  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
-  if (it == attributes_.end())
-    return false;
-  attributes_.erase(it);
-  return true;
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
