@@ -44,7 +44,7 @@ void Component::Add(HouseEvent* house_event) {
 }
 
 void Component::Add(CcfGroup* ccf_group) {
-  if (ccf_groups_.count(ccf_group->name())) {
+  if (ccf_groups().count(ccf_group->name())) {
     SCRAM_THROW(DuplicateElementError())
         << errinfo_element(ccf_group->name(), "CCF group");
   }
@@ -54,7 +54,7 @@ void Component::Add(CcfGroup* ccf_group) {
   for (auto* member : ccf_group->members())
     Composite::Add(member);
 
-  ccf_groups_.insert(ccf_group);
+  Composite::Add(ccf_group);
 }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {

@@ -40,7 +40,8 @@ class Component
                        Container<Component, BasicEvent, false, false>,
                        Container<Component, HouseEvent, false, false>,
                        Container<Component, Gate, false, false>,
-                       Container<Component, Parameter, false, false>> {
+                       Container<Component, Parameter, false, false>,
+                       Container<Component, CcfGroup, false, false>> {
  public:
   /// Type identifier string for error messages.
   static constexpr const char* kTypeString = "component/fault tree";
@@ -77,7 +78,9 @@ class Component
   const ElementTable<Parameter*>& parameters() const {
     return table<Parameter>();
   }
-  const ElementTable<CcfGroup*>& ccf_groups() const { return ccf_groups_; }
+  const ElementTable<CcfGroup*>& ccf_groups() const {
+    return table<CcfGroup>();
+  }
   const ElementTable<std::unique_ptr<Component>>& components() const {
     return table<Component>();
   }
@@ -114,9 +117,6 @@ class Component
   ///
   /// @throws DuplicateElementError  The element is already in the model.
   void CheckDuplicateEvent(const Event& event);
-
-  /// Container for component constructs with original names as keys.
-  ElementTable<CcfGroup*> ccf_groups_;
 };
 
 using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
