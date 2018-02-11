@@ -49,7 +49,7 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
 {
     if (basicEvent->HasAttribute("flavor")) {
         const mef::Attribute &flavor = basicEvent->GetAttribute("flavor");
-        if (flavor.value == "undeveloped")
+        if (flavor.value() == "undeveloped")
             m_flavor = Flavor::Undeveloped;
     }
 }

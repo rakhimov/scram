@@ -63,11 +63,64 @@ class ContainerElement {
   const Element* container_ = nullptr;
 };
 
-/// This struct allows any attribute.
-struct Attribute {
-  std::string name;  ///< The name that identifies this attribute.
-  std::string value;  ///< Value of this attribute.
-  std::string type;  ///< Optional type of the attribute.
+/// MEF Element Attributes.
+/// Attributes carry extra (arbitrary) data for the elements.
+/// The interpretation of the attribute data
+/// is tool-dependent or up-to-the-user.
+///
+/// @note Attribute values are all free-form strings.
+///       The strings are not sanitized or normalized to be meaningful.
+///       If not careful, it is possible to end-up with values
+///       that XML schema validators won't accept (e.g., special chars).
+class Attribute {
+ public:
+  /// @param[in] name  The name for the attribute.
+  /// @param[in] value  The value for the attribute.
+  /// @param[in] type  The optional type of the attribute value.
+  ///
+  /// @throws LogicError  if any required values are empty.
+  Attribute(std::string name, std::string value, std::string type = "") {
+    Attribute::name(std::move(name));
+    Attribute::value(std::move(value));
+    Attribute::type(std::move(type));
+  }
+
+  /// @returns The name of the attribute.
+  const std::string& name() const { return name_; }
+
+  /// @param[in] name  The name for the attribute.
+  ///
+  /// @throws LogicError  The name is empty.
+  void name(std::string name) {
+    if (name.empty())
+      SCRAM_THROW(LogicError("Attribute name cannot be empty."));
+    name_ = std::move(name);
+  }
+
+  /// @returns The value of the attribute.
+  const std::string& value() const { return value_; }
+
+  /// @param[in] value  The value for the attribute.
+  ///
+  /// @throws LogicError  The value is empty.
+  void value(std::string value) {
+    if (value.empty())
+      SCRAM_THROW(LogicError("Attribute value cannot be empty."));
+    value_ = std::move(value);
+  }
+
+  /// @returns The type of the attribute value.
+  ///          Empty string if the type is not set.
+  const std::string& type() const { return type_; }
+
+  /// @param[in] type  The value type.
+  ///                  Empty string to remove the type.
+  void type(std::string type) { type_ = std::move(type); }
+
+ private:
+  std::string name_;  ///< The name that identifies this attribute.
+  std::string value_;  ///< Value of this attribute.
+  std::string type_;  ///< Optional type of the attribute.
 };
 
 /// Mixin class that represents
@@ -168,7 +221,7 @@ class Element : public ContainerElement, private boost::noncopyable {
   struct AttributeKey {
     /// Tests attribute equality with attribute names.
     const std::string& operator()(const Attribute& attribute) const {
-      return attribute.name;
+      return attribute.name();
     }
   };
 

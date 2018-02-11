@@ -35,16 +35,14 @@ void Element::name(std::string name) {
 void Element::AddAttribute(Attribute attr) {
   if (attributes_.insert(std::move(attr)).second == false) {
     SCRAM_THROW(ValidityError("Duplicate attribute"))
-        << errinfo_element(name_, "element") << errinfo_attribute(attr.name);
+        << errinfo_element(name_, "element") << errinfo_attribute(attr.name());
   }
 }
 
 void Element::SetAttribute(Attribute attr) {
   auto [it, success] = attributes_.insert(std::move(attr));
-  if (!success) {
-    it->value = std::move(attr.value);
-    it->type = std::move(attr.type);
-  }
+  if (!success)
+    *it = std::move(attr);
 }
 
 const Attribute& Element::GetAttribute(const std::string& name) const {

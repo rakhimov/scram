@@ -63,12 +63,10 @@ void SerializeLabelAndAttributes(const Element& element,
     for (const Attribute& attribute : element.attributes()) {
       xml::StreamElement attribute_element =
           attributes_container.AddChild("attribute");
-      assert(attribute.name.empty() == false);
-      attribute_element.SetAttribute("name", attribute.name);
-      assert(attribute.value.empty() == false);
-      attribute_element.SetAttribute("value", attribute.value);
-      if (attribute.type.empty() == false)
-        attribute_element.SetAttribute("type", attribute.type);
+      attribute_element.SetAttribute("name", attribute.name());
+      attribute_element.SetAttribute("value", attribute.value());
+      if (attribute.type().empty() == false)
+        attribute_element.SetAttribute("type", attribute.type());
     }
   }
 }
