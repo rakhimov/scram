@@ -411,24 +411,6 @@ class Composite : public Ts... {
   }
 };
 
-/// Adds a unique element into a table,
-/// ensuring no duplicated entries.
-///
-/// @tparam T  A pointer type of the element supporting Element API.
-/// @tparam Table  A set container supporting standard insert API.
-///
-/// @param[in] element  The pointer to the unique element.
-/// @param[in,out] table  The destination set container.
-/// @param[in] type  The element type string (static string).
-///
-/// @throws DuplicateElementError  The element is already in the table.
-template <class T, class Table>
-void AddElement(T&& element, Table* table, const char* type) {
-  const std::string& name = Id::unique_name(*element);  // Get id before move.
-  if (table->insert(std::forward<T>(element)).second == false)  // Move!
-    SCRAM_THROW(DuplicateElementError()) << errinfo_element(name, type);
-}
-
 /// Mixin class for providing marks for graph nodes.
 class NodeMark {
  public:
