@@ -398,6 +398,10 @@ int main(int argc, char* argv[]) {
       assert(type);
       std::cerr << "MEF Container type: " << *type << "\n";
     }
+    if (const std::string* attribute =
+            boost::get_error_info<scram::mef::errinfo_attribute>(err)) {
+      std::cerr << "MEF Attribute: " << *attribute << "\n";
+    }
     if (const std::string* xml_element =
             boost::get_error_info<scram::xml::errinfo_element>(err)) {
       std::cerr << "XML element: " << *xml_element << "\n";

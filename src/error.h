@@ -110,6 +110,9 @@ using errinfo_container =
     boost::tuple<errinfo_container_id, errinfo_container_type>;
 /// @}
 
+/// MEF Element Attribute.
+using errinfo_attribute = boost::error_info<struct tag_attribute, std::string>;
+
 /// The MEF element identifier data in errors.
 /// @{
 using errinfo_element_id =
