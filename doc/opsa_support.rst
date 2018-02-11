@@ -99,8 +99,7 @@ Deviations from the Open-PSA MEF
 - Redefinition of fault tree variables (e.g., basic-events, parameters) is an
   `error <https://github.com/open-psa/mef/issues/50>`_.
 - Substitution names are required.
-- Attributes are not inherited.
-  `Issue #231 <https://github.com/rakhimov/scram/issues/231>`_
+- Attributes must be `unique <https://github.com/open-psa/mef/issues/60>`_.
 - Recursive parameters are not allowed.
 - Recursive event-tree rules and links (instructions) are not allowed.
 - Mixing collect-expression and collect-formula is not allowed.
