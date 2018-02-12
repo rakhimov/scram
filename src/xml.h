@@ -70,43 +70,36 @@ namespace detail {  // Internal XML helper functions.
 ///
 /// @throws ValidityError  Casting is unsuccessful.
 template <typename T>
-std::enable_if_t<std::is_arithmetic_v<T>, T>
-CastValue(const std::string_view& value);
+std::enable_if_t<std::is_arithmetic_v<T>, T> to(const std::string_view& value) {
+  if constexpr (std::is_same_v<T, int>) {
+    char* end_char = nullptr;
+    std::int64_t ret = std::strtoll(value.data(), &end_char, 10);
+    int len = end_char - value.data();
+    if (len != value.size() || ret > std::numeric_limits<int>::max() ||
+        ret < std::numeric_limits<int>::min())
+      SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
+                                "' to 'int'."));
+    return ret;
 
-/// Specialization for integer values.
-template <>
-inline int CastValue<int>(const std::string_view& value) {
-  char* end_char = nullptr;
-  std::int64_t ret = std::strtoll(value.data(), &end_char, 10);
-  int len = end_char - value.data();
-  if (len != value.size() || ret > std::numeric_limits<int>::max() ||
-      ret < std::numeric_limits<int>::min())
+  } else if constexpr (std::is_same_v<T, double>) {  // NOLINT
+    char* end_char = nullptr;
+    double ret = std::strtod(value.data(), &end_char);
+    int len = end_char - value.data();
+    if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
+      SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
+                                "' to 'double'."));
+    return ret;
+
+  } else {
+    static_assert(std::is_same_v<T, bool>, "Only default numeric types.");
+
+    if (value == "true" || value == "1")
+      return true;
+    if (value == "false" || value == "0")
+      return false;
     SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                              "' to 'int'."));
-  return ret;
-}
-
-/// Specialization for floating point numbers.
-template <>
-inline double CastValue<double>(const std::string_view& value) {
-  char* end_char = nullptr;
-  double ret = std::strtod(value.data(), &end_char);
-  int len = end_char - value.data();
-  if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
-    SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                              "' to 'double'."));
-  return ret;
-}
-
-/// Specialization for Boolean values.
-template <>
-inline bool CastValue<bool>(const std::string_view& value) {
-  if (value == "true" || value == "1")
-    return true;
-  if (value == "false" || value == "0")
-    return false;
-  SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                            "' to 'bool'."));
+                              "' to 'bool'."));
+  }
 }
 
 /// Reinterprets the XML library UTF-8 string into C string.
@@ -269,6 +262,18 @@ class Element {
   /// @pre The element has a name.
   std::string_view name() const { return detail::from_utf8(element_->name); }
 
+  /// Queries element attribute existence.
+  ///
+  /// @param[in] name  The non-empty attribute name.
+  ///
+  /// @returns true if the element has an attribute with the given name.
+  ///
+  /// @note This is an inefficient way to work with optional attributes.
+  ///       Use the ``attribute(name)`` member function directly for optionals.
+  bool has_attribute(const char* name) const {
+    return xmlHasProp(to_node(), detail::to_utf8(name)) != nullptr;
+  }
+
   /// Retrieves the XML element's attribute values.
   ///
   /// @param[in] name  The name of the requested attribute.
@@ -285,30 +290,6 @@ class Element {
     const xmlNode* text_node = property->children;
     assert(text_node && text_node->type == XML_TEXT_NODE);
     assert(text_node->content);
-    return detail::trim(detail::from_utf8(text_node->content));
-  }
-
-  /// Queries element attribute existence.
-  ///
-  /// @param[in] name  The non-empty attribute name.
-  ///
-  /// @returns true if the element has an attribute with the given name.
-  ///
-  /// @note This is an inefficient way to work with optional attributes.
-  ///       Use the ``attribute(name)`` member function directly for optionals.
-  bool has_attribute(const char* name) const {
-    return xmlHasProp(to_node(), detail::to_utf8(name)) != nullptr;
-  }
-
-  /// @returns The XML element's text.
-  ///
-  /// @pre The Element has text.
-  std::string_view text() const {
-    const xmlNode* text_node = element_->children;
-    while (text_node && text_node->type != XML_TEXT_NODE)
-      text_node = text_node->next;
-    assert(text_node && "Element does not have text.");
-    assert(text_node->content && "Missing text in Element.");
     return detail::trim(detail::from_utf8(text_node->content));
   }
 
@@ -329,13 +310,25 @@ class Element {
     if (value.empty())
       return {};
     try {
-      return detail::CastValue<T>(value);
+      return detail::to<T>(value);
     } catch (ValidityError& err) {
       err << errinfo_element(std::string(Element::name()))
           << errinfo_attribute(name) << boost::errinfo_at_line(line())
           << boost::errinfo_file_name(filename());
       throw;
     }
+  }
+
+  /// @returns The XML element's text.
+  ///
+  /// @pre The Element has text.
+  std::string_view text() const {
+    const xmlNode* text_node = element_->children;
+    while (text_node && text_node->type != XML_TEXT_NODE)
+      text_node = text_node->next;
+    assert(text_node && "Element does not have text.");
+    assert(text_node->content && "Missing text in Element.");
+    return detail::trim(detail::from_utf8(text_node->content));
   }
 
   /// Generic text value extraction following XML data types.
@@ -350,7 +343,7 @@ class Element {
   template <typename T>
   std::enable_if_t<std::is_arithmetic_v<T>, T> text() const {
     try {
-      return detail::CastValue<T>(text());
+      return detail::to<T>(text());
     } catch (ValidityError& err) {
       err << errinfo_element(std::string(name()))
           << boost::errinfo_at_line(line())
