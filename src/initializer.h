@@ -243,9 +243,9 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidityError  There are issues with registering and defining
   ///                        the component and its data
   ///                        like gates and events.
-  ComponentPtr DefineComponent(const xml::Element& component_node,
-                               const std::string& base_path,
-                               RoleSpecifier container_role);
+  std::unique_ptr<Component> DefineComponent(const xml::Element& component_node,
+                                             const std::string& base_path,
+                                             RoleSpecifier container_role);
 
   /// Registers fault tree and component data
   /// like gates, events, parameters.
@@ -275,8 +275,8 @@ class Initializer : private boost::noncopyable {
   /// @returns Boolean formula that is defined.
   ///
   /// @throws ValidityError  The defined formula is not valid.
-  FormulaPtr GetFormula(const xml::Element& formula_node,
-                        const std::string& base_path);
+  std::unique_ptr<Formula> GetFormula(const xml::Element& formula_node,
+                                      const std::string& base_path);
 
   /// Processes event tree branch instructions and target from XML data.
   ///

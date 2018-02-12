@@ -149,15 +149,7 @@ class BasicEvent : public Event {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-/// Convenience aliases for smart pointers @{
-using EventPtr = std::unique_ptr<Event>;
-using HouseEventPtr = std::unique_ptr<HouseEvent>;
-using BasicEventPtr = std::unique_ptr<BasicEvent>;
-using GatePtr = std::unique_ptr<Gate>;
-/// @}
-
 class Formula;  // To describe a gate's formula.
-using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
@@ -186,14 +178,14 @@ class Gate : public Event, public NodeMark {
   /// @param[in] formula  The new Boolean formula of this gate.
   ///
   /// @returns The old formula.
-  FormulaPtr formula(FormulaPtr formula) {
+  std::unique_ptr<Formula> formula(std::unique_ptr<Formula> formula) {
     assert(formula && "Cannot unset formula.");
     formula_.swap(formula);
     return formula;
   }
 
  private:
-  FormulaPtr formula_;  ///< Boolean formula of this gate.
+  std::unique_ptr<Formula> formula_;  ///< Boolean formula of this gate.
 };
 
 /// Logical connectives for formulas.
@@ -357,6 +349,8 @@ class Formula {
   std::uint16_t max_number_;  ///< Max number for "cardinality".
   ArgSet args_;  ///< All events.
 };
+
+using FormulaPtr = std::unique_ptr<Formula>;  ///< Convenience alias.
 
 /// Comparison of formula arguments.
 inline bool operator==(const Formula::Arg& lhs,

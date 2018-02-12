@@ -28,21 +28,6 @@ Component::Component(std::string name, std::string base_path,
                      RoleSpecifier role)
     : Element(std::move(name)), Role(role, std::move(base_path)) {}
 
-void Component::Add(Gate* gate) {
-  CheckDuplicateEvent(*gate);
-  Composite::Add(gate);
-}
-
-void Component::Add(BasicEvent* basic_event) {
-  CheckDuplicateEvent(*basic_event);
-  Composite::Add(basic_event);
-}
-
-void Component::Add(HouseEvent* house_event) {
-  CheckDuplicateEvent(*house_event);
-  Composite::Add(house_event);
-}
-
 void Component::Add(CcfGroup* ccf_group) {
   if (ccf_groups().count(ccf_group->name())) {
     SCRAM_THROW(DuplicateElementError())

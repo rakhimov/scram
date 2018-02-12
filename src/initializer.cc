@@ -138,8 +138,9 @@ auto GetNonAttributeElements(const xml::Element& xml_element) {
 }
 
 template <>
-PhasePtr ConstructElement<Phase>(const xml::Element& xml_element) {
-  PhasePtr element;
+std::unique_ptr<Phase>
+ConstructElement<Phase>(const xml::Element& xml_element) {
+  std::unique_ptr<Phase> element;
   try {
     element = std::make_unique<Phase>(
         std::string(xml_element.attribute("name")),
@@ -248,7 +249,8 @@ template <>
 Gate* Initializer::Register(const xml::Element& gate_node,
                             const std::string& base_path,
                             RoleSpecifier container_role) {
-  GatePtr ptr = ConstructElement<Gate>(gate_node, base_path, container_role);
+  std::unique_ptr<Gate> ptr =
+      ConstructElement<Gate>(gate_node, base_path, container_role);
   auto* gate = ptr.get();
   Register(std::move(ptr), gate_node);
   path_gates_.insert(gate);
@@ -260,7 +262,7 @@ template <>
 BasicEvent* Initializer::Register(const xml::Element& event_node,
                                   const std::string& base_path,
                                   RoleSpecifier container_role) {
-  BasicEventPtr ptr =
+  std::unique_ptr<BasicEvent> ptr =
       ConstructElement<BasicEvent>(event_node, base_path, container_role);
   auto* basic_event = ptr.get();
   Register(std::move(ptr), event_node);
@@ -273,7 +275,7 @@ template <>
 HouseEvent* Initializer::Register(const xml::Element& event_node,
                                   const std::string& base_path,
                                   RoleSpecifier container_role) {
-  HouseEventPtr ptr =
+  std::unique_ptr<HouseEvent> ptr =
       ConstructElement<HouseEvent>(event_node, base_path, container_role);
   auto* house_event = ptr.get();
   Register(std::move(ptr), event_node);
@@ -290,7 +292,7 @@ template <>
 Parameter* Initializer::Register(const xml::Element& param_node,
                                  const std::string& base_path,
                                  RoleSpecifier container_role) {
-  ParameterPtr ptr =
+  std::unique_ptr<Parameter> ptr =
       ConstructElement<Parameter>(param_node, base_path, container_role);
   auto* parameter = ptr.get();
   Register(std::move(ptr), param_node);
@@ -311,7 +313,7 @@ template <>
 CcfGroup* Initializer::Register(const xml::Element& ccf_node,
                                 const std::string& base_path,
                                 RoleSpecifier container_role) {
-  auto ptr = [&]() -> CcfGroupPtr {
+  auto ptr = [&]() -> std::unique_ptr<CcfGroup> {
     std::string_view model = ccf_node.attribute("model");
     if (model == "beta-factor")
       return ConstructElement<BetaFactorModel>(ccf_node, base_path,
@@ -338,7 +340,7 @@ template <>
 Sequence* Initializer::Register(const xml::Element& xml_node,
                                 const std::string& /*base_path*/,
                                 RoleSpecifier /*container_role*/) {
-  SequencePtr ptr = ConstructElement<Sequence>(xml_node);
+  std::unique_ptr<Sequence> ptr = ConstructElement<Sequence>(xml_node);
   auto* sequence = ptr.get();
   Register(std::move(ptr), xml_node);
   tbd_.emplace_back(sequence, xml_node);
@@ -357,14 +359,14 @@ void Initializer::ProcessInputFile(const xml::Document& document) {
 
   for (const xml::Element& node : root.children()) {
     if (node.name() == "define-initiating-event") {
-      InitiatingEventPtr initiating_event =
+      std::unique_ptr<InitiatingEvent> initiating_event =
           ConstructElement<InitiatingEvent>(node);
       auto* ref_ptr = initiating_event.get();
       Register(std::move(initiating_event), node);
       tbd_.emplace_back(ref_ptr, node);
 
     } else if (node.name() == "define-rule") {
-      RulePtr rule = ConstructElement<Rule>(node);
+      std::unique_ptr<Rule> rule = ConstructElement<Rule>(node);
       auto* ref_ptr = rule.get();
       Register(std::move(rule), node);
       tbd_.emplace_back(ref_ptr, node);
@@ -379,13 +381,14 @@ void Initializer::ProcessInputFile(const xml::Document& document) {
       Register<CcfGroup>(node, "", RoleSpecifier::kPublic);
 
     } else if (node.name() == "define-alignment") {
-      AlignmentPtr alignment = ConstructElement<Alignment>(node);
+      std::unique_ptr<Alignment> alignment = ConstructElement<Alignment>(node);
       auto* address = alignment.get();
       Register(std::move(alignment), node);
       tbd_.emplace_back(address, node);
 
     } else if (node.name() == "define-substitution") {
-      SubstitutionPtr substitution = ConstructElement<Substitution>(node);
+      std::unique_ptr<Substitution> substitution =
+          ConstructElement<Substitution>(node);
       auto* address = substitution.get();
       Register(std::move(substitution), node);
       tbd_.emplace_back(address, node);
@@ -505,7 +508,7 @@ template <>
 void Initializer::Define(const xml::Element& xml_node, Alignment* alignment) {
   for (const xml::Element& node : xml_node.children("define-phase")) {
     try {
-      PhasePtr phase = ConstructElement<Phase>(node);
+      std::unique_ptr<Phase> phase = ConstructElement<Phase>(node);
       std::vector<SetHouseEvent*> instructions;
       for (const xml::Element& arg : node.children("set-house-event")) {
         instructions.push_back(
@@ -615,7 +618,7 @@ void Initializer::ProcessTbdElements() {
 }
 
 void Initializer::DefineEventTree(const xml::Element& et_node) {
-  EventTreePtr event_tree = ConstructElement<EventTree>(et_node);
+  std::unique_ptr<EventTree> event_tree = ConstructElement<EventTree>(et_node);
   for (const xml::Element& node : et_node.children()) {
     if (node.name() == "define-sequence") {
       event_tree->Add(
@@ -625,7 +628,8 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
         if (node.name() == "define-branch") {
           event_tree->Add(ConstructElement<NamedBranch>(node));
         } else if (node.name() == "define-functional-event") {
-          FunctionalEventPtr event = ConstructElement<FunctionalEvent>(node);
+          std::unique_ptr<FunctionalEvent> event =
+              ConstructElement<FunctionalEvent>(node);
           event->order(event_tree->functional_events().size() + 1);
           event_tree->Add(std::move(event));
         }
@@ -642,15 +646,15 @@ void Initializer::DefineEventTree(const xml::Element& et_node) {
 }
 
 void Initializer::DefineFaultTree(const xml::Element& ft_node) {
-  FaultTreePtr fault_tree = ConstructElement<FaultTree>(ft_node);
+  std::unique_ptr<FaultTree> fault_tree = ConstructElement<FaultTree>(ft_node);
   RegisterFaultTreeData(ft_node, fault_tree->name(), fault_tree.get());
   Register(std::move(fault_tree), ft_node);
 }
 
-ComponentPtr Initializer::DefineComponent(const xml::Element& component_node,
-                                          const std::string& base_path,
-                                          RoleSpecifier container_role) {
-  ComponentPtr component =
+std::unique_ptr<Component> Initializer::DefineComponent(
+    const xml::Element& component_node, const std::string& base_path,
+    RoleSpecifier container_role) {
+  std::unique_ptr<Component> component =
       ConstructElement<Component>(component_node, base_path, container_role);
   RegisterFaultTreeData(component_node, base_path + "." + component->name(),
                         component.get());
@@ -677,7 +681,8 @@ void Initializer::RegisterFaultTreeData(const xml::Element& ft_node,
       component->Add(Register<CcfGroup>(node, base_path, component->role()));
 
     } else if (node.name() == "define-component") {
-      ComponentPtr sub = DefineComponent(node, base_path, component->role());
+      std::unique_ptr<Component> sub =
+          DefineComponent(node, base_path, component->role());
       try {
         component->Add(std::move(sub));
       } catch (ValidityError& err) {
@@ -700,8 +705,8 @@ void Initializer::ProcessModelData(const xml::Element& model_data) {
   }
 }
 
-FormulaPtr Initializer::GetFormula(const xml::Element& formula_node,
-                                   const std::string& base_path) {
+std::unique_ptr<Formula> Initializer::GetFormula(
+    const xml::Element& formula_node, const std::string& base_path) {
   Connective formula_type = [&formula_node]() {
     if (formula_node.has_attribute("name") || formula_node.name() == "constant")
       return kNull;

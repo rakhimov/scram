@@ -122,9 +122,13 @@ class Model : public Element,
   /// @throws DuplicateElementError  The element is already in the model.
   ///
   /// @{
-  void Add(HouseEventPtr element);
-  void Add(BasicEventPtr element);
-  void Add(GatePtr element);
+  void Add(std::unique_ptr<HouseEvent> element) {
+    AddEvent(std::move(element));
+  }
+  void Add(std::unique_ptr<BasicEvent> element) {
+    AddEvent(std::move(element));
+  }
+  void Add(std::unique_ptr<Gate> element) { AddEvent(std::move(element)); }
   void Add(std::unique_ptr<Expression> element) {
     expressions_.emplace_back(std::move(element));
   }
@@ -143,6 +147,13 @@ class Model : public Element,
   Formula::ArgEvent GetEvent(const std::string& id);
 
  private:
+  /// @copydoc Model::Add(std::unique_ptr<BasicEvent>).
+  template <class T>
+  void AddEvent(std::unique_ptr<T> element) {
+    CheckDuplicateEvent(*element);
+    Composite::Add(std::move(element));
+  }
+
   /// Checks if an event with the same id is already in the model.
   ///
   /// @param[in] event  The event to be tested for duplicate before insertion.

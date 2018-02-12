@@ -86,9 +86,9 @@ class Component
   /// @throws DuplicateElementError  The element is already in this container.
   ///
   /// @{
-  void Add(Gate* element);
-  void Add(BasicEvent* element);
-  void Add(HouseEvent* element);
+  void Add(Gate* element) { AddEvent(element); }
+  void Add(BasicEvent* element) { AddEvent(element); }
+  void Add(HouseEvent* element) { AddEvent(element); }
   void Add(CcfGroup* element);
   /// @}
 
@@ -101,6 +101,13 @@ class Component
   void GatherGates(std::unordered_set<Gate*>* gates);
 
  private:
+  /// @copydoc Component::Add(BasicEvent*)
+  template <class T>
+  void AddEvent(T* element) {
+    CheckDuplicateEvent(*element);
+    Composite::Add(element);
+  }
+
   /// Checks if an event with the same id is already in the component.
   ///
   /// @param[in] event  The event to be tested for duplicate before insertion.
@@ -108,8 +115,6 @@ class Component
   /// @throws DuplicateElementError  The element is already in the model.
   void CheckDuplicateEvent(const Event& event);
 };
-
-using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 
 /// Fault tree representation as a container of
 /// gates, basic and house events, and other information.
@@ -149,7 +154,5 @@ class FaultTree : public Component {
 
   std::vector<const Gate*> top_events_;  ///< Top events of this fault tree.
 };
-
-using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
 }  // namespace scram::mef

@@ -54,9 +54,6 @@ class Sequence : public Element, public Usage {
   std::vector<Instruction*> instructions_;
 };
 
-/// Sequences are defined in event trees but referenced in other constructs.
-using SequencePtr = std::unique_ptr<Sequence>;
-
 class EventTree;  // Manages the order assignment to functional events.
 
 /// Representation of functional events in event trees.
@@ -77,9 +74,6 @@ class FunctionalEvent : public Element, public Usage {
  private:
   int order_ = 0;  ///< The order of the functional event.
 };
-
-/// Functional events are defined in and unique to event trees.
-using FunctionalEventPtr = std::unique_ptr<FunctionalEvent>;
 
 class Fork;
 class NamedBranch;
@@ -126,8 +120,6 @@ class NamedBranch : public Element,
 
   using Element::Element;
 };
-
-using NamedBranchPtr = std::unique_ptr<NamedBranch>;  ///< Unique in event tree.
 
 /// Functional-event state paths in event trees.
 class Path : public Branch {
@@ -206,8 +198,6 @@ class EventTree : public Element,
   std::vector<std::unique_ptr<Fork>> forks_;  ///< Lifetime management of forks.
 };
 
-using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in a model.
-
 /// Event-tree Initiating Event.
 class InitiatingEvent : public Element, public Usage {
  public:
@@ -234,8 +224,5 @@ class InitiatingEvent : public Element, public Usage {
  private:
   EventTree* event_tree_ = nullptr;  ///< The optional event tree specification.
 };
-
-/// Unique initiating events in a model.
-using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
 }  // namespace scram::mef

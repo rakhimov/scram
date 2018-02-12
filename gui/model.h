@@ -385,13 +385,13 @@ public:
     {
     public:
         /// Stores the gate and its new formula.
-        SetFormula(Gate *gate, mef::FormulaPtr formula);
+        SetFormula(Gate *gate, std::unique_ptr<mef::Formula> formula);
 
         void redo() override; ///< Applies the gate formula changes.
 
     private:
-        mef::FormulaPtr m_formula; ///< The new formula.
-        Gate *m_gate;              ///< The receiver gate for the formula.
+        std::unique_ptr<mef::Formula> m_formula; ///< The new formula.
+        Gate *m_gate; ///< The receiver gate for the formula.
     };
 
 signals:
@@ -474,7 +474,7 @@ public:
     {
     public:
         /// Stores the new fault tree and the target model.
-        AddFaultTree(mef::FaultTreePtr faultTree, Model *model);
+        AddFaultTree(std::unique_ptr<mef::FaultTree> faultTree, Model *model);
 
         void redo() override; ///< Adds the fault tree.
         void undo() override; ///< Removes the fault tree.
@@ -490,7 +490,7 @@ public:
     private:
         Model *m_model; ///< The model for the fault tree addition.
         mef::FaultTree *const m_address; ///< The data MEF fault tree.
-        mef::FaultTreePtr m_faultTree;   ///< The proxy of the MEF fault tree.
+        std::unique_ptr<mef::FaultTree> m_faultTree; ///< The lifetime.
     };
 
     /// Removes a fault tree from the model.

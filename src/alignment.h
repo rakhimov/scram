@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -59,8 +58,6 @@ class Phase : public Element {
   std::vector<SetHouseEvent*> instructions_;  ///< The phase modifiers.
 };
 
-using PhasePtr = std::unique_ptr<Phase>;  ///< Phases are unique to alignments.
-
 /// Alignment configuration for the whole model per analysis.
 class Alignment : public Element, public Container<Alignment, Phase> {
  public:
@@ -77,7 +74,5 @@ class Alignment : public Element, public Container<Alignment, Phase> {
   /// @throws ValidityError  Phases are incomplete (e.g., don't sum to 1).
   void Validate();
 };
-
-using AlignmentPtr = std::unique_ptr<Alignment>;  ///< Unique model alignments.
 
 }  // namespace scram::mef

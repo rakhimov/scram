@@ -1127,7 +1127,7 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
 ///
 /// @returns A new formula with arguments from the event dialog.
 template <>
-mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::Formula> MainWindow::extract(const EventDialog &dialog)
 {
     auto getEvent = [this](const std::string &arg) -> mef::Formula::ArgEvent {
         try {
@@ -1159,7 +1159,7 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct basic event out of event editor data.
 template <>
-mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::BasicEvent> MainWindow::extract(const EventDialog &dialog)
 {
     auto basicEvent =
         std::make_unique<mef::BasicEvent>(dialog.name().toStdString());
@@ -1182,7 +1182,7 @@ mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct house event out of event editor data.
 template <>
-mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::HouseEvent> MainWindow::extract(const EventDialog &dialog)
 {
     GUI_ASSERT(dialog.currentType() == EventDialog::HouseEvent, nullptr);
     auto houseEvent =
@@ -1194,7 +1194,7 @@ mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct gate out of event editor data.
 template <>
-mef::GatePtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::Gate> MainWindow::extract(const EventDialog &dialog)
 {
     GUI_ASSERT(dialog.currentType() == EventDialog::Gate, nullptr);
     auto gate = std::make_unique<mef::Gate>(dialog.name().toStdString());

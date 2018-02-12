@@ -110,9 +110,7 @@ class ExternFunction<void> : public Element, public Usage {
   apply(std::vector<Expression*> args) const = 0;
 };
 
-/// The concrete extern functions uniquely stored in a model.
-using ExternFunctionPtr = std::unique_ptr<ExternFunction<void>>;
-
+using ExternFunctionPtr = std::unique_ptr<ExternFunction<void>>;  ///< Base ptr.
 using ExternFunctionBase = ExternFunction<void>;  ///< To help Doxygen.
 
 /// Extern function abstraction to be referenced by expressions.

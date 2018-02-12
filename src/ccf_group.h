@@ -200,8 +200,6 @@ class CcfGroup : public Id {
   std::vector<std::unique_ptr<CcfEvent>> ccf_events_;
 };
 
-using CcfGroupPtr = std::unique_ptr<CcfGroup>;  ///< Convenience alias.
-
 /// Common cause failure model that assumes,
 /// if common cause failure occurs,
 /// then all components or members fail simultaneously or within short time.

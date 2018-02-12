@@ -38,21 +38,6 @@ void Model::CheckDuplicateEvent(const Event& event) {
         << errinfo_container(Element::name(), kTypeString);
 }
 
-void Model::Add(HouseEventPtr house_event) {
-  CheckDuplicateEvent(*house_event);
-  Composite::Add(std::move(house_event));
-}
-
-void Model::Add(BasicEventPtr basic_event) {
-  CheckDuplicateEvent(*basic_event);
-  Composite::Add(std::move(basic_event));
-}
-
-void Model::Add(GatePtr gate) {
-  CheckDuplicateEvent(*gate);
-  Composite::Add(std::move(gate));
-}
-
 Formula::ArgEvent Model::GetEvent(const std::string& id) {
   if (auto it = ext::find(table<BasicEvent>(), id))
     return &*it;

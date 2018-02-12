@@ -117,7 +117,7 @@ void HouseEvent::SetState::redo()
     m_state = prev_state;
 }
 
-Gate::SetFormula::SetFormula(Gate *gate, mef::FormulaPtr formula)
+Gate::SetFormula::SetFormula(Gate *gate, std::unique_ptr<mef::Formula> formula)
     : Involution(QObject::tr("Update gate '%1' formula").arg(gate->id())),
       m_formula(std::move(formula)), m_gate(gate)
 {
@@ -180,7 +180,8 @@ void Model::SetName::redo()
     m_name = std::move(currentName);
 }
 
-Model::AddFaultTree::AddFaultTree(mef::FaultTreePtr faultTree, Model *model)
+Model::AddFaultTree::AddFaultTree(std::unique_ptr<mef::FaultTree> faultTree,
+                                  Model *model)
     : QUndoCommand(QObject::tr("Add fault tree '%1'")
                        .arg(QString::fromStdString(faultTree->name()))),
       m_model(model), m_address(faultTree.get()),

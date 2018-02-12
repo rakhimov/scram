@@ -55,7 +55,7 @@ class Substitution : public Element {
   /// Sets the substitution hypothesis formula.
   ///
   /// @param[in] formula  Simple Boolean formula built over basic events only.
-  void hypothesis(FormulaPtr formula) {
+  void hypothesis(std::unique_ptr<Formula> formula) {
     assert(formula && "Cannot unset the hypothesis of substitution.");
     hypothesis_ = std::move(formula);
   }
@@ -99,12 +99,10 @@ class Substitution : public Element {
   std::optional<Type> type() const;
 
  private:
-  FormulaPtr hypothesis_;  ///< The formula to be satisfied.
+  std::unique_ptr<Formula> hypothesis_;  ///< The formula to be satisfied.
   std::vector<BasicEvent*> source_;  ///< The source events to be replaced.
   Target target_;  ///< The target event to replace the source events.
 };
-
-using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
 
 /// String representations of the "traditional" substitution types in the MEF.
 const char* const kSubstitutionTypeToString[] = {
