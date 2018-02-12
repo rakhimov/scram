@@ -65,25 +65,15 @@ class Component
 
   virtual ~Component() = default;
 
-  /// @returns The container of component constructs of specific kind
-  ///          with construct original names as keys.
+  /// @returns The table ranges of component elements of specific kind
+  ///          with element original names as keys.
   /// @{
-  const ElementTable<Gate*>& gates() const { return table<Gate>(); }
-  const ElementTable<BasicEvent*>& basic_events() const {
-    return table<BasicEvent>();
-  }
-  const ElementTable<HouseEvent*>& house_events() const {
-    return table<HouseEvent>();
-  }
-  const ElementTable<Parameter*>& parameters() const {
-    return table<Parameter>();
-  }
-  const ElementTable<CcfGroup*>& ccf_groups() const {
-    return table<CcfGroup>();
-  }
-  const ElementTable<std::unique_ptr<Component>>& components() const {
-    return table<Component>();
-  }
+  auto gates() const { return table<Gate>(); }
+  auto basic_events() const { return table<BasicEvent>(); }
+  auto house_events() const { return table<HouseEvent>(); }
+  auto parameters() const { return table<Parameter>(); }
+  auto ccf_groups() const { return table<CcfGroup>(); }
+  auto components() const { return table<Component>(); }
   /// @}
 
   using Composite::Add;

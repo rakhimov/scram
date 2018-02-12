@@ -43,9 +43,9 @@ void RiskAnalysis::Analyze() noexcept {
   if (model_->alignments().empty()) {
     RunAnalysis();
   } else {
-    for (const mef::AlignmentPtr& alignment : model_->alignments()) {
-      for (const mef::PhasePtr& phase : alignment->phases())
-        RunAnalysis(Context{*alignment, *phase});
+    for (const mef::Alignment& alignment : model_->alignments()) {
+      for (const mef::Phase& phase : alignment.phases())
+        RunAnalysis(Context{alignment, phase});
     }
   }
 }
@@ -70,29 +70,30 @@ void RiskAnalysis::RunAnalysis(std::optional<Context> context) noexcept {
 
     for (const mef::SetHouseEvent* instruction :
          context->phase.instructions()) {
-      auto it = model_->house_events().find(instruction->name());
-      assert(it != model_->house_events().end() && "Invalid instruction.");
-      mef::HouseEvent* house_event = it->get();
-      if (house_event->state() != instruction->state()) {
-        house_events.emplace_back(house_event, house_event->state());
-        house_event->state(instruction->state());
+      auto it = model_->table<mef::HouseEvent>().find(instruction->name());
+      assert(it != model_->table<mef::HouseEvent>().end() &&
+             "Invalid instruction.");
+      mef::HouseEvent& house_event = *it;
+      if (house_event.state() != instruction->state()) {
+        house_events.emplace_back(&house_event, house_event.state());
+        house_event.state(instruction->state());
       }
     }
   }
 
-  for (const mef::InitiatingEventPtr& initiating_event :
+  for (const mef::InitiatingEvent& initiating_event :
        model_->initiating_events()) {
-    if (initiating_event->event_tree()) {
-      LOG(INFO) << "Running event tree analysis: " << initiating_event->name();
+    if (initiating_event.event_tree()) {
+      LOG(INFO) << "Running event tree analysis: " << initiating_event.name();
       auto eta = std::make_unique<EventTreeAnalysis>(
-          *initiating_event, Analysis::settings(), model_->context());
+          initiating_event, Analysis::settings(), model_->context());
       eta->Analyze();
       for (EventTreeAnalysis::Result& result : eta->sequences()) {
         const mef::Sequence& sequence = result.sequence;
         LOG(INFO) << "Running analysis for sequence: " << sequence.name();
         results_.push_back(
             {{std::pair<const mef::InitiatingEvent&, const mef::Sequence&>{
-                  *initiating_event, sequence},
+                  initiating_event, sequence},
               context}});
         RunAnalysis(*result.gate, &results_.back());
         if (result.is_expression_only) {
@@ -104,13 +105,13 @@ void RiskAnalysis::RunAnalysis(std::optional<Context> context) noexcept {
         LOG(INFO) << "Finished analysis for sequence: " << sequence.name();
       }
       event_tree_results_.push_back(
-          {*initiating_event, context, std::move(eta)});
-      LOG(INFO) << "Finished event tree analysis: " << initiating_event->name();
+          {initiating_event, context, std::move(eta)});
+      LOG(INFO) << "Finished event tree analysis: " << initiating_event.name();
     }
   }
 
-  for (const mef::FaultTreePtr& ft : model_->fault_trees()) {
-    for (const mef::Gate* target : ft->top_events()) {
+  for (const mef::FaultTree& ft : model_->fault_trees()) {
+    for (const mef::Gate* target : ft.top_events()) {
       LOG(INFO) << "Running analysis for gate: " << target->id();
       results_.push_back({{target, context}});
       RunAnalysis(*target, &results_.back());

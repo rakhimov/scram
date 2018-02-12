@@ -132,33 +132,20 @@ void Gate::SetFormula::redo()
 namespace {
 
 template <class T, class S>
-void populate(const mef::IdTable<S> &source, ProxyTable<T> *proxyTable)
+void populate(const mef::TableRange<S> &source, ProxyTable<T> *proxyTable)
 {
     proxyTable->reserve(source.size());
-    for (const S &element : source)
-        proxyTable->emplace(std::make_unique<T>(element.get()));
+    for (auto &element : source)
+        proxyTable->emplace(std::make_unique<T>(&element));
 }
 
 } // namespace
 
 Model::Model(mef::Model *model) : Element(model), m_model(model)
 {
-    normalize(model);
-    populate<HouseEvent>(m_model->house_events(), &m_houseEvents);
-    populate<BasicEvent>(m_model->basic_events(), &m_basicEvents);
-    populate<Gate>(m_model->gates(), &m_gates);
-}
-
-void Model::normalize(mef::Model *model)
-{
-    for (const mef::FaultTreePtr &faultTree : model->fault_trees()) {
-        const_cast<mef::ElementTable<mef::BasicEvent *> &>(
-            faultTree->basic_events())
-            .clear();
-        const_cast<mef::ElementTable<mef::HouseEvent *> &>(
-            faultTree->house_events())
-            .clear();
-    }
+    populate<HouseEvent>(m_model->table<mef::HouseEvent>(), &m_houseEvents);
+    populate<BasicEvent>(m_model->table<mef::BasicEvent>(), &m_basicEvents);
+    populate<Gate>(m_model->table<mef::Gate>(), &m_gates);
 }
 
 std::vector<Gate *> Model::parents(mef::Formula::ArgEvent event) const

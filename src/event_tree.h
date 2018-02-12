@@ -185,29 +185,21 @@ class EventTree : public Element,
   /// Sets the initial state of the event tree.
   void initial_state(Branch branch) { initial_state_ = std::move(branch); }
 
-  /// @returns The container of event tree constructs of specific kind
-  ///          with construct original names as keys.
+  /// @returns The table range of event tree elements of specific kind
+  ///          with element original names as keys.
   /// @{
-  const ElementTable<Sequence*>& sequances() const { return table<Sequence>(); }
-  const ElementTable<FunctionalEventPtr>& functional_events() const {
-    return table<FunctionalEvent>();
-  }
-  const ElementTable<NamedBranchPtr>& branches() const {
-    return table<NamedBranch>();
-  }
+  auto sequances() const { return table<Sequence>(); }
+  auto functional_events() const { return table<FunctionalEvent>(); }
+  auto branches() const { return table<NamedBranch>(); }
   /// @}
 
   using Composite::Add;
   using Composite::Remove;
 
-  /// Adds event tree constructs into the container.
+  /// Registers an event tree fork.
   ///
-  /// @param[in] element  A unique element defined in this event tree.
-  ///
-  /// @throws DuplicateElementError  The element is already in this container.
-  void Add(std::unique_ptr<Fork> element) {
-    forks_.push_back(std::move(element));
-  }
+  /// @param[in] fork  The fork in this event tree.
+  void Add(std::unique_ptr<Fork> fork) { forks_.push_back(std::move(fork)); }
 
  private:
   Branch initial_state_;  ///< The starting point.

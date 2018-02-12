@@ -256,11 +256,11 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
   ReportUnusedElements(risk_an.model().sequences(),
                        "Unused sequences: ", &information);
   ReportUnusedElements(risk_an.model().rules(), "Unused rules: ", &information);
-  for (const mef::EventTreePtr& event_tree : risk_an.model().event_trees()) {
-    std::string header = "In event tree " + event_tree->name() + ", ";
-    ReportUnusedElements(event_tree->branches(),
+  for (const mef::EventTree& event_tree : risk_an.model().event_trees()) {
+    std::string header = "In event tree " + event_tree.name() + ", ";
+    ReportUnusedElements(event_tree.branches(),
                          header + "unused branches: ", &information);
-    ReportUnusedElements(event_tree->functional_events(),
+    ReportUnusedElements(event_tree.functional_events(),
                          header + "unused functional events: ", &information);
   }
 }
@@ -299,8 +299,8 @@ void Reporter::ReportModelFeatures(const mef::Model& model,
   feature("event-trees", model.event_trees());
 
   int num_functional_events = 0;
-  for (const mef::EventTreePtr& event_tree : model.event_trees())
-    num_functional_events += event_tree->functional_events().size();
+  for (const mef::EventTree& event_tree : model.event_trees())
+    num_functional_events += event_tree.functional_events().size();
   if (num_functional_events)
     model_features.AddChild("functional-events").AddText(num_functional_events);
 
@@ -342,10 +342,10 @@ void Reporter::ReportUnusedElements(const T& container,
                                     const std::string& header,
                                     xml::StreamElement* information) {
   std::string out = boost::join(
-      container | boost::adaptors::filtered([](auto& ptr) {
-        return !ptr->usage();
-      }) | boost::adaptors::transformed([](auto& ptr) -> decltype(auto) {
-        return mef::Id::unique_name(*ptr);
+      container | boost::adaptors::filtered([](const auto& arg) {
+        return !arg.usage();
+      }) | boost::adaptors::transformed([](const auto& arg) -> decltype(auto) {
+        return mef::Id::unique_name(arg);
       }),
       " ");
   if (!out.empty())

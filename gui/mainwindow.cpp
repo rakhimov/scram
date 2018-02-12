@@ -308,13 +308,13 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
                 .model();
         }();
 
-        for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
-            if (faultTree->top_events().size() != 1) {
+        for (const mef::FaultTree &faultTree : newModel->fault_trees()) {
+            if (faultTree.top_events().size() != 1) {
                 QMessageBox::critical(
                     this, tr("Initialization Error"),
                     //: Single top/root event fault tree are expected by GUI.
                     tr("Fault tree '%1' must have a single top-gate.")
-                        .arg(QString::fromStdString(faultTree->name())));
+                        .arg(QString::fromStdString(faultTree.name())));
                 return false;
             }
         }
@@ -784,8 +784,8 @@ void MainWindow::runAnalysis()
     GUI_ASSERT(m_model, );
     if (m_settings.probability_analysis()
         && ext::any_of(m_model->basic_events(),
-                       [](const mef::BasicEventPtr &basicEvent) {
-                           return !basicEvent->HasExpression();
+                       [](const mef::BasicEvent &basicEvent) {
+                           return !basicEvent.HasExpression();
                        })) {
         QMessageBox::critical(this, tr("Validation Error"),
                               tr("Not all basic events have expressions "
@@ -998,12 +998,12 @@ template <>
 mef::FaultTree *MainWindow::getFaultTree(mef::Gate *gate)
 {
     /// @todo Duplicate code from EventDialog.
-    auto it = boost::find_if(m_model->fault_trees(),
-                             [&gate](const mef::FaultTreePtr &faultTree) {
-                                 return faultTree->gates().count(gate->name());
+    auto it = boost::find_if(m_model->table<mef::FaultTree>(),
+                             [&gate](const mef::FaultTree &faultTree) {
+                                 return faultTree.gates().count(gate->name());
                              });
-    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-    return it->get();
+    GUI_ASSERT(it != m_model->table<mef::FaultTree>().end(), nullptr);
+    return &*it;
 }
 
 template <class T>
@@ -1242,9 +1242,9 @@ mef::FaultTree *MainWindow::getFaultTree(const EventDialog &dialog)
 {
     if (dialog.faultTree().empty())
         return nullptr;
-    auto it = m_model->fault_trees().find(dialog.faultTree());
-    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-    return it->get();
+    auto it = m_model->table<mef::FaultTree>().find(dialog.faultTree());
+    GUI_ASSERT(it != m_model->table<mef::FaultTree>().end(), nullptr);
+    return &*it;
 }
 
 template <class T>

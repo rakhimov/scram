@@ -34,8 +34,8 @@ Phase::Phase(std::string name, double time_fraction)
 
 void Alignment::Validate() {
   double sum = 0;
-  for (const PhasePtr& phase : phases())
-    sum += phase->time_fraction();
+  for (const Phase& phase : phases())
+    sum += phase.time_fraction();
   if (!ext::is_close(1, sum, 1e-4))
     SCRAM_THROW(ValidityError("The phases of the alignment do not sum to 1."))
         << errinfo_element(Element::name(), kTypeString);

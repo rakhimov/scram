@@ -36,8 +36,8 @@ TEST_CASE("PdagTest.Print", "[mef::pdag]") {
   std::unique_ptr<mef::Model> model =
       mef::Initializer({"tests/input/fta/correct_formulas.xml"}, Settings())
           .model();
-  const mef::FaultTreePtr& ft = *model->fault_trees().begin();
-  Pdag graph(*ft->top_events().front());
+  const mef::FaultTree& ft = *model->fault_trees().begin();
+  Pdag graph(*ft.top_events().front());
   graph.Print();
 }
 

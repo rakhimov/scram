@@ -54,12 +54,12 @@ void Model::Add(GatePtr gate) {
 }
 
 Formula::ArgEvent Model::GetEvent(const std::string& id) {
-  if (auto it = ext::find(basic_events(), id))
-    return it->get();
-  if (auto it = ext::find(gates(), id))
-    return it->get();
-  if (auto it = ext::find(house_events(), id))
-    return it->get();
+  if (auto it = ext::find(table<BasicEvent>(), id))
+    return &*it;
+  if (auto it = ext::find(table<Gate>(), id))
+    return &*it;
+  if (auto it = ext::find(table<HouseEvent>(), id))
+    return &*it;
   SCRAM_THROW(UndefinedElement("The event " + id + " is not in the model."));
 }
 

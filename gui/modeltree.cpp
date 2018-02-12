@@ -27,8 +27,8 @@ namespace scram::gui {
 ModelTree::ModelTree(model::Model *model, QObject *parent)
     : QAbstractItemModel(parent), m_model(model)
 {
-    for (const mef::FaultTreePtr &faultTree : m_model->faultTrees())
-        m_faultTrees.insert(faultTree.get());
+    for (mef::FaultTree &faultTree : m_model->faultTrees())
+        m_faultTrees.insert(&faultTree);
 
     connect(m_model, OVERLOAD(model::Model, added, mef::FaultTree *), this,
             [this](mef::FaultTree *faultTree) {

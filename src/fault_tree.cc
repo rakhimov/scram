@@ -58,9 +58,9 @@ void Component::Add(CcfGroup* ccf_group) {
 }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  gates->insert(table<Gate>().begin(), table<Gate>().end());
-  for (const ComponentPtr& component : components())
-    component->GatherGates(gates);
+  gates->insert(data<Gate>().begin(), data<Gate>().end());
+  for (Component& component : table<Component>())
+    component.GatherGates(gates);
 }
 
 void Component::CheckDuplicateEvent(const Event& event) {

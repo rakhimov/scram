@@ -422,10 +422,8 @@ public:
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
     const ProxyTable<Gate> &gates() const { return m_gates; }
-    const mef::ElementTable<mef::FaultTreePtr> &faultTrees() const
-    {
-        return m_model->fault_trees();
-    }
+    auto faultTrees() const { return m_model->fault_trees(); }
+    auto faultTrees() { return m_model->table<mef::FaultTree>(); }
     /// @}
 
     /// Generic access to event tables.
@@ -684,15 +682,6 @@ signals:
     /// @}
 
 private:
-    /// Normalizes the model to the GUI expectations.
-    ///
-    /// @param[in,out] model  The valid and fully initialized MEF model.
-    ///
-    /// @post No house events or basic events in fault tree containers.
-    ///
-    /// @todo Remove normalization upon full container support for elements.
-    void normalize(mef::Model *model);
-
     mef::Model *m_model; ///< The MEF model with data.
 
     /// Proxy element tables.

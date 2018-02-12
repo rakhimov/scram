@@ -28,6 +28,7 @@
 #include <boost/exception/errinfo_file_name.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/indirected.hpp>
 #include <boost/range/algorithm.hpp>
 
 #include "cycle.h"
@@ -463,12 +464,11 @@ void Initializer::Define(const xml::Element& xml_node, Sequence* sequence) {
 
 template <>
 void Initializer::Define(const xml::Element& et_node, EventTree* event_tree) {
-  auto it = event_tree->branches().begin();
   for (const xml::Element& node : et_node.children("define-branch")) {
-    assert(it != event_tree->branches().end());
-    assert((*it)->name() == node.attribute("name"));
-    DefineBranch(GetNonAttributeElements(node), event_tree, it->get());
-    ++it;
+    auto it = ext::find(event_tree->table<NamedBranch>(),
+                        std::string(node.attribute("name")));
+    assert(it);
+    DefineBranch(GetNonAttributeElements(node), event_tree, &*it);
   }
   Branch initial_state;
   DefineBranch(et_node.child("initial-state")->children(), event_tree,
@@ -481,10 +481,10 @@ void Initializer::Define(const xml::Element& xml_node,
                          InitiatingEvent* initiating_event) {
   std::string event_tree_name(xml_node.attribute("event-tree"));
   if (!event_tree_name.empty()) {
-    if (auto it = ext::find(model_->event_trees(), event_tree_name)) {
-      initiating_event->event_tree(it->get());
+    if (auto it = ext::find(model_->table<EventTree>(), event_tree_name)) {
+      initiating_event->event_tree(&*it);
       initiating_event->usage(true);
-      (*it)->usage(true);
+      it->usage(true);
     } else {
       SCRAM_THROW(ValidityError("Event tree " + event_tree_name +
                                 " is not defined in model."))
@@ -789,7 +789,7 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
                                      EventTree* event_tree, Branch* branch) {
   if (target_node.name() == "fork") {
     std::string name(target_node.attribute("functional-event"));
-    if (auto it = ext::find(event_tree->functional_events(), name)) {
+    if (auto it = ext::find(event_tree->table<FunctionalEvent>(), name)) {
       std::vector<Path> paths;
       for (const xml::Element& path_element : target_node.children("path")) {
         paths.emplace_back(std::string(path_element.attribute("state")));
@@ -797,10 +797,10 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       }
       assert(!paths.empty());
       try {
-        auto fork = std::make_unique<Fork>(**it, std::move(paths));
+        auto fork = std::make_unique<Fork>(*it, std::move(paths));
         branch->target(fork.get());
         event_tree->Add(std::move(fork));
-        (*it)->usage(true);
+        it->usage(true);
       } catch (ValidityError& err) {
         err << errinfo_container(event_tree->name(), "event tree");
         throw;
@@ -812,9 +812,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
     }
   } else if (target_node.name() == "sequence") {
     std::string name(target_node.attribute("name"));
-    if (auto it = ext::find(model_->sequences(), name)) {
-      branch->target(it->get());
-      (*it)->usage(true);
+    if (auto it = ext::find(model_->table<Sequence>(), name)) {
+      branch->target(&*it);
+      it->usage(true);
     } else {
       SCRAM_THROW(
           ValidityError("Sequence " + name + " is not defined in the model."))
@@ -823,9 +823,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
   } else {
     assert(target_node.name() == "branch");
     std::string name(target_node.attribute("name"));
-    if (auto it = ext::find(event_tree->branches(), name)) {
-      branch->target(it->get());
-      (*it)->usage(true);
+    if (auto it = ext::find(event_tree->table<NamedBranch>(), name)) {
+      branch->target(&*it);
+      it->usage(true);
     } else {
       SCRAM_THROW(ValidityError("Branch " + name + " is not defined in " +
                                 event_tree->name()))
@@ -855,9 +855,9 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   std::string_view node_name = xml_element.name();
   if (node_name == "rule") {
     std::string name(xml_element.attribute("name"));
-    if (auto it = ext::find(model_->rules(), name)) {
-      (*it)->usage(true);
-      return it->get();
+    if (auto it = ext::find(model_->table<Rule>(), name)) {
+      it->usage(true);
+      return &*it;
     } else {
       SCRAM_THROW(
           ValidityError("Rule " + name + " is not defined in the model."))
@@ -873,10 +873,10 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
 
   if (node_name == "event-tree") {
     std::string name(xml_element.attribute("name"));
-    if (auto it = ext::find(model_->event_trees(), name)) {
-      (*it)->usage(true);
+    if (auto it = ext::find(model_->table<EventTree>(), name)) {
+      it->usage(true);
       links_.push_back(static_cast<Link*>(
-          register_instruction(std::make_unique<Link>(**it))));
+          register_instruction(std::make_unique<Link>(*it))));
       return links_.back();
     } else {
       SCRAM_THROW(
@@ -1196,13 +1196,13 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
   if (expr_type == "extern-function") {
     const ExternFunction<void>* extern_function = [this, &expr_element] {
       std::string name(expr_element.attribute("name"));
-      auto it = model_->extern_functions().find(name);
-      if (it == model_->extern_functions().end()) {
+      if (auto it = ext::find(model_->table<ExternFunction<void>>(), name)) {
+        it->usage(true);
+        return &*it;
+      } else {
         SCRAM_THROW(ValidityError("Undefined extern function: " + name))
             << boost::errinfo_at_line(expr_element.line());
       }
-      (*it)->usage(true);
-      return it->get();
     }();
 
     std::vector<Expression*> expr_args;
@@ -1299,41 +1299,42 @@ void Initializer::DefineCcfFactor(const xml::Element& factor_node,
 
 Parameter* Initializer::GetParameter(const std::string& entity_reference,
                                      const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, model_->parameters(),
-                   path_parameters_);
+  return GetEntity(entity_reference, base_path, model_->table<Parameter>(),
+                   TableRange(path_parameters_));
 }
 
 HouseEvent* Initializer::GetHouseEvent(const std::string& entity_reference,
                                        const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, model_->house_events(),
-                   path_house_events_);
+  return GetEntity(entity_reference, base_path, model_->table<HouseEvent>(),
+                   TableRange(path_house_events_));
 }
 
 BasicEvent* Initializer::GetBasicEvent(const std::string& entity_reference,
                                        const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, model_->basic_events(),
-                   path_basic_events_);
+  return GetEntity(entity_reference, base_path, model_->table<BasicEvent>(),
+                   TableRange(path_basic_events_));
 }
 
 Gate* Initializer::GetGate(const std::string& entity_reference,
                            const std::string& base_path) {
-  return GetEntity(entity_reference, base_path, model_->gates(), path_gates_);
+  return GetEntity(entity_reference, base_path, model_->table<Gate>(),
+                   TableRange(path_gates_));
 }
 
 template <class P, class T>
 T* Initializer::GetEntity(const std::string& entity_reference,
                           const std::string& base_path,
-                          const IdTable<P>& container,
-                          const PathTable<T>& path_container) {
+                          const TableRange<IdTable<P>>& container,
+                          const TableRange<PathTable<T>>& path_container) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     if (auto it = ext::find(path_container, base_path + "." + entity_reference))
-      return &**it;
+      return &*it;
   }
 
   auto at = [&entity_reference](const auto& reference_container) {
     if (auto it = ext::find(reference_container, entity_reference))
-      return &**it;
+      return &*it;
     throw std::out_of_range("The entity cannot be found.");
   };
 
@@ -1347,11 +1348,11 @@ T* Initializer::GetEntity(const std::string& entity_reference,
 #define GET_EVENT(gates, basic_events, house_events, path_reference) \
   do {                                                               \
     if (auto it = ext::find(gates, path_reference))                  \
-      return &**it;                                                  \
+      return &*it;                                                   \
     if (auto it = ext::find(basic_events, path_reference))           \
-      return &**it;                                                  \
+      return &*it;                                                   \
     if (auto it = ext::find(house_events, path_reference))           \
-      return &**it;                                                  \
+      return &*it;                                                   \
   } while (false)
 
 Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
@@ -1362,15 +1363,16 @@ Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
     std::string full_path = base_path + "." + entity_reference;
-    GET_EVENT(path_gates_, path_basic_events_, path_house_events_, full_path);
+    GET_EVENT(TableRange(path_gates_), TableRange(path_basic_events_),
+              TableRange(path_house_events_), full_path);
   }
 
   if (entity_reference.find('.') == std::string::npos) {  // Public entity.
-    GET_EVENT(model_->gates(), model_->basic_events(), model_->house_events(),
-              entity_reference);
+    GET_EVENT(model_->table<Gate>(), model_->table<BasicEvent>(),
+              model_->table<HouseEvent>(), entity_reference);
   } else {  // Direct access.
-    GET_EVENT(path_gates_, path_basic_events_, path_house_events_,
-              entity_reference);
+    GET_EVENT(TableRange(path_gates_), TableRange(path_basic_events_),
+              TableRange(path_house_events_), entity_reference);
   }
   throw std::out_of_range("The event cannot be bound.");
 }
@@ -1505,12 +1507,12 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
 
   const ExternLibrary& library = [this, &xml_element]() -> decltype(auto) {
     std::string lib_name(xml_element.attribute("library"));
-    auto it = model_->libraries().find(lib_name);
-    if (it == model_->libraries().end())
-      SCRAM_THROW(ValidityError("Undefined extern library: " + lib_name))
-          << boost::errinfo_at_line(xml_element.line());
-    (*it)->usage(true);
-    return **it;
+    if (auto it = ext::find(model_->table<ExternLibrary>(), lib_name)) {
+      it->usage(true);
+      return *it;
+    }
+    SCRAM_THROW(ValidityError("Undefined extern library: " + lib_name))
+        << boost::errinfo_at_line(xml_element.line());
   }();
 
   ExternFunctionPtr extern_function = [&xml_element, &library] {
@@ -1541,48 +1543,48 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
 
 void Initializer::ValidateInitialization() {
   // Check if *all* gates have no cycles.
-  cycle::CheckCycle<Gate>(model_->gates(), "gate");
+  cycle::CheckCycle<Gate>(model_->table<Gate>(), "gate");
 
   // Check for cycles in event tree instruction rules.
-  cycle::CheckCycle<Rule>(model_->rules(), "rule");
+  cycle::CheckCycle<Rule>(model_->table<Rule>(), "rule");
 
   // Check for cycles in event tree branches.
-  for (const EventTreePtr& event_tree : model_->event_trees()) {
+  for (EventTree& event_tree : model_->table<EventTree>()) {
     try {
-      cycle::CheckCycle<NamedBranch>(event_tree->branches(), "branch");
+      cycle::CheckCycle<NamedBranch>(event_tree.table<NamedBranch>(), "branch");
     } catch (CycleError& err) {
-      err << errinfo_container(event_tree->name(), "event tree");
+      err << errinfo_container(event_tree.name(), "event tree");
       throw;
     }
   }
 
   // All other event-tree checks available after ensuring no-cycles in branches.
-  for (const EventTreePtr& event_tree : model_->event_trees()) {
+  for (const EventTree& event_tree : model_->event_trees()) {
     try {
-      for (const NamedBranchPtr& branch : event_tree->branches()) {
-        CheckFunctionalEventOrder(*branch);  // The order of events in forks.
-        EnsureLinksOnlyInSequences(*branch);  // Link instructions in sequences.
+      for (const NamedBranch& branch : event_tree.branches()) {
+        CheckFunctionalEventOrder(branch);  // The order of events in forks.
+        EnsureLinksOnlyInSequences(branch);  // Link instructions in sequences.
       }
-      CheckFunctionalEventOrder(event_tree->initial_state());
-      EnsureLinksOnlyInSequences(event_tree->initial_state());
+      CheckFunctionalEventOrder(event_tree.initial_state());
+      EnsureLinksOnlyInSequences(event_tree.initial_state());
     } catch (ValidityError& err) {
-      err << errinfo_container(event_tree->name(), "event tree");
+      err << errinfo_container(event_tree.name(), "event tree");
       throw;
     }
   }
 
   // The cycles in links are checked only after ensuring their valid locations.
-  cycle::CheckCycle<Link>(links_, "event-tree link");
+  cycle::CheckCycle<Link>(boost::adaptors::indirect(links_), "event-tree link");
 
   // Event-tree instruction homogeneity checks only after cycle checks.
-  for (const EventTreePtr& event_tree : model_->event_trees()) {
+  for (const EventTree& event_tree : model_->event_trees()) {
     try {
-      for (const NamedBranchPtr& branch : event_tree->branches()) {
-        EnsureHomogeneousEventTree(*branch);  // No mixed instructions.
+      for (const NamedBranch& branch : event_tree.branches()) {
+        EnsureHomogeneousEventTree(branch);  // No mixed instructions.
       }
-      EnsureHomogeneousEventTree(event_tree->initial_state());
+      EnsureHomogeneousEventTree(event_tree.initial_state());
     } catch (ValidityError& err) {
-      err << errinfo_container(event_tree->name(), "event tree");
+      err << errinfo_container(event_tree.name(), "event tree");
       throw;
     }
   }
@@ -1592,9 +1594,9 @@ void Initializer::ValidateInitialization() {
   // Check if all basic events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg;
-    for (const BasicEventPtr& event : model_->basic_events()) {
-      if (event->HasExpression() == false)
-        msg += event->name() + "\n";
+    for (const BasicEvent& event : model_->basic_events()) {
+      if (event.HasExpression() == false)
+        msg += event.name() + "\n";
     }
 
     if (!msg.empty())
@@ -1732,31 +1734,31 @@ void Initializer::EnsureHomogeneousEventTree(const Branch& branch) {
 void Initializer::EnsureNoSubstitutionConflicts() {
   auto substitutions = model_->substitutions() |
                        boost::adaptors::filtered([](const auto& substitution) {
-                         return !substitution->declarative();
+                         return !substitution.declarative();
                        });
-  for (const SubstitutionPtr& origin : substitutions) {
-    const auto* target_ptr = std::get_if<BasicEvent*>(&origin->target());
-    for (const SubstitutionPtr& substitution : substitutions) {
-      if (target_ptr && boost::count(substitution->source(), *target_ptr))
+  for (const Substitution& origin : substitutions) {
+    const auto* target_ptr = std::get_if<BasicEvent*>(&origin.target());
+    for (const Substitution& substitution : substitutions) {
+      if (target_ptr && boost::count(substitution.source(), *target_ptr))
         SCRAM_THROW(ValidityError(
-            "Non-declarative substitution '" + origin->name() +
+            "Non-declarative substitution '" + origin.name() +
             "' target event should not appear in any substitution source."));
-      if (origin == substitution)
+      if (&origin == &substitution)
         continue;
       auto in_hypothesis = [&substitution](const BasicEvent* source) {
-        return ext::any_of(substitution->hypothesis().args(),
+        return ext::any_of(substitution.hypothesis().args(),
                            [source](const Formula::Arg& arg) {
                              return std::get<BasicEvent*>(arg.event) == source;
                            });
       };
       if (target_ptr && in_hypothesis(*target_ptr))
         SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin->name() +
+                                  origin.name() +
                                   "' target event should not appear in another "
                                   "substitution hypothesis."));
-      if (ext::any_of(origin->source(), in_hypothesis))
+      if (ext::any_of(origin.source(), in_hypothesis))
         SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin->name() +
+                                  origin.name() +
                                   "' source event should not appear in another "
                                   "substitution hypothesis."));
     }
@@ -1766,7 +1768,7 @@ void Initializer::EnsureNoSubstitutionConflicts() {
 void Initializer::EnsureNoCcfSubstitutions() {
   auto substitutions = model_->substitutions() |
                        boost::adaptors::filtered([](const auto& substitution) {
-                         return !substitution->declarative();
+                         return !substitution.declarative();
                        });
   auto is_ccf = [](const Substitution& substitution) {
     if (ext::any_of(substitution.hypothesis().args(),
@@ -1785,10 +1787,10 @@ void Initializer::EnsureNoCcfSubstitutions() {
     return false;
   };
 
-  for (const SubstitutionPtr& substitution : substitutions) {
-    if (is_ccf(*substitution))
+  for (const Substitution& substitution : substitutions) {
+    if (is_ccf(substitution))
       SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                substitution->name() +
+                                substitution.name() +
                                 "' events cannot be in a CCF group."));
   }
 }
@@ -1798,8 +1800,8 @@ void Initializer::EnsureSubstitutionsWithApproximations() {
     return;
 
   if (ext::any_of(model_->substitutions(),
-                  [](const SubstitutionPtr& substitution) {
-                    return !substitution->declarative();
+                  [](const Substitution& substitution) {
+                    return !substitution.declarative();
                   }))
     SCRAM_THROW(ValidityError(
         "Non-declarative substitutions do not apply to exact analyses."));
@@ -1808,7 +1810,7 @@ void Initializer::EnsureSubstitutionsWithApproximations() {
 void Initializer::ValidateExpressions() {
   // Check for cycles in parameters.
   // This must be done before expressions.
-  cycle::CheckCycle<Parameter>(model_->parameters(), "parameter");
+  cycle::CheckCycle<Parameter>(model_->table<Parameter>(), "parameter");
 
   // Validate expressions.
   for (const std::pair<Expression*, xml::Element>& expression : expressions_) {
@@ -1822,32 +1824,31 @@ void Initializer::ValidateExpressions() {
   }
 
   // Validate CCF groups.
-  for (const CcfGroupPtr& group : model_->ccf_groups()) {
-    group->Validate();
-  }
+  for (const CcfGroup& group : model_->ccf_groups())
+    group.Validate();
 
   // Check probability values for primary events.
-  for (const BasicEventPtr& event : model_->basic_events()) {
-    if (event->HasExpression())
-      event->Validate();
+  for (const BasicEvent& event : model_->basic_events()) {
+    if (event.HasExpression())
+      event.Validate();
   }
 }
 
 void Initializer::SetupForAnalysis() {
   {
     TIMER(DEBUG2, "Collecting top events of fault trees");
-    for (const GatePtr& gate : model_->gates())
-      gate->mark(NodeMark::kClear);
+    for (Gate& gate : model_->table<Gate>())
+      gate.mark(NodeMark::kClear);
 
-    for (const FaultTreePtr& ft : model_->fault_trees())
-      ft->CollectTopEvents();
+    for (FaultTree& ft : model_->table<FaultTree>())
+      ft.CollectTopEvents();
   }
 
   {
     TIMER(DEBUG2, "Applying CCF models");
     // CCF groups must apply models to basic event members.
-    for (const CcfGroupPtr& group : model_->ccf_groups())
-      group->ApplyModel();
+    for (CcfGroup& group : model_->table<CcfGroup>())
+      group.ApplyModel();
   }
 }
 

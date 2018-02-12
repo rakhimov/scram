@@ -392,8 +392,9 @@ class Initializer : private boost::noncopyable {
   /// @throws std::out_of_range  The entity cannot be found.
   template <class P, class T = typename P::element_type>
   T* GetEntity(const std::string& entity_reference,
-               const std::string& base_path, const IdTable<P>& container,
-               const PathTable<T>& path_container);
+               const std::string& base_path,
+               const TableRange<IdTable<P>>& container,
+               const TableRange<PathTable<T>>& path_container);
 
   /// Defines and loads extern libraries.
   ///

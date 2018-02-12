@@ -69,8 +69,8 @@ class Alignment : public Element, public Container<Alignment, Phase> {
 
   using Element::Element;
 
-  /// @returns The phases defined in the alignment.
-  const ElementTable<PhasePtr>& phases() const { return Container::table(); }
+  /// @returns The table range of phases in the alignment.
+  auto phases() const { return Container::table(); }
 
   /// Ensures that all phases add up to be valid for the alignment.
   ///

@@ -358,6 +358,7 @@ using IdTable = boost::multi_index_container<
 
 /// Wraps the element container tables into ranges of plain references
 /// to hide the memory smart or raw pointers.
+/// This is similar to boost::range::adaptors::indirect.
 ///
 /// This range is used to enforce const correctness
 /// by not leaking modifiable elements in the const containers of pointers.
@@ -367,12 +368,18 @@ template <class T>
 class TableRange {
   /// Types inferred from the container.
   /// @{
-  using pointer = typename T::value_type;
-  using deref_type = std::decay_t<decltype(*pointer(nullptr))>;
+  using deref_type = std::decay_t<decltype(*typename T::value_type(nullptr))>;
+  using key_type = typename T::key_type;
+  /// @}
+
+ public:
+  /// Value typedefs of the range.
+  /// @{
   using value_type =
       std::conditional_t<std::is_const_v<T>, std::add_const_t<deref_type>,
                          deref_type>;
-  using key_type = typename T::key_type;
+  using reference = value_type&;
+  using pointer = value_type*;
   /// @}
 
   static_assert(std::is_const_v<T> == std::is_const_v<value_type>);
@@ -391,23 +398,27 @@ class TableRange {
     /// @{
     void increment() { ++it_; }
     bool equal(const iterator& other) const { return it_ == other.it_; }
-    value_type& dereference() const { return **it_; }
+    reference dereference() const { return **it_; }
     /// @}
 
     typename T::const_iterator it_;  ///< The iterator of value pointers.
   };
 
- public:
+  using const_iterator = iterator;  ///< Phony const iterator for ranges.
+
   /// @param[in] table  The associative container of pointers.
   explicit TableRange(T& table) : table_(table) {}
 
   /// The proxy members for the common functionality of the associative table T.
   /// @{
+  bool empty() const { return table_.empty(); }
   std::size_t size() const { return table_.size(); }
   std::size_t count(const key_type& key) const { return table_.count(key); }
   iterator find(const key_type& key) const { return table_.find(key); }
   iterator begin() const { return table_.begin(); }
   iterator end() const { return table_.end(); }
+  iterator cbegin() const { return table_.begin(); }
+  iterator cend() const { return table_.end(); }
   /// @}
 
  private:
@@ -432,8 +443,11 @@ class Container {
   using TableType =
       std::conditional_t<ById, IdTable<Pointer>, ElementTable<Pointer>>;
 
-  /// @returns The underlying table with the elements.
-  const TableType& table() const { return table_; }
+  /// @returns The table as an associative range of type T elements.
+  /// @{
+  auto table() const { return TableRange(table_); }
+  auto table() { return TableRange(table_); }
+  /// @}
 
   /// Adds a unique element into the container,
   /// ensuring no duplicated entries.
@@ -487,6 +501,10 @@ class Container {
     return ext::extract(it, &table_);  // no-throw.
   }
 
+ protected:
+  /// @returns The data table with the elements.
+  const TableType& data() const { return table_; }
+
  private:
   TableType table_;  ///< Unique table with the elements.
 };
@@ -509,11 +527,17 @@ struct container_of_impl<E, void> {
 
 /// Finds the container type for the given element type.
 ///
-/// @tparam E  The mef::Element type.
-/// @tparam T  The mef::Container type.
-/// @tparam Ts  Other mef::Container types in the type list.
-template <class E, class T, class... Ts>
-struct container_of : public container_of_impl<E, T, Ts..., void> {};
+/// @tparam T  The mef::Element type.
+/// @tparam Ts  mef::Container types.
+template <class T, class... Ts>
+struct container_of {
+  static_assert(std::is_base_of_v<Element, T>);
+
+  using type = typename container_of_impl<T, Ts..., void>::type;  ///< Return.
+
+  static_assert(!std::is_same_v<type, void>,
+                "No container with elements of type T.");
+};
 
 }  // namespace detail
 
@@ -528,13 +552,26 @@ class Composite : public Ts... {
 
   /// @tparam T  The mef::Element type in the composite container.
   ///
-  /// @returns The table containing the elements of the given type.
+  /// @returns The table as an associative range of type T elements.
+  /// @{
   template <class T>
-  decltype(auto) table() const {
+  auto table() const {
     using ContainerType = typename detail::container_of<T, Ts...>::type;
-    static_assert(!std::is_same_v<ContainerType, void>,
-                  "No container with elements of type T.");
     return ContainerType::table();
+  }
+  template <class T>
+  auto table() {
+    using ContainerType = typename detail::container_of<T, Ts...>::type;
+    return ContainerType::table();
+  }
+  /// @}
+
+ protected:
+  /// @returns The data table with elements of specific type.
+  template <class T>
+  decltype(auto) data() const {
+    using ContainerType = typename detail::container_of<T, Ts...>::type;
+    return ContainerType::data();
   }
 };
 

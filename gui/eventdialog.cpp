@@ -124,8 +124,9 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                     .arg(name));
             return;
         } else if (m_event) {
-            auto it = m_model->gates().find(name.toStdString());
-            if (it != m_model->gates().end() && checkCycle(it->get())) {
+            auto it =
+                ext::find(m_model->table<mef::Gate>(), name.toStdString());
+            if (it && checkCycle(&*it)) {
                 m_errorBar->showMessage(
                     //: Fault trees are acyclic graphs.
                     tr("The argument '%1' would introduce a cycle.").arg(name));
@@ -219,30 +220,29 @@ template <class T>
 mef::FaultTree *EventDialog::getFaultTree(const T *event) const
 {
     // Find the fault tree of the first parent gate.
-    auto it =
-        boost::find_if(m_model->gates(), [&event](const mef::GatePtr &gate) {
-            auto it_arg = boost::find_if(
-                gate->formula().args(), [&event](const mef::Formula::Arg &arg) {
-                    return arg.event
-                           == mef::Formula::ArgEvent(const_cast<T *>(event));
-                });
-            return it_arg != gate->formula().args().end();
-        });
+    auto it = boost::find_if(m_model->gates(), [&event](const mef::Gate &gate) {
+        auto it_arg = boost::find_if(
+            gate.formula().args(), [&event](const mef::Formula::Arg &arg) {
+                return arg.event
+                       == mef::Formula::ArgEvent(const_cast<T *>(event));
+            });
+        return it_arg != gate.formula().args().end();
+    });
     if (it == m_model->gates().end())
         return nullptr;
-    return getFaultTree(it->get());
+    return getFaultTree(&*it);
 }
 
 /// Finds fault tree container of the gate.
 template <>
 mef::FaultTree *EventDialog::getFaultTree(const mef::Gate *event) const
 {
-    auto it = boost::find_if(m_model->fault_trees(),
-                             [&event](const mef::FaultTreePtr &faultTree) {
-                                 return faultTree->gates().count(event->name());
+    auto it = boost::find_if(m_model->table<mef::FaultTree>(),
+                             [&event](const mef::FaultTree &faultTree) {
+                                 return faultTree.gates().count(event->name());
                              });
-    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-    return it->get();
+    GUI_ASSERT(it != m_model->table<mef::FaultTree>().end(), nullptr);
+    return &*it;
 }
 
 template <class T>
@@ -438,7 +438,7 @@ void EventDialog::validate()
         QString faultTreeName = containerFaultTreeName->text();
         if (auto it = ext::find(m_model->fault_trees(),
                                 faultTreeName.toStdString())) {
-            GUI_ASSERT((*it)->top_events().empty() == false, );
+            GUI_ASSERT(it->top_events().empty() == false, );
             m_errorBar->showMessage(
                 //: Fault tree redefinition.
                 tr("Fault tree '%1' is already defined with a top gate.")
@@ -496,8 +496,8 @@ void EventDialog::setupArgCompleter()
     allEvents.reserve(m_model->gates().size() + m_model->basic_events().size()
                       + m_model->house_events().size());
     auto addEvents = [&allEvents](const auto &eventContainer) {
-        for (const auto &eventPtr : eventContainer)
-            allEvents.push_back(QString::fromStdString(eventPtr->id()));
+        for (const auto &event : eventContainer)
+            allEvents.push_back(QString::fromStdString(event.id()));
     };
     addEvents(m_model->gates());
     addEvents(m_model->basic_events());

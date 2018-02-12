@@ -138,8 +138,8 @@ void Serialize(const FaultTree& fault_tree, xml::StreamElement* parent) {
   assert(fault_tree.role() == RoleSpecifier::kPublic);
   xml::StreamElement ft_element = parent->AddChild("define-fault-tree");
   SerializeElement(fault_tree, &ft_element);
-  for (Gate* gate : fault_tree.gates())
-    Serialize(*gate, &ft_element);
+  for (const Gate& gate : fault_tree.gates())
+    Serialize(gate, &ft_element);
 }
 
 void Serialize(const Expression& expression, xml::StreamElement* parent) {
@@ -193,14 +193,14 @@ void Serialize(const Model& model, std::FILE* out) {
   assert(model.sequences().empty());
   assert(model.rules().empty());
 
-  for (const FaultTreePtr& fault_tree : model.fault_trees())
-    Serialize(*fault_tree, &root);
+  for (const FaultTree& fault_tree : model.fault_trees())
+    Serialize(fault_tree, &root);
 
   xml::StreamElement model_data = root.AddChild("model-data");
-  for (const BasicEventPtr& basic_event : model.basic_events())
-    Serialize(*basic_event, &model_data);
-  for (const HouseEventPtr& house_event : model.house_events())
-    Serialize(*house_event, &model_data);
+  for (const BasicEvent& basic_event : model.basic_events())
+    Serialize(basic_event, &model_data);
+  for (const HouseEvent& house_event : model.house_events())
+    Serialize(house_event, &model_data);
 }
 
 }  // namespace scram::mef

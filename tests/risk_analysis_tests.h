@@ -68,19 +68,10 @@ class RiskAnalysisTest {
   void CheckReport(const std::vector<std::string>& tree_input);
 
   // Returns a single fault tree, assuming one fault tree with single top gate.
-  const mef::FaultTreePtr& fault_tree() {
-    return *model->fault_trees().begin();
-  }
-
-  const mef::IdTable<mef::GatePtr>& gates() { return model->gates(); }
-
-  const mef::IdTable<mef::HouseEventPtr>& house_events() {
-    return model->house_events();
-  }
-
-  const mef::IdTable<mef::BasicEventPtr>& basic_events() {
-    return model->basic_events();
-  }
+  const mef::FaultTree& fault_tree() { return *model->fault_trees().begin(); }
+  auto gates() { return model->gates(); }
+  auto house_events() { return model->house_events(); }
+  auto basic_events() { return model->basic_events(); }
 
   /// @returns The resultant products of the fault tree analysis.
   const std::set<std::set<std::string>>& products();

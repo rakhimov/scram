@@ -81,6 +81,12 @@ class Model : public Element,
     Element::name(name.empty() ? kDefaultName : std::move(name));
   }
 
+  /// @returns The mission time expression for the whole model.
+  /// @{
+  const MissionTime& mission_time() const { return *mission_time_; }
+  MissionTime& mission_time() { return *mission_time_; }
+  /// @}
+
   /// @returns The context to be used by test-event expressions
   ///          for event-tree walks.
   ///
@@ -88,44 +94,22 @@ class Model : public Element,
   ///       two event-trees cannot be walked concurrently.
   Context* context() const { return const_cast<Context*>(&context_); }
 
-  /// @returns Defined constructs in the model.
+  /// @returns Table ranges of the elements in the model.
   /// @{
-  const ElementTable<InitiatingEventPtr>& initiating_events() const {
-    return table<InitiatingEvent>();
-  }
-  const ElementTable<EventTreePtr>& event_trees() const {
-    return table<EventTree>();
-  }
-  const ElementTable<SequencePtr>& sequences() const {
-    return table<Sequence>();
-  }
-  const ElementTable<RulePtr>& rules() const { return table<Rule>(); }
-  const ElementTable<FaultTreePtr>& fault_trees() const {
-    return table<FaultTree>();
-  }
-  const ElementTable<AlignmentPtr>& alignments() const {
-    return table<Alignment>();
-  }
-  const ElementTable<SubstitutionPtr>& substitutions() const {
-    return table<Substitution>();
-  }
-  const IdTable<ParameterPtr>& parameters() const { return table<Parameter>(); }
-  const MissionTime& mission_time() const { return *mission_time_; }
-  MissionTime& mission_time() { return *mission_time_; }
-  const IdTable<HouseEventPtr>& house_events() const {
-    return table<HouseEvent>();
-  }
-  const IdTable<BasicEventPtr>& basic_events() const {
-    return table<BasicEvent>();
-  }
-  const IdTable<GatePtr>& gates() const { return table<Gate>(); }
-  const IdTable<CcfGroupPtr>& ccf_groups() const { return table<CcfGroup>(); }
-  const ElementTable<std::unique_ptr<ExternLibrary>>& libraries() const {
-    return table<ExternLibrary>();
-  }
-  const ElementTable<ExternFunctionPtr>& extern_functions() const {
-    return table<ExternFunction<void>>();
-  }
+  auto initiating_events() const { return table<InitiatingEvent>(); }
+  auto event_trees() const { return table<EventTree>(); }
+  auto sequences() const { return table<Sequence>(); }
+  auto rules() const { return table<Rule>(); }
+  auto fault_trees() const { return table<FaultTree>(); }
+  auto alignments() const { return table<Alignment>(); }
+  auto substitutions() const { return table<Substitution>(); }
+  auto parameters() const { return table<Parameter>(); }
+  auto house_events() const { return table<HouseEvent>(); }
+  auto basic_events() const { return table<BasicEvent>(); }
+  auto gates() const { return table<Gate>(); }
+  auto ccf_groups() const { return table<CcfGroup>(); }
+  auto libraries() const { return table<ExternLibrary>(); }
+  auto extern_functions() const { return table<ExternFunction<void>>(); }
   /// @}
 
   using Composite::Add;
@@ -166,12 +150,13 @@ class Model : public Element,
   /// @throws DuplicateElementError  The element is already in the model.
   void CheckDuplicateEvent(const Event& event);
 
-  /// A collection of defined constructs in the model.
+  /// Constructs w/o id or name stored for the duration of the model lifetime.
   /// @{
-  std::unique_ptr<MissionTime> mission_time_;
   std::vector<std::unique_ptr<Expression>> expressions_;
   std::vector<std::unique_ptr<Instruction>> instructions_;
   /// @}
+
+  std::unique_ptr<MissionTime> mission_time_;  ///< The system mission time.
   Context context_;  ///< The context to be used by test-event expressions.
 };
 
