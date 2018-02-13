@@ -136,7 +136,7 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// Attribute key extractor.
   struct AttributeKey {
     /// Attributes are keyed by their names.
-    const std::string& operator()(const Attribute& attribute) const {
+    std::string_view operator()(const Attribute& attribute) const {
       return attribute.name();
     }
   };
@@ -211,7 +211,7 @@ class Element : public ContainerElement, private boost::noncopyable {
   ///          Do not store the returned pointer.
   ///
   /// @note Attributes can be inherited from parent containers.
-  const Attribute* GetAttribute(const std::string& name) const noexcept;
+  const Attribute* GetAttribute(std::string_view name) const noexcept;
 
   /// Removes an attribute of this element.
   ///
@@ -220,7 +220,7 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @returns The removed attribute if any.
   ///
   /// @post No inherited attributes are affected.
-  std::optional<Attribute> RemoveAttribute(const std::string& name) noexcept;
+  std::optional<Attribute> RemoveAttribute(std::string_view name) noexcept;
 
  protected:
   ~Element() = default;

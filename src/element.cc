@@ -45,7 +45,7 @@ void Element::SetAttribute(Attribute attr) noexcept {
     *it = std::move(attr);
 }
 
-const Attribute* Element::GetAttribute(const std::string& name) const noexcept {
+const Attribute* Element::GetAttribute(std::string_view name) const noexcept {
   auto it = attributes_.find(name);
   if (it != attributes_.end())
     return &*it;
@@ -54,7 +54,7 @@ const Attribute* Element::GetAttribute(const std::string& name) const noexcept {
 }
 
 std::optional<Attribute>
-Element::RemoveAttribute(const std::string& name) noexcept {
+Element::RemoveAttribute(std::string_view name) noexcept {
   std::optional<Attribute> attr;
   auto it = attributes_.find(name);
   if (it != attributes_.end()) {
