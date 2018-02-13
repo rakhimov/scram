@@ -488,14 +488,15 @@ void Initializer::Define(const xml::Element& xml_node,
                          InitiatingEvent* initiating_event) {
   std::string event_tree_name(xml_node.attribute("event-tree"));
   if (!event_tree_name.empty()) {
-    if (auto it = ext::find(model_->table<EventTree>(), event_tree_name)) {
-      initiating_event->event_tree(&*it);
+    try {
+      auto& event_tree = model_->Get<EventTree>(event_tree_name);
+      initiating_event->event_tree(&event_tree);
       initiating_event->usage(true);
-      it->usage(true);
-    } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(event_tree_name, "event tree")
-          << boost::errinfo_at_line(xml_node.line());
+      event_tree.usage(true);
+
+    } catch (Error& err) {
+      err << boost::errinfo_at_line(xml_node.line());
+      throw;
     }
   }
 }
@@ -788,9 +789,10 @@ std::unique_ptr<Formula> Initializer::GetFormula(
 
 void Initializer::DefineBranchTarget(const xml::Element& target_node,
                                      EventTree* event_tree, Branch* branch) {
-  if (target_node.name() == "fork") {
-    std::string name(target_node.attribute("functional-event"));
-    if (auto it = ext::find(event_tree->table<FunctionalEvent>(), name)) {
+  try {
+    if (target_node.name() == "fork") {
+      std::string name(target_node.attribute("functional-event"));
+      auto& functional_event = event_tree->Get<FunctionalEvent>(name);
       std::vector<Path> paths;
       for (const xml::Element& path_element : target_node.children("path")) {
         paths.emplace_back(std::string(path_element.attribute("state")));
@@ -798,42 +800,29 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       }
       assert(!paths.empty());
       try {
-        auto fork = std::make_unique<Fork>(*it, std::move(paths));
+        auto fork = std::make_unique<Fork>(functional_event, std::move(paths));
         branch->target(fork.get());
         event_tree->Add(std::move(fork));
-        it->usage(true);
+        functional_event.usage(true);
       } catch (ValidityError& err) {
         err << errinfo_container(event_tree->name(), "event tree");
         throw;
       }
+    } else if (target_node.name() == "sequence") {
+      std::string name(target_node.attribute("name"));
+      auto& sequence = model_->Get<Sequence>(name);
+      branch->target(&sequence);
+      sequence.usage(true);
     } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "functional event")
-          << errinfo_container(event_tree->name(), "event tree")
-          << boost::errinfo_at_line(target_node.line());
+      assert(target_node.name() == "branch");
+      std::string name(target_node.attribute("name"));
+      auto& named_branch = event_tree->Get<NamedBranch>(name);
+      branch->target(&named_branch);
+      named_branch.usage(true);
     }
-  } else if (target_node.name() == "sequence") {
-    std::string name(target_node.attribute("name"));
-    if (auto it = ext::find(model_->table<Sequence>(), name)) {
-      branch->target(&*it);
-      it->usage(true);
-    } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "sequence")
-          << boost::errinfo_at_line(target_node.line());
-    }
-  } else {
-    assert(target_node.name() == "branch");
-    std::string name(target_node.attribute("name"));
-    if (auto it = ext::find(event_tree->table<NamedBranch>(), name)) {
-      branch->target(&*it);
-      it->usage(true);
-    } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "branch")
-          << errinfo_container(event_tree->name(), "event tree")
-          << boost::errinfo_at_line(target_node.line());
-    }
+  } catch (ValidityError& err) {
+    err << boost::errinfo_at_line(target_node.line());
+    throw;
   }
 }
 
@@ -856,16 +845,22 @@ void Initializer::DefineBranch(const SinglePassRange& xml_nodes,
 
 Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   std::string_view node_name = xml_element.name();
+  auto invoke = [&xml_element](auto&& action) {
+    try {
+      return action();
+    } catch (UndefinedElement& err) {
+      err << boost::errinfo_at_line(xml_element.line());
+      throw;
+    }
+  };
+
   if (node_name == "rule") {
     std::string name(xml_element.attribute("name"));
-    if (auto it = ext::find(model_->table<Rule>(), name)) {
-      it->usage(true);
-      return &*it;
-    } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "rule")
-          << boost::errinfo_at_line(xml_element.line());
-    }
+    return invoke([&name, this] {
+      auto& rule = model_->Get<Rule>(name);
+      rule.usage(true);
+      return &rule;
+    });
   }
 
   auto register_instruction = [this](std::unique_ptr<Instruction> instruction) {
@@ -876,16 +871,13 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
 
   if (node_name == "event-tree") {
     std::string name(xml_element.attribute("name"));
-    if (auto it = ext::find(model_->table<EventTree>(), name)) {
-      it->usage(true);
+    return invoke([&] {
+      auto& event_tree = model_->Get<EventTree>(name);
+      event_tree.usage(true);
       links_.push_back(static_cast<Link*>(
-          register_instruction(std::make_unique<Link>(*it))));
+          register_instruction(std::make_unique<Link>(event_tree))));
       return links_.back();
-    } else {
-      SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "event tree")
-          << boost::errinfo_at_line(xml_element.line());
-    }
+    });
   }
 
   if (node_name == "collect-expression") {
@@ -1199,13 +1191,14 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
   if (expr_type == "extern-function") {
     const ExternFunction<void>* extern_function = [this, &expr_element] {
       std::string name(expr_element.attribute("name"));
-      if (auto it = ext::find(model_->table<ExternFunction<void>>(), name)) {
-        it->usage(true);
-        return &*it;
-      } else {
-        SCRAM_THROW(UndefinedElement())
-            << errinfo_element(name, "extern function")
-            << boost::errinfo_at_line(expr_element.line());
+      try {
+        auto& ret = model_->Get<ExternFunction<void>>(name);
+        ret.usage(true);
+        return &ret;
+
+      } catch (UndefinedElement& err) {
+        err << boost::errinfo_at_line(expr_element.line());
+        throw;
       }
     }();
 
@@ -1513,13 +1506,14 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
 
   const ExternLibrary& library = [this, &xml_element]() -> decltype(auto) {
     std::string lib_name(xml_element.attribute("library"));
-    if (auto it = ext::find(model_->table<ExternLibrary>(), lib_name)) {
-      it->usage(true);
-      return *it;
+    try {
+      auto& lib = model_->Get<ExternLibrary>(lib_name);
+      lib.usage(true);
+      return lib;
+    } catch (UndefinedElement& err) {
+      err << boost::errinfo_at_line(xml_element.line());
+      throw;
     }
-    SCRAM_THROW(UndefinedElement())
-        << errinfo_element(lib_name, "extern library")
-        << boost::errinfo_at_line(xml_element.line());
   }();
 
   ExternFunctionPtr extern_function = [&xml_element, &library] {

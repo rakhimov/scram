@@ -442,11 +442,36 @@ class Container {
   /// The table indexed by id or name.
   using TableType =
       std::conditional_t<ById, IdTable<Pointer>, ElementTable<Pointer>>;
+  /// The key type of the table.
+  using key_type = typename TableType::key_type;
 
   /// @returns The table as an associative range of type T elements.
   /// @{
   auto table() const { return TableRange(table_); }
   auto table() { return TableRange(table_); }
+  /// @}
+
+  /// Retrieves an element from the container.
+  ///
+  /// @param[in] id  The valid ID/name string of the element.
+  ///
+  /// @returns The reference to the element.
+  ///
+  /// @throws UndefinedElement  The element is not found.
+  /// @{
+  const T& Get(const key_type& id) const {
+    auto it = table_.find(id);
+    if (it != table_.end())
+      return **it;
+
+    SCRAM_THROW(UndefinedElement())
+        << errinfo_element(id, T::kTypeString)
+        << errinfo_container(Id::unique_name(static_cast<const Self&>(*this)),
+                             Self::kTypeString);
+  }
+  T& Get(const key_type& id) {
+    return const_cast<T&>(std::as_const(*this).Get(id));
+  }
   /// @}
 
   /// Adds a unique element into the container,
@@ -493,7 +518,7 @@ class Container {
 
     } catch (Error& err) {
       err << errinfo_element(Id::unique_name(*element), T::kTypeString)
-          << errinfo_container(Id::unique_name(static_cast<Self&>(*this)),
+          << errinfo_container(Id::unique_name(static_cast<const Self&>(*this)),
                                Self::kTypeString);
       throw;
     }
@@ -563,6 +588,28 @@ class Composite : public Ts... {
   auto table() {
     using ContainerType = typename detail::container_of<T, Ts...>::type;
     return ContainerType::table();
+  }
+  /// @}
+
+  /// Retrieves an element from the container.
+  ///
+  /// @tparam T  The mef::Element type in the composite container.
+  ///
+  /// @param[in] id  The valid ID/name string of the element.
+  ///
+  /// @returns The reference to the element.
+  ///
+  /// @throws UndefinedElement  The element is not found.
+  /// @{
+  template <class T,
+            class ContainerType = typename detail::container_of<T, Ts...>::type>
+  const T& Get(const typename ContainerType::key_type& id) const {
+    return ContainerType::Get(id);
+  }
+  template <class T,
+            class ContainerType = typename detail::container_of<T, Ts...>::type>
+  T& Get(const typename ContainerType::key_type& id) {
+    return ContainerType::Get(id);
   }
   /// @}
 
