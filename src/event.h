@@ -50,6 +50,8 @@ class Event : public Id, public Usage {
 /// @note House Events with unset/uninitialized expressions default to False.
 class HouseEvent : public Event {
  public:
+  static constexpr const char* kTypeString = "house event";  ///< In errors.
+
   static HouseEvent kTrue;  ///< Literal True event.
   static HouseEvent kFalse;  ///< Literal False event.
 
@@ -76,6 +78,8 @@ class Gate;
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public Event {
  public:
+  static constexpr const char* kTypeString = "basic event";  ///< In errors.
+
   using Event::Event;
 
   virtual ~BasicEvent() = default;
@@ -154,6 +158,8 @@ class Formula;  // To describe a gate's formula.
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
  public:
+  static constexpr const char* kTypeString = "gate";  ///< Type for errors only.
+
   using Event::Event;
 
   /// @returns true if the gate formula has been set.

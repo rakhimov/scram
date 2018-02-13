@@ -68,7 +68,7 @@ namespace detail {  // Internal XML helper functions.
 ///
 /// @returns The interpreted value.
 ///
-/// @throws ValidityError  Casting is unsuccessful.
+/// @throws ValidityError  The interpretation is unsuccessful.
 template <typename T>
 std::enable_if_t<std::is_arithmetic_v<T>, T> to(const std::string_view& value) {
   if constexpr (std::is_same_v<T, int>) {
@@ -76,18 +76,20 @@ std::enable_if_t<std::is_arithmetic_v<T>, T> to(const std::string_view& value) {
     std::int64_t ret = std::strtoll(value.data(), &end_char, 10);
     int len = end_char - value.data();
     if (len != value.size() || ret > std::numeric_limits<int>::max() ||
-        ret < std::numeric_limits<int>::min())
-      SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                                "' to 'int'."));
+        ret < std::numeric_limits<int>::min()) {
+      SCRAM_THROW(ValidityError("Failed to interpret value to int"))
+          << errinfo_value(std::string(value));
+    }
     return ret;
 
   } else if constexpr (std::is_same_v<T, double>) {  // NOLINT
     char* end_char = nullptr;
     double ret = std::strtod(value.data(), &end_char);
     int len = end_char - value.data();
-    if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL)
-      SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                                "' to 'double'."));
+    if (len != value.size() || ret == HUGE_VAL || ret == -HUGE_VAL) {
+      SCRAM_THROW(ValidityError("Failed to interpret value to double"))
+          << errinfo_value(std::string(value));
+    }
     return ret;
 
   } else {
@@ -97,8 +99,8 @@ std::enable_if_t<std::is_arithmetic_v<T>, T> to(const std::string_view& value) {
       return true;
     if (value == "false" || value == "0")
       return false;
-    SCRAM_THROW(ValidityError("Failed to interpret '" + std::string(value) +
-                              "' to 'bool'."));
+    SCRAM_THROW(ValidityError("Failed to interpret value to bool"))
+        << errinfo_value(std::string(value));
   }
 }
 

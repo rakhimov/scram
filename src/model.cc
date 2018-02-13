@@ -45,7 +45,9 @@ Formula::ArgEvent Model::GetEvent(const std::string& id) {
     return &*it;
   if (auto it = ext::find(table<HouseEvent>(), id))
     return &*it;
-  SCRAM_THROW(UndefinedElement("The event " + id + " is not in the model."));
+  SCRAM_THROW(UndefinedElement())
+      << errinfo_element(id, "event")
+      << errinfo_container(Element::name(), kTypeString);
 }
 
 }  // namespace scram::mef

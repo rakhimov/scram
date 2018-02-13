@@ -377,17 +377,30 @@ int main(int argc, char* argv[]) {
   } catch (const scram::Error& err) {
     LOG(scram::DEBUG1) << boost::diagnostic_information(err);
     std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
+    if (const std::string* value =
+            boost::get_error_info<scram::errinfo_value>(err)) {
+      std::cerr << "Value: " << *value << "\n";
+    }
     if (const std::string* filename =
             boost::get_error_info<boost::errinfo_file_name>(err)) {
       std::cerr << "File: " << *filename << "\n";
       if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
         std::cerr << "Line: " << *line << "\n";
     }
+    if (const std::string* element_reference =
+            boost::get_error_info<scram::mef::errinfo_reference>(err)) {
+      std::cerr << "MEF reference: " << *element_reference << "\n";
+    }
+    if (const std::string* base_path =
+            boost::get_error_info<scram::mef::errinfo_base_path>(err)) {
+      std::cerr << "MEF base path: " << *base_path << "\n";
+    }
     if (const std::string* id =
             boost::get_error_info<scram::mef::errinfo_element_id>(err)) {
       std::cerr << "MEF Element ID: " << *id << "\n";
-      auto* type = boost::get_error_info<scram::mef::errinfo_element_type>(err);
-      assert(type);
+    }
+    if (const auto* type =
+            boost::get_error_info<scram::mef::errinfo_element_type>(err)) {
       std::cerr << "MEF Element type: " << *type << "\n";
     }
     if (const std::string* container =
@@ -401,6 +414,10 @@ int main(int argc, char* argv[]) {
     if (const std::string* attribute =
             boost::get_error_info<scram::mef::errinfo_attribute>(err)) {
       std::cerr << "MEF Attribute: " << *attribute << "\n";
+    }
+    if (const std::string* cycle =
+            boost::get_error_info<scram::mef::errinfo_cycle>(err)) {
+      std::cerr << "Cycle: " << *cycle << "\n";
     }
     if (const std::string* xml_element =
             boost::get_error_info<scram::xml::errinfo_element>(err)) {

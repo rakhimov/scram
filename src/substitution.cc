@@ -41,12 +41,14 @@ void Substitution::Validate() const {
         return !std::holds_alternative<BasicEvent*>(arg.event);
       })) {
     SCRAM_THROW(ValidityError(
-        "Substitution hypothesis must be built over basic events only."));
+        "Substitution hypothesis must be built over basic events only."))
+        << errinfo_element(Element::name(), kTypeString);
   }
 
   if (ext::any_of(hypothesis_->args(),
                   [](const Formula::Arg& arg) { return arg.complement; })) {
-    SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."));
+    SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."))
+        << errinfo_element(Element::name(), kTypeString);
   }
 
   if (declarative()) {
@@ -57,11 +59,13 @@ void Substitution::Validate() const {
       case kOr:
         break;
       default:
-        SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."));
+        SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."))
+            << errinfo_element(Element::name(), kTypeString);
     }
     const bool* constant = std::get_if<bool>(&target_);
     if (constant && *constant)
-      SCRAM_THROW(ValidityError("Substitution has no effect."));
+      SCRAM_THROW(ValidityError("Substitution has no effect."))
+          << errinfo_element(Element::name(), kTypeString);
   } else {  // Non-declarative.
     switch (hypothesis_->connective()) {
       case kNull:
@@ -71,11 +75,13 @@ void Substitution::Validate() const {
       default:
         SCRAM_THROW(
             ValidityError("Non-declarative substitution hypotheses only allow "
-                          "AND/OR/NULL connectives."));
+                          "AND/OR/NULL connectives."))
+            << errinfo_element(Element::name(), kTypeString);
     }
     const bool* constant = std::get_if<bool>(&target_);
     if (constant && !*constant)
-      SCRAM_THROW(ValidityError("Substitution source set is irrelevant."));
+      SCRAM_THROW(ValidityError("Substitution source set is irrelevant."))
+          << errinfo_element(Element::name(), kTypeString);
   }
 }
 

@@ -80,23 +80,23 @@ Formula::Formula(Connective connective, ArgSet args,
     case kNor:
       if (args_.size() < 2)
         SCRAM_THROW(
-            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
-                          "\" connective must have 2 or more arguments."));
+            ValidityError("'" + std::string(kConnectiveToString[connective_]) +
+                          "' connective must have 2 or more arguments."));
       break;
     case kNot:
     case kNull:
       if (args_.size() != 1)
         SCRAM_THROW(
-            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
-                          "\" connective must have only one argument."));
+            ValidityError("'" + std::string(kConnectiveToString[connective_]) +
+                          "' connective must have only one argument."));
       break;
     case kXor:
     case kIff:
     case kImply:
       if (args_.size() != 2)
         SCRAM_THROW(
-            ValidityError("\"" + std::string(kConnectiveToString[connective_]) +
-                          "\" connective must have exactly 2 arguments."));
+            ValidityError("'" + std::string(kConnectiveToString[connective_]) +
+                          "' connective must have exactly 2 arguments."));
       break;
     case kAtleast:
       if (!min_number)
@@ -119,17 +119,17 @@ Formula::Formula(Connective connective, ArgSet args,
             "'cardinality' connective requires min and max number for args."));
 
       if (min_number_ > max_number_)
-        SCRAM_THROW(ValidityError("\"cardinality\" connective min number (" +
+        SCRAM_THROW(ValidityError("'cardinality' connective min number (" +
                                   std::to_string(min_number_) +
                                   ") cannot be greater than max number (" +
                                   std::to_string(max_number_) + ")."));
       if (args_.empty())
         SCRAM_THROW(ValidityError(
-            "\"cardinality\" connective requires one or more arguments."));
+            "'cardinality' connective requires one or more arguments."));
 
       if (args_.size() < max_number_)
         SCRAM_THROW(
-            ValidityError("\"cardinality\" connective max number (" +
+            ValidityError("'cardinality' connective max number (" +
                           std::to_string(max_number_) +
                           ") cannot be greater than the number of arguments (" +
                           std::to_string(args_.size()) + ")"));

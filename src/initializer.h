@@ -361,7 +361,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Pointer to the entity found by following the given reference.
   ///
-  /// @throws std::out_of_range  The entity cannot be found.
+  /// @throws UndefinedElement  The entity cannot be found.
   /// @{
   Parameter* GetParameter(const std::string& entity_reference,
                           const std::string& base_path);
@@ -389,7 +389,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Pointer to the requested entity.
   ///
-  /// @throws std::out_of_range  The entity cannot be found.
+  /// @throws UndefinedElement  The entity cannot be found.
   template <class P, class T = typename P::element_type>
   T* GetEntity(const std::string& entity_reference,
                const std::string& base_path,

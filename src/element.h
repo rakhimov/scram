@@ -487,7 +487,7 @@ class Container {
 
     try {
       if (it == table_.end())
-        SCRAM_THROW(UndefinedElement("Undefined Element"));
+        SCRAM_THROW(UndefinedElement());
       if (&**it != element)
         SCRAM_THROW(LogicError("Duplicate element with different address."));
 

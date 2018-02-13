@@ -42,8 +42,9 @@ Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
           return fork_path.state() == it->state();
         });
     if (it_find != paths_.end())
-      SCRAM_THROW(ValidityError("Duplicate state '" + it->state() +
-                                "' path in fork " + functional_event_.name()));
+      SCRAM_THROW(ValidityError("Duplicate state path in a fork"))
+          << errinfo_value(it->state())
+          << errinfo_element(functional_event_.name(), "functional event");
   }
 }
 

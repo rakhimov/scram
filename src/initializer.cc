@@ -427,6 +427,10 @@ void Initializer::Define(const xml::Element& event_node,
     assert(basic_event->HasExpression() == false && "Resetting expressions.");
     basic_event->expression(
         GetExpression(*expressions.begin(), basic_event->base_path()));
+  } else if (settings_.probability_analysis()) {
+    SCRAM_THROW(ValidityError("The basic event does not have an expression."))
+        << errinfo_element(basic_event->id(), "basic event")
+        << boost::errinfo_at_line(event_node.line());
   }
 }
 
@@ -489,8 +493,8 @@ void Initializer::Define(const xml::Element& xml_node,
       initiating_event->usage(true);
       it->usage(true);
     } else {
-      SCRAM_THROW(ValidityError("Event tree " + event_tree_name +
-                                " is not defined in model."))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(event_tree_name, "event tree")
           << boost::errinfo_at_line(xml_node.line());
     }
   }
@@ -543,10 +547,7 @@ void Initializer::Define(const xml::Element& xml_node,
         BasicEvent* event = GetBasicEvent(name, "");
         substitution->Add(event);
         event->usage(true);
-      } catch (std::out_of_range&) {
-        SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
-            << boost::errinfo_at_line(basic_event.line());
-      } catch (DuplicateElementError& err) {
+      } catch (ValidityError& err) {
         err << boost::errinfo_at_line(basic_event.line());
         throw;
       }
@@ -561,9 +562,9 @@ void Initializer::Define(const xml::Element& xml_node,
       BasicEvent* event = GetBasicEvent(name, "");
       substitution->target(event);
       event->usage(true);
-    } catch (std::out_of_range&) {
-      SCRAM_THROW(ValidityError("Undefined basic event '" + name + "'"))
-          << boost::errinfo_at_line(target.line());
+    } catch (ValidityError& err) {
+      err << boost::errinfo_at_line(target.line());
+      throw;
     }
   } else {
     assert(target.name() == "constant");
@@ -746,12 +747,7 @@ std::unique_ptr<Formula> Initializer::GetFormula(
         }
       }();
       arg_set.Add(arg_event, complement);
-    } catch (std::out_of_range&) {
-      SCRAM_THROW(ValidityError(
-          "Undefined " + std::string(element_type) + " " + name +
-          (base_path.empty() ? "" : " with base path " + base_path)))
-          << boost::errinfo_at_line(element.line());
-    } catch (DuplicateElementError& err) {
+    } catch (ValidityError& err) {
       err << boost::errinfo_at_line(element.line());
       throw;
     }
@@ -811,8 +807,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
         throw;
       }
     } else {
-      SCRAM_THROW(ValidityError("Functional event " + name +
-                                " is not defined in " + event_tree->name()))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "functional event")
+          << errinfo_container(event_tree->name(), "event tree")
           << boost::errinfo_at_line(target_node.line());
     }
   } else if (target_node.name() == "sequence") {
@@ -821,8 +818,8 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(&*it);
       it->usage(true);
     } else {
-      SCRAM_THROW(
-          ValidityError("Sequence " + name + " is not defined in the model."))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "sequence")
           << boost::errinfo_at_line(target_node.line());
     }
   } else {
@@ -832,8 +829,9 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
       branch->target(&*it);
       it->usage(true);
     } else {
-      SCRAM_THROW(ValidityError("Branch " + name + " is not defined in " +
-                                event_tree->name()))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "branch")
+          << errinfo_container(event_tree->name(), "event tree")
           << boost::errinfo_at_line(target_node.line());
     }
   }
@@ -864,8 +862,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
       it->usage(true);
       return &*it;
     } else {
-      SCRAM_THROW(
-          ValidityError("Rule " + name + " is not defined in the model."))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "rule")
           << boost::errinfo_at_line(xml_element.line());
     }
   }
@@ -884,8 +882,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
           register_instruction(std::make_unique<Link>(*it))));
       return links_.back();
     } else {
-      SCRAM_THROW(
-          ValidityError("Event tree " + name + " is not defined in the model."))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "event tree")
           << boost::errinfo_at_line(xml_element.line());
     }
   }
@@ -923,8 +921,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   if (node_name == "set-house-event") {
     std::string name(xml_element.attribute("name"));
     if (!model_->house_events().count(name)) {
-      SCRAM_THROW(ValidityError("House event " + name +
-                                " is not defined in the model."))
+      SCRAM_THROW(UndefinedElement())
+          << errinfo_element(name, "house event")
           << boost::errinfo_at_line(xml_element.line());
     }
     return register_instruction(std::make_unique<SetHouseEvent>(
@@ -1205,7 +1203,8 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
         it->usage(true);
         return &*it;
       } else {
-        SCRAM_THROW(ValidityError("Undefined extern function: " + name))
+        SCRAM_THROW(UndefinedElement())
+            << errinfo_element(name, "extern function")
             << boost::errinfo_at_line(expr_element.line());
       }
     }();
@@ -1259,11 +1258,9 @@ Expression* Initializer::GetParameter(const std::string_view& expr_type,
       param->usage(true);
       check_units(*param);
       return param;
-    } catch (std::out_of_range&) {
-      SCRAM_THROW(ValidityError(
-          "Undefined parameter " + name +
-          (base_path.empty() ? "" : " with base path " + base_path)))
-          << boost::errinfo_at_line(expr_element.line());
+    } catch (ValidityError& err) {
+      err << boost::errinfo_at_line(expr_element.line());
+      throw;
     }
   } else if (expr_type == "system-mission-time") {
     check_units(model_->mission_time());
@@ -1337,10 +1334,12 @@ T* Initializer::GetEntity(const std::string& entity_reference,
       return &*it;
   }
 
-  auto at = [&entity_reference](const auto& reference_container) {
+  auto at = [&entity_reference, &base_path](const auto& reference_container) {
     if (auto it = ext::find(reference_container, entity_reference))
       return &*it;
-    throw std::out_of_range("The entity cannot be found.");
+    SCRAM_THROW(UndefinedElement())
+        << errinfo_reference(entity_reference) << errinfo_base_path(base_path)
+        << errinfo_element_type(T::kTypeString);
   };
 
   if (entity_reference.find('.') == std::string::npos)  // Public entity.
@@ -1379,7 +1378,9 @@ Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
     GET_EVENT(TableRange(path_gates_), TableRange(path_basic_events_),
               TableRange(path_house_events_), entity_reference);
   }
-  throw std::out_of_range("The event cannot be bound.");
+  SCRAM_THROW(UndefinedElement())
+      << errinfo_reference(entity_reference) << errinfo_base_path(base_path)
+      << errinfo_element_type("event");
 }
 
 #undef GET_EVENT
@@ -1516,7 +1517,8 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
       it->usage(true);
       return *it;
     }
-    SCRAM_THROW(ValidityError("Undefined extern library: " + lib_name))
+    SCRAM_THROW(UndefinedElement())
+        << errinfo_element(lib_name, "extern library")
         << boost::errinfo_at_line(xml_element.line());
   }();
 
@@ -1537,7 +1539,7 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
       return function_extractors.at(encoding)(
           std::string(xml_element.attribute("name")),
           std::string(xml_element.attribute("symbol")), library);
-    } catch (ValidityError& err) {
+    } catch (Error& err) {
       err << boost::errinfo_at_line(xml_element.line());
       throw;
     }
@@ -1595,19 +1597,6 @@ void Initializer::ValidateInitialization() {
   }
 
   EnsureNoSubstitutionConflicts();
-
-  // Check if all basic events have expressions for probability analysis.
-  if (settings_.probability_analysis()) {
-    std::string msg;
-    for (const BasicEvent& event : model_->basic_events()) {
-      if (event.HasExpression() == false)
-        msg += event.name() + "\n";
-    }
-
-    if (!msg.empty())
-      SCRAM_THROW(
-          ValidityError("These basic events do not have expressions:\n" + msg));
-  }
 
   ValidateExpressions();
 }
@@ -1745,9 +1734,10 @@ void Initializer::EnsureNoSubstitutionConflicts() {
     const auto* target_ptr = std::get_if<BasicEvent*>(&origin.target());
     for (const Substitution& substitution : substitutions) {
       if (target_ptr && boost::count(substitution.source(), *target_ptr))
-        SCRAM_THROW(ValidityError(
-            "Non-declarative substitution '" + origin.name() +
-            "' target event should not appear in any substitution source."));
+        SCRAM_THROW(
+            ValidityError("Non-declarative substitution target event should "
+                          "not appear in any substitution source."))
+            << errinfo_element(origin.name(), "substitution");
       if (&origin == &substitution)
         continue;
       auto in_hypothesis = [&substitution](const BasicEvent* source) {
@@ -1757,15 +1747,15 @@ void Initializer::EnsureNoSubstitutionConflicts() {
                            });
       };
       if (target_ptr && in_hypothesis(*target_ptr))
-        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin.name() +
-                                  "' target event should not appear in another "
-                                  "substitution hypothesis."));
+        SCRAM_THROW(
+            ValidityError("Non-declarative substitution target event should "
+                          "not appear in another substitution hypothesis."))
+            << errinfo_element(origin.name(), "substitution");
       if (ext::any_of(origin.source(), in_hypothesis))
-        SCRAM_THROW(ValidityError("Non-declarative substitution '" +
-                                  origin.name() +
-                                  "' source event should not appear in another "
-                                  "substitution hypothesis."));
+        SCRAM_THROW(
+            ValidityError("Non-declarative substitution source event should "
+                          "not appear in another substitution hypothesis."))
+            << errinfo_element(origin.name(), "substitution");
     }
   }
 }

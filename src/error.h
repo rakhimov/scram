@@ -48,12 +48,15 @@
 
 namespace scram {
 
+/// The generic tag to carry an erroneous value.
+/// Use this tag only if another more-specific error tag is not available.
+using errinfo_value = boost::error_info<struct tag_value, std::string>;
+
 /// The Error class is the base class
 /// for all exceptions specific to the SCRAM code.
 ///
 /// @note The copy constructor is not noexcept as required by std::exception.
-///       However, this class (and boost::exception)
-///       may only throw std::bad_alloc upon copy,
+///       However, this class may only throw std::bad_alloc upon copy,
 ///       which may be produced anyway
 ///       even if the copy constructor were noexcept.
 class Error : virtual public std::exception, virtual public boost::exception {
@@ -122,7 +125,15 @@ using errinfo_element_type =
 using errinfo_element = boost::tuple<errinfo_element_id, errinfo_element_type>;
 /// @}
 
-/// For validating input parameters or user arguments.
+/// The MEF element reference.
+using errinfo_reference = boost::error_info<struct tag_reference, std::string>;
+/// The base path to follow the reference.
+using errinfo_base_path = boost::error_info<struct tag_base_path, std::string>;
+
+/// String representation of invalid cycles/loops.
+using errinfo_cycle = boost::error_info<struct tag_cycle, std::string>;
+
+/// Model validity errors.
 struct ValidityError : public Error {
   using Error::Error;
 };
@@ -134,10 +145,10 @@ struct DuplicateElementError : public ValidityError {
 
 /// The error for undefined elements in a model.
 struct UndefinedElement : public ValidityError {
-  using ValidityError::ValidityError;
+  UndefinedElement() : ValidityError("Undefined Element Error") {}
 };
 
-/// Signals unacceptable cycles in invalid structures.
+/// Unacceptable cycles in model structures.
 struct CycleError : public ValidityError {
   using ValidityError::ValidityError;
 };

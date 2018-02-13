@@ -64,14 +64,15 @@ class ExternLibrary : public Element, public Usage {
   ///
   /// @returns The function pointer resolved from the symbol.
   ///
-  /// @throws UndefinedElement  The symbol is not in the library.
+  /// @throws DLError  The symbol is not in the library.
   template <typename F>
   std::enable_if_t<std::is_function_v<F>, std::add_pointer_t<F>>
   get(const std::string& symbol) const {
     try {
       return lib_handle_.get<F>(symbol);
     } catch (const boost::system::system_error& err) {
-      SCRAM_THROW(UndefinedElement(err.what()))
+      SCRAM_THROW(DLError(err.what()))
+          << errinfo_value(symbol)
           << boost::errinfo_nested_exception(boost::current_exception());
     }
   }
@@ -133,7 +134,7 @@ class ExternFunction : public ExternFunctionBase {
   /// @param[in] symbol  The symbol name for the function in the library.
   /// @param[in] library  The dynamic library to lookup the function.
   ///
-  /// @throws UndefinedElement  There is no such symbol in the library.
+  /// @throws DLError  There is no such symbol in the library.
   ExternFunction(std::string name, const std::string& symbol,
                  const ExternLibrary& library)
       : ExternFunctionBase(std::move(name)),
