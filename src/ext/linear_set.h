@@ -69,9 +69,9 @@ struct identity {
 /// and fewer CPU front-end and back-end stalls.
 ///
 /// @tparam Value  The type of the values.
-/// @tparam Key  The key extraction functor.
+/// @tparam KeyFromValue  The key extraction functor.
 /// @tparam Sequence  The underlying container type.
-template <typename Value, typename Key = identity,
+template <typename Value, typename KeyFromValue = identity,
           template <typename...> class Sequence = std::vector>
 class linear_set {
   /// Non-member equality test operators.
@@ -103,10 +103,10 @@ class linear_set {
  public:
   /// Public typedefs similar to standard sets.
   /// @{
-  using key_equal = Key;
+  using key_from_value = KeyFromValue;
   using value_type = Value;
-  using key_type =
-      std::decay_t<decltype(key_equal()(*static_cast<value_type*>(nullptr)))>;
+  using key_type = std::decay_t<decltype(
+      key_from_value()(*static_cast<value_type*>(nullptr)))>;
   using container_type = Sequence<value_type>;
   /// @}
 
@@ -138,6 +138,9 @@ class linear_set {
   }
   /// @}
 
+  /// @returns Value-to-key converter.
+  key_from_value key_extractor() const { return key_from_value(); }
+
   /// Finds an entry in the set by key.
   ///
   /// @param[in] key  The key of the entry.
@@ -146,15 +149,17 @@ class linear_set {
   ///          or end() if not found.
   /// @{
   const_iterator find(const key_type& key) const {
-    return std::find_if(
-        set_.cbegin(), set_.cend(),
-        [&key](const value_type& value) { return key == key_equal()(value); });
+    return std::find_if(set_.cbegin(), set_.cend(),
+                        [&key](const value_type& value) {
+                          return key == key_from_value()(value);
+                        });
   }
 
   iterator find(const key_type& key) {
-    return std::find_if(
-        set_.begin(), set_.end(),
-        [&key](const value_type& value) { return key == key_equal()(value); });
+    return std::find_if(set_.begin(), set_.end(),
+                        [&key](const value_type& value) {
+                          return key == key_from_value()(value);
+                        });
   }
   /// @}
 
@@ -318,10 +323,10 @@ class linear_set {
   ///          or end() if not found.
   /// @{
   const_iterator find_value(const value_type& value) const {
-    return find(key_equal()(value));
+    return find(key_from_value()(value));
   }
   iterator find_value(const value_type& value) {
-    return find(key_equal()(value));
+    return find(key_from_value()(value));
   }
   /// @}
 
