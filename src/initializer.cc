@@ -486,7 +486,7 @@ void Initializer::Define(const xml::Element& et_node, EventTree* event_tree) {
 template <>
 void Initializer::Define(const xml::Element& xml_node,
                          InitiatingEvent* initiating_event) {
-  std::string event_tree_name(xml_node.attribute("event-tree"));
+  std::string_view event_tree_name = xml_node.attribute("event-tree");
   if (!event_tree_name.empty()) {
     try {
       auto& event_tree = model_->Get<EventTree>(event_tree_name);
@@ -543,9 +543,8 @@ void Initializer::Define(const xml::Element& xml_node,
   if (std::optional<xml::Element> source = xml_node.child("source")) {
     for (const xml::Element& basic_event : source->children()) {
       assert(basic_event.name() == "basic-event");
-      std::string name(basic_event.attribute("name"));
       try {
-        BasicEvent* event = GetBasicEvent(name, "");
+        BasicEvent* event = GetBasicEvent(basic_event.attribute("name"), "");
         substitution->Add(event);
         event->usage(true);
       } catch (ValidityError& err) {
@@ -558,9 +557,8 @@ void Initializer::Define(const xml::Element& xml_node,
 
   xml::Element target = xml_node.child("target")->child().value();
   if (target.name() == "basic-event") {
-    std::string name(target.attribute("name"));
     try {
-      BasicEvent* event = GetBasicEvent(name, "");
+      BasicEvent* event = GetBasicEvent(target.attribute("name"), "");
       substitution->target(event);
       event->usage(true);
     } catch (ValidityError& err) {
@@ -722,13 +720,14 @@ std::unique_ptr<Formula> Initializer::GetFormula(
 
   auto add_event = [this, &arg_set, &base_path](const xml::Element& element,
                                                 bool complement) {
-    std::string name(element.attribute("name"));
-    assert(!name.empty() && "Not an appropriate XML element for arg Event.");
     std::string_view element_type = [&element] {
       // This is for the case "<event name="id" type="type"/>".
       std::string_view type = element.attribute("type");
       return type.empty() ? element.name() : type;
     }();
+
+    std::string_view name = element.attribute("name");
+    assert(!name.empty() && "Not an appropriate XML element for arg Event.");
 
     try {
       auto arg_event = [this, &element_type, &name,
@@ -791,8 +790,8 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
                                      EventTree* event_tree, Branch* branch) {
   try {
     if (target_node.name() == "fork") {
-      std::string name(target_node.attribute("functional-event"));
-      auto& functional_event = event_tree->Get<FunctionalEvent>(name);
+      auto& functional_event = event_tree->Get<FunctionalEvent>(
+          target_node.attribute("functional-event"));
       std::vector<Path> paths;
       for (const xml::Element& path_element : target_node.children("path")) {
         paths.emplace_back(std::string(path_element.attribute("state")));
@@ -809,14 +808,13 @@ void Initializer::DefineBranchTarget(const xml::Element& target_node,
         throw;
       }
     } else if (target_node.name() == "sequence") {
-      std::string name(target_node.attribute("name"));
-      auto& sequence = model_->Get<Sequence>(name);
+      auto& sequence = model_->Get<Sequence>(target_node.attribute("name"));
       branch->target(&sequence);
       sequence.usage(true);
     } else {
       assert(target_node.name() == "branch");
-      std::string name(target_node.attribute("name"));
-      auto& named_branch = event_tree->Get<NamedBranch>(name);
+      auto& named_branch =
+          event_tree->Get<NamedBranch>(target_node.attribute("name"));
       branch->target(&named_branch);
       named_branch.usage(true);
     }
@@ -855,9 +853,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   };
 
   if (node_name == "rule") {
-    std::string name(xml_element.attribute("name"));
-    return invoke([&name, this] {
-      auto& rule = model_->Get<Rule>(name);
+    return invoke([&xml_element, this] {
+      auto& rule = model_->Get<Rule>(xml_element.attribute("name"));
       rule.usage(true);
       return &rule;
     });
@@ -870,9 +867,8 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   };
 
   if (node_name == "event-tree") {
-    std::string name(xml_element.attribute("name"));
     return invoke([&] {
-      auto& event_tree = model_->Get<EventTree>(name);
+      auto& event_tree = model_->Get<EventTree>(xml_element.attribute("name"));
       event_tree.usage(true);
       links_.push_back(static_cast<Link*>(
           register_instruction(std::make_unique<Link>(event_tree))));
@@ -911,14 +907,14 @@ Instruction* Initializer::GetInstruction(const xml::Element& xml_element) {
   }
 
   if (node_name == "set-house-event") {
-    std::string name(xml_element.attribute("name"));
+    std::string_view name = xml_element.attribute("name");
     if (!model_->house_events().count(name)) {
       SCRAM_THROW(UndefinedElement())
-          << errinfo_element(name, "house event")
+          << errinfo_element(std::string(name), "house event")
           << boost::errinfo_at_line(xml_element.line());
     }
     return register_instruction(std::make_unique<SetHouseEvent>(
-        std::move(name), *xml_element.child()->attribute<bool>("value")));
+        std::string(name), *xml_element.child()->attribute<bool>("value")));
   }
 
   assert(false && "Unknown instruction type.");
@@ -1190,9 +1186,9 @@ Expression* Initializer::GetExpression(const xml::Element& expr_element,
 
   if (expr_type == "extern-function") {
     const ExternFunction<void>* extern_function = [this, &expr_element] {
-      std::string name(expr_element.attribute("name"));
       try {
-        auto& ret = model_->Get<ExternFunction<void>>(name);
+        auto& ret =
+            model_->Get<ExternFunction<void>>(expr_element.attribute("name"));
         ret.usage(true);
         return &ret;
 
@@ -1245,9 +1241,9 @@ Expression* Initializer::GetParameter(const std::string_view& expr_type,
   };
 
   if (expr_type == "parameter") {
-    std::string name(expr_element.attribute("name"));
     try {
-      Parameter* param = GetParameter(name, base_path);
+      Parameter* param =
+          GetParameter(expr_element.attribute("name"), base_path);
       param->usage(true);
       check_units(*param);
       return param;
@@ -1292,38 +1288,40 @@ void Initializer::DefineCcfFactor(const xml::Element& factor_node,
   }
 }
 
-Parameter* Initializer::GetParameter(const std::string& entity_reference,
+Parameter* Initializer::GetParameter(std::string_view entity_reference,
                                      const std::string& base_path) {
   return GetEntity(entity_reference, base_path, model_->table<Parameter>(),
                    TableRange(path_parameters_));
 }
 
-HouseEvent* Initializer::GetHouseEvent(const std::string& entity_reference,
+HouseEvent* Initializer::GetHouseEvent(std::string_view entity_reference,
                                        const std::string& base_path) {
   return GetEntity(entity_reference, base_path, model_->table<HouseEvent>(),
                    TableRange(path_house_events_));
 }
 
-BasicEvent* Initializer::GetBasicEvent(const std::string& entity_reference,
+BasicEvent* Initializer::GetBasicEvent(std::string_view entity_reference,
                                        const std::string& base_path) {
   return GetEntity(entity_reference, base_path, model_->table<BasicEvent>(),
                    TableRange(path_basic_events_));
 }
 
-Gate* Initializer::GetGate(const std::string& entity_reference,
+Gate* Initializer::GetGate(std::string_view entity_reference,
                            const std::string& base_path) {
   return GetEntity(entity_reference, base_path, model_->table<Gate>(),
                    TableRange(path_gates_));
 }
 
 template <class P, class T>
-T* Initializer::GetEntity(const std::string& entity_reference,
+T* Initializer::GetEntity(std::string_view entity_reference,
                           const std::string& base_path,
                           const TableRange<IdTable<P>>& container,
                           const TableRange<PathTable<T>>& path_container) {
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
-    if (auto it = ext::find(path_container, base_path + "." + entity_reference))
+    std::string full_path = base_path + ".";
+    full_path.append(entity_reference.data(), entity_reference.size());
+    if (auto it = ext::find(path_container, full_path))
       return &*it;
   }
 
@@ -1331,11 +1329,11 @@ T* Initializer::GetEntity(const std::string& entity_reference,
     if (auto it = ext::find(reference_container, entity_reference))
       return &*it;
     SCRAM_THROW(UndefinedElement())
-        << errinfo_reference(entity_reference) << errinfo_base_path(base_path)
-        << errinfo_element_type(T::kTypeString);
+        << errinfo_reference(std::string(entity_reference))
+        << errinfo_base_path(base_path) << errinfo_element_type(T::kTypeString);
   };
 
-  if (entity_reference.find('.') == std::string::npos)  // Public entity.
+  if (entity_reference.find('.') == std::string_view::npos)  // Public entity.
     return at(container);
 
   return at(path_container);  // Direct access.
@@ -1352,19 +1350,20 @@ T* Initializer::GetEntity(const std::string& entity_reference,
       return &*it;                                                   \
   } while (false)
 
-Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
+Formula::ArgEvent Initializer::GetEvent(std::string_view entity_reference,
                                         const std::string& base_path) {
   // Do not implement this in terms of
   // GetGate, GetBasicEvent, or GetHouseEvent.
   // The semantics for local lookup with the base type is different.
   assert(!entity_reference.empty());
   if (!base_path.empty()) {  // Check the local scope.
-    std::string full_path = base_path + "." + entity_reference;
+    std::string full_path = base_path + ".";
+    full_path.append(entity_reference.data(), entity_reference.size());
     GET_EVENT(TableRange(path_gates_), TableRange(path_basic_events_),
               TableRange(path_house_events_), full_path);
   }
 
-  if (entity_reference.find('.') == std::string::npos) {  // Public entity.
+  if (entity_reference.find('.') == std::string_view::npos) {  // Public entity.
     GET_EVENT(model_->table<Gate>(), model_->table<BasicEvent>(),
               model_->table<HouseEvent>(), entity_reference);
   } else {  // Direct access.
@@ -1372,8 +1371,8 @@ Formula::ArgEvent Initializer::GetEvent(const std::string& entity_reference,
               TableRange(path_house_events_), entity_reference);
   }
   SCRAM_THROW(UndefinedElement())
-      << errinfo_reference(entity_reference) << errinfo_base_path(base_path)
-      << errinfo_element_type("event");
+      << errinfo_reference(std::string(entity_reference))
+      << errinfo_base_path(base_path) << errinfo_element_type("event");
 }
 
 #undef GET_EVENT
@@ -1505,9 +1504,8 @@ void Initializer::DefineExternFunction(const xml::Element& xml_element) {
   }();
 
   const ExternLibrary& library = [this, &xml_element]() -> decltype(auto) {
-    std::string lib_name(xml_element.attribute("library"));
     try {
-      auto& lib = model_->Get<ExternLibrary>(lib_name);
+      auto& lib = model_->Get<ExternLibrary>(xml_element.attribute("library"));
       lib.usage(true);
       return lib;
     } catch (UndefinedElement& err) {

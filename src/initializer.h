@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -28,8 +29,8 @@
 #include <variant>
 #include <vector>
 
-#include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/noncopyable.hpp>
 
@@ -99,9 +100,10 @@ class Initializer : private boost::noncopyable {
   /// @tparam T  The element type.
   template <typename T>
   using PathTable = boost::multi_index_container<
-      T*, boost::multi_index::indexed_by<
-              boost::multi_index::hashed_unique<boost::multi_index::global_fun<
-                  const T*, std::string, &GetFullPath>>>>;
+      T*, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+              boost::multi_index::const_mem_fun<Id, std::string_view,
+                                                &Id::full_path>,
+              std::hash<std::string_view>>>>;
 
   /// @tparam T  Type of an expression.
   /// @tparam N  The number of arguments for the expression.
@@ -363,15 +365,15 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws UndefinedElement  The entity cannot be found.
   /// @{
-  Parameter* GetParameter(const std::string& entity_reference,
+  Parameter* GetParameter(std::string_view entity_reference,
                           const std::string& base_path);
-  HouseEvent* GetHouseEvent(const std::string& entity_reference,
+  HouseEvent* GetHouseEvent(std::string_view entity_reference,
                             const std::string& base_path);
-  BasicEvent* GetBasicEvent(const std::string& entity_reference,
+  BasicEvent* GetBasicEvent(std::string_view entity_reference,
                             const std::string& base_path);
-  Gate* GetGate(const std::string& entity_reference,
+  Gate* GetGate(std::string_view entity_reference,
                 const std::string& base_path);
-  Formula::ArgEvent GetEvent(const std::string& entity_reference,
+  Formula::ArgEvent GetEvent(std::string_view entity_reference,
                              const std::string& base_path);
   /// @}
 
@@ -391,8 +393,7 @@ class Initializer : private boost::noncopyable {
   ///
   /// @throws UndefinedElement  The entity cannot be found.
   template <class P, class T = typename P::element_type>
-  T* GetEntity(const std::string& entity_reference,
-               const std::string& base_path,
+  T* GetEntity(std::string_view entity_reference, const std::string& base_path,
                const TableRange<IdTable<P>>& container,
                const TableRange<PathTable<T>>& path_container);
 

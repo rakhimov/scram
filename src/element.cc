@@ -77,11 +77,11 @@ Role::Role(RoleSpecifier role, std::string base_path)
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)
     : Element(std::move(name)),
       Role(role, std::move(base_path)),
-      id_(MakeId(*this)) {}
+      full_path_(GetFullPath(this)) {}
 
 void Id::id(std::string name) {
   Element::name(std::move(name));
-  id_ = MakeId(*this);
+  full_path_ = GetFullPath(this);
 }
 
 }  // namespace scram::mef

@@ -23,9 +23,11 @@
 
 #include <cstdint>
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -161,6 +163,9 @@ class Element : public ContainerElement, private boost::noncopyable {
   /// @returns The original name.
   const std::string& name() const { return name_; }
 
+  /// @returns The string view to the name for table keys.
+  std::string_view name_view() const { return name_; }
+
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
   const std::string& label() const { return label_; }
@@ -245,9 +250,10 @@ class Element : public ContainerElement, private boost::noncopyable {
 ///      while it is in the container.
 template <typename T>
 using ElementTable = boost::multi_index_container<
-    T, boost::multi_index::indexed_by<
-           boost::multi_index::hashed_unique<boost::multi_index::const_mem_fun<
-               Element, const std::string&, &Element::name>>>>;
+    T, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+           boost::multi_index::const_mem_fun<Element, std::string_view,
+                                             &Element::name_view>,
+           std::hash<std::string_view>>>>;
 
 /// Role, access attributes for elements.
 enum class RoleSpecifier : std::uint8_t { kPublic, kPrivate };
@@ -309,7 +315,16 @@ class Id : public Element, public Role {
               RoleSpecifier role = RoleSpecifier::kPublic);
 
   /// @returns The unique id that is set upon the construction of this element.
-  const std::string& id() const { return id_; }
+  const std::string& id() const {
+    return Role::role() == RoleSpecifier::kPublic ? Element::name()
+                                                  : full_path_;
+  }
+
+  /// @returns The string view to the id to be used as a table key.
+  std::string_view id_view() const { return id(); }
+
+  /// @returns The string view to the unique full path for a table key.
+  std::string_view full_path() const { return full_path_; }
 
   /// Resets the element ID.
   ///
@@ -335,13 +350,7 @@ class Id : public Element, public Role {
   ~Id() = default;
 
  private:
-  /// Creates an ID string for an element.
-  static std::string MakeId(const Id& element) {
-    return element.role() == RoleSpecifier::kPublic ? element.name()
-                                                    : GetFullPath(&element);
-  }
-
-  std::string id_;  ///< Unique Id name of an element.
+  std::string full_path_;  ///< Unique for all elements per certain type.
 };
 
 /// Table of elements with unique ids.
@@ -354,7 +363,8 @@ template <typename T>
 using IdTable = boost::multi_index_container<
     T,
     boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
-        boost::multi_index::const_mem_fun<Id, const std::string&, &Id::id>>>>;
+        boost::multi_index::const_mem_fun<Id, std::string_view, &Id::id_view>,
+        std::hash<std::string_view>>>>;
 
 /// Wraps the element container tables into ranges of plain references
 /// to hide the memory smart or raw pointers.
@@ -465,7 +475,7 @@ class Container {
       return **it;
 
     SCRAM_THROW(UndefinedElement())
-        << errinfo_element(id, T::kTypeString)
+        << errinfo_element(std::string(id), T::kTypeString)
         << errinfo_container(Id::unique_name(static_cast<const Self&>(*this)),
                              Self::kTypeString);
   }
