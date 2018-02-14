@@ -209,6 +209,21 @@ void displayError(const scram::IOError &err, const QString &text,
     message.exec();
 }
 
+template <class Tag>
+void displayErrorInfo(QString tag_string, const scram::Error &err,
+                      QString *info)
+{
+    if (const auto *value = boost::get_error_info<Tag>(err)) {
+        std::stringstream ss;
+        ss << *value;
+        auto value_string = QString::fromStdString(ss.str());
+
+        //: Error information tag and its value.
+        info->append(QObject::tr("%1: %2").arg(tag_string, value_string));
+        info->append(QStringLiteral("\n"));
+    }
+}
+
 void displayError(const scram::Error &err, const QString &title,
                   const QString &text, QWidget *parent = nullptr)
 {
@@ -216,6 +231,8 @@ void displayError(const scram::Error &err, const QString &title,
                         parent);
     QString info;
     auto newLine = [&info] { info.append(QStringLiteral("\n")); };
+
+    displayErrorInfo<errinfo_value>(QObject::tr("Value"), err, &info);
 
     if (const std::string *filename =
             boost::get_error_info<boost::errinfo_file_name>(err)) {
@@ -228,17 +245,25 @@ void displayError(const scram::Error &err, const QString &title,
             newLine();
         }
     }
-    if (const std::string *container =
-            boost::get_error_info<mef::errinfo_container_id>(err)) {
-        info.append(QObject::tr("MEF Container: %1")
-                        .arg(QString::fromStdString(*container)));
-        newLine();
-        auto *type = boost::get_error_info<mef::errinfo_container_type>(err);
-        GUI_ASSERT(type, );
-        info.append(QObject::tr("MEF Container type: %1")
-                        .arg(QString::fromLatin1(*type)));
-        newLine();
-    }
+
+    displayErrorInfo<mef::errinfo_connective>(QObject::tr("MEF Connective"),
+                                              err, &info);
+    displayErrorInfo<mef::errinfo_reference>(QObject::tr("MEF reference"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_base_path>(QObject::tr("MEF base path"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_element_id>(QObject::tr("MEF Element ID"),
+                                              err, &info);
+    displayErrorInfo<mef::errinfo_element_type>(QObject::tr("MEF Element type"),
+                                                err, &info);
+    displayErrorInfo<mef::errinfo_container_id>(QObject::tr("MEF Container"),
+                                                err, &info);
+    displayErrorInfo<mef::errinfo_container_type>(
+        QObject::tr("MEF Container type"), err, &info);
+    displayErrorInfo<mef::errinfo_attribute>(QObject::tr("MEF Attribute"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_cycle>(QObject::tr("Cycle"), err, &info);
+
     if (const std::string *xml_element =
             boost::get_error_info<xml::errinfo_element>(err)) {
         info.append(QObject::tr("XML element: %1")
