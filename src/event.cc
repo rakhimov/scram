@@ -41,7 +41,12 @@ HouseEvent HouseEvent::kFalse("__false__");
 
 void BasicEvent::Validate() const {
   assert(expression_ && "The basic event's expression is not set.");
-  EnsureProbability(expression_, Event::name());
+  try {
+    EnsureProbability(expression_);
+  } catch (DomainError& err) {
+    err << errinfo_element(Event::name(), kTypeString);
+    throw;
+  }
 }
 
 void Formula::ArgSet::Add(ArgEvent event, bool complement) {

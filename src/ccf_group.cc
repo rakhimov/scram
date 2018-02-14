@@ -115,22 +115,25 @@ void CcfGroup::AddFactor(Expression* factor, std::optional<int> level) {
 }
 
 void CcfGroup::Validate() const {
-  if (!distribution_ || members_.empty() || factors_.empty())
-    SCRAM_THROW(LogicError("CCF group is not initialized."))
-        << errinfo_element(Element::name(), kTypeString);
+  try {
+    if (!distribution_ || members_.empty() || factors_.empty())
+      SCRAM_THROW(LogicError("CCF group is not initialized."));
 
-  EnsureProbability(distribution_,
-                    Element::name() + " CCF group distribution.");
+    EnsureProbability(distribution_, "CCF group distribution");
 
-  for (const std::pair<int, Expression*>& f : factors_) {
-    if (!f.second) {
-      SCRAM_THROW(ValidityError("Missing some CCF factors"))
-          << errinfo_element(Element::name(), kTypeString);
+    for (const std::pair<int, Expression*>& f : factors_) {
+      if (!f.second)
+        SCRAM_THROW(ValidityError("Missing some CCF factors"));
+
+      EnsureProbability(f.second, "CCF group factor");
     }
-    EnsureProbability(f.second, Element::name() + " CCF group factors.",
-                      "fraction");
+
+    this->DoValidate();
+
+  } catch (Error& err) {
+    err << errinfo_element(Element::name(), kTypeString);
+    throw;
   }
-  this->DoValidate();
 }
 
 void CcfGroup::ApplyModel() {
@@ -282,8 +285,7 @@ void PhiFactorModel::DoValidate() const {
   }
   if (!ext::is_close(1, sum, 1e-4) || !ext::is_close(1, sum_min, 1e-4) ||
       !ext::is_close(1, sum_max, 1e-4)) {
-    SCRAM_THROW(ValidityError("The factors for Phi model CCF must sum to 1."))
-        << errinfo_element(CcfGroup::name(), kTypeString);
+    SCRAM_THROW(ValidityError("The factors for Phi model CCF must sum to 1."));
   }
 }
 

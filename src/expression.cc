@@ -21,6 +21,7 @@
 #include "expression.h"
 
 #include <sstream>
+#include <string>
 
 #include "error.h"
 #include "ext/algorithm.h"
@@ -54,38 +55,64 @@ namespace detail {
 
 void EnsureMultivariateArgs(std::vector<Expression*> args) {
   if (args.size() < 2)
-    SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."));
+    SCRAM_THROW(ValidityError("Expression requires 2 or more arguments."))
+        << errinfo_value(std::to_string(args.size()));
 }
 
 }  // namespace detail
 
-void EnsureProbability(Expression* expression, const std::string& description,
-                       const char* type) {
+namespace {  // Interval to string.
+
+/// Converts an interval into a string.
+std::string ToString(const Interval& interval) {
+  std::stringstream ss;
+  ss << interval;
+  return ss.str();
+}
+
+}  // namespace
+
+void EnsureProbability(Expression* expression, const char* type) {
   double value = expression->value();
   if (value < 0 || value > 1)
-    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " value for " +
-                            description));
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " value"))
+        << errinfo_value(std::to_string(value));
 
-  if (IsProbability(expression->interval()) == false)
-    SCRAM_THROW(DomainError("Invalid " + std::string(type) +
-                            " sample domain for " + description));
+  Interval interval = expression->interval();
+  if (IsProbability(interval) == false)
+    SCRAM_THROW(DomainError("Invalid " + std::string(type) + " sample domain"))
+        << errinfo_value(ToString(interval));
 }
 
-void EnsurePositive(Expression* expression, const std::string& description) {
-  if (expression->value() <= 0)
-    SCRAM_THROW(DomainError(description + " argument value must be positive."));
-  if (IsPositive(expression->interval()) == false)
+void EnsurePositive(Expression* expression, const char* description) {
+  using namespace std::string_literals;  // NOLINT
+
+  double value = expression->value();
+  if (value <= 0)
+    SCRAM_THROW(DomainError(description + " argument value must be positive."s))
+        << errinfo_value(std::to_string(value));
+
+  Interval interval = expression->interval();
+  if (IsPositive(interval) == false)
     SCRAM_THROW(
-        DomainError(description + " argument sample domain must be positive."));
+        DomainError(description + " argument sample domain must be positive."s))
+        << errinfo_value(ToString(interval));
 }
 
-void EnsureNonNegative(Expression* expression, const std::string& description) {
-  if (expression->value() < 0)
+void EnsureNonNegative(Expression* expression, const char* description) {
+  using namespace std::string_literals;  // NOLINT
+
+  double value = expression->value();
+  if (value < 0)
     SCRAM_THROW(
-        DomainError(description + " argument value cannot be negative."));
-  if (IsNonNegative(expression->interval()) == false)
+        DomainError(description + " argument value cannot be negative."s))
+        << errinfo_value(std::to_string(value));
+
+  Interval interval = expression->interval();
+  if (IsNonNegative(interval) == false)
     SCRAM_THROW(DomainError(description +
-                            " argument sample cannot have negative values."));
+                            " argument sample cannot have negative values."s))
+        << errinfo_value(ToString(interval));
 }
 
 void EnsureWithin(Expression* expression, const Interval& interval,
@@ -93,16 +120,15 @@ void EnsureWithin(Expression* expression, const Interval& interval,
   double arg_value = expression->value();
   if (!Contains(interval, arg_value)) {
     std::stringstream ss;
-    ss << type << " argument value [" << arg_value << "] must be in "
-       << interval << ".";
-    SCRAM_THROW(DomainError(ss.str()));
+    ss << type << " argument value must be in " << interval << ".";
+    SCRAM_THROW(DomainError(ss.str()))
+        << errinfo_value(std::to_string(arg_value));
   }
   Interval arg_interval = expression->interval();
   if (!boost::icl::within(arg_interval, interval)) {
     std::stringstream ss;
-    ss << type << " argument sample domain " << arg_interval << " must be in "
-       << interval << ".";
-    SCRAM_THROW(DomainError(ss.str()));
+    ss << type << " argument sample domain must be in " << interval << ".";
+    SCRAM_THROW(DomainError(ss.str())) << errinfo_value(ToString(arg_interval));
   }
 }
 

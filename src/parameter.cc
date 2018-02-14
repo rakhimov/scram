@@ -24,9 +24,7 @@
 
 namespace scram::mef {
 
-MissionTime::MissionTime(double time, Units unit) : unit_(unit), value_(time) {
-  value(time);
-}
+MissionTime::MissionTime(double time, Units unit) : unit_(unit) { value(time); }
 
 void MissionTime::value(double time) {
   if (time < 0)

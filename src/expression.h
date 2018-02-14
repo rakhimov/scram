@@ -22,7 +22,6 @@
 #pragma once
 
 #include <algorithm>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -282,11 +281,10 @@ class NaryExpression<T, -1> : public ExpressionFormula<NaryExpression<T, -1>> {
 /// Ensures that expression can be used for probability ([0, 1]).
 ///
 /// @param[in] expression  The expression to be validated.
-/// @param[in] description  The addition information for error messages.
 /// @param[in] type  The type of probability or fraction for error messages.
 ///
 /// @throws DomainError  The expression is not suited for probability.
-void EnsureProbability(Expression* expression, const std::string& description,
+void EnsureProbability(Expression* expression,
                        const char* type = "probability");
 
 /// Ensures that expression yields positive (> 0) values.
@@ -295,7 +293,7 @@ void EnsureProbability(Expression* expression, const std::string& description,
 /// @param[in] description  The addition information for error messages.
 ///
 /// @throws DomainError  The expression is not suited for positive values.
-void EnsurePositive(Expression* expression, const std::string& description);
+void EnsurePositive(Expression* expression, const char* description);
 
 /// Ensures that expression yields non-negative (>= 0) values.
 ///
@@ -303,7 +301,7 @@ void EnsurePositive(Expression* expression, const std::string& description);
 /// @param[in] description  The addition information for error messages.
 ///
 /// @throws DomainError  The expression is not suited for non-negative values.
-void EnsureNonNegative(Expression* expression, const std::string& description);
+void EnsureNonNegative(Expression* expression, const char* description);
 
 /// Ensures that expression values are within the interval.
 ///
