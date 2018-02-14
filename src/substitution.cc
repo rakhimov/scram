@@ -60,7 +60,9 @@ void Substitution::Validate() const {
         break;
       default:
         SCRAM_THROW(ValidityError("Substitution hypotheses must be coherent."))
-            << errinfo_element(Element::name(), kTypeString);
+            << errinfo_element(Element::name(), kTypeString)
+            << errinfo_connective(
+                   kConnectiveToString[hypothesis_->connective()]);
     }
     const bool* constant = std::get_if<bool>(&target_);
     if (constant && *constant)
@@ -76,7 +78,9 @@ void Substitution::Validate() const {
         SCRAM_THROW(
             ValidityError("Non-declarative substitution hypotheses only allow "
                           "AND/OR/NULL connectives."))
-            << errinfo_element(Element::name(), kTypeString);
+            << errinfo_element(Element::name(), kTypeString)
+            << errinfo_connective(
+                   kConnectiveToString[hypothesis_->connective()]);
     }
     const bool* constant = std::get_if<bool>(&target_);
     if (constant && !*constant)

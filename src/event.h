@@ -343,6 +343,17 @@ class Formula {
   void ValidateMinMaxNumber(std::optional<int> min_number,
                             std::optional<int> max_number);
 
+  /// Validates the formula connective setup.
+  ///
+  /// @param[in] min_number  The number to be used for connective min number.
+  /// @param[in] max_number  The number to be used for connective max number.
+  ///
+  /// @throws ValidityError  The connective setup is invalid.
+  ///
+  /// @pre The connective error info must be tagged outside of this function.
+  void ValidateConnective(std::optional<int> min_number,
+                          std::optional<int> max_number);
+
   /// Checks if the formula argument results in invalid nesting.
   ///
   /// @param[in] arg  The argument in the formula.

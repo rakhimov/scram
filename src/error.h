@@ -133,6 +133,10 @@ using errinfo_base_path = boost::error_info<struct tag_base_path, std::string>;
 /// String representation of invalid cycles/loops.
 using errinfo_cycle = boost::error_info<struct tag_cycle, std::string>;
 
+/// Connectives in formulae.
+using errinfo_connective =
+    boost::error_info<struct tag_connective, std::string>;
+
 /// Model validity errors.
 struct ValidityError : public Error {
   using Error::Error;

@@ -386,6 +386,7 @@ int main(int argc, char* argv[]) {
     PrintErrorInfo<errinfo_value>("Value", err);
     PrintErrorInfo<boost::errinfo_file_name>("File", err);
     PrintErrorInfo<boost::errinfo_at_line>("Line", err);
+    PrintErrorInfo<mef::errinfo_connective>("MEF Connective", err);
     PrintErrorInfo<mef::errinfo_reference>("MEF reference", err);
     PrintErrorInfo<mef::errinfo_base_path>("MEF base path", err);
     PrintErrorInfo<mef::errinfo_element_id>("MEF Element ID", err);
