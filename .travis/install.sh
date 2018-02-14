@@ -19,15 +19,7 @@ pip install --user -U pip wheel
 
 if [[ "${CONFIG}" == "Lint" ]]; then
   git clone https://github.com/Sarcasm/run-clang-format
-
-  # Install newer doxygen due to bugs in 1.8.6 with C++11 code.
-  DOXYGEN='doxygen-1.8.11.linux.bin.tar.gz'
-  wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.11/${DOXYGEN}
-  tar -xf ${DOXYGEN}
-  cp doxygen-1.8.11/bin/* ~/.local/bin/
-
   pip install --user -r requirements-dev.txt  # Python linting tools.
-
   exit 0  # Compilation dependencies are not required.
 fi
 

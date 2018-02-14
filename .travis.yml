@@ -63,8 +63,10 @@ jobs:
               apt:
                   packages:
                       - clang-format-6.0
+                      - doxygen
                   sources:
                       - ubuntu-toolchain-r-test
+                      - sourceline: "ppa:rakhimov/doxygen"
                       - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
         # - stage: test
         #   os: osx  # OS X builds are slow and limited.
