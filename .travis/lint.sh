@@ -4,9 +4,9 @@ set -ev
 
 CLANG_FORMAT="./run-clang-format/run-clang-format.py --clang-format-executable clang-format-${CLANG_VERSION}"
 
-${CLANG_FORMAT} -r gui/
-${CLANG_FORMAT} -r src/
-${CLANG_FORMAT} tests/*.{h,cc}
+# ${CLANG_FORMAT} -r gui/
+# ${CLANG_FORMAT} -r src/
+# ${CLANG_FORMAT} tests/*.{h,cc}
 
 # Check documentation coverage
 which doxygen || exit 1

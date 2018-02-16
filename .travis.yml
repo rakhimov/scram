@@ -62,12 +62,12 @@ jobs:
           addons:
               apt:
                   packages:
-                      - clang-format-6.0
+                      # - clang-format-6.0
                       - doxygen
                   sources:
                       - ubuntu-toolchain-r-test
                       - sourceline: "ppa:rakhimov/doxygen"
-                      - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
+                      # - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
         # - stage: test
         #   os: osx  # OS X builds are slow and limited.
         #   osx_image: xcode9.2 # C++17 not yet fully supported!!!
