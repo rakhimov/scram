@@ -6,13 +6,15 @@ message(STATUS "Found Qt5 Linguist")
 # Use 'lupdate' directly to update the English locale only.
 # The other locales will be updated by Crowdin automatically.
 #
-# The following commented code does what lupdate does;
-# however, this doesn't play well with CMake out-of-source builds.
+# To lupdate the reference - en - translation file,
+# the GUI source files require preprocessing
+# to replace gettext-like `_()` w/ `QObject::tr()`.
 #
-# set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM 1)  # prevent 'make clean'
-# set(SCRAM_GUI_TS_ORIGIN scramgui_en.ts)
-# qt5_create_translation(TRANSLATION_MESSAGES .. ${SCRAM_GUI_TS_ORIGIN})
-# add_custom_target(translations_update DEPENDS ${TRANSLATION_MESSAGES})
+#   $ sed -i -r 's/\b_\b\(/QObject::tr\(/g' ./*.{cpp,h}
+#   $ lupdate . -ts translations/scramgui_en.ts
+#
+# This could have been automated w/ CMake;
+# however, it does not play well with CMake out-of-source builds.
 
 # The En locale is default reference,
 # so TS only includes non-En locales.

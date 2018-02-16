@@ -21,6 +21,7 @@
 
 #include "guiassert.h"
 #include "overload.h"
+#include "translate.h"
 
 namespace scram::gui {
 
@@ -124,16 +125,16 @@ QVariant ModelTree::data(const QModelIndex &index, int role) const
     switch (static_cast<Row>(index.row())) {
     case Row::FaultTrees:
         //: The parent item for collections of fault trees in the model.
-        return tr("Fault Trees (%L1)").arg(m_model->faultTrees().size());
+        return _("Fault Trees (%L1)").arg(m_model->faultTrees().size());
     case Row::Gates:
         //: The table of gates.
-        return tr("Gates (%L1)").arg(m_model->gates().size());
+        return _("Gates (%L1)").arg(m_model->gates().size());
     case Row::BasicEvents:
         //: The table of basic events.
-        return tr("Basic Events (%L1)").arg(m_model->basicEvents().size());
+        return _("Basic Events (%L1)").arg(m_model->basicEvents().size());
     case Row::HouseEvents:
         //: The table of house events.
-        return tr("House Events (%L1)").arg(m_model->houseEvents().size());
+        return _("House Events (%L1)").arg(m_model->houseEvents().size());
     }
     GUI_ASSERT(false, {});
 }

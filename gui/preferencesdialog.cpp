@@ -32,6 +32,7 @@
 #include "guiassert.h"
 #include "language.h"
 #include "overload.h"
+#include "translate.h"
 
 namespace scram::gui {
 
@@ -83,9 +84,9 @@ void PreferencesDialog::setupLanguage()
         ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int), this,
         [this, proxyModel](int proxyIndex) {
             QMessageBox::information(
-                this, tr("Restart Required"),
-                tr("The language change will take effect after an "
-                   "application restart."));
+                this, _("Restart Required"),
+                _("The language change will take effect after an "
+                  "application restart."));
             int index =
                 proxyModel->mapToSource(proxyModel->index(proxyIndex, 0)).row();
             QString locale = index == locales.size()

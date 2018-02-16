@@ -224,6 +224,13 @@ GUI Code
 
 - Automatic (implicit) connection of signals and slots is forbidden.
 
+- Avoid using unqualified ``tr()`` calls.
+  Qt Linguist automatic context deduction is flaky
+  and often fails with modern C++ code.
+  ``_()`` (a-la ``gettext``) is provided to always resolve
+  the context to ``QObject::tr()`` (the common case).
+  Add extra translation/disambiguation context as needed (the rare case).
+
 
 Monitoring Code Quality
 =======================

@@ -37,6 +37,7 @@
 
 #include "guiassert.h"
 #include "overload.h"
+#include "translate.h"
 #include "validator.h"
 
 namespace scram::gui {
@@ -61,7 +62,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
             [this](int index) {
                 switch (static_cast<EventType>(1 << index)) {
                 case HouseEvent:
-                    GUI_ASSERT(typeBox->currentText() == tr("House event"), );
+                    GUI_ASSERT(typeBox->currentText() == _("House event"), );
                     stackedWidgetType->setCurrentWidget(tabBoolean);
                     break;
                 case BasicEvent:
@@ -114,14 +115,13 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         if (hasFormulaArg(name)) {
             m_errorBar->showMessage(
                 //: Duplicate arguments are not allowed in a formula.
-                tr("The argument '%1' is already in formula.").arg(name));
+                _("The argument '%1' is already in formula.").arg(name));
             return;
         }
         if (name == nameLine->text()) {
             m_errorBar->showMessage(
                 //: Self-cycle is also called a loop in a graph.
-                tr("The argument '%1' would introduce a self-cycle.")
-                    .arg(name));
+                _("The argument '%1' would introduce a self-cycle.").arg(name));
             return;
         } else if (m_event) {
             auto it =
@@ -129,7 +129,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
             if (it && checkCycle(&*it)) {
                 m_errorBar->showMessage(
                     //: Fault trees are acyclic graphs.
-                    tr("The argument '%1' would introduce a cycle.").arg(name));
+                    _("The argument '%1' would introduce a cycle.").arg(name));
                 return;
             }
         }
@@ -356,7 +356,7 @@ void EventDialog::validate()
             m_model->GetEvent(name.toStdString());
             m_errorBar->showMessage(
                 //: Duplicate event definition in the model.
-                tr("The event with name '%1' already exists.").arg(name));
+                _("The event with name '%1' already exists.").arg(name));
             return;
         }
     } catch (const mef::UndefinedElement &) {
@@ -364,7 +364,7 @@ void EventDialog::validate()
 
     if (!tabFormula->isHidden() && hasFormulaArg(name)) {
         m_errorBar->showMessage(
-            tr("Name '%1' would introduce a self-cycle.").arg(name));
+            _("Name '%1' would introduce a self-cycle.").arg(name));
         return;
     }
     nameLine->setStyleSheet({});
@@ -391,7 +391,7 @@ void EventDialog::validate()
         case mef::kNull:
             if (numArgs != 1) {
                 m_errorBar->showMessage(
-                    tr("%1 connective requires a single argument.")
+                    _("%1 connective requires a single argument.")
                         .arg(connectiveBox->currentText()));
                 return;
             }
@@ -402,7 +402,7 @@ void EventDialog::validate()
         case mef::kNor:
             if (numArgs < 2) {
                 m_errorBar->showMessage(
-                    tr("%1 connective requires 2 or more arguments.")
+                    _("%1 connective requires 2 or more arguments.")
                         .arg(connectiveBox->currentText()));
                 return;
             }
@@ -410,7 +410,7 @@ void EventDialog::validate()
         case mef::kXor:
             if (numArgs != 2) {
                 m_errorBar->showMessage(
-                    tr("%1 connective requires exactly 2 arguments.")
+                    _("%1 connective requires exactly 2 arguments.")
                         .arg(connectiveBox->currentText()));
                 return;
             }
@@ -420,8 +420,8 @@ void EventDialog::validate()
                 int numReqArgs = minNumberBox->value() + 1;
                 m_errorBar->showMessage(
                     //: The number of required arguments is always more than 2.
-                    tr("%1 connective requires at-least %n arguments.", "",
-                       numReqArgs)
+                    _("%1 connective requires at-least %n arguments.", "",
+                      numReqArgs)
                         .arg(connectiveBox->currentText()));
                 return;
             }
@@ -441,7 +441,7 @@ void EventDialog::validate()
             GUI_ASSERT(it->top_events().empty() == false, );
             m_errorBar->showMessage(
                 //: Fault tree redefinition.
-                tr("Fault tree '%1' is already defined with a top gate.")
+                _("Fault tree '%1' is already defined with a top gate.")
                     .arg(faultTreeName));
             containerFaultTreeName->setStyleSheet(yellowBackground);
             return;
