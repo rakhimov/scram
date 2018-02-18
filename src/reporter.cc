@@ -397,7 +397,7 @@ void Reporter::ReportResults(const core::RiskAnalysis::Result::Id& id,
   if (fta.products().empty() == false) {
     sum_of_products.SetAttribute(
         "distribution",
-        boost::join(fta.products().Distribution() |
+        boost::join(fta.products().distribution() |
                         boost::adaptors::transformed(
                             [](int number) { return std::to_string(number); }),
                     " "));

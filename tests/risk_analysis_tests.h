@@ -78,7 +78,7 @@ class RiskAnalysisTest {
 
   // Provides the number of products per order of sets.
   // The order starts from 1.
-  std::vector<int> ProductDistribution();
+  const std::vector<int>& ProductDistribution();
 
   /// Prints products to the standard error.
   void PrintProducts();

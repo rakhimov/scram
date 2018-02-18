@@ -123,19 +123,7 @@ class ProductContainer {
   ///
   /// @param[in] products  Sets with indices of events from calculations.
   /// @param[in] graph  PDAG with basic event indices and pointers.
-  ProductContainer(const Zbdd& products, const Pdag& graph) noexcept
-      : products_(products), graph_(graph) {
-    Pdag::IndexMap<bool> filter(graph_.basic_events().size());
-    for (const std::vector<int>& result_set : products_) {
-      for (int i : result_set) {
-        i = std::abs(i);
-        if (filter[i])
-          continue;
-        filter[i] = true;
-        product_events_.insert(graph_.basic_events()[i]);
-      }
-    }
-  }
+  ProductContainer(const Zbdd& products, const Pdag& graph) noexcept;
 
   /// @returns Collection of basic events that are in the products.
   const std::unordered_set<const mef::BasicEvent*>& product_events() const {
@@ -161,11 +149,12 @@ class ProductContainer {
   int size() const { return products_.size(); }
 
   /// @returns The product distribution by order.
-  std::vector<int> Distribution() const;
+  const std::vector<int>& distribution() const { return distribution_; }
 
  private:
   const Zbdd& products_;  ///< Container of analysis results.
   const Pdag& graph_;  ///< The analysis graph.
+  std::vector<int> distribution_;  ///< Product counts by order.
   /// The set of events in the resultant products.
   std::unordered_set<const mef::BasicEvent*> product_events_;
 };

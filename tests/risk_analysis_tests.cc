@@ -80,12 +80,12 @@ const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
   return result_.products;
 }
 
-std::vector<int> RiskAnalysisTest::ProductDistribution() {
+const std::vector<int>& RiskAnalysisTest::ProductDistribution() {
   assert(analysis->results().size() == 1);
   return analysis->results()
       .front()
       .fault_tree_analysis->products()
-      .Distribution();
+      .distribution();
 }
 
 void RiskAnalysisTest::PrintProducts() {
