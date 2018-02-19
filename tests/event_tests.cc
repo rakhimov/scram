@@ -161,12 +161,12 @@ TEST_CASE("FormulaTest.DuplicateViaComplement", "[mef::event]") {
   SECTION("Complement first") {
     REQUIRE_NOTHROW(arg_set.Add(&arg_event, true));
     CHECK(arg_set.size() == 1);
-    REQUIRE_THROWS_AS(arg_set.Add(&arg_event), DuplicateArgumentError);
+    REQUIRE_THROWS_AS(arg_set.Add(&arg_event), DuplicateElementError);
   }
   SECTION("Complement second") {
     REQUIRE_NOTHROW(arg_set.Add(&arg_event));
     CHECK(arg_set.size() == 1);
-    REQUIRE_THROWS_AS(arg_set.Add(&arg_event, true), DuplicateArgumentError);
+    REQUIRE_THROWS_AS(arg_set.Add(&arg_event, true), DuplicateElementError);
   }
 }
 
@@ -183,7 +183,7 @@ TEST_CASE("FormulaTest.Swap", "[mef::event]") {
   BasicEvent one("one"), two("two"), three("three"), four("four");
   Formula formula(kAnd, {{true, &one}, {false, &two}});
   const Formula orig(formula);
-  auto check_orig = [ orig = formula, &formula ] {
+  auto check_orig = [orig = formula, &formula] {
     CHECK(formula.connective() == orig.connective());
     CHECK(formula.args() == orig.args());
     CHECK(formula.min_number() == orig.min_number());
@@ -201,8 +201,8 @@ TEST_CASE("FormulaTest.Swap", "[mef::event]") {
   }
 
   SECTION("Duplicate") {
-    REQUIRE_THROWS_AS(formula.Swap(&one, &two), DuplicateArgumentError);
-    REQUIRE_THROWS_AS(formula.Swap(&two, &one), DuplicateArgumentError);
+    REQUIRE_THROWS_AS(formula.Swap(&one, &two), DuplicateElementError);
+    REQUIRE_THROWS_AS(formula.Swap(&two, &one), DuplicateElementError);
     check_orig();
   }
 

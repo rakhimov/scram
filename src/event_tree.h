@@ -34,6 +34,9 @@ namespace scram::mef {
 /// Representation of sequences in event trees.
 class Sequence : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "sequence";
+
   using Element::Element;
 
   /// @param[in] instructions  Zero or more instructions for the sequence.
@@ -51,31 +54,26 @@ class Sequence : public Element, public Usage {
   std::vector<Instruction*> instructions_;
 };
 
-/// Sequences are defined in event trees but referenced in other constructs.
-using SequencePtr = std::unique_ptr<Sequence>;
-
 class EventTree;  // Manages the order assignment to functional events.
 
 /// Representation of functional events in event trees.
 class FunctionalEvent : public Element, public Usage {
-  friend class EventTree;
-
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "functional event";
+
   using Element::Element;
 
   /// @returns The order of the functional event in the event tree.
   /// @returns 0 if no order has been assigned.
   int order() const { return order_; }
 
- private:
   /// Sets the functional event order.
   void order(int order) { order_ = order; }
 
+ private:
   int order_ = 0;  ///< The order of the functional event.
 };
-
-/// Functional events are defined in and unique to event trees.
-using FunctionalEventPtr = std::unique_ptr<FunctionalEvent>;
 
 class Fork;
 class NamedBranch;
@@ -118,10 +116,10 @@ class NamedBranch : public Element,
                     public NodeMark,
                     public Usage {
  public:
+  static constexpr const char* kTypeString = "branch";  ///< For error message.
+
   using Element::Element;
 };
-
-using NamedBranchPtr = std::unique_ptr<NamedBranch>;  ///< Unique in event tree.
 
 /// Functional-event state paths in event trees.
 class Path : public Branch {
@@ -162,8 +160,15 @@ class Fork {
 };
 
 /// Event Tree representation with MEF constructs.
-class EventTree : public Element, public Usage {
+class EventTree : public Element,
+                  public Usage,
+                  public Composite<Container<EventTree, Sequence, false>,
+                                   Container<EventTree, FunctionalEvent>,
+                                   Container<EventTree, NamedBranch>> {
  public:
+  /// Container and element type string for error messages.
+  static constexpr const char* kTypeString = "event tree";
+
   using Element::Element;
 
   /// @returns The initial state branch of the event tree.
@@ -172,47 +177,33 @@ class EventTree : public Element, public Usage {
   /// Sets the initial state of the event tree.
   void initial_state(Branch branch) { initial_state_ = std::move(branch); }
 
-  /// @returns The container of event tree constructs of specific kind
-  ///          with construct original names as keys.
+  /// @returns The table range of event tree elements of specific kind
+  ///          with element original names as keys.
   /// @{
-  const ElementTable<FunctionalEventPtr>& functional_events() const {
-    return functional_events_;
-  }
-  const ElementTable<NamedBranchPtr>& branches() const { return branches_; }
+  auto sequances() const { return table<Sequence>(); }
+  auto functional_events() const { return table<FunctionalEvent>(); }
+  auto branches() const { return table<NamedBranch>(); }
   /// @}
 
-  /// Adds event tree constructs into the container.
+  using Composite::Add;
+  using Composite::Remove;
+
+  /// Registers an event tree fork.
   ///
-  /// @param[in] element  A unique element defined in this event tree.
-  ///
-  /// @throws ValidityError  The element is already in this container.
-  ///
-  /// @{
-  void Add(Sequence* element);
-  void Add(FunctionalEventPtr element);
-  void Add(NamedBranchPtr element);
-  void Add(std::unique_ptr<Fork> element) {
-    forks_.push_back(std::move(element));
-  }
-  /// @}
+  /// @param[in] fork  The fork in this event tree.
+  void Add(std::unique_ptr<Fork> fork) { forks_.push_back(std::move(fork)); }
 
  private:
   Branch initial_state_;  ///< The starting point.
-
-  /// Containers for unique event tree constructs defined in this event tree.
-  /// @{
-  ElementTable<Sequence*> sequences_;
-  ElementTable<FunctionalEventPtr> functional_events_;
-  ElementTable<NamedBranchPtr> branches_;
-  /// @}
   std::vector<std::unique_ptr<Fork>> forks_;  ///< Lifetime management of forks.
 };
-
-using EventTreePtr = std::unique_ptr<EventTree>;  ///< Unique trees in a model.
 
 /// Event-tree Initiating Event.
 class InitiatingEvent : public Element, public Usage {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "initiating event";
+
   using Element::Element;
 
   /// Associates an event tree to the initiating event.
@@ -233,8 +224,5 @@ class InitiatingEvent : public Element, public Usage {
  private:
   EventTree* event_tree_ = nullptr;  ///< The optional event tree specification.
 };
-
-/// Unique initiating events in a model.
-using InitiatingEventPtr = std::unique_ptr<InitiatingEvent>;
 
 }  // namespace scram::mef

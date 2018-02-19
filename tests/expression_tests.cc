@@ -144,10 +144,9 @@ void TestNonPositive(Expression* expr, OpenExpression* arg,
 
 TEST_CASE("ExpressionTest.Parameter", "[mef::expression]") {
   OpenExpression expr(10, 8);
-  ParameterPtr param;
-  REQUIRE_NOTHROW(param = ParameterPtr(new Parameter("param")));
-  REQUIRE_NOTHROW(param->expression(&expr));
-  REQUIRE_THROWS_AS(param->expression(&expr), LogicError);
+  Parameter param("param");
+  REQUIRE_NOTHROW(param.expression(&expr));
+  REQUIRE_THROWS_AS(param.expression(&expr), LogicError);
 }
 
 TEST_CASE("ExpressionTest.Exponential", "[mef::expression]") {

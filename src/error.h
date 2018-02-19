@@ -17,6 +17,11 @@
 
 /// @file
 /// Exceptions for SCRAM.
+/// Exceptions are designed with boost::exception;
+/// that is, exception classes act like tags.
+/// No new data members shall ever be added to derived exception classes
+/// (no slicing upon copy or change of exception type!).
+/// Instead, all the data are carried with boost::error_info mechanism.
 
 #pragma once
 
@@ -26,6 +31,7 @@
 #include <boost/current_function.hpp>
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
+#include <boost/exception/info_tuple.hpp>
 
 #include "ext/source_info.h"
 
@@ -42,18 +48,23 @@
 
 namespace scram {
 
+/// The generic tag to carry an erroneous value.
+/// Use this tag only if another more-specific error tag is not available.
+using errinfo_value = boost::error_info<struct tag_value, std::string>;
+
 /// The Error class is the base class
-/// for common exceptions specific to the SCRAM code.
+/// for all exceptions specific to the SCRAM code.
+///
+/// @note The copy constructor is not noexcept as required by std::exception.
+///       However, this class may only throw std::bad_alloc upon copy,
+///       which may be produced anyway
+///       even if the copy constructor were noexcept.
 class Error : virtual public std::exception, virtual public boost::exception {
  public:
   /// Constructs a new error with a provided message.
   ///
   /// @param[in] msg  The message to be passed with this error.
   explicit Error(std::string msg) : msg_(std::move(msg)) {}
-
-  Error(const Error&) = default;  ///< Explicit declaration.
-
-  virtual ~Error() noexcept = default;
 
   /// @returns The formatted error message to be printed.
   const char* what() const noexcept final { return msg_.c_str(); }
@@ -93,29 +104,55 @@ struct SettingsError : public Error {
 namespace mef {  // MEF specific errors.
 
 /// The MEF container element as namespace.
-using errinfo_container = boost::error_info<struct tag_contianer, std::string>;
+/// @{
+using errinfo_container_id =
+    boost::error_info<struct tag_contianer_id, std::string>;
+using errinfo_container_type =
+    boost::error_info<struct tag_container_type, const char*>;
+using errinfo_container =
+    boost::tuple<errinfo_container_id, errinfo_container_type>;
+/// @}
 
-/// For validating input parameters or user arguments.
+/// MEF Element Attribute.
+using errinfo_attribute = boost::error_info<struct tag_attribute, std::string>;
+
+/// The MEF element identifier data in errors.
+/// @{
+using errinfo_element_id =
+    boost::error_info<struct tag_element_id, std::string>;
+using errinfo_element_type =
+    boost::error_info<struct tag_element_type, const char*>;
+using errinfo_element = boost::tuple<errinfo_element_id, errinfo_element_type>;
+/// @}
+
+/// The MEF element reference.
+using errinfo_reference = boost::error_info<struct tag_reference, std::string>;
+/// The base path to follow the reference.
+using errinfo_base_path = boost::error_info<struct tag_base_path, std::string>;
+
+/// String representation of invalid cycles/loops.
+using errinfo_cycle = boost::error_info<struct tag_cycle, std::string>;
+
+/// Connectives in formulae.
+using errinfo_connective =
+    boost::error_info<struct tag_connective, std::string>;
+
+/// Model validity errors.
 struct ValidityError : public Error {
   using Error::Error;
 };
 
-/// For cases when events or practically anything is redefined.
-struct RedefinitionError : public ValidityError {
-  using ValidityError::ValidityError;
-};
-
-/// This error indicates that arguments must be unique.
-struct DuplicateArgumentError : public ValidityError {
-  using ValidityError::ValidityError;
+/// This error indicates that elements must be unique.
+struct DuplicateElementError : public ValidityError {
+  DuplicateElementError() : ValidityError("Duplicate Element Error") {}
 };
 
 /// The error for undefined elements in a model.
 struct UndefinedElement : public ValidityError {
-  using ValidityError::ValidityError;
+  UndefinedElement() : ValidityError("Undefined Element Error") {}
 };
 
-/// Signals unacceptable cycles in invalid structures.
+/// Unacceptable cycles in model structures.
 struct CycleError : public ValidityError {
   using ValidityError::ValidityError;
 };

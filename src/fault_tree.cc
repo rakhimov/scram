@@ -28,86 +28,34 @@ Component::Component(std::string name, std::string base_path,
                      RoleSpecifier role)
     : Element(std::move(name)), Role(role, std::move(base_path)) {}
 
-void Component::Add(Gate* gate) { AddEvent(gate, &gates_); }
-
-void Component::Add(BasicEvent* basic_event) {
-  AddEvent(basic_event, &basic_events_);
-}
-
-void Component::Add(HouseEvent* house_event) {
-  AddEvent(house_event, &house_events_);
-}
-
-void Component::Add(Parameter* parameter) {
-  mef::AddElement<ValidityError>(parameter, &parameters_,
-                                 "Duplicate parameter: ");
-}
-
 void Component::Add(CcfGroup* ccf_group) {
-  if (ccf_groups_.count(ccf_group->name())) {
-    SCRAM_THROW(ValidityError("Duplicate CCF group " + ccf_group->name()));
+  if (ccf_groups().count(ccf_group->name())) {
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(ccf_group->name(), "CCF group");
   }
-  for (BasicEvent* member : ccf_group->members()) {
-    const std::string& name = member->name();
-    if (gates_.count(name) || basic_events_.count(name) ||
-        house_events_.count(name)) {
-      SCRAM_THROW(ValidityError("Duplicate event " + name + " from CCF group " +
-                                ccf_group->name()));
-    }
-  }
-  for (const auto& member : ccf_group->members())
-    basic_events_.insert(member);
-  ccf_groups_.insert(ccf_group);
+  for (BasicEvent* member : ccf_group->members())
+    CheckDuplicateEvent(*member);
+
+  for (auto* member : ccf_group->members())
+    Composite::Add(member);
+
+  Composite::Add(ccf_group);
 }
-
-void Component::Add(std::unique_ptr<Component> component) {
-  if (components_.count(component->name())) {
-    SCRAM_THROW(ValidityError("Duplicate component " + component->name()));
-  }
-  components_.insert(std::move(component));
-}
-
-namespace {
-
-/// Helper function to remove events from component containers.
-template <class T>
-void RemoveEvent(T* event, ElementTable<T*>* table) {
-  auto it = table->find(event->name());
-  if (it == table->end())
-    SCRAM_THROW(
-        UndefinedElement("Event " + event->id() + " is not in the component."));
-  if (*it != event)
-    SCRAM_THROW(UndefinedElement("Duplicate event " + event->id() +
-                                 " does not belong to the component."));
-  table->erase(it);
-}
-
-}  // namespace
-
-void Component::Remove(HouseEvent* element) {
-  return RemoveEvent(element, &house_events_);
-}
-
-void Component::Remove(BasicEvent* element) {
-  return RemoveEvent(element, &basic_events_);
-}
-
-void Component::Remove(Gate* element) { return RemoveEvent(element, &gates_); }
 
 void Component::GatherGates(std::unordered_set<Gate*>* gates) {
-  gates->insert(gates_.begin(), gates_.end());
-  for (const ComponentPtr& component : components_)
-    component->GatherGates(gates);
+  gates->insert(data<Gate>().begin(), data<Gate>().end());
+  for (Component& component : table<Component>())
+    component.GatherGates(gates);
 }
 
-template <class T, class Container>
-void Component::AddEvent(T* event, Container* container) {
-  const std::string& name = event->name();
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
-    SCRAM_THROW(ValidityError("Duplicate event " + name));
+void Component::CheckDuplicateEvent(const Event& event) {
+  const std::string& name = event.name();
+  if (gates().count(name) || basic_events().count(name) ||
+      house_events().count(name)) {
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(name, "event")
+        << errinfo_container(Element::name(), kTypeString);
   }
-  container->insert(event);
 }
 
 FaultTree::FaultTree(const std::string& name) : Component(name) {}

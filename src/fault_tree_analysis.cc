@@ -42,7 +42,7 @@ void Print(const ProductContainer& products) {
     return;
   }
   std::cerr << " " << products.size() << " : {";
-  for (int i : products.Distribution())
+  for (int i : products.distribution())
     std::cerr << " " << i;
   std::cerr << " }\n\n";
 
@@ -70,23 +70,32 @@ void Print(const ProductContainer& products) {
   std::cerr << std::flush;
 }
 
+ProductContainer::ProductContainer(const Zbdd& products,
+                                   const Pdag& graph) noexcept
+    : products_(products), graph_(graph) {
+  Pdag::IndexMap<bool> filter(graph_.basic_events().size());
+  for (const std::vector<int>& product : products_) {
+    int order = product.empty() ? 0 : product.size() - 1;
+    if (distribution_.size() <= order)
+      distribution_.resize(order + 1);
+    distribution_[order]++;
+
+    for (int i : product) {
+      i = std::abs(i);
+      if (filter[i])
+        continue;
+      filter[i] = true;
+      product_events_.insert(graph_.basic_events()[i]);
+    }
+  }
+}
+
 double Product::p() const {
   double p = 1;
   for (const Literal& literal : *this) {
     p *= literal.complement ? 1 - literal.event.p() : literal.event.p();
   }
   return p;
-}
-
-std::vector<int> ProductContainer::Distribution() const {
-  std::vector<int> distribution;
-  for (const std::vector<int>& product : products_) {
-    int index = product.empty() ? 0 : product.size() - 1;
-    if (distribution.size() <= index)
-      distribution.resize(index + 1);
-    distribution[index]++;
-  }
-  return distribution;
 }
 
 FaultTreeAnalysis::FaultTreeAnalysis(const mef::Gate& root,

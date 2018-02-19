@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -28,8 +29,8 @@
 #include <variant>
 #include <vector>
 
-#include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/noncopyable.hpp>
 
@@ -65,23 +66,24 @@ class Initializer : private boost::noncopyable {
   /// @param[in] xml_files  The MEF XML input files.
   /// @param[in] settings  Analysis settings.
   /// @param[in] allow_extern  Allow external libraries in the input.
+  /// @param[in] extra_validator  Additional XML validator to be run
+  ///                             after the MEF validator.
   ///
-  /// @throws DuplicateArgumentError  Input contains duplicate files.
-  /// @throws ValidityError  The input contains errors.
+  /// @throws IOError  Input contains duplicate files.
   /// @throws IOError  One of the input files is not accessible.
+  /// @throws xml::Error  The xml files contain errors or malformed.
+  /// @throws xml::ValidityError  The xml files are not valid for schema.
+  /// @throws mef::ValidityError  The input model contains errors.
   ///
   /// @warning Processing external libraries from XML input is **UNSAFE**.
   ///          It allows loading and executing arbitrary code during analysis.
   ///          Enable this feature for trusted input files and libraries only.
   Initializer(const std::vector<std::string>& xml_files,
-              core::Settings settings, bool allow_extern = false);
+              core::Settings settings, bool allow_extern = false,
+              xml::Validator* extra_validator = nullptr);
 
   /// @returns The model built from the input files.
-  std::shared_ptr<Model> model() const { return model_; }
-
-  /// @returns The parsed & validated XML DOM documents
-  ///          corresponding to the input files (the same order).
-  const std::vector<xml::Document>& documents() const { return documents_; }
+  std::unique_ptr<Model> model() && { return std::move(model_); }
 
  private:
   /// Convenience alias for expression extractor function types.
@@ -98,9 +100,10 @@ class Initializer : private boost::noncopyable {
   /// @tparam T  The element type.
   template <typename T>
   using PathTable = boost::multi_index_container<
-      T*, boost::multi_index::indexed_by<
-              boost::multi_index::hashed_unique<boost::multi_index::global_fun<
-                  const T*, std::string, &GetFullPath>>>>;
+      T*, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<
+              boost::multi_index::const_mem_fun<Id, std::string_view,
+                                                &Id::full_path>,
+              std::hash<std::string_view>>>>;
 
   /// @tparam T  Type of an expression.
   /// @tparam N  The number of arguments for the expression.
@@ -140,33 +143,34 @@ class Initializer : private boost::noncopyable {
   ///
   /// @pre All input files exist on the system.
   ///
-  /// @throws DuplicateArgumentError  There are duplicate input files.
+  /// @throws DuplicateElementError  There are duplicate input files.
   void CheckDuplicateFiles(const std::vector<std::string>& xml_files);
 
   /// @copybrief Initializer::Initializer
   ///
   /// @param[in] xml_files  The formatted XML input files.
   ///
-  /// @throws DuplicateArgumentError  Input contains duplicate files.
-  /// @throws ValidityError  The input contains errors.
+  /// @throws xml::Error  The xml files are erroneous or malformed.
+  /// @throws xml::ValidityError The xml files do not pass validation.
+  /// @throws mef::ValidityError  The input model contains errors.
   /// @throws IOError  One of the input files is not accessible.
+  /// @throws IOError  Input contains duplicate files.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
-  /// Reads one input file with the structure of analysis entities.
-  /// Initializes the analysis from the given input file.
+  /// Reads one input XML file document with the structure of analysis entities.
+  /// Initializes the analysis from the given document.
   /// Puts all events into their appropriate containers.
   /// This function mostly registers element definitions,
   /// but it may leave them to be defined later
   /// because of possible undefined dependencies of those elements.
   ///
-  /// @param[in] xml_file  The formatted XML input file.
+  /// @param[in] document  The XML DOM document from a model input file.
   ///
-  /// @pre The input file has not been passed before.
+  /// @pre The document has not been passed before.
   ///
-  /// @throws ValidityError  The input contains errors.
-  /// @throws IOError  The input file is not accessible.
+  /// @throws ValidityError  The input model contains errors.
   /// @throws IllegalOperation  Loading external libraries is disallowed.
-  void ProcessInputFile(const std::string& xml_file);
+  void ProcessInputFile(const xml::Document& document);
 
   /// Processes definitions of elements
   /// that are left to be determined later.
@@ -177,14 +181,14 @@ class Initializer : private boost::noncopyable {
 
   /// Registers an element into the model.
   ///
-  /// @tparam T  A pointer type to the element.
+  /// @tparam T  The element type.
   ///
   /// @param[in] element  The initialized element ready to be added into models.
   /// @param[in] xml_element  The related XML element for error messages.
   ///
   /// @throws ValidityError  Issues with adding the element into the model.
   template <class T>
-  void Register(T&& element, const xml::Element& xml_element);
+  void Register(std::unique_ptr<T> element, const xml::Element& xml_element);
 
   /// Constructs and registers an element in the model.
   ///
@@ -241,9 +245,9 @@ class Initializer : private boost::noncopyable {
   /// @throws ValidityError  There are issues with registering and defining
   ///                        the component and its data
   ///                        like gates and events.
-  ComponentPtr DefineComponent(const xml::Element& component_node,
-                               const std::string& base_path,
-                               RoleSpecifier container_role);
+  std::unique_ptr<Component> DefineComponent(const xml::Element& component_node,
+                                             const std::string& base_path,
+                                             RoleSpecifier container_role);
 
   /// Registers fault tree and component data
   /// like gates, events, parameters.
@@ -273,8 +277,8 @@ class Initializer : private boost::noncopyable {
   /// @returns Boolean formula that is defined.
   ///
   /// @throws ValidityError  The defined formula is not valid.
-  FormulaPtr GetFormula(const xml::Element& formula_node,
-                        const std::string& base_path);
+  std::unique_ptr<Formula> GetFormula(const xml::Element& formula_node,
+                                      const std::string& base_path);
 
   /// Processes event tree branch instructions and target from XML data.
   ///
@@ -359,17 +363,17 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Pointer to the entity found by following the given reference.
   ///
-  /// @throws std::out_of_range  The entity cannot be found.
+  /// @throws UndefinedElement  The entity cannot be found.
   /// @{
-  Parameter* GetParameter(const std::string& entity_reference,
+  Parameter* GetParameter(std::string_view entity_reference,
                           const std::string& base_path);
-  HouseEvent* GetHouseEvent(const std::string& entity_reference,
+  HouseEvent* GetHouseEvent(std::string_view entity_reference,
                             const std::string& base_path);
-  BasicEvent* GetBasicEvent(const std::string& entity_reference,
+  BasicEvent* GetBasicEvent(std::string_view entity_reference,
                             const std::string& base_path);
-  Gate* GetGate(const std::string& entity_reference,
+  Gate* GetGate(std::string_view entity_reference,
                 const std::string& base_path);
-  Formula::ArgEvent GetEvent(const std::string& entity_reference,
+  Formula::ArgEvent GetEvent(std::string_view entity_reference,
                              const std::string& base_path);
   /// @}
 
@@ -387,20 +391,18 @@ class Initializer : private boost::noncopyable {
   ///
   /// @returns Pointer to the requested entity.
   ///
-  /// @throws std::out_of_range  The entity cannot be found.
+  /// @throws UndefinedElement  The entity cannot be found.
   template <class P, class T = typename P::element_type>
-  T* GetEntity(const std::string& entity_reference,
-               const std::string& base_path, const IdTable<P>& container,
-               const PathTable<T>& path_container);
+  T* GetEntity(std::string_view entity_reference, const std::string& base_path,
+               const TableRange<IdTable<P>>& container,
+               const TableRange<PathTable<T>>& path_container);
 
   /// Defines and loads extern libraries.
   ///
   /// @param[in] xml_node  The XML element with the data.
-  /// @param[in] xml_file  The XML file path.
   ///
   /// @throws ValidityError  The initialization contains validity errors.
-  void DefineExternLibraries(const xml::Element& xml_node,
-                             const std::string& xml_file);
+  void DefineExternLibraries(const xml::Element& xml_node);
 
   /// Defines extern function.
   ///
@@ -488,9 +490,10 @@ class Initializer : private boost::noncopyable {
   /// @todo Research non-declarative substitutions with exact algorithms.
   void EnsureSubstitutionsWithApproximations();
 
-  std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
+  std::unique_ptr<Model> model_;  ///< Analysis model with constructs.
   core::Settings settings_;  ///< Settings for analysis.
   bool allow_extern_;  ///< Allow processing MEF 'extern-library'.
+  xml::Validator* extra_validator_;  ///< The optional extra XML validation.
 
   /// Saved XML documents to keep elements alive.
   std::vector<xml::Document> documents_;

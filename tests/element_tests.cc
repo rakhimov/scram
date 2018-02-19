@@ -27,6 +27,16 @@ namespace {
 
 class NamedElement : public Element {
  public:
+  static constexpr const char* kTypeString = "named element";
+
+  using Element::Element;
+};
+
+class DummyContainer : public Element,
+                       public Container<DummyContainer, NamedElement, false> {
+ public:
+  static constexpr const char* kTypeString = "dummy container";
+
   using Element::Element;
 };
 
@@ -51,6 +61,19 @@ TEST_CASE("ElementTest.Name", "[mef::element]") {
   CHECK_NOTHROW(NamedElement("name?"));
 }
 
+TEST_CASE("ElementTest.Attribute", "[mef::element]") {
+  CHECK_THROWS_AS(Attribute("", ""), LogicError);
+  CHECK_THROWS_AS(Attribute("name", ""), LogicError);
+  CHECK_THROWS_AS(Attribute("", "value"), LogicError);
+  CHECK_NOTHROW(Attribute("name", "value", ""));
+  CHECK_NOTHROW(Attribute("na me", "value \n in some free form", "weirdo int"));
+
+  Attribute attr("impact", "0.1", "float");
+  CHECK_THROWS_AS(attr.name(""), LogicError);
+  CHECK_THROWS_AS(attr.value(""), LogicError);
+  CHECK_NOTHROW(attr.type(""));
+}
+
 TEST_CASE("ElementTest.Label", "[mef::element]") {
   NamedElement el("name");
   CHECK(el.label() == "");
@@ -63,55 +86,89 @@ TEST_CASE("ElementTest.Label", "[mef::element]") {
 
 TEST_CASE("ElementTest.AddAttribute", "[mef::element]") {
   NamedElement el("name");
-  Attribute attr;
-  attr.name = "impact";
-  attr.value = "0.1";
-  attr.type = "float";
-  CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
+  Attribute attr("impact", "0.1", "float");
+  CHECK(el.GetAttribute(attr.name()) == nullptr);
   REQUIRE_NOTHROW(el.AddAttribute(attr));
-  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
-  REQUIRE(el.HasAttribute(attr.name));
-  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
-  CHECK(el.GetAttribute(attr.name).value == attr.value);
-  CHECK(el.GetAttribute(attr.name).name == attr.name);
+  CHECK_THROWS_AS(el.AddAttribute(attr), ValidityError);
+  const Attribute* check = el.GetAttribute(attr.name());
+  REQUIRE(check);
+  CHECK(check->value() == attr.value());
+  CHECK(check->name() == attr.name());
+  CHECK(check->type() == attr.type());
 }
 
 TEST_CASE("ElementTest.SetAttribute", "[mef::element]") {
   NamedElement el("name");
-  Attribute attr;
-  attr.name = "impact";
-  attr.value = "0.1";
-  attr.type = "float";
-  CHECK_THROWS_AS(el.GetAttribute(attr.name), LogicError);
+  Attribute attr("impact", "0.1", "float");
+  CHECK(el.GetAttribute(attr.name()) == nullptr);
   REQUIRE_NOTHROW(el.SetAttribute(attr));
-  CHECK_THROWS_AS(el.AddAttribute(attr), DuplicateArgumentError);
-  REQUIRE(el.HasAttribute(attr.name));
-  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
-  CHECK(el.GetAttribute(attr.name).value == attr.value);
-  CHECK(el.GetAttribute(attr.name).name == attr.name);
+  CHECK_THROWS_AS(el.AddAttribute(attr), ValidityError);
+  const Attribute* check = el.GetAttribute(attr.name());
+  REQUIRE(check);
+  CHECK(check->value() == attr.value());
+  CHECK(check->name() == attr.name());
+  CHECK(check->type() == attr.type());
 
-  attr.value = "0.2";
+  attr.value("0.2");
   REQUIRE_NOTHROW(el.SetAttribute(attr));
   CHECK(el.attributes().size() == 1);
-  REQUIRE_NOTHROW(el.GetAttribute(attr.name));
-  CHECK(el.GetAttribute(attr.name).value == attr.value);
+  check = el.GetAttribute(attr.name());
+  REQUIRE(check);
+  CHECK(check->value() == attr.value());
+  CHECK(check->name() == attr.name());
+  CHECK(check->type() == attr.type());
 }
 
 TEST_CASE("ElementTest.RemoveAttribute", "[mef::element]") {
   NamedElement el("name");
-  Attribute attr;
-  attr.name = "impact";
-  attr.value = "0.1";
-  attr.type = "float";
+  Attribute attr("impact", "0.1", "float");
 
-  CHECK_FALSE(el.HasAttribute(attr.name));
+  CHECK_FALSE(el.GetAttribute(attr.name()));
   CHECK(el.attributes().empty());
-  CHECK_FALSE(el.RemoveAttribute(attr.name));
+  CHECK_FALSE(el.RemoveAttribute(attr.name()));
 
   REQUIRE_NOTHROW(el.AddAttribute(attr));
-  CHECK(el.RemoveAttribute(attr.name));
-  CHECK_FALSE(el.HasAttribute(attr.name));
+  CHECK(el.RemoveAttribute(attr.name()));
+  CHECK_FALSE(el.GetAttribute(attr.name()));
   CHECK(el.attributes().empty());
+}
+
+TEST_CASE("ElementTest.AttributeInheritance", "[mef::element]") {
+  NamedElement el("name");
+  DummyContainer container("container");
+  container.Add(&el);
+
+  CHECK(!el.GetAttribute("impact"));
+  CHECK(!container.GetAttribute("impact"));
+  container.AddAttribute({"impact", "42"});
+  const Attribute* inherited = el.GetAttribute("impact");
+  REQUIRE(inherited);
+  CHECK(inherited->value() == "42");
+  CHECK(el.attributes().empty());
+
+  container.SetAttribute({"impact", "66"});
+  inherited = el.GetAttribute("impact");
+  REQUIRE(inherited);
+  CHECK(inherited->value() == "66");
+
+  CHECK(!el.attributes().count("impact"));
+  CHECK(!el.RemoveAttribute("impact"));
+
+  el.AddAttribute({"impact", "13"});
+  const Attribute* direct = el.GetAttribute("impact");
+  REQUIRE(direct);
+  CHECK(direct != inherited);
+  CHECK(direct->value() == "13");
+  CHECK(el.attributes().count("impact"));
+
+  std::optional<Attribute> removed = el.RemoveAttribute("impact");
+  REQUIRE(removed);
+  CHECK(removed->value() == "13");
+  REQUIRE(container.GetAttribute("impact"));
+  CHECK(el.GetAttribute("impact") == container.GetAttribute("impact"));
+
+  container.Remove(&el);
+  CHECK(!el.GetAttribute("impact"));
 }
 
 namespace {

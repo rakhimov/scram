@@ -385,13 +385,13 @@ public:
     {
     public:
         /// Stores the gate and its new formula.
-        SetFormula(Gate *gate, mef::FormulaPtr formula);
+        SetFormula(Gate *gate, std::unique_ptr<mef::Formula> formula);
 
         void redo() override; ///< Applies the gate formula changes.
 
     private:
-        mef::FormulaPtr m_formula; ///< The new formula.
-        Gate *m_gate;              ///< The receiver gate for the formula.
+        std::unique_ptr<mef::Formula> m_formula; ///< The new formula.
+        Gate *m_gate; ///< The receiver gate for the formula.
     };
 
 signals:
@@ -422,10 +422,8 @@ public:
     const ProxyTable<HouseEvent> &houseEvents() const { return m_houseEvents; }
     const ProxyTable<BasicEvent> &basicEvents() const { return m_basicEvents; }
     const ProxyTable<Gate> &gates() const { return m_gates; }
-    const mef::ElementTable<mef::FaultTreePtr> &faultTrees() const
-    {
-        return m_model->fault_trees();
-    }
+    auto faultTrees() const { return m_model->fault_trees(); }
+    auto faultTrees() { return m_model->table<mef::FaultTree>(); }
     /// @}
 
     /// Generic access to event tables.
@@ -476,7 +474,7 @@ public:
     {
     public:
         /// Stores the new fault tree and the target model.
-        AddFaultTree(mef::FaultTreePtr faultTree, Model *model);
+        AddFaultTree(std::unique_ptr<mef::FaultTree> faultTree, Model *model);
 
         void redo() override; ///< Adds the fault tree.
         void undo() override; ///< Removes the fault tree.
@@ -492,7 +490,7 @@ public:
     private:
         Model *m_model; ///< The model for the fault tree addition.
         mef::FaultTree *const m_address; ///< The data MEF fault tree.
-        mef::FaultTreePtr m_faultTree;   ///< The proxy of the MEF fault tree.
+        std::unique_ptr<mef::FaultTree> m_faultTree; ///< The lifetime.
     };
 
     /// Removes a fault tree from the model.
@@ -684,15 +682,6 @@ signals:
     /// @}
 
 private:
-    /// Normalizes the model to the GUI expectations.
-    ///
-    /// @param[in,out] model  The valid and fully initialized MEF model.
-    ///
-    /// @post No house events or basic events in fault tree containers.
-    ///
-    /// @todo Remove normalization upon full container support for elements.
-    void normalize(mef::Model *model);
-
     mef::Model *m_model; ///< The MEF model with data.
 
     /// Proxy element tables.

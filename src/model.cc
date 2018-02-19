@@ -26,137 +26,28 @@
 
 namespace scram::mef {
 
-const char Model::kDefaultName[] = "__unnamed-model__";
-
 Model::Model(std::string name)
     : Element(name.empty() ? kDefaultName : std::move(name)),
       mission_time_(std::make_unique<MissionTime>()) {}
 
-void Model::Add(InitiatingEventPtr initiating_event) {
-  mef::AddElement<RedefinitionError>(std::move(initiating_event),
-                                     &initiating_events_,
-                                     "Redefinition of initiating event: ");
-}
-
-void Model::Add(EventTreePtr event_tree) {
-  mef::AddElement<RedefinitionError>(std::move(event_tree), &event_trees_,
-                                     "Redefinition of event tree: ");
-}
-
-void Model::Add(SequencePtr sequence) {
-  mef::AddElement<RedefinitionError>(std::move(sequence), &sequences_,
-                                     "Redefinition of sequence: ");
-}
-
-void Model::Add(RulePtr rule) {
-  mef::AddElement<RedefinitionError>(std::move(rule), &rules_,
-                                     "Redefinition of rule: ");
-}
-
-void Model::Add(FaultTreePtr fault_tree) {
-  mef::AddElement<RedefinitionError>(std::move(fault_tree), &fault_trees_,
-                                     "Redefinition of fault tree: ");
-}
-
-void Model::Add(AlignmentPtr alignment) {
-  mef::AddElement<RedefinitionError>(std::move(alignment), &alignments_,
-                                     "Redefinition of alignment: ");
-}
-
-void Model::Add(SubstitutionPtr substitution) {
-  mef::AddElement<RedefinitionError>(std::move(substitution), &substitutions_,
-                                     "Redefinition of substitution: ");
-}
-
-void Model::Add(ParameterPtr parameter) {
-  mef::AddElement<RedefinitionError>(std::move(parameter), &parameters_,
-                                     "Redefinition of parameter: ");
-}
-
 void Model::CheckDuplicateEvent(const Event& event) {
   const std::string& id = event.id();
-  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id))
-    SCRAM_THROW(RedefinitionError("Redefinition of event: " + id));
+  if (gates().count(id) || basic_events().count(id) || house_events().count(id))
+    SCRAM_THROW(DuplicateElementError())
+        << errinfo_element(id, "event")
+        << errinfo_container(Element::name(), kTypeString);
 }
 
-void Model::Add(HouseEventPtr house_event) {
-  CheckDuplicateEvent(*house_event);
-  house_events_.insert(std::move(house_event));
-}
-
-void Model::Add(BasicEventPtr basic_event) {
-  CheckDuplicateEvent(*basic_event);
-  basic_events_.insert(std::move(basic_event));
-}
-
-void Model::Add(GatePtr gate) {
-  CheckDuplicateEvent(*gate);
-  gates_.insert(std::move(gate));
-}
-
-void Model::Add(CcfGroupPtr ccf_group) {
-  mef::AddElement<RedefinitionError>(std::move(ccf_group), &ccf_groups_,
-                                     "Redefinition of CCF group: ");
-}
-
-void Model::Add(std::unique_ptr<ExternLibrary> library) {
-  mef::AddElement<RedefinitionError>(std::move(library), &libraries_,
-                                     "Redefinition of extern library: ");
-}
-
-void Model::Add(ExternFunctionPtr extern_function) {
-  mef::AddElement<RedefinitionError>(std::move(extern_function),
-                                     &extern_functions_,
-                                     "Redefinition of extern function: ");
-}
-
-Formula::ArgEvent Model::GetEvent(const std::string& id) {
-  if (auto it = ext::find(basic_events(), id))
-    return it->get();
-  if (auto it = ext::find(gates(), id))
-    return it->get();
-  if (auto it = ext::find(house_events(), id))
-    return it->get();
-  SCRAM_THROW(UndefinedElement("The event " + id + " is not in the model."));
-}
-
-namespace {
-
-/// Helper function to remove events from containers.
-template <class T, class Table>
-std::unique_ptr<T> RemoveEvent(T* event, Table* table) {
-  auto it = table->find(event->id());
-  if (it == table->end())
-    SCRAM_THROW(
-        UndefinedElement("Event " + event->id() + " is not in the model."));
-
-  if (it->get() != event)
-    SCRAM_THROW(UndefinedElement("Duplicate event " + event->id() +
-                                 " does not belong to the model."));
-  return ext::extract(it, table);
-}
-
-}  // namespace
-
-HouseEventPtr Model::Remove(HouseEvent* house_event) {
-  return RemoveEvent(house_event, &house_events_);
-}
-
-BasicEventPtr Model::Remove(BasicEvent* basic_event) {
-  return RemoveEvent(basic_event, &basic_events_);
-}
-
-GatePtr Model::Remove(Gate* gate) { return RemoveEvent(gate, &gates_); }
-
-FaultTreePtr Model::Remove(FaultTree* fault_tree) {
-  auto it = fault_trees_.find(fault_tree->name());
-  if (it == fault_trees_.end())
-    SCRAM_THROW(UndefinedElement("Fault tree " + fault_tree->name() +
-                                 " is not in the model."));
-  if (it->get() != fault_tree)
-    SCRAM_THROW(UndefinedElement("Duplicate fault tree " + fault_tree->name() +
-                                 " does not belong to the model."));
-  return ext::extract(it, &fault_trees_);
+Formula::ArgEvent Model::GetEvent(std::string_view id) {
+  if (auto it = ext::find(table<BasicEvent>(), id))
+    return &*it;
+  if (auto it = ext::find(table<Gate>(), id))
+    return &*it;
+  if (auto it = ext::find(table<HouseEvent>(), id))
+    return &*it;
+  SCRAM_THROW(UndefinedElement())
+      << errinfo_element(std::string(id), "event")
+      << errinfo_container(Element::name(), kTypeString);
 }
 
 }  // namespace scram::mef

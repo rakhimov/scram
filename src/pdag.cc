@@ -460,19 +460,19 @@ Pdag::Pdag(const mef::Gate& root, bool ccf, const mef::Model* model) noexcept
   ProcessedNodes nodes;
   GatherVariables(root.formula(), ccf, &nodes);
   if (model) {  // Process substitution variables.
-    for (const mef::SubstitutionPtr& substitution : model->substitutions())
-      GatherVariables(*substitution, ccf, &nodes);
+    for (const mef::Substitution& substitution : model->substitutions())
+      GatherVariables(substitution, ccf, &nodes);
   }
 
   root_ = ConstructGate(root.formula(), ccf, &nodes);
 
   if (model) {  // Process substitution application.
     auto application = std::make_shared<Gate>(kAnd, this);
-    for (const mef::SubstitutionPtr& substitution : model->substitutions()) {
-      if (substitution->declarative()) {  // Apply declarative substitutions.
-        application->AddArg(ConstructSubstitution(*substitution, ccf, &nodes));
+    for (const mef::Substitution& substitution : model->substitutions()) {
+      if (substitution.declarative()) {  // Apply declarative substitutions.
+        application->AddArg(ConstructSubstitution(substitution, ccf, &nodes));
       } else {  // Gather non-declarative substitutions for analysis.
-        CollectSubstitution(*substitution, &nodes);
+        CollectSubstitution(substitution, &nodes);
       }
     }
     if (!application->args().empty()) {

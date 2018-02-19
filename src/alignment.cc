@@ -28,21 +28,19 @@ namespace scram::mef {
 Phase::Phase(std::string name, double time_fraction)
     : Element(std::move(name)), time_fraction_(time_fraction) {
   if (time_fraction_ <= 0 || time_fraction_ > 1)
-    SCRAM_THROW(DomainError("The phase fraction must be in (0, 1]."));
-}
-
-void Alignment::Add(PhasePtr phase) {
-  AddElement<DuplicateArgumentError>(std::move(phase), &phases_,
-                                     "Duplicate phase: ");
+    SCRAM_THROW(DomainError("The phase fraction must be in (0, 1]."))
+        << errinfo_value(std::to_string(time_fraction_))
+        << errinfo_element(Element::name(), kTypeString);
 }
 
 void Alignment::Validate() {
   double sum = 0;
-  for (const PhasePtr& phase : phases_)
-    sum += phase->time_fraction();
+  for (const Phase& phase : phases())
+    sum += phase.time_fraction();
   if (!ext::is_close(1, sum, 1e-4))
-    SCRAM_THROW(ValidityError("The phases of alignment '" + Element::name() +
-                              "' do not sum to 1."));
+    SCRAM_THROW(ValidityError("The phases of the alignment do not sum to 1."))
+        << errinfo_value(std::to_string(sum))
+        << errinfo_element(Element::name(), kTypeString);
 }
 
 }  // namespace scram::mef

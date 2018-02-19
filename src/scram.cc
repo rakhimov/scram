@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 Olzhas Rakhimov
+ * Copyright (C) 2014-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -270,7 +270,7 @@ void RunScram(const po::variables_map& vm) {
   // Process input files
   // into valid analysis containers and constructs.
   // Throws if anything is invalid.
-  std::shared_ptr<scram::mef::Model> model =
+  std::unique_ptr<scram::mef::Model> model =
       scram::mef::Initializer(input_files, settings, vm.count("allow-extern"))
           .model();
 #ifndef NDEBUG
@@ -322,6 +322,18 @@ void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
   LOG(scram::WARNING) << buffer.data();
 }
 
+/// Prints error information into the standard error.
+///
+/// @tparam Tag  The error info tag to retrieve the error value.
+///
+/// @param[in] tag_string  The string for the tag type.
+/// @param[in] err  The error.
+template <class Tag>
+void PrintErrorInfo(const char* tag_string, const scram::Error& err) {
+  if (const auto* value = boost::get_error_info<Tag>(err))
+    std::cerr << tag_string << ": " << *value << "\n";
+}
+
 }  // namespace
 
 /// Command-line SCRAM entrance.
@@ -359,15 +371,8 @@ int main(int argc, char* argv[]) {
   } catch (const scram::IOError& err) {
     LOG(scram::DEBUG1) << boost::diagnostic_information(err);
     std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
-    const std::string* filename =
-        boost::get_error_info<boost::errinfo_file_name>(err);
-    assert(filename);
-    std::cerr << "File: " << *filename << "\n";
-    if (const std::string* mode =
-            boost::get_error_info<boost::errinfo_file_open_mode>(err)) {
-      std::cerr << "Open mode: " << *mode << "\n";
-    }
-
+    PrintErrorInfo<boost::errinfo_file_name>("File", err);
+    PrintErrorInfo<boost::errinfo_file_open_mode>("Open mode", err);
     if (const int* errnum = boost::get_error_info<boost::errinfo_errno>(err)) {
       std::cerr << "Error code: " << *errnum << "\n";
       std::cerr << "Error string: " << std::strerror(*errnum) << "\n";
@@ -375,26 +380,23 @@ int main(int argc, char* argv[]) {
     std::cerr << "\n" << err.what() << std::endl;
     return 1;
   } catch (const scram::Error& err) {
-    LOG(scram::DEBUG1) << boost::diagnostic_information(err);
+    using namespace scram;  // NOLINT
+    LOG(DEBUG1) << boost::diagnostic_information(err);
     std::cerr << boost::core::demangled_name(typeid(err)) << "\n\n";
-    if (const std::string* filename =
-            boost::get_error_info<boost::errinfo_file_name>(err)) {
-      std::cerr << "File: " << *filename << "\n";
-      if (const int* line = boost::get_error_info<boost::errinfo_at_line>(err))
-        std::cerr << "Line: " << *line << "\n";
-    }
-    if (const std::string* container =
-            boost::get_error_info<scram::mef::errinfo_container>(err)) {
-      std::cerr << "MEF Container: " << *container << "\n";
-    }
-    if (const std::string* xml_element =
-            boost::get_error_info<scram::xml::errinfo_element>(err)) {
-      std::cerr << "XML element: " << *xml_element << "\n";
-    }
-    if (const std::string* xml_attribute =
-            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
-      std::cerr << "XML attribute: " << *xml_attribute << "\n";
-    }
+    PrintErrorInfo<errinfo_value>("Value", err);
+    PrintErrorInfo<boost::errinfo_file_name>("File", err);
+    PrintErrorInfo<boost::errinfo_at_line>("Line", err);
+    PrintErrorInfo<mef::errinfo_connective>("MEF Connective", err);
+    PrintErrorInfo<mef::errinfo_reference>("MEF reference", err);
+    PrintErrorInfo<mef::errinfo_base_path>("MEF base path", err);
+    PrintErrorInfo<mef::errinfo_element_id>("MEF Element ID", err);
+    PrintErrorInfo<mef::errinfo_element_type>("MEF Element type", err);
+    PrintErrorInfo<mef::errinfo_container_id>("MEF Container", err);
+    PrintErrorInfo<mef::errinfo_container_type>("MEF Container type", err);
+    PrintErrorInfo<mef::errinfo_attribute>("MEF Attribute", err);
+    PrintErrorInfo<mef::errinfo_cycle>("Cycle", err);
+    PrintErrorInfo<xml::errinfo_element>("XML element", err);
+    PrintErrorInfo<xml::errinfo_attribute>("XML attribute", err);
     std::cerr << "\n" << err.what() << std::endl;
     return 1;
   } catch (const boost::exception& boost_err) {
@@ -403,7 +405,7 @@ int main(int argc, char* argv[]) {
     return 1;
   } catch (const std::exception& err) {
     LOG(scram::ERROR) << "Unexpected Exception: "
-                      << boost::core::demangled_name(typeid(err)) << ": "
+                      << boost::core::demangled_name(typeid(err)) << ":\n"
                       << err.what();
     return 1;
   }

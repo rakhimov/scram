@@ -34,6 +34,9 @@ namespace scram::mef {
 /// Delete Terms, Recovery Rules, and Exchange Events.
 class Substitution : public Element {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "substitution";
+
   using Target = std::variant<BasicEvent*, bool>;  ///< The target type.
 
   /// The "traditional" substitution types.
@@ -52,7 +55,7 @@ class Substitution : public Element {
   /// Sets the substitution hypothesis formula.
   ///
   /// @param[in] formula  Simple Boolean formula built over basic events only.
-  void hypothesis(FormulaPtr formula) {
+  void hypothesis(std::unique_ptr<Formula> formula) {
     assert(formula && "Cannot unset the hypothesis of substitution.");
     hypothesis_ = std::move(formula);
   }
@@ -77,7 +80,7 @@ class Substitution : public Element {
   ///
   /// @param[in] source_event  The event to be replaced by the target event.
   ///
-  /// @throws DuplicateArgumentError  The source event is duplicate.
+  /// @throws DuplicateElementError  The source event is duplicate.
   void Add(BasicEvent* source_event);
 
   /// Checks if the substitution is setup correctly.
@@ -96,12 +99,10 @@ class Substitution : public Element {
   std::optional<Type> type() const;
 
  private:
-  FormulaPtr hypothesis_;  ///< The formula to be satisfied.
+  std::unique_ptr<Formula> hypothesis_;  ///< The formula to be satisfied.
   std::vector<BasicEvent*> source_;  ///< The source events to be replaced.
   Target target_;  ///< The target event to replace the source events.
 };
-
-using SubstitutionPtr = std::unique_ptr<Substitution>;  ///< Unique per model.
 
 /// String representations of the "traditional" substitution types in the MEF.
 const char* const kSubstitutionTypeToString[] = {

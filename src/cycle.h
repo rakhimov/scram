@@ -312,7 +312,7 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
 /// Checks for cycles in a model constructs.
 ///
 /// @tparam T  The type of the node.
-/// @tparam SinglePassRange  The range type with node pointers.
+/// @tparam SinglePassRange  The range type with nodes.
 ///
 /// @param[in] container  The range with nodes to be tested.
 /// @param[in] type  The type of nodes for error messages.
@@ -321,11 +321,11 @@ std::string PrintCycle(const std::vector<T*>& cycle) {
 template <class T, class SinglePassRange>
 void CheckCycle(const SinglePassRange& container, const char* type) {
   std::vector<T*> cycle;
-  for (const auto& node : container) {
-    if (DetectCycle(&*node, &cycle)) {
-      SCRAM_THROW(CycleError("Detected a cycle in " + GetUniqueName(&*node) +
-                             " " + std::string(type) + ":\n" +
-                             PrintCycle(cycle)));
+  for (T& node : container) {
+    if (DetectCycle(&node, &cycle)) {
+      SCRAM_THROW(CycleError("Cycle Error"))
+          << errinfo_element(GetUniqueName(&node), type)
+          << errinfo_cycle(PrintCycle(cycle));
     }
   }
 }

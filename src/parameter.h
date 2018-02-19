@@ -22,9 +22,6 @@
 
 #include <cstdint>
 
-#include <memory>
-#include <string>
-
 #include "element.h"
 #include "expression.h"
 
@@ -86,6 +83,9 @@ class MissionTime : public Expression {
 /// It is both expression and element description.
 class Parameter : public Expression, public Id, public NodeMark, public Usage {
  public:
+  /// Type string for errors.
+  static constexpr const char* kTypeString = "parameter";
+
   using Id::Id;
 
   /// Sets the expression of this parameter.
@@ -112,7 +112,5 @@ class Parameter : public Expression, public Id, public NodeMark, public Usage {
   Units unit_ = kUnitless;  ///< Units of this parameter.
   Expression* expression_ = nullptr;  ///< Expression for this parameter.
 };
-
-using ParameterPtr = std::unique_ptr<Parameter>;  ///< Convenience alias.
 
 }  // namespace scram::mef

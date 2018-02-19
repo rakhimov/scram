@@ -33,8 +33,19 @@
 namespace scram::mef {
 
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public Element, public Role {
+class Component
+    : public Element,
+      public Role,
+      public Composite<Container<Component, Component, true, false>,
+                       Container<Component, BasicEvent, false, false>,
+                       Container<Component, HouseEvent, false, false>,
+                       Container<Component, Gate, false, false>,
+                       Container<Component, Parameter, false, false>,
+                       Container<Component, CcfGroup, false, false>> {
  public:
+  /// Type identifier string for error messages.
+  static constexpr const char* kTypeString = "component/fault tree";
+
   /// Constructs a component assuming
   /// that it exists within some fault tree.
   /// The public or private role of a component is not
@@ -54,48 +65,31 @@ class Component : public Element, public Role {
 
   virtual ~Component() = default;
 
-  /// @returns The container of component constructs of specific kind
-  ///          with construct original names as keys.
+  /// @returns The table ranges of component elements of specific kind
+  ///          with element original names as keys.
   /// @{
-  const ElementTable<Gate*>& gates() const { return gates_; }
-  const ElementTable<BasicEvent*>& basic_events() const {
-    return basic_events_;
-  }
-  const ElementTable<HouseEvent*>& house_events() const {
-    return house_events_;
-  }
-  const ElementTable<Parameter*>& parameters() const { return parameters_; }
-  const ElementTable<CcfGroup*>& ccf_groups() const { return ccf_groups_; }
-  const ElementTable<std::unique_ptr<Component>>& components() const {
-    return components_;
-  }
+  auto gates() const { return table<Gate>(); }
+  auto basic_events() const { return table<BasicEvent>(); }
+  auto house_events() const { return table<HouseEvent>(); }
+  auto parameters() const { return table<Parameter>(); }
+  auto ccf_groups() const { return table<CcfGroup>(); }
+  auto components() const { return table<Component>(); }
   /// @}
+
+  using Composite::Add;
+  using Composite::Remove;
 
   /// Adds MEF constructs into this component container.
   ///
   /// @param[in] element  The element to be added to the container.
   ///
-  /// @throws ValidityError  The element is already in this container.
+  /// @throws DuplicateElementError  The element is already in this container.
   ///
   /// @{
-  void Add(Gate* element);
-  void Add(BasicEvent* element);
-  void Add(HouseEvent* element);
-  void Add(Parameter* element);
+  void Add(Gate* element) { AddEvent(element); }
+  void Add(BasicEvent* element) { AddEvent(element); }
+  void Add(HouseEvent* element) { AddEvent(element); }
   void Add(CcfGroup* element);
-  void Add(std::unique_ptr<Component> element);
-  /// @}
-
-  /// Removes Event from the component container.
-  ///
-  /// @param[in] element  An element defined in this model.
-  ///
-  /// @throws UndefinedElement  The element doesn't belong to this container.
-  ///
-  /// @{
-  void Remove(HouseEvent* element);
-  void Remove(BasicEvent* element);
-  void Remove(Gate* element);
   /// @}
 
  protected:
@@ -107,30 +101,20 @@ class Component : public Element, public Role {
   void GatherGates(std::unordered_set<Gate*>* gates);
 
  private:
-  /// Adds an event into this component container.
-  ///
-  /// @tparam T  The event type.
-  /// @tparam Container  Map with the event's original name as the key.
-  ///
-  /// @param[in] event  The event to be added to this component.
-  /// @param[in,out] container  The destination container.
-  ///
-  /// @throws ValidityError  The event is already in this container.
-  template <class T, class Container>
-  void AddEvent(T* event, Container* container);
+  /// @copydoc Component::Add(BasicEvent*)
+  template <class T>
+  void AddEvent(T* element) {
+    CheckDuplicateEvent(*element);
+    Composite::Add(element);
+  }
 
-  /// Container for component constructs with original names as keys.
-  /// @{
-  ElementTable<Gate*> gates_;
-  ElementTable<BasicEvent*> basic_events_;
-  ElementTable<HouseEvent*> house_events_;
-  ElementTable<Parameter*> parameters_;
-  ElementTable<CcfGroup*> ccf_groups_;
-  ElementTable<std::unique_ptr<Component>> components_;
-  /// @}
+  /// Checks if an event with the same id is already in the component.
+  ///
+  /// @param[in] event  The event to be tested for duplicate before insertion.
+  ///
+  /// @throws DuplicateElementError  The element is already in the model.
+  void CheckDuplicateEvent(const Event& event);
 };
-
-using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 
 /// Fault tree representation as a container of
 /// gates, basic and house events, and other information.
@@ -138,6 +122,9 @@ using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 /// detection of top events.
 class FaultTree : public Component {
  public:
+  /// Type identifier string for error messages.
+  static constexpr const char* kTypeString = "fault tree";
+
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///
@@ -167,7 +154,5 @@ class FaultTree : public Component {
 
   std::vector<const Gate*> top_events_;  ///< Top events of this fault tree.
 };
-
-using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
 }  // namespace scram::mef

@@ -33,11 +33,11 @@
 namespace scram::core::test {
 
 TEST_CASE("PdagTest.Print", "[mef::pdag]") {
-  std::unique_ptr<mef::Initializer> init;
-  REQUIRE_NOTHROW(init.reset(new mef::Initializer(
-      {"tests/input/fta/correct_formulas.xml"}, Settings())));
-  const mef::FaultTreePtr& ft = *init->model()->fault_trees().begin();
-  Pdag graph(*ft->top_events().front());
+  std::unique_ptr<mef::Model> model =
+      mef::Initializer({"tests/input/fta/correct_formulas.xml"}, Settings())
+          .model();
+  const mef::FaultTree& ft = *model->fault_trees().begin();
+  Pdag graph(*ft.top_events().front());
   graph.Print();
 }
 

@@ -209,6 +209,21 @@ void displayError(const scram::IOError &err, const QString &text,
     message.exec();
 }
 
+template <class Tag>
+void displayErrorInfo(QString tag_string, const scram::Error &err,
+                      QString *info)
+{
+    if (const auto *value = boost::get_error_info<Tag>(err)) {
+        std::stringstream ss;
+        ss << *value;
+        auto value_string = QString::fromStdString(ss.str());
+
+        //: Error information tag and its value.
+        info->append(QObject::tr("%1: %2").arg(tag_string, value_string));
+        info->append(QStringLiteral("\n"));
+    }
+}
+
 void displayError(const scram::Error &err, const QString &title,
                   const QString &text, QWidget *parent = nullptr)
 {
@@ -216,6 +231,8 @@ void displayError(const scram::Error &err, const QString &title,
                         parent);
     QString info;
     auto newLine = [&info] { info.append(QStringLiteral("\n")); };
+
+    displayErrorInfo<errinfo_value>(QObject::tr("Value"), err, &info);
 
     if (const std::string *filename =
             boost::get_error_info<boost::errinfo_file_name>(err)) {
@@ -228,20 +245,33 @@ void displayError(const scram::Error &err, const QString &title,
             newLine();
         }
     }
-    if (const std::string *container =
-            boost::get_error_info<scram::mef::errinfo_container>(err)) {
-        info.append(QObject::tr("MEF Container: %1")
-                        .arg(QString::fromStdString(*container)));
-        newLine();
-    }
+
+    displayErrorInfo<mef::errinfo_connective>(QObject::tr("MEF Connective"),
+                                              err, &info);
+    displayErrorInfo<mef::errinfo_reference>(QObject::tr("MEF reference"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_base_path>(QObject::tr("MEF base path"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_element_id>(QObject::tr("MEF Element ID"),
+                                              err, &info);
+    displayErrorInfo<mef::errinfo_element_type>(QObject::tr("MEF Element type"),
+                                                err, &info);
+    displayErrorInfo<mef::errinfo_container_id>(QObject::tr("MEF Container"),
+                                                err, &info);
+    displayErrorInfo<mef::errinfo_container_type>(
+        QObject::tr("MEF Container type"), err, &info);
+    displayErrorInfo<mef::errinfo_attribute>(QObject::tr("MEF Attribute"), err,
+                                             &info);
+    displayErrorInfo<mef::errinfo_cycle>(QObject::tr("Cycle"), err, &info);
+
     if (const std::string *xml_element =
-            boost::get_error_info<scram::xml::errinfo_element>(err)) {
+            boost::get_error_info<xml::errinfo_element>(err)) {
         info.append(QObject::tr("XML element: %1")
                         .arg(QString::fromStdString(*xml_element)));
         newLine();
     }
     if (const std::string *xml_attribute =
-            boost::get_error_info<scram::xml::errinfo_attribute>(err)) {
+            boost::get_error_info<xml::errinfo_attribute>(err)) {
         info.append(QObject::tr("XML attribute: %1")
                         .arg(QString::fromStdString(*xml_attribute)));
         newLine();
@@ -291,24 +321,25 @@ bool MainWindow::addInputFiles(const std::vector<std::string> &inputFiles)
 
     if (inputFiles.empty())
         return true;
+    if (isWindowModified() && !saveModel())
+        return false;
 
     try {
         std::vector<std::string> allInput = m_inputFiles;
         allInput.insert(allInput.end(), inputFiles.begin(), inputFiles.end());
-        std::shared_ptr<mef::Model> newModel = [this, &allInput] {
-            mef::Initializer init(allInput, m_settings);
-            for (int i = m_inputFiles.size(); i < allInput.size(); ++i)
-                validator.validate(init.documents()[i]);
-            return init.model();
+        std::unique_ptr<mef::Model> newModel = [this, &allInput] {
+            return mef::Initializer(allInput, m_settings,
+                                    /*allow_extern=*/false, &validator)
+                .model();
         }();
 
-        for (const mef::FaultTreePtr &faultTree : newModel->fault_trees()) {
-            if (faultTree->top_events().size() != 1) {
+        for (const mef::FaultTree &faultTree : newModel->fault_trees()) {
+            if (faultTree.top_events().size() != 1) {
                 QMessageBox::critical(
                     this, tr("Initialization Error"),
                     //: Single top/root event fault tree are expected by GUI.
                     tr("Fault tree '%1' must have a single top-gate.")
-                        .arg(QString::fromStdString(faultTree->name())));
+                        .arg(QString::fromStdString(faultTree.name())));
                 return false;
             }
         }
@@ -624,15 +655,12 @@ void MainWindow::createNewModel()
 
         if (answer == QMessageBox::Cancel)
             return;
-        if (answer == QMessageBox::Save) {
-            saveModel();
-            if (isWindowModified())
-                return;
-        }
+        if (answer == QMessageBox::Save && !saveModel())
+            return;
     }
 
     m_inputFiles.clear();
-    m_model = std::make_shared<mef::Model>();
+    m_model = std::make_unique<mef::Model>();
 
     emit configChanged();
 }
@@ -659,28 +687,28 @@ void MainWindow::autoSaveModel()
     saveToFile(m_inputFiles.front());
 }
 
-void MainWindow::saveModel()
+bool MainWindow::saveModel()
 {
     if (m_inputFiles.empty() || m_inputFiles.size() > 1)
         return saveModelAs();
-    saveToFile(m_inputFiles.front());
+    return saveToFile(m_inputFiles.front());
 }
 
-void MainWindow::saveModelAs()
+bool MainWindow::saveModelAs()
 {
     QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Model As"), QDir::homePath(),
         QStringLiteral("%1 (*.mef *.opsa *.opsa-mef *.xml);;%2 (*.*)")
             .arg(tr("Model Exchange Format"), tr("All files")));
     if (filename.isNull())
-        return;
-    saveToFile(filename.toStdString());
+        return false;
+    return saveToFile(filename.toStdString());
 }
 
-void MainWindow::saveToFile(std::string destination)
+bool MainWindow::saveToFile(std::string destination)
 {
-    GUI_ASSERT(!destination.empty(), );
-    GUI_ASSERT(m_model, );
+    GUI_ASSERT(!destination.empty(), false);
+    GUI_ASSERT(m_model, false);
 
     namespace fs = boost::filesystem;
     fs::path temp_file = destination + "." + fs::unique_path().string();
@@ -696,11 +724,12 @@ void MainWindow::saveToFile(std::string destination)
         }
     } catch (const IOError &err) {
         displayError(err, tr("Save error", "error on saving to file"), this);
-        return;
+        return false;
     }
     m_undoStack->setClean();
     m_inputFiles.clear();
     m_inputFiles.push_back(std::move(destination));
+    return true;
 }
 
 void MainWindow::updateRecentFiles(QStringList filePaths)
@@ -755,8 +784,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (answer == QMessageBox::Discard)
         return event->accept();
 
-    saveModel();
-    return isWindowModified() ? event->ignore() : event->accept();
+    return saveModel() ? event->accept() : event->ignore();
 }
 
 void MainWindow::closeTab(int index)
@@ -781,8 +809,8 @@ void MainWindow::runAnalysis()
     GUI_ASSERT(m_model, );
     if (m_settings.probability_analysis()
         && ext::any_of(m_model->basic_events(),
-                       [](const mef::BasicEventPtr &basicEvent) {
-                           return !basicEvent->HasExpression();
+                       [](const mef::BasicEvent &basicEvent) {
+                           return !basicEvent.HasExpression();
                        })) {
         QMessageBox::critical(this, tr("Validation Error"),
                               tr("Not all basic events have expressions "
@@ -995,12 +1023,12 @@ template <>
 mef::FaultTree *MainWindow::getFaultTree(mef::Gate *gate)
 {
     /// @todo Duplicate code from EventDialog.
-    auto it = boost::find_if(m_model->fault_trees(),
-                             [&gate](const mef::FaultTreePtr &faultTree) {
-                                 return faultTree->gates().count(gate->name());
+    auto it = boost::find_if(m_model->table<mef::FaultTree>(),
+                             [&gate](const mef::FaultTree &faultTree) {
+                                 return faultTree.gates().count(gate->name());
                              });
-    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-    return it->get();
+    GUI_ASSERT(it != m_model->table<mef::FaultTree>().end(), nullptr);
+    return &*it;
 }
 
 template <class T>
@@ -1124,7 +1152,7 @@ void MainWindow::setupRemovable(QAbstractItemView *view)
 ///
 /// @returns A new formula with arguments from the event dialog.
 template <>
-mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::Formula> MainWindow::extract(const EventDialog &dialog)
 {
     auto getEvent = [this](const std::string &arg) -> mef::Formula::ArgEvent {
         try {
@@ -1156,7 +1184,7 @@ mef::FormulaPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct basic event out of event editor data.
 template <>
-mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::BasicEvent> MainWindow::extract(const EventDialog &dialog)
 {
     auto basicEvent =
         std::make_unique<mef::BasicEvent>(dialog.name().toStdString());
@@ -1179,7 +1207,7 @@ mef::BasicEventPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct house event out of event editor data.
 template <>
-mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::HouseEvent> MainWindow::extract(const EventDialog &dialog)
 {
     GUI_ASSERT(dialog.currentType() == EventDialog::HouseEvent, nullptr);
     auto houseEvent =
@@ -1191,7 +1219,7 @@ mef::HouseEventPtr MainWindow::extract(const EventDialog &dialog)
 
 /// Specialization to construct gate out of event editor data.
 template <>
-mef::GatePtr MainWindow::extract(const EventDialog &dialog)
+std::unique_ptr<mef::Gate> MainWindow::extract(const EventDialog &dialog)
 {
     GUI_ASSERT(dialog.currentType() == EventDialog::Gate, nullptr);
     auto gate = std::make_unique<mef::Gate>(dialog.name().toStdString());
@@ -1239,9 +1267,9 @@ mef::FaultTree *MainWindow::getFaultTree(const EventDialog &dialog)
 {
     if (dialog.faultTree().empty())
         return nullptr;
-    auto it = m_model->fault_trees().find(dialog.faultTree());
-    GUI_ASSERT(it != m_model->fault_trees().end(), nullptr);
-    return it->get();
+    auto it = m_model->table<mef::FaultTree>().find(dialog.faultTree());
+    GUI_ASSERT(it != m_model->table<mef::FaultTree>().end(), nullptr);
+    return &*it;
 }
 
 template <class T>

@@ -39,7 +39,9 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
       lib_path.back() == ':' ||
       lib_path.back() == '/' ||
       lib_path.back() == '\\') {
-    SCRAM_THROW(ValidityError("Invalid library path: " + lib_path));
+    SCRAM_THROW(ValidityError("Invalid library path format"))
+        << errinfo_value(lib_path)
+        << errinfo_element(Element::name(), kTypeString);
   }
   // clang-format on
 
@@ -57,7 +59,8 @@ ExternLibrary::ExternLibrary(std::string name, std::string lib_path,
     lib_handle_.load(ref_path, load_type);
   } catch (const boost::system::system_error& err) {
     SCRAM_THROW(DLError(err.what()))
-        << boost::errinfo_nested_exception(boost::current_exception());
+        << boost::errinfo_nested_exception(boost::current_exception())
+        << errinfo_element(Element::name(), kTypeString);
   }
 }
 

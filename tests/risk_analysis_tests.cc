@@ -50,8 +50,7 @@ RiskAnalysisTest::RiskAnalysisTest() {
 
 void RiskAnalysisTest::ProcessInputFiles(
     const std::vector<std::string>& input_files, bool allow_extern) {
-  mef::Initializer init(input_files, settings, allow_extern);
-  model = init.model();
+  model = mef::Initializer(input_files, settings, allow_extern).model();
   analysis = std::make_unique<RiskAnalysis>(model.get(), settings);
   result_ = Result();
 }
@@ -81,12 +80,12 @@ const std::set<std::set<std::string>>& RiskAnalysisTest::products() {
   return result_.products;
 }
 
-std::vector<int> RiskAnalysisTest::ProductDistribution() {
+const std::vector<int>& RiskAnalysisTest::ProductDistribution() {
   assert(analysis->results().size() == 1);
   return analysis->results()
       .front()
       .fault_tree_analysis->products()
-      .Distribution();
+      .distribution();
 }
 
 void RiskAnalysisTest::PrintProducts() {
@@ -141,20 +140,20 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   CHECK(basic_events().count("ValveTwo") == 1);
 
   REQUIRE(gates().count("TopEvent"));
-  mef::Gate* top = gates().find("TopEvent")->get();
-  CHECK(top->id() == "TopEvent");
-  CHECK(top->formula().connective() == mef::kAnd);
-  CHECK(top->formula().args().size() == 2);
+  const mef::Gate& top = *gates().find("TopEvent");
+  CHECK(top.id() == "TopEvent");
+  CHECK(top.formula().connective() == mef::kAnd);
+  CHECK(top.formula().args().size() == 2);
 
   REQUIRE(gates().count("TrainOne"));
-  mef::Gate* inter = gates().find("TrainOne")->get();
-  CHECK(inter->id() == "TrainOne");
-  CHECK(inter->formula().connective() == mef::kOr);
-  CHECK(inter->formula().args().size() == 2);
+  const mef::Gate& inter = *gates().find("TrainOne");
+  CHECK(inter.id() == "TrainOne");
+  CHECK(inter.formula().connective() == mef::kOr);
+  CHECK(inter.formula().args().size() == 2);
 
   REQUIRE(basic_events().count("ValveOne"));
-  mef::BasicEvent* primary = basic_events().find("ValveOne")->get();
-  CHECK(primary->id() == "ValveOne");
+  const mef::BasicEvent& primary = *basic_events().find("ValveOne");
+  CHECK(primary.id() == "ValveOne");
 }
 
 // Test Probability Assignment
@@ -162,25 +161,25 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   // Input with probabilities
   std::string tree_input = "tests/input/fta/correct_tree_input_with_probs.xml";
   REQUIRE_NOTHROW(ProcessInputFiles({tree_input}));
-  REQUIRE(basic_events().size() == 4);
+  CHECK(basic_events().size() == 4);
   REQUIRE(basic_events().count("PumpOne") == 1);
   REQUIRE(basic_events().count("PumpTwo") == 1);
   REQUIRE(basic_events().count("ValveOne") == 1);
   REQUIRE(basic_events().count("ValveTwo") == 1);
 
-  mef::BasicEvent* p1 = basic_events().find("PumpOne")->get();
-  mef::BasicEvent* p2 = basic_events().find("PumpTwo")->get();
-  mef::BasicEvent* v1 = basic_events().find("ValveOne")->get();
-  mef::BasicEvent* v2 = basic_events().find("ValveTwo")->get();
+  const mef::BasicEvent& p1 = *basic_events().find("PumpOne");
+  const mef::BasicEvent& p2 = *basic_events().find("PumpTwo");
+  const mef::BasicEvent& v1 = *basic_events().find("ValveOne");
+  const mef::BasicEvent& v2 = *basic_events().find("ValveTwo");
 
-  REQUIRE_NOTHROW(p1->p());
-  REQUIRE_NOTHROW(p2->p());
-  REQUIRE_NOTHROW(v1->p());
-  REQUIRE_NOTHROW(v2->p());
-  CHECK(p1->p() == 0.6);
-  CHECK(p2->p() == 0.7);
-  CHECK(v1->p() == 0.4);
-  CHECK(v2->p() == 0.5);
+  REQUIRE_NOTHROW(p1.p());
+  REQUIRE_NOTHROW(p2.p());
+  REQUIRE_NOTHROW(v1.p());
+  REQUIRE_NOTHROW(v2.p());
+  CHECK(p1.p() == 0.6);
+  CHECK(p2.p() == 0.7);
+  CHECK(v1.p() == 0.4);
+  CHECK(v2.p() == 0.5);
 }
 
 // Test Analysis of Two train system.

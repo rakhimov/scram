@@ -20,11 +20,6 @@
 
 #include "element.h"
 
-#include <boost/range/algorithm.hpp>
-
-#include "error.h"
-#include "ext/algorithm.h"
-
 namespace scram::mef {
 
 Element::Element(std::string name) { Element::name(std::move(name)); }
@@ -38,50 +33,35 @@ void Element::name(std::string name) {
 }
 
 void Element::AddAttribute(Attribute attr) {
-  if (HasAttribute(attr.name)) {
-    SCRAM_THROW(DuplicateArgumentError(
-        "Trying to overwrite an existing attribute {event: " + name_ +
-        ", attr: " + attr.name + "} "));
+  if (attributes_.insert(std::move(attr)).second == false) {
+    SCRAM_THROW(ValidityError("Duplicate attribute"))
+        << errinfo_element(name_, "element") << errinfo_attribute(attr.name());
   }
-  attributes_.emplace_back(std::move(attr));
 }
 
-void Element::SetAttribute(Attribute attr) {
-  auto it = boost::find_if(attributes_, [&attr](const Attribute& member) {
-    return attr.name == member.name;
-  });
+void Element::SetAttribute(Attribute attr) noexcept {
+  auto [it, success] = attributes_.insert(std::move(attr));
+  if (!success)
+    *it = std::move(attr);
+}
+
+const Attribute* Element::GetAttribute(std::string_view name) const noexcept {
+  auto it = attributes_.find(name);
+  if (it != attributes_.end())
+    return &*it;
+
+  return container() ? container()->GetAttribute(name) : nullptr;
+}
+
+std::optional<Attribute>
+Element::RemoveAttribute(std::string_view name) noexcept {
+  std::optional<Attribute> attr;
+  auto it = attributes_.find(name);
   if (it != attributes_.end()) {
-    it->value = std::move(attr.value);
-    it->type = std::move(attr.type);
-  } else {
-    attributes_.emplace_back(std::move(attr));
+    attr = std::move(*it);
+    attributes_.erase(it);
   }
-}
-
-bool Element::HasAttribute(const std::string& name) const {
-  return ext::any_of(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
-}
-
-const Attribute& Element::GetAttribute(const std::string& name) const {
-  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
-  if (it == attributes_.end())
-    SCRAM_THROW(LogicError("Element does not have attribute: " + name));
-
-  return *it;
-}
-
-bool Element::RemoveAttribute(const std::string& name) {
-  auto it = boost::find_if(attributes_, [&name](const Attribute& attr) {
-    return attr.name == name;
-  });
-  if (it == attributes_.end())
-    return false;
-  attributes_.erase(it);
-  return true;
+  return attr;
 }
 
 Role::Role(RoleSpecifier role, std::string base_path)
@@ -97,11 +77,11 @@ Role::Role(RoleSpecifier role, std::string base_path)
 Id::Id(std::string name, std::string base_path, RoleSpecifier role)
     : Element(std::move(name)),
       Role(role, std::move(base_path)),
-      id_(MakeId(*this)) {}
+      full_path_(GetFullPath(this)) {}
 
 void Id::id(std::string name) {
   Element::name(std::move(name));
-  id_ = MakeId(*this);
+  full_path_ = GetFullPath(this);
 }
 
 }  // namespace scram::mef

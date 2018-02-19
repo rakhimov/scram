@@ -38,6 +38,8 @@ namespace scram::mef {
 /// Abstract base class for general fault tree events.
 class Event : public Id, public Usage {
  public:
+  static constexpr const char* kTypeString = "event";  ///< For error messages.
+
   using Id::Id;
 
   virtual ~Event() = 0;  ///< Abstract class.
@@ -48,6 +50,8 @@ class Event : public Id, public Usage {
 /// @note House Events with unset/uninitialized expressions default to False.
 class HouseEvent : public Event {
  public:
+  static constexpr const char* kTypeString = "house event";  ///< In errors.
+
   static HouseEvent kTrue;  ///< Literal True event.
   static HouseEvent kFalse;  ///< Literal False event.
 
@@ -74,6 +78,8 @@ class Gate;
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public Event {
  public:
+  static constexpr const char* kTypeString = "basic event";  ///< In errors.
+
   using Event::Event;
 
   virtual ~BasicEvent() = default;
@@ -147,19 +153,13 @@ class BasicEvent : public Event {
   std::unique_ptr<Gate> ccf_gate_;
 };
 
-/// Convenience aliases for smart pointers @{
-using EventPtr = std::unique_ptr<Event>;
-using HouseEventPtr = std::unique_ptr<HouseEvent>;
-using BasicEventPtr = std::unique_ptr<BasicEvent>;
-using GatePtr = std::unique_ptr<Gate>;
-/// @}
-
 class Formula;  // To describe a gate's formula.
-using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
 /// A representation of a gate in a fault tree.
 class Gate : public Event, public NodeMark {
  public:
+  static constexpr const char* kTypeString = "gate";  ///< Type for errors only.
+
   using Event::Event;
 
   /// @returns true if the gate formula has been set.
@@ -184,14 +184,14 @@ class Gate : public Event, public NodeMark {
   /// @param[in] formula  The new Boolean formula of this gate.
   ///
   /// @returns The old formula.
-  FormulaPtr formula(FormulaPtr formula) {
+  std::unique_ptr<Formula> formula(std::unique_ptr<Formula> formula) {
     assert(formula && "Cannot unset formula.");
     formula_.swap(formula);
     return formula;
   }
 
  private:
-  FormulaPtr formula_;  ///< Boolean formula of this gate.
+  std::unique_ptr<Formula> formula_;  ///< Boolean formula of this gate.
 };
 
 /// Logical connectives for formulas.
@@ -260,7 +260,7 @@ class Formula {
     /// @param[in] event  An argument event.
     /// @param[in] complement  Indicate the negation of the argument event.
     ///
-    /// @throws DuplicateArgumentError  The argument event is duplicate.
+    /// @throws DuplicateElementError  The argument event is duplicate.
     void Add(ArgEvent event, bool complement = false);
 
     /// Overload to add formula argument with a structure.
@@ -328,7 +328,7 @@ class Formula {
   /// @post The complement flag is preserved.
   /// @post The position is preserved.
   ///
-  /// @throws DuplicateArgumentError  The replacement argument is duplicate.
+  /// @throws DuplicateElementError  The replacement argument is duplicate.
   /// @throws LogicError  The current argument does not belong to this formula.
   /// @throws LogicError  The replacement would result in invalid setup.
   void Swap(ArgEvent current, ArgEvent other);
@@ -343,6 +343,17 @@ class Formula {
   void ValidateMinMaxNumber(std::optional<int> min_number,
                             std::optional<int> max_number);
 
+  /// Validates the formula connective setup.
+  ///
+  /// @param[in] min_number  The number to be used for connective min number.
+  /// @param[in] max_number  The number to be used for connective max number.
+  ///
+  /// @throws ValidityError  The connective setup is invalid.
+  ///
+  /// @pre The connective error info must be tagged outside of this function.
+  void ValidateConnective(std::optional<int> min_number,
+                          std::optional<int> max_number);
+
   /// Checks if the formula argument results in invalid nesting.
   ///
   /// @param[in] arg  The argument in the formula.
@@ -355,6 +366,8 @@ class Formula {
   std::uint16_t max_number_;  ///< Max number for "cardinality".
   ArgSet args_;  ///< All events.
 };
+
+using FormulaPtr = std::unique_ptr<Formula>;  ///< Convenience alias.
 
 /// Comparison of formula arguments.
 inline bool operator==(const Formula::Arg& lhs,

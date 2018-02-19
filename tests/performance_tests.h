@@ -72,7 +72,7 @@ class PerformanceTest {
     return analysis->results().front().probability_analysis->analysis_time();
   }
 
-  std::shared_ptr<mef::Model> model;
+  std::unique_ptr<mef::Model> model;
   std::unique_ptr<RiskAnalysis> analysis;
   Settings settings;
   double delta;  // The range indicator for values.

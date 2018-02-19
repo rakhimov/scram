@@ -42,27 +42,10 @@ Fork::Fork(const FunctionalEvent& functional_event, std::vector<Path> paths)
           return fork_path.state() == it->state();
         });
     if (it_find != paths_.end())
-      SCRAM_THROW(ValidityError("Duplicate state '" + it->state() +
-                                "' path in fork " + functional_event_.name()));
+      SCRAM_THROW(ValidityError("Duplicate state path in a fork"))
+          << errinfo_value(it->state())
+          << errinfo_element(functional_event_.name(), "functional event");
   }
-}
-
-void EventTree::Add(Sequence* sequence) {
-  mef::AddElement<ValidityError>(sequence, &sequences_, "Duplicate sequence: ");
-}
-
-void EventTree::Add(FunctionalEventPtr functional_event) {
-  assert(functional_event->order() == 0 && "Non-unique functional event.");
-  auto& unordered_event = *functional_event;
-  mef::AddElement<ValidityError>(std::move(functional_event),
-                                 &functional_events_,
-                                 "Duplicate functional event: ");
-  unordered_event.order(functional_events_.size());
-}
-
-void EventTree::Add(NamedBranchPtr branch) {
-  mef::AddElement<ValidityError>(std::move(branch), &branches_,
-                                 "Duplicate named branch: ");
 }
 
 }  // namespace scram::mef

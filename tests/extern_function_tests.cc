@@ -76,7 +76,7 @@ TEST_CASE("ExternTest.ExternLibraryGet", "[mef::extern_function]") {
   CHECK_NOTHROW(library->get<int()>("foo"));
   CHECK_NOTHROW(library->get<double()>("bar"));
   CHECK_NOTHROW(library->get<float()>("baz"));
-  CHECK_THROWS_AS(library->get<int()>("foobar"), UndefinedElement);
+  CHECK_THROWS_AS(library->get<int()>("foobar"), DLError);
 
   CHECK(library->get<int()>("foo")() == 42);
   CHECK(library->get<double()>("bar")() == 42);
@@ -90,8 +90,7 @@ TEST_CASE("ExternTest.ExternFunction", "[mef::extern_function]") {
   CHECK_NOTHROW(ExternFunction<int>("extern", "foo", library));
   CHECK_NOTHROW(ExternFunction<double>("extern", "bar", library));
   CHECK_NOTHROW(ExternFunction<float>("extern", "baz", library));
-  CHECK_THROWS_AS(ExternFunction<int>("extern", "foobar", library),
-                  UndefinedElement);
+  CHECK_THROWS_AS(ExternFunction<int>("extern", "foobar", library), DLError);
 
   CHECK(ExternFunction<int>("extern", "foo", library)() == 42);
 }

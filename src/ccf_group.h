@@ -79,6 +79,9 @@ class CcfEvent : public BasicEvent {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Id {
  public:
+  /// Type string for error messages.
+  static constexpr const char* kTypeString = "CCF group";
+
   using Id::Id;
 
   virtual ~CcfGroup() = default;
@@ -91,7 +94,7 @@ class CcfGroup : public Id {
   ///
   /// @param[in] basic_event  A member basic event.
   ///
-  /// @throws DuplicateArgumentError  The basic event is already in the group.
+  /// @throws DuplicateElementError  The basic event is already in the group.
   /// @throws LogicError  The probability distribution or factors
   ///                     for this CCF group are already defined.
   ///                     No more members are accepted.
@@ -118,7 +121,7 @@ class CcfGroup : public Id {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidityError  The level is invalid.
-  /// @throws RedefinitionError  The factor for the level already exists.
+  /// @throws ValidityError  The factor for the level already exists.
   /// @throws LogicError  The level is not positive,
   ///                     or the CCF group members are undefined.
   void AddFactor(Expression* factor, std::optional<int> level = {});
@@ -196,8 +199,6 @@ class CcfGroup : public Id {
   /// CCF events created by the group.
   std::vector<std::unique_ptr<CcfEvent>> ccf_events_;
 };
-
-using CcfGroupPtr = std::unique_ptr<CcfGroup>;  ///< Convenience alias.
 
 /// Common cause failure model that assumes,
 /// if common cause failure occurs,

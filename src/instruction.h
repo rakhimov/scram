@@ -89,13 +89,14 @@ class CollectExpression : public Visitable<CollectExpression> {
 class CollectFormula : public Visitable<CollectFormula> {
  public:
   /// @param[in] formula  The valid formula to add into the sequence fault tree.
-  explicit CollectFormula(FormulaPtr formula) : formula_(std::move(formula)) {}
+  explicit CollectFormula(std::unique_ptr<Formula> formula)
+      : formula_(std::move(formula)) {}
 
   /// @returns The formula to include into the current product of the path.
   Formula& formula() const { return *formula_; }
 
  private:
-  FormulaPtr formula_;  ///< The valid single formula for the collection.
+  std::unique_ptr<Formula> formula_;  ///< The valid single collection formula.
 };
 
 /// Conditional application of instructions.
@@ -148,6 +149,8 @@ class Rule : public Element,
              public NodeMark,
              public Usage {
  public:
+  static constexpr const char* kTypeString = "rule";  ///< For error messages.
+
   using Element::Element;
 
   /// @param[in] instructions  One or more instructions for the sequence.
@@ -164,8 +167,6 @@ class Rule : public Element,
  private:
   std::vector<Instruction*> instructions_;  ///< Instructions to execute.
 };
-
-using RulePtr = std::unique_ptr<Rule>;  ///< Unique rules in a model.
 
 class EventTree;  // The target of the Link (avoid dependency cycle).
 

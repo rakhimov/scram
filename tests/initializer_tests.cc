@@ -55,7 +55,7 @@ TEST_CASE("InitializerTest.PassTheSameFileTwice", "[mef::initializer]") {
   std::string the_same_path =  // Path obfuscation.
       "tests/../tests/input/fta/correct_tree_input.xml";
   CHECK_THROWS_AS(Initializer({input_correct, the_same_path}, core::Settings()),
-                  ValidityError);
+                  IOError);
 }
 
 // Test if the schema catches errors.
@@ -358,7 +358,6 @@ TEST_CASE("InitializerTest.IncorrectModelInputs", "[mef::initializer]") {
       "duplicate_extern_libraries.xml",
       "duplicate_extern_functions.xml",
       "undefined_extern_library.xml",
-      "undefined_symbol_extern_function.xml",
       "invalid_num_param_extern_function.xml",
       "undefined_extern_function.xml",
       "invalid_num_args_extern_expression.xml",
@@ -414,8 +413,13 @@ TEST_CASE("InitializerTest.IncorrectModelEmptyInputs", "[mef::initializer]") {
 }
 
 TEST_CASE("InitializerTest.ExternDLError", "[mef::initializer]") {
-  std::string input = "tests/input/model/extern_library_ioerror.xml";
-  CHECK_THROWS_AS(Initializer({input}, core::Settings(), true), DLError);
+  CHECK_THROWS_AS(Initializer({"tests/input/model/extern_library_ioerror.xml"},
+                              core::Settings(), true),
+                  DLError);
+  CHECK_THROWS_AS(
+      Initializer({"tests/input/model/undefined_symbol_extern_function.xml"},
+                  core::Settings(), true),
+      DLError);
 }
 
 // Tests that external libraries are disabled by default.
