@@ -632,6 +632,13 @@ class Composite : public Ts... {
   }
 };
 
+/// Convenience alias for a homogeneous composite of containers.
+///
+/// @tparam T  The MEF container type for the CRTP.
+/// @tparam Ts  The MEF element types for the containers.
+template <class T, class... Ts>
+using MultiContainer = Composite<Container<T, Ts>...>;
+
 /// Mixin class for providing marks for graph nodes.
 class NodeMark {
  public:
