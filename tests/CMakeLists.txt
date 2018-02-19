@@ -1,3 +1,7 @@
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/catch2/single_include/catch.hpp")
+  message(FATAL_ERROR "Catch2 submodule is not present.")
+endif()
+
 include_directories(SYSTEM "catch2/single_include")
 
 # Include the project headers.
