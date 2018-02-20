@@ -216,9 +216,8 @@ void CheckCycle(const SinglePassRange& container, const char* type) {
   std::vector<T*> cycle;
   for (T& node : container) {
     if (DetectCycle(&node, &cycle)) {
-      SCRAM_THROW(CycleError("Cycle Error"))
-          << errinfo_element(GetUniqueName(&node), type)
-          << errinfo_cycle(PrintCycle(cycle));
+      SCRAM_THROW(CycleError()) << errinfo_element(GetUniqueName(&node), type)
+                                << errinfo_cycle(PrintCycle(cycle));
     }
   }
 }
