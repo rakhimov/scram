@@ -1,11 +1,14 @@
-################### File Configurations #######################
+# vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
+################### File Configurations ####################### {{{
 execute_process(COMMAND git describe --tags OUTPUT_VARIABLE core_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 configure_file(version.cc.in version.cc @ONLY)
-################### End File Configurations ####################
+################### End File Configurations ################### }}}
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+####################### Begin SCRAM core lib config ##################### {{{
+### Begin SCRAM core source list ### {{{
 set(SCRAM_CORE_SRC
   env.cc
   ${CMAKE_CURRENT_BINARY_DIR}/version.cc
@@ -46,6 +49,7 @@ set(SCRAM_CORE_SRC
   initializer.cc
   risk_analysis.cc
   )
+### End SCRAM core source list ### }}}
 add_library(scram SHARED ${SCRAM_CORE_SRC})
 target_link_libraries(scram ${LIBS})
 target_compile_options(scram PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
@@ -57,7 +61,9 @@ install(
   RUNTIME DESTINATION bin
   COMPONENT scram
   )
+####################### End SCRAM core lib config ##################### }}}
 
+####################### Begin SCRAM CLI config ##################### {{{
 add_executable(scram-cli scram.cc)
 set_target_properties(scram-cli PROPERTIES OUTPUT_NAME scram)
 target_link_libraries(scram-cli scram ${Boost_LIBRARIES})
@@ -68,3 +74,4 @@ install(
   RUNTIME DESTINATION bin
   COMPONENT scram
   )
+####################### End SCRAM CLI config ##################### }}}

@@ -1,3 +1,4 @@
+# vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
 cmake_minimum_required(VERSION 3.8)
 
 # In-source build prevention.
@@ -6,7 +7,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(SCRAM VERSION 0.16.2 LANGUAGES CXX)
 
-####################### Begin Options ###################
+####################### Begin Options ################### {{{
 
 option(WITH_TCMALLOC "Use TCMalloc if available (#1 preference)" ON)
 option(WITH_JEMALLOC "Use JEMalloc if available (#2 preference)" ON)
@@ -21,9 +22,9 @@ option(BUILD_TESTING "Build the tests" OFF)  # Influences CTest.
 
 option(PACKAGE "Package for distribution" OFF)
 
-####################### End Options ###################
+####################### End Options ##################### }}}
 
-####################### Begin compiler configurations ###################
+####################### Begin compiler configurations ################### {{{
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  # Needed for Clang Tooling.
 
@@ -88,9 +89,9 @@ if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif()
 
-######################## End compiler configurations ####################
+######################## End compiler configurations #################### }}}
 
-##################### Begin cmake configuration ###################
+##################### Begin cmake configuration ################### {{{
 
 include(CTest)
 
@@ -128,9 +129,9 @@ endif()
 # Tell CMake where the modules are.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-######################## End cmake configuration ###################
+######################## End cmake configuration ################### }}}
 
-######################## Begin find libraries ######################
+######################## Begin find libraries ###################### {{{
 
 set(MALLOC "System Malloc")
 # Optional alternative Malloc for optimization.
@@ -170,9 +171,9 @@ list(APPEND LIBS ${CMAKE_DL_LIBS})
 
 message(STATUS "Libraries: ${LIBS}")
 
-########################## End of find libraries ########################
+########################## End of find libraries ######################## }}}
 
-########################## Begin includes ###############################
+########################## Begin includes ############################### {{{
 
 # Include all the discovered system directories.
 include_directories(SYSTEM "${Boost_INCLUDE_DIR}")
@@ -192,17 +193,17 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
-####################### End includes ####################################
+####################### End includes #################################### }}}
 
-###################### Begin uninstall target ###########################
+###################### Begin uninstall target ########################### {{{
 
 configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake @ONLY)
 add_custom_target(uninstall
   COMMAND "${CMAKE_COMMAND}" -P "\"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake\"")
 
-###################### End uninstall target #############################
+###################### End uninstall target ############################# }}}
 
-###################### Begin CPACK configurations ###########################
+###################### Begin CPACK configurations ########################### {{{
 
 if(PACKAGE)
   if(WIN32)
@@ -250,4 +251,4 @@ set(CPACK_COMPONENT_LIBRARIES_REQUIRED ON)
 
 include(CPack)
 
-###################### End CPACK configurations #############################
+###################### End CPACK configurations ############################# }}}
