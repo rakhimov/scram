@@ -1,5 +1,5 @@
 install(FILES
-  config.rng
+  project.rng
   input.rng
   report.rng
   DESTINATION share/scram

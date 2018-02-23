@@ -15,7 +15,7 @@ that must conform to the specific schema provided bellow.
 Validation Schemas
 ==================
 
-- `RELAX NG Schema <https://github.com/rakhimov/scram/blob/master/share/config.rng>`_
+- `RELAX NG Schema <https://github.com/rakhimov/scram/blob/master/share/project.rng>`_
 
 
 Configuration File Example
