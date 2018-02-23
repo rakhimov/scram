@@ -14,6 +14,7 @@ message(STATUS "Qt5 Version: ${Qt5_VERSION}")
 
 ##################### Begin cmake configuration ################### {{{
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories("${CMAKE_BINARY_DIR}")  # Access the generated core version header.
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)

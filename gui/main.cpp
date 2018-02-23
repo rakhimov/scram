@@ -194,8 +194,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName(QStringLiteral("scram"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("scram-pra.org"));
     QCoreApplication::setApplicationName(QStringLiteral("scram"));
-    QCoreApplication::setApplicationVersion(
-        QString::fromLatin1(scram::version::core()));
+    QCoreApplication::setApplicationVersion(QString::fromLatin1(SCRAM_VERSION));
 
     if (QIcon::themeName().isEmpty())
         QIcon::setThemeName(QStringLiteral("tango"));

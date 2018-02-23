@@ -1,8 +1,8 @@
 # vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
 ################### File Configurations ####################### {{{
-execute_process(COMMAND git describe --tags OUTPUT_VARIABLE core_version
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE SCRAM_GIT_REVISION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-configure_file(version.cc.in version.cc @ONLY)
+configure_file(version.h.in version.h @ONLY)
 ################### End File Configurations ################### }}}
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -11,7 +11,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ### Begin SCRAM core source list ### {{{
 set(SCRAM_CORE_SRC
   env.cc
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cc
   logger.cc
   settings.cc
   xml.cc

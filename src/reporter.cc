@@ -268,9 +268,8 @@ void Reporter::ReportInformation(const core::RiskAnalysis& risk_an,
 void Reporter::ReportSoftwareInformation(xml::StreamElement* information) {
   information->AddChild("software")
       .SetAttribute("name", "SCRAM")
-      .SetAttribute("version", *version::describe() != '\0'
-                                   ? version::describe()
-                                   : version::core())
+      .SetAttribute("version", *SCRAM_GIT_REVISION != '\0' ? SCRAM_GIT_REVISION
+                                                           : SCRAM_VERSION)
       .SetAttribute("contacts", "https://scram-pra.org");
 
   std::time_t current_time = std::time(nullptr);

@@ -30,10 +30,11 @@
 #include <boost/core/typeinfo.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
+#include <boost/version.hpp>
 
 #include <libxml/parser.h>  // xmlInitParser, xmlCleanupParser
 #include <libxml/xmlerror.h>  // initGenericErrorDefaultFunc
-#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
+#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION, LIBXML_DOTTED_VERSION
 
 #include "config.h"
 #include "error.h"
@@ -145,11 +146,10 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return -1;
   }
   if (vm->count("version")) {
-    std::cout << "SCRAM " << scram::version::core() << " ("
-              << scram::version::describe() << ")"
+    std::cout << "SCRAM " << SCRAM_VERSION << " (" << SCRAM_GIT_REVISION << ")"
               << "\n\nDependencies:\n"
-              << "   Boost       " << scram::version::boost() << "\n"
-              << "   libxml2     " << scram::version::libxml() << std::endl;
+              << "   Boost       " << BOOST_LIB_VERSION << "\n"
+              << "   libxml2     " << LIBXML_DOTTED_VERSION << std::endl;
     return -1;
   }
 
