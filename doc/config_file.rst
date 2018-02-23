@@ -6,7 +6,7 @@ In order to analyze complex models
 with several input files and tailored configurations,
 it is more convenient to use a configuration file than command-line arguments.
 Additional command-line options can be provided
-to override or suppress the options from a configuration file.
+to override (enable only) the options from a configuration file.
 
 The configuration file is an XML file
 that must conform to the specific schema provided bellow.

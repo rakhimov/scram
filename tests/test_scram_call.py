@@ -75,8 +75,7 @@ def test_fta_no_prob(tmpdir):
         # Test the MCUB approximation
         (["--mcub"], True),
         # Test the uncertainty
-        (["--uncertainty", "true", "--num-bins", "20", "--num-quantiles", "20"],
-         True),
+        (["--uncertainty", "--num-bins", "20", "--num-quantiles", "20"], True),
         # Test calls for prime implicants
         (["--prime-implicants", "--mocus"], False),
         (["--prime-implicants", "--rare-event"], False),

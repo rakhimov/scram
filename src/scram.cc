@@ -70,11 +70,11 @@ po::options_description ConstructOptions() {
       ("zbdd", "Perform qualitative analysis with ZBDD")
       ("mocus", "Perform qualitative analysis with MOCUS")
       ("prime-implicants", "Calculate prime implicants")
-      ("probability", OPT_VALUE(bool), "Perform probability analysis")
-      ("importance", OPT_VALUE(bool), "Perform importance analysis")
-      ("uncertainty", OPT_VALUE(bool), "Perform uncertainty analysis")
-      ("ccf", OPT_VALUE(bool), "Perform common-cause failure analysis")
-      ("sil", OPT_VALUE(bool), "Compute the Safety Integrity Level metrics")
+      ("probability", "Perform probability analysis")
+      ("importance", "Perform importance analysis")
+      ("uncertainty", "Perform uncertainty analysis")
+      ("ccf", "Perform common-cause failure analysis")
+      ("sil", "Compute the Safety Integrity Level metrics")
       ("rare-event", "Use the rare event approximation")
       ("mcub", "Use the MCUB approximation")
       ("limit-order,l", OPT_VALUE(int), "Upper limit for the product order")
@@ -217,12 +217,12 @@ void ConstructSettings(const po::variables_map& vm,
     settings->approximation("mcub");
   }
   SET("time-step", double, time_step);
-  SET("sil", bool, safety_integrity_levels);
+  settings->safety_integrity_levels(vm.count("sil"));
 
-  SET("probability", bool, probability_analysis);
-  SET("importance", bool, importance_analysis);
-  SET("uncertainty", bool, uncertainty_analysis);
-  SET("ccf", bool, ccf_analysis);
+  settings->probability_analysis(vm.count("probability"));
+  settings->importance_analysis(vm.count("importance"));
+  settings->uncertainty_analysis(vm.count("uncertainty"));
+  settings->ccf_analysis(vm.count("ccf"));
   SET("seed", int, seed);
   SET("limit-order", int, limit_order);
   SET("cut-off", double, cut_off);
