@@ -16,9 +16,9 @@
  */
 
 /// @file
-/// Implementation of configuration facilities.
+/// Implementation of project configuration facilities.
 
-#include "config.h"
+#include "project.h"
 
 #include <cassert>
 
@@ -54,7 +54,7 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 
 }  // namespace
 
-Config::Config(const std::string& config_file) {
+Project::Project(const std::string& config_file) {
   static xml::Validator validator(env::config_schema());
 
   if (fs::exists(config_file) == false) {
@@ -80,8 +80,8 @@ Config::Config(const std::string& config_file) {
   }
 }
 
-void Config::GatherInputFiles(const xml::Element& root,
-                              const fs::path& base_path) {
+void Project::GatherInputFiles(const xml::Element& root,
+                               const fs::path& base_path) {
   std::optional<xml::Element> input_files = root.child("input-files");
   if (!input_files)
     return;
@@ -92,7 +92,7 @@ void Config::GatherInputFiles(const xml::Element& root,
   }
 }
 
-void Config::GatherOptions(const xml::Element& root) {
+void Project::GatherOptions(const xml::Element& root) {
   std::optional<xml::Element> options_element = root.child("options");
   if (!options_element)
     return;
@@ -130,7 +130,7 @@ void Config::GatherOptions(const xml::Element& root) {
   }
 }
 
-void Config::SetAnalysis(const xml::Element& analysis) {
+void Project::SetAnalysis(const xml::Element& analysis) {
   auto set_flag = [&analysis](const char* tag, auto setter) {
     if (std::optional<bool> flag = analysis.attribute<bool>(tag))
       setter(*flag);
@@ -146,7 +146,7 @@ void Config::SetAnalysis(const xml::Element& analysis) {
            [this](bool flag) { settings_.safety_integrity_levels(flag); });
 }
 
-void Config::SetLimits(const xml::Element& limits) {
+void Project::SetLimits(const xml::Element& limits) {
   for (xml::Element limit : limits.children()) {
     std::string_view name = limit.name();
     if (name == "product-order") {

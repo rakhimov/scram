@@ -16,7 +16,7 @@
  */
 
 /// @file
-/// Configuration management facilities
+/// Project/configuration management facilities
 /// to make various setups for analysis possible.
 
 #pragma once
@@ -31,10 +31,10 @@
 
 namespace scram {
 
-/// This class processes configuration files for analysis.
+/// This class processes project configuration files for analysis.
 /// The class contains all the setup and state
 /// to initialize general analysis.
-class Config {
+class Project {
  public:
   /// A constructor with configurations for analysis.
   /// Reads and validates the configurations.
@@ -47,7 +47,7 @@ class Config {
   /// @throws ValidityError  The configurations have problems.
   /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
-  explicit Config(const std::string& config_file);
+  explicit Project(const std::string& config_file);
 
   /// @returns normalized, absolute paths to input files for analysis.
   const std::vector<std::string>& input_files() const { return input_files_; }

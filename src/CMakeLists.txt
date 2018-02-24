@@ -14,7 +14,7 @@ set(SCRAM_CORE_SRC
   logger.cc
   settings.cc
   xml.cc
-  config.cc
+  project.cc
   element.cc
   expression.cc
   parameter.cc

@@ -36,11 +36,11 @@
 #include <libxml/xmlerror.h>  // initGenericErrorDefaultFunc
 #include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION, LIBXML_DOTTED_VERSION
 
-#include "config.h"
 #include "error.h"
 #include "ext/scope_guard.h"
 #include "initializer.h"
 #include "logger.h"
+#include "project.h"
 #include "reporter.h"
 #include "risk_analysis.h"
 #include "serialization.h"
@@ -251,11 +251,10 @@ void RunScram(const po::variables_map& vm) {
   // Get configurations if any.
   // Invalid configurations will throw.
   if (vm.count("config-file")) {
-    auto config =
-        std::make_unique<scram::Config>(vm["config-file"].as<std::string>());
-    settings = config->settings();
-    input_files = config->input_files();
-    output_path = config->output_path();
+    scram::Project config(vm["config-file"].as<std::string>());
+    settings = config.settings();
+    input_files = config.input_files();
+    output_path = config.output_path();
   }
   // Command-line settings overwrite
   // the settings from the configurations.

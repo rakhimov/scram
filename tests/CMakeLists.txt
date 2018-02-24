@@ -18,7 +18,7 @@ set(SCRAM_CORE_TEST_SOURCE
   linear_set_tests.cc
   xml_stream_tests.cc
   settings_tests.cc
-  config_tests.cc
+  project_tests.cc
   element_tests.cc
   event_tests.cc
   expression_tests.cc
