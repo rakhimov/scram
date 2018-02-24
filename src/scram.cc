@@ -88,7 +88,7 @@ po::options_description ConstructOptions() {
        "Number of quantiles for distributions")
       ("num-bins", OPT_VALUE(int), "Number of bins for histograms")
       ("seed", OPT_VALUE(int), "Seed for the pseudo-random number generator")
-      ("output-path,o", OPT_VALUE(path), "Output path for reports")
+      ("output,o", OPT_VALUE(path), "Output file for reports")
       ("no-indent", "Omit indentation whitespace in output XML")
       ("verbosity", OPT_VALUE(int), "Set log verbosity");
 #ifndef NDEBUG
@@ -247,7 +247,6 @@ void ConstructSettings(const po::variables_map& vm,
 void RunScram(const po::variables_map& vm) {
   scram::core::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
-  std::string output_path;
   // Get configurations if any.
   // Invalid configurations will throw.
   if (vm.count("project")) {
@@ -261,9 +260,6 @@ void RunScram(const po::variables_map& vm) {
   if (vm.count("input-files")) {
     auto cmd_input = vm["input-files"].as<std::vector<std::string>>();
     input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
-  }
-  if (vm.count("output-path")) {
-    output_path = vm["output-path"].as<std::string>();
   }
   // Process input files
   // into valid analysis containers and constructs.
@@ -287,10 +283,10 @@ void RunScram(const po::variables_map& vm) {
 #endif
   scram::Reporter reporter;
   bool indent = vm.count("no-indent") ? false : true;
-  if (output_path.empty()) {
-    reporter.Report(analysis, stdout, indent);
+  if (vm.count("output")) {
+    reporter.Report(analysis, vm["output"].as<std::string>(), indent);
   } else {
-    reporter.Report(analysis, output_path, indent);
+    reporter.Report(analysis, stdout, indent);
   }
 }
 
