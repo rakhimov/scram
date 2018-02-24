@@ -58,15 +58,15 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 
 }  // namespace
 
-Project::Project(const std::string& config_file) {
+Project::Project(const std::string& project_file) {
   static xml::Validator validator(env::project_schema());
 
-  if (fs::exists(config_file) == false) {
+  if (fs::exists(project_file) == false) {
     SCRAM_THROW(IOError("The configuration file does not exist."))
-        << boost::errinfo_file_name(config_file);
+        << boost::errinfo_file_name(project_file);
   }
 
-  xml::Document document(config_file);
+  xml::Document document(project_file);
   xml::Element root = document.root();
   std::string_view version = root.attribute("version");
   if (root.name() == "scram" && !version.empty()) {
@@ -89,13 +89,13 @@ Project::Project(const std::string& config_file) {
   }
   validator.validate(document);
   assert(root.name() == "scram");
-  fs::path base_path = fs::path(config_file).parent_path();
+  fs::path base_path = fs::path(project_file).parent_path();
   GatherInputFiles(root, base_path);
 
   try {
     GatherOptions(root);
   } catch (Error& err) {
-    err << boost::errinfo_file_name(config_file);
+    err << boost::errinfo_file_name(project_file);
     throw;
   }
 }

@@ -36,19 +36,19 @@ namespace scram {
 /// to initialize general analysis.
 class Project {
  public:
-  /// A constructor with configurations for analysis.
+  /// A constructor with project configurations for analysis.
   /// Reads and validates the configurations.
   ///
   /// All relative paths in the configuration are resolved
   /// with respect to the location of the original configuration file.
   ///
-  /// @param[in] config_file  The path to an XML file with configurations.
+  /// @param[in] project_file  The path to the project file with configurations.
   ///
   /// @throws VersionError  The version required by the file is incompatible.
   /// @throws ValidityError  The configurations have problems.
   /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
-  explicit Project(const std::string& config_file);
+  explicit Project(const std::string& project_file);
 
   /// @returns normalized, absolute paths to input files for analysis.
   const std::vector<std::string>& input_files() const { return input_files_; }
