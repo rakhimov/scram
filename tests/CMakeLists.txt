@@ -14,6 +14,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 ### Begin SCRAM test source list ### {{{
 set(SCRAM_CORE_TEST_SOURCE
+  version_tests.cc
   linear_map_tests.cc
   linear_set_tests.cc
   xml_stream_tests.cc

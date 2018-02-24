@@ -3,6 +3,10 @@
 
   <start>
     <element name="scram">
+      <optional>
+        <!-- SCRAM version requirement -->
+        <attribute name="version"> <data type="normalizedString"/> </attribute>
+      </optional>
       <element name="model">
         <oneOrMore>
           <element name="file"> <data type="anyURI"/> </element>

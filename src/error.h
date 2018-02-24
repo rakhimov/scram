@@ -101,6 +101,11 @@ struct SettingsError : public Error {
   using Error::Error;
 };
 
+/// The minimum required version is not satisfied.
+struct VersionError : public Error {
+  using Error::Error;
+};
+
 namespace mef {  // MEF specific errors.
 
 /// The MEF container element as namespace.

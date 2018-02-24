@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<scram>
+<scram version="0.17.0">
   <model>
     <file>input.xml</file>
   </model>

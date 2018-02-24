@@ -37,6 +37,13 @@ TEST_CASE("ProjectTest.ValidityError", "[config]") {
   REQUIRE_THROWS_AS(Project(config_file), xml::ValidityError);
 }
 
+TEST_CASE("ProjectTest.VersionError", "[config]") {
+  REQUIRE_THROWS_AS(Project("tests/input/version_error_config.xml"),
+                    xml::ValidityError);
+  REQUIRE_THROWS_AS(Project("tests/input/incompatible_version_config.xml"),
+                    VersionError);
+}
+
 // Test with XML content numerical issues.
 TEST_CASE("ProjectTest.NumericalErrors", "[config]") {
   std::string config_file = "tests/input/fta/int_overflow_config.xml";

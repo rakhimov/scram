@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<scram>
+<scram version="0.16.2">
   <model>
     <file>correct_tree_input_with_probs.xml</file>
   </model>

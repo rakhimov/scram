@@ -22,7 +22,9 @@
 
 #include <cassert>
 
+#include <array>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include <boost/predef.h>
@@ -34,12 +36,14 @@
 
 #include "env.h"
 #include "error.h"
+#include "ext/version.h"
+#include "version.h"
 
 namespace fs = boost::filesystem;
 
 namespace scram {
 
-namespace {  // Path normalization helpers.
+namespace {  // Path normalization helper.
 
 std::string normalize(const std::string& file_path, const fs::path& base_path) {
   fs::path abs_path = fs::absolute(file_path, base_path).generic_string();
@@ -62,8 +66,28 @@ Project::Project(const std::string& config_file) {
         << boost::errinfo_file_name(config_file);
   }
 
-  xml::Document document(config_file, &validator);
+  xml::Document document(config_file);
   xml::Element root = document.root();
+  std::string_view version = root.attribute("version");
+  if (root.name() == "scram" && !version.empty()) {
+    try {
+      std::optional<std::array<int, 3>> numbers = ext::extract_version(version);
+      if (!numbers)
+        SCRAM_THROW(xml::ValidityError("Invalid version string"));
+      auto current_numbers = ext::extract_version(SCRAM_VERSION);
+      assert(current_numbers);
+      if (numbers > current_numbers)
+        SCRAM_THROW(VersionError("Version incompatibility"));
+
+    } catch (Error& err) {
+      err << errinfo_value(std::string(version))
+          << xml::errinfo_element("scram") << xml::errinfo_attribute("version")
+          << boost::errinfo_at_line(root.line())
+          << boost::errinfo_file_name(root.filename());
+      throw;
+    }
+  }
+  validator.validate(document);
   assert(root.name() == "scram");
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);

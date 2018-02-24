@@ -44,6 +44,7 @@ class Project {
   ///
   /// @param[in] config_file  The path to an XML file with configurations.
   ///
+  /// @throws VersionError  The version required by the file is incompatible.
   /// @throws ValidityError  The configurations have problems.
   /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.

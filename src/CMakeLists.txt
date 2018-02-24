@@ -10,6 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ####################### Begin SCRAM core lib config ##################### {{{
 ### Begin SCRAM core source list ### {{{
 set(SCRAM_CORE_SRC
+  ext/version.cc
   env.cc
   logger.cc
   settings.cc
