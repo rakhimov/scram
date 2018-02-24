@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <scram>
-  <input-files>
+  <model>
     <file>correct_tree_input_with_probs.xml</file>
-  </input-files>
+  </model>
   <options>
     <algorithm name="bdd"/>
     <prime-implicants/>

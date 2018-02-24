@@ -78,7 +78,7 @@ Project::Project(const std::string& config_file) {
 
 void Project::GatherInputFiles(const xml::Element& root,
                                const fs::path& base_path) {
-  std::optional<xml::Element> input_files = root.child("input-files");
+  std::optional<xml::Element> input_files = root.child("model");
   if (!input_files)
     return;
   for (xml::Element input_file : input_files->children()) {

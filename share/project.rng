@@ -3,7 +3,7 @@
 
   <start>
     <element name="scram">
-      <element name="input-files">
+      <element name="model">
         <oneOrMore>
           <element name="file"> <data type="anyURI"/> </element>
         </oneOrMore>
