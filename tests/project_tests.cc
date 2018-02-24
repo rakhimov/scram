@@ -54,9 +54,6 @@ TEST_CASE("ProjectTest.FullSettings", "[config]") {
     auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
     CHECK(config.input_files().back() == prob);
   }
-  // Check the output destination.
-  auto out_dest = cwd + "/tests/input/fta/./temp_results.xml";
-  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
   CHECK(settings.algorithm() == core::Algorithm::kBdd);
@@ -87,9 +84,6 @@ TEST_CASE("ProjectTest.PrimeImplicantsSettings", "[config]") {
     auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
     CHECK(config.input_files().back() == prob);
   }
-  // Check the output destination.
-  auto out_dest = cwd + "/tests/input/fta/temp_results.xml";
-  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
   CHECK(settings.algorithm() == core::Algorithm::kBdd);

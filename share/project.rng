@@ -8,9 +8,6 @@
           <element name="file"> <data type="anyURI"/> </element>
         </oneOrMore>
       </element>
-      <optional>
-        <element name="output-path"> <data type="anyURI"/> </element>
-      </optional>
       <ref name="options"/>
     </element>
   </start>

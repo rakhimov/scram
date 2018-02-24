@@ -254,7 +254,6 @@ void RunScram(const po::variables_map& vm) {
     scram::Project config(vm["config-file"].as<std::string>());
     settings = config.settings();
     input_files = config.input_files();
-    output_path = config.output_path();
   }
   // Command-line settings overwrite
   // the settings from the configurations.

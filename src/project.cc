@@ -68,10 +68,6 @@ Project::Project(const std::string& config_file) {
   fs::path base_path = fs::path(config_file).parent_path();
   GatherInputFiles(root, base_path);
 
-  if (std::optional<xml::Element> out = root.child("output-path")) {
-    output_path_ = normalize(std::string(out->text()), base_path);
-  }
-
   try {
     GatherOptions(root);
   } catch (Error& err) {

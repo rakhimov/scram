@@ -55,10 +55,6 @@ class Project {
   /// @returns the settings for analysis.
   const core::Settings& settings() const { return settings_; }
 
-  /// @returns the output destination path (absolute, normalized).
-  /// @returns empty string if no path has been set.
-  const std::string& output_path() const { return output_path_; }
-
  private:
   /// Gathers input files with analysis constructs.
   ///
@@ -86,7 +82,6 @@ class Project {
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;
   core::Settings settings_;  ///< Settings for specific analysis.
-  std::string output_path_;  ///< The output destination.
 };
 
 }  // namespace scram
