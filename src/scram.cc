@@ -297,7 +297,7 @@ void RunScram(const po::variables_map& vm) {
 /// @param[in] ...  The variadic arguments for the format string.
 ///
 /// @pre The library strictly follows validity conditions of printf.
-void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
+extern "C" void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
   std::va_list args;
   va_start(args, msg);
   SCOPE_EXIT([&args] { va_end(args); });
