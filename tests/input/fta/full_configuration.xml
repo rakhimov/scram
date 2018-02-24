@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
-<scram>
-  <input-files>
+<scram version="0.16.2">
+  <model>
     <file>correct_tree_input_with_probs.xml</file>
-  </input-files>
-  <output-path>./temp_results.xml</output-path>
+  </model>
   <options>
     <algorithm name="bdd"/>
     <analysis probability="true" importance="true" uncertainty="true" ccf="true" sil="true"/>

@@ -16,13 +16,15 @@
  */
 
 /// @file
-/// Implementation of configuration facilities.
+/// Implementation of project configuration facilities.
 
-#include "config.h"
+#include "project.h"
 
 #include <cassert>
 
+#include <array>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include <boost/predef.h>
@@ -34,12 +36,14 @@
 
 #include "env.h"
 #include "error.h"
+#include "ext/version.h"
+#include "version.h"
 
 namespace fs = boost::filesystem;
 
 namespace scram {
 
-namespace {  // Path normalization helpers.
+namespace {  // Path normalization helper.
 
 std::string normalize(const std::string& file_path, const fs::path& base_path) {
   fs::path abs_path = fs::absolute(file_path, base_path).generic_string();
@@ -54,35 +58,51 @@ std::string normalize(const std::string& file_path, const fs::path& base_path) {
 
 }  // namespace
 
-Config::Config(const std::string& config_file) {
-  static xml::Validator validator(env::config_schema());
+Project::Project(const std::string& project_file) {
+  static xml::Validator validator(env::project_schema());
 
-  if (fs::exists(config_file) == false) {
+  if (fs::exists(project_file) == false) {
     SCRAM_THROW(IOError("The configuration file does not exist."))
-        << boost::errinfo_file_name(config_file);
+        << boost::errinfo_file_name(project_file);
   }
 
-  xml::Document document(config_file, &validator);
+  xml::Document document(project_file);
   xml::Element root = document.root();
-  assert(root.name() == "scram");
-  fs::path base_path = fs::path(config_file).parent_path();
-  GatherInputFiles(root, base_path);
+  std::string_view version = root.attribute("version");
+  if (root.name() == "scram" && !version.empty()) {
+    try {
+      std::optional<std::array<int, 3>> numbers = ext::extract_version(version);
+      if (!numbers)
+        SCRAM_THROW(xml::ValidityError("Invalid version string"));
+      auto current_numbers = ext::extract_version(SCRAM_VERSION);
+      assert(current_numbers);
+      if (numbers > current_numbers)
+        SCRAM_THROW(VersionError("Version incompatibility"));
 
-  if (std::optional<xml::Element> out = root.child("output-path")) {
-    output_path_ = normalize(std::string(out->text()), base_path);
+    } catch (Error& err) {
+      err << errinfo_value(std::string(version))
+          << xml::errinfo_element("scram") << xml::errinfo_attribute("version")
+          << boost::errinfo_at_line(root.line())
+          << boost::errinfo_file_name(root.filename());
+      throw;
+    }
   }
+  validator.validate(document);
+  assert(root.name() == "scram");
+  fs::path base_path = fs::path(project_file).parent_path();
+  GatherInputFiles(root, base_path);
 
   try {
     GatherOptions(root);
   } catch (Error& err) {
-    err << boost::errinfo_file_name(config_file);
+    err << boost::errinfo_file_name(project_file);
     throw;
   }
 }
 
-void Config::GatherInputFiles(const xml::Element& root,
-                              const fs::path& base_path) {
-  std::optional<xml::Element> input_files = root.child("input-files");
+void Project::GatherInputFiles(const xml::Element& root,
+                               const fs::path& base_path) {
+  std::optional<xml::Element> input_files = root.child("model");
   if (!input_files)
     return;
   for (xml::Element input_file : input_files->children()) {
@@ -92,7 +112,7 @@ void Config::GatherInputFiles(const xml::Element& root,
   }
 }
 
-void Config::GatherOptions(const xml::Element& root) {
+void Project::GatherOptions(const xml::Element& root) {
   std::optional<xml::Element> options_element = root.child("options");
   if (!options_element)
     return;
@@ -130,7 +150,7 @@ void Config::GatherOptions(const xml::Element& root) {
   }
 }
 
-void Config::SetAnalysis(const xml::Element& analysis) {
+void Project::SetAnalysis(const xml::Element& analysis) {
   auto set_flag = [&analysis](const char* tag, auto setter) {
     if (std::optional<bool> flag = analysis.attribute<bool>(tag))
       setter(*flag);
@@ -146,7 +166,7 @@ void Config::SetAnalysis(const xml::Element& analysis) {
            [this](bool flag) { settings_.safety_integrity_levels(flag); });
 }
 
-void Config::SetLimits(const xml::Element& limits) {
+void Project::SetLimits(const xml::Element& limits) {
   for (xml::Element limit : limits.children()) {
     std::string_view name = limit.name();
     if (name == "product-order") {

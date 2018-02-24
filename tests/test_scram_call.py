@@ -75,8 +75,7 @@ def test_fta_no_prob(tmpdir):
         # Test the MCUB approximation
         (["--mcub"], True),
         # Test the uncertainty
-        (["--uncertainty", "true", "--num-bins", "20", "--num-quantiles", "20"],
-         True),
+        (["--uncertainty", "--num-bins", "20", "--num-quantiles", "20"], True),
         # Test calls for prime implicants
         (["--prime-implicants", "--mocus"], False),
         (["--prime-implicants", "--rare-event"], False),
@@ -99,7 +98,7 @@ def test_config_file_output(tmpdir):
     # Test with a configuration file
     config_file = "./input/fta/full_configuration.xml"
     out_temp = str(tmpdir / "output_temp.xml")
-    cmd = ["scram", "--config-file", config_file, "-o", out_temp]
+    cmd = ["scram", "--project", config_file, "-o", out_temp]
     assert call(cmd) == 0
     if os.path.isfile(out_temp):
         os.remove(out_temp)
@@ -109,7 +108,7 @@ def test_config_file_clash():
     """Test the clash of files from configuration and command-line."""
     config_file = "./input/fta/full_configuration.xml"
     cmd = [
-        "scram", "--config-file", config_file,
+        "scram", "--project", config_file,
         "input/fta/correct_tree_input_with_probs.xml"
     ]
     assert call(cmd) != 0

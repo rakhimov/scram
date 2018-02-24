@@ -3,14 +3,15 @@
 
   <start>
     <element name="scram">
-      <element name="input-files">
+      <optional>
+        <!-- SCRAM version requirement -->
+        <attribute name="version"> <data type="normalizedString"/> </attribute>
+      </optional>
+      <element name="model">
         <oneOrMore>
           <element name="file"> <data type="anyURI"/> </element>
         </oneOrMore>
       </element>
-      <optional>
-        <element name="output-path"> <data type="anyURI"/> </element>
-      </optional>
       <ref name="options"/>
     </element>
   </start>

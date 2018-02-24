@@ -24,9 +24,9 @@
 
 namespace scram::env {
 
-const std::string& config_schema() {
+const std::string& project_schema() {
   static const std::string schema_path =
-      install_dir() + "/share/scram/config.rng";
+      install_dir() + "/share/scram/project.rng";
   return schema_path;
 }
 

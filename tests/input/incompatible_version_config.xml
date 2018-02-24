@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<scram version="10000000">
+  <model>
+    <file>fta/correct_tree_input_with_probs.xml</file>
+  </model>
+  <options/>
+</scram>

@@ -83,7 +83,7 @@ Documentation
     :maxdepth: 1
 
     doc/input_file
-    doc/config_file
+    doc/project_file
     doc/report_file
     doc/opsa_support
 

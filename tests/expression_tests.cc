@@ -293,7 +293,7 @@ TEST_CASE("ExpressionTest.PeriodicTest11", "[mef::expression]") {
   available_at_test.mean = false;
   EXPECT_NEAR(0.668316, dev->value(), 1e-5);
   time.mean = 4750;
-  CHECK(dev->value() == 1);
+  CHECK(dev->value() == Approx(1));
   time.mean = 4870;
   EXPECT_NEAR(0.996715, dev->value(), 1e-5);
   time.mean = 8710;

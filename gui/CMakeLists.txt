@@ -1,3 +1,5 @@
+# vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
+######################## Begin find Qt ###################### {{{
 # Find Qt5 libraries.
 if(APPLE)
   # Qt5 with Homebrew.
@@ -8,13 +10,18 @@ find_package(Qt5 "5.9.1" REQUIRED COMPONENTS
   )
 message(STATUS "Found Qt5")
 message(STATUS "Qt5 Version: ${Qt5_VERSION}")
+######################## End find Qt ###################### }}}
 
+##################### Begin cmake configuration ################### {{{
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories("${CMAKE_BINARY_DIR}")  # Access the generated core version header.
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
+##################### End cmake configuration ################### }}}
 
+##################### Begin resource configuration ################### {{{
 set(SCRAM_GUI_RES res.qrc)
 
 if(NOT HAS_TANGO AND (WIN32 OR APPLE))
@@ -31,44 +38,6 @@ if(NOT HAS_TANGO AND (WIN32 OR APPLE))
   endif()
   list(APPEND SCRAM_GUI_RES "${TANGO_QRC}")
 endif()
-
-add_subdirectory(translations)
-
-set(SCRAM_GUI_SRC
-  language.cpp
-  validator.cpp
-  model.cpp
-  modeltree.cpp
-  reporttree.cpp
-  elementcontainermodel.cpp
-  importancetablemodel.cpp
-  producttablemodel.cpp
-  preferencesdialog.cpp
-  settingsdialog.cpp
-  eventdialog.cpp
-  printable.cpp
-  zoomableview.cpp
-  diagram.cpp
-  mainwindow.cpp
-  )
-add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
-target_link_libraries(scram-gui
-  ${LIBS} scram
-  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
-target_compile_options(scram-gui PUBLIC $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG} -Wno-useless-cast>) # TODO: MOC failure.
-# Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
-target_compile_definitions(scram-gui PRIVATE
-  $<$<CONFIG:DEBUG>:QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_BYTEARRAY QT_NO_URL_CAST_FROM_STRING QT_USE_QSTRINGBUILDER>
-  )
-
-add_executable(scram-gui-bin WIN32 main.cpp scram.rc ${SCRAM_GUI_RES})
-set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
-target_link_libraries(scram-gui-bin scram-gui scram ${Boost_LIBRARIES})
-install(
-  TARGETS scram-gui-bin
-  RUNTIME DESTINATION bin
-  COMPONENT gui
-  )
 
 if(UNIX AND NOT APPLE)
   foreach(size IN ITEMS 32 64 128)
@@ -99,6 +68,52 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
+add_subdirectory(translations)
+##################### End resource configuration ################### }}}
+
+####################### Begin SCRAM GUI lib config ##################### {{{
+### Begin SCRAM GUI source list ### {{{
+set(SCRAM_GUI_SRC
+  language.cpp
+  validator.cpp
+  model.cpp
+  modeltree.cpp
+  reporttree.cpp
+  elementcontainermodel.cpp
+  importancetablemodel.cpp
+  producttablemodel.cpp
+  preferencesdialog.cpp
+  settingsdialog.cpp
+  eventdialog.cpp
+  printable.cpp
+  zoomableview.cpp
+  diagram.cpp
+  mainwindow.cpp
+  )
+### End SCRAM GUI source list ### }}}
+add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
+target_link_libraries(scram-gui
+  ${LIBS} scram
+  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
+target_compile_options(scram-gui PUBLIC $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG} -Wno-useless-cast>) # TODO: MOC failure.
+# Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
+target_compile_definitions(scram-gui PRIVATE
+  $<$<CONFIG:DEBUG>:QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_BYTEARRAY QT_NO_URL_CAST_FROM_STRING QT_USE_QSTRINGBUILDER>
+  )
+####################### End SCRAM GUI lib config ##################### }}}
+
+####################### Begin SCRAM GUI bin config ##################### {{{
+add_executable(scram-gui-bin WIN32 main.cpp scram.rc ${SCRAM_GUI_RES})
+set_target_properties(scram-gui-bin PROPERTIES OUTPUT_NAME scram-gui)
+target_link_libraries(scram-gui-bin scram-gui scram ${Boost_LIBRARIES})
+install(
+  TARGETS scram-gui-bin
+  RUNTIME DESTINATION bin
+  COMPONENT gui
+  )
+####################### End SCRAM GUI bin config ##################### }}}
+
+###################### Begin CPACK configurations ########################### {{{
 if(PACKAGE)
   if(WIN32)
     # Helper functions to bundle the dependencies.
@@ -143,6 +158,7 @@ if(PACKAGE)
       COMPONENT gui)
   endif()
 endif()
+###################### End CPACK configurations ############################# }}}
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

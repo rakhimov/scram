@@ -39,7 +39,6 @@
 #include <boost/exception/get_error_info.hpp>
 #include <boost/filesystem.hpp>
 
-#include "src/config.h"
 #include "src/env.h"
 #include "src/error.h"
 #include "src/expression/constant.h"
@@ -48,6 +47,7 @@
 #include "src/ext/find_iterator.h"
 #include "src/ext/variant.h"
 #include "src/initializer.h"
+#include "src/project.h"
 #include "src/reporter.h"
 #include "src/serialization.h"
 #include "src/xml.h"
@@ -292,7 +292,7 @@ bool MainWindow::setConfig(const std::string &configPath,
                            std::vector<std::string> inputFiles)
 {
     try {
-        Config config(configPath);
+        Project config(configPath);
         inputFiles.insert(inputFiles.begin(), config.input_files().begin(),
                           config.input_files().end());
         mef::Initializer(inputFiles, config.settings());

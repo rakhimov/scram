@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
+#include "project.h"
 
 #include <catch.hpp>
 
@@ -26,37 +26,41 @@
 namespace scram::test {
 
 // Test with a wrong input.
-TEST_CASE("ConfigTest.IOError", "[config]") {
+TEST_CASE("ProjectTest.IOError", "[config]") {
   std::string config_file = "./nonexistent_configurations.xml";
-  REQUIRE_THROWS_AS(Config(config_file), IOError);
+  REQUIRE_THROWS_AS(Project(config_file), IOError);
 }
 
 // Test with XML content validation issues.
-TEST_CASE("ConfigTest.ValidityError", "[config]") {
+TEST_CASE("ProjectTest.ValidityError", "[config]") {
   std::string config_file = "tests/input/fta/invalid_configuration.xml";
-  REQUIRE_THROWS_AS(Config(config_file), xml::ValidityError);
+  REQUIRE_THROWS_AS(Project(config_file), xml::ValidityError);
+}
+
+TEST_CASE("ProjectTest.VersionError", "[config]") {
+  REQUIRE_THROWS_AS(Project("tests/input/version_error_config.xml"),
+                    xml::ValidityError);
+  REQUIRE_THROWS_AS(Project("tests/input/incompatible_version_config.xml"),
+                    VersionError);
 }
 
 // Test with XML content numerical issues.
-TEST_CASE("ConfigTest.NumericalErrors", "[config]") {
+TEST_CASE("ProjectTest.NumericalErrors", "[config]") {
   std::string config_file = "tests/input/fta/int_overflow_config.xml";
-  REQUIRE_THROWS_AS(Config(config_file), xml::ValidityError);
+  REQUIRE_THROWS_AS(Project(config_file), xml::ValidityError);
 }
 
 // Tests all settings with one file.
-TEST_CASE("ConfigTest.FullSettings", "[config]") {
+TEST_CASE("ProjectTest.FullSettings", "[config]") {
   std::string config_file = "tests/input/fta/full_configuration.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
-  Config config(config_file);
+  Project config(config_file);
   // Check the input files.
   CHECK(config.input_files().size() == 1);
   if (!config.input_files().empty()) {
     auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
     CHECK(config.input_files().back() == prob);
   }
-  // Check the output destination.
-  auto out_dest = cwd + "/tests/input/fta/./temp_results.xml";
-  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
   CHECK(settings.algorithm() == core::Algorithm::kBdd);
@@ -77,29 +81,26 @@ TEST_CASE("ConfigTest.FullSettings", "[config]") {
   CHECK(settings.seed() == 97531);
 }
 
-TEST_CASE("ConfigTest.PrimeImplicantsSettings", "[config]") {
+TEST_CASE("ProjectTest.PrimeImplicantsSettings", "[config]") {
   std::string config_file = "tests/input/fta/pi_configuration.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
-  Config config(config_file);
+  Project config(config_file);
   // Check the input files.
   CHECK(config.input_files().size() == 1);
   if (!config.input_files().empty()) {
     auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";
     CHECK(config.input_files().back() == prob);
   }
-  // Check the output destination.
-  auto out_dest = cwd + "/tests/input/fta/temp_results.xml";
-  CHECK(config.output_path() == out_dest);
 
   const core::Settings& settings = config.settings();
   CHECK(settings.algorithm() == core::Algorithm::kBdd);
   CHECK(settings.prime_implicants());
 }
 
-TEST_CASE("ConfigTest.CanonicalPath", "[config]") {
+TEST_CASE("ProjectTest.CanonicalPath", "[config]") {
   std::string config_file = "tests/input/win_path_in_config.xml";
   std::string cwd = boost::filesystem::current_path().generic_string();
-  Config config(config_file);
+  Project config(config_file);
   // Check the input files.
   REQUIRE(config.input_files().size() == 1);
   auto prob = cwd + "/tests/input/fta/correct_tree_input_with_probs.xml";

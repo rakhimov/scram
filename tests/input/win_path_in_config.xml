@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <scram>
-  <input-files>
+  <model>
     <file>fta\correct_tree_input_with_probs.xml</file>
-  </input-files>
+  </model>
   <options/>
 </scram>

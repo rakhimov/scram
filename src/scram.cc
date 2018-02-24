@@ -30,16 +30,17 @@
 #include <boost/core/typeinfo.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
+#include <boost/version.hpp>
 
 #include <libxml/parser.h>  // xmlInitParser, xmlCleanupParser
 #include <libxml/xmlerror.h>  // initGenericErrorDefaultFunc
-#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION
+#include <libxml/xmlversion.h>  // LIBXML_TEST_VERSION, LIBXML_DOTTED_VERSION
 
-#include "config.h"
 #include "error.h"
 #include "ext/scope_guard.h"
 #include "initializer.h"
 #include "logger.h"
+#include "project.h"
 #include "reporter.h"
 #include "risk_analysis.h"
 #include "serialization.h"
@@ -62,18 +63,18 @@ po::options_description ConstructOptions() {
   desc.add_options()
       ("help", "Display this help message")
       ("version", "Display version information")
-      ("config-file", OPT_VALUE(path), "XML file with analysis configurations")
+      ("project", OPT_VALUE(path), "Project file with analysis configurations")
       ("allow-extern", "**UNSAFE** Allow external libraries")
       ("validate", "Validate input files without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
       ("zbdd", "Perform qualitative analysis with ZBDD")
       ("mocus", "Perform qualitative analysis with MOCUS")
       ("prime-implicants", "Calculate prime implicants")
-      ("probability", OPT_VALUE(bool), "Perform probability analysis")
-      ("importance", OPT_VALUE(bool), "Perform importance analysis")
-      ("uncertainty", OPT_VALUE(bool), "Perform uncertainty analysis")
-      ("ccf", OPT_VALUE(bool), "Perform common-cause failure analysis")
-      ("sil", OPT_VALUE(bool), "Compute the Safety Integrity Level metrics")
+      ("probability", "Perform probability analysis")
+      ("importance", "Perform importance analysis")
+      ("uncertainty", "Perform uncertainty analysis")
+      ("ccf", "Perform common-cause failure analysis")
+      ("sil", "Compute the Safety Integrity Level metrics")
       ("rare-event", "Use the rare event approximation")
       ("mcub", "Use the MCUB approximation")
       ("limit-order,l", OPT_VALUE(int), "Upper limit for the product order")
@@ -87,7 +88,7 @@ po::options_description ConstructOptions() {
        "Number of quantiles for distributions")
       ("num-bins", OPT_VALUE(int), "Number of bins for histograms")
       ("seed", OPT_VALUE(int), "Seed for the pseudo-random number generator")
-      ("output-path,o", OPT_VALUE(path), "Output path for reports")
+      ("output,o", OPT_VALUE(path), "Output file for reports")
       ("no-indent", "Omit indentation whitespace in output XML")
       ("verbosity", OPT_VALUE(int), "Set log verbosity");
 #ifndef NDEBUG
@@ -127,7 +128,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   po::options_description options("All options with positional input files.");
   options.add(desc).add_options()("input-files",
                                   po::value<std::vector<std::string>>(),
-                                  "XML input files with analysis constructs");
+                                  "MEF input files with analysis constructs");
   po::positional_options_description p;
   p.add("input-files", -1);  // All input files are implicit.
   po::store(
@@ -145,11 +146,10 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return -1;
   }
   if (vm->count("version")) {
-    std::cout << "SCRAM " << scram::version::core() << " ("
-              << scram::version::describe() << ")"
+    std::cout << "SCRAM " << SCRAM_VERSION << " (" << SCRAM_GIT_REVISION << ")"
               << "\n\nDependencies:\n"
-              << "   Boost       " << scram::version::boost() << "\n"
-              << "   libxml2     " << scram::version::libxml() << std::endl;
+              << "   Boost       " << BOOST_LIB_VERSION << "\n"
+              << "   libxml2     " << LIBXML_DOTTED_VERSION << std::endl;
     return -1;
   }
 
@@ -163,7 +163,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     }
   }
 
-  if (!vm->count("input-files") && !vm->count("config-file")) {
+  if (!vm->count("input-files") && !vm->count("project")) {
     std::cerr << "No input or configuration file is given.\n\n";
     print_help(std::cerr);
     return 1;
@@ -202,27 +202,27 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 void ConstructSettings(const po::variables_map& vm,
                        scram::core::Settings* settings) {
   if (vm.count("bdd")) {
-    settings->algorithm("bdd");
+    settings->algorithm(scram::core::Algorithm::kBdd);
   } else if (vm.count("zbdd")) {
-    settings->algorithm("zbdd");
+    settings->algorithm(scram::core::Algorithm::kZbdd);
   } else if (vm.count("mocus")) {
-    settings->algorithm("mocus");
+    settings->algorithm(scram::core::Algorithm::kMocus);
   }
   settings->prime_implicants(vm.count("prime-implicants"));
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings->approximation("rare-event");
+    settings->approximation(scram::core::Approximation::kRareEvent);
   } else if (vm.count("mcub")) {
-    settings->approximation("mcub");
+    settings->approximation(scram::core::Approximation::kMcub);
   }
   SET("time-step", double, time_step);
-  SET("sil", bool, safety_integrity_levels);
+  settings->safety_integrity_levels(vm.count("sil"));
 
-  SET("probability", bool, probability_analysis);
-  SET("importance", bool, importance_analysis);
-  SET("uncertainty", bool, uncertainty_analysis);
-  SET("ccf", bool, ccf_analysis);
+  settings->probability_analysis(vm.count("probability"));
+  settings->importance_analysis(vm.count("importance"));
+  settings->uncertainty_analysis(vm.count("uncertainty"));
+  settings->ccf_analysis(vm.count("ccf"));
   SET("seed", int, seed);
   SET("limit-order", int, limit_order);
   SET("cut-off", double, cut_off);
@@ -247,15 +247,12 @@ void ConstructSettings(const po::variables_map& vm,
 void RunScram(const po::variables_map& vm) {
   scram::core::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
-  std::string output_path;
   // Get configurations if any.
   // Invalid configurations will throw.
-  if (vm.count("config-file")) {
-    auto config =
-        std::make_unique<scram::Config>(vm["config-file"].as<std::string>());
-    settings = config->settings();
-    input_files = config->input_files();
-    output_path = config->output_path();
+  if (vm.count("project")) {
+    scram::Project config(vm["project"].as<std::string>());
+    settings = config.settings();
+    input_files = config.input_files();
   }
   // Command-line settings overwrite
   // the settings from the configurations.
@@ -263,9 +260,6 @@ void RunScram(const po::variables_map& vm) {
   if (vm.count("input-files")) {
     auto cmd_input = vm["input-files"].as<std::vector<std::string>>();
     input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
-  }
-  if (vm.count("output-path")) {
-    output_path = vm["output-path"].as<std::string>();
   }
   // Process input files
   // into valid analysis containers and constructs.
@@ -289,10 +283,10 @@ void RunScram(const po::variables_map& vm) {
 #endif
   scram::Reporter reporter;
   bool indent = vm.count("no-indent") ? false : true;
-  if (output_path.empty()) {
-    reporter.Report(analysis, stdout, indent);
+  if (vm.count("output")) {
+    reporter.Report(analysis, vm["output"].as<std::string>(), indent);
   } else {
-    reporter.Report(analysis, output_path, indent);
+    reporter.Report(analysis, stdout, indent);
   }
 }
 
@@ -303,7 +297,7 @@ void RunScram(const po::variables_map& vm) {
 /// @param[in] ...  The variadic arguments for the format string.
 ///
 /// @pre The library strictly follows validity conditions of printf.
-void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
+extern "C" void LogXmlError(void* /*ctx*/, const char* msg, ...) noexcept {
   std::va_list args;
   va_start(args, msg);
   SCOPE_EXIT([&args] { va_end(args); });

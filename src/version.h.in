@@ -16,31 +16,14 @@
  */
 
 /// @file
-/// Implementations of functions returning
-/// the version information
-/// of the core and dependencies.
-/// Some information is filled by CMake and Git.
+/// Compile-time version information of SCRAM.
 
-#include "version.h"
-
-#include <boost/version.hpp>
-
-#include <libxml/xmlversion.h>
-
-namespace scram::version {
-
-const char* describe() { return "@core_version@"; }
-
-const char* build() { return "@CMAKE_BUILD_TYPE@"; }
+#pragma once
 
 // clang-format off
-const char* core() {
-  return "@SCRAM_VERSION_MAJOR@.@SCRAM_VERSION_MINOR@.@SCRAM_VERSION_PATCH@";
-}
+#define SCRAM_VERSION_MAJOR @SCRAM_VERSION_MAJOR@  ///< API stability.
+#define SCRAM_VERSION_MINOR @SCRAM_VERSION_MINOR@  ///< Feature release.
+#define SCRAM_VERSION_MICRO @SCRAM_VERSION_PATCH@  ///< Micro/patch release.
+#define SCRAM_VERSION "@SCRAM_VERSION@"  ///< Dotted "major.minor.micro" string.
+#define SCRAM_GIT_REVISION "@SCRAM_GIT_REVISION@"  ///< Detailed version if any.
 // clang-format on
-
-const char* boost() { return BOOST_LIB_VERSION; }
-
-const char* libxml() { return LIBXML_DOTTED_VERSION; }
-
-}  // namespace scram::version

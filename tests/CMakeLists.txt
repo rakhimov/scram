@@ -1,15 +1,25 @@
-include_directories(SYSTEM "catch2/single_include")
+# vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
+######################## Begin find Catch2 ###################### {{{
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/catch2/single_include/catch.hpp")
+  message(FATAL_ERROR "Catch2 submodule is not present.")
+endif()
 
+include_directories(SYSTEM "catch2/single_include")
+######################## End find Catch2 ###################### }}}
+
+######################## Begin SCRAM test config ###################### {{{
 # Include the project headers.
 include_directories("${CMAKE_SOURCE_DIR}/src")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+### Begin SCRAM test source list ### {{{
 set(SCRAM_CORE_TEST_SOURCE
+  version_tests.cc
   linear_map_tests.cc
   linear_set_tests.cc
   xml_stream_tests.cc
   settings_tests.cc
-  config_tests.cc
+  project_tests.cc
   element_tests.cc
   event_tests.cc
   expression_tests.cc
@@ -39,8 +49,9 @@ set(SCRAM_CORE_TEST_SOURCE
   bench_gas_leak.cc
   performance_tests.cc
   )
+### End SCRAM test source list ### }}}
 
-# Make tests switch and run in install directory.
+# Make tests switch and run in the test directory.
 configure_file(scram_unit_test_driver.cc.in scram_unit_test_driver.cc @ONLY)
 
 add_executable(scram_tests ${CMAKE_CURRENT_BINARY_DIR}/scram_unit_test_driver.cc ${SCRAM_CORE_TEST_SOURCE})
@@ -52,7 +63,9 @@ install(
   RUNTIME DESTINATION bin
   COMPONENT testing
   )
+######################## End SCRAM test config ###################### }}}
 
+######################## Begin Dummy DLL config ###################### {{{
 # Create dummy library to test dynamic loading and extern function.
 add_library(scram_dummy_extern SHARED scram_dummy_extern.cc)
 target_compile_options(scram_dummy_extern PRIVATE $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG}>)
@@ -66,3 +79,4 @@ install(
   COMPONENT testing
   )
 endif()
+######################## End Dummy DLL config ###################### }}}

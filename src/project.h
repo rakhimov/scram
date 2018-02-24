@@ -16,7 +16,7 @@
  */
 
 /// @file
-/// Configuration management facilities
+/// Project/configuration management facilities
 /// to make various setups for analysis possible.
 
 #pragma once
@@ -31,33 +31,30 @@
 
 namespace scram {
 
-/// This class processes configuration files for analysis.
+/// This class processes project configuration files for analysis.
 /// The class contains all the setup and state
 /// to initialize general analysis.
-class Config {
+class Project {
  public:
-  /// A constructor with configurations for analysis.
+  /// A constructor with project configurations for analysis.
   /// Reads and validates the configurations.
   ///
   /// All relative paths in the configuration are resolved
   /// with respect to the location of the original configuration file.
   ///
-  /// @param[in] config_file  The path to an XML file with configurations.
+  /// @param[in] project_file  The path to the project file with configurations.
   ///
+  /// @throws VersionError  The version required by the file is incompatible.
   /// @throws ValidityError  The configurations have problems.
   /// @throws SettingsError  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
-  explicit Config(const std::string& config_file);
+  explicit Project(const std::string& project_file);
 
   /// @returns normalized, absolute paths to input files for analysis.
   const std::vector<std::string>& input_files() const { return input_files_; }
 
   /// @returns the settings for analysis.
   const core::Settings& settings() const { return settings_; }
-
-  /// @returns the output destination path (absolute, normalized).
-  /// @returns empty string if no path has been set.
-  const std::string& output_path() const { return output_path_; }
 
  private:
   /// Gathers input files with analysis constructs.
@@ -86,7 +83,6 @@ class Config {
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;
   core::Settings settings_;  ///< Settings for specific analysis.
-  std::string output_path_;  ///< The output destination.
 };
 
 }  // namespace scram

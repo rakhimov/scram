@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <scram>
-  <input-files>
+  <model>
     <file>correct_tree_input.xml</file>
-  </input-files>
+  </model>
   <options>
     <limits>
       <number-of-trials>10000000000</number-of-trials>  <!-- 1e10 -->
