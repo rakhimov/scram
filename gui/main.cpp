@@ -61,8 +61,8 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
     // clang-format off
     desc.add_options()
             ("help", "Display this help message")
-            ("config-file", po::value<std::string>()->value_name("path"),
-             "Project configuration file");
+            ("project", po::value<std::string>()->value_name("path"),
+             "Project file with analysis configurations");
     // clang-format on
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -215,8 +215,8 @@ int main(int argc, char *argv[])
         try {
             if (vm.count("input-files"))
                 inputFiles = vm["input-files"].as<std::vector<std::string>>();
-            if (vm.count("config-file")) {
-                w.setConfig(vm["config-file"].as<std::string>(), inputFiles);
+            if (vm.count("project")) {
+                w.setConfig(vm["project"].as<std::string>(), inputFiles);
             } else {
                 w.addInputFiles(inputFiles);
             }

@@ -244,9 +244,9 @@ The command can also take project configuration and/or input files:
 
     scram-gui path/to/input/files
 
-    scram-gui --config-file path/to/config/file
+    scram-gui --project path/to/project/file
 
-    scram-gui path/to/input/files --config-file path/to/config/file
+    scram-gui path/to/input/files --project path/to/project/file
 
 
 To run tests

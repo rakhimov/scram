@@ -63,7 +63,7 @@ po::options_description ConstructOptions() {
   desc.add_options()
       ("help", "Display this help message")
       ("version", "Display version information")
-      ("config-file", OPT_VALUE(path), "XML file with analysis configurations")
+      ("project", OPT_VALUE(path), "Project file with analysis configurations")
       ("allow-extern", "**UNSAFE** Allow external libraries")
       ("validate", "Validate input files without analysis")
       ("bdd", "Perform qualitative analysis with BDD")
@@ -128,7 +128,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   po::options_description options("All options with positional input files.");
   options.add(desc).add_options()("input-files",
                                   po::value<std::vector<std::string>>(),
-                                  "XML input files with analysis constructs");
+                                  "MEF input files with analysis constructs");
   po::positional_options_description p;
   p.add("input-files", -1);  // All input files are implicit.
   po::store(
@@ -163,7 +163,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     }
   }
 
-  if (!vm->count("input-files") && !vm->count("config-file")) {
+  if (!vm->count("input-files") && !vm->count("project")) {
     std::cerr << "No input or configuration file is given.\n\n";
     print_help(std::cerr);
     return 1;
@@ -250,8 +250,8 @@ void RunScram(const po::variables_map& vm) {
   std::string output_path;
   // Get configurations if any.
   // Invalid configurations will throw.
-  if (vm.count("config-file")) {
-    scram::Project config(vm["config-file"].as<std::string>());
+  if (vm.count("project")) {
+    scram::Project config(vm["project"].as<std::string>());
     settings = config.settings();
     input_files = config.input_files();
   }
