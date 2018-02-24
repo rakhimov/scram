@@ -74,8 +74,8 @@ Project::Project(const std::string& project_file) {
       std::optional<std::array<int, 3>> numbers = ext::extract_version(version);
       if (!numbers)
         SCRAM_THROW(xml::ValidityError("Invalid version string"));
-      auto current_numbers = ext::extract_version(SCRAM_VERSION);
-      assert(current_numbers);
+      std::array<int, 3> current_numbers = {
+          SCRAM_VERSION_MAJOR, SCRAM_VERSION_MINOR, SCRAM_VERSION_MICRO};
       if (numbers > current_numbers)
         SCRAM_THROW(VersionError("Version incompatibility"));
 
