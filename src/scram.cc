@@ -202,19 +202,19 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 void ConstructSettings(const po::variables_map& vm,
                        scram::core::Settings* settings) {
   if (vm.count("bdd")) {
-    settings->algorithm("bdd");
+    settings->algorithm(scram::core::Algorithm::kBdd);
   } else if (vm.count("zbdd")) {
-    settings->algorithm("zbdd");
+    settings->algorithm(scram::core::Algorithm::kZbdd);
   } else if (vm.count("mocus")) {
-    settings->algorithm("mocus");
+    settings->algorithm(scram::core::Algorithm::kMocus);
   }
   settings->prime_implicants(vm.count("prime-implicants"));
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings->approximation("rare-event");
+    settings->approximation(scram::core::Approximation::kRareEvent);
   } else if (vm.count("mcub")) {
-    settings->approximation("mcub");
+    settings->approximation(scram::core::Approximation::kMcub);
   }
   SET("time-step", double, time_step);
   settings->safety_integrity_levels(vm.count("sil"));
