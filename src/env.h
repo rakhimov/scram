@@ -28,8 +28,8 @@
 
 namespace scram::env {
 
-/// @returns The location of the RELAX NG schema for configuration files.
-const std::string& config_schema();
+/// @returns The location of the RELAX NG schema for project files.
+const std::string& project_schema();
 
 /// @returns The location of the RELAX NG schema for input files.
 const std::string& input_schema();
