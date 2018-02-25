@@ -146,7 +146,7 @@ class ProductContainer {
   bool empty() const { return products_.empty(); }
 
   /// @returns The number of products in the container.
-  int size() const { return products_.size(); }
+  int size() const { return size_; }
 
   /// @returns The product distribution by order.
   const std::vector<int>& distribution() const { return distribution_; }
@@ -154,6 +154,7 @@ class ProductContainer {
  private:
   const Zbdd& products_;  ///< Container of analysis results.
   const Pdag& graph_;  ///< The analysis graph.
+  int size_;  ///< The number of products.
   std::vector<int> distribution_;  ///< Product counts by order.
   /// The set of events in the resultant products.
   std::unordered_set<const mef::BasicEvent*> product_events_;
