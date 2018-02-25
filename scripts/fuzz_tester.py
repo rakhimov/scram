@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015-2017 Olzhas Rakhimov
+# Copyright (C) 2015-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ class Config(object):
     Empty strings mean the default options of SCRAM.
 
     Attributes:
-        switch: SCRAM flags that take true or false values.
+        switch: SCRAM Boolean flags.
         approximation: SCRAM quantitative analysis approximations.
         analysis: Qualitative analysis algorithms.
         max_limit: The largest size limit on the cut sets.
@@ -162,7 +162,7 @@ def generate_analysis_call(input_file):
     """
     cmd = ["scram", input_file, "--limit-order", str(get_limit_order())]
     if Config.switch:
-        cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
+        cmd += [random.choice(Config.switch)]
     approx = random.choice(Config.approximation)
     if approx:
         cmd.append(approx)
