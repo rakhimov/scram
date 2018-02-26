@@ -6,7 +6,7 @@ services:
 language: python
 
 git:
-    depth: 200
+    depth: 50
 
 env:
     global:

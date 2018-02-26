@@ -73,7 +73,7 @@ project = u'SCRAM'
 #
 # The full version, including alpha/beta/rc tags.
 release = check_output(['git', 'describe', '--tags',
-                        '--abbrev=0']).strip().decode()
+                        '--abbrev=0', '--candidates=1']).strip().decode()
 # The short X.Y version.
 version = release.rsplit('.', 1)[0]
 release_date = check_output(['git', 'log', '-n', '1', '--format=format:%cd',
