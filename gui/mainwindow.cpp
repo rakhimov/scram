@@ -310,6 +310,10 @@ bool MainWindow::setConfig(const std::string &configPath,
         displayError(err, tr("Configuration Error"),
                      tr("Invalid configurations"), this);
         return false;
+    } catch (const scram::VersionError &err) {
+        displayError(err, tr("Version Error"), tr("Version incompatibility"),
+                     this);
+        return false;
     }
     return true;
 }

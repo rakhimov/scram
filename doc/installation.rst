@@ -65,7 +65,7 @@ Linux Bundle
 ============
 
 The relocatable bundle is packaged with exodus_
-and available on SourceForge_.
+and available on SourceForge_ and Bintray_.
 
 .. _exodus: https://github.com/Intoli/exodus/
 
@@ -87,9 +87,10 @@ Installation with homebrew_:
 Windows
 =======
 
-Download and run the installer from SourceForge_.
+Download and run the installer from SourceForge_ or Bintray_.
 
 .. _SourceForge: https://sourceforge.net/projects/iscram/files/
+.. _Bintray: https://bintray.com/rakhimov/scram/scram
 
 
 Docker Containers

@@ -220,8 +220,10 @@ int main(int argc, char *argv[])
             } else {
                 w.addInputFiles(inputFiles);
             }
-        } catch (const boost::exception &) {
-            assert(false);
+        } catch (const boost::exception &err) {
+            std::string message = boost::diagnostic_information(err);
+            qCritical("%s", message.c_str());
+            return 1;
         }
     }
     return app.exec();

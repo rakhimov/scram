@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <scram>
-  <input-files>
+  <model>
     <file>two_train.xml</file>
-  </input-files>
+  </model>
   <options>
     <analysis importance="true" uncertainty="false" ccf="false"/>
     <limits>
