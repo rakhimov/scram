@@ -72,8 +72,22 @@ Release
 Distributions
 =============
 
+Distros
+-------
+
 - [ ] Salsa/Debian
 - [ ] PPA/Ubuntu
 - [ ] rpms/Fedora
+- [-] Homebrew/macOS
+
+Bundles
+-------
+
 - [ ] Mingw-w64/NSIS/Windows
-- [ ] Homebrew/macOS
+- [ ] Exodus/Linux
+
+Upload
+~~~~~~
+
+- [ ] SourceForge
+- [ ] Bintray
