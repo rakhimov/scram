@@ -198,6 +198,8 @@ int main(int argc, char *argv[])
 
     if (QIcon::themeName().isEmpty())
         QIcon::setThemeName(QStringLiteral("tango"));
+    else
+        QIcon::setThemeName(QStringLiteral("Humanity"));
 
     installTranslators(&app);
 

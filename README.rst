@@ -92,6 +92,7 @@ Package                Minimum Version
 ====================   ===============
 TCMalloc               1.7
 JEMalloc               3.6
+Humanity Icons         0.6.13
 ====================   ===============
 
 
@@ -118,7 +119,7 @@ The process is tested on Ubuntu 17.10 using ``apt-get`` as the package manager:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qt{base,tools}5-dev{,-tools}
+    sudo apt-get install -y cmake lib{boost-all,xml2,google-perftools,qt5{svg,opengl}5}-dev qt{base,tools}5-dev{,-tools} humanity-icon-theme
 
 
 macOS
