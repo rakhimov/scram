@@ -98,22 +98,58 @@ TEST_CASE("ExternTest.ExternFunction", "[mef::extern_function]") {
 TEST_CASE("ExternTest.ExternExpression", "[mef::extern_function]") {
   const std::string cwd_dir = boost::filesystem::current_path().string();
   ExternLibrary library("dummy", kLibRelPath, cwd_dir, false, true);
-  ExternFunction<int> foo("dummy_foo", "foo", library);
-  ExternFunction<double, double> identity("dummy_id", "identity", library);
-  ConstantExpression arg_one(12);
+  ConstantExpression arg_one(42);
+  ConstantExpression arg_two(13);
+  ConstantExpression arg_three(-1);
 
-  CHECK_NOTHROW(ExternExpression<int>(&foo, {}));
-  CHECK_THROWS_AS(ExternExpression<int>(&foo, {&arg_one}), ValidityError);
+  SECTION("foo") {
+    ExternFunction<int> foo("dummy_foo", "foo", library);
+    CHECK_THROWS_AS(ExternExpression(&foo, {&arg_one}), ValidityError);
+    ExternExpression expr(&foo, {});
+    CHECK(expr.value() == 42);
+    CHECK(expr.Sample() == 42);
+    CHECK_FALSE(expr.IsDeviate());
+  }
 
-  CHECK(ExternExpression<int>(&foo, {}).value() == 42);
-  CHECK(ExternExpression<int>(&foo, {}).Sample() == 42);
-  CHECK_FALSE(ExternExpression<int>(&foo, {}).IsDeviate());
+  SECTION("identity") {
+    ExternFunction<double, double> identity("dummy_id", "identity", library);
+    CHECK_THROWS_AS(ExternExpression(&identity, {}), ValidityError);
+    ExternExpression expr(&identity, {&arg_one});
+    CHECK(expr.value() == arg_one.value());
+    CHECK(expr.Sample() == arg_one.Sample());
+    CHECK_FALSE(expr.IsDeviate());
+  }
 
-  CHECK_NOTHROW((ExternExpression<double, double>(&identity, {&arg_one})));
-  CHECK_THROWS_AS((ExternExpression<double, double>(&identity, {})),
-                  ValidityError);
-  CHECK((ExternExpression<double, double>(&identity, {&arg_one})).value() ==
-        arg_one.value());
+  SECTION("sum") {
+    ExternFunction<double, double, double, double> sum("dummy_id", "sum",
+                                                       library);
+    CHECK_THROWS_AS(ExternExpression(&sum, {}), ValidityError);
+    CHECK_THROWS_AS(ExternExpression(&sum, {&arg_one}), ValidityError);
+    CHECK_THROWS_AS(ExternExpression(&sum, {&arg_one, &arg_two}),
+                    ValidityError);
+    ExternExpression expr(&sum, {&arg_one, &arg_two, &arg_three});
+    CHECK(expr.value() == 54);
+    CHECK(expr.Sample() == 54);
+    CHECK_FALSE(expr.IsDeviate());
+  }
+
+  SECTION("div") {
+    ExternFunction<double, double, double> div("dummy_id", "div", library);
+    CHECK_THROWS_AS(ExternExpression(&div, {&arg_one}), ValidityError);
+    ExternExpression expr(&div, {&arg_one, &arg_two});
+    double result = arg_one.value() / arg_two.value();
+    CHECK(expr.value() == result);
+    CHECK(expr.Sample() == result);
+  }
+
+  SECTION("subtract") {
+    ExternFunction<double, double, double> sub("dummy_id", "sub", library);
+    CHECK_THROWS_AS(ExternExpression(&sub, {&arg_one}), ValidityError);
+    ExternExpression expr(&sub, {&arg_one, &arg_two});
+    double result = arg_one.value() - arg_two.value();
+    CHECK(expr.value() == result);
+    CHECK(expr.Sample() == result);
+  }
 }
 
 TEST_CASE("ExternTest.ExternFunctionApply", "[mef::extern_function]") {
