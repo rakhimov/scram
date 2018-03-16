@@ -290,7 +290,7 @@ class linear_map {
     auto it = linear_map::find(p.first);
     if (it != map_.end())
       return {it, false};
-    map_.emplace_back(std::forward<value_type>(p));
+    map_.push_back(std::move(p));
     return {std::prev(map_.end()), true};
   }
   /// @}
@@ -318,12 +318,7 @@ class linear_map {
   ///          and a flag indicating if the insertion actually happened.
   template <typename... Ts>
   std::pair<iterator, bool> emplace(Ts&&... args) {
-    value_type p(std::forward<Ts>(args)...);
-    auto it = linear_map::find(p.first);
-    if (it != map_.end())
-      return {it, false};
-    map_.emplace_back(std::move(p));
-    return {std::prev(map_.end()), true};
+    return linear_map::insert(value_type(std::forward<Ts>(args)...));
   }
 
   /// Erases the entry pointed by an iterator.
