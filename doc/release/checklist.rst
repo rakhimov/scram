@@ -31,7 +31,6 @@ Pre-Release
 
     * [ ] Run all *fast* tests under Valgrind memcheck
 
-- [ ] Check compatibility with Python2 and Python3 (tools: pylint)
 - [ ] Update documentation (RST files)
 
     * [ ] Grammar check the documentation (optional)
