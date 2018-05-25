@@ -48,6 +48,7 @@ set(SCRAM_CORE_SRC
   reporter.cc
   serialization.cc
   initializer.cc
+  initializer2.cc
   risk_analysis.cc
   )
 ### End SCRAM core source list ### }}}

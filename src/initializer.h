@@ -529,4 +529,29 @@ class Initializer : private boost::noncopyable {
   /// @}
 };
 
+template <class T>
+void Initializer::Register(std::unique_ptr<T> element,
+                           const xml::Element& xml_element) {
+  try {
+    model_->Add(std::move(element));
+  } catch (ValidityError& err) {
+    err << boost::errinfo_at_line(xml_element.line());
+    throw;
+  }
+}
+
+/// Filters the data for MEF Element definitions.
+///
+/// @param[in] xml_element  The XML element with the construct definition.
+///
+/// @returns A range of XML child elements of MEF Element constructs.
+inline
+auto GetNonAttributeElements(const xml::Element& xml_element) {
+  return xml_element.children() |
+         boost::adaptors::filtered([](const xml::Element& child) {
+           std::string_view name = child.name();
+           return name != "label" && name != "attributes";
+         });
+}
+
 }  // namespace scram::mef
