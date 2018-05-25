@@ -10,8 +10,6 @@ language: cpp
 
 cache:
     ccache: true
-    directories:
-        - $HOME/.cache/pip
 
 os: linux
 
@@ -25,6 +23,7 @@ env:
         - QT_QPA_FONTDIR=/usr/share/fonts
         - QT_QPA_PLATFORM=offscreen
         - GCC_VERSION=7
+        - PYTHON_VERSION=3
     matrix:
         - CONFIG=Debug
         - CONFIG=Release
@@ -102,6 +101,8 @@ stages:
 
 before_install:
     - mkdir -p ~/.local/bin
+    - virtualenv -p $(which python$PYTHON_VERSION) pyenv
+    - source pyenv/bin/activate
 
 install:
     - .travis/install.sh  # Dependencies are built with gcc or clang.
