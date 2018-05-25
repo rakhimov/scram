@@ -26,5 +26,5 @@ cpplint --quiet --recursive src/
 cpplint --quiet tests/*.{cc,h,cc.in}
 
 # Python linting
-yapf -d scripts/*.py scripts/test/*.py tests/*.py tests/input/fta/run_inputs.py
+yapf -d scripts/*.py scripts/test/*.py tests/*.py
 prospector scripts/*.py
