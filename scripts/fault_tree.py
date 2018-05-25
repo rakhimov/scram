@@ -146,8 +146,9 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
 
     def num_arguments(self):
         """Returns the number of arguments."""
-        return (len(self.b_arguments) + len(self.h_arguments) +
-                len(self.g_arguments) + len(self.u_arguments))
+        return sum(
+            len(x) for x in (self.b_arguments, self.h_arguments,
+                             self.g_arguments, self.u_arguments))
 
     def add_argument(self, argument):
         """Adds argument into a collection of gate arguments.
@@ -303,8 +304,8 @@ class CcfGroup(object):  # pylint: disable=too-few-public-methods
                    " model=\"" + self.model + "\">\n<members>\n")
         for member in self.members:
             mef_xml += "<basic-event name=\"" + member.name + "\"/>\n"
-        mef_xml += ("</members>\n<distribution>\n<float value=\"" +
-                    str(self.prob) + "\"/>\n</distribution>\n")
+        mef_xml += ("</members>\n<distribution>\n<float value=\"" + str(
+            self.prob) + "\"/>\n</distribution>\n")
         mef_xml += "<factors>\n"
         assert self.model == "MGL"
         assert self.factors

@@ -330,8 +330,8 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         if self.__num_gate:
             return self.__num_gate
         b_factor = 1 - self.common_b + self.common_b / self.parents_b
-        return int(self.num_basic /
-                   (self.__percent_basic * self.num_args * b_factor))
+        return int(
+            self.num_basic / (self.__percent_basic * self.num_args * b_factor))
 
     def get_num_common_basic(self, num_gate):
         """Estimates the number of common basic events.
@@ -447,9 +447,9 @@ class GeneratorFaultTree(FaultTree):
         Returns:
             A fully initialized basic event with a random probability.
         """
-        basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
-                                 random.uniform(self.factors.min_prob,
-                                                self.factors.max_prob))
+        basic_event = BasicEvent(
+            "B" + str(len(self.basic_events) + 1),
+            random.uniform(self.factors.min_prob, self.factors.max_prob))
         self.basic_events.append(basic_event)
         return basic_event
 
@@ -725,10 +725,10 @@ def write_info(fault_tree, tree_file, seed):
         "Percentage of common basic events per gate: " + str(factors.common_b) +
         "\n"
         "Percentage of common gates per gate: " + str(factors.common_g) + "\n"
-        "The avg. number of parents for common basic events: " + str(
-            factors.parents_b) + "\n"
-        "The avg. number of parents for common gates: " + str(
-            factors.parents_g) + "\n"
+        "The avg. number of parents for common basic events: " +
+        str(factors.parents_b) + "\n"
+        "The avg. number of parents for common gates: " +
+        str(factors.parents_g) + "\n"
         "Maximum probability for basic events: " + str(factors.max_prob) + "\n"
         "Minimum probability for basic events: " + str(factors.min_prob) + "\n"
         "-->\n")
