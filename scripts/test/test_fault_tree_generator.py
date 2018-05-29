@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Tests for the fault tree generator."""
 
-from __future__ import division, absolute_import, print_function
-
 import random
 from subprocess import call
 from tempfile import NamedTemporaryFile

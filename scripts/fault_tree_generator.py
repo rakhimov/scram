@@ -41,8 +41,6 @@ guaranteed to be preserved and used as they are.
 
 # pylint: disable=too-many-lines
 
-from __future__ import print_function, division, absolute_import
-
 from collections import deque
 import random
 import sys

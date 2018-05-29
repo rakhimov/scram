@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015-2017 Olzhas Rakhimov
+# Copyright (C) 2015-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 The representation is given in the Aralia format.
 """
-
-from __future__ import print_function
 
 import argparse as ap
 
