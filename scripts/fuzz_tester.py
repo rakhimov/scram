@@ -295,6 +295,7 @@ def main():
         "-j",
         "--jobs",
         type=int,
+        default=1,
         metavar="N",
         help="allow N runs (jobs) at once")
     parser.add_argument(
