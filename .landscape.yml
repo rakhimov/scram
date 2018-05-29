@@ -12,5 +12,4 @@ pylint:
     enable: [bad-continuation, fixme]
     options: {max-nested-blocks: 3}
 python-targets:
-    - 2
     - 3
