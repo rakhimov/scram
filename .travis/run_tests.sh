@@ -12,7 +12,7 @@ scram_tests
 (cd tests && python -m pytest test_scram_call.py)
 (cd build && ctest --verbose)
 
-./scripts/fault_tree_generator.py -b 200 -a 5
+./scripts/fault_tree_generator.py -b 200 -a 5 -o fault_tree.xml
 scram --validate fault_tree.xml
 
 [[ "${TRAVIS_OS_NAME}" == "linux" ]] || exit 0

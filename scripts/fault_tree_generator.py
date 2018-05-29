@@ -936,7 +936,6 @@ def manage_cmd_args(argv=None):
         "-o",
         "--out",
         type=str,
-        default="fault_tree.xml",
         metavar="path",
         help="a file to write the fault tree")
     parser.add_argument(
@@ -948,8 +947,6 @@ def manage_cmd_args(argv=None):
         action="store_true",
         help="nest NOT connectives in Boolean formulae")
     args = parser.parse_args(argv)
-    if args.aralia and args.out == "fault_tree.xml":
-        args.out = "fault_tree.txt"
     return args
 
 
