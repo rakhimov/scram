@@ -1,19 +1,7 @@
 clone_depth: 50
 
 platform:
-    - x64
-
-branches:
-    except:
-        - l10n_develop
-        - travis
-
-cache:
-    - .ccache
-
-environment:
-    CCACHE_DIR: "%APPVEYOR_BUILD_FOLDER%\\.ccache"
-    CCACHE_MAXSIZE: 1
+    - x86
 
 configuration:
     # - Debug
@@ -22,29 +10,26 @@ configuration:
 
 install:
     - git submodule update --init --recursive
-    - set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
+    - set PATH=C:\msys64\mingw32\bin;C:\msys64\usr\bin;%PATH%
     - pacman --noconfirm -Syuu --needed
-    # - pacman --noconfirm -S mingw-w64-x86_64-cmake
-    - pacman --noconfirm -S mingw-w64-x86_64-drmingw
-    # - pacman --noconfirm -S mingw-w64-x86_64-jemalloc
-    - pacman --noconfirm -S mingw-w64-x86_64-boost
-    - pacman --noconfirm -S mingw-w64-x86_64-libxml2
-    - pacman --noconfirm -S --force mingw-w64-x86_64-qt5
-    - pacman --noconfirm -S mingw-w64-x86_64-ccache
+    - pacman --noconfirm -S mingw-w64-i686-toolchain
+    # - pacman --noconfirm -S mingw-w64-i686-cmake
+    - pacman --noconfirm -S mingw-w64-i686-drmingw
+    - pacman --noconfirm -S mingw-w64-i686-boost
+    - pacman --noconfirm -S mingw-w64-i686-libxml2
+    - pacman --noconfirm -S --force mingw-w64-i686-qt5
 
 before_build:
     - md install
     - md build
 
 build_script:
-    - ccache -s
     - where cmake
     - where make
     - cd build
     - cmake .. -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DWITH_JEMALLOC=OFF -DBUILD_TESTING=ON -DCMAKE_VERBOSE_MAKEFILE=ON
     - make install/strip -j 2
     - cd ..
-    - ccache -s
 
 after_build:
     - set PATH=%PATH%;%CD%\install\bin
@@ -65,7 +50,7 @@ after_test:
     - cd ..
 
 on_failure:
-    - type build\_CPack_Packages\win64\NSIS\NSISOutput.log
+    - type build\_CPack_Packages\win32\NSIS\NSISOutput.log
 
 artifacts:
     - path: build/SCRAM*.exe
