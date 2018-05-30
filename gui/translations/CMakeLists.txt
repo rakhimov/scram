@@ -28,6 +28,7 @@ qt5_add_translation(SCRAM_GUI_QM
   scramgui_id_ID.ts
   scramgui_pl_PL.ts
   scramgui_it_IT.ts
+  scramgui_zh_CN.ts
   )
 message(STATUS "GUI translations: ${SCRAM_GUI_QM}")
 add_custom_target(translations ALL DEPENDS ${SCRAM_GUI_QM})
