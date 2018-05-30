@@ -5,6 +5,7 @@ branches:
     except:
         - l10n_develop
         - appveyor
+        - win32
 
 language: cpp
 
