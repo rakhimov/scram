@@ -33,14 +33,10 @@ fi
 
 if [[ "${CONFIG}" == "Coverage" ]]; then
   # Submit coverage of C++ and Python.
-  COV_DIR="build/src/CMakeFiles/scram.dir/"
-  CLI_COV_DIR="build/src/CMakeFiles/scram-cli.dir/"
-  GUI_COV_DIR="build/gui/CMakeFiles/scram-gui.dir/"
   TRACE_FILE="coverage.info"
-  lcov --no-compat-libtool --directory $COV_DIR --directory $CLI_COV_DIR \
-    --directory $GUI_COV_DIR \
+  lcov --no-compat-libtool --directory build \
     --gcov-tool gcov-${GCC_VERSION} \
-    -c --rc lcov_branch_coverage=1 -o $TRACE_FILE -q
+    -c -o $TRACE_FILE -q
   lcov --extract $TRACE_FILE --gcov-tool gcov-${GCC_VERSION} \
     '*/scram/*' -o $TRACE_FILE
   codecov > /dev/null
