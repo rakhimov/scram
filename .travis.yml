@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 dist: trusty
 
 branches:
@@ -8,108 +8,51 @@ branches:
 
 language: cpp
 
-cache:
-    ccache: true
-
-os: linux
-
-compiler:
-    - gcc
-    # - clang  # Wait till Clang 6 or patched 5 to work w/ libstdc++.
+compiler: gcc
 
 env:
     global:
-        - PATH=$HOME/.local/bin:$PATH:$PWD/install/bin
-        - QT_QPA_FONTDIR=/usr/share/fonts
-        - QT_QPA_PLATFORM=offscreen
-        - GCC_VERSION=7
-        - PYTHON_VERSION=3
-    matrix:
-        - CONFIG=Debug
-        - CONFIG=Release
+        secure: "C4tE5UQtoItWxd+sSfj9vULLd0EjY5Ek/BentI/m1xz6tAOi+65RTjMEgz9OQZh1rlsExV4y9YEfV/JzZ3peLNypw3b2BaCum6LECkaEDob2aPR03u/DruTkGkXITUIFFh2hg0iQH2TZP9/0ZtQBRXqNbU+DnH8Rs1Q+kNcWoFU="
 
 addons:
+    coverity_scan:
+        project:
+            name: "rakhimov/scram"
+        # description: "Command-line Risk Analysis Multi-tool"
+        notification_email: "ol.rakhimov@gmail.com"
+        build_command_prepend: "cmake .."
+        build_command: "make -j 2"
+        branch_pattern: "coverity-scan"
     apt:
         packages:
             - gcc-7
             - g++-7
-            - ccache
             - libboost-program-options1.61-dev
             - libboost-math1.61-dev
             - libboost-random1.61-dev
             - libboost-filesystem1.61-dev
             - libxml2-dev
-            - libgoogle-perftools-dev
             - qt59base
             - qt59tools
             - qt59svg
-            - fontconfig
-            - lcov
         sources: &Sources
             - ubuntu-toolchain-r-test
             - sourceline: "ppa:rakhimov/boost"
-            - sourceline: "ppa:zerebubuth/ccache"
             - sourceline: "ppa:beineri/opt-qt593-trusty"
 
-jobs:
-    include:
-        - stage: lint
-          compiler: clang
-          before_script: mkdir build
-          script: .travis/lint.sh
-          env: CONFIG=Lint CLANG_VERSION=6.0
-          addons:
-              apt:
-                  packages:
-                      - clang-format-6.0
-                      - doxygen
-                  sources:
-                      - ubuntu-toolchain-r-test
-                      - llvm-toolchain-trusty-6.0
-                      - sourceline: "ppa:rakhimov/doxygen"
-        # - stage: test
-        #   os: osx  # OS X builds are slow and limited.
-        #   osx_image: xcode9.2 # C++17 not yet fully supported!!!
-        #   compiler: clang
-        #   env: CONFIG=Release
-        - stage: test
-          compiler: gcc
-          env: CONFIG=Coverage
-        - stage: test
-          compiler: gcc
-          env: CONFIG=Memcheck
-          before_script: mkdir build install
-          addons:
-              apt:
-                  packages:
-                      - gcc-7
-                      - g++-7
-                      - libboost-program-options1.61-dev
-                      - libboost-math1.61-dev
-                      - libboost-random1.61-dev
-                      - libboost-filesystem1.61-dev
-                      - libxml2-dev
-                      - valgrind
-                  sources: *Sources
-    exclude:
-        - compiler: gcc
-          env: CONFIG=Debug
-
-stages:
-    - lint
-    - test
-
 before_install:
-    - mkdir -p ~/.local/bin
-    - virtualenv -p $(which python$PYTHON_VERSION) pyenv
-    - source pyenv/bin/activate
-
-install:
-    - .travis/install.sh  # Dependencies are built with gcc or clang.
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 20
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 20
 
 before_script:
-    - mkdir build install
+    - find src/ tests/*.{cc,h} -type f | grep -v 'error' | xargs -n 1 sed -i 's/noexcept\([^(]\|$\)/\1/'
+    - mkdir build
+    - cd build
     - source /opt/qt59/bin/qt59-env.sh
 
 script:
-    - .travis/script.sh
+    - echo "Done"
+    - cat cov-int/build-log.txt
+
+after_success:
+    - cat cov-int/scm_log.txt

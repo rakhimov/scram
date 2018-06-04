@@ -5,6 +5,7 @@ platform:
 
 branches:
     except:
+        - coverity-scan
         - l10n_develop
         - travis
 

@@ -80,13 +80,6 @@ if(WITH_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-  message(STATUS "Using CCache for builds")
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-endif()
-
 ######################## End compiler configurations #################### }}}
 
 ##################### Begin cmake configuration ################### {{{
