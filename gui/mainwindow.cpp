@@ -58,7 +58,6 @@
 #include "guiassert.h"
 #include "importancetablemodel.h"
 #include "modeltree.h"
-#include "overload.h"
 #include "preferencesdialog.h"
 #include "printable.h"
 #include "producttablemodel.h"
@@ -1657,8 +1656,9 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
                     action(house);
                 }
             });
-    connect(m_guiModel.get(), OVERLOAD(model::Model, removed, mef::FaultTree *),
-            view, [this, faultTree, view](mef::FaultTree *removedTree) {
+    connect(m_guiModel.get(),
+            qOverload<mef::FaultTree *>(&model::Model::removed), view,
+            [this, faultTree, view](mef::FaultTree *removedTree) {
                 if (removedTree == faultTree)
                     closeTab(ui->tabWidget->indexOf(view));
             });

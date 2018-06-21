@@ -25,7 +25,6 @@
 
 #include "align.h"
 #include "guiassert.h"
-#include "overload.h"
 #include "translate.h"
 
 namespace scram::gui::model {
@@ -42,9 +41,9 @@ ElementContainerModel::ElementContainerModel(const T &container, Model *model,
         m_elements.push_back(elementPtr.get());
     }
     using E = typename T::value_type::element_type;
-    connect(model, OVERLOAD(Model, added, E *), this,
+    connect(model, qOverload<E *>(&Model::added), this,
             &ElementContainerModel::addElement);
-    connect(model, OVERLOAD(Model, removed, E *), this,
+    connect(model, qOverload<E *>(&Model::removed), this,
             &ElementContainerModel::removeElement);
 }
 

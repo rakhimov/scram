@@ -36,7 +36,6 @@
 #include "src/ext/variant.h"
 
 #include "guiassert.h"
-#include "overload.h"
 #include "translate.h"
 #include "validator.h"
 
@@ -58,7 +57,7 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     addArgLine->setValidator(Validator::name());
     containerFaultTreeName->setValidator(Validator::name());
 
-    connect(typeBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+    connect(typeBox, qOverload<int>(&QComboBox::currentIndexChanged),
             [this](int index) {
                 switch (static_cast<EventType>(1 << index)) {
                 case HouseEvent:
@@ -89,12 +88,12 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 }
                 validate();
             });
-    connect(expressionType, OVERLOAD(QComboBox, currentIndexChanged, int), this,
-            &EventDialog::validate);
+    connect(expressionType, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, &EventDialog::validate);
     connect(expressionBox, &QGroupBox::toggled, this, &EventDialog::validate);
     connectLineEdits(
         {nameLine, constantValue, exponentialRate, containerFaultTreeName});
-    connect(connectiveBox, OVERLOAD(QComboBox, currentIndexChanged, int),
+    connect(connectiveBox, qOverload<int>(&QComboBox::currentIndexChanged),
             [this](int index) {
                 minNumberBox->setEnabled(index == mef::kAtleast);
                 validate();

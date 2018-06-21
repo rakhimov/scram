@@ -20,7 +20,6 @@
 #include "modeltree.h"
 
 #include "guiassert.h"
-#include "overload.h"
 #include "translate.h"
 
 namespace scram::gui {
@@ -31,7 +30,7 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
     for (mef::FaultTree &faultTree : m_model->faultTrees())
         m_faultTrees.insert(&faultTree);
 
-    connect(m_model, OVERLOAD(model::Model, added, mef::FaultTree *), this,
+    connect(m_model, qOverload<mef::FaultTree *>(&model::Model::added), this,
             [this](mef::FaultTree *faultTree) {
                 auto it = m_faultTrees.lower_bound(faultTree);
                 int index = m_faultTrees.index_of(it);
@@ -41,7 +40,7 @@ ModelTree::ModelTree(model::Model *model, QObject *parent)
                 m_faultTrees.insert(it, faultTree);
                 endInsertRows();
             });
-    connect(m_model, OVERLOAD(model::Model, removed, mef::FaultTree *), this,
+    connect(m_model, qOverload<mef::FaultTree *>(&model::Model::removed), this,
             [this](mef::FaultTree *faultTree) {
                 auto it = m_faultTrees.find(faultTree);
                 GUI_ASSERT(it != m_faultTrees.end(), );
@@ -66,8 +65,8 @@ void ModelTree::setupElementCountConnections()
         QModelIndex index = createIndex(static_cast<int>(R), 0, nullptr);
         emit dataChanged(index, index);
     };
-    connect(m_model, OVERLOAD(model::Model, added, T *), this, tracker);
-    connect(m_model, OVERLOAD(model::Model, removed, T *), this, tracker);
+    connect(m_model, qOverload<T *>(&model::Model::added), this, tracker);
+    connect(m_model, qOverload<T *>(&model::Model::removed), this, tracker);
 }
 
 int ModelTree::rowCount(const QModelIndex &parent) const
