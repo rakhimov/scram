@@ -5,7 +5,7 @@ Description
 Command-line Usage
 ==================
 
-The user supplies a configuration file, input files,
+The user supplies a project file, input files,
 and analysis configurations via command-line.
 Various types of analyses can be performed on the model,
 for example, fault tree, event tree, uncertainty.

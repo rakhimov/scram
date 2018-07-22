@@ -12,12 +12,12 @@ Core
 
 #. XML Parser leverages external libraries to process XML files.
 
-#. Validator validates XML configuration and input files against the RELAX NG schema.
+#. Validator validates XML project and input files against the RELAX NG schema.
    The validation against the schema is an integral part of the initialization.
    Values that pass the validation against the schema are not re-checked by users of those values.
 
 #. Settings manages overall analysis settings per run.
-#. Config manages program configurations and analysis settings from a configuration file.
+#. Project manages program configurations, analysis input and settings from a project file.
 
 #. Analysis input constructs (e.g., model, fault trees, event trees, components, events)
    follow closely the architecture of the Open-PSA Model Exchange Format [MEF]_.
@@ -30,7 +30,7 @@ Core
    with fault trees, event trees, CCF, and other analysis containers and constructs.
    This initialization phase validates the values and logic supplied from the input files.
    The constructs and analyses are initialized according to the configurations
-   supplied from the configuration file and command-line.
+   supplied from the project file and command-line.
    After the initialization step,
    it is not expected that the analysis constructs change.
 
