@@ -145,7 +145,7 @@ the following instructions will install SCRAM dependencies:
 
 .. code-block:: bash
 
-    pacman --noconfirm -S mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,qt5,jemalloc}
+    pacman --noconfirm -S mingw-w64-x86_64-{gcc,make,cmake,boost,libxml2,qt5}
 
 SCRAM installation and executables must be run inside of the MSYS2 shell.
 
