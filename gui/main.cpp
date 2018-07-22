@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
             if (vm.count("input-files"))
                 inputFiles = vm["input-files"].as<std::vector<std::string>>();
             if (vm.count("project")) {
-                w.setConfig(vm["project"].as<std::string>(), inputFiles);
+                w.setProjectFile(vm["project"].as<std::string>(), inputFiles);
             } else {
                 w.addInputFiles(inputFiles);
             }
