@@ -6,6 +6,7 @@ platform:
 branches:
     except:
         - l10n_develop
+        - travis
 
 cache:
     - .ccache
