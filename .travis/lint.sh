@@ -27,4 +27,4 @@ cpplint --quiet tests/*.{cc,h,cc.in}
 
 # Python linting
 yapf -d scripts/*.py scripts/test/*.py tests/*.py
-prospector scripts/*.py
+prospector -o grouped scripts/*.py
