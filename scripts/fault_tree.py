@@ -17,7 +17,7 @@
 from collections import deque
 
 
-class Event(object):
+class Event:
     """Representation of a base class for an event in a fault tree.
 
     Attributes:
@@ -278,7 +278,7 @@ class Gate(Event):  # pylint: disable=too-many-instance-attributes
         printer("".join(line))
 
 
-class CcfGroup(object):  # pylint: disable=too-few-public-methods
+class CcfGroup:  # pylint: disable=too-few-public-methods
     """Representation of CCF groups in a fault tree.
 
     Attributes:
@@ -328,7 +328,7 @@ class CcfGroup(object):  # pylint: disable=too-few-public-methods
         printer('</define-CCF-group>')
 
 
-class FaultTree(object):  # pylint: disable=too-many-instance-attributes
+class FaultTree:  # pylint: disable=too-many-instance-attributes
     """Representation of a fault tree for general purposes.
 
     Attributes:

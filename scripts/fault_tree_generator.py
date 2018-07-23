@@ -56,7 +56,7 @@ class FactorError(Exception):
     pass
 
 
-class Factors(object):  # pylint: disable=too-many-instance-attributes
+class Factors:  # pylint: disable=too-many-instance-attributes
     """Collection of factors that determine the complexity of the fault tree.
 
     This collection must be setup and updated
@@ -292,7 +292,7 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         """
         if gate.operator == "not":
             return 1
-        elif gate.operator == "xor":
+        if gate.operator == "xor":
             return 2
 
         max_args = int(self.__max_args)
@@ -423,7 +423,7 @@ class GeneratorFaultTree(FaultTree):
         """
         assert not self.top_gate and not self.top_gates
         operator = self.factors.get_random_operator()
-        while operator == "xor" or operator == "not":
+        while operator in ("xor", "not"):
             operator = self.factors.get_random_operator()
         self.top_gate = Gate(root_name, operator)
         self.gates.append(self.top_gate)
@@ -545,18 +545,18 @@ def choose_basic_event(s_common, common_basic, fault_tree):
     Returns:
         Basic event argument for a gate.
     """
-    if s_common < fault_tree.factors.common_b and common_basic:
-        orphans = [x for x in common_basic if not x.parents]
-        if orphans:
-            return random.choice(orphans)
-
-        single_parent = [x for x in common_basic if len(x.parents) == 1]
-        if single_parent:
-            return random.choice(single_parent)
-
-        return random.choice(common_basic)
-    else:
+    if s_common >= fault_tree.factors.common_b or not common_basic:
         return fault_tree.construct_basic_event()
+
+    orphans = [x for x in common_basic if not x.parents]
+    if orphans:
+        return random.choice(orphans)
+
+    single_parent = [x for x in common_basic if len(x.parents) == 1]
+    if single_parent:
+        return random.choice(single_parent)
+
+    return random.choice(common_basic)
 
 
 def init_gates(gates_queue, common_basic, common_gate, fault_tree):
