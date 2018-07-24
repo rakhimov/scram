@@ -265,15 +265,15 @@ Python
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_ and reporting with Codecov_
-#. Continuous code quality control on Landscape_ with Prospector_
+#. Continuous code quality control on Codacy_ with Prospector_
 #. Consistent code formatting with YAPF_
 
 .. _Pylint: https://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: https://coverage.readthedocs.io/en/latest/
 .. _Codecov: https://codecov.io/github/rakhimov/scram
-.. _Landscape: https://landscape.io/
-.. _Prospector: https://github.com/landscapeio/prospector
+.. _Codacy: https://codacy.com/
+.. _Prospector: https://github.com/PyCQA/prospector
 .. _YAPF: https://github.com/google/yapf
 
 
