@@ -39,8 +39,9 @@ void TestLanguage::testTranslations()
     try {
         std::vector<std::string> translations = scram::gui::translations();
         boost::sort(translations);
-        decltype(translations) expected = {"de_DE", "es_ES", "id_ID", "it_IT",
-                                           "nl_NL", "pl_PL", "ru_RU", "tr_TR"};
+        decltype(translations) expected = {"de_DE", "es_ES", "id_ID",
+                                           "it_IT", "nl_NL", "pl_PL",
+                                           "ru_RU", "tr_TR", "zh_CN"};
         QCOMPARE(translations, expected);
     } catch (const std::exception &err) {
         qFatal("%s", err.what());

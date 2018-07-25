@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2017-2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,4 +25,7 @@ int foo() { return 42; }
 double bar() { return 42; }
 float baz() { return 42; }
 double identity(double arg) { return arg; }
+double div(double lhs, double rhs) { return lhs / rhs; }
+double sum(double arg1, double arg2, double arg3) { return arg1 + arg2 + arg3; }
+double sub(double lhs, double rhs) { return lhs - rhs; }
 }

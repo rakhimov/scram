@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Olzhas Rakhimov
+ * Copyright (C) 2018 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,19 @@
  */
 
 /// @file
-/// Facilities to help with pointers to overloaded functions.
+/// Translation helper facilities to workaround Qt Linguist shortcomings.
 
-/// Helper macro to resolve overloaded signals in Qt 5 style connections.
-///
-/// @param T  The class type of the signal.
-/// @param name  The name of the signal function.
-/// @param ...  The parameter types of the signal function.
-#define OVERLOAD(T, name, ...) static_cast<void (T::*)(__VA_ARGS__)>(&T::name)
+#pragma once
+
+#include <QObject>
+
+namespace scram::gui {
+
+/// Forwards to translate function with a default global context.
+template <typename... Ts>
+decltype(auto) _(Ts &&... args)
+{
+    return QObject::tr(std::forward<Ts>(args)...);
+}
+
+} // namespace scram::gui

@@ -28,8 +28,7 @@
 namespace scram::gui::model {
 
 Element::SetLabel::SetLabel(Element *element, QString label)
-    : Involution(QObject::tr("Set element '%1' label to '%2'")
-                     .arg(element->id(), label)),
+    : Involution(_("Set element '%1' label to '%2'").arg(element->id(), label)),
       m_label(std::move(label)), m_element(element)
 {
 }
@@ -55,8 +54,7 @@ BasicEvent::BasicEvent(mef::BasicEvent *basicEvent)
 
 BasicEvent::SetExpression::SetExpression(BasicEvent *basicEvent,
                                          mef::Expression *expression)
-    : Involution(QObject::tr("Modify basic event '%1' expression")
-                     .arg(basicEvent->id())),
+    : Involution(_("Modify basic event '%1' expression").arg(basicEvent->id())),
       m_expression(expression), m_basicEvent(basicEvent)
 {
 }
@@ -74,7 +72,7 @@ void BasicEvent::SetExpression::redo()
 }
 
 BasicEvent::SetFlavor::SetFlavor(BasicEvent *basicEvent, Flavor flavor)
-    : Involution(tr("Set basic event '%1' flavor to '%2'")
+    : Involution(_("Set basic event '%1' flavor to '%2'")
                      .arg(basicEvent->id(), flavorToString(flavor))),
       m_flavor(flavor), m_basicEvent(basicEvent)
 {
@@ -101,7 +99,7 @@ void BasicEvent::SetFlavor::redo()
 }
 
 HouseEvent::SetState::SetState(HouseEvent *houseEvent, bool state)
-    : Involution(QObject::tr("Set house event '%1' state to '%2'")
+    : Involution(_("Set house event '%1' state to '%2'")
                      .arg(houseEvent->id(), boolToString(state))),
       m_state(state), m_houseEvent(houseEvent)
 {
@@ -118,7 +116,7 @@ void HouseEvent::SetState::redo()
 }
 
 Gate::SetFormula::SetFormula(Gate *gate, std::unique_ptr<mef::Formula> formula)
-    : Involution(QObject::tr("Update gate '%1' formula").arg(gate->id())),
+    : Involution(_("Update gate '%1' formula").arg(gate->id())),
       m_formula(std::move(formula)), m_gate(gate)
 {
 }
@@ -164,7 +162,7 @@ std::vector<Gate *> Model::parents(mef::Formula::ArgEvent event) const
 }
 
 Model::SetName::SetName(QString name, Model *model)
-    : Involution(QObject::tr("Rename model to '%1'").arg(name)), m_model(model),
+    : Involution(_("Rename model to '%1'").arg(name)), m_model(model),
       m_name(std::move(name))
 {
 }
@@ -182,7 +180,7 @@ void Model::SetName::redo()
 
 Model::AddFaultTree::AddFaultTree(std::unique_ptr<mef::FaultTree> faultTree,
                                   Model *model)
-    : QUndoCommand(QObject::tr("Add fault tree '%1'")
+    : QUndoCommand(_("Add fault tree '%1'")
                        .arg(QString::fromStdString(faultTree->name()))),
       m_model(model), m_address(faultTree.get()),
       m_faultTree(std::move(faultTree))
@@ -203,7 +201,7 @@ void Model::AddFaultTree::undo()
 
 Model::RemoveFaultTree::RemoveFaultTree(mef::FaultTree *faultTree, Model *model)
     : Inverse<AddFaultTree>(faultTree, model,
-                            QObject::tr("Remove fault tree '%1'")
+                            _("Remove fault tree '%1'")
                                 .arg(QString::fromStdString(faultTree->name())))
 {
 }

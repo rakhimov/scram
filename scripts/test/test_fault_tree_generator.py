@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Tests for the fault tree generator."""
 
-from __future__ import division, absolute_import
-
 import random
 from subprocess import call
 from tempfile import NamedTemporaryFile
@@ -160,9 +158,14 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
         assert fault_tree is not None
-        write_info(fault_tree, self.output, 123)
-        write_summary(fault_tree, self.output)
-        self.output.write(fault_tree.to_xml(1))
+
+        def printer(*args):
+            """Temporary printer."""
+            print(*args, sep='', file=self.output)
+
+        write_info(fault_tree, printer, 123)
+        write_summary(fault_tree, printer)
+        fault_tree.to_xml(printer, True)
         self.output.flush()
         relaxng_doc = etree.parse("../share/input.rng")
         relaxng = etree.RelaxNG(relaxng_doc)
@@ -178,7 +181,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
         assert fault_tree is not None
-        self.output.write(fault_tree.to_aralia())
+        fault_tree.to_aralia(
+            lambda *args: print(*args, sep='', file=self.output))
         self.output.file.flush()
         tmp = NamedTemporaryFile(mode="w+")
         cmd = ["./translators/aralia.py", self.output.name, "-o", tmp.name]

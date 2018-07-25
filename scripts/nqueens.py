@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015-2017 Olzhas Rakhimov
+# Copyright (C) 2015-2018 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 The representation is given in the Aralia format.
 """
-
-from __future__ import print_function
 
 import argparse as ap
 
@@ -70,10 +68,10 @@ def print_constraints(n):  # pylint: disable=invalid-name
             if k != i:
                 logic.append(position(k, j, True))
                 diag_one = j + k - i
-                if diag_one > 0 and diag_one <= n:
+                if 0 < diag_one <= n:
                     logic.append(position(k, diag_one, True))
                 diag_two = j + i - k
-                if diag_two > 0 and diag_two <= n:
+                if 0 < diag_two <= n:
                     logic.append(position(k, diag_two, True))
 
     for i in range(1, n + 1):

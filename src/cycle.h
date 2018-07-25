@@ -94,6 +94,19 @@ inline auto GetConnectors(Expression* connector) {
 }
 /// @}
 
+/// Helper function to check for cyclic references through connectors.
+/// Connectors may get market upon traversal.
+///
+/// Connectors and nodes of the connector are retrieved via unqualified calls:
+/// GetConnectors(connector) and GetNodes(connector).
+///
+/// @tparam T  The type managing the connectors (nodes, edges).
+/// @tparam N  The node type.
+///
+/// @param[in,out] connector  Connector to nodes.
+/// @param[out] cycle  The cycle path if detected.
+///
+/// @returns True if a cycle is detected.
 template <class T, class N>
 bool ContinueConnector(T* connector, std::vector<N*>* cycle);
 
@@ -133,19 +146,6 @@ bool DetectCycle(T* node, std::vector<T*>* cycle) {
   return false;
 }
 
-/// Helper function to check for cyclic references through connectors.
-/// Connectors may get market upon traversal.
-///
-/// Connectors and nodes of the connector are retrieved via unqualified calls:
-/// GetConnectors(connector) and GetNodes(connector).
-///
-/// @tparam T  The type managing the connectors (nodes, edges).
-/// @tparam N  The node type.
-///
-/// @param[in,out] connector  Connector to nodes.
-/// @param[out] cycle  The cycle path if detected.
-///
-/// @returns True if a cycle is detected.
 template <class T, class N>
 bool ContinueConnector(T* connector, std::vector<N*>* cycle) {
   for (N* node : GetNodes(connector)) {
@@ -161,122 +161,15 @@ bool ContinueConnector(T* connector, std::vector<N*>* cycle) {
 
 /// Cycle detection specialization for event tree named branches.
 template <>
-inline bool ContinueConnector(Branch* connector,
-                              std::vector<NamedBranch*>* cycle) {
-  struct {
-    bool operator()(NamedBranch* branch) { return DetectCycle(branch, cycle_); }
-
-    bool operator()(Fork* fork) {
-      for (Branch& branch : fork->paths()) {
-        if (ContinueConnector(&branch, cycle_))
-          return true;
-      }
-      return false;
-    }
-
-    bool operator()(Sequence*) { return false; }
-
-    decltype(cycle) cycle_;
-  } continue_connector{cycle};
-
-  return std::visit(continue_connector, connector->target());
-}
+bool ContinueConnector(Branch* connector, std::vector<NamedBranch*>* cycle);
 
 /// Cycle detection specialization for visitor-based traversal of instructions.
 template <>
-inline bool ContinueConnector(const Instruction* connector,
-                              std::vector<Rule*>* cycle) {
-  struct Visitor : public InstructionVisitor {
-    struct ArgSelector : public InstructionVisitor {
-      explicit ArgSelector(Visitor* visitor) : visitor_(visitor) {}
-
-      void Visit(const SetHouseEvent*) override {}
-      void Visit(const CollectExpression*) override {}
-      void Visit(const CollectFormula*) override {}
-      void Visit(const Link*) override {}
-      void Visit(const IfThenElse* ite) override { visitor_->Visit(ite); }
-      void Visit(const Block* block) override { visitor_->Visit(block); }
-      void Visit(const Rule* rule) override {
-        // Non-const rules are only needed to mark the nodes.
-        if (DetectCycle(const_cast<Rule*>(rule), visitor_->cycle_))
-          throw true;
-      }
-
-      Visitor* visitor_;
-    };
-
-    explicit Visitor(std::vector<Rule*>* t_cycle)
-        : cycle_(t_cycle), selector_(this) {}
-
-    void Visit(const SetHouseEvent*) override {}
-    void Visit(const CollectExpression*) override {}
-    void Visit(const CollectFormula*) override {}
-    void Visit(const Link*) override {}
-    void Visit(const IfThenElse* ite) override {
-      ite->then_instruction()->Accept(&selector_);
-      if (ite->else_instruction())
-        ite->else_instruction()->Accept(&selector_);
-    }
-    void Visit(const Block* block) override {
-      for (const Instruction* instruction : block->instructions())
-        instruction->Accept(&selector_);
-    }
-    void Visit(const Rule* rule) override {
-      for (const Instruction* instruction : rule->instructions())
-        instruction->Accept(&selector_);
-    }
-    std::vector<Rule*>* cycle_;
-    ArgSelector selector_;
-  } visitor(cycle);
-
-  try {
-    connector->Accept(&visitor);
-  } catch (bool& ret_val) {
-    assert(ret_val && !cycle->empty());
-    return true;
-  }
-  return false;
-}
+bool ContinueConnector(const Instruction* connector, std::vector<Rule*>* cycle);
 
 /// Cycle detection specialization for visitor-based traversal of event-trees.
 template <>
-inline bool ContinueConnector(const EventTree* connector,
-                              std::vector<Link*>* cycle) {
-  struct {
-    void operator()(const Branch* branch) {
-      std::visit(*this, branch->target());
-    }
-    void operator()(Fork* fork) {
-      for (Branch& branch : fork->paths())
-        (*this)(&branch);
-    }
-    void operator()(Sequence* sequence) {
-      struct Visitor : public NullVisitor {
-        explicit Visitor(decltype(cycle) t_cycle) : visitor_cycle_(t_cycle) {}
-
-        void Visit(const Link* link) override {
-          if (DetectCycle(const_cast<Link*>(link), visitor_cycle_))
-            throw true;
-        }
-
-        decltype(cycle) visitor_cycle_;
-      } visitor(cycle_);
-
-      for (const Instruction* instruction : sequence->instructions())
-        instruction->Accept(&visitor);
-    }
-
-    decltype(cycle) cycle_;
-  } continue_connector{cycle};
-
-  try {
-    continue_connector(&connector->initial_state());
-  } catch (bool& ret_val) {
-    assert(ret_val && !cycle->empty());
-    return true;
-  }
-  return false;
-}
+bool ContinueConnector(const EventTree* connector, std::vector<Link*>* cycle);
 
 /// Retrieves a unique name for a node.
 template <class T>
@@ -323,9 +216,8 @@ void CheckCycle(const SinglePassRange& container, const char* type) {
   std::vector<T*> cycle;
   for (T& node : container) {
     if (DetectCycle(&node, &cycle)) {
-      SCRAM_THROW(CycleError("Cycle Error"))
-          << errinfo_element(GetUniqueName(&node), type)
-          << errinfo_cycle(PrintCycle(cycle));
+      SCRAM_THROW(CycleError()) << errinfo_element(GetUniqueName(&node), type)
+                                << errinfo_cycle(PrintCycle(cycle));
     }
   }
 }

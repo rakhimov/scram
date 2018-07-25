@@ -194,7 +194,7 @@ class linear_set {
     auto it = linear_set::find_value(value);
     if (it != set_.end())
       return {it, false};
-    set_.emplace_back(std::forward<value_type>(value));
+    set_.push_back(std::move(value));
     return {std::prev(set_.end()), true};
   }
   /// @}
@@ -222,12 +222,7 @@ class linear_set {
   ///          and a flag indicating if the insertion actually happened.
   template <typename... Ts>
   std::pair<iterator, bool> emplace(Ts&&... args) {
-    value_type value(std::forward<Ts>(args)...);
-    auto it = linear_set::find_value(value);
-    if (it != set_.end())
-      return {it, false};
-    set_.emplace_back(std::move(value));
-    return {std::prev(set_.end()), true};
+    return linear_set::insert(value_type(std::forward<Ts>(args)...));
   }
 
   /// Erases the entry pointed by an iterator.

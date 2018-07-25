@@ -23,6 +23,7 @@
 
 #include "align.h"
 #include "guiassert.h"
+#include "translate.h"
 
 namespace scram::gui::model {
 
@@ -53,21 +54,21 @@ QVariant ImportanceTableModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("ID");
+        return _("ID");
     case 1:
-        return tr("Occurrence");
+        return _("Occurrence");
     case 2:
-        return tr("Probability");
+        return _("Probability");
     case 3:
-        return tr("MIF");
+        return _("MIF");
     case 4:
-        return tr("CIF");
+        return _("CIF");
     case 5:
-        return tr("DIF");
+        return _("DIF");
     case 6:
-        return tr("RAW");
+        return _("RAW");
     case 7:
-        return tr("RRW");
+        return _("RRW");
     }
     GUI_ASSERT(false && "unexpected header section", {});
 }

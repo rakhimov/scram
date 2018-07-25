@@ -33,6 +33,7 @@ set(SCRAM_CORE_SRC
   event_tree.cc
   alignment.cc
   model.cc
+  cycle.cc
   pdag.cc
   preprocessor.cc
   mocus.cc

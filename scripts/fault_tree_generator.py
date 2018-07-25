@@ -41,8 +41,6 @@ guaranteed to be preserved and used as they are.
 
 # pylint: disable=too-many-lines
 
-from __future__ import print_function, division, absolute_import
-
 from collections import deque
 import random
 import sys
@@ -58,7 +56,7 @@ class FactorError(Exception):
     pass
 
 
-class Factors(object):  # pylint: disable=too-many-instance-attributes
+class Factors:  # pylint: disable=too-many-instance-attributes
     """Collection of factors that determine the complexity of the fault tree.
 
     This collection must be setup and updated
@@ -294,7 +292,7 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         """
         if gate.operator == "not":
             return 1
-        elif gate.operator == "xor":
+        if gate.operator == "xor":
             return 2
 
         max_args = int(self.__max_args)
@@ -330,8 +328,8 @@ class Factors(object):  # pylint: disable=too-many-instance-attributes
         if self.__num_gate:
             return self.__num_gate
         b_factor = 1 - self.common_b + self.common_b / self.parents_b
-        return int(self.num_basic /
-                   (self.__percent_basic * self.num_args * b_factor))
+        return int(
+            self.num_basic / (self.__percent_basic * self.num_args * b_factor))
 
     def get_num_common_basic(self, num_gate):
         """Estimates the number of common basic events.
@@ -425,7 +423,7 @@ class GeneratorFaultTree(FaultTree):
         """
         assert not self.top_gate and not self.top_gates
         operator = self.factors.get_random_operator()
-        while operator == "xor" or operator == "not":
+        while operator in ("xor", "not"):
             operator = self.factors.get_random_operator()
         self.top_gate = Gate(root_name, operator)
         self.gates.append(self.top_gate)
@@ -447,9 +445,9 @@ class GeneratorFaultTree(FaultTree):
         Returns:
             A fully initialized basic event with a random probability.
         """
-        basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
-                                 random.uniform(self.factors.min_prob,
-                                                self.factors.max_prob))
+        basic_event = BasicEvent(
+            "B" + str(len(self.basic_events) + 1),
+            random.uniform(self.factors.min_prob, self.factors.max_prob))
         self.basic_events.append(basic_event)
         return basic_event
 
@@ -547,18 +545,18 @@ def choose_basic_event(s_common, common_basic, fault_tree):
     Returns:
         Basic event argument for a gate.
     """
-    if s_common < fault_tree.factors.common_b and common_basic:
-        orphans = [x for x in common_basic if not x.parents]
-        if orphans:
-            return random.choice(orphans)
-
-        single_parent = [x for x in common_basic if len(x.parents) == 1]
-        if single_parent:
-            return random.choice(single_parent)
-
-        return random.choice(common_basic)
-    else:
+    if s_common >= fault_tree.factors.common_b or not common_basic:
         return fault_tree.construct_basic_event()
+
+    orphans = [x for x in common_basic if not x.parents]
+    if orphans:
+        return random.choice(orphans)
+
+    single_parent = [x for x in common_basic if len(x.parents) == 1]
+    if single_parent:
+        return random.choice(single_parent)
+
+    return random.choice(common_basic)
 
 
 def init_gates(gates_queue, common_basic, common_gate, fault_tree):
@@ -699,65 +697,59 @@ def generate_fault_tree(ft_name, root_name, factors):
     return fault_tree
 
 
-def write_info(fault_tree, tree_file, seed):
+def write_info(fault_tree, printer, seed):
     """Writes the information about the setup for fault tree generation.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
-        tree_file: A file open for writing.
+        printer: The output stream.
         seed: The seed of the pseudo-random number generator.
     """
     factors = fault_tree.factors
-    tree_file.write("<?xml version=\"1.0\"?>\n")
-    tree_file.write(
-        "<!--\nThis is a description of the auto-generated fault tree\n"
-        "with the following parameters:\n\n"
-        "The output file name: " + tree_file.name + "\n"
-        "The fault tree name: " + fault_tree.name + "\n"
-        "The root gate name: " + fault_tree.top_gate.name + "\n\n"
-        "The seed of the random number generator: " + str(seed) + "\n"
-        "The number of basic events: " + str(factors.num_basic) + "\n"
-        "The number of house events: " + str(factors.num_house) + "\n"
-        "The number of CCF groups: " + str(factors.num_ccf) + "\n"
-        "The average number of gate arguments: " + str(factors.num_args) + "\n"
-        "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
-        str(factors.get_gate_weights()) + "\n"
-        "Percentage of common basic events per gate: " + str(factors.common_b) +
-        "\n"
-        "Percentage of common gates per gate: " + str(factors.common_g) + "\n"
-        "The avg. number of parents for common basic events: " + str(
-            factors.parents_b) + "\n"
-        "The avg. number of parents for common gates: " + str(
-            factors.parents_g) + "\n"
-        "Maximum probability for basic events: " + str(factors.max_prob) + "\n"
-        "Minimum probability for basic events: " + str(factors.min_prob) + "\n"
-        "-->\n")
+    printer('<?xml version="1.0"?>')
+    printer('<!--')
+    printer('This is a description of the auto-generated fault tree')
+    printer('with the following parameters:\n')
+    printer('The fault tree name: ', fault_tree.name)
+    printer('The root gate name: ', fault_tree.top_gate.name)
+    printer()
+    printer('The seed of the random number generator: ', seed)
+    printer('The number of basic events: ', factors.num_basic)
+    printer('The number of house events: ', factors.num_house)
+    printer('The number of CCF groups: ', factors.num_ccf)
+    printer('The average number of gate arguments: ', factors.num_args)
+    printer('The weights of gate types [AND, OR, K/N, NOT, XOR]: ',
+            factors.get_gate_weights())
+    printer('Percentage of common basic events per gate: ', factors.common_b)
+    printer('Percentage of common gates per gate: ', factors.common_g)
+    printer('The avg. number of parents for common basic events: ',
+            factors.parents_b)
+    printer('The avg. number of parents for common gates: ', factors.parents_g)
+    printer('Maximum probability for basic events: ', factors.max_prob)
+    printer('Minimum probability for basic events: ', factors.min_prob)
+    printer('-->')
 
 
-def get_size_summary(fault_tree):
+def get_size_summary(fault_tree, printer):
     """Gathers information about the size of the fault tree.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
-
-    Returns:
-        A text snippet to be embedded in a XML summary.
+        printer: The output stream.
     """
-    and_gates = [x for x in fault_tree.gates if x.operator == "and"]
-    or_gates = [x for x in fault_tree.gates if x.operator == "or"]
-    atleast_gates = [x for x in fault_tree.gates if x.operator == "atleast"]
-    not_gates = [x for x in fault_tree.gates if x.operator == "not"]
-    xor_gates = [x for x in fault_tree.gates if x.operator == "xor"]
-    return (
-        "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
-        "The number of house events: %d" % len(fault_tree.house_events) + "\n"
-        "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
-        "The number of gates: %d" % len(fault_tree.gates) + "\n"
-        "    AND gates: %d" % len(and_gates) + "\n"
-        "    OR gates: %d" % len(or_gates) + "\n"
-        "    K/N gates: %d" % len(atleast_gates) + "\n"
-        "    NOT gates: %d" % len(not_gates) + "\n"
-        "    XOR gates: %d" % len(xor_gates) + "\n")
+    gate_count = {'and': 0, 'or': 0, 'atleast': 0, 'not': 0, 'xor': 0}
+    for gate in fault_tree.gates:
+        gate_count[gate.operator] = gate_count[gate.operator] + 1
+
+    printer('The number of basic events: ', len(fault_tree.basic_events))
+    printer('The number of house events: ', len(fault_tree.house_events))
+    printer('The number of CCF groups: ', len(fault_tree.ccf_groups))
+    printer('The number of gates: ', len(fault_tree.gates))
+    printer('    AND gates: ', gate_count['and'])
+    printer('    OR gates: ', gate_count['or'])
+    printer('    K/N gates: ', gate_count['atleast'])
+    printer('    NOT gates: ', gate_count['not'])
+    printer('    XOR gates: ', gate_count['xor'])
 
 
 def calculate_complexity_factors(fault_tree):
@@ -790,53 +782,45 @@ def calculate_complexity_factors(fault_tree):
     return frac_b, common_b, common_g
 
 
-def get_complexity_summary(fault_tree):
+def get_complexity_summary(fault_tree, printer):
     """Gathers information about the complexity factors of the fault tree.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
-
-    Returns:
-        A text snippet to be embedded in a XML summary.
+        printer: The output stream.
     """
     frac_b, common_b, common_g = calculate_complexity_factors(fault_tree)
     shared_b = [x for x in fault_tree.basic_events if x.is_common()]
     shared_g = [x for x in fault_tree.gates if x.is_common()]
-    summary_txt = (
-        "Basic events to gates ratio: %f" %
-        (len(fault_tree.basic_events) / len(fault_tree.gates)) + "\n"
-        "The average number of gate arguments: %f" %
-        (sum(x.num_arguments()
-             for x in fault_tree.gates) / len(fault_tree.gates)) + "\n"
-        "The number of common basic events: %d" % len(shared_b) + "\n"
-        "The number of common gates: %d" % len(shared_g) + "\n"
-        "Percentage of common basic events per gate: %f" % common_b + "\n"
-        "Percentage of common gates per gate: %f" % common_g + "\n"
-        "Percentage of arguments that are basic events per gate: %f" % frac_b +
-        "\n")
+    printer('Basic events to gates ratio: ',
+            (len(fault_tree.basic_events) / len(fault_tree.gates)))
+    printer('The average number of gate arguments: ',
+            (sum(x.num_arguments()
+                 for x in fault_tree.gates) / len(fault_tree.gates)))
+    printer('The number of common basic events: ', len(shared_b))
+    printer('The number of common gates: ', len(shared_g))
+    printer('Percentage of common basic events per gate: ', common_b)
+    printer('Percentage of common gates per gate: ', common_g)
+    printer('Percentage of arguments that are basic events per gate: ', frac_b)
     if shared_b:
-        summary_txt += (
-            "The avg. number of parents for common basic events: %f" %
-            (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
+        printer('The avg. number of parents for common basic events: ',
+                (sum(x.num_parents() for x in shared_b) / len(shared_b)))
     if shared_g:
-        summary_txt += (
-            "The avg. number of parents for common gates: %f" %
-            (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
-    return summary_txt
+        printer('The avg. number of parents for common gates: ',
+                (sum(x.num_parents() for x in shared_g) / len(shared_g)))
 
 
-def write_summary(fault_tree, tree_file):
+def write_summary(fault_tree, printer):
     """Writes the summary of the generated fault tree.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
-        tree_file: A file open for writing.
+        printer: The output stream.
     """
-    tree_file.write(
-        "<!--\nThe generated fault tree has the following metrics:\n\n")
-    tree_file.write(get_size_summary(fault_tree))
-    tree_file.write(get_complexity_summary(fault_tree))
-    tree_file.write("-->\n\n")
+    printer('<!--\nThe generated fault tree has the following metrics:\n')
+    get_size_summary(fault_tree, printer)
+    get_complexity_summary(fault_tree, printer)
+    printer('-->\n')
 
 
 def manage_cmd_args(argv=None):
@@ -950,7 +934,6 @@ def manage_cmd_args(argv=None):
         "-o",
         "--out",
         type=str,
-        default="fault_tree.xml",
         metavar="path",
         help="a file to write the fault tree")
     parser.add_argument(
@@ -962,8 +945,6 @@ def manage_cmd_args(argv=None):
         action="store_true",
         help="nest NOT connectives in Boolean formulae")
     args = parser.parse_args(argv)
-    if args.aralia and args.out == "fault_tree.xml":
-        args.out = "fault_tree.txt"
     return args
 
 
@@ -1008,13 +989,23 @@ def main(argv=None):
     args = manage_cmd_args(argv)
     factors = setup_factors(args)
     fault_tree = generate_fault_tree(args.ft_name, args.root, factors)
-    with open(args.out, "w") as tree_file:
-        if args.aralia:
-            tree_file.write(fault_tree.to_aralia())
-        else:
-            write_info(fault_tree, tree_file, args.seed)
-            write_summary(fault_tree, tree_file)
-            tree_file.write(fault_tree.to_xml(args.nest))
+    printer = get_printer(args.out)
+    if args.aralia:
+        fault_tree.to_aralia(printer)
+    else:
+        write_info(fault_tree, printer, args.seed)
+        write_summary(fault_tree, printer)
+        fault_tree.to_xml(printer, args.nest)
+
+
+def get_printer(file_path=None):
+    """Returns printer to stream output."""
+    destination = open(file_path, 'w') if file_path else sys.stdout
+
+    def _print(*args):
+        print(*args, file=destination, sep='')
+
+    return _print
 
 
 if __name__ == "__main__":

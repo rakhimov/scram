@@ -40,6 +40,7 @@
 #include "src/model.h"
 
 #include "command.h"
+#include "translate.h"
 
 namespace scram::gui::model {
 
@@ -107,8 +108,7 @@ public:
         /// Stores an element, its new name and parent containers.
         SetId(T *event, QString name, mef::Model *model,
               mef::FaultTree *faultTree = nullptr)
-            : Involution(QObject::tr("Rename event '%1' to '%2'")
-                             .arg(event->id(), name)),
+            : Involution(_("Rename event '%1' to '%2'").arg(event->id(), name)),
               m_name(std::move(name)), m_event(event), m_model(model),
               m_faultTree(faultTree)
         {
@@ -190,9 +190,9 @@ public:
     {
         switch (flavor) {
         case Basic:
-            return tr("Basic");
+            return _("Basic");
         case Undeveloped:
-            return tr("Undeveloped");
+            return _("Undeveloped");
         }
         assert(false);
     }
@@ -274,7 +274,7 @@ private:
 /// Converts Boolean value to a UI string.
 inline QString boolToString(bool value)
 {
-    return value ? QObject::tr("True") : QObject::tr("False");
+    return value ? _("True") : _("False");
 }
 
 /// The proxy to manage mef::HouseEvent.
@@ -335,25 +335,25 @@ public:
         if constexpr (std::is_same_v<T, QString>) {
             switch (type()) {
             case mef::kAnd:
-                return tr("and");
+                return _("and");
             case mef::kOr:
-                return tr("or");
+                return _("or");
             case mef::kAtleast:
                 //: Also named as 'vote', 'voting or', 'combination', 'combo'.
-                return tr("at-least %1").arg(*minNumber());
+                return _("at-least %1").arg(*minNumber());
             case mef::kXor:
-                return tr("xor");
+                return _("xor");
             case mef::kNot:
-                return tr("not");
+                return _("not");
             case mef::kNull:
                 //: This is 'pass-through' or 'no-action' gate type.
-                return tr("null");
+                return _("null");
             case mef::kNand:
                 //: not and.
-                return tr("nand");
+                return _("nand");
             case mef::kNor:
                 //: not or.
-                return tr("nor");
+                return _("nor");
             default:
                 assert(false && "Unsupported connectives.");
             }
@@ -515,8 +515,8 @@ public:
         /// Stores the newly defined event and its destination container.
         AddEvent(std::unique_ptr<typename T::Origin> event, Model *model,
                  mef::FaultTree *faultTree = nullptr)
-            : QUndoCommand(QObject::tr("Add event '%1'")
-                               .arg(QString::fromStdString(event->id()))),
+            : QUndoCommand(
+                  _("Add event '%1'").arg(QString::fromStdString(event->id()))),
               m_model(model), m_proxy(std::make_unique<T>(event.get())),
               m_address(event.get()), m_event(std::move(event)),
               m_faultTree(faultTree)
@@ -575,9 +575,8 @@ public:
     public:
         /// Stores model containers and the existing event for removal.
         RemoveEvent(T *event, Model *model, mef::FaultTree *faultTree = nullptr)
-            : Inverse<AddEvent<T>>(
-                  event, model, faultTree,
-                  QObject::tr("Remove event '%1'").arg(event->id()))
+            : Inverse<AddEvent<T>>(event, model, faultTree,
+                                   _("Remove event '%1'").arg(event->id()))
         {
         }
     };
@@ -598,8 +597,8 @@ public:
         ChangeEventType(E *currentEvent,
                         std::unique_ptr<typename T::Origin> newEvent,
                         Model *model, mef::FaultTree *faultTree = nullptr)
-            : QUndoCommand(QObject::tr("Change the type of event '%1'")
-                               .arg(currentEvent->id())),
+            : QUndoCommand(
+                  _("Change the type of event '%1'").arg(currentEvent->id())),
               m_switchTo{currentEvent, std::make_unique<T>(newEvent.get()),
                          std::move(newEvent)},
               m_model(model), m_faultTree(faultTree),

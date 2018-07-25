@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <boost/dll/shared_library.hpp>
@@ -151,41 +152,6 @@ class ExternFunction : public ExternFunctionBase {
   const Pointer fptr_;  ///< The pointer to the extern function in a library.
 };
 
-namespace detail {  // Helpers for extern function call with Expression values.
-
-/// Evaluates the argument expressions and marshals the result to function.
-/// Marshaller of expressions to extern function calls.
-///
-/// @tparam N  The number of arguments.
-///
-/// @param[in] self  The extern function to be called with the argument values.
-/// @param[in] args  The argument expressions.
-/// @param[in] eval  The evaluator of the expressions.
-/// @param[in] values  The results of expression evaluation.
-///
-/// @returns The result of the function call.
-///
-/// @pre The number of arguments is exactly the same at runtime.
-template <int N, typename F, typename R, typename... Ts, typename... Args>
-R Marshal(const ExternFunction<R, Args...>& self,
-          const std::vector<Expression*>& args, F&& eval,
-          Ts&&... values) noexcept {
-  static_assert(N >= 0);
-  assert(args.size() >= N);
-
-  if constexpr (N == 0) {
-    assert(args.size() == sizeof...(values) && "Incorrect number of args.");
-    return self(std::forward<Ts>(values)...);
-
-  } else {
-    double value = eval(args[N - 1]);
-    return Marshal<N - 1>(self, args, std::forward<F>(eval), value,
-                          std::forward<Ts>(values)...);
-  }
-}
-
-}  // namespace detail
-
 /// Expression evaluating an extern function with expression arguments.
 ///
 /// @tparam R  Numeric return type.
@@ -210,11 +176,27 @@ class ExternExpression
   /// Computes the extern function with the given evaluator for arguments.
   template <typename F>
   double Compute(F&& eval) noexcept {
-    return detail::Marshal<sizeof...(Args)>(
-        extern_function_, Expression::args(), std::forward<F>(eval));
+    return Marshal(std::forward<F>(eval),
+                   std::make_index_sequence<sizeof...(Args)>());
   }
 
  private:
+  /// Evaluates the argument expressions and marshals the result to function.
+  /// Marshaller of expressions to extern function calls.
+  ///
+  /// @tparam F  The expression evaluator type.
+  /// @tparam Is  The index sequence for the arguments vector.
+  ///
+  /// @param[in] eval  The evaluator of the expressions.
+  ///
+  /// @returns The result of the function call.
+  ///
+  /// @pre The number of arguments is exactly the same at runtime.
+  template <typename F, std::size_t... Is>
+  double Marshal(F&& eval, std::index_sequence<Is...>) noexcept {
+    return extern_function_(eval(Expression::args()[Is])...);
+  }
+
   const ExternFunction<R, Args...>& extern_function_;  ///< The source function.
 };
 

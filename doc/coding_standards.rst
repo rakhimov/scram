@@ -224,6 +224,13 @@ GUI Code
 
 - Automatic (implicit) connection of signals and slots is forbidden.
 
+- Avoid using unqualified ``tr()`` calls.
+  Qt Linguist automatic context deduction is flaky
+  and often fails with modern C++ code.
+  ``_()`` (a-la ``gettext``) is provided to always resolve
+  the context to ``QObject::tr()`` (the common case).
+  Add extra translation/disambiguation context as needed (the rare case).
+
 
 Monitoring Code Quality
 =======================
@@ -258,15 +265,15 @@ Python
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_ and reporting with Codecov_
-#. Continuous code quality control on Landscape_ with Prospector_
+#. Continuous code quality control on Codacy_ with Prospector_
 #. Consistent code formatting with YAPF_
 
 .. _Pylint: https://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: https://coverage.readthedocs.io/en/latest/
 .. _Codecov: https://codecov.io/github/rakhimov/scram
-.. _Landscape: https://landscape.io/
-.. _Prospector: https://github.com/landscapeio/prospector
+.. _Codacy: https://codacy.com/
+.. _Prospector: https://github.com/PyCQA/prospector
 .. _YAPF: https://github.com/google/yapf
 
 

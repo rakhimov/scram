@@ -23,6 +23,7 @@
 
 #include "align.h"
 #include "guiassert.h"
+#include "translate.h"
 
 namespace scram::gui::model {
 
@@ -75,13 +76,13 @@ QVariant ProductTableModel::headerData(int section, Qt::Orientation orientation,
     GUI_ASSERT(m_withProbability || section < 2, {});
     switch (section) {
     case 0:
-        return tr("Product");
+        return _("Product");
     case 1:
-        return tr("Order");
+        return _("Order");
     case 2:
-        return tr("Probability");
+        return _("Probability");
     case 3:
-        return tr("Contribution");
+        return _("Contribution");
     }
     GUI_ASSERT(false && "unexpected header section", {});
 }

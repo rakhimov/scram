@@ -42,7 +42,7 @@ import argparse as ap
 import fault_tree_generator as ft_gen
 
 
-class Config(object):
+class Config:
     """Storage for configurations.
 
     Empty strings mean the default options of SCRAM.
@@ -295,6 +295,7 @@ def main():
         "-j",
         "--jobs",
         type=int,
+        default=1,
         metavar="N",
         help="allow N runs (jobs) at once")
     parser.add_argument(
@@ -329,7 +330,7 @@ def get_map(working_threads):
     return multiprocessing.Pool(processes=working_threads).imap_unordered
 
 
-class Fuzzer(object):  # pylint: disable=too-few-public-methods
+class Fuzzer:  # pylint: disable=too-few-public-methods
     """Runs fuzz testing."""
 
     def __init__(self, args):

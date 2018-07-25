@@ -61,17 +61,17 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    /// Loads a model and analysis configuration from a file.
+    /// Loads a model and analysis from a project file.
     ///
-    /// @param[in] configPath  The path to the configuration file.
+    /// @param[in] projectFilePath  The path to the project configuration file.
     /// @param[in] inputFiles  Additional input files for model initialization.
     ///
     /// @returns true if the initialization is successful.
     ///
     /// @post No side effects are left-over
     ///       if the initialization is not successful.
-    bool setConfig(const std::string &configPath,
-                   std::vector<std::string> inputFiles = {});
+    bool setProjectFile(const std::string &projectFilePath,
+                        std::vector<std::string> inputFiles = {});
 
     /// Adds a new set of model elements from input files.
     ///
@@ -85,8 +85,8 @@ public:
     bool addInputFiles(const std::vector<std::string> &inputFiles);
 
 signals:
-    /// Indicates addition of new input or configuration files.
-    void configChanged();
+    /// Indicates addition of new input or project files.
+    void projectChanged();
 
 private slots:
     /// Opens a new project configuration.

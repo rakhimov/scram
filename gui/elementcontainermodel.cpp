@@ -25,7 +25,7 @@
 
 #include "align.h"
 #include "guiassert.h"
-#include "overload.h"
+#include "translate.h"
 
 namespace scram::gui::model {
 
@@ -41,9 +41,9 @@ ElementContainerModel::ElementContainerModel(const T &container, Model *model,
         m_elements.push_back(elementPtr.get());
     }
     using E = typename T::value_type::element_type;
-    connect(model, OVERLOAD(Model, added, E *), this,
+    connect(model, qOverload<E *>(&Model::added), this,
             &ElementContainerModel::addElement);
-    connect(model, OVERLOAD(Model, removed, E *), this,
+    connect(model, qOverload<E *>(&Model::removed), this,
             &ElementContainerModel::removeElement);
 }
 
@@ -139,15 +139,15 @@ QVariant BasicEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("ID");
+        return _("ID");
     case 1:
         //: The flavor type of a basic event.
-        return tr("Flavor");
+        return _("Flavor");
     case 2:
         //: In PRA context, probability may be unavailability or unreliability.
-        return tr("Probability");
+        return _("Probability");
     case 3:
-        return tr("Label");
+        return _("Label");
     }
     GUI_ASSERT(false && "unexpected header section", {});
 }
@@ -218,12 +218,12 @@ QVariant HouseEventContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("ID");
+        return _("ID");
     case 1:
         //: House event Boolean state.
-        return tr("State");
+        return _("State");
     case 2:
-        return tr("Label");
+        return _("Label");
     }
     GUI_ASSERT(false && "unexpected header section", {});
 }
@@ -340,15 +340,15 @@ QVariant GateContainerModel::headerData(int section,
 
     switch (section) {
     case 0:
-        return tr("ID");
+        return _("ID");
     case 1:
         //: Boolean operator of the Boolean formula.
-        return tr("Connective");
+        return _("Connective");
     case 2:
         //: The number of arguments in the Boolean formula.
-        return tr("Args");
+        return _("Args");
     case 3:
-        return tr("Label");
+        return _("Label");
     }
     GUI_ASSERT(false && "unexpected header section", {});
 }

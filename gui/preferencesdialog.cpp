@@ -31,7 +31,7 @@
 
 #include "guiassert.h"
 #include "language.h"
-#include "overload.h"
+#include "translate.h"
 
 namespace scram::gui {
 
@@ -80,12 +80,12 @@ void PreferencesDialog::setupLanguage()
     ui->languageBox->setCurrentIndex(
         proxyModel->mapFromSource(listModel->index(currentIndex, 0)).row());
     connect(
-        ui->languageBox, OVERLOAD(QComboBox, currentIndexChanged, int), this,
+        ui->languageBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
         [this, proxyModel](int proxyIndex) {
             QMessageBox::information(
-                this, tr("Restart Required"),
-                tr("The language change will take effect after an "
-                   "application restart."));
+                this, _("Restart Required"),
+                _("The language change will take effect after an "
+                  "application restart."));
             int index =
                 proxyModel->mapToSource(proxyModel->index(proxyIndex, 0)).row();
             QString locale = index == locales.size()
@@ -105,8 +105,8 @@ void PreferencesDialog::setupUndoStack(QUndoStack *undoStack)
         undoStack->setUndoLimit(undoLimit);
         m_preferences->setValue(QStringLiteral("undoLimit"), undoLimit);
     };
-    connect(ui->undoLimitBox, OVERLOAD(QSpinBox, valueChanged, int), undoStack,
-            setUndoLimit);
+    connect(ui->undoLimitBox, qOverload<int>(&QSpinBox::valueChanged),
+            undoStack, setUndoLimit);
     connect(ui->checkUndoLimit, &QCheckBox::toggled, undoStack,
             [this, setUndoLimit](bool checked) {
                 setUndoLimit(checked ? ui->undoLimitBox->value() : 0);
@@ -127,7 +127,7 @@ void PreferencesDialog::setupAutoSave(QTimer *autoSaveTimer)
         else
             autoSaveTimer->stop();
     };
-    connect(ui->autoSaveBox, OVERLOAD(QSpinBox, valueChanged, int),
+    connect(ui->autoSaveBox, qOverload<int>(&QSpinBox::valueChanged),
             autoSaveTimer, setAutoSave);
     connect(ui->checkAutoSave, &QCheckBox::toggled, autoSaveTimer,
             [this, setAutoSave](bool checked) {

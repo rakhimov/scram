@@ -22,6 +22,7 @@
 #include "reporttree.h"
 
 #include "guiassert.h"
+#include "translate.h"
 
 namespace scram::gui {
 
@@ -105,15 +106,15 @@ QVariant ReportTree::data(const QModelIndex &index, int role) const
     const core::RiskAnalysis::Result &result = m_results[index.parent().row()];
     switch (static_cast<Row>(index.row())) {
     case Row::Products:
-        return tr("Products (%L1)")
+        return _("Products (%L1)")
             .arg(result.fault_tree_analysis->products().size());
     case Row::Probability:
         GUI_ASSERT(result.probability_analysis, {});
-        return tr("Probability (%1)")
+        return _("Probability (%1)")
             .arg(result.probability_analysis->p_total());
     case Row::Importance:
         GUI_ASSERT(result.importance_analysis, {});
-        return tr("Importance Factors (%L1)")
+        return _("Importance Factors (%L1)")
             .arg(result.importance_analysis->importance().size());
     }
     GUI_ASSERT(false && "Unexpected analysis report data", {});

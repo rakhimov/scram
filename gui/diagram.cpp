@@ -40,7 +40,6 @@
 #include "src/ext/find_iterator.h"
 
 #include "guiassert.h"
-#include "overload.h"
 
 namespace scram::gui::diagram {
 
@@ -360,7 +359,7 @@ DiagramScene::DiagramScene(model::Gate *event, model::Model *model,
     : QGraphicsScene(parent), m_root(event), m_model(model)
 {
     redraw();
-    connect(m_model, OVERLOAD(model::Model, removed, model::Gate *), this,
+    connect(m_model, qOverload<model::Gate *>(&model::Model::removed), this,
             [this](model::Gate *gate) {
                 if (gate == m_root) {
                     clear();

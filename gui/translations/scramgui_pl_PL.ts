@@ -35,11 +35,6 @@
       <translation>Nierozwinięty</translation>
     </message>
     <message>
-      <source>Conditional</source>
-      <extracomment>Conditioning flavor for a basic event (used as a conditioning variable for conditional probabilities)</extracomment>
-      <translation>Warunkowo</translation>
-    </message>
-    <message>
       <source>Gate</source>
       <extracomment>The intermediary w/ a Boolean formula as a definition. Defines the logic and interdependencies of the fault tree.</extracomment>
       <translation>Brama</translation>
@@ -436,16 +431,449 @@
       <translation>Linia: %1</translation>
     </message>
     <message>
-      <source>MEF Container: %1</source>
-      <translation>Kontener MEF: %1</translation>
-    </message>
-    <message>
       <source>XML element: %1</source>
       <translation>XML element: %1</translation>
     </message>
     <message>
       <source>XML attribute: %1</source>
       <translation>Atrybut XML: %1</translation>
+    </message>
+    <message>
+      <source>ID</source>
+      <translation type="unfinished">ID</translation>
+    </message>
+    <message>
+      <source>Flavor</source>
+      <extracomment>The flavor type of a basic event.</extracomment>
+      <translation>Rodzaj</translation>
+    </message>
+    <message>
+      <source>Probability</source>
+      <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
+      <translation>Prawdopodobieństwo</translation>
+    </message>
+    <message>
+      <source>Label</source>
+      <translation>Etykieta</translation>
+    </message>
+    <message>
+      <source>State</source>
+      <extracomment>House event Boolean state.</extracomment>
+      <translation>Stan</translation>
+    </message>
+    <message>
+      <source>Connective</source>
+      <extracomment>Boolean operator of the Boolean formula.</extracomment>
+      <translation>Łącznej</translation>
+    </message>
+    <message>
+      <source>Args</source>
+      <extracomment>The number of arguments in the Boolean formula.</extracomment>
+      <translation type="unfinished">Args</translation>
+    </message>
+    <message>
+      <source>House event</source>
+      <translation>Stałe Zdarzenie</translation>
+    </message>
+    <message>
+      <source>The argument &apos;%1&apos; is already in formula.</source>
+      <extracomment>Duplicate arguments are not allowed in a formula.</extracomment>
+      <translation>Argument &apos;%1&apos; jest już w formule.</translation>
+    </message>
+    <message>
+      <source>The argument &apos;%1&apos; would introduce a self-cycle.</source>
+      <extracomment>Self-cycle is also called a loop in a graph.</extracomment>
+      <translation>Argument &apos;%1&apos; wprowadziłby własny cykl.</translation>
+    </message>
+    <message>
+      <source>The argument &apos;%1&apos; would introduce a cycle.</source>
+      <extracomment>Fault trees are acyclic graphs.</extracomment>
+      <translation>Argument &apos;%1&apos; wprowadziłby własny cykl.</translation>
+    </message>
+    <message>
+      <source>The event with name &apos;%1&apos; already exists.</source>
+      <extracomment>Duplicate event definition in the model.</extracomment>
+      <translation>Zdarzenie o nazwie &apos;%1&apos; już istnieje.</translation>
+    </message>
+    <message>
+      <source>Name &apos;%1&apos; would introduce a self-cycle.</source>
+      <translation>Nazwa &apos;%1&apos; wprowadziłaby własny cykl.</translation>
+    </message>
+    <message>
+      <source>%1 connective requires a single argument.</source>
+      <translation>%1 łączna wymaga jednego argumentu.</translation>
+    </message>
+    <message>
+      <source>%1 connective requires 2 or more arguments.</source>
+      <translation>%1 łączna wymaga 2 lub więcej argumentów.</translation>
+    </message>
+    <message>
+      <source>%1 connective requires exactly 2 arguments.</source>
+      <translation>%1 łączna wymaga dokładnie 2 argumentów.</translation>
+    </message>
+    <message numerus="yes">
+      <source>%1 connective requires at-least %n arguments.</source>
+      <extracomment>The number of required arguments is always more than 2.</extracomment>
+      <translation type="unfinished">
+        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
+        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
+        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
+        <numerusform>%1 connective requires at-least %n arguments.</numerusform>
+      </translation>
+    </message>
+    <message>
+      <source>Fault tree &apos;%1&apos; is already defined with a top gate.</source>
+      <extracomment>Fault tree redefinition.</extracomment>
+      <translation>Drzewo awarii &apos;%1&apos; jest już zdefiniowane w bramie górnej.</translation>
+    </message>
+    <message>
+      <source>Occurrence</source>
+      <translation>Wystąpienie</translation>
+    </message>
+    <message>
+      <source>MIF</source>
+      <translation type="unfinished">MIF</translation>
+    </message>
+    <message>
+      <source>CIF</source>
+      <translation type="unfinished">CIF</translation>
+    </message>
+    <message>
+      <source>DIF</source>
+      <translation type="unfinished">DIF</translation>
+    </message>
+    <message>
+      <source>RAW</source>
+      <translation type="unfinished">RAW</translation>
+    </message>
+    <message>
+      <source>RRW</source>
+      <translation type="unfinished">RRW</translation>
+    </message>
+    <message>
+      <source>Export As</source>
+      <translation>Eksportuj jako</translation>
+    </message>
+    <message>
+      <source>SVG files (*.svg);;All files (*.*)</source>
+      <translation>Pliki SVG (*.svg);;Wszystkie pliki (*. *)</translation>
+    </message>
+    <message>
+      <source>%1: %2</source>
+      <extracomment>Error information tag and its value.</extracomment>
+      <translation type="unfinished">%1: %2</translation>
+    </message>
+    <message>
+      <source>Value</source>
+      <translation type="unfinished">Value</translation>
+    </message>
+    <message>
+      <source>MEF Connective</source>
+      <translation type="unfinished">MEF Connective</translation>
+    </message>
+    <message>
+      <source>MEF reference</source>
+      <translation type="unfinished">MEF reference</translation>
+    </message>
+    <message>
+      <source>MEF base path</source>
+      <translation type="unfinished">MEF base path</translation>
+    </message>
+    <message>
+      <source>MEF Element ID</source>
+      <translation type="unfinished">MEF Element ID</translation>
+    </message>
+    <message>
+      <source>MEF Element type</source>
+      <translation type="unfinished">MEF Element type</translation>
+    </message>
+    <message>
+      <source>MEF Container</source>
+      <translation type="unfinished">MEF Container</translation>
+    </message>
+    <message>
+      <source>MEF Container type</source>
+      <translation type="unfinished">MEF Container type</translation>
+    </message>
+    <message>
+      <source>MEF Attribute</source>
+      <translation type="unfinished">MEF Attribute</translation>
+    </message>
+    <message>
+      <source>Cycle</source>
+      <translation type="unfinished">Cycle</translation>
+    </message>
+    <message>
+      <source>Configuration file error</source>
+      <translation>Błąd pliku konfiguracji</translation>
+    </message>
+    <message>
+      <source>XML Validity Error</source>
+      <translation>Błąd ważności XML</translation>
+    </message>
+    <message>
+      <source>Invalid configuration file</source>
+      <translation>Nieprawidłowy plik konfiguracji</translation>
+    </message>
+    <message>
+      <source>Configuration Error</source>
+      <translation>Błąd konfiguracji</translation>
+    </message>
+    <message>
+      <source>Invalid configurations</source>
+      <translation>Nieprawidłowe konfiguracje</translation>
+    </message>
+    <message>
+      <source>Initialization Error</source>
+      <extracomment>The error upon initialization from a file.</extracomment>
+      <translation>Błąd inicjalizacji</translation>
+    </message>
+    <message>
+      <source>Fault tree &apos;%1&apos; must have a single top-gate.</source>
+      <extracomment>Single top/root event fault tree are expected by GUI.</extracomment>
+      <translation>Drzewo awarii &apos;%1&apos; musi mieć pojedynczą bramę górną.</translation>
+    </message>
+    <message>
+      <source>Input file error</source>
+      <translation>Błąd pliku wejściowego</translation>
+    </message>
+    <message>
+      <source>Invalid input file</source>
+      <translation>Nieprawidłowy plik wejściowy</translation>
+    </message>
+    <message>
+      <source>Invalid input model</source>
+      <translation>Nieprawidłowy model wejściowy</translation>
+    </message>
+    <message>
+      <source>Find/Filter (Perl Regex)</source>
+      <extracomment>The search bar.</extracomment>
+      <translation>Znajdź/filtruj (Perl Regex)</translation>
+    </message>
+    <message>
+      <source>About SCRAM</source>
+      <translation>O SCRAM</translation>
+    </message>
+    <message>
+      <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
+      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Interfejs graficzny dla SCRAM,&lt;br/&gt;wielofunkcyjne narzędzie do analizy ryzyka.&lt;br/&gt;&lt;br/&gt;Licencji: GPLv3+&lt;br/&gt;Strona główna: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Wsparcie techniczne: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;śledzenie błędów: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
+    </message>
+    <message>
+      <source>Undo:</source>
+      <translation>Cofnij:</translation>
+    </message>
+    <message>
+      <source>Redo:</source>
+      <translation>Ponów:</translation>
+    </message>
+    <message>
+      <source>Unnamed Model</source>
+      <translation>Nienazwany model</translation>
+    </message>
+    <message>
+      <source>Save Model?</source>
+      <translation>Zapisać Model?</translation>
+    </message>
+    <message>
+      <source>Save changes to model &apos;%1&apos; before closing?</source>
+      <translation>Zapisać zmiany w modelu &apos;%1&apos; przed zamknięciem?</translation>
+    </message>
+    <message>
+      <source>Open Model Files</source>
+      <translation>Otwórz pliki modelu</translation>
+    </message>
+    <message>
+      <source>Model Exchange Format</source>
+      <translation>Format wymiany modelu</translation>
+    </message>
+    <message>
+      <source>All files</source>
+      <translation>Wszystkie pliki</translation>
+    </message>
+    <message>
+      <source>Save Model As</source>
+      <translation>Zapisz model jako</translation>
+    </message>
+    <message>
+      <source>Save error</source>
+      <comment>error on saving to file</comment>
+      <translation>Zapisz błąd</translation>
+    </message>
+    <message>
+      <source>Validation Error</source>
+      <translation>Błąd walidacji</translation>
+    </message>
+    <message>
+      <source>Not all basic events have expressions for probability analysis.</source>
+      <translation>Nie wszystkie wydarzenia mają wyrażenia do prawdopodobieństwa analizy.</translation>
+    </message>
+    <message>
+      <source>Running analysis...</source>
+      <extracomment>This is a message shown during the analysis run.</extracomment>
+      <translation>Uruchamianie analizy...</translation>
+    </message>
+    <message>
+      <source>Export Report As</source>
+      <translation>Eksportuj model jako</translation>
+    </message>
+    <message>
+      <source>Reporting error</source>
+      <translation>Raportowanie błędu</translation>
+    </message>
+    <message>
+      <source>Dependency Container Removal</source>
+      <extracomment>The container w/ dependents still in the model.</extracomment>
+      <translation>Usuwanie kontenera zależności</translation>
+    </message>
+    <message>
+      <source>Fault tree &apos;%1&apos; with root &apos;%2&apos; is not removable because it has dependent non-root gates. Remove the gates from the fault tree before this operation.</source>
+      <translation>Drzewo awarii &apos;%1&apos; z korzeniem &apos;%2&apos; nie jest wymienny, ponieważ ma zależne korzenie nie należące do bramy. Usuń bramy z drzewa awarii przed wykonaniem tej operacji.</translation>
+    </message>
+    <message>
+      <source>Remove fault tree &apos;%1&apos; with root &apos;%2&apos;</source>
+      <translation>Usuń drzewo błędu &apos;%1&apos; z korzeniem &apos;%2&apos;</translation>
+    </message>
+    <message>
+      <source>Dependency Event Removal</source>
+      <extracomment>The event w/ dependents in the model.</extracomment>
+      <translation>Usuwanie zależności zdarzeń</translation>
+    </message>
+    <message>
+      <source>Event &apos;%1&apos; is not removable because it has dependents. Remove the event from the dependents before this operation.</source>
+      <translation>Zdarzenie &apos;%1&apos; jest nieusuwalne, ponieważ ma zależności. Usuń to zdarzenie z zależności przed wykonaniem tej operacji.</translation>
+    </message>
+    <message>
+      <source>Add fault tree &apos;%1&apos; with gate &apos;%2&apos;</source>
+      <extracomment>Addition of a fault by defining its root event first.</extracomment>
+      <translation>Dodaj drzewo błędu &apos;%1&apos; z bramą &apos;%2&apos;</translation>
+    </message>
+    <message>
+      <source>Gates</source>
+      <extracomment>The tab for the table of gates.</extracomment>
+      <translation>Bramy</translation>
+    </message>
+    <message>
+      <source>Basic Events</source>
+      <extracomment>The tab for the table of basic events.</extracomment>
+      <translation>Podstawowe wydarzenia</translation>
+    </message>
+    <message>
+      <source>House Events</source>
+      <extracomment>The tab for the table of house events.</extracomment>
+      <translation>Stałe Zdarzenia</translation>
+    </message>
+    <message>
+      <source>Products: %1</source>
+      <translation>Produkty: %1</translation>
+    </message>
+    <message>
+      <source>Importance: %1</source>
+      <translation>Znaczenie: %1</translation>
+    </message>
+    <message>
+      <source>Fault Tree: %1</source>
+      <extracomment>The tab for a fault tree diagram.</extracomment>
+      <translation>Drzewo błędu: %1</translation>
+    </message>
+    <message>
+      <source>Set basic event &apos;%1&apos; flavor to &apos;%2&apos;</source>
+      <translation>Ustaw stan podstawowego wydarzenia &apos;%1&apos; na &apos;%2&apos;</translation>
+    </message>
+    <message>
+      <source>Basic</source>
+      <translation>Podstawowe</translation>
+    </message>
+    <message>
+      <source>Undeveloped</source>
+      <translation>Nierozwinięty</translation>
+    </message>
+    <message>
+      <source>and</source>
+      <translation type="unfinished">and</translation>
+    </message>
+    <message>
+      <source>or</source>
+      <translation type="unfinished">or</translation>
+    </message>
+    <message>
+      <source>at-least %1</source>
+      <extracomment>Also named as &apos;vote&apos;, &apos;voting or&apos;, &apos;combination&apos;, &apos;combo&apos;.</extracomment>
+      <translation>co najmniej %1</translation>
+    </message>
+    <message>
+      <source>xor</source>
+      <translation type="unfinished">xor</translation>
+    </message>
+    <message>
+      <source>not</source>
+      <translation type="unfinished">not</translation>
+    </message>
+    <message>
+      <source>null</source>
+      <extracomment>This is &apos;pass-through&apos; or &apos;no-action&apos; gate type.</extracomment>
+      <translation type="unfinished">null</translation>
+    </message>
+    <message>
+      <source>nand</source>
+      <extracomment>not and.</extracomment>
+      <translation type="unfinished">nand</translation>
+    </message>
+    <message>
+      <source>nor</source>
+      <extracomment>not or.</extracomment>
+      <translation type="unfinished">nor</translation>
+    </message>
+    <message>
+      <source>Fault Trees (%L1)</source>
+      <extracomment>The parent item for collections of fault trees in the model.</extracomment>
+      <translation>Drzewa błędu (%L1)</translation>
+    </message>
+    <message>
+      <source>Gates (%L1)</source>
+      <extracomment>The table of gates.</extracomment>
+      <translation>Bramy (%L1)</translation>
+    </message>
+    <message>
+      <source>Basic Events (%L1)</source>
+      <extracomment>The table of basic events.</extracomment>
+      <translation>Podstawowe zdarzenia (%L1)</translation>
+    </message>
+    <message>
+      <source>House Events (%L1)</source>
+      <extracomment>The table of house events.</extracomment>
+      <translation>Stałe Zdarzenia (%L1)</translation>
+    </message>
+    <message>
+      <source>Restart Required</source>
+      <translation>Wymagany reset</translation>
+    </message>
+    <message>
+      <source>The language change will take effect after an application restart.</source>
+      <translation>Zmiana języka zacznie obowiązywać po resecie aplikacji.</translation>
+    </message>
+    <message>
+      <source>Product</source>
+      <translation>Produkt</translation>
+    </message>
+    <message>
+      <source>Order</source>
+      <translation>Zamówienie</translation>
+    </message>
+    <message>
+      <source>Contribution</source>
+      <translation>Wkład</translation>
+    </message>
+    <message>
+      <source>Products (%L1)</source>
+      <translation>Produkty (%L1)</translation>
+    </message>
+    <message>
+      <source>Probability (%1)</source>
+      <translation>Prawdopodobieństwo (%1)</translation>
+    </message>
+    <message>
+      <source>Importance Factors (%L1)</source>
+      <translation>Znaczenie czytników (%L1)</translation>
     </message>
   </context>
   <context>
@@ -516,469 +944,6 @@
     <message>
       <source>Recent Files</source>
       <translation>Ostatnie pliki</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::DiagramView</name>
-    <message>
-      <source>Export As</source>
-      <translation>Eksportuj jako</translation>
-    </message>
-    <message>
-      <source>SVG files (*.svg);;All files (*.*)</source>
-      <translation>Pliki SVG (*.svg);;Wszystkie pliki (*. *)</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::EventDialog</name>
-    <message>
-      <source>House event</source>
-      <translation>Stałe Zdarzenie</translation>
-    </message>
-    <message>
-      <source>The argument &apos;%1&apos; is already in formula.</source>
-      <extracomment>Duplicate arguments are not allowed in a formula.</extracomment>
-      <translation>Argument &apos;%1&apos; jest już w formule.</translation>
-    </message>
-    <message>
-      <source>The argument &apos;%1&apos; would introduce a self-cycle.</source>
-      <extracomment>Self-cycle is also called a loop in a graph.</extracomment>
-      <translation>Argument &apos;%1&apos; wprowadziłby własny cykl.</translation>
-    </message>
-    <message>
-      <source>The argument &apos;%1&apos; would introduce a cycle.</source>
-      <extracomment>Fault trees are acyclic graphs.</extracomment>
-      <translation>Argument &apos;%1&apos; wprowadziłby własny cykl.</translation>
-    </message>
-    <message>
-      <source>The event with name &apos;%1&apos; already exists.</source>
-      <extracomment>Duplicate event definition in the model.</extracomment>
-      <translation>Zdarzenie o nazwie &apos;%1&apos; już istnieje.</translation>
-    </message>
-    <message>
-      <source>Name &apos;%1&apos; would introduce a self-cycle.</source>
-      <translation>Nazwa &apos;%1&apos; wprowadziłaby własny cykl.</translation>
-    </message>
-    <message>
-      <source>%1 connective requires a single argument.</source>
-      <translation>%1 łączna wymaga jednego argumentu.</translation>
-    </message>
-    <message>
-      <source>%1 connective requires 2 or more arguments.</source>
-      <translation>%1 łączna wymaga 2 lub więcej argumentów.</translation>
-    </message>
-    <message>
-      <source>%1 connective requires exactly 2 arguments.</source>
-      <translation>%1 łączna wymaga dokładnie 2 argumentów.</translation>
-    </message>
-    <message>
-      <source>Fault tree &apos;%1&apos; is already defined with a top gate.</source>
-      <extracomment>Fault tree redefinition.</extracomment>
-      <translation>Drzewo awarii &apos;%1&apos; jest już zdefiniowane w bramie górnej.</translation>
-    </message>
-    <message numerus="yes">
-      <source>%1 connective requires at-least %n arguments.</source>
-      <extracomment>The number of required arguments is always more than 2.</extracomment>
-      <translation>
-        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
-        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
-        <numerusform>%1 łączna wymaga co najmniej %n argumentów.</numerusform>
-      </translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::MainWindow</name>
-    <message>
-      <source>Validation Error</source>
-      <translation>Błąd walidacji</translation>
-    </message>
-    <message>
-      <source>Not all basic events have expressions for probability analysis.</source>
-      <translation>Nie wszystkie wydarzenia mają wyrażenia do prawdopodobieństwa analizy.</translation>
-    </message>
-    <message>
-      <source>Running analysis...</source>
-      <extracomment>This is a message shown during the analysis run.</extracomment>
-      <translation>Uruchamianie analizy...</translation>
-    </message>
-    <message>
-      <source>Configuration Error</source>
-      <translation>Błąd konfiguracji</translation>
-    </message>
-    <message>
-      <source>Initialization Error</source>
-      <extracomment>The error upon initialization from a file.</extracomment>
-      <translation>Błąd inicjalizacji</translation>
-    </message>
-    <message>
-      <source>Fault tree &apos;%1&apos; must have a single top-gate.</source>
-      <extracomment>Single top/root event fault tree are expected by GUI.</extracomment>
-      <translation>Drzewo awarii &apos;%1&apos; musi mieć pojedynczą bramę górną.</translation>
-    </message>
-    <message>
-      <source>Find/Filter (Perl Regex)</source>
-      <extracomment>The search bar.</extracomment>
-      <translation>Znajdź/filtruj (Perl Regex)</translation>
-    </message>
-    <message>
-      <source>About SCRAM</source>
-      <translation>O SCRAM</translation>
-    </message>
-    <message>
-      <source>Undo:</source>
-      <translation>Cofnij:</translation>
-    </message>
-    <message>
-      <source>Redo:</source>
-      <translation>Ponów:</translation>
-    </message>
-    <message>
-      <source>Save Model?</source>
-      <translation>Zapisać Model?</translation>
-    </message>
-    <message>
-      <source>Save changes to model &apos;%1&apos; before closing?</source>
-      <translation>Zapisać zmiany w modelu &apos;%1&apos; przed zamknięciem?</translation>
-    </message>
-    <message>
-      <source>Open Model Files</source>
-      <translation>Otwórz pliki modelu</translation>
-    </message>
-    <message>
-      <source>Model Exchange Format</source>
-      <translation>Format wymiany modelu</translation>
-    </message>
-    <message>
-      <source>All files</source>
-      <translation>Wszystkie pliki</translation>
-    </message>
-    <message>
-      <source>Save Model As</source>
-      <translation>Zapisz model jako</translation>
-    </message>
-    <message>
-      <source>Export Report As</source>
-      <translation>Eksportuj model jako</translation>
-    </message>
-    <message>
-      <source>Dependency Container Removal</source>
-      <extracomment>The container w/ dependents still in the model.</extracomment>
-      <translation>Usuwanie kontenera zależności</translation>
-    </message>
-    <message>
-      <source>Fault tree &apos;%1&apos; with root &apos;%2&apos; is not removable because it has dependent non-root gates. Remove the gates from the fault tree before this operation.</source>
-      <translation>Drzewo awarii &apos;%1&apos; z korzeniem &apos;%2&apos; nie jest wymienny, ponieważ ma zależne korzenie nie należące do bramy. Usuń bramy z drzewa awarii przed wykonaniem tej operacji.</translation>
-    </message>
-    <message>
-      <source>Remove fault tree &apos;%1&apos; with root &apos;%2&apos;</source>
-      <translation>Usuń drzewo błędu &apos;%1&apos; z korzeniem &apos;%2&apos;</translation>
-    </message>
-    <message>
-      <source>Dependency Event Removal</source>
-      <extracomment>The event w/ dependents in the model.</extracomment>
-      <translation>Usuwanie zależności zdarzeń</translation>
-    </message>
-    <message>
-      <source>Event &apos;%1&apos; is not removable because it has dependents. Remove the event from the dependents before this operation.</source>
-      <translation>Zdarzenie &apos;%1&apos; jest nieusuwalne, ponieważ ma zależności. Usuń to zdarzenie z zależności przed wykonaniem tej operacji.</translation>
-    </message>
-    <message>
-      <source>Add fault tree &apos;%1&apos; with gate &apos;%2&apos;</source>
-      <extracomment>Addition of a fault by defining its root event first.</extracomment>
-      <translation>Dodaj drzewo błędu &apos;%1&apos; z bramą &apos;%2&apos;</translation>
-    </message>
-    <message>
-      <source>Gates</source>
-      <extracomment>The tab for the table of gates.</extracomment>
-      <translation>Bramy</translation>
-    </message>
-    <message>
-      <source>Basic Events</source>
-      <extracomment>The tab for the table of basic events.</extracomment>
-      <translation>Podstawowe wydarzenia</translation>
-    </message>
-    <message>
-      <source>House Events</source>
-      <extracomment>The tab for the table of house events.</extracomment>
-      <translation>Stałe Zdarzenia</translation>
-    </message>
-    <message>
-      <source>Fault Tree: %1</source>
-      <extracomment>The tab for a fault tree diagram.</extracomment>
-      <translation>Drzewo błędu: %1</translation>
-    </message>
-    <message>
-      <source>Products: %1</source>
-      <translation>Produkty: %1</translation>
-    </message>
-    <message>
-      <source>Importance: %1</source>
-      <translation>Znaczenie: %1</translation>
-    </message>
-    <message>
-      <source>&lt;h1&gt;SCRAM %1&lt;/h1&gt;The GUI front-end for SCRAM,&lt;br/&gt;a command-line risk analysis multi-tool.&lt;br/&gt;&lt;br/&gt;License: GPLv3+&lt;br/&gt;Homepage: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Technical Support: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;Bug Tracker: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</source>
-      <translation>&lt;h1&gt;SCRAM %1&lt;/h1&gt;Interfejs graficzny dla SCRAM,&lt;br/&gt;wielofunkcyjne narzędzie do analizy ryzyka.&lt;br/&gt;&lt;br/&gt;Licencji: GPLv3+&lt;br/&gt;Strona główna: &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;br/&gt;Wsparcie techniczne: &lt;a href=&quot;%3&quot;&gt;%3&lt;/a&gt;&lt;br/&gt;śledzenie błędów: &lt;a href=&quot;%4&quot;&gt;%4&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;%5</translation>
-    </message>
-    <message>
-      <source>Configuration file error</source>
-      <translation>Błąd pliku konfiguracji</translation>
-    </message>
-    <message>
-      <source>XML Validity Error</source>
-      <translation>Błąd ważności XML</translation>
-    </message>
-    <message>
-      <source>Invalid configuration file</source>
-      <translation>Nieprawidłowy plik konfiguracji</translation>
-    </message>
-    <message>
-      <source>Invalid configurations</source>
-      <translation>Nieprawidłowe konfiguracje</translation>
-    </message>
-    <message>
-      <source>Input file error</source>
-      <translation>Błąd pliku wejściowego</translation>
-    </message>
-    <message>
-      <source>Invalid input file</source>
-      <translation>Nieprawidłowy plik wejściowy</translation>
-    </message>
-    <message>
-      <source>Invalid input model</source>
-      <translation>Nieprawidłowy model wejściowy</translation>
-    </message>
-    <message>
-      <source>Unnamed Model</source>
-      <translation>Nienazwany model</translation>
-    </message>
-    <message>
-      <source>Save error</source>
-      <comment>error on saving to file</comment>
-      <translation>Zapisz błąd</translation>
-    </message>
-    <message>
-      <source>Reporting error</source>
-      <translation>Raportowanie błędu</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::ModelTree</name>
-    <message>
-      <source>Fault Trees (%L1)</source>
-      <extracomment>The parent item for collections of fault trees in the model.</extracomment>
-      <translation>Drzewa błędu (%L1)</translation>
-    </message>
-    <message>
-      <source>Gates (%L1)</source>
-      <extracomment>The table of gates.</extracomment>
-      <translation>Bramy (%L1)</translation>
-    </message>
-    <message>
-      <source>Basic Events (%L1)</source>
-      <extracomment>The table of basic events.</extracomment>
-      <translation>Podstawowe zdarzenia (%L1)</translation>
-    </message>
-    <message>
-      <source>House Events (%L1)</source>
-      <extracomment>The table of house events.</extracomment>
-      <translation>Stałe Zdarzenia (%L1)</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::PreferencesDialog</name>
-    <message>
-      <source>Restart Required</source>
-      <translation>Wymagany reset</translation>
-    </message>
-    <message>
-      <source>The language change will take effect after an application restart.</source>
-      <translation>Zmiana języka zacznie obowiązywać po resecie aplikacji.</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::ReportTree</name>
-    <message>
-      <source>Products (%L1)</source>
-      <translation>Produkty (%L1)</translation>
-    </message>
-    <message>
-      <source>Probability (%1)</source>
-      <translation>Prawdopodobieństwo (%1)</translation>
-    </message>
-    <message>
-      <source>Importance Factors (%L1)</source>
-      <translation>Znaczenie czytników (%L1)</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::BasicEvent</name>
-    <message>
-      <source>Set basic event &apos;%1&apos; flavor to &apos;%2&apos;</source>
-      <translation>Ustaw stan podstawowego wydarzenia &apos;%1&apos; na &apos;%2&apos;</translation>
-    </message>
-    <message>
-      <source>Basic</source>
-      <translation>Podstawowe</translation>
-    </message>
-    <message>
-      <source>Undeveloped</source>
-      <translation>Nierozwinięty</translation>
-    </message>
-    <message>
-      <source>Conditional</source>
-      <extracomment>Actually, this is &apos;conditioning&apos; since the event is the condition for some sub-tree.</extracomment>
-      <translation>Warunkowo</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::BasicEventContainerModel</name>
-    <message>
-      <source>ID</source>
-      <translation>ID</translation>
-    </message>
-    <message>
-      <source>Flavor</source>
-      <extracomment>The flavor type of a basic event.</extracomment>
-      <translation>Rodzaj</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <extracomment>In PRA context, probability may be unavailability or unreliability.</extracomment>
-      <translation>Prawdopodobieństwo</translation>
-    </message>
-    <message>
-      <source>Label</source>
-      <translation>Etykieta</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::Gate</name>
-    <message>
-      <source>and</source>
-      <translation>and</translation>
-    </message>
-    <message>
-      <source>or</source>
-      <translation>or</translation>
-    </message>
-    <message>
-      <source>at-least %1</source>
-      <extracomment>Also named as &apos;vote&apos;, &apos;voting or&apos;, &apos;combination&apos;, &apos;combo&apos;.</extracomment>
-      <translation>co najmniej %1</translation>
-    </message>
-    <message>
-      <source>xor</source>
-      <translation>xor</translation>
-    </message>
-    <message>
-      <source>not</source>
-      <translation>not</translation>
-    </message>
-    <message>
-      <source>null</source>
-      <extracomment>This is &apos;pass-through&apos; or &apos;no-action&apos; gate type.</extracomment>
-      <translation>null</translation>
-    </message>
-    <message>
-      <source>nand</source>
-      <extracomment>not and.</extracomment>
-      <translation>nand</translation>
-    </message>
-    <message>
-      <source>nor</source>
-      <extracomment>not or.</extracomment>
-      <translation>nor</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::GateContainerModel</name>
-    <message>
-      <source>ID</source>
-      <translation>ID</translation>
-    </message>
-    <message>
-      <source>Connective</source>
-      <extracomment>Boolean operator of the Boolean formula.</extracomment>
-      <translation>Łącznej</translation>
-    </message>
-    <message>
-      <source>Args</source>
-      <extracomment>The number of arguments in the Boolean formula.</extracomment>
-      <translation>Args</translation>
-    </message>
-    <message>
-      <source>Label</source>
-      <translation>Etykieta</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::HouseEventContainerModel</name>
-    <message>
-      <source>ID</source>
-      <translation>ID</translation>
-    </message>
-    <message>
-      <source>State</source>
-      <extracomment>House event Boolean state.</extracomment>
-      <translation>Stan</translation>
-    </message>
-    <message>
-      <source>Label</source>
-      <translation>Etykieta</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::ImportanceTableModel</name>
-    <message>
-      <source>ID</source>
-      <translation>ID</translation>
-    </message>
-    <message>
-      <source>Occurrence</source>
-      <translation>Wystąpienie</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <translation>Prawdopodobieństwo</translation>
-    </message>
-    <message>
-      <source>MIF</source>
-      <translation>MIF</translation>
-    </message>
-    <message>
-      <source>CIF</source>
-      <translation>CIF</translation>
-    </message>
-    <message>
-      <source>DIF</source>
-      <translation>DIF</translation>
-    </message>
-    <message>
-      <source>RAW</source>
-      <translation>RAW</translation>
-    </message>
-    <message>
-      <source>RRW</source>
-      <translation>RRW</translation>
-    </message>
-  </context>
-  <context>
-    <name>scram::gui::model::ProductTableModel</name>
-    <message>
-      <source>Product</source>
-      <translation>Produkt</translation>
-    </message>
-    <message>
-      <source>Order</source>
-      <translation>Zamówienie</translation>
-    </message>
-    <message>
-      <source>Probability</source>
-      <translation>Prawdopodobieństwo</translation>
-    </message>
-    <message>
-      <source>Contribution</source>
-      <translation>Wkład</translation>
     </message>
   </context>
 </TS>
