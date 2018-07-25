@@ -1,0 +1,6 @@
+<map id="scram::core::Settings::probability_analysis" name="scram::core::Settings::probability_analysis">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Initializer.xhtml#aa6329e9c18a0ef61415f8c7cb6076265" title="Specializations for elements defined after registration. " alt="" coords="219,5,378,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1Project.xhtml#aa72871e05c53f98f8c4f48ec61277754" title="A constructor with project configurations for analysis. " alt="" coords="215,71,382,98"/>
+<area shape="rect" id="node4" href="$classscram_1_1Reporter.xhtml#a87eeccfed9678b035c745b6ed1610dbf" title="Reports the results of risk analysis on a model. " alt="" coords="212,122,385,149"/>
+<area shape="rect" id="node5" href="$classscram_1_1Reporter.xhtml#a7f4903f4c19a9630f828395eded780bf" title="A convenience function to generate the report into a file. " alt="" coords="433,122,607,149"/>
+</map>

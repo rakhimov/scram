@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Input Files &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Project Files" href="project_file.html" />
+    <link rel="prev" title="Substitutions" href="substitutions.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Input Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#encodings">Encodings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#steps-in-xml-input-validation">Steps in XML Input Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#validation-schemas">Validation Schemas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aralia-input-format">Aralia Input Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-file-examples">Input File Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fault-tree-input-file">Fault Tree Input File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aralia-version">Aralia Version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Input Files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="input-files">
+<h1>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h1>
+<p>SCRAM uses XML input files to describe analysis.
+One model per run is assumed.
+See <a class="reference internal" href="xml_comments.html#xml-tools"><span class="std std-ref">XML File Helper Tools</span></a> for more convenient writing and reading of XML input files.</p>
+<p>The input file format follows
+the Open-PSA Model Exchange Format (<a class="reference internal" href="references.html#mef" id="id1">[MEF]</a>) version 2.0d or later.
+An extensive description is given in the above format documentation by Open-PSA,
+and input files should be straightforward to create and understand.
+However, not all Open-PSA formatting is supported,
+and some additional assumptions/restrictions are made by SCRAM.
+See <a class="reference internal" href="opsa_support.html#opsa-support"><span class="std std-ref">Supported Open-PSA MEF Features</span></a> for the format description
+and current implementation with differences.</p>
+<p>In addition to the XML format,
+the <a class="reference internal" href="#aralia-format"><span class="std std-ref">Aralia Input Format</span></a> is supported indirectly.</p>
+<div class="section" id="encodings">
+<h2>Encodings<a class="headerlink" href="#encodings" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>UTF-8</li>
+<li>UTF-16</li>
+<li>other encodings supported by <a class="reference external" href="http://xmlsoft.org/encoding.html">GNOME XML Parser</a> on the given platform.</li>
+</ul>
+</div>
+<div class="section" id="steps-in-xml-input-validation">
+<h2>Steps in XML Input Validation<a class="headerlink" href="#steps-in-xml-input-validation" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Several input files to describe one model.</p>
+<blockquote>
+<div><ul class="simple">
+<li>The first file must define the name, label, and attributes of the model.
+This information about models in the other input files is ignored without a warning,
+which allows reuse of files with analysis constructs from other models.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">XML input file validation against the <a class="reference external" href="http://relaxng.org/">RELAX NG</a> <a class="reference internal" href="#schema"><span class="std std-ref">Validation Schemas</span></a>.</p>
+</li>
+<li><p class="first">The validation assumptions/requirements:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Construct names and references are case-sensitive.</li>
+<li>Leading and trailing whitespace characters are trimmed.</li>
+<li>Names and references should conform to the MEF recommendations.</li>
+<li>Public names must be unique globally,
+and private names must be unique locally within containers.</li>
+<li>References are followed according to the public and private roles
+described in the Open-PSA MEF section
+<em>IV.3.2. Solving Name Conflicts: Public versus Private Elements</em>.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Additional validation of fault trees and values of parameters:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Each gate or formula must have the correct number of arguments.</li>
+<li>A duplicate argument in Boolean formulas or gates is an error.</li>
+<li>Values of expressions and parameters must be valid, i.e., non-negative for probabilities.</li>
+<li>All events must be explicitly defined for probability calculations.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Error messages (with a file name, line numbers, types of errors):</p>
+<blockquote>
+<div><ul class="simple">
+<li>Report a cyclic tree (gates or event tree branches).</li>
+<li>Report a cyclic parameter with expressions.</li>
+<li>Report a cyclic rule with instructions.</li>
+<li>Report missing element descriptions.</li>
+<li>Report an error if an event or a construct is being redefined.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">Warnings for potential errors:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Unused model constructs:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Primary events</li>
+<li>Parameters</li>
+<li>Event trees</li>
+<li>Initiating events or event groups</li>
+<li>Functional events, branches, sequences, rules</li>
+<li>Extern functions and libraries</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="validation-schemas">
+<span id="schema"></span><h2>Validation Schemas<a class="headerlink" href="#validation-schemas" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/rakhimov/scram/blob/master/share/input.rng">RELAX NG Schema</a></li>
+</ul>
+</div>
+<div class="section" id="aralia-input-format">
+<span id="aralia-format"></span><h2>Aralia Input Format<a class="headerlink" href="#aralia-input-format" title="Permalink to this headline">¶</a></h2>
+<p>A more convenient format than the XML for writing simple fault trees
+utilizes a shorter notation for gates, operators (<code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">|</span></code>, <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>, <code class="docutils literal notranslate"><span class="pre">~</span></code>, <code class="docutils literal notranslate"><span class="pre">^</span></code>), and events
+to create a collection of Boolean formulas.
+The Aralia format can be converted into the XML format with <a class="reference external" href="https://github.com/open-psa/translators/blob/master/aralia.py">this script</a>.</p>
+</div>
+<div class="section" id="input-file-examples">
+<h2>Input File Examples<a class="headerlink" href="#input-file-examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fault-tree-input-file">
+<h3>Fault Tree Input File<a class="headerlink" href="#fault-tree-input-file" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="nt">&lt;opsa-mef&gt;</span>
+  <span class="nt">&lt;define-fault-tree</span> <span class="na">name=</span><span class="s">&quot;TwoTrains&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;define-gate</span> <span class="na">name=</span><span class="s">&quot;TopEvent&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;and&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;TrainOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;TrainTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/and&gt;</span>
+    <span class="nt">&lt;/define-gate&gt;</span>
+    <span class="nt">&lt;define-gate</span> <span class="na">name=</span><span class="s">&quot;TrainOne&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;or&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;ValveOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;PumpOne&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/or&gt;</span>
+    <span class="nt">&lt;/define-gate&gt;</span>
+    <span class="nt">&lt;define-gate</span> <span class="na">name=</span><span class="s">&quot;TrainTwo&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;or&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;ValveTwo&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;event</span> <span class="na">name=</span><span class="s">&quot;PumpTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/or&gt;</span>
+    <span class="nt">&lt;/define-gate&gt;</span>
+    <span class="nt">&lt;define-basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveOne&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;float</span> <span class="na">value=</span><span class="s">&quot;0.5&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/define-basic-event&gt;</span>
+    <span class="nt">&lt;define-basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveTwo&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;float</span> <span class="na">value=</span><span class="s">&quot;0.5&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/define-basic-event&gt;</span>
+    <span class="nt">&lt;define-basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpOne&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;float</span> <span class="na">value=</span><span class="s">&quot;0.7&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/define-basic-event&gt;</span>
+    <span class="nt">&lt;define-basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpTwo&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;float</span> <span class="na">value=</span><span class="s">&quot;0.7&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/define-basic-event&gt;</span>
+  <span class="nt">&lt;/define-fault-tree&gt;</span>
+<span class="nt">&lt;/opsa-mef&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="aralia-version">
+<h3>Aralia Version<a class="headerlink" href="#aralia-version" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TwoTrains</span>
+
+<span class="n">TopEvent</span> <span class="p">:</span><span class="o">=</span> <span class="p">(</span><span class="n">TrainOne</span> <span class="o">&amp;</span> <span class="n">TrainTwo</span><span class="p">)</span>
+<span class="n">TrainOne</span> <span class="p">:</span><span class="o">=</span> <span class="p">(</span><span class="n">ValveOne</span> <span class="o">|</span> <span class="n">PumpOne</span><span class="p">)</span>
+<span class="n">TrainTwo</span> <span class="p">:</span><span class="o">=</span> <span class="p">(</span><span class="n">ValveTwo</span> <span class="o">|</span> <span class="n">PumpTwo</span><span class="p">)</span>
+
+<span class="n">p</span><span class="p">(</span><span class="n">ValveOne</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">p</span><span class="p">(</span><span class="n">ValveTwo</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">p</span><span class="p">(</span><span class="n">PumpOne</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="n">p</span><span class="p">(</span><span class="n">PumpTwo</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.7</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="project_file.html" class="btn btn-neutral float-right" title="Project Files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="substitutions.html" class="btn btn-neutral" title="Substitutions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

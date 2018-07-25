@@ -1,0 +1,4 @@
+<map id="scram::mef::Component::GatherGates" name="scram::mef::Component::GatherGates">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Component.xhtml#af901b99ff262cdea54d489f54c1fb7ed" title="Adds MEF constructs into this component container. " alt="" coords="232,5,443,32"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1FaultTree.xhtml#a9535bd49edb4598ead887faf8dadd9f2" title="Collects top event gates in this fault tree with components. " alt="" coords="258,57,417,98"/>
+</map>

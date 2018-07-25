@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="scram::gui::model::\lProxy\&lt; BasicEvent, mef\l::BasicEvent \&gt;" alt="" coords="141,5,316,61"/>
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEvent.xhtml" title="The proxy to manage mef::BasicEvent. " alt="" coords="394,33,539,74"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="scram::gui::model::\lProxy\&lt; Gate, mef::Gate \&gt;" alt="" coords="133,85,324,126"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml" title="The proxy to manage mef::Gate. " alt="" coords="379,137,555,164"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="scram::gui::model::\lProxy\&lt; HouseEvent, mef\l::HouseEvent \&gt;" alt="" coords="137,215,320,271"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1HouseEvent.xhtml" title="The proxy to manage mef::HouseEvent. " alt="" coords="394,206,539,247"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="scram::gui::model::\lProxy\&lt; Model, mef::Model \&gt;" alt="" coords="127,294,331,335"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1model_1_1Model.xhtml" title="The wrapper around the MEF Model. " alt="" coords="394,274,539,315"/>
+<area shape="rect" id="node10" href="$classscram_1_1gui_1_1model_1_1Element.xhtml" title="The base proxy Element model for mef::Element. " alt="" coords="156,150,301,191"/>
+</map>

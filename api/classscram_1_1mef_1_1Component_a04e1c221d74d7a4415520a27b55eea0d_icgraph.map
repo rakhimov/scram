@@ -1,0 +1,5 @@
+<map id="scram::mef::Component::basic_events" name="scram::mef::Component::basic_events">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Component.xhtml#a63441da08667fe6826f3ae0c0a5a94fe" title="Recursively traverses components to gather gates relevant to the whole component. ..." alt="" coords="232,35,411,76"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1FaultTree.xhtml#a9535bd49edb4598ead887faf8dadd9f2" title="Collects top event gates in this fault tree with components. " alt="" coords="485,5,643,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Component.xhtml#af901b99ff262cdea54d489f54c1fb7ed" title="Adds MEF constructs into this component container. " alt="" coords="459,71,669,98"/>
+</map>

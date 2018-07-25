@@ -1,0 +1,49 @@
+<map id="scram::mef::Element::name" name="scram::mef::Element::name">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Component.xhtml#a4fd4a9b195b92c8061149da20f5bd3f0" title="Adds MEF constructs into this component container. " alt="" coords="751,61,961,87"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1CcfGroup.xhtml#ac5ff8673a8ebbecee6a645671d5ae063" title="Adds the distribution that describes the probability of basic events in this CCF group. " alt="" coords="238,611,401,652"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1CcfGroup.xhtml#a585735fdd3be1d19d39705dfb80bca37" title="Adds a CCF factor for the specified model. " alt="" coords="238,676,401,717"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1CcfGroup.xhtml#a9d6dbf5a3154a1537a806e7f3993c710" title="Adds a basic event into this CCF group. " alt="" coords="238,741,401,783"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a070c68c0d67edb30c9bf57e226aaf88e" title="Analyzes an event tree given the initiating event. " alt="" coords="209,807,429,848"/>
+<area shape="rect" id="node9" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a7aed757ac5a7a96878c2706a7a9710bb" title="Analyzes the model and performs computations specified in the settings. " alt="" coords="228,251,411,292"/>
+<area shape="rect" id="node11" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="740,229,972,271"/>
+<area shape="rect" id="node12" href="$classscram_1_1mef_1_1CcfEvent.xhtml#a2bf0b6b7db8a5851c484dac1d20811cd" title="Constructs CCF event with specific name that is used for internal purposes. " alt="" coords="240,872,399,913"/>
+<area shape="rect" id="node13" href="$classscram_1_1mef_1_1Initializer.xhtml#a969f088f20697a8a317cb7c998f034ad" title="Specializations for elements defined after registration. " alt="" coords="505,944,664,985"/>
+<area shape="rect" id="node14" href="$classscram_1_1mef_1_1Element.xhtml#a006e56dfae6a5a3bb91f1a4644ed59fa" title="Constructs an element with an original name. " alt="" coords="241,1055,397,1096"/>
+<area shape="rect" id="node15" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a3e3404417cbdcf92474e5653ec24f936" title="scram::core::EventTreeAnalysis\l::EventTreeAnalysis" alt="" coords="209,1120,429,1161"/>
+<area shape="rect" id="node16" href="$classscram_1_1mef_1_1ExternLibrary.xhtml#a9fb4b0d55c05a5055c606664d1823759" title="Constructs an element with an original name. " alt="" coords="226,1185,413,1227"/>
+<area shape="rect" id="node17" href="$classscram_1_1mef_1_1Fork.xhtml#a2f4a542f37c3874891f1fd5a2796b1b1" title="scram::mef::Fork::Fork" alt="" coords="237,1251,402,1278"/>
+<area shape="rect" id="node18" href="$classscram_1_1mef_1_1Component.xhtml#a63441da08667fe6826f3ae0c0a5a94fe" title="Recursively traverses components to gather gates relevant to the whole component. ..." alt="" coords="230,1303,409,1344"/>
+<area shape="rect" id="node21" href="$classscram_1_1mef_1_1Element.xhtml#adc6d9dba718f5c89524803d035f94e05" title="scram::mef::Element\l::GetAttribute" alt="" coords="241,1392,397,1433"/>
+<area shape="rect" id="node22" href="$classscram_1_1mef_1_1Model.xhtml#a7072f42b762e3758127f1755a2c8970e" title="Convenience function to retrieve an event with its ID. " alt="" coords="245,1457,394,1499"/>
+<area shape="rect" id="node24" href="$classscram_1_1mef_1_1Model.xhtml#a8c11c1a8b9cd08ac3305ceb35d2ae2b4" title="scram::mef::Model::\lGetOptionalName" alt="" coords="510,397,659,439"/>
+<area shape="rect" id="node25" href="$cycle_8h.xhtml#a230f776f001ca1a60c9ad6ee960aa2f0" title="Specialization for event&#45;tree link name retrieval. " alt="" coords="248,1523,391,1564"/>
+<area shape="rect" id="node26" href="$classscram_1_1mef_1_1Model.xhtml#a742b8f5f989b633eeeeb192d2e793181" title="scram::mef::Model::\lHasDefaultName" alt="" coords="245,361,394,403"/>
+<area shape="rect" id="node28" href="$classscram_1_1mef_1_1Id.xhtml#afa644b550e338f53cc22a867e2ac52a9" title="Resets the element ID. " alt="" coords="253,1589,386,1615"/>
+<area shape="rect" id="node29" href="$classscram_1_1mef_1_1Model.xhtml#a9cc591bf6c40805064ea0a9ec0c453c7" title="Creates a model container. " alt="" coords="245,1640,394,1681"/>
+<area shape="rect" id="node30" href="$classscram_1_1mef_1_1Phase.xhtml#ad41525a07d4e3c6b2c89b8a8c3730e44" title="Constructs an element with an original name. " alt="" coords="244,1705,395,1747"/>
+<area shape="rect" id="node31" href="$classscram_1_1mef_1_1Element.xhtml#adbe5cb2da18b56b56a6c6542a0492373" title="Removes an attribute of this element. " alt="" coords="241,1771,397,1812"/>
+<area shape="rect" id="node32" href="$serialization_8cc.xhtml#a83f7058a5caad9ec3ffb5fd6c7d7b8f6" title="Convenience function for serialization into a file. " alt="" coords="241,1861,398,1887"/>
+<area shape="rect" id="node33" href="$classscram_1_1mef_1_1Model.xhtml#a63c29088e50a8e55a75a8c707ee068d3" title="Sets the optional name of the model. " alt="" coords="245,1912,394,1953"/>
+<area shape="rect" id="node34" href="$classscram_1_1mef_1_1Id.xhtml#ad92eeb2ebe9c650e3c5ad90526f2d8f9" title="Produces unique name for the model element within the same type. " alt="" coords="215,559,424,586"/>
+<area shape="rect" id="node41" href="$classscram_1_1mef_1_1Alignment.xhtml#a9f8e15e0f89ab4d0a9adb1645ace3f1b" title="Ensures that all phases add up to be valid for the alignment. " alt="" coords="235,1977,403,2019"/>
+<area shape="rect" id="node43" href="$classscram_1_1mef_1_1Substitution.xhtml#ab1859efddac529e0827537fae2f16cbb" title="Checks if the substitution is setup correctly. " alt="" coords="229,989,409,1031"/>
+<area shape="rect" id="node45" href="$classscram_1_1mef_1_1BasicEvent.xhtml#acfc0e73e1add67aa2ace841350eb62cd" title="Validates the probability expressions for the primary event. " alt="" coords="233,112,406,153"/>
+<area shape="rect" id="node48" href="$classscram_1_1mef_1_1CcfGroup.xhtml#a31cbe59ce89f295de7bb810d8b75990e" title="Validates the setup for the CCF model and group. " alt="" coords="238,2043,401,2084"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Initializer.xhtml#a8acae56d17d34aa1500dcb83763d638a" title="Specializations for elements defined after registration. " alt="" coords="505,813,664,855"/>
+<area shape="rect" id="node6" href="$structscram_1_1mef_1_1Initializer_1_1Extractor_3_01T_00-1_01_4.xhtml#aed4438ca816e65ced748e4bc1f67a631" title="Constructs an expression with a variable number of arguments. " alt="" coords="477,879,692,920"/>
+<area shape="rect" id="node10" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a337f7e9fe02b1581e872590d6f7baa01" title="scram::core::RiskAnalysis\l::model" alt="" coords="493,229,676,271"/>
+<area shape="rect" id="node19" href="$classscram_1_1mef_1_1Component.xhtml#af901b99ff262cdea54d489f54c1fb7ed" title="Adds MEF constructs into this component container. " alt="" coords="479,1281,690,1307"/>
+<area shape="rect" id="node20" href="$classscram_1_1mef_1_1FaultTree.xhtml#a9535bd49edb4598ead887faf8dadd9f2" title="Collects top event gates in this fault tree with components. " alt="" coords="505,1332,664,1373"/>
+<area shape="rect" id="node23" href="$classscram_1_1mef_1_1Model.xhtml#a399227af1b36b77162c75a51fe13ebe7" title="Adds MEF constructs into the model container. " alt="" coords="497,1465,672,1491"/>
+<area shape="rect" id="node27" href="$serialization_8cc.xhtml#a04bd5db90ad7b35c9bd60f945d76fe6c" title="Serializes the model and its data into stream as XML. " alt="" coords="506,346,663,373"/>
+<area shape="rect" id="node35" href="$cycle_8h.xhtml#a8f86e1c839eb739736a5c3836cd93c5d" title="Retrieves a unique name for a node. " alt="" coords="513,539,656,580"/>
+<area shape="rect" id="node38" href="$classscram_1_1mef_1_1Container.xhtml#acfbeb704d99355151ebff50b29885c46" title="Retrieves an element from the container. " alt="" coords="487,604,682,645"/>
+<area shape="rect" id="node39" href="$classscram_1_1mef_1_1Container.xhtml#a2136972b2c5201110105dfce05cc674e" title="Adds a unique element into the container, ensuring no duplicated entries. " alt="" coords="486,669,683,711"/>
+<area shape="rect" id="node40" href="$classscram_1_1mef_1_1Container.xhtml#a28294d2f7d99945b7c583eebc2e7a620" title="Removes MEF elements from the container. " alt="" coords="502,734,667,790"/>
+<area shape="rect" id="node36" href="$cycle_8h.xhtml#a15cca15d6c6a9db61edc78ca5d195f9a" title="Prints the detected cycle from the output produced by cycle detection functions. " alt="" coords="785,580,927,621"/>
+<area shape="rect" id="node37" href="$cycle_8h.xhtml#a8ff9fbf65ad4582369783058a9dec0fc" title="Checks for cycles in a model constructs. " alt="" coords="1020,539,1163,580"/>
+<area shape="rect" id="node42" href="$classscram_1_1mef_1_1Initializer.xhtml#a65ae79523f0590087038b5bfa75ed7b9" title="Specializations for elements defined after registration. " alt="" coords="505,1977,664,2019"/>
+<area shape="rect" id="node44" href="$classscram_1_1mef_1_1Substitution.xhtml#ad29f35247718d44ff8d6f9bd9bd41d9f" title="scram::mef::Substitution\l::declarative" alt="" coords="495,1009,675,1051"/>
+<area shape="rect" id="node46" href="$classscram_1_1mef_1_1CcfGroup.xhtml#a06dd05cabcbeddf42090536f6a47a184" title="scram::mef::CcfGroup\l::members" alt="" coords="503,112,666,153"/>
+<area shape="rect" id="node47" href="$classscram_1_1mef_1_1CcfGroup.xhtml#ab399c5ed0c1d7d0a316ac3b7244b7eb9" title="Processes the given factors and members to create common cause failure probabilities and new events t..." alt="" coords="775,112,937,153"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="scram::core::Settings::time_step" name="scram::core::Settings::time_step">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1McubCalculator.xhtml#af47379d2ba9190b34aef1acfa402e15c" title="Calculates probabilities using the minimal cut set upper bound (MCUB) approximation. " alt="" coords="212,5,416,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1Project.xhtml#aa72871e05c53f98f8c4f48ec61277754" title="A constructor with project configurations for analysis. " alt="" coords="231,71,397,98"/>
+</map>

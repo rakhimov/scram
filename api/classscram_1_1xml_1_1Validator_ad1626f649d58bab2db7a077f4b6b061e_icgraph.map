@@ -1,0 +1,5 @@
+<map id="scram::xml::Validator::validate" name="scram::xml::Validator::validate">
+<area shape="rect" id="node2" href="$classscram_1_1xml_1_1Document.xhtml#a1672ae449b286137ae239ef4adfada44" title="Parses XML input document. " alt="" coords="211,5,379,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Initializer.xhtml#aa0e4d36e8f44c9f7952c86e67f2de273" title="Reads input files with the structure of analysis constructs. " alt="" coords="215,71,374,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1Project.xhtml#aa72871e05c53f98f8c4f48ec61277754" title="A constructor with project configurations for analysis. " alt="" coords="211,137,378,163"/>
+</map>

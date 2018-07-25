@@ -1,0 +1,8 @@
+<map id="eventdialog.cpp" name="eventdialog.cpp">
+<area shape="rect" id="node2" href="$eventdialog_8h.xhtml" title="Dialog to edit and validate events. " alt="" coords="1068,80,1176,107"/>
+<area shape="rect" id="node25" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="1926,237,2017,263"/>
+<area shape="rect" id="node37" href="$guiassert_8h.xhtml" title="GUI assertions that should not crash the program by default. " alt="" coords="1762,80,1855,107"/>
+<area shape="rect" id="node40" href="$validator_8h.xhtml" title="Collection of validators. " alt="" coords="3814,80,3902,107"/>
+<area shape="rect" id="node14" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="971,155,1046,181"/>
+<area shape="rect" id="node24" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="959,237,1058,263"/>
+</map>

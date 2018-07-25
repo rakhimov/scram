@@ -1,0 +1,9 @@
+<map id="scram::gui::diagram::Gate::Gate" name="scram::gui::diagram::Gate::Gate">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml#abe97d8835764cc5754d7141c6eaf7c7d" title="scram::gui::model::\lGate::args" alt="" coords="234,5,379,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent.xhtml#a827dd95218bb3eece34e5777d487a590" title="scram::gui::model::\lBasicEvent::flavor" alt="" coords="234,71,379,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml#aa92554a7eba539e49c5a8a1cd259cd45" title="Constructs graphics object representing the given gate type. " alt="" coords="204,136,409,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#a29eb38d7ae8c6258de2a2bcc69f79046" title="scram::gui::diagram\l::Event::units" alt="" coords="457,195,608,236"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#a689aedbf5244a97df88a76993241991d" title="Releases the current derived class item, and sets the new one. " alt="" coords="217,253,396,295"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml#af6bdef0f594fd764a96912a4df8eb2f2" title="scram::gui::model::\lGate::type" alt="" coords="234,319,379,360"/>
+<area shape="rect" id="node8" href="$translate_8h.xhtml#adfe5f7367036126ec5ca81430fbf4c71" title="Forwards to translate function with a default global context. " alt="" coords="481,326,585,353"/>
+</map>

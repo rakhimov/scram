@@ -1,0 +1,10 @@
+<map id="alignment.h" name="alignment.h">
+<area shape="rect" id="node4" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="1261,229,1347,256"/>
+<area shape="rect" id="node28" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="1863,80,1964,107"/>
+<area shape="rect" id="node16" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="1019,311,1083,338"/>
+<area shape="rect" id="node23" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="1660,311,1780,338"/>
+<area shape="rect" id="node27" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="1107,311,1237,338"/>
+<area shape="rect" id="node22" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="1179,401,1309,427"/>
+<area shape="rect" id="node29" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="1782,155,1853,181"/>
+<area shape="rect" id="node31" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="2163,229,2266,256"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="scram::gui::diagram::Event::setTypeGraphics" name="scram::gui::diagram::Event::setTypeGraphics">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1diagram_1_1BasicEvent.xhtml#a8d42e9b3c6a1f1dc7c764da03aa2134e" title="Assigns an event to a presentation view. " alt="" coords="239,5,417,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml#a2111abee08814f57bc5cdfd0452b8ec0" title="Constructs the graph with the transfer symbols for gates. " alt="" coords="253,71,403,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#a0cec58c01e850dc2571dcecfe1261c8e" title="scram::gui::diagram\l::Event::getTypeGraphics" alt="" coords="239,136,417,177"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1diagram_1_1HouseEvent.xhtml#aa0e8d4250c50e7795f15e7e67fd8da5c" title="Assigns an event to a presentation view. " alt="" coords="232,201,424,243"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1diagram_1_1TransferIn.xhtml#a2730a1fcb6263bbe58286e9b6082f642" title="Assigns an event to a presentation view. " alt="" coords="248,267,408,308"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1diagram_1_1UndevelopedEvent.xhtml#a5047cec2da3a7af805982b9acf10d063" title="Assigns an event to a presentation view. " alt="" coords="249,331,407,387"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml#a0d59d686a63ffaa23f6c121860354d4b" title="Adds the transfer&#45;out symbol besides the gate shape. " alt="" coords="472,136,639,177"/>
+</map>

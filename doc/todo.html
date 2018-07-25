@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TODO List for the SCRAM Project &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bugs and Issues" href="bugs.html" />
+    <link rel="prev" title="Coding Style and Quality Assurance" href="coding_standards.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TODO List for the SCRAM Project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#low-hanging-fruits">Low Hanging Fruits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enhancements-and-capabilities">Enhancements and Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#major">Major</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minor">Minor</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#code">Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>TODO List for the SCRAM Project</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="todo-list-for-the-scram-project">
+<h1>TODO List for the SCRAM Project<a class="headerlink" href="#todo-list-for-the-scram-project" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="low-hanging-fruits">
+<h2>Low Hanging Fruits<a class="headerlink" href="#low-hanging-fruits" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/rakhimov/scram/issues">Issues on GitHub</a></li>
+<li><a class="reference external" href="https://scram-pra.org/api/todo.xhtml">TODO list in the core code</a></li>
+<li><a class="reference external" href="https://scram-pra.org/gui-api/todo.xhtml">TODO list in the GUI code</a></li>
+<li><a class="reference external" href="https://github.com/rakhimov/scram/blob/develop/doc/bugs.rst">Bugs and Issues</a></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The following To-Do items are features with high uncertainties.
+Upon becoming more certain (realistic, clear, ready, doable),
+the items should graduate to GitHub issues.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Relative, subjective importance within groups is tagged in <em>italics</em>.
+The order of items is arbitrary (i.e., irrelevant).</p>
+</div>
+</div>
+<div class="section" id="enhancements-and-capabilities">
+<h2>Enhancements and Capabilities<a class="headerlink" href="#enhancements-and-capabilities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="major">
+<h3>Major<a class="headerlink" href="#major" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Sensitivity analysis. <em>Moderate</em></li>
+<li>Dynamic fault tree analysis. <em>High</em></li>
+<li>Systems with loops (risk network, strongly-connected components). <em>Low</em></li>
+<li>Markov chains (numerical and simulation-based analyses). <em>Moderate</em></li>
+<li>Reliability block diagrams. <em>Moderate</em></li>
+</ul>
+</div>
+<div class="section" id="minor">
+<h3>Minor<a class="headerlink" href="#minor" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Quantitative analysis with BDD w/o qualitative analysis. <em>Moderate</em></li>
+<li>Event-tree analysis shadow-variables optimizations. <em>High</em></li>
+<li>Incorporation of cut-offs (probability, contribution, dynamic) for ZBDD. <em>Moderate</em></li>
+<li>Advanced variable ordering and reordering heuristics for BDD. <em>Low</em></li>
+<li>Joint importance reliability factor. <em>Low</em></li>
+<li>Analysis for all system gates (qualitative and quantitative).
+Multi-rooted graph analysis. <em>Low</em></li>
+<li>Importance factor calculation for gates (formulas). <em>Low</em></li>
+<li>Uncertainty analysis for importance factors. <em>Moderate</em></li>
+<li>Generalization of parameter units and dimensional analysis. <em>Low</em></li>
+</ul>
+</div>
+</div>
+<div class="section" id="code">
+<h2>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">More tests for expressions. <em>Moderate</em></p>
+</li>
+<li><p class="first">More tests for preprocessing techniques. <em>High</em></p>
+<blockquote>
+<div><ul class="simple">
+<li>Graph equality tests.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bugs.html" class="btn btn-neutral float-right" title="Bugs and Issues" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="coding_standards.html" class="btn btn-neutral" title="Coding Style and Quality Assurance" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

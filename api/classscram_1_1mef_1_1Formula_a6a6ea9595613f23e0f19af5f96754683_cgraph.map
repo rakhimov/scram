@@ -1,0 +1,11 @@
+<map id="scram::mef::Formula::Swap" name="scram::mef::Formula::Swap">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Formula_1_1ArgSet.xhtml#a9e35c2fdad19fe30bc9e1ba4ccc8ed93" title="scram::mef::Formula\l::ArgSet::data" alt="" coords="208,5,363,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Formula_1_1ArgSet.xhtml#a1e4a926eb0379fdb33ee354f65348418" title="scram::mef::Formula\l::ArgSet::empty" alt="" coords="208,71,363,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Id.xhtml#a7e258c5f6332715d5ed6a3fdbf681a8b" title="scram::mef::Id::id" alt="" coords="219,137,352,163"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Formula.xhtml#a306266e72a52153d168abdce3d039368" title="scram::mef::Formula\l::max_number" alt="" coords="208,188,363,229"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1Formula.xhtml#a7a1e721a74179b966543929fcaabd6af" title="scram::mef::Formula\l::min_number" alt="" coords="208,253,363,295"/>
+<area shape="rect" id="node9" href="$classscram_1_1mef_1_1Formula_1_1ArgSet.xhtml#add1c73d7d5e7c20b08ec0eb814101aed" title="scram::mef::Formula\l::ArgSet::size" alt="" coords="208,319,363,360"/>
+<area shape="rect" id="node10" href="$classscram_1_1mef_1_1Usage.xhtml#ae2ee222f7ce6cd4660567ce97d551222" title="scram::mef::Usage::\lusage" alt="" coords="209,384,361,425"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Role.xhtml#aa1843c29411c29b27d79414d34525bbc" title="scram::mef::Role::role" alt="" coords="411,107,572,134"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Element.xhtml#adb401e2ca84aa98cb60797bec2500a81" title="scram::mef::Element\l::name" alt="" coords="413,159,569,200"/>
+</map>

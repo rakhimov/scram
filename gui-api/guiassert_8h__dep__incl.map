@@ -1,0 +1,14 @@
+<map id="guiassert.h" name="guiassert.h">
+<area shape="rect" id="node2" href="$diagram_8cpp.xhtml" title="Implementation of diagram graphics. " alt="" coords="5,80,108,107"/>
+<area shape="rect" id="node3" href="$elementcontainermodel_8cpp.xhtml" title="elementcontainermodel.cpp" alt="" coords="133,80,335,107"/>
+<area shape="rect" id="node4" href="$eventdialog_8cpp.xhtml" title="eventdialog.cpp" alt="" coords="359,80,482,107"/>
+<area shape="rect" id="node5" href="$importancetablemodel_8cpp.xhtml" title="importancetablemodel.cpp" alt="" coords="506,80,701,107"/>
+<area shape="rect" id="node6" href="$language_8cpp.xhtml" title="language.cpp" alt="" coords="725,80,833,107"/>
+<area shape="rect" id="node7" href="$mainwindow_8cpp.xhtml" title="mainwindow.cpp" alt="" coords="858,80,983,107"/>
+<area shape="rect" id="node8" href="$model_8cpp.xhtml" title="model.cpp" alt="" coords="1008,80,1097,107"/>
+<area shape="rect" id="node9" href="$modeltree_8cpp.xhtml" title="modeltree.cpp" alt="" coords="1122,80,1237,107"/>
+<area shape="rect" id="node10" href="$preferencesdialog_8cpp.xhtml" title="preferencesdialog.cpp" alt="" coords="1261,80,1423,107"/>
+<area shape="rect" id="node11" href="$producttablemodel_8cpp.xhtml" title="producttablemodel.cpp" alt="" coords="1447,80,1618,107"/>
+<area shape="rect" id="node12" href="$reporttree_8cpp.xhtml" title="reporttree.cpp" alt="" coords="1642,80,1757,107"/>
+<area shape="rect" id="node13" href="$settingsdialog_8cpp.xhtml" title="settingsdialog.cpp" alt="" coords="1781,80,1919,107"/>
+</map>

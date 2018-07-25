@@ -1,0 +1,4 @@
+<map id="scram::core::Preprocessor::GatherCommonNodes" name="scram::core::Preprocessor::GatherCommonNodes">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Gate.xhtml#aa793eeaa12244c5b39a0d80e5b1518ae" title="scram::core::Gate::args" alt="" coords="244,5,417,32"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Node.xhtml#a54799feee1f1e91f848d11f3918e3e88" title="Registers the visit time for this node upon graph traversal. " alt="" coords="257,57,405,98"/>
+</map>

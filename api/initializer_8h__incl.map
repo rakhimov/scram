@@ -1,0 +1,23 @@
+<map id="initializer.h" name="initializer.h">
+<area shape="rect" id="node14" href="$alignment_8h.xhtml" title="Mission and phase constructs. " alt="" coords="1987,155,2085,181"/>
+<area shape="rect" id="node15" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="2806,386,2893,413"/>
+<area shape="rect" id="node31" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="1985,229,2087,256"/>
+<area shape="rect" id="node32" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="3121,304,3191,331"/>
+<area shape="rect" id="node33" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="3577,386,3679,413"/>
+<area shape="rect" id="node35" href="$ccf__group_8h.xhtml" title="Functional containers for basic events grouped by common cause failure. " alt="" coords="3259,229,3355,256"/>
+<area shape="rect" id="node36" href="$event__tree_8h.xhtml" title="Event Tree facilities. " alt="" coords="741,155,843,181"/>
+<area shape="rect" id="node38" href="$constant_8h.xhtml" title="Constant expressions that cannot have uncertainties. " alt="" coords="3725,80,3888,107"/>
+<area shape="rect" id="node39" href="$fault__tree_8h.xhtml" title="Fault Tree and Component containers. " alt="" coords="2959,155,3054,181"/>
+<area shape="rect" id="node41" href="$parameter_8h.xhtml" title="Parameter expressions that act like a shareable variable. " alt="" coords="3627,304,3728,331"/>
+<area shape="rect" id="node42" href="$model_8h.xhtml" title="Representation for a model container for risk analysis. " alt="" coords="2389,80,2464,107"/>
+<area shape="rect" id="node50" href="$substitution_8h.xhtml" title="The MEF Substitution constructs. " alt="" coords="2179,229,2288,256"/>
+<area shape="rect" id="node51" href="$settings_8h.xhtml" title="Builder for settings. " alt="" coords="4035,386,4120,413"/>
+<area shape="rect" id="node52" href="$xml_8h.xhtml" title="XML helper facilities to work with libxml2. " alt="" coords="4735,386,4793,413"/>
+<area shape="rect" id="node20" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="3753,475,3817,502"/>
+<area shape="rect" id="node27" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="3271,475,3391,502"/>
+<area shape="rect" id="node30" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="2460,475,2591,502"/>
+<area shape="rect" id="node26" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="4077,565,4208,591"/>
+<area shape="rect" id="node37" href="$variant_8h.xhtml" title="Extra helper functions for std::variant. " alt="" coords="550,304,653,331"/>
+<area shape="rect" id="node43" href="$extern_8h.xhtml" title="The MEF facilities to call external functions in expressions. " alt="" coords="1911,304,2059,331"/>
+<area shape="rect" id="node49" href="$test__event_8h.xhtml" title="Event tree analysis expressions to test functional and initiating events. " alt="" coords="2578,155,2753,181"/>
+</map>

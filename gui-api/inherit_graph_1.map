@@ -1,0 +1,8 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml" title="The base class for probabilistic events in a fault tree. " alt="" coords="171,136,321,177"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1diagram_1_1BasicEvent.xhtml" title="Representation of a fault tree basic event. " alt="" coords="369,5,520,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml" title="Fault tree intermediate events or gates. " alt="" coords="369,71,520,112"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1diagram_1_1HouseEvent.xhtml" title="Representation of a fault tree house events. " alt="" coords="369,136,520,177"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1diagram_1_1TransferIn.xhtml" title="An alias pointer to a gate. " alt="" coords="369,201,520,243"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1diagram_1_1UndevelopedEvent.xhtml" title="Placeholder for events with a potential to become a gate. " alt="" coords="369,267,520,308"/>
+</map>

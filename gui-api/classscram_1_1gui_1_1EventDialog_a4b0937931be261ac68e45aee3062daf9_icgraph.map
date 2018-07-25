@@ -1,0 +1,4 @@
+<map id="scram::gui::EventDialog::faultTree" name="scram::gui::EventDialog::faultTree">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="227,5,401,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1EventDialog.xhtml#aa7277e2f2b20420880a2a875680eaffa" title="Finds fault tree container of the gate. " alt="" coords="227,71,401,112"/>
+</map>

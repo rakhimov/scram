@@ -1,0 +1,7 @@
+<map id="scram::mef::NodeMark" name="scram::mef::NodeMark">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Gate.xhtml" title="A representation of a gate in a fault tree. " alt="" coords="5,160,140,311"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Link.xhtml" title="A link to another event tree in end&#45;states only. " alt="" coords="165,189,293,281"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1NamedBranch.xhtml" title="Named branches that can be referenced and reused. " alt="" coords="317,197,511,274"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Parameter.xhtml" title="This class provides a representation of a variable in basic event description. " alt="" coords="535,167,706,303"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Rule.xhtml" title="A reusable collection of instructions. " alt="" coords="731,189,860,281"/>
+</map>

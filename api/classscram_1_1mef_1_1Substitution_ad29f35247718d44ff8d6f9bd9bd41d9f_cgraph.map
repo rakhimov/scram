@@ -1,0 +1,8 @@
+<map id="scram::mef::Substitution::declarative" name="scram::mef::Substitution::declarative">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Substitution.xhtml#a0a6da28d1514d7543d80e554e144df6f" title="Adds a source event to the substitution container. " alt="" coords="233,5,447,32"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Substitution.xhtml#a01bb7b2682e333bb6cd4b730447162c2" title="scram::mef::Substitution\l::type" alt="" coords="250,57,430,98"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Substitution.xhtml#ab1859efddac529e0827537fae2f16cbb" title="Checks if the substitution is setup correctly. " alt="" coords="250,122,430,163"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Id.xhtml#a7e258c5f6332715d5ed6a3fdbf681a8b" title="scram::mef::Id::id" alt="" coords="495,15,628,41"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Element.xhtml#adb401e2ca84aa98cb60797bec2500a81" title="scram::mef::Element\l::name" alt="" coords="679,74,835,115"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Role.xhtml#aa1843c29411c29b27d79414d34525bbc" title="scram::mef::Role::role" alt="" coords="676,15,837,41"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="scram::core::Gate::mark" name="scram::core::Gate::mark">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Preprocessor.xhtml#af4dae5abf76e5da8b8c9f4371550b7dc" title="Gathers all modules in the PDAG. " alt="" coords="232,5,423,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Preprocessor_1_1GateSet.xhtml#ae00239084858979e096032c4cf2f05b9" title="Inserts a gate into the set if it is semantically unique. " alt="" coords="232,71,423,112"/>
+</map>

@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>GUI Front-End &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Theory" href="theory.html" />
+    <link rel="prev" title="Fault Tree Generator" href="fault_tree_generator.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GUI Front-End</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#gui-concerns">GUI Concerns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-goals-principles">Design Goals/Principles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-constraints">Design Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-assumptions">Design Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui-features">GUI Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#human-interface-guidelines">Human Interface Guidelines</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>GUI Front-End</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="gui-front-end">
+<h1>GUI Front-End<a class="headerlink" href="#gui-front-end" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The GUI front-end does not provide access
+to all the features implemented in SCRAM.</p>
+</div>
+<p>The GUI front-end is developed with <a class="reference external" href="https://www.qt.io/developers/">Qt5 and Qt Creator</a>.</p>
+<p>The front-end can be launched from the command-line with <code class="docutils literal notranslate"><span class="pre">scram-gui</span></code>.
+Run <code class="docutils literal notranslate"><span class="pre">scram-gui</span> <span class="pre">--help</span></code> to get more information.</p>
+<p>Translation and localization status can be found at <a class="reference external" href="https://crowdin.com/project/scram">Crowdin</a>.</p>
+<div class="section" id="gui-concerns">
+<h2>GUI Concerns<a class="headerlink" href="#gui-concerns" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Construction and visualization of risk analysis models
+(fault trees, event trees, etc.).</li>
+<li>Configuration of the analysis.</li>
+<li>Delegation of the analysis to the core.</li>
+<li>Presentation of the analysis results.</li>
+</ul>
+</div>
+<div class="section" id="design-goals-principles">
+<h2>Design Goals/Principles<a class="headerlink" href="#design-goals-principles" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The GUI design relates to the user,
+not the system architecture.</li>
+<li>The GUI must be so intuitive, discoverable, and transparent
+that developers can get away with minimal or no documentation of the GUI.</li>
+<li>If the GUI tutorial is needed,
+the design is failure.</li>
+<li>If screen-shots are needed to discover a feature,
+the design is failure.</li>
+</ul>
+</div>
+<div class="section" id="design-constraints">
+<h2>Design Constraints<a class="headerlink" href="#design-constraints" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Loose coupling with the SCRAM core</li>
+<li>Functionality</li>
+<li>Efficiency and Performance (Soft = 50ms)</li>
+<li>Correct by construction (guaranteed validity upon model construction).</li>
+</ul>
+</div>
+<div class="section" id="design-assumptions">
+<h2>Design Assumptions<a class="headerlink" href="#design-assumptions" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Visualization and construction of analysis models
+are meant for human consumption and analysis,
+not for demonstration of how complex/complicated/large the system is.</li>
+<li>Risk analysis models (e.g. fault trees) of engineering systems
+have natural modularity;
+the system can be described by an interrelated/interconnected collection of components.</li>
+<li>A monolithic description of a component with a large number of elements (e.g. 100 or more)
+is practically incomprehensible for human consumption, unmaintainable,
+and error-prone, hiding the modeling errors.</li>
+<li>A myriad (10 or more) of failure scenarios describing the model
+is practically incomprehensible for the analyst.</li>
+<li>Qualitative and quantitative metrics (e.g. total probability, # of scenarios, etc.)
+together with data analysis and visualization help the analyst
+filter out the most important/relevant information to focus and act upon.</li>
+<li>The analyst is computer-literate
+and knowledgeable of risk analysis tools and techniques.</li>
+</ul>
+</div>
+<div class="section" id="gui-features">
+<h2>GUI Features<a class="headerlink" href="#gui-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Full screen mode</li>
+<li>Dynamic/Interactive</li>
+<li>Scrolling/Dragging/Magnification</li>
+<li>Printing capability</li>
+<li>Find and replace</li>
+<li>Warning pane</li>
+<li>Status line</li>
+<li>Multi-level undo</li>
+<li>Hot keys/Shortcuts</li>
+<li>Auto-Save</li>
+<li>Separate editors for analysis components</li>
+<li>Convenient, effective view of analysis results</li>
+<li>Context menu</li>
+<li>Smart defaults</li>
+</ul>
+</div>
+<div class="section" id="human-interface-guidelines">
+<h2>Human Interface Guidelines<a class="headerlink" href="#human-interface-guidelines" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://techbase.kde.org/Projects/Usability/HIG/">KDE HIG</a></li>
+<li><a class="reference external" href="https://developer.gnome.org/hig/stable/">GNOME HIG</a></li>
+<li><a class="reference external" href="https://wiki.xfce.org/dev/hig/general">XFCE HIG</a></li>
+<li><a class="reference external" href="https://www.usability.gov/what-and-why/user-interface-design.html">The basic concepts of UI</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="theory.html" class="btn btn-neutral float-right" title="Theory" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fault_tree_generator.html" class="btn btn-neutral" title="Fault Tree Generator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

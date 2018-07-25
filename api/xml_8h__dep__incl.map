@@ -1,0 +1,8 @@
+<map id="xml.h" name="xml.h">
+<area shape="rect" id="node2" href="$initializer_8h.xhtml" title="A facility that processes input files into analysis constructs. " alt="" coords="65,80,155,107"/>
+<area shape="rect" id="node5" href="$project_8h.xhtml" title="Project/configuration management facilities to make various setups for analysis possible. " alt="" coords="179,80,257,107"/>
+<area shape="rect" id="node7" href="$xml_8cc.xhtml" title="XML facility expensive wrappers implemented out&#45;of&#45;line. " alt="" coords="281,80,344,107"/>
+<area shape="rect" id="node3" href="$initializer_8cc.xhtml" title="Implementation of input file processing into analysis constructs. " alt="" coords="5,155,100,181"/>
+<area shape="rect" id="node4" href="$scram_8cc.xhtml" title="Main entrance. " alt="" coords="125,155,205,181"/>
+<area shape="rect" id="node6" href="$project_8cc.xhtml" title="Implementation of project configuration facilities. " alt="" coords="229,155,313,181"/>
+</map>

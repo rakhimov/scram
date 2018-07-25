@@ -1,0 +1,4 @@
+<map id="scram::xml::XIncludeError" name="scram::xml::XIncludeError">
+<area shape="rect" id="node2" href="$structscram_1_1xml_1_1Error.xhtml" title="The base for all XML related errors. " alt="" coords="67,271,199,348"/>
+<area shape="rect" id="node3" href="$classscram_1_1Error.xhtml" title="The Error class is the base class for all exceptions specific to the SCRAM code. " alt="" coords="83,131,184,223"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="scram::mef::ValidityError" name="scram::mef::ValidityError">
+<area shape="rect" id="node5" href="$structscram_1_1mef_1_1CycleError.xhtml" title="Unacceptable cycles in model structures. " alt="" coords="5,403,173,481"/>
+<area shape="rect" id="node6" href="$structscram_1_1mef_1_1DomainError.xhtml" title="Invalid domain for values or arguments. " alt="" coords="197,403,381,481"/>
+<area shape="rect" id="node7" href="$structscram_1_1mef_1_1DuplicateElementError.xhtml" title="This error indicates that elements must be unique. " alt="" coords="405,396,621,488"/>
+<area shape="rect" id="node8" href="$structscram_1_1mef_1_1UndefinedElement.xhtml" title="The error for undefined elements in a model. " alt="" coords="645,403,867,481"/>
+<area shape="rect" id="node2" href="$classscram_1_1Error.xhtml" title="The Error class is the base class for all exceptions specific to the SCRAM code. " alt="" coords="351,131,452,223"/>
+</map>

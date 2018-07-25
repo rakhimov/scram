@@ -1,0 +1,8 @@
+<map id="scram::Reporter::Report" name="scram::Reporter::Report">
+<area shape="rect" id="node2" href="$classscram_1_1xml_1_1StreamElement.xhtml#a12256127d75537b64e53ccc1d7c0e07c" title="Adds a child element to the element. " alt="" coords="227,5,429,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a179feb51377899f5108fb2c8b13a18c5" title="scram::core::RiskAnalysis\l::event_tree_results" alt="" coords="237,71,419,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1Settings.xhtml#a83ddd939f7217fb9f0438bd1dd01f7b1" title="scram::core::Settings\l::probability_analysis" alt="" coords="249,136,407,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a9198a9d439e7559e7661aa664e172400" title="scram::core::RiskAnalysis\l::results" alt="" coords="237,201,419,243"/>
+<area shape="rect" id="node6" href="$classscram_1_1xml_1_1Stream.xhtml#aef4e5bae1f92709e708c515a255fb5e4" title="Creates a root element for the document. " alt="" coords="253,267,403,308"/>
+<area shape="rect" id="node7" href="$classscram_1_1core_1_1Analysis.xhtml#ab04a96c555ba726368fa3868a8701610" title="scram::core::Analysis\l::settings" alt="" coords="249,332,407,373"/>
+</map>

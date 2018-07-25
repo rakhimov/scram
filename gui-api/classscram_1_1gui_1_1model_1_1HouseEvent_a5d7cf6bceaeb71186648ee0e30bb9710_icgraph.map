@@ -1,0 +1,5 @@
+<map id="scram::gui::model::HouseEvent::state" name="scram::gui::model::HouseEvent::state">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="212,5,387,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1HouseEvent_1_1SetState.xhtml#a932800361c8b3ae4342647f5be26759f" title="Applies the new state to the house event. " alt="" coords="199,71,400,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1EventDialog.xhtml#a355f7af9b2cef48f4e52ffc4a44cb020" title="Sets up the dialog with element data. " alt="" coords="213,136,386,177"/>
+</map>

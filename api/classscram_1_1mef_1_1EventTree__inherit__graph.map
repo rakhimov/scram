@@ -1,0 +1,7 @@
+<map id="scram::mef::EventTree" name="scram::mef::EventTree">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="129,455,285,694"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="5,198,224,275"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Usage.xhtml" title="Mixin class for providing usage marks for elements. " alt="" coords="309,521,453,628"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Composite.xhtml" title="{scram::mef::Composite\l\&lt; Container\&lt; EventTree,\l Sequence, false \&gt;, Container\l\&lt; EventTree, FunctionalEvent\l \&gt;, Container\&lt; EventTree, NamedBranch \&gt; \&gt;\n||+ table()\l+ table()\l+ Get()\l+ Get()\l# data()\l* table()\l* table()\l* Get()\l* Get()\l}" alt="" coords="477,448,792,701"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1Composite.xhtml" title="The composition of multiple mef::Containers. " alt="" coords="641,132,813,341"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="numerical.cc" name="numerical.cc">
+<area shape="rect" id="node2" href="$numerical_8h.xhtml" title="A collection of numerical expressions. " alt="" coords="207,80,304,107"/>
+<area shape="rect" id="node12" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="777,80,864,107"/>
+<area shape="rect" id="node6" href="$constant_8h.xhtml" title="Constant expressions that cannot have uncertainties. " alt="" coords="251,162,342,189"/>
+<area shape="rect" id="node7" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="316,244,443,271"/>
+<area shape="rect" id="node19" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="1449,162,1579,189"/>
+</map>

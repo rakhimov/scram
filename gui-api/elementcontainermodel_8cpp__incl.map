@@ -1,0 +1,8 @@
+<map id="elementcontainermodel.cpp" name="elementcontainermodel.cpp">
+<area shape="rect" id="node2" href="$elementcontainermodel_8h.xhtml" title="The table model for elements. " alt="" coords="612,80,799,107"/>
+<area shape="rect" id="node25" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="1708,237,1799,263"/>
+<area shape="rect" id="node27" href="$align_8h.xhtml" title="Text alignment common conventions. " alt="" coords="2153,80,2217,107"/>
+<area shape="rect" id="node29" href="$guiassert_8h.xhtml" title="GUI assertions that should not crash the program by default. " alt="" coords="1647,80,1740,107"/>
+<area shape="rect" id="node10" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="793,155,868,181"/>
+<area shape="rect" id="node24" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="823,237,921,263"/>
+</map>

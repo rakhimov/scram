@@ -1,0 +1,7 @@
+<map id="scram::core::Analysis::AddAnalysisTime" name="scram::core::Analysis::AddAnalysisTime">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1UncertaintyAnalysis.xhtml#a38f984572d8b7fbeb819e933f9bc3a3b" title="Performs quantitative analysis on the total probability. " alt="" coords="237,5,417,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1ImportanceAnalysis.xhtml#acf487235f07ddcc1c920943ebfe2ce60" title="Performs quantitative analysis of importance factors of basic events in products. ..." alt="" coords="212,71,443,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1ProbabilityAnalysis.xhtml#ab68a356b0bdeb793d30d3b6e84847d12" title="Performs quantitative analysis on the supplied fault tree. " alt="" coords="241,136,413,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1FaultTreeAnalysis.xhtml#a327afc0524cff5289c3887357487266b" title="Analyzes the fault tree and performs computations. " alt="" coords="220,201,435,243"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1ProbabilityAnalyzer_3_01Bdd_01_4.xhtml#a45b66605634ae60f1c00e3ac469a7c7a" title="Calculates the total probability with a different set of probability values than the one given upon c..." alt="" coords="213,266,441,322"/>
+</map>

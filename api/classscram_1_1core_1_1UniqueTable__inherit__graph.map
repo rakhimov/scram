@@ -1,0 +1,4 @@
+<map id="scram::core::UniqueTable&lt; T &gt;" name="scram::core::UniqueTable&lt; T &gt;">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1UniqueTable.xhtml" title="{scram::core::UniqueTable\l\&lt; scram::core::SetNode \&gt;\n||+ UniqueTable()\l+ size()\l+ clear()\l+ Release()\l+ FindOrAdd()\l* Bucket\l* Table\l}" alt="" coords="5,233,197,413"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1UniqueTable.xhtml" title="{scram::core::UniqueTable\l\&lt; scram::core::Ite \&gt;\n||+ UniqueTable()\l+ size()\l+ clear()\l+ Release()\l+ FindOrAdd()\l* Bucket\l* Table\l}" alt="" coords="222,233,405,413"/>
+</map>

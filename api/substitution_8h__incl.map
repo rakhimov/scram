@@ -1,0 +1,9 @@
+<map id="substitution.h" name="substitution.h">
+<area shape="rect" id="node6" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="1265,155,1351,181"/>
+<area shape="rect" id="node29" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="1273,80,1343,107"/>
+<area shape="rect" id="node17" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="713,237,777,263"/>
+<area shape="rect" id="node24" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="2141,237,2261,263"/>
+<area shape="rect" id="node28" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="1243,237,1373,263"/>
+<area shape="rect" id="node23" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="384,326,515,353"/>
+<area shape="rect" id="node30" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="2375,237,2478,263"/>
+</map>

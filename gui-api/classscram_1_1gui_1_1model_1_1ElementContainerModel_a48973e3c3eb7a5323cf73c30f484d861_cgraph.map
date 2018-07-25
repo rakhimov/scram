@@ -1,0 +1,5 @@
+<map id="scram::gui::model::ElementContainerModel::connectElement" name="scram::gui::model::ElementContainerModel::connectElement">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#a057325384c34e69a890a8a409dea2d09" title="scram::gui::model::\lElementContainerModel\l::getElementIndex" alt="" coords="228,5,403,61"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#a18aa736cabfb5651e6c90330e9046241" title="Puts the element pointer into the index&#39;s internal pointer. " alt="" coords="451,39,625,95"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#a9aee454164cf6db9962bd29e367c9082" title="scram::gui::model::\lElementContainerModel\l::getElement" alt="" coords="673,39,848,95"/>
+</map>

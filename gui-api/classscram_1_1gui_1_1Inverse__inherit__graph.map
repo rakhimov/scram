@@ -1,0 +1,6 @@
+<map id="scram::gui::Inverse&lt; T &gt;" name="scram::gui::Inverse&lt; T &gt;">
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1Inverse.xhtml" title="{scram::gui::Inverse\l\&lt; AddFaultTree \&gt;\n||+ redo()\l+ undo()\l}" alt="" coords="29,287,172,393"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1Inverse.xhtml" title="{scram::gui::Inverse\l\&lt; AddEvent\&lt; T \&gt; \&gt;\n||+ redo()\l+ undo()\l}" alt="" coords="221,287,372,393"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1Model_1_1RemoveFaultTree.xhtml" title="Removes a fault tree from the model. " alt="" coords="5,443,180,535"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1Model_1_1RemoveEvent.xhtml" title="Removes an existing event from the model. " alt="" coords="205,443,397,535"/>
+</map>

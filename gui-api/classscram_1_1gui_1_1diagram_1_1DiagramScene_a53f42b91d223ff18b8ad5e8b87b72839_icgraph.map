@@ -1,0 +1,4 @@
+<map id="scram::gui::diagram::DiagramScene::activated" name="scram::gui::diagram::DiagramScene::activated">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1diagram_1_1DiagramScene.xhtml#abdb67a7e57cd69498008f0fcfa884af3" title="Recursively populates the scene with fault tree object graphics. " alt="" coords="263,5,491,47"/>
+<area shape="rect" id="node3" href="$mainwindow_8cpp.xhtml#ad0f4088e2f2115f81473cbb2a6db09ed" title="Specialization to show gates as trees in tables. " alt="" coords="245,71,508,112"/>
+</map>

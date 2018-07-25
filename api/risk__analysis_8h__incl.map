@@ -1,0 +1,34 @@
+<map id="risk_analysis.h" name="risk_analysis.h">
+<area shape="rect" id="node7" href="$alignment_8h.xhtml" title="Mission and phase constructs. " alt="" coords="5109,229,5208,256"/>
+<area shape="rect" id="node31" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="4203,393,4274,420"/>
+<area shape="rect" id="node34" href="$analysis_8h.xhtml" title="Common facilities for all analysis classes. " alt="" coords="2363,311,2448,338"/>
+<area shape="rect" id="node36" href="$settings_8h.xhtml" title="Builder for settings. " alt="" coords="2509,475,2595,502"/>
+<area shape="rect" id="node37" href="$event__tree__analysis_8h.xhtml" title="Event tree analysis facilities. " alt="" coords="2645,155,2806,181"/>
+<area shape="rect" id="node42" href="$fault__tree__analysis_8h.xhtml" title="Fault Tree Analysis. " alt="" coords="2017,229,2170,256"/>
+<area shape="rect" id="node65" href="$importance__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of importance factors. " alt="" coords="987,80,1152,107"/>
+<area shape="rect" id="node66" href="$probability__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of probabilities. " alt="" coords="1107,155,1266,181"/>
+<area shape="rect" id="node67" href="$model_8h.xhtml" title="Representation for a model container for risk analysis. " alt="" coords="4181,155,4256,181"/>
+<area shape="rect" id="node78" href="$uncertainty__analysis_8h.xhtml" title="Provides functionality for uncertainty analysis with Monte Carlo method. " alt="" coords="2305,80,2469,107"/>
+<area shape="rect" id="node9" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="4659,475,4746,502"/>
+<area shape="rect" id="node30" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="4677,311,4779,338"/>
+<area shape="rect" id="node19" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="6680,565,6744,591"/>
+<area shape="rect" id="node26" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="4160,565,4280,591"/>
+<area shape="rect" id="node29" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="5292,565,5423,591"/>
+<area shape="rect" id="node25" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="6729,654,6860,681"/>
+<area shape="rect" id="node32" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="3923,475,4026,502"/>
+<area shape="rect" id="node39" href="$event__tree_8h.xhtml" title="Event Tree facilities. " alt="" coords="3279,229,3382,256"/>
+<area shape="rect" id="node41" href="$test__event_8h.xhtml" title="Event tree analysis expressions to test functional and initiating events. " alt="" coords="3017,393,3191,420"/>
+<area shape="rect" id="node40" href="$variant_8h.xhtml" title="Extra helper functions for std::variant. " alt="" coords="3139,311,3242,338"/>
+<area shape="rect" id="node46" href="$pdag_8h.xhtml" title="Classes and facilities to represent fault trees as PDAGs with event and gate indices instead of ID na..." alt="" coords="912,475,979,502"/>
+<area shape="rect" id="node54" href="$preprocessor_8h.xhtml" title="A collection of PDAG transformation/preprocessing algorithms that simplify fault trees for analysis..." alt="" coords="1352,393,1469,420"/>
+<area shape="rect" id="node57" href="$zbdd_8h.xhtml" title="Zero&#45;Suppressed Binary Decision Diagram facilities. " alt="" coords="1691,311,1757,338"/>
+<area shape="rect" id="node50" href="$find__iterator_8h.xhtml" title="Convenience iterator adaptor to wrap find calls and results. " alt="" coords="1182,565,1317,591"/>
+<area shape="rect" id="node51" href="$index__map_8h.xhtml" title="Non&#45;zero based Index&#45;&gt;Value map adapter on sequential containers. " alt="" coords="1648,565,1776,591"/>
+<area shape="rect" id="node52" href="$linear__map_8h.xhtml" title="Implementation of a vector&#45;based map for a small number of entries. " alt="" coords="1494,565,1623,591"/>
+<area shape="rect" id="node61" href="$bdd_8h.xhtml" title="Fault tree analysis with the Binary Decision Diagram algorithms. " alt="" coords="608,393,667,420"/>
+<area shape="rect" id="node68" href="$ccf__group_8h.xhtml" title="Functional containers for basic events grouped by common cause failure. " alt="" coords="4517,311,4613,338"/>
+<area shape="rect" id="node69" href="$extern_8h.xhtml" title="The MEF facilities to call external functions in expressions. " alt="" coords="5593,393,5741,420"/>
+<area shape="rect" id="node75" href="$fault__tree_8h.xhtml" title="Fault Tree and Component containers. " alt="" coords="4171,229,4266,256"/>
+<area shape="rect" id="node76" href="$parameter_8h.xhtml" title="Parameter expressions that act like a shareable variable. " alt="" coords="3824,393,3925,420"/>
+<area shape="rect" id="node77" href="$substitution_8h.xhtml" title="The MEF Substitution constructs. " alt="" coords="3912,311,4021,338"/>
+</map>

@@ -1,0 +1,7 @@
+nqueens module
+==============
+
+.. automodule:: nqueens
+    :members:
+    :undoc-members:
+    :show-inheritance:

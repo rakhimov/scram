@@ -1,0 +1,9 @@
+<map id="scram::core::Ite" name="scram::core::Ite">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1NonTerminal.xhtml" title="{scram::core::NonTerminal\l\&lt; Ite \&gt;\n||+ NonTerminal()\l+ index()\l+ order()\l+ module()\l+ module()\l+ coherent()\l+ coherent()\l+ high()\l+ low()\l+ mark()\l+ mark()\l# ~NonTerminal()\l* get_high_id\l* get_low_id\l}" alt="" coords="244,869,429,1152"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Vertex.xhtml" title="{scram::core::Vertex\l\&lt; Ite \&gt;\n||+ Vertex()\l+ id()\l+ terminal()\l+ use_count()\l+ unique()\l# ~Vertex()\l}" alt="" coords="54,590,201,755"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1Vertex.xhtml" title="Representation of a vertex in BDD graphs. " alt="" coords="61,204,245,355"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1NonTerminal.xhtml" title="Representation of non&#45;terminal vertices in BDD graphs. " alt="" coords="225,539,448,807"/>
+<area shape="rect" id="node6" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml" title="{scram::core::IntrusivePtr\lCast\&lt; Ite \&gt;\n||+ Ptr()\l+ Ref()\l* Ptr()\l* Ref()\l}" alt="" coords="395,379,574,515"/>
+<area shape="rect" id="node7" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml" title="Provides pointer and reference cast wrappers for intrusive Vertex pointers. " alt="" coords="358,5,537,141"/>
+<area shape="rect" id="node9" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml" title="{scram::core::IntrusivePtr\lCast\&lt; T \&gt;\n||+ Ptr()\l+ Ref()\l* Ptr()\l* Ref()\l}" alt="" coords="269,211,447,347"/>
+</map>

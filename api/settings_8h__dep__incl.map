@@ -1,0 +1,30 @@
+<map id="settings.h" name="settings.h">
+<area shape="rect" id="node2" href="$analysis_8h.xhtml" title="Common facilities for all analysis classes. " alt="" coords="802,155,887,181"/>
+<area shape="rect" id="node4" href="$event__tree__analysis_8h.xhtml" title="Event tree analysis facilities. " alt="" coords="544,229,705,256"/>
+<area shape="rect" id="node6" href="$risk__analysis_8h.xhtml" title="Contains the main system for performing analysis. " alt="" coords="787,453,902,480"/>
+<area shape="rect" id="node7" href="$reporter_8h.xhtml" title="Reporter of results. " alt="" coords="802,528,887,555"/>
+<area shape="rect" id="node9" href="$scram_8cc.xhtml" title="Main entrance. " alt="" coords="309,603,389,629"/>
+<area shape="rect" id="node11" href="$fault__tree__analysis_8h.xhtml" title="Fault Tree Analysis. " alt="" coords="1099,229,1252,256"/>
+<area shape="rect" id="node14" href="$importance__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of importance factors. " alt="" coords="1233,379,1398,405"/>
+<area shape="rect" id="node16" href="$probability__analysis_8cc.xhtml" title="Implementations of functions to provide probability analysis. " alt="" coords="1475,379,1639,405"/>
+<area shape="rect" id="node17" href="$uncertainty__analysis_8h.xhtml" title="Provides functionality for uncertainty analysis with Monte Carlo method. " alt="" coords="516,379,680,405"/>
+<area shape="rect" id="node19" href="$bdd_8h.xhtml" title="Fault tree analysis with the Binary Decision Diagram algorithms. " alt="" coords="1345,80,1403,107"/>
+<area shape="rect" id="node22" href="$mocus_8h.xhtml" title="Fault tree analysis with the MOCUS algorithm. " alt="" coords="1715,229,1793,256"/>
+<area shape="rect" id="node25" href="$initializer_8h.xhtml" title="A facility that processes input files into analysis constructs. " alt="" coords="219,80,308,107"/>
+<area shape="rect" id="node27" href="$project_8h.xhtml" title="Project/configuration management facilities to make various setups for analysis possible. " alt="" coords="88,80,167,107"/>
+<area shape="rect" id="node29" href="$settings_8cc.xhtml" title="Implementation of Settings Builder. " alt="" coords="1922,80,2013,107"/>
+<area shape="rect" id="node3" href="$analysis_8cc.xhtml" title="Implementation of common facilities for all analysis classes. " alt="" coords="882,229,973,256"/>
+<area shape="rect" id="node13" href="$probability__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of probabilities. " alt="" coords="883,304,1041,331"/>
+<area shape="rect" id="node5" href="$event__tree__analysis_8cc.xhtml" title="Implementation of event tree analysis facilities. " alt="" coords="488,304,655,331"/>
+<area shape="rect" id="node10" href="$risk__analysis_8cc.xhtml" title="Implementation of risk analysis handler. " alt="" coords="1642,528,1762,555"/>
+<area shape="rect" id="node8" href="$reporter_8cc.xhtml" title="Implements Reporter class. " alt="" coords="799,603,890,629"/>
+<area shape="rect" id="node12" href="$fault__tree__analysis_8cc.xhtml" title="Implementation of fault tree analysis. " alt="" coords="1117,304,1276,331"/>
+<area shape="rect" id="node15" href="$importance__analysis_8cc.xhtml" title="Implementations of functions to provide quantitative importance informations. " alt="" coords="1291,453,1462,480"/>
+<area shape="rect" id="node18" href="$uncertainty__analysis_8cc.xhtml" title="Implements the functionality to run Monte Carlo simulations. " alt="" coords="513,453,683,480"/>
+<area shape="rect" id="node20" href="$bdd_8cc.xhtml" title="Implementation of BDD fault tree analysis algorithms. " alt="" coords="1378,229,1442,256"/>
+<area shape="rect" id="node21" href="$zbdd_8h.xhtml" title="Zero&#45;Suppressed Binary Decision Diagram facilities. " alt="" coords="1475,155,1540,181"/>
+<area shape="rect" id="node24" href="$zbdd_8cc.xhtml" title="Implementation of Zero&#45;Suppressed BDD algorithms. " alt="" coords="1517,229,1588,256"/>
+<area shape="rect" id="node23" href="$mocus_8cc.xhtml" title="Implementation of the MOCUS algorithm. " alt="" coords="1765,304,1847,331"/>
+<area shape="rect" id="node26" href="$initializer_8cc.xhtml" title="Implementation of input file processing into analysis constructs. " alt="" coords="216,155,311,181"/>
+<area shape="rect" id="node28" href="$project_8cc.xhtml" title="Implementation of project configuration facilities. " alt="" coords="5,155,89,181"/>
+</map>

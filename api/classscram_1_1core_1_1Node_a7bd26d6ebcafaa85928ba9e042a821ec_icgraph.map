@@ -1,0 +1,4 @@
+<map id="scram::core::Node::graph" name="scram::core::Node::graph">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Gate.xhtml#a9f9390cdf7bfb3c552a7ef843629ddc0" title="Clones arguments and parameters. " alt="" coords="201,5,347,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Gate.xhtml#ac1eeb543de0928d926ed68e1ed51f565" title="Sets the logic of this gate to pass&#45;through and clears all its arguments except for a Boolean constan..." alt="" coords="201,71,347,112"/>
+</map>

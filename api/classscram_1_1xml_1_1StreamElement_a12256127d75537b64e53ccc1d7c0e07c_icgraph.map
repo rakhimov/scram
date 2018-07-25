@@ -1,0 +1,10 @@
+<map id="scram::xml::StreamElement::AddChild" name="scram::xml::StreamElement::AddChild">
+<area shape="rect" id="node2" href="$classscram_1_1Reporter.xhtml#a87eeccfed9678b035c745b6ed1610dbf" title="Reports the results of risk analysis on a model. " alt="" coords="285,5,459,32"/>
+<area shape="rect" id="node4" href="$reporter_8cc.xhtml#a110c567fb36e60228edd2738df46f18c" title="Describes the fault tree analysis and techniques. " alt="" coords="256,57,488,98"/>
+<area shape="rect" id="node5" href="$reporter_8cc.xhtml#a328dc5e461b2c97987b9598bd9e50c08" title="Describes the importance analysis and techniques. " alt="" coords="256,122,488,163"/>
+<area shape="rect" id="node6" href="$reporter_8cc.xhtml#a38a83e177703049445b1234cb3b4a314" title="Describes the probability analysis and techniques. " alt="" coords="256,187,488,229"/>
+<area shape="rect" id="node7" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="256,253,488,294"/>
+<area shape="rect" id="node8" href="$reporter_8cc.xhtml#a7d0d1b563f07dc4800ac38d384716e3a" title="Describes the uncertainty analysis and techniques. " alt="" coords="256,318,488,359"/>
+<area shape="rect" id="node9" href="$serialization_8cc.xhtml#a83f7058a5caad9ec3ffb5fd6c7d7b8f6" title="Convenience function for serialization into a file. " alt="" coords="293,408,451,435"/>
+<area shape="rect" id="node3" href="$classscram_1_1Reporter.xhtml#a7f4903f4c19a9630f828395eded780bf" title="A convenience function to generate the report into a file. " alt="" coords="536,5,709,32"/>
+</map>

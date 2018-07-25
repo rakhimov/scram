@@ -1,0 +1,5 @@
+<map id="scram::gui::model::BasicEvent" name="scram::gui::model::BasicEvent">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1Element.xhtml" title="The base proxy Element model for mef::Element. " alt="" coords="5,233,151,355"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="{scram::gui::model::\lProxy\&lt; BasicEvent, mef\l::BasicEvent \&gt;\n||+ data()\l+ data()\l* data()\l* data()\l}" alt="" coords="175,219,349,369"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="Provides the type and data of the origin for Proxy Elements. " alt="" coords="189,5,335,141"/>
+</map>

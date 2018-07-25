@@ -1,0 +1,10 @@
+<map id="scram::core::Vertex&lt; T &gt;" name="scram::core::Vertex&lt; T &gt;">
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1NonTerminal.xhtml" title="Representation of non&#45;terminal vertices in BDD graphs. " alt="" coords="397,345,619,613"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1Terminal.xhtml" title="Representation of terminal vertices in BDD graphs. " alt="" coords="177,433,373,525"/>
+<area shape="rect" id="node9" href="$classscram_1_1core_1_1Vertex.xhtml" title="{scram::core::Vertex\l\&lt; Ite \&gt;\n||+ Vertex()\l+ id()\l+ terminal()\l+ use_count()\l+ unique()\l# ~Vertex()\l}" alt="" coords="5,397,152,562"/>
+<area shape="rect" id="node10" href="$classscram_1_1core_1_1Vertex.xhtml" title="{scram::core::Vertex\l\&lt; SetNode \&gt;\n||+ Vertex()\l+ id()\l+ terminal()\l+ use_count()\l+ unique()\l# ~Vertex()\l}" alt="" coords="644,397,791,562"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1NonTerminal.xhtml" title="{scram::core::NonTerminal\l\&lt; Ite \&gt;\n||+ NonTerminal()\l+ index()\l+ order()\l+ module()\l+ module()\l+ coherent()\l+ coherent()\l+ high()\l+ low()\l+ mark()\l+ mark()\l# ~NonTerminal()\l* get_high_id\l* get_low_id\l}" alt="" coords="294,676,479,959"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1NonTerminal.xhtml" title="{scram::core::NonTerminal\l\&lt; SetNode \&gt;\n||+ NonTerminal()\l+ index()\l+ order()\l+ module()\l+ module()\l+ coherent()\l+ coherent()\l+ high()\l+ low()\l+ mark()\l+ mark()\l# ~NonTerminal()\l* get_high_id\l* get_low_id\l}" alt="" coords="551,676,737,959"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1Ite.xhtml" title="Representation of non&#45;terminal if&#45;then&#45;else vertices in BDD graphs. " alt="" coords="303,1008,470,1159"/>
+<area shape="rect" id="node7" href="$classscram_1_1core_1_1SetNode.xhtml" title="Representation of non&#45;terminal nodes in ZBDD. " alt="" coords="563,1008,725,1159"/>
+</map>

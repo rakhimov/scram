@@ -1,0 +1,19 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classscram_1_1Error.xhtml" title="The Error class is the base class for all exceptions specific to the SCRAM code. " alt="" coords="137,183,239,209"/>
+<area shape="rect" id="node3" href="$structscram_1_1DLError.xhtml" title="Dynamic library errors. " alt="" coords="317,5,435,32"/>
+<area shape="rect" id="node4" href="$structscram_1_1IllegalOperation.xhtml" title="This error can be used to indicate that call for a function or operation is not legal. " alt="" coords="291,56,461,83"/>
+<area shape="rect" id="node5" href="$structscram_1_1IOError.xhtml" title="For input/output related errors. " alt="" coords="319,107,433,133"/>
+<area shape="rect" id="node6" href="$structscram_1_1LogicError.xhtml" title="Signals internal logic errors, for example, pre&#45;condition failure or use of functionality in ways not..." alt="" coords="309,157,443,184"/>
+<area shape="rect" id="node7" href="$structscram_1_1mef_1_1ValidityError.xhtml" title="Model validity errors. " alt="" coords="287,208,465,235"/>
+<area shape="rect" id="node12" href="$structscram_1_1SettingsError.xhtml" title="The error in analysis settings. " alt="" coords="299,259,453,285"/>
+<area shape="rect" id="node13" href="$structscram_1_1VersionError.xhtml" title="The minimum required version is not satisfied. " alt="" coords="302,309,450,336"/>
+<area shape="rect" id="node14" href="$structscram_1_1xml_1_1Error.xhtml" title="The base for all XML related errors. " alt="" coords="310,368,442,395"/>
+<area shape="rect" id="node8" href="$structscram_1_1mef_1_1CycleError.xhtml" title="Unacceptable cycles in model structures. " alt="" coords="540,99,708,125"/>
+<area shape="rect" id="node9" href="$structscram_1_1mef_1_1DomainError.xhtml" title="Invalid domain for values or arguments. " alt="" coords="532,149,716,176"/>
+<area shape="rect" id="node10" href="$structscram_1_1mef_1_1DuplicateElementError.xhtml" title="This error indicates that elements must be unique. " alt="" coords="516,201,732,242"/>
+<area shape="rect" id="node11" href="$structscram_1_1mef_1_1UndefinedElement.xhtml" title="The error for undefined elements in a model. " alt="" coords="513,267,735,293"/>
+<area shape="rect" id="node15" href="$structscram_1_1xml_1_1ParseError.xhtml" title="XML parsing errors. " alt="" coords="541,317,707,344"/>
+<area shape="rect" id="node16" href="$structscram_1_1xml_1_1StreamError.xhtml" title="Errors in using XML streaming facilities. " alt="" coords="534,368,714,395"/>
+<area shape="rect" id="node17" href="$structscram_1_1xml_1_1ValidityError.xhtml" title="XML document validity errors. " alt="" coords="535,419,713,445"/>
+<area shape="rect" id="node18" href="$structscram_1_1xml_1_1XIncludeError.xhtml" title="XInclude resolution issues. " alt="" coords="531,469,717,496"/>
+</map>

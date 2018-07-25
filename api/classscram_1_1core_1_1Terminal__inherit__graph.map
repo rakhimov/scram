@@ -1,0 +1,5 @@
+<map id="scram::core::Terminal&lt; T &gt;" name="scram::core::Terminal&lt; T &gt;">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Vertex.xhtml" title="Representation of a vertex in BDD graphs. " alt="" coords="5,204,189,355"/>
+<area shape="rect" id="node4" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml" title="{scram::core::IntrusivePtr\lCast\&lt; T, Terminal\&lt; T \&gt; \&gt;\n||+ Ptr()\l+ Ref()\l* Ptr()\l* Ref()\l}" alt="" coords="213,211,400,347"/>
+<area shape="rect" id="node5" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml" title="Provides pointer and reference cast wrappers for intrusive Vertex pointers. " alt="" coords="217,5,396,141"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="diagram.h" name="diagram.h">
+<area shape="rect" id="node8" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="1063,80,1138,107"/>
+<area shape="rect" id="node22" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="1867,162,1966,189"/>
+<area shape="rect" id="node23" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="223,162,314,189"/>
+</map>

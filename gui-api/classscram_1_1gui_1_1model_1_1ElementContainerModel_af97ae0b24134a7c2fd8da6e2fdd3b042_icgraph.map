@@ -1,0 +1,5 @@
+<map id="scram::gui::model::ElementContainerModel::elements" name="scram::gui::model::ElementContainerModel::elements">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a64a95b2368b017f25fc06fd78d0a7f33" title="Constructs from the table of proxy Basic Events in the Model. " alt="" coords="231,5,431,61"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml#a9cdee9017df030e4b41b29d5d8b895c9" title="Constructs from the table of proxy Gates in the Model. " alt="" coords="251,85,412,141"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml#a1687ef3e47c335b5b3a52e21ba0e7dd2" title="Constructs from the table of proxy House Events in the Model. " alt="" coords="228,165,435,221"/>
+</map>

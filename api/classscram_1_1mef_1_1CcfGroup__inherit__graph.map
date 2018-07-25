@@ -1,0 +1,10 @@
+<map id="scram::mef::CcfGroup" name="scram::mef::CcfGroup">
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1AlphaFactorModel.xhtml" title="Alpha factor model characterizes failure of exactly k members of the group due to common cause..." alt="" coords="5,976,221,1053"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1BetaFactorModel.xhtml" title="Common cause failure model that assumes, if common cause failure occurs, then all components or membe..." alt="" coords="245,976,456,1053"/>
+<area shape="rect" id="node9" href="$classscram_1_1mef_1_1MglModel.xhtml" title="Multiple Greek Letters model characterizes failure of sub&#45;groups of the group due to common cause..." alt="" coords="480,976,643,1053"/>
+<area shape="rect" id="node10" href="$classscram_1_1mef_1_1PhiFactorModel.xhtml" title="Phi factor model is a simplification, where fractions of k&#45;member group failure is given directly..." alt="" coords="667,976,866,1053"/>
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Id.xhtml" title="Mixin class for assigning unique identifiers to elements. " alt="" coords="389,417,523,627"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="295,131,451,369"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="172,5,391,83"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Role.xhtml" title="Mixin class that manages private or public roles for elements as needed. " alt="" coords="475,189,605,311"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml" title="The base class for models to list elements in a table. " alt="" coords="207,71,381,112"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1ModelTree.xhtml" title="The tree representation for the Model constructs. " alt="" coords="213,137,375,163"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1ReportTree.xhtml" title="The report is organized by its top items as analysis identifiers and its descendant items as analysis..." alt="" coords="212,187,376,214"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml" title="Container model for basic events. " alt="" coords="433,5,625,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml" title="Tree&#45;view inside table. " alt="" coords="452,71,605,112"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml" title="Container model for house events. " alt="" coords="429,136,628,177"/>
+</map>

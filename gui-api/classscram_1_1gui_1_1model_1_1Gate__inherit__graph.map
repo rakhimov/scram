@@ -1,0 +1,5 @@
+<map id="scram::gui::model::Gate" name="scram::gui::model::Gate">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1Element.xhtml" title="The base proxy Element model for mef::Element. " alt="" coords="5,211,151,333"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="{scram::gui::model::\lProxy\&lt; Gate, mef::Gate \&gt;\n||+ data()\l+ data()\l* data()\l* data()\l}" alt="" coords="175,204,365,340"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml" title="Provides the type and data of the origin for Proxy Elements. " alt="" coords="197,5,343,141"/>
+</map>

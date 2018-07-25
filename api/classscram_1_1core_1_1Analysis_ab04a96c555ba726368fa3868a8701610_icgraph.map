@@ -1,0 +1,12 @@
+<map id="scram::core::Analysis::settings" name="scram::core::Analysis::settings">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1ProbabilityAnalysis.xhtml#ab68a356b0bdeb793d30d3b6e84847d12" title="Performs quantitative analysis on the supplied fault tree. " alt="" coords="240,5,412,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a7aed757ac5a7a96878c2706a7a9710bb" title="Analyzes the model and performs computations specified in the settings. " alt="" coords="235,71,417,112"/>
+<area shape="rect" id="node5" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="719,100,951,141"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1FaultTreeAnalysis.xhtml#a327afc0524cff5289c3887357487266b" title="Analyzes the fault tree and performs computations. " alt="" coords="219,188,433,229"/>
+<area shape="rect" id="node7" href="$classscram_1_1core_1_1McubCalculator.xhtml#af47379d2ba9190b34aef1acfa402e15c" title="Calculates probabilities using the minimal cut set upper bound (MCUB) approximation. " alt="" coords="224,253,428,295"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1ProbabilityAnalyzer_3_01Bdd_01_4.xhtml#a45b66605634ae60f1c00e3ac469a7c7a" title="Calculates the total probability with a different set of probability values than the one given upon c..." alt="" coords="212,318,440,374"/>
+<area shape="rect" id="node9" href="$classscram_1_1Reporter.xhtml#a87eeccfed9678b035c745b6ed1610dbf" title="Reports the results of risk analysis on a model. " alt="" coords="239,398,413,425"/>
+<area shape="rect" id="node11" href="$classscram_1_1core_1_1UncertaintyAnalysis.xhtml#a6986c9442a93fb0e43a0b59ac2c7d6c9" title="Samples uncertain probabilities. " alt="" coords="223,449,429,491"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a337f7e9fe02b1581e872590d6f7baa01" title="scram::core::RiskAnalysis\l::model" alt="" coords="488,71,671,112"/>
+<area shape="rect" id="node10" href="$classscram_1_1Reporter.xhtml#a7f4903f4c19a9630f828395eded780bf" title="A convenience function to generate the report into a file. " alt="" coords="493,398,666,425"/>
+</map>

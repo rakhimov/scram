@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Report Files &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The Open-PSA Model Exchange Format" href="opsa_support.html" />
+    <link rel="prev" title="Project Files" href="project_file.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Report Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-open-psa-mef">The Open-PSA MEF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#encodings">Encodings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time">Time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#validation-schemas">Validation Schemas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#post-processing">Post-processing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#report-file-example">Report File Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Report Files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="report-files">
+<h1>Report Files<a class="headerlink" href="#report-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-open-psa-mef">
+<h2>The Open-PSA MEF<a class="headerlink" href="#the-open-psa-mef" title="Permalink to this headline">¶</a></h2>
+<p>The results of calculations are reported in the XML format
+suggested by the Open-PSA Model Exchange Format (<a class="reference internal" href="references.html#mef" id="id1">[MEF]</a>).
+SCRAM-specific extra report XML elements and attributes are added
+on top of the MEF report format in a compatible way.
+It is expected that the standardized report format be used by other tools
+to further analyze and operate on the results of PSA tools.</p>
+<div class="section" id="encodings">
+<h3>Encodings<a class="headerlink" href="#encodings" title="Permalink to this headline">¶</a></h3>
+<p>There is no specification for file encodings in the Open-PSA MEF.
+SCRAM results are reported with the UTF-8 character set
+regardless of what the input file encodings are.</p>
+</div>
+<div class="section" id="time">
+<h3>Time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h3>
+<p>Reporting of analysis time and duration is not specified in the MEF standard.
+For informational purposes, SCRAM reports analysis duration in seconds,
+and the UTC date-time is formatted in ISO 8601 extended form.</p>
+</div>
+<div class="section" id="validation-schemas">
+<h3>Validation Schemas<a class="headerlink" href="#validation-schemas" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/rakhimov/scram/blob/develop/share/report.rng">RELAX NG Schema</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="post-processing">
+<h2>Post-processing<a class="headerlink" href="#post-processing" title="Permalink to this headline">¶</a></h2>
+<p>It is expected that the results of analysis
+are processed by other tools than the SCRAM core.
+The GUI front-end, Python or R scripts, and XML query tools are better suited
+to filter, group, sort, and do other data manipulations and visualization.</p>
+<p>Suggested tools:</p>
+<ul class="simple">
+<li>SCRAM GUI front-end</li>
+<li>R with <a class="reference external" href="https://rdrr.io/rforge/FaultTree.SCRAM/">FaultTree.SCRAM</a></li>
+<li>Python with <a class="reference external" href="http://lxml.de/">lxml</a></li>
+<li><a class="reference external" href="http://basex.org">BaseX</a></li>
+</ul>
+<div class="section" id="report-file-example">
+<h3>Report File Example<a class="headerlink" href="#report-file-example" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;report&gt;</span>
+  <span class="nt">&lt;information&gt;</span>
+    <span class="nt">&lt;software</span> <span class="na">name=</span><span class="s">&quot;SCRAM&quot;</span> <span class="na">version=</span><span class="s">&quot;0.12.0-73-gec10dde&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;time&gt;</span>2017-04-16T22:44:18<span class="nt">&lt;/time&gt;</span>
+    <span class="nt">&lt;performance&gt;</span>
+      <span class="nt">&lt;calculation-time</span> <span class="na">name=</span><span class="s">&quot;TopEvent&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;products&gt;</span>0.000586056<span class="nt">&lt;/products&gt;</span>
+        <span class="nt">&lt;probability&gt;</span>3.324e-06<span class="nt">&lt;/probability&gt;</span>
+        <span class="nt">&lt;importance&gt;</span>1.4344e-05<span class="nt">&lt;/importance&gt;</span>
+      <span class="nt">&lt;/calculation-time&gt;</span>
+    <span class="nt">&lt;/performance&gt;</span>
+    <span class="nt">&lt;calculated-quantity</span> <span class="na">name=</span><span class="s">&quot;Minimal Cut Sets&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;calculation-method</span> <span class="na">name=</span><span class="s">&quot;Binary Decision Diagram&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;limits&gt;</span>
+          <span class="nt">&lt;product-order&gt;</span>10<span class="nt">&lt;/product-order&gt;</span>
+        <span class="nt">&lt;/limits&gt;</span>
+      <span class="nt">&lt;/calculation-method&gt;</span>
+    <span class="nt">&lt;/calculated-quantity&gt;</span>
+    <span class="nt">&lt;calculated-quantity</span> <span class="na">name=</span><span class="s">&quot;Probability Analysis&quot;</span> <span class="na">definition=</span><span class="s">&quot;Quantitative analysis of failure probability or unavailability&quot;</span> <span class="na">approximation=</span><span class="s">&quot;none&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;calculation-method</span> <span class="na">name=</span><span class="s">&quot;Binary Decision Diagram&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;limits&gt;</span>
+          <span class="nt">&lt;mission-time&gt;</span>8760<span class="nt">&lt;/mission-time&gt;</span>
+        <span class="nt">&lt;/limits&gt;</span>
+      <span class="nt">&lt;/calculation-method&gt;</span>
+    <span class="nt">&lt;/calculated-quantity&gt;</span>
+    <span class="nt">&lt;calculated-quantity</span> <span class="na">name=</span><span class="s">&quot;Importance Analysis&quot;</span> <span class="na">definition=</span><span class="s">&quot;Quantitative analysis of contributions and importance factors of events.&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;model-features&gt;</span>
+      <span class="nt">&lt;gates&gt;</span>3<span class="nt">&lt;/gates&gt;</span>
+      <span class="nt">&lt;basic-events&gt;</span>4<span class="nt">&lt;/basic-events&gt;</span>
+      <span class="nt">&lt;fault-trees&gt;</span>1<span class="nt">&lt;/fault-trees&gt;</span>
+    <span class="nt">&lt;/model-features&gt;</span>
+  <span class="nt">&lt;/information&gt;</span>
+  <span class="nt">&lt;results&gt;</span>
+    <span class="nt">&lt;sum-of-products</span> <span class="na">name=</span><span class="s">&quot;TopEvent&quot;</span> <span class="na">basic-events=</span><span class="s">&quot;4&quot;</span> <span class="na">products=</span><span class="s">&quot;4&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.7225&quot;</span> <span class="na">distribution=</span><span class="s">&quot;0 4&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;product</span> <span class="na">order=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.25&quot;</span> <span class="na">contribution=</span><span class="s">&quot;0.173611&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/product&gt;</span>
+      <span class="nt">&lt;product</span> <span class="na">order=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.35&quot;</span> <span class="na">contribution=</span><span class="s">&quot;0.243056&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/product&gt;</span>
+      <span class="nt">&lt;product</span> <span class="na">order=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.35&quot;</span> <span class="na">contribution=</span><span class="s">&quot;0.243056&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/product&gt;</span>
+      <span class="nt">&lt;product</span> <span class="na">order=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.49&quot;</span> <span class="na">contribution=</span><span class="s">&quot;0.340278&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpOne&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpTwo&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;/product&gt;</span>
+    <span class="nt">&lt;/sum-of-products&gt;</span>
+    <span class="nt">&lt;importance</span> <span class="na">name=</span><span class="s">&quot;TopEvent&quot;</span> <span class="na">basic-events=</span><span class="s">&quot;4&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveOne&quot;</span> <span class="na">occurrence=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.5&quot;</span> <span class="na">MIF=</span><span class="s">&quot;0.255&quot;</span> <span class="na">CIF=</span><span class="s">&quot;0.176471&quot;</span> <span class="na">DIF=</span><span class="s">&quot;0.588235&quot;</span> <span class="na">RAW=</span><span class="s">&quot;1.17647&quot;</span> <span class="na">RRW=</span><span class="s">&quot;1.21429&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpOne&quot;</span> <span class="na">occurrence=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.7&quot;</span> <span class="na">MIF=</span><span class="s">&quot;0.425&quot;</span> <span class="na">CIF=</span><span class="s">&quot;0.411765&quot;</span> <span class="na">DIF=</span><span class="s">&quot;0.823529&quot;</span> <span class="na">RAW=</span><span class="s">&quot;1.17647&quot;</span> <span class="na">RRW=</span><span class="s">&quot;1.7&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;ValveTwo&quot;</span> <span class="na">occurrence=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.5&quot;</span> <span class="na">MIF=</span><span class="s">&quot;0.255&quot;</span> <span class="na">CIF=</span><span class="s">&quot;0.176471&quot;</span> <span class="na">DIF=</span><span class="s">&quot;0.588235&quot;</span> <span class="na">RAW=</span><span class="s">&quot;1.17647&quot;</span> <span class="na">RRW=</span><span class="s">&quot;1.21429&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;basic-event</span> <span class="na">name=</span><span class="s">&quot;PumpTwo&quot;</span> <span class="na">occurrence=</span><span class="s">&quot;2&quot;</span> <span class="na">probability=</span><span class="s">&quot;0.7&quot;</span> <span class="na">MIF=</span><span class="s">&quot;0.425&quot;</span> <span class="na">CIF=</span><span class="s">&quot;0.411765&quot;</span> <span class="na">DIF=</span><span class="s">&quot;0.823529&quot;</span> <span class="na">RAW=</span><span class="s">&quot;1.17647&quot;</span> <span class="na">RRW=</span><span class="s">&quot;1.7&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/importance&gt;</span>
+  <span class="nt">&lt;/results&gt;</span>
+<span class="nt">&lt;/report&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="opsa_support.html" class="btn btn-neutral float-right" title="The Open-PSA Model Exchange Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="project_file.html" class="btn btn-neutral" title="Project Files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+<map id="scram::core::ProbabilityAnalyzerBase" name="scram::core::ProbabilityAnalyzerBase">
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1ProbabilityAnalyzer.xhtml" title="Fault&#45;tree&#45;analysis&#45;aware probability analyzer. " alt="" coords="5,815,207,907"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1ProbabilityAnalyzer_3_01Bdd_01_4.xhtml" title="Specialization of probability analyzer with Binary Decision Diagrams. " alt="" coords="231,785,432,936"/>
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1ProbabilityAnalysis.xhtml" title="Main quantitative analysis class. " alt="" coords="130,359,306,539"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Analysis.xhtml" title="Base abstract class for all analysis with settings. " alt="" coords="139,131,297,311"/>
+</map>

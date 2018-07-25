@@ -1,0 +1,6 @@
+<map id="scram::mef::Alignment" name="scram::mef::Alignment">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="209,321,365,560"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="5,93,224,171"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Container.xhtml" title="{scram::mef::Container\l\&lt; Alignment, Phase \&gt;\n||+ Add()\l+ Remove()\l+ table()\l+ table()\l+ Get()\l+ Get()\l# data()\l* table()\l* table()\l* Get()\l* Get()\l}" alt="" coords="389,321,555,560"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Container.xhtml" title="The MEF Container of unique elements. " alt="" coords="389,5,555,259"/>
+</map>

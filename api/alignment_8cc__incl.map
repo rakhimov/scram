@@ -1,0 +1,12 @@
+<map id="alignment.cc" name="alignment.cc">
+<area shape="rect" id="node2" href="$alignment_8h.xhtml" title="Mission and phase constructs. " alt="" coords="1331,80,1429,107"/>
+<area shape="rect" id="node17" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="2652,386,2716,413"/>
+<area shape="rect" id="node34" href="$float__compare_8h.xhtml" title="Floating pointing comparison helper functions. " alt="" coords="2667,80,2818,107"/>
+<area shape="rect" id="node5" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="1337,304,1423,331"/>
+<area shape="rect" id="node29" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="748,155,849,181"/>
+<area shape="rect" id="node24" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="1053,386,1173,413"/>
+<area shape="rect" id="node28" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="1248,386,1379,413"/>
+<area shape="rect" id="node23" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="3427,475,3557,502"/>
+<area shape="rect" id="node30" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="834,229,905,256"/>
+<area shape="rect" id="node32" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="453,304,555,331"/>
+</map>

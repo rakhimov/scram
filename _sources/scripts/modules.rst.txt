@@ -1,0 +1,12 @@
+:orphan:
+
+scripts
+=======
+
+.. toctree::
+   :maxdepth: 4
+
+   fault_tree
+   fault_tree_generator
+   fuzz_tester
+   nqueens

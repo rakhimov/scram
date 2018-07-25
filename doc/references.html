@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>References &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Citation" href="citation.html" />
+    <link rel="prev" title="Theory" href="theory.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#papers">Papers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#standards-guides-manuals-handbooks">Standards, Guides, Manuals, Handbooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#web-resources">Web Resources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>References</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="references">
+<span id="id1"></span><h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="papers">
+<h2>Papers<a class="headerlink" href="#papers" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="brb90" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[BRB90]</td><td>K. Brace, R. Rudell, and R. Bryant,
+“Efficient implementation of a BDD package,”
+in Proc. 27th ACM/IEEE Design Automation Conf., IEEE 0738, 1990.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="bry86" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Bry86]</td><td>R. Bryant,
+“Graph based algorithms for boolean function manipulation,”
+IEEE Trans. Comp., vol. 35, no. 8, pp. 677-691, 1986.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="dr96" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[DR96]</td><td>Y. Dutuit and A. Rauzy,
+“A linear time algorithm to find modules of fault trees,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 45, no. 3, pp. 422-425, 1996.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="dr01" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[DR01]</td><td>Y. Dutuit and A. Rauzy,
+“Efficient algorithms to assess component and gate importance in fault tree analysis,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="dr05" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[DR05]</td><td>Y. Dutuit and A. Rauzy,
+“Approximate estimation of system reliability via fault trees”,
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 87, no. 2, pp. 163–172, 2005.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="drs08" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[DRS08]</td><td>Y. Dutuit, A. Rauzy, and J.-P. Signoret,
+“A snapshot of methods and tools to assess safety integrity levels of high integrity protection systems”,
+Proceedings of the Institution of Mechanical Engineers,
+Part O, Journal of risk and reliability, vol. 222, no. 3, pp. 371-379, 2008.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="jun09" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Jun09]</td><td>W. Jung,
+“ZBDD algorithm features for an efficient probabilistic safety assessment,”
+Nuc. Eng. Des., vol. 239, pp. 2085-2092, 2009.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="min93" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Min93]</td><td>S. Minato,
+“Zero-suppressed BDD’s for set manipulation in combinatorial problems,”
+in Proc. 30th ACM/IEEE Design Automation Conf., pp. 272-277, 1993.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="nie94" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Nie94]</td><td>I. Niemelä,
+“On simplification of large fault trees,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 44, pp. 135-138, 1994.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="nr99" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[NR99]</td><td>M. Nikolskaia and A. Rauzy,
+“Fine-tuning of boolean formulae preprocessing techniques,”
+in Proc. ESREL Conf., vol. 2, pp. 1027-1032, 1999.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pa09" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[PA09]</td><td>R. Remenyte-Prescott and J. Andrews,
+“An efficient real-time method of analysis for non-coherent fault trees,”
+Qual. Reliab. Eng. Int., no. 25, pp. 129-150, 2009.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rau93" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rau93]</td><td>A. Rauzy,
+“New algorithms for fault trees analysis,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 5, no. 59, pp. 203-211, 1993.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rau01" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rau01]</td><td>A. Rauzy,
+“Mathematical foundation of minimal cutsets,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 50, no. 4, pp. 389-396, 2001</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rau03" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rau03]</td><td>A. Rauzy,
+“Towards an efficient implementation of MOCUS,”
+IEEE Trans. Reliab. Eng. Syst. Saf., vol. 52, no. 2, pp. 175-180, 2003.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="wakxx" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[WakXX]</td><td>D. Wakefield,
+“You can’t just build trees and call it PSA”</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="standards-guides-manuals-handbooks">
+<h2>Standards, Guides, Manuals, Handbooks<a class="headerlink" href="#standards-guides-manuals-handbooks" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="mef" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[MEF]</td><td><a class="reference external" href="https://open-psa.github.io/mef">Open PSA Model Exchange Format</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="nureg0492" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[NUREG0492]</td><td><a class="reference external" href="https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr0492/">NRC NUREG-0492</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="wash1400" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[WASH1400]</td><td><a class="reference external" href="https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr75-014/appendix-iii-iv/">NRC NUREG-75/014 (WASH-1400), Appendices III &amp; IV</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="cr2300" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[CR2300]</td><td><a class="reference external" href="https://www.nrc.gov/reading-rm/doc-collections/nuregs/contract/cr2300/">NRC NUREG/CR-2300 (PRA Procedure Guide), Vols 1 &amp; 2</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ftacourse" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FTACOURSE]</td><td>Bill Vesely,
+“FTA: Concepts and Applications,”
+NASA Headquarters, Washington DC, 2002.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fthb" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FTHB]</td><td>NASA Office of Safety and Mission Assurance,
+“Fault tree handbook with aerospace applications,”
+NASA Headquarters, Washington DC, 2002.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="sttfta" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[STTFTA]</td><td><a class="reference external" href="http://www.cs.virginia.edu/~jck/publications/safecomp.97.pdf">Software Test Techniques for System Fault-Tree Analysis</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="web-resources">
+<h2>Web Resources<a class="headerlink" href="#web-resources" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="opsa" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[OPSA]</td><td><a class="reference external" href="https://open-psa.github.io">The Open-PSA Initiative</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pra" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[PRA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Probabilistic_risk_assessment">PRA Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fta" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FTA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Fault_tree_analysis">FTA Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="eta" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[ETA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Event_tree_analysis">ETA Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ha" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[HA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Hazard_analysis">Hazard Analysis Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rbd" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[RBD]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Reliability_block_diagram">RBD Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fmea" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FMEA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Failure_mode_and_effects_analysis">FMEA Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fm" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FM]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Failure_causes">Failure Modes Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fr" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[FR]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Failure_rate">Failure Rate Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="he" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[HE]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Human_error">Human Error Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="sc" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[SC]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Safety_culture">Safety Culture Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="sa" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[SA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Sensitivity_analysis">Sensitivity Analysis Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ua" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[UA]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Uncertainty_quantification">Uncertainty Quantification Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ccf" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[CCF]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Common_cause_and_special_cause_(statistics)">Common Cause Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="iec-61508" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[IEC_61508]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/IEC_61508">IEC 61508 Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="sil" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[SIL]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Safety_integrity_level">Safety Integrity Level Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="pdag" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[PDAG]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Propositional_directed_acyclic_graph">Propositional DAG Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="bdd" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[BDD]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Binary_decision_diagram">BDD Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="zbdd" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[ZBDD]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Zero-suppressed_decision_diagram">ZBDD Wiki Page</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="nnf" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[NNF]</td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Negation_normal_form">Negation Normal Form Wiki Page</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="citation.html" class="btn btn-neutral float-right" title="Citation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="theory.html" class="btn btn-neutral" title="Theory" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

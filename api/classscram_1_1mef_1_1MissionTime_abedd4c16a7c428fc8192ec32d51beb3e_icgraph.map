@@ -1,0 +1,6 @@
+<map id="scram::mef::MissionTime::value" name="scram::mef::MissionTime::value">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a7aed757ac5a7a96878c2706a7a9710bb" title="Analyzes the model and performs computations specified in the settings. " alt="" coords="245,5,428,47"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1McubCalculator.xhtml#af47379d2ba9190b34aef1acfa402e15c" title="Calculates probabilities using the minimal cut set upper bound (MCUB) approximation. " alt="" coords="235,71,439,112"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1RiskAnalysis.xhtml#a337f7e9fe02b1581e872590d6f7baa01" title="scram::core::RiskAnalysis\l::model" alt="" coords="487,5,669,47"/>
+<area shape="rect" id="node4" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="717,5,949,47"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="ext::test_bit" name="ext::test_bit">
+<area shape="rect" id="node2" href="$bits_8h.xhtml#a4e5cca94aa78c46f2b70b5473427bd68" title="Counts the trailing zero bits. " alt="" coords="152,29,288,71"/>
+<area shape="rect" id="node3" href="$bits_8h.xhtml#a43b440e9884b56087fdef078cc7f526b" title="Helper function to map single bit integer/enum values into indices. " alt="" coords="336,37,475,63"/>
+</map>

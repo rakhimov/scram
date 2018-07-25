@@ -1,0 +1,5 @@
+<map id="env.h" name="env.h">
+<area shape="rect" id="node2" href="$env_8cc.xhtml" title="The environment variables discovered at run&#45;time. " alt="" coords="5,80,68,107"/>
+<area shape="rect" id="node3" href="$initializer_8cc.xhtml" title="Implementation of input file processing into analysis constructs. " alt="" coords="92,80,187,107"/>
+<area shape="rect" id="node4" href="$project_8cc.xhtml" title="Implementation of project configuration facilities. " alt="" coords="211,80,295,107"/>
+</map>

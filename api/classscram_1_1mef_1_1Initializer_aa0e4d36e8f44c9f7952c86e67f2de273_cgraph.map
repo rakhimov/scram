@@ -1,0 +1,5 @@
+<map id="scram::mef::Initializer::Initializer" name="scram::mef::Initializer::Initializer">
+<area shape="rect" id="node2" href="$classscram_1_1xml_1_1Element.xhtml#a4a447a4146a0131bc1461762d55f6482" title="scram::xml::Element\l::line" alt="" coords="213,5,368,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1xml_1_1Validator.xhtml#ad1626f649d58bab2db7a077f4b6b061e" title="Validates XML DOM documents against the schema. " alt="" coords="212,71,369,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1xml_1_1Document.xhtml#afcabff07e31e1f4947f5c393364a1ea7" title="scram::xml::Document::get" alt="" coords="417,78,615,105"/>
+</map>

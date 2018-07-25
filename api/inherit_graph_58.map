@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classscram_1_1mef_1_1InstructionVisitor.xhtml" title="The base abstract class for instruction visitors. " alt="" coords="5,5,216,32"/>
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1NullVisitor.xhtml" title="Visits only instructions and ignores non&#45;instructions. " alt="" coords="264,5,431,32"/>
+</map>

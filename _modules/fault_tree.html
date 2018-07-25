@@ -1,0 +1,721 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+<meta name="robots" content="noindex, nofollow"/>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fault_tree &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../doc/theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../doc/xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>fault_tree</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fault_tree</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2014-2018 Olzhas Rakhimov</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software; you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Fault tree classes and common facilities.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Representation of a base class for an event in a fault tree.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: A specific name that identifies this node.</span>
+<span class="sd">        parents: A set of parents of this node.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a new node with a unique name.</span>
+
+<span class="sd">        Note that the tracking of parents introduces a cyclic reference.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier for the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Event.is_common"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Event.is_common">[docs]</a>    <span class="k">def</span> <span class="nf">is_common</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Indicates if this node appears in several places.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Event.is_orphan"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Event.is_orphan">[docs]</a>    <span class="k">def</span> <span class="nf">is_orphan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determines if the node has no parents.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span></div>
+
+<div class="viewcode-block" id="Event.num_parents"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Event.num_parents">[docs]</a>    <span class="k">def</span> <span class="nf">num_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the number of unique parents.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Event.add_parent"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Event.add_parent">[docs]</a>    <span class="k">def</span> <span class="nf">add_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gate</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds a gate as a parent of the node.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gate: The gate where this node appears.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">gate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gate</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BasicEvent"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.BasicEvent">[docs]</a><span class="k">class</span> <span class="nc">BasicEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Representation of a basic event in a fault tree.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        prob: Probability of failure of this basic event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prob</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes a basic event node.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier of the node.</span>
+<span class="sd">            prob: Probability of the basic event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BasicEvent</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prob</span> <span class="o">=</span> <span class="n">prob</span>
+
+<div class="viewcode-block" id="BasicEvent.to_xml"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.BasicEvent.to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Open-PSA MEF XML definition of the basic event.&quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;define-basic-event name=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;float value=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">,</span> <span class="s1">&#39;&quot;/&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/define-basic-event&gt;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BasicEvent.to_aralia"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.BasicEvent.to_aralia">[docs]</a>    <span class="k">def</span> <span class="nf">to_aralia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Aralia definition of the basic event.&quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;p(&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;) = &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="HouseEvent"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.HouseEvent">[docs]</a><span class="k">class</span> <span class="nc">HouseEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Representation of a house event in a fault tree.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        state: State of the house event (&quot;true&quot; or &quot;false&quot;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes a house event node.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier of the node.</span>
+<span class="sd">            state: Boolean state string of the constant.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HouseEvent</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+
+<div class="viewcode-block" id="HouseEvent.to_xml"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.HouseEvent.to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Open-PSA MEF XML definition of the house event.&quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;define-house-event name=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;constant value=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="s1">&#39;&quot;/&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/define-house-event&gt;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HouseEvent.to_aralia"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.HouseEvent.to_aralia">[docs]</a>    <span class="k">def</span> <span class="nf">to_aralia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Aralia definition of the house event.&quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;s(&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;) = &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Gate"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate">[docs]</a><span class="k">class</span> <span class="nc">Gate</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+    <span class="sd">&quot;&quot;&quot;Representation of a fault tree gate.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        operator: Logical operator of this formula.</span>
+<span class="sd">        k_num: Min number for the combination operator.</span>
+<span class="sd">        g_arguments: arguments that are gates.</span>
+<span class="sd">        b_arguments: arguments that are basic events.</span>
+<span class="sd">        h_arguments: arguments that are house events.</span>
+<span class="sd">        u_arguments: arguments that are undefined.</span>
+<span class="sd">        mark: Marking for various algorithms like toposort.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">k_num</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes a gate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier of the node.</span>
+<span class="sd">            operator: Boolean operator of this formula.</span>
+<span class="sd">            k_num: Min number for the combination operator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Gate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_num</span> <span class="o">=</span> <span class="n">k_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g_arguments</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b_arguments</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_arguments</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u_arguments</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Gate.num_arguments"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate.num_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">num_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the number of arguments.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b_arguments</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_arguments</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">g_arguments</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_arguments</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Gate.add_argument"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate.add_argument">[docs]</a>    <span class="k">def</span> <span class="nf">add_argument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds argument into a collection of gate arguments.</span>
+
+<span class="sd">        Note that this function also updates the parent set of the argument.</span>
+<span class="sd">        Duplicate arguments are ignored.</span>
+<span class="sd">        The logic of the Boolean operator is not taken into account</span>
+<span class="sd">        upon adding arguments to the gate.</span>
+<span class="sd">        Therefore, no logic checking is performed</span>
+<span class="sd">        for repeated or complement arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: Gate, HouseEvent, BasicEvent, or Event argument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">argument</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">Gate</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g_arguments</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">BasicEvent</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b_arguments</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">HouseEvent</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">h_arguments</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">Event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">u_arguments</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Gate.get_ancestors"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate.get_ancestors">[docs]</a>    <span class="k">def</span> <span class="nf">get_ancestors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collects ancestors from this gate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A set of ancestors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ancestors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>  <span class="c1"># to avoid recursion</span>
+        <span class="k">while</span> <span class="n">parents</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">parents</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">:</span>
+                <span class="n">ancestors</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+                <span class="n">parents</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">parents</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ancestors</span></div>
+
+<div class="viewcode-block" id="Gate.to_xml"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate.to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">,</span> <span class="n">nest</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Open-PSA MEF XML definition of the gate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            printer: The output stream.</span>
+<span class="sd">            nest: Nesting of NOT connectives in formulas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">arg_to_xml</span><span class="p">(</span><span class="n">type_str</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Produces XML string representation of an argument.&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2"> name=</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2">/&gt;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">type_str</span><span class="p">,</span> <span class="n">arg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">args_to_xml</span><span class="p">(</span><span class="n">type_str</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Produces XML string representation of arguments.&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arg_to_xml</span><span class="p">(</span><span class="n">type_str</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">convert_formula</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">nest</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Converts the formula of a gate into XML representation.&quot;&quot;&quot;</span>
+            <span class="n">mef_xml</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">!=</span> <span class="s2">&quot;null&quot;</span><span class="p">:</span>
+                <span class="n">mef_xml</span> <span class="o">+=</span> <span class="s2">&quot;&lt;&quot;</span> <span class="o">+</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span>
+                <span class="k">if</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;atleast&quot;</span><span class="p">:</span>
+                    <span class="n">mef_xml</span> <span class="o">+=</span> <span class="s2">&quot; min=</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">gate</span><span class="o">.</span><span class="n">k_num</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+                <span class="n">mef_xml</span> <span class="o">+=</span> <span class="s2">&quot;&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">mef_xml</span> <span class="o">+=</span> <span class="n">args_to_xml</span><span class="p">(</span><span class="s2">&quot;house-event&quot;</span><span class="p">,</span> <span class="n">gate</span><span class="o">.</span><span class="n">h_arguments</span><span class="p">)</span>
+            <span class="n">mef_xml</span> <span class="o">+=</span> <span class="n">args_to_xml</span><span class="p">(</span><span class="s2">&quot;basic-event&quot;</span><span class="p">,</span> <span class="n">gate</span><span class="o">.</span><span class="n">b_arguments</span><span class="p">)</span>
+            <span class="n">mef_xml</span> <span class="o">+=</span> <span class="n">args_to_xml</span><span class="p">(</span><span class="s2">&quot;event&quot;</span><span class="p">,</span> <span class="n">gate</span><span class="o">.</span><span class="n">u_arguments</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">converter</span><span class="p">(</span><span class="n">arg_gate</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;Converter for single nesting NOT connective.&quot;&quot;&quot;</span>
+                <span class="k">if</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">!=</span> <span class="s2">&quot;not&quot;</span> <span class="ow">and</span> <span class="n">arg_gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;not&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">convert_formula</span><span class="p">(</span><span class="n">arg_gate</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">arg_to_xml</span><span class="p">(</span><span class="s2">&quot;gate&quot;</span><span class="p">,</span> <span class="n">arg_gate</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">nest</span><span class="p">:</span>
+                <span class="n">mef_xml</span> <span class="o">+=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">converter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gate</span><span class="o">.</span><span class="n">g_arguments</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mef_xml</span> <span class="o">+=</span> <span class="n">args_to_xml</span><span class="p">(</span><span class="s2">&quot;gate&quot;</span><span class="p">,</span> <span class="n">gate</span><span class="o">.</span><span class="n">g_arguments</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">!=</span> <span class="s2">&quot;null&quot;</span><span class="p">:</span>
+                <span class="n">mef_xml</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/&quot;</span> <span class="o">+</span> <span class="n">gate</span><span class="o">.</span><span class="n">operator</span> <span class="o">+</span> <span class="s2">&quot;&gt;&quot;</span>
+            <span class="k">return</span> <span class="n">mef_xml</span>
+
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;define-gate name=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="n">convert_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nest</span><span class="p">))</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/define-gate&gt;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Gate.to_aralia"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.Gate.to_aralia">[docs]</a>    <span class="k">def</span> <span class="nf">to_aralia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Aralia definition of the gate.</span>
+
+<span class="sd">        The transformation to the Aralia format</span>
+<span class="sd">        does not support complement or undefined arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            printer: The output stream.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: The gate operator is not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_arguments</span>
+
+        <span class="k">def</span> <span class="nf">get_format</span><span class="p">(</span><span class="n">operator</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Determins formatting for the gate operator.&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;atleast&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;@(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_num</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, [&quot;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="p">,</span> <span class="s2">&quot;])&quot;</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;and&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot; &amp; &quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;or&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot; | &quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;xor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot; ^ &quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;not&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;~(&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+            <span class="p">}[</span><span class="n">operator</span><span class="p">]</span>
+
+        <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot; := &quot;</span><span class="p">]</span>
+        <span class="n">line_start</span><span class="p">,</span> <span class="n">div</span><span class="p">,</span> <span class="n">line_end</span> <span class="o">=</span> <span class="n">get_format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">)</span>
+        <span class="n">line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_start</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">h_arg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_arguments</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h_arg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">b_arg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">b_arguments</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b_arg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">g_arg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_arguments</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_arg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">div</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+        <span class="n">line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_end</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="CcfGroup"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.CcfGroup">[docs]</a><span class="k">class</span> <span class="nc">CcfGroup</span><span class="p">:</span>  <span class="c1"># pylint: disable=too-few-public-methods</span>
+    <span class="sd">&quot;&quot;&quot;Representation of CCF groups in a fault tree.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: The name of an instance CCF group.</span>
+<span class="sd">        members: A collection of members in a CCF group.</span>
+<span class="sd">        prob: Probability for a CCF group.</span>
+<span class="sd">        model: The CCF model chosen for a group.</span>
+<span class="sd">        factors: The factors of the CCF model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a unique CCF group with a unique name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier for the group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prob</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factors</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="CcfGroup.to_xml"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.CcfGroup.to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Open-PSA MEF XML definition of the CCF group.&quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;define-CCF-group name=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39; model=&quot;&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;members&gt;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;basic-event name=&quot;&#39;</span><span class="p">,</span> <span class="n">member</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;/&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/members&gt;&#39;</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;distribution&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;float value=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">,</span> <span class="s1">&#39;&quot;/&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/distribution&gt;&#39;</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;factors&gt;&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;MGL&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;factor level=&quot;&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;float value=&quot;&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="s1">&#39;&quot;/&gt;&#39;</span><span class="p">)</span>
+            <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/factor&gt;&#39;</span><span class="p">)</span>
+            <span class="n">level</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/factors&gt;&#39;</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/define-CCF-group&gt;&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FaultTree"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.FaultTree">[docs]</a><span class="k">class</span> <span class="nc">FaultTree</span><span class="p">:</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+    <span class="sd">&quot;&quot;&quot;Representation of a fault tree for general purposes.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: The name of a fault tree.</span>
+<span class="sd">        top_gate: The root gate of the fault tree.</span>
+<span class="sd">        top_gates: Container of top gates. Single one is the default.</span>
+<span class="sd">        gates: A set of all gates that are created for the fault tree.</span>
+<span class="sd">        basic_events: A list of all basic events created for the fault tree.</span>
+<span class="sd">        house_events: A list of all house events created for the fault tree.</span>
+<span class="sd">        ccf_groups: A collection of created CCF groups.</span>
+<span class="sd">        non_ccf_events: A list of basic events that are not in CCF groups.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes an empty fault tree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The name of the system described by the fault tree container.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_gate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_gates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basic_events</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">house_events</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccf_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">non_ccf_events</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># must be assigned directly.</span>
+
+<div class="viewcode-block" id="FaultTree.to_xml"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.FaultTree.to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">,</span> <span class="n">nest</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Open-PSA MEF XML definition of the fault tree.</span>
+
+<span class="sd">        The fault tree is produced breadth-first.</span>
+<span class="sd">        The output XML representation is not formatted for human readability.</span>
+<span class="sd">        The fault tree must be valid and well-formed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            printer: The output stream.</span>
+<span class="sd">            nest: A nesting factor for the Boolean formulae.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;opsa-mef&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;define-fault-tree name=&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">)</span>
+
+        <span class="n">sorted_gates</span> <span class="o">=</span> <span class="n">toposort_gates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_gates</span> <span class="ow">or</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_gate</span><span class="p">],</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">gates</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">sorted_gates</span><span class="p">:</span>
+            <span class="n">gate</span><span class="o">.</span><span class="n">to_xml</span><span class="p">(</span><span class="n">printer</span><span class="p">,</span> <span class="n">nest</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ccf_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccf_groups</span><span class="p">:</span>
+            <span class="n">ccf_group</span><span class="o">.</span><span class="n">to_xml</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/define-fault-tree&gt;&#39;</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;model-data&gt;&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">basic_event</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">non_ccf_events</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccf_groups</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">basic_events</span><span class="p">):</span>
+            <span class="n">basic_event</span><span class="o">.</span><span class="n">to_xml</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">house_event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">house_events</span><span class="p">:</span>
+            <span class="n">house_event</span><span class="o">.</span><span class="n">to_xml</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/model-data&gt;&#39;</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">(</span><span class="s1">&#39;&lt;/opsa-mef&gt;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FaultTree.to_aralia"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.FaultTree.to_aralia">[docs]</a>    <span class="k">def</span> <span class="nf">to_aralia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">printer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces the Aralia definition of the fault tree.</span>
+
+<span class="sd">        Note that the Aralia format does not support advanced features.</span>
+<span class="sd">        The fault tree must be valid and well formed for printing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            printer: The output stream.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: Some gate operator is not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">printer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">printer</span><span class="p">()</span>
+
+        <span class="n">sorted_gates</span> <span class="o">=</span> <span class="n">toposort_gates</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">top_gate</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gates</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">sorted_gates</span><span class="p">:</span>
+            <span class="n">gate</span><span class="o">.</span><span class="n">to_aralia</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">basic_event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basic_events</span><span class="p">:</span>
+            <span class="n">basic_event</span><span class="o">.</span><span class="n">to_aralia</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span>
+
+        <span class="n">printer</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">house_event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">house_events</span><span class="p">:</span>
+            <span class="n">house_event</span><span class="o">.</span><span class="n">to_aralia</span><span class="p">(</span><span class="n">printer</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="toposort_gates"><a class="viewcode-back" href="../scripts/fault_tree.html#fault_tree.toposort_gates">[docs]</a><span class="k">def</span> <span class="nf">toposort_gates</span><span class="p">(</span><span class="n">root_gates</span><span class="p">,</span> <span class="n">gates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sorts gates topologically starting from the root gate.</span>
+
+<span class="sd">    The gate marks are used for the algorithm.</span>
+<span class="sd">    After this sorting the marks are reset to None.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        root_gates: The root gates of the graph.</span>
+<span class="sd">        gates: Gates to be sorted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A deque of sorted gates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">gates</span><span class="p">:</span>
+        <span class="n">gate</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">final_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Recursively visits the given gate sub-tree to include into the list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gate: The current gate.</span>
+<span class="sd">            final_list: A deque of sorted gates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">gate</span><span class="o">.</span><span class="n">mark</span> <span class="o">!=</span> <span class="s2">&quot;temp&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gate</span><span class="o">.</span><span class="n">mark</span><span class="p">:</span>
+            <span class="n">gate</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="s2">&quot;temp&quot;</span>
+            <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">gate</span><span class="o">.</span><span class="n">g_arguments</span><span class="p">:</span>
+                <span class="n">visit</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">final_list</span><span class="p">)</span>
+            <span class="n">gate</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="s2">&quot;perm&quot;</span>
+            <span class="n">final_list</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="n">gate</span><span class="p">)</span>
+
+    <span class="n">sorted_gates</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">root_gate</span> <span class="ow">in</span> <span class="n">root_gates</span><span class="p">:</span>
+        <span class="n">visit</span><span class="p">(</span><span class="n">root_gate</span><span class="p">,</span> <span class="n">sorted_gates</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_gates</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">gates</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">gates</span><span class="p">:</span>
+        <span class="n">gate</span><span class="o">.</span><span class="n">mark</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">sorted_gates</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

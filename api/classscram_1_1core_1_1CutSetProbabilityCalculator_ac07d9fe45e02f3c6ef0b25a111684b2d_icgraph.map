@@ -1,0 +1,4 @@
+<map id="scram::core::CutSetProbabilityCalculator::Calculate" name="scram::core::CutSetProbabilityCalculator::Calculate">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1RareEventCalculator.xhtml#a338c4038209d0a6e311d913df8b684f9" title="Calculates probabilities using the Rare&#45;Event approximation. " alt="" coords="269,5,504,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1McubCalculator.xhtml#af47379d2ba9190b34aef1acfa402e15c" title="Calculates probabilities using the minimal cut set upper bound (MCUB) approximation. " alt="" coords="285,71,489,112"/>
+</map>

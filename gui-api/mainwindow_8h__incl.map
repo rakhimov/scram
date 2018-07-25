@@ -1,0 +1,6 @@
+<map id="mainwindow.h" name="mainwindow.h">
+<area shape="rect" id="node20" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="857,80,931,107"/>
+<area shape="rect" id="node34" href="$zoomableview_8h.xhtml" title="Provides a GraphicsView with zoom in/out and other convenience features. " alt="" coords="2402,80,2525,107"/>
+<area shape="rect" id="node32" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="1657,162,1755,189"/>
+<area shape="rect" id="node33" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="849,162,939,189"/>
+</map>

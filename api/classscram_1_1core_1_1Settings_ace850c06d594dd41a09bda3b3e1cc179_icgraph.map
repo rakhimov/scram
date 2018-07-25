@@ -1,0 +1,5 @@
+<map id="scram::core::Settings::approximation" name="scram::core::Settings::approximation">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Settings.xhtml#af47ea81c8e9f113e6824bc3d79df72df" title="Sets the approximation for quantitative analysis. " alt="" coords="216,5,375,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Settings.xhtml#a738f782afa0f5dba1ffec83caff540e3" title="Sets a flag to calculate prime implicants instead of minimal cut sets. " alt="" coords="216,71,375,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1Project.xhtml#aa72871e05c53f98f8c4f48ec61277754" title="A constructor with project configurations for analysis. " alt="" coords="212,137,379,163"/>
+</map>

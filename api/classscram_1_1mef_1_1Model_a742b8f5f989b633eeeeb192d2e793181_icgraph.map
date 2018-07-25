@@ -1,0 +1,5 @@
+<map id="scram::mef::Model::HasDefaultName" name="scram::mef::Model::HasDefaultName">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Model.xhtml#a8c11c1a8b9cd08ac3305ceb35d2ae2b4" title="scram::mef::Model::\lGetOptionalName" alt="" coords="244,5,393,47"/>
+<area shape="rect" id="node3" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="203,71,435,112"/>
+<area shape="rect" id="node4" href="$serialization_8cc.xhtml#a04bd5db90ad7b35c9bd60f945d76fe6c" title="Serializes the model and its data into stream as XML. " alt="" coords="240,137,397,163"/>
+</map>

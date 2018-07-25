@@ -1,0 +1,7 @@
+<map id="scram::gui::diagram::Event" name="scram::gui::diagram::Event">
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1diagram_1_1BasicEvent.xhtml" title="Representation of a fault tree basic event. " alt="" coords="5,498,156,590"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml" title="Fault tree intermediate events or gates. " alt="" coords="180,476,363,612"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1diagram_1_1HouseEvent.xhtml" title="Representation of a fault tree house events. " alt="" coords="387,498,537,590"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1diagram_1_1TransferIn.xhtml" title="An alias pointer to a gate. " alt="" coords="561,498,712,590"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1diagram_1_1UndevelopedEvent.xhtml" title="Placeholder for events with a potential to become a gate. " alt="" coords="736,498,903,590"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="scram::mef::Parameter" name="scram::mef::Parameter">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Expression.xhtml" title="Abstract base class for all sorts of expressions to describe events. " alt="" coords="5,145,177,355"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="201,131,357,369"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Id.xhtml" title="Mixin class for assigning unique identifiers to elements. " alt="" coords="212,417,347,627"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="170,5,389,83"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Role.xhtml" title="Mixin class that manages private or public roles for elements as needed. " alt="" coords="381,189,511,311"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1NodeMark.xhtml" title="Mixin class for providing marks for graph nodes. " alt="" coords="371,469,539,575"/>
+<area shape="rect" id="node9" href="$classscram_1_1mef_1_1Usage.xhtml" title="Mixin class for providing usage marks for elements. " alt="" coords="563,469,707,575"/>
+</map>

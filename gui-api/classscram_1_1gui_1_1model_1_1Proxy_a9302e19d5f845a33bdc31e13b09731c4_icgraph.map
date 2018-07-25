@@ -1,0 +1,7 @@
+<map id="scram::gui::model::Proxy::data" name="scram::gui::model::Proxy::data">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetExpression.xhtml#ae6a0cda81a87f9e74eaf258a0a266963" title="Applies the expression changes. " alt="" coords="199,5,427,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetFlavor.xhtml#ac37ddcb53247b2404b909868566b34c7" title="Applies the flavor changes. " alt="" coords="214,71,411,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1HouseEvent_1_1SetState.xhtml#a932800361c8b3ae4342647f5be26759f" title="Applies the new state to the house event. " alt="" coords="212,136,413,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Gate_1_1SetFormula.xhtml#a7e970a42c601690b7c1b298e2b7478fb" title="Applies the gate formula changes. " alt="" coords="227,201,399,243"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1EventDialog.xhtml#a355f7af9b2cef48f4e52ffc4a44cb020" title="Sets up the dialog with element data. " alt="" coords="226,267,399,308"/>
+</map>

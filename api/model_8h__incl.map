@@ -1,0 +1,19 @@
+<map id="model.h" name="model.h">
+<area shape="rect" id="node6" href="$alignment_8h.xhtml" title="Mission and phase constructs. " alt="" coords="2821,80,2919,107"/>
+<area shape="rect" id="node7" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="3095,311,3181,338"/>
+<area shape="rect" id="node29" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="2819,155,2921,181"/>
+<area shape="rect" id="node30" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="3616,229,3687,256"/>
+<area shape="rect" id="node32" href="$expression_8h.xhtml" title="Provides the base class for all expressions and units for expression values. " alt="" coords="4275,311,4377,338"/>
+<area shape="rect" id="node34" href="$ccf__group_8h.xhtml" title="Functional containers for basic events grouped by common cause failure. " alt="" coords="3991,155,4087,181"/>
+<area shape="rect" id="node35" href="$event__tree_8h.xhtml" title="Event Tree facilities. " alt="" coords="2053,80,2156,107"/>
+<area shape="rect" id="node37" href="$extern_8h.xhtml" title="The MEF facilities to call external functions in expressions. " alt="" coords="1333,229,1481,256"/>
+<area shape="rect" id="node43" href="$test__event_8h.xhtml" title="Event tree analysis expressions to test functional and initiating events. " alt="" coords="4453,229,4628,256"/>
+<area shape="rect" id="node45" href="$fault__tree_8h.xhtml" title="Fault Tree and Component containers. " alt="" coords="3667,80,3761,107"/>
+<area shape="rect" id="node47" href="$parameter_8h.xhtml" title="Parameter expressions that act like a shareable variable. " alt="" coords="3762,229,3863,256"/>
+<area shape="rect" id="node48" href="$substitution_8h.xhtml" title="The MEF Substitution constructs. " alt="" coords="3106,155,3215,181"/>
+<area shape="rect" id="node17" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="427,401,491,427"/>
+<area shape="rect" id="node24" href="$linear__set_8h.xhtml" title="Implementation of a vector&#45;based set for a small number of entries. " alt="" coords="3689,401,3809,427"/>
+<area shape="rect" id="node28" href="$multi__index_8h.xhtml" title="Helper functions to boost multi_index_container. " alt="" coords="3073,401,3203,427"/>
+<area shape="rect" id="node23" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="181,490,311,517"/>
+<area shape="rect" id="node36" href="$variant_8h.xhtml" title="Extra helper functions for std::variant. " alt="" coords="2132,229,2235,256"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="scram::gui::model::BasicEvent::flavor" name="scram::gui::model::BasicEvent::flavor">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEvent.xhtml#a036db72d9a602fe492b5f3ac093f3d11" title="Initializes proxy with the MEF basic event and its implicit flavor. " alt="" coords="212,5,383,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="210,71,385,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1diagram_1_1Gate.xhtml#a2111abee08814f57bc5cdfd0452b8ec0" title="Constructs the graph with the transfer symbols for gates. " alt="" coords="222,136,373,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetFlavor.xhtml#ac37ddcb53247b2404b909868566b34c7" title="Applies the flavor changes. " alt="" coords="199,201,396,243"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1EventDialog.xhtml#a69b4f2ab718abc1d3ba4d79c5688378a" title="Sets up the dialog with element data. " alt="" coords="211,267,384,308"/>
+</map>

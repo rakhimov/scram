@@ -1,0 +1,4 @@
+<map id="scram::gui::model::Model::RemoveFaultTree" name="scram::gui::model::Model::RemoveFaultTree">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1Inverse.xhtml" title="{scram::gui::Inverse\l\&lt; AddFaultTree \&gt;\n||+ redo()\l+ undo()\l}" alt="" coords="37,287,180,393"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1Inverse.xhtml" title="A command that is an inverse of another command. " alt="" coords="132,132,312,224"/>
+</map>

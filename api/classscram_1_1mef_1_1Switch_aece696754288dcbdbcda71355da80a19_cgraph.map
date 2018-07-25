@@ -1,0 +1,7 @@
+<map id="scram::mef::Switch::interval" name="scram::mef::Switch::interval">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Expression.xhtml#a179b21e75df522673e6d51b784d10e86" title="scram::mef::Expression\l::interval" alt="" coords="197,128,369,169"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Expression.xhtml#a058aef65da884a47ea3345bc31488b7a" title="Determines if the value of the expression contains deviate expressions. " alt="" coords="417,29,589,71"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Expression.xhtml#ab6d31c4ddb5d4a827727829cbd4e4449" title="This routine resets the sampling to get new values. " alt="" coords="417,95,589,136"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Expression.xhtml#a5cf00d8b2ff843ad029a501a89ee572a" title="scram::mef::Expression\l::Sample" alt="" coords="417,160,589,201"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Expression.xhtml#af4c1a5cb29e8f45623a99742b7ba8bc5" title="scram::mef::Expression\l::value" alt="" coords="417,225,589,267"/>
+</map>

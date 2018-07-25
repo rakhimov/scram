@@ -1,0 +1,7 @@
+<map id="scram::xml::Error" name="scram::xml::Error">
+<area shape="rect" id="node5" href="$structscram_1_1xml_1_1ParseError.xhtml" title="XML parsing errors. " alt="" coords="5,396,172,473"/>
+<area shape="rect" id="node6" href="$structscram_1_1xml_1_1StreamError.xhtml" title="Errors in using XML streaming facilities. " alt="" coords="196,396,376,473"/>
+<area shape="rect" id="node7" href="$structscram_1_1xml_1_1ValidityError.xhtml" title="XML document validity errors. " alt="" coords="400,396,577,473"/>
+<area shape="rect" id="node8" href="$structscram_1_1xml_1_1XIncludeError.xhtml" title="XInclude resolution issues. " alt="" coords="601,396,787,473"/>
+<area shape="rect" id="node2" href="$classscram_1_1Error.xhtml" title="The Error class is the base class for all exceptions specific to the SCRAM code. " alt="" coords="337,131,438,223"/>
+</map>

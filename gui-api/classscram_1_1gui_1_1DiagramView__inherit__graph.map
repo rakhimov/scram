@@ -1,0 +1,4 @@
+<map id="scram::gui::DiagramView" name="scram::gui::DiagramView">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1ZoomableView.xhtml" title="The base class for graphics views with default zoom logic. " alt="" coords="5,131,197,281"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1Printable.xhtml" title="An abstract mixin class for printable objects. " alt="" coords="222,153,375,259"/>
+</map>

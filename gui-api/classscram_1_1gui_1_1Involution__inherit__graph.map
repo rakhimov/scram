@@ -1,0 +1,9 @@
+<map id="scram::gui::Involution" name="scram::gui::Involution">
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetExpression.xhtml" title="Sets the basic event expression. " alt="" coords="5,256,196,363"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetFlavor.xhtml" title="Sets the flavor of the basic event. " alt="" coords="221,256,381,363"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Element_1_1SetId.xhtml" title="Sets the name of an Element. " alt="" coords="405,256,559,363"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1Element_1_1SetLabel.xhtml" title="Sets the label of an Element. " alt="" coords="583,256,728,363"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1Gate_1_1SetFormula.xhtml" title="Formula modification commands. " alt="" coords="752,256,897,363"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1model_1_1HouseEvent_1_1SetState.xhtml" title="Flips the house event state. " alt="" coords="921,256,1085,363"/>
+<area shape="rect" id="node9" href="$classscram_1_1gui_1_1model_1_1Model_1_1SetName.xhtml" title="Sets the optional name of the model. " alt="" coords="1109,256,1255,363"/>
+</map>

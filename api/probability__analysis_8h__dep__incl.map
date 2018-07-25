@@ -1,0 +1,12 @@
+<map id="probability_analysis.h" name="probability_analysis.h">
+<area shape="rect" id="node2" href="$importance__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of importance factors. " alt="" coords="110,80,275,107"/>
+<area shape="rect" id="node4" href="$reporter_8h.xhtml" title="Reporter of results. " alt="" coords="192,229,278,256"/>
+<area shape="rect" id="node7" href="$risk__analysis_8h.xhtml" title="Contains the main system for performing analysis. " alt="" coords="268,155,383,181"/>
+<area shape="rect" id="node9" href="$probability__analysis_8cc.xhtml" title="Implementations of functions to provide probability analysis. " alt="" coords="538,80,702,107"/>
+<area shape="rect" id="node10" href="$uncertainty__analysis_8h.xhtml" title="Provides functionality for uncertainty analysis with Monte Carlo method. " alt="" coords="350,80,514,107"/>
+<area shape="rect" id="node3" href="$importance__analysis_8cc.xhtml" title="Implementations of functions to provide quantitative importance informations. " alt="" coords="23,155,194,181"/>
+<area shape="rect" id="node5" href="$reporter_8cc.xhtml" title="Implements Reporter class. " alt="" coords="164,304,255,331"/>
+<area shape="rect" id="node6" href="$scram_8cc.xhtml" title="Main entrance. " alt="" coords="279,304,359,331"/>
+<area shape="rect" id="node8" href="$risk__analysis_8cc.xhtml" title="Implementation of risk analysis handler. " alt="" coords="356,229,476,256"/>
+<area shape="rect" id="node11" href="$uncertainty__analysis_8cc.xhtml" title="Implements the functionality to run Monte Carlo simulations. " alt="" coords="458,155,628,181"/>
+</map>

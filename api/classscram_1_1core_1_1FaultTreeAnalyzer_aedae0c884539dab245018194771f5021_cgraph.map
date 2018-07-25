@@ -1,0 +1,25 @@
+<map id="scram::core::FaultTreeAnalyzer::algorithm" name="scram::core::FaultTreeAnalyzer::algorithm">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Zbdd.xhtml#aac27b9279de1ee1a63822896daeca0c7" title="Runs the analysis with the representation of a PDAG as ZBDD. " alt="" coords="271,324,419,365"/>
+<area shape="rect" id="node3" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml#af153c12dc6133b7d9f9b7a57bba29f1d" title="scram::core::IntrusivePtr\lCast\&lt; SetNode \&gt;::Ref" alt="" coords="1157,671,1336,712"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1SetNode.xhtml#a2d7f99792b82961df2e5ecfcd735bb5f" title="scram::core::SetNode\l::max_set_order" alt="" coords="1165,336,1328,377"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1Settings.xhtml#a0e43ec0f017d23a4fa4e376c4060d380" title="scram::core::Settings\l::limit_order" alt="" coords="676,156,835,197"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1Zbdd.xhtml#a3dbb8ef5da2882daf6c39e9724eae459" title="Removes subsets in ZBDD. " alt="" coords="681,324,829,365"/>
+<area shape="rect" id="node9" href="$classscram_1_1core_1_1SetNode.xhtml#a88d05af2b9f4f08b7bc66a31c2b9e249" title="scram::core::SetNode\l::minimal" alt="" coords="921,105,1084,147"/>
+<area shape="rect" id="node16" href="$classscram_1_1core_1_1Zbdd.xhtml#a8cfceb8301f35bce33c34f1283f33725" title="Applies non&#45;declarative substitutions at the end of analysis. " alt="" coords="467,549,615,591"/>
+<area shape="rect" id="node24" href="$classscram_1_1core_1_1Zbdd.xhtml#a3e6359ba152137912cbafc500c2e6430" title="Freezes the graph. " alt="" coords="467,791,615,832"/>
+<area shape="rect" id="node7" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml#adc53e5b89cace18e05bac95316da7d91" title="scram::core::IntrusivePtr\lCast\&lt; SetNode \&gt;::Ptr" alt="" coords="913,301,1092,343"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1Zbdd.xhtml#a42af18229ba2e80201bc0fdac07b7091" title="Finds or adds a unique SetNode in the ZBDD. " alt="" coords="929,443,1077,484"/>
+<area shape="rect" id="node10" href="$classscram_1_1core_1_1Terminal.xhtml#a7a25b0b40498f4876571a5dac4e724c3" title="scram::core::Terminal\l::value" alt="" coords="923,171,1082,212"/>
+<area shape="rect" id="node12" href="$classscram_1_1core_1_1Settings.xhtml#ae64f362fceb44402e101140dfc1725ba" title="scram::core::Settings\l::prime_implicants" alt="" coords="923,236,1082,277"/>
+<area shape="rect" id="node13" href="$classscram_1_1core_1_1NonTerminal.xhtml#aeeaafd82ae5890a7ec3462c68ffc8628" title="scram::core::NonTerminal\l::index" alt="" coords="910,639,1095,680"/>
+<area shape="rect" id="node14" href="$classscram_1_1core_1_1NonTerminal.xhtml#a9230422e92d086c34f67bcb864bfc8a9" title="scram::core::NonTerminal\l::module" alt="" coords="910,508,1095,549"/>
+<area shape="rect" id="node15" href="$classscram_1_1core_1_1NonTerminal.xhtml#adcdd0c5114aa6a1d32a03928adc07c49" title="scram::core::NonTerminal\l::coherent" alt="" coords="910,573,1095,615"/>
+<area shape="rect" id="node11" href="$classscram_1_1core_1_1Vertex.xhtml#a8a4a6e9871c7b80b9951fea57617d438" title="scram::core::Vertex::id" alt="" coords="1163,178,1330,205"/>
+<area shape="rect" id="node17" href="$classscram_1_1core_1_1Zbdd.xhtml#a7c1129acd9810b5b9ff4952f587ce490" title="Clears all memoization tables. " alt="" coords="681,968,829,1009"/>
+<area shape="rect" id="node18" href="$classscram_1_1core_1_1NonTerminal.xhtml#a7b70ab1b978f3197458c95e0891fd79c" title="scram::core::NonTerminal\l::mark" alt="" coords="663,725,848,767"/>
+<area shape="rect" id="node19" href="$classscram_1_1core_1_1NonTerminal.xhtml#a7b184b2ba68a289aae9f3737f1d13b97" title="scram::core::NonTerminal\l::high" alt="" coords="910,704,1095,745"/>
+<area shape="rect" id="node20" href="$classscram_1_1core_1_1NonTerminal.xhtml#adeb100923176ebd5f820c75b79280796" title="scram::core::NonTerminal::low" alt="" coords="896,771,1109,798"/>
+<area shape="rect" id="node21" href="$classscram_1_1core_1_1Zbdd.xhtml#aed1eaa96df30e6eaa32e9e51427c9743" title="scram::core::Zbdd::\lmodules" alt="" coords="681,608,829,649"/>
+<area shape="rect" id="node22" href="$classscram_1_1core_1_1NonTerminal.xhtml#af5853746ad388f479a7aa45c5d843466" title="scram::core::NonTerminal\l\&lt; SetNode \&gt;::order" alt="" coords="910,825,1095,867"/>
+<area shape="rect" id="node23" href="$classscram_1_1core_1_1SetNode.xhtml#a687ac81766268cd0094acbfcd7c26af0" title="scram::core::SetNode\l::count" alt="" coords="674,389,837,431"/>
+</map>

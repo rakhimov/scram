@@ -1,0 +1,31 @@
+<map id="scram::mef::Element" name="scram::mef::Element">
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Alignment.xhtml" title="Alignment configuration for the whole model per analysis. " alt="" coords="5,779,173,871"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Component.xhtml" title="Component is for logical grouping of events, gates, and other components. " alt="" coords="197,625,376,1025"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1EventTree.xhtml" title="Event Tree representation with MEF constructs. " alt="" coords="400,728,565,923"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1ExternFunction_3_01void_01_4.xhtml" title="Abstract base class for ExternFunction concrete types. " alt="" coords="589,772,787,879"/>
+<area shape="rect" id="node11" href="$classscram_1_1mef_1_1ExternLibrary.xhtml" title="The MEF construct to extend expressions with external libraries. " alt="" coords="811,779,997,871"/>
+<area shape="rect" id="node12" href="$classscram_1_1mef_1_1FunctionalEvent.xhtml" title="Representation of functional events in event trees. " alt="" coords="1021,779,1224,871"/>
+<area shape="rect" id="node13" href="$classscram_1_1mef_1_1Id.xhtml" title="Mixin class for assigning unique identifiers to elements. " alt="" coords="1249,721,1383,930"/>
+<area shape="rect" id="node25" href="$classscram_1_1mef_1_1InitiatingEvent.xhtml" title="Event&#45;tree Initiating Event. " alt="" coords="1407,757,1601,893"/>
+<area shape="rect" id="node26" href="$classscram_1_1mef_1_1Model.xhtml" title="This class represents a risk analysis model. " alt="" coords="1625,420,1788,1231"/>
+<area shape="rect" id="node27" href="$classscram_1_1mef_1_1NamedBranch.xhtml" title="Named branches that can be referenced and reused. " alt="" coords="1812,787,2007,864"/>
+<area shape="rect" id="node28" href="$classscram_1_1mef_1_1Phase.xhtml" title="Phases of alignments the models spends its time fraction. " alt="" coords="2031,750,2174,901"/>
+<area shape="rect" id="node29" href="$classscram_1_1mef_1_1Rule.xhtml" title="A reusable collection of instructions. " alt="" coords="2198,779,2327,871"/>
+<area shape="rect" id="node30" href="$classscram_1_1mef_1_1Sequence.xhtml" title="Representation of sequences in event trees. " alt="" coords="2351,779,2518,871"/>
+<area shape="rect" id="node31" href="$classscram_1_1mef_1_1Substitution.xhtml" title="The general representation for Delete Terms, Recovery Rules, and Exchange Events. ..." alt="" coords="2542,728,2722,923"/>
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="1247,5,1465,83"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1FaultTree.xhtml" title="Fault tree representation as a container of gates, basic and house events, and other information..." alt="" coords="207,1353,366,1460"/>
+<area shape="rect" id="node9" href="$classscram_1_1mef_1_1ExternFunction.xhtml" title="{scram::mef::ExternFunction\l\&lt; R, Args... \&gt;\n||+ ExternFunction()\l+ operator()()\l+ apply()\l}" alt="" coords="453,1633,651,1754"/>
+<area shape="rect" id="node10" href="$classscram_1_1mef_1_1ExternFunction.xhtml" title="Extern function abstraction to be referenced by expressions. " alt="" coords="589,1346,787,1467"/>
+<area shape="rect" id="node14" href="$classscram_1_1mef_1_1CcfGroup.xhtml" title="Abstract base class for all common cause failure models. " alt="" coords="1149,1280,1312,1533"/>
+<area shape="rect" id="node19" href="$classscram_1_1mef_1_1Event.xhtml" title="Abstract base class for general fault tree events. " alt="" coords="1577,1368,1716,1445"/>
+<area shape="rect" id="node24" href="$classscram_1_1mef_1_1Parameter.xhtml" title="This class provides a representation of a variable in basic event description. " alt="" coords="1740,1339,1911,1475"/>
+<area shape="rect" id="node15" href="$classscram_1_1mef_1_1AlphaFactorModel.xhtml" title="Alpha factor model characterizes failure of exactly k members of the group due to common cause..." alt="" coords="675,1655,891,1732"/>
+<area shape="rect" id="node16" href="$classscram_1_1mef_1_1BetaFactorModel.xhtml" title="Common cause failure model that assumes, if common cause failure occurs, then all components or membe..." alt="" coords="915,1655,1125,1732"/>
+<area shape="rect" id="node17" href="$classscram_1_1mef_1_1MglModel.xhtml" title="Multiple Greek Letters model characterizes failure of sub&#45;groups of the group due to common cause..." alt="" coords="1149,1655,1312,1732"/>
+<area shape="rect" id="node18" href="$classscram_1_1mef_1_1PhiFactorModel.xhtml" title="Phi factor model is a simplification, where fractions of k&#45;member group failure is given directly..." alt="" coords="1337,1655,1535,1732"/>
+<area shape="rect" id="node20" href="$classscram_1_1mef_1_1BasicEvent.xhtml" title="Representation of a basic event in a fault tree. " alt="" coords="1560,1596,1733,1791"/>
+<area shape="rect" id="node22" href="$classscram_1_1mef_1_1Gate.xhtml" title="A representation of a gate in a fault tree. " alt="" coords="1758,1618,1893,1769"/>
+<area shape="rect" id="node23" href="$classscram_1_1mef_1_1HouseEvent.xhtml" title="Representation of a house event in a fault tree. " alt="" coords="1917,1625,2097,1761"/>
+<area shape="rect" id="node21" href="$classscram_1_1mef_1_1CcfEvent.xhtml" title="A basic event that represents a multiple failure of a group of events due to a common cause..." alt="" coords="1567,1840,1726,1947"/>
+</map>

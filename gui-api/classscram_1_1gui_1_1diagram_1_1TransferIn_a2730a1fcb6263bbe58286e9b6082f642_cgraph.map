@@ -1,0 +1,4 @@
+<map id="scram::gui::diagram::TransferIn::TransferIn" name="scram::gui::diagram::TransferIn::TransferIn">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#a689aedbf5244a97df88a76993241991d" title="Releases the current derived class item, and sets the new one. " alt="" coords="213,5,392,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#a29eb38d7ae8c6258de2a2bcc69f79046" title="scram::gui::diagram\l::Event::units" alt="" coords="440,35,591,76"/>
+</map>

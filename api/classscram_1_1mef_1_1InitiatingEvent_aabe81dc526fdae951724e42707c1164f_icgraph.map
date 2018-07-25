@@ -1,0 +1,4 @@
+<map id="scram::mef::InitiatingEvent::event_tree" name="scram::mef::InitiatingEvent::event_tree">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a070c68c0d67edb30c9bf57e226aaf88e" title="Analyzes an event tree given the initiating event. " alt="" coords="247,5,467,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Initializer.xhtml#ac5a9fe2fb3d4cc5a37ead0726ca74462" title="Specializations for elements defined after registration. " alt="" coords="277,71,436,112"/>
+</map>

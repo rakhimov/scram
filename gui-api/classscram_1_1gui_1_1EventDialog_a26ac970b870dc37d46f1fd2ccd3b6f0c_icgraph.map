@@ -1,0 +1,7 @@
+<map id="scram::gui::EventDialog::validated" name="scram::gui::EventDialog::validated">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1EventDialog.xhtml#abe5bd4a7b6bca6ddb91656f4bb87f905" title="Creates a dialog for the definition of a new event. " alt="" coords="448,5,621,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1EventDialog.xhtml#a4b0937931be261ac68e45aee3062daf9" title="scram::gui::EventDialog\l::faultTree" alt="" coords="448,84,621,125"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1EventDialog.xhtml#a38bf6ffaa2fb4575a8ddeb52a1a953a4" title="Triggers validation of the current data. " alt="" coords="227,51,400,92"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="669,51,844,92"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1EventDialog.xhtml#aa7277e2f2b20420880a2a875680eaffa" title="Finds fault tree container of the gate. " alt="" coords="670,116,843,157"/>
+</map>

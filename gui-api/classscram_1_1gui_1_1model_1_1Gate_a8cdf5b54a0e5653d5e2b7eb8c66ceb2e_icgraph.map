@@ -1,0 +1,8 @@
+<map id="scram::gui::model::Gate::minNumber" name="scram::gui::model::Gate::minNumber">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="731,5,905,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1EventDialog.xhtml#abe5bf2e13a1fbb54ce0d8c5a03ad3a05" title="Sets up the dialog with element data. " alt="" coords="199,93,372,135"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1EventDialog.xhtml#a4b0937931be261ac68e45aee3062daf9" title="scram::gui::EventDialog\l::faultTree" alt="" coords="465,64,638,105"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1EventDialog.xhtml#aa7277e2f2b20420880a2a875680eaffa" title="Finds fault tree container of the gate. " alt="" coords="731,96,905,137"/>
+<area shape="rect" id="node6" href="$mainwindow_8cpp.xhtml#ad0f4088e2f2115f81473cbb2a6db09ed" title="Specialization to show gates as trees in tables. " alt="" coords="420,181,683,223"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1EventDialog.xhtml#a355f7af9b2cef48f4e52ffc4a44cb020" title="Sets up the dialog with element data. " alt="" coords="465,247,638,288"/>
+</map>

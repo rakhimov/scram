@@ -1,0 +1,52 @@
+<map id="source_info.h" name="source_info.h">
+<area shape="rect" id="node2" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="2660,80,2724,107"/>
+<area shape="rect" id="node3" href="$element_8h.xhtml" title="Base/mixin classes, structs, and properties common to all MEF classes/constructs. ..." alt="" coords="1667,155,1754,181"/>
+<area shape="rect" id="node5" href="$alignment_8cc.xhtml" title="Implementation of alignment and phase classes. " alt="" coords="499,453,603,480"/>
+<area shape="rect" id="node7" href="$initializer_8cc.xhtml" title="Implementation of input file processing into analysis constructs. " alt="" coords="2527,603,2622,629"/>
+<area shape="rect" id="node8" href="$scram_8cc.xhtml" title="Main entrance. " alt="" coords="1557,677,1637,704"/>
+<area shape="rect" id="node10" href="$model_8cc.xhtml" title="Implementation of functions in Model class. " alt="" coords="2573,528,2653,555"/>
+<area shape="rect" id="node13" href="$reporter_8cc.xhtml" title="Implements Reporter class. " alt="" coords="112,677,203,704"/>
+<area shape="rect" id="node20" href="$cycle_8h.xhtml" title="Validation facilities to detect and print cycles in graphs. " alt="" coords="2199,453,2265,480"/>
+<area shape="rect" id="node22" href="$event__tree_8cc.xhtml" title="Implementation of event tree facilities. " alt="" coords="2805,453,2915,480"/>
+<area shape="rect" id="node27" href="$ccf__group_8cc.xhtml" title="Implementation of various common cause failure models. " alt="" coords="347,379,450,405"/>
+<area shape="rect" id="node29" href="$fault__tree_8cc.xhtml" title="Implementation of fault tree and component containers. " alt="" coords="1800,453,1901,480"/>
+<area shape="rect" id="node30" href="$event_8cc.xhtml" title="Implementation of Event Class and its derived classes. " alt="" coords="2142,304,2218,331"/>
+<area shape="rect" id="node34" href="$substitution_8cc.xhtml" title="Implementation of Substitution members. " alt="" coords="2080,379,2195,405"/>
+<area shape="rect" id="node38" href="$parameter_8cc.xhtml" title="Implementation of expression parameters. " alt="" coords="2371,379,2477,405"/>
+<area shape="rect" id="node40" href="$extern_8h.xhtml" title="The MEF facilities to call external functions in expressions. " alt="" coords="2551,229,2625,256"/>
+<area shape="rect" id="node42" href="$exponential_8cc.xhtml" title="Implementation of various exponential expressions. " alt="" coords="3199,155,3313,181"/>
+<area shape="rect" id="node43" href="$numerical_8cc.xhtml" title="Implementation of various numerical expressions. " alt="" coords="3338,155,3441,181"/>
+<area shape="rect" id="node44" href="$random__deviate_8cc.xhtml" title="Implementations of random deviate expressions. " alt="" coords="3465,155,3609,181"/>
+<area shape="rect" id="node45" href="$expression_8cc.xhtml" title="Implementation of the expression base class. " alt="" coords="3633,155,3743,181"/>
+<area shape="rect" id="node46" href="$xml_8h.xhtml" title="XML helper facilities to work with libxml2. " alt="" coords="2833,155,2890,181"/>
+<area shape="rect" id="node48" href="$project_8cc.xhtml" title="Implementation of project configuration facilities. " alt="" coords="2989,304,3073,331"/>
+<area shape="rect" id="node50" href="$xml__stream_8h.xhtml" title="Facilities to stream data in XML format. " alt="" coords="297,528,407,555"/>
+<area shape="rect" id="node51" href="$settings_8cc.xhtml" title="Implementation of Settings Builder. " alt="" coords="3767,155,3857,181"/>
+<area shape="rect" id="node4" href="$alignment_8h.xhtml" title="Mission and phase constructs. " alt="" coords="761,379,860,405"/>
+<area shape="rect" id="node6" href="$initializer_8h.xhtml" title="A facility that processes input files into analysis constructs. " alt="" coords="1667,528,1757,555"/>
+<area shape="rect" id="node9" href="$model_8h.xhtml" title="Representation for a model container for risk analysis. " alt="" coords="1185,453,1260,480"/>
+<area shape="rect" id="node17" href="$serialization_8cc.xhtml" title="serialization.cc" alt="" coords="294,603,410,629"/>
+<area shape="rect" id="node18" href="$instruction_8h.xhtml" title="Model and event tree modifier instructions. " alt="" coords="1496,304,1597,331"/>
+<area shape="rect" id="node19" href="$event__tree_8h.xhtml" title="Event Tree facilities. " alt="" coords="1801,379,1903,405"/>
+<area shape="rect" id="node25" href="$event_8h.xhtml" title="Contains event classes for fault trees. " alt="" coords="1210,229,1281,256"/>
+<area shape="rect" id="node26" href="$ccf__group_8h.xhtml" title="Functional containers for basic events grouped by common cause failure. " alt="" coords="448,304,544,331"/>
+<area shape="rect" id="node28" href="$fault__tree_8h.xhtml" title="Fault Tree and Component containers. " alt="" coords="1138,379,1233,405"/>
+<area shape="rect" id="node33" href="$substitution_8h.xhtml" title="The MEF Substitution constructs. " alt="" coords="1848,304,1957,331"/>
+<area shape="rect" id="node37" href="$parameter_8h.xhtml" title="Parameter expressions that act like a shareable variable. " alt="" coords="1723,304,1824,331"/>
+<area shape="rect" id="node39" href="$element_8cc.xhtml" title="Implementation of helper features for all elements of the analysis. " alt="" coords="1773,229,1867,256"/>
+<area shape="rect" id="node14" href="$risk__analysis_8h.xhtml" title="Contains the main system for performing analysis. " alt="" coords="948,528,1063,555"/>
+<area shape="rect" id="node11" href="$pdag_8cc.xhtml" title="Implementation of a Propositional Directed Acyclic Graph with indexed nodes, variables, and gates. " alt="" coords="1087,528,1159,555"/>
+<area shape="rect" id="node12" href="$reporter_8h.xhtml" title="Reporter of results. " alt="" coords="955,603,1040,629"/>
+<area shape="rect" id="node16" href="$serialization_8h.xhtml" title="The MEF Model serialization facilities. " alt="" coords="1183,528,1294,555"/>
+<area shape="rect" id="node15" href="$risk__analysis_8cc.xhtml" title="Implementation of risk analysis handler. " alt="" coords="1255,603,1375,629"/>
+<area shape="rect" id="node24" href="$event__tree__analysis_8cc.xhtml" title="Implementation of event tree analysis facilities. " alt="" coords="553,528,719,555"/>
+<area shape="rect" id="node23" href="$event__tree__analysis_8h.xhtml" title="Event tree analysis facilities. " alt="" coords="627,453,789,480"/>
+<area shape="rect" id="node21" href="$cycle_8cc.xhtml" title="Implementation of cycle detection specializations. " alt="" coords="2196,528,2268,555"/>
+<area shape="rect" id="node31" href="$fault__tree__analysis_8cc.xhtml" title="Implementation of fault tree analysis. " alt="" coords="721,304,879,331"/>
+<area shape="rect" id="node32" href="$importance__analysis_8cc.xhtml" title="Implementations of functions to provide quantitative importance informations. " alt="" coords="904,304,1075,331"/>
+<area shape="rect" id="node35" href="$probability__analysis_8cc.xhtml" title="Implementations of functions to provide probability analysis. " alt="" coords="1257,379,1421,405"/>
+<area shape="rect" id="node36" href="$uncertainty__analysis_8cc.xhtml" title="Implements the functionality to run Monte Carlo simulations. " alt="" coords="1099,304,1269,331"/>
+<area shape="rect" id="node41" href="$extern_8cc.xhtml" title="Implementation of foreign function calls with MEF expressions. " alt="" coords="2547,304,2629,331"/>
+<area shape="rect" id="node47" href="$project_8h.xhtml" title="Project/configuration management facilities to make various setups for analysis possible. " alt="" coords="2943,229,3022,256"/>
+<area shape="rect" id="node49" href="$xml_8cc.xhtml" title="XML facility expensive wrappers implemented out&#45;of&#45;line. " alt="" coords="2857,229,2919,256"/>
+</map>

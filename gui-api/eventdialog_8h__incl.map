@@ -1,0 +1,5 @@
+<map id="eventdialog.h" name="eventdialog.h">
+<area shape="rect" id="node13" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="597,80,671,107"/>
+<area shape="rect" id="node23" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="1206,162,1305,189"/>
+<area shape="rect" id="node24" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="611,162,702,189"/>
+</map>

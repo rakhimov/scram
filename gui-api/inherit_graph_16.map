@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classscram_1_1gui_1_1Printable.xhtml" title="An abstract mixin class for printable objects. " alt="" coords="190,5,343,32"/>
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1DiagramView.xhtml" title="The default view for graphics views (e.g., fault tree diagram). " alt="" coords="411,31,592,57"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1ZoomableView.xhtml" title="The base class for graphics views with default zoom logic. " alt="" coords="171,56,363,83"/>
+</map>

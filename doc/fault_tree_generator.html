@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Fault Tree Generator &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GUI Front-End" href="gui.html" />
+    <link rel="prev" title="The Open-PSA Model Exchange Format" href="opsa_support.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Fault Tree Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-description">General Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#script-arguments">Script Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#note-on-performance">Note on Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Fault Tree Generator</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fault-tree-generator">
+<h1>Fault Tree Generator<a class="headerlink" href="#fault-tree-generator" title="Permalink to this headline">¶</a></h1>
+<p>The complexity of a fault tree depends on many factors,
+such as types of gates, the number of common nodes, the total number of nodes,
+and the structure of the tree or the arrangement of the nodes.
+It is best to craft fault trees to test complex and most demanding cases,
+but it is time consuming to design large and non-trivial fault trees.
+In order to facilitate the creation of complex fault trees,
+a python script is provided that takes into account the factors
+that make a fault tree complex for analysis
+or other types of processing, such as visual representation and validation.</p>
+<div class="section" id="general-description">
+<h2>General Description<a class="headerlink" href="#general-description" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Use of pseudo-random numbers to determine the structure of the tree.</li>
+<li>The number of basic events is set by a user.</li>
+<li>The seed of the pseudo-random number generator is fixed and set by a user.</li>
+<li>Nodes in the fault tree are randomly chosen between a new node or common nodes.</li>
+<li>Names are assigned sequentially. B#, H#, CCF#, and G#.</li>
+<li>Probabilities for basic events are generated randomly.</li>
+<li>The fault tree is reproducible with the same parameters and the seed.</li>
+<li>The larger the fault tree is,
+the closer its characteristics are to the user-supplied parameters.</li>
+<li>The output is topologically sorted and valid for other analysis tools.</li>
+</ul>
+</div>
+<div class="section" id="script-arguments">
+<h2>Script Arguments<a class="headerlink" href="#script-arguments" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The seed for the pseudo-random number generator.</li>
+<li>The number of basic events.</li>
+<li>The number of house events.</li>
+<li>The number of CCF (MGL only) groups.</li>
+<li>The average number of arguments for gates.</li>
+<li>Percentage of common-basic-event arguments per gate.
+These events may show up in several places in the resulting fault tree.</li>
+<li>Percentage of common-gate arguments per gate.
+The acyclic property is ensured.</li>
+<li>The average number of parents for common basic events.</li>
+<li>The average number of parents for common gates.</li>
+<li>Minimum and maximum probabilities for basic events.</li>
+<li>Weights for the gate types: AND, OR, K/N, NOT, XOR.
+Complex gates (K/N, NOT, XOR) are created
+only if the weights are given.</li>
+<li>Output file name.</li>
+<li>Output formats: Aralia or XML(default).</li>
+<li>An option to merge gates into nested formulas for the output.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The number of gates can be constrained,
+but this may change other factors or not succeed at all.
+The reason is that the fault tree generation formulas
+may run out of degrees of freedom.</p>
+</div>
+</div>
+<div class="section" id="note-on-performance">
+<h2>Note on Performance<a class="headerlink" href="#note-on-performance" title="Permalink to this headline">¶</a></h2>
+<p>Depending on the provided arguments for the script,
+the execution time varies greatly.
+The number of gates and the number of common gates in the fault tree
+tend to greatly increase the execution time
+because of the need to prevent cycles.
+If the number of gates and the number of common gates are kept constant,
+the generation time scales linearly with the number of basic events.</p>
+<p>It is possible to generate a 100,000-basic-event fault tree in less than a minute;
+however, to generate more complex fault trees,
+the Python code can be converted into C with <a class="reference external" href="http://cython.org/">Cython</a>,
+which is capable of generating million-basic-event fault trees in few minutes.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gui.html" class="btn btn-neutral float-right" title="GUI Front-End" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="opsa_support.html" class="btn btn-neutral" title="The Open-PSA Model Exchange Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

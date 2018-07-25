@@ -1,0 +1,4 @@
+<map id="scram::core::WeakIntrusivePtr&lt; T &gt;" name="scram::core::WeakIntrusivePtr&lt; T &gt;">
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1WeakIntrusivePtr.xhtml" title="{scram::core::WeakIntrusive\lPtr\&lt; Ite \&gt;\n||+ WeakIntrusivePtr()\l+ WeakIntrusivePtr()\l+ operator=()\l+ ~WeakIntrusivePtr()\l+ expired()\l+ lock()\l+ get()\l}" alt="" coords="5,375,199,555"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1WeakIntrusivePtr.xhtml" title="{scram::core::WeakIntrusive\lPtr\&lt; SetNode \&gt;\n||+ WeakIntrusivePtr()\l+ WeakIntrusivePtr()\l+ operator=()\l+ ~WeakIntrusivePtr()\l+ expired()\l+ lock()\l+ get()\l}" alt="" coords="223,375,416,555"/>
+</map>

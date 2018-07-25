@@ -1,0 +1,16 @@
+<map id="preprocessor.h" name="preprocessor.h">
+<area shape="rect" id="node2" href="$fault__tree__analysis_8h.xhtml" title="Fault Tree Analysis. " alt="" coords="304,80,457,107"/>
+<area shape="rect" id="node15" href="$preprocessor_8cc.xhtml" title="Implementation of preprocessing algorithms. " alt="" coords="482,80,605,107"/>
+<area shape="rect" id="node3" href="$fault__tree__analysis_8cc.xhtml" title="Implementation of fault tree analysis. " alt="" coords="5,155,164,181"/>
+<area shape="rect" id="node4" href="$probability__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of probabilities. " alt="" coords="392,155,551,181"/>
+<area shape="rect" id="node7" href="$reporter_8h.xhtml" title="Reporter of results. " alt="" coords="654,379,739,405"/>
+<area shape="rect" id="node10" href="$risk__analysis_8h.xhtml" title="Contains the main system for performing analysis. " alt="" coords="227,304,342,331"/>
+<area shape="rect" id="node5" href="$importance__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of importance factors. " alt="" coords="667,229,833,256"/>
+<area shape="rect" id="node12" href="$probability__analysis_8cc.xhtml" title="Implementations of functions to provide probability analysis. " alt="" coords="291,229,455,256"/>
+<area shape="rect" id="node13" href="$uncertainty__analysis_8h.xhtml" title="Provides functionality for uncertainty analysis with Monte Carlo method. " alt="" coords="479,229,643,256"/>
+<area shape="rect" id="node6" href="$importance__analysis_8cc.xhtml" title="Implementations of functions to provide quantitative importance informations. " alt="" coords="611,304,782,331"/>
+<area shape="rect" id="node8" href="$reporter_8cc.xhtml" title="Implements Reporter class. " alt="" coords="651,453,742,480"/>
+<area shape="rect" id="node9" href="$scram_8cc.xhtml" title="Main entrance. " alt="" coords="397,453,477,480"/>
+<area shape="rect" id="node11" href="$risk__analysis_8cc.xhtml" title="Implementation of risk analysis handler. " alt="" coords="322,379,442,405"/>
+<area shape="rect" id="node14" href="$uncertainty__analysis_8cc.xhtml" title="Implements the functionality to run Monte Carlo simulations. " alt="" coords="366,304,537,331"/>
+</map>

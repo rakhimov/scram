@@ -1,0 +1,6 @@
+<map id="scram::core::Node" name="scram::core::Node">
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1Constant.xhtml" title="Representation of a node that is a Boolean constant TRUE. " alt="" coords="5,645,169,723"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1Gate.xhtml" title="An indexed gate for use in a PDAG. " alt="" coords="193,543,331,825"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1Variable.xhtml" title="Boolean variables in a Boolean formula or graph. " alt="" coords="355,645,513,723"/>
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1NodeParentManager.xhtml" title="A manager of information about parents. " alt="" coords="143,131,381,223"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="scram::core::RiskAnalysis::event_tree_results" name="scram::core::RiskAnalysis::event_tree_results">
+<area shape="rect" id="node2" href="$classscram_1_1Reporter.xhtml#a87eeccfed9678b035c745b6ed1610dbf" title="Reports the results of risk analysis on a model. " alt="" coords="236,13,409,39"/>
+<area shape="rect" id="node3" href="$classscram_1_1Reporter.xhtml#a7f4903f4c19a9630f828395eded780bf" title="A convenience function to generate the report into a file. " alt="" coords="457,13,631,39"/>
+</map>

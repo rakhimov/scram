@@ -1,0 +1,4 @@
+<map id="scram::gui::model::Model::RemoveEvent&lt; T &gt;" name="scram::gui::model::Model::RemoveEvent&lt; T &gt;">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1Inverse.xhtml" title="{scram::gui::Inverse\l\&lt; AddEvent\&lt; T \&gt; \&gt;\n||+ redo()\l+ undo()\l}" alt="" coords="45,287,195,393"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1Inverse.xhtml" title="A command that is an inverse of another command. " alt="" coords="150,132,330,224"/>
+</map>

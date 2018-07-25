@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1Involution.xhtml" title="The function inverse is the function itself (i.e., f(f(x)) = id(x)). " alt="" coords="198,209,357,235"/>
+<area shape="rect" id="node10" href="$classscram_1_1gui_1_1model_1_1Model_1_1AddEvent.xhtml" title="Adds an event to the model. " alt="" coords="194,260,361,301"/>
+<area shape="rect" id="node11" href="$classscram_1_1gui_1_1model_1_1Model_1_1AddFaultTree.xhtml" title="Adds a fault tree into a model. " alt="" coords="203,325,352,367"/>
+<area shape="rect" id="node12" href="$classscram_1_1gui_1_1model_1_1Model_1_1ChangeEventType.xhtml" title="Changes the event type. " alt="" coords="187,390,368,446"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetExpression.xhtml" title="Sets the basic event expression. " alt="" coords="416,5,607,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetFlavor.xhtml" title="Sets the flavor of the basic event. " alt="" coords="431,71,591,112"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Element_1_1SetId.xhtml" title="Sets the name of an Element. " alt="" coords="435,136,588,177"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1Element_1_1SetLabel.xhtml" title="Sets the label of an Element. " alt="" coords="439,201,584,243"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1Gate_1_1SetFormula.xhtml" title="Formula modification commands. " alt="" coords="439,267,584,308"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1model_1_1HouseEvent_1_1SetState.xhtml" title="Flips the house event state. " alt="" coords="429,332,593,373"/>
+<area shape="rect" id="node9" href="$classscram_1_1gui_1_1model_1_1Model_1_1SetName.xhtml" title="Sets the optional name of the model. " alt="" coords="439,397,584,439"/>
+</map>

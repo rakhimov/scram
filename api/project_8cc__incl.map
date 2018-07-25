@@ -1,0 +1,9 @@
+<map id="project.cc" name="project.cc">
+<area shape="rect" id="node2" href="$project_8h.xhtml" title="Project/configuration management facilities to make various setups for analysis possible. " alt="" coords="1322,80,1401,107"/>
+<area shape="rect" id="node26" href="$error_8h.xhtml" title="Exceptions for SCRAM. " alt="" coords="449,237,513,263"/>
+<area shape="rect" id="node38" href="$env_8h.xhtml" title="SCRAM&#45;specific environment variables. " alt="" coords="2665,155,2721,181"/>
+<area shape="rect" id="node39" href="$version_8h.xhtml" title="String version interpretation facilities. " alt="" coords="327,80,431,107"/>
+<area shape="rect" id="node6" href="$settings_8h.xhtml" title="Builder for settings. " alt="" coords="607,155,692,181"/>
+<area shape="rect" id="node9" href="$xml_8h.xhtml" title="XML helper facilities to work with libxml2. " alt="" coords="1406,155,1463,181"/>
+<area shape="rect" id="node32" href="$source__info_8h.xhtml" title="Helper facilities to get source file information. " alt="" coords="5,326,136,353"/>
+</map>

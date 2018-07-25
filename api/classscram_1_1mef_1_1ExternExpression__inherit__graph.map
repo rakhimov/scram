@@ -1,0 +1,5 @@
+<map id="scram::mef::ExternExpression&lt; R, Args &gt;" name="scram::mef::ExternExpression&lt; R, Args &gt;">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1ExpressionFormula.xhtml" title="{scram::mef::ExpressionFormula\l\&lt; ExternExpression\&lt; R, Args... \&gt; \&gt;\n||+ value()\l}" alt="" coords="5,545,255,637"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Expression.xhtml" title="Abstract base class for all sorts of expressions to describe events. " alt="" coords="8,132,180,341"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1ExpressionFormula.xhtml" title="CRTP for Expressions with the same formula to evaluate and sample. " alt="" coords="115,391,377,468"/>
+</map>

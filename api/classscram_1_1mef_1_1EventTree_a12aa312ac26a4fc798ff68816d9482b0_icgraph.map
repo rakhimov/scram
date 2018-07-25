@@ -1,0 +1,5 @@
+<map id="scram::mef::EventTree::initial_state" name="scram::mef::EventTree::initial_state">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a070c68c0d67edb30c9bf57e226aaf88e" title="Analyzes an event tree given the initiating event. " alt="" coords="219,5,439,47"/>
+<area shape="rect" id="node3" href="$cycle_8cc.xhtml#a3d93263301751ad6e79c87664427ba95" title="Cycle detection specialization for visitor&#45;based traversal of event&#45;trees. " alt="" coords="256,71,401,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Initializer.xhtml#afb3c51948314e160a79f40792aeaa489" title="Specializations for elements defined after registration. " alt="" coords="249,136,408,177"/>
+</map>

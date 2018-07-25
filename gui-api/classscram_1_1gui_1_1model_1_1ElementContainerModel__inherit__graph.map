@@ -1,0 +1,5 @@
+<map id="scram::gui::model::ElementContainerModel" name="scram::gui::model::ElementContainerModel">
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml" title="Container model for basic events. " alt="" coords="5,417,223,597"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml" title="Tree&#45;view inside table. " alt="" coords="247,373,426,641"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml" title="Container model for house events. " alt="" coords="450,417,674,597"/>
+</map>

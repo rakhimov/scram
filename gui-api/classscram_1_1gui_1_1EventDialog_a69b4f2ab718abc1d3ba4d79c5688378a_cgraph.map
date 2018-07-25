@@ -1,0 +1,9 @@
+<map id="scram::gui::EventDialog::setupData" name="scram::gui::EventDialog::setupData">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1Proxy.xhtml#a9302e19d5f845a33bdc31e13b09731c4" title="scram::gui::model::\lProxy::data" alt="" coords="448,5,593,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent.xhtml#a827dd95218bb3eece34e5777d487a590" title="scram::gui::model::\lBasicEvent::flavor" alt="" coords="241,64,386,105"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1EventDialog.xhtml#abe5bf2e13a1fbb54ce0d8c5a03ad3a05" title="Sets up the dialog with element data. " alt="" coords="227,129,400,171"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml#abe97d8835764cc5754d7141c6eaf7c7d" title="scram::gui::model::\lGate::args" alt="" coords="448,71,593,112"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml#a8cdf5b54a0e5653d5e2b7eb8c66ceb2e" title="scram::gui::model::\lGate::minNumber" alt="" coords="448,136,593,177"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1Gate.xhtml#af6bdef0f594fd764a96912a4df8eb2f2" title="scram::gui::model::\lGate::type" alt="" coords="448,201,593,243"/>
+<area shape="rect" id="node8" href="$translate_8h.xhtml#adfe5f7367036126ec5ca81430fbf4c71" title="Forwards to translate function with a default global context. " alt="" coords="641,209,745,235"/>
+</map>

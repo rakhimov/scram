@@ -1,0 +1,5 @@
+<map id="scram::gui::model::BasicEvent::flavorChanged" name="scram::gui::model::BasicEvent::flavorChanged">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a44a7b2e19f453595a7b6650d5273b2db" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="245,5,475,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1diagram_1_1DiagramScene.xhtml#abdb67a7e57cd69498008f0fcfa884af3" title="Recursively populates the scene with fault tree object graphics. " alt="" coords="246,71,474,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetFlavor.xhtml#ac37ddcb53247b2404b909868566b34c7" title="Applies the flavor changes. " alt="" coords="261,136,459,177"/>
+</map>

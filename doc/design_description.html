@@ -1,0 +1,534 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Design Description &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Coding Style and Quality Assurance" href="coding_standards.html" />
+    <link rel="prev" title="Installation Instructions" href="installation.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Design Description</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core">Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cppdep-component-dependency-report">cppdep Component Dependency Report</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Design Description</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="design-description">
+<h1>Design Description<a class="headerlink" href="#design-description" title="Permalink to this headline">¶</a></h1>
+<div class="figure align-center" id="id2">
+<img alt="http://img.thedailywtf.com/images/201101/DependencyGraph.png" src="http://img.thedailywtf.com/images/201101/DependencyGraph.png" />
+<p class="caption"><span class="caption-text">Complex Dependency Diagram (TheDailyWTF)</span></p>
+</div>
+<div class="section" id="core">
+<h2>Core<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">XML Parser leverages external libraries to process XML files.</p>
+</li>
+<li><p class="first">Validator validates XML project and input files against the RELAX NG schema.
+The validation against the schema is an integral part of the initialization.
+Values that pass the validation against the schema are not re-checked by users of those values.</p>
+</li>
+<li><p class="first">Settings manages overall analysis settings per run.</p>
+</li>
+<li><p class="first">Project manages program configurations, analysis input and settings from a project file.</p>
+</li>
+<li><p class="first">Analysis input constructs (e.g., model, fault trees, event trees, components, events)
+follow closely the architecture of the Open-PSA Model Exchange Format <a class="reference internal" href="references.html#mef" id="id1">[MEF]</a>.
+The API is designed <em>as if</em>
+it were generated by an automatic XML data-binding from the MEF schema,
+with additional functionalities
+to support model manipulation, validation, invariant enforcement, and analysis.</p>
+</li>
+<li><p class="first">Initializer processes input files to construct a model
+with fault trees, event trees, CCF, and other analysis containers and constructs.
+This initialization phase validates the values and logic supplied from the input files.
+The constructs and analyses are initialized according to the configurations
+supplied from the project file and command-line.
+After the initialization step,
+it is not expected that the analysis constructs change.</p>
+</li>
+<li><p class="first">The Model container is the top-most container
+that owns uniquely (non-shared) every object defined and registered in the model
+either directly or transitively.
+The analysis input constructs and containers are alive
+as long as the parent Model container is alive.</p>
+</li>
+<li><p class="first">Risk Analyzer operates on a valid model
+with initialized fault, event trees, and other constructs
+to provide the requested results.
+It runs after the initialization phase with the user-specified analysis settings.</p>
+</li>
+<li><p class="first">Analyzers of fault trees, event trees, CCF, uncertainty,
+and other analysis kinds.
+These analyzers are employed by the main Risk Analyzer
+to produce final results.
+Common facilities, utilities, and functionalities
+can be shared among these analyzers.
+Analyzers and analysis facilities are designed
+in the spirit of <a class="reference external" href="https://en.wikipedia.org/wiki/Design_by_contract">Design by Contract</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Policy-based_design">Policy-based design</a>
+to keep the code simple and flexible with algorithms.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Fault Tree Analyzer operates on one fault tree with a single top event,
+and may provide primary events, intermediate events,
+and  products (minimal cut sets or prime implicants) as output,
+or other information about the passed fault tree.
+This fault tree analyzer uses many other helper facilities
+specifically designed to make the analysis efficient and fast.</li>
+<li>Probability Calculator accepts the results of Fault Tree Analyzer
+to calculate the total probability
+and to provide facilities for other Quantitative analyzers.</li>
+<li>Importance Analyzer calculates
+importance factors of <em>important</em> basic events
+with Probability Calculator facilities.</li>
+<li>Uncertainty Analyzer uses Probability Calculator facilities
+to sample basic event probabilities
+and calculate the total probability.
+Sampled results are processed to find statistical information,
+such as mean, confidence ranges, standard deviation, and distributions.</li>
+</ol>
+</div></blockquote>
+</li>
+<li><p class="first">Reporter outputs the results of the work of Risk Analyzer
+to specified files or streams in XML format.</p>
+</li>
+<li><p class="first">Support components:
+Logger, XML stream, and library extensions in the <code class="docutils literal notranslate"><span class="pre">ext</span></code> namespace.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../api/index.xhtml">API Docs Generated by Doxygen</a></p>
+</div>
+<div class="section" id="cppdep-component-dependency-report">
+<h2>cppdep Component Dependency Report<a class="headerlink" href="#cppdep-component-dependency-report" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+<span class="c1">################################################################################</span>
+<span class="n">analyzing</span> <span class="n">dependencies</span> <span class="n">among</span> <span class="n">packages</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">specified</span> <span class="n">package</span> <span class="n">group</span> <span class="n">scram</span> <span class="o">...</span>
+<span class="o">================================================================================</span>
+<span class="mi">3</span> <span class="n">level</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+
+<span class="n">level</span> <span class="mi">0</span><span class="p">:</span>
+	<span class="n">Dependencies</span>
+<span class="n">level</span> <span class="mi">1</span><span class="p">:</span>
+	<span class="n">ext</span>
+	<span class="n">include</span>
+<span class="n">level</span> <span class="mi">2</span><span class="p">:</span>
+	<span class="n">core</span>
+<span class="n">level</span> <span class="mi">3</span><span class="p">:</span>
+	<span class="n">gui</span>
+<span class="o">================================================================================</span>
+<span class="n">SUMMARY</span><span class="p">:</span>
+<span class="n">Components</span><span class="p">:</span> <span class="mi">4</span>	 <span class="n">Cycles</span><span class="p">:</span> <span class="mi">0</span>	 <span class="n">Levels</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">CCD</span><span class="p">:</span> <span class="mi">7</span>	 <span class="n">ACCD</span><span class="p">:</span> <span class="mf">1.75</span>	 <span class="n">NCCD</span><span class="p">:</span> <span class="mf">0.92</span> <span class="p">(</span><span class="n">typical</span> <span class="nb">range</span> <span class="ow">is</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.10</span><span class="p">])</span>
+
+<span class="c1">################################################################################</span>
+<span class="n">analyzing</span> <span class="n">dependencies</span> <span class="n">among</span> <span class="n">components</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">specified</span> <span class="n">package</span> <span class="n">scram</span><span class="o">.</span><span class="n">core</span> <span class="o">...</span>
+<span class="o">================================================================================</span>
+<span class="mi">1</span> <span class="n">cycles</span> <span class="n">detected</span><span class="p">:</span>
+
+<span class="n">cycle</span> <span class="c1">#0 (2 nodes): bdd, zbdd</span>
+<span class="n">cycle</span> <span class="c1">#0 (2 edges): bdd-&gt;zbdd zbdd-&gt;bdd</span>
+
+<span class="o">================================================================================</span>
+<span class="mi">16</span> <span class="n">level</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+
+<span class="n">level</span> <span class="mi">0</span><span class="p">:</span>
+	<span class="n">Boost</span>
+	<span class="n">LibXML</span>
+	<span class="n">STL</span>
+	<span class="n">ext</span>
+<span class="n">level</span> <span class="mi">1</span><span class="p">:</span>
+	<span class="n">env</span>
+	<span class="n">error</span>
+	<span class="n">logger</span>
+<span class="n">level</span> <span class="mi">2</span><span class="p">:</span>
+	<span class="n">element</span>
+	<span class="n">expression</span>
+	<span class="n">settings</span>
+	<span class="n">xml</span>
+	<span class="n">xml_stream</span>
+<span class="n">level</span> <span class="mi">3</span><span class="p">:</span>
+	<span class="n">analysis</span>
+	<span class="n">event</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">boolean</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">conditional</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">constant</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">exponential</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">extern</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">random_deviate</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">test_event</span>
+	<span class="n">parameter</span>
+	<span class="n">project</span>
+<span class="n">level</span> <span class="mi">4</span><span class="p">:</span>
+	<span class="n">expression</span><span class="o">/</span><span class="n">numerical</span>
+	<span class="n">instruction</span>
+	<span class="n">substitution</span>
+<span class="n">level</span> <span class="mi">5</span><span class="p">:</span>
+	<span class="n">alignment</span>
+	<span class="n">ccf_group</span>
+	<span class="n">event_tree</span>
+<span class="n">level</span> <span class="mi">6</span><span class="p">:</span>
+	<span class="n">cycle</span>
+	<span class="n">event_tree_analysis</span>
+	<span class="n">fault_tree</span>
+<span class="n">level</span> <span class="mi">7</span><span class="p">:</span>
+	<span class="n">model</span>
+<span class="n">level</span> <span class="mi">8</span><span class="p">:</span>
+	<span class="n">initializer</span>
+	<span class="n">pdag</span>
+	<span class="n">serialization</span>
+<span class="n">level</span> <span class="mi">9</span><span class="p">:</span>
+	<span class="n">preprocessor</span>
+<span class="n">level</span> <span class="mi">10</span><span class="p">:</span>
+	<span class="n">bdd</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span>
+	<span class="n">zbdd</span> <span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span>
+<span class="n">level</span> <span class="mi">11</span><span class="p">:</span>
+	<span class="n">fault_tree_analysis</span>
+	<span class="n">mocus</span>
+<span class="n">level</span> <span class="mi">12</span><span class="p">:</span>
+	<span class="n">probability_analysis</span>
+<span class="n">level</span> <span class="mi">13</span><span class="p">:</span>
+	<span class="n">importance_analysis</span>
+	<span class="n">uncertainty_analysis</span>
+<span class="n">level</span> <span class="mi">14</span><span class="p">:</span>
+	<span class="n">risk_analysis</span>
+<span class="n">level</span> <span class="mi">15</span><span class="p">:</span>
+	<span class="n">reporter</span>
+<span class="n">level</span> <span class="mi">16</span><span class="p">:</span>
+	<span class="n">scram</span>
+<span class="o">================================================================================</span>
+<span class="n">SUMMARY</span><span class="p">:</span>
+<span class="n">Components</span><span class="p">:</span> <span class="mi">43</span>	 <span class="n">Cycles</span><span class="p">:</span> <span class="mi">1</span>	 <span class="n">Levels</span><span class="p">:</span> <span class="mi">16</span>
+<span class="n">CCD</span><span class="p">:</span> <span class="mi">483</span>	 <span class="n">ACCD</span><span class="p">:</span> <span class="mf">11.23</span>	 <span class="n">NCCD</span><span class="p">:</span> <span class="mf">2.45</span> <span class="p">(</span><span class="n">typical</span> <span class="nb">range</span> <span class="ow">is</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.10</span><span class="p">])</span>
+
+<span class="c1">################################################################################</span>
+<span class="n">analyzing</span> <span class="n">dependencies</span> <span class="n">among</span> <span class="n">components</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">specified</span> <span class="n">package</span> <span class="n">scram</span><span class="o">.</span><span class="n">gui</span> <span class="o">...</span>
+<span class="o">================================================================================</span>
+<span class="mi">4</span> <span class="n">level</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+
+<span class="n">level</span> <span class="mi">0</span><span class="p">:</span>
+	<span class="n">Boost</span>
+	<span class="n">Qt5</span>
+	<span class="n">STL</span>
+	<span class="n">core</span>
+	<span class="n">ext</span>
+<span class="n">level</span> <span class="mi">1</span><span class="p">:</span>
+	<span class="n">align</span>
+	<span class="n">command</span>
+	<span class="n">guiassert</span>
+	<span class="n">printable</span>
+	<span class="n">translate</span>
+	<span class="n">validator</span>
+	<span class="n">zoomableview</span>
+<span class="n">level</span> <span class="mi">2</span><span class="p">:</span>
+	<span class="n">importancetablemodel</span>
+	<span class="n">language</span>
+	<span class="n">model</span>
+	<span class="n">producttablemodel</span>
+	<span class="n">reporttree</span>
+	<span class="n">settingsdialog</span>
+<span class="n">level</span> <span class="mi">3</span><span class="p">:</span>
+	<span class="n">diagram</span>
+	<span class="n">elementcontainermodel</span>
+	<span class="n">eventdialog</span>
+	<span class="n">modeltree</span>
+	<span class="n">preferencesdialog</span>
+<span class="n">level</span> <span class="mi">4</span><span class="p">:</span>
+	<span class="n">mainwindow</span>
+<span class="o">================================================================================</span>
+<span class="n">SUMMARY</span><span class="p">:</span>
+<span class="n">Components</span><span class="p">:</span> <span class="mi">19</span>	 <span class="n">Cycles</span><span class="p">:</span> <span class="mi">0</span>	 <span class="n">Levels</span><span class="p">:</span> <span class="mi">4</span>
+<span class="n">CCD</span><span class="p">:</span> <span class="mi">71</span>	 <span class="n">ACCD</span><span class="p">:</span> <span class="mf">3.74</span>	 <span class="n">NCCD</span><span class="p">:</span> <span class="mf">1.05</span> <span class="p">(</span><span class="n">typical</span> <span class="nb">range</span> <span class="ow">is</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.10</span><span class="p">])</span>
+
+<span class="c1">################################################################################</span>
+<span class="n">analyzing</span> <span class="n">dependencies</span> <span class="n">among</span> <span class="n">components</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">specified</span> <span class="n">package</span> <span class="n">scram</span><span class="o">.</span><span class="n">ext</span> <span class="o">...</span>
+<span class="o">================================================================================</span>
+<span class="mi">1</span> <span class="n">level</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+
+<span class="n">level</span> <span class="mi">0</span><span class="p">:</span>
+	<span class="n">Boost</span>
+	<span class="n">STL</span>
+<span class="n">level</span> <span class="mi">1</span><span class="p">:</span>
+	<span class="n">algorithm</span>
+	<span class="n">bits</span>
+	<span class="n">combination</span>
+	<span class="n">find_iterator</span>
+	<span class="n">float_compare</span>
+	<span class="n">index_map</span>
+	<span class="n">linear_map</span>
+	<span class="n">linear_set</span>
+	<span class="n">multi_index</span>
+	<span class="n">scope_guard</span>
+	<span class="n">source_info</span>
+	<span class="n">variant</span>
+	<span class="n">version</span>
+<span class="o">================================================================================</span>
+<span class="n">SUMMARY</span><span class="p">:</span>
+<span class="n">Components</span><span class="p">:</span> <span class="mi">13</span>	 <span class="n">Cycles</span><span class="p">:</span> <span class="mi">0</span>	 <span class="n">Levels</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">CCD</span><span class="p">:</span> <span class="mi">13</span>	 <span class="n">ACCD</span><span class="p">:</span> <span class="mf">1.00</span>	 <span class="n">NCCD</span><span class="p">:</span> <span class="mf">0.32</span> <span class="p">(</span><span class="n">typical</span> <span class="nb">range</span> <span class="ow">is</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">1.10</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="coding_standards.html" class="btn btn-neutral float-right" title="Coding Style and Quality Assurance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation Instructions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

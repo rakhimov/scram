@@ -1,0 +1,6 @@
+<map id="scram::core::ProductContainer::distribution" name="scram::core::ProductContainer::distribution">
+<area shape="rect" id="node2" href="$fault__tree__analysis_8cc.xhtml#af405213a7ee34a3dd833ce5298983b04" title="Prints a collection of products to the standard error. " alt="" coords="271,78,405,105"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1ProductContainer.xhtml#ae3c4f3a13d162014a7e7bd35c12f4bcf" title="Begin and end iterators over products in the container. " alt="" coords="453,5,671,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1ProductContainer.xhtml#ac48d179d37d1109d36bf2d36e02aebe7" title="scram::core::ProductContainer\l::empty" alt="" coords="453,71,671,112"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1ProductContainer.xhtml#ac02fbe13144218abf07fdd6ba9c8b532" title="scram::core::ProductContainer\l::size" alt="" coords="453,136,671,177"/>
+</map>

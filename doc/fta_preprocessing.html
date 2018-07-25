@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FTA: Preprocessing Techniques &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FTA: Algorithms" href="fta_algorithms.html" />
+    <link rel="prev" title="Fault Tree Analysis" href="fault_tree_analysis.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FTA: Preprocessing Techniques</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#constant-propagation">Constant Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gate-normalization">Gate Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complement-propagation">Complement Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gate-coalescing">Gate Coalescing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-detection">Module Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multiple-definition-detection">Multiple Definition Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-shannon-decomposition-for-common-nodes">The Shannon Decomposition for Common Nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#distributivity-detection">Distributivity Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#merging-common-arguments">Merging Common Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#boolean-optimization">Boolean Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>FTA: Preprocessing Techniques</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fta-preprocessing-techniques">
+<span id="preprocessing"></span><h1>FTA: Preprocessing Techniques<a class="headerlink" href="#fta-preprocessing-techniques" title="Permalink to this headline">¶</a></h1>
+<p>In order to optimize the analysis
+and deal with the exponential complexity,
+fault tree preprocessing (or transformation) is attempted
+before initiating other fault tree analysis algorithms.</p>
+<p>The preprocessing algorithms deal with
+transformations of propositional directed acyclic graphs (<a class="reference internal" href="references.html#pdag" id="id1">[PDAG]</a>)
+to reduce the complexity and to divide-and-conquer the problem.
+There are many proposed algorithms,
+and successful application of preprocessing techniques helps reduce substantially
+the analysis complexity of large graphs in some cases.
+However, the ordering of preprocessing algorithms is not always clear
+due to their side-effects,
+and the performance gain is not guaranteed (may even be negative).
+Some preprocessing techniques may only work
+for certain structures or particular setups in the graph.</p>
+<div class="section" id="constant-propagation">
+<h2>Constant Propagation<a class="headerlink" href="#constant-propagation" title="Permalink to this headline">¶</a></h2>
+<p>House or external events are treated as Boolean constants
+and propagated according to the Boolean logic
+before other more complex and expensive preprocessing steps <a class="reference internal" href="references.html#nr99" id="id2">[NR99]</a> <a class="reference internal" href="references.html#rau03" id="id3">[Rau03]</a>.
+This procedure prunes the PDAG.
+Null and unity branches are removed from the PDAG,
+leaving only variables and gates.</p>
+</div>
+<div class="section" id="gate-normalization">
+<h2>Gate Normalization<a class="headerlink" href="#gate-normalization" title="Permalink to this headline">¶</a></h2>
+<p>The PDAG is simplified to contain only <em>AND</em> and <em>OR</em> gates
+by rewriting complex gates like <em>ATLEAST</em> and <em>XOR</em> with <em>AND</em> and <em>OR</em> gates
+<a class="reference internal" href="references.html#nie94" id="id4">[Nie94]</a> <a class="reference internal" href="references.html#rau03" id="id5">[Rau03]</a>.
+After this operation,
+the graph is in normal form.</p>
+</div>
+<div class="section" id="complement-propagation">
+<h2>Complement Propagation<a class="headerlink" href="#complement-propagation" title="Permalink to this headline">¶</a></h2>
+<p>Complements or negations of gates are pushed down to leaves (variables)
+according to the De Morgan’s law <a class="reference internal" href="references.html#rau03" id="id6">[Rau03]</a>.
+This procedure transforms the graph into negation normal form (<a class="reference internal" href="references.html#nnf" id="id7">[NNF]</a>)
+if the graph is normal before the propagation.</p>
+</div>
+<div class="section" id="gate-coalescing">
+<h2>Gate Coalescing<a class="headerlink" href="#gate-coalescing" title="Permalink to this headline">¶</a></h2>
+<p>Gates of the same type or logic are coalesced
+according to the rules of the Boolean algebra <a class="reference internal" href="references.html#nie94" id="id8">[Nie94]</a> <a class="reference internal" href="references.html#rau03" id="id9">[Rau03]</a>.
+For example,
+<em>AND</em> gate parent and <em>AND</em> gate child are joined into a new gate,
+or the arguments of the child are added to the parent gate.
+This operation attempts to reduce the number of gates to expand later.
+However, this operation may complicate other preprocessing steps
+that may try to find modules or propagate failure in the PDAG.</p>
+</div>
+<div class="section" id="module-detection">
+<h2>Module Detection<a class="headerlink" href="#module-detection" title="Permalink to this headline">¶</a></h2>
+<p>Modules are defined as gates or group of nodes
+whose sub-graph does not have common nodes with the rest of the graph.
+Modules are detected and analyzed
+as separate and independent PDAGs <a class="reference internal" href="references.html#dr96" id="id10">[DR96]</a>.
+If a module appears in the final products,
+then the products are populated with the sum of products of the module.
+This operation guarantees
+that the final, joint sum is minimal,
+and no expensive check for minimality is needed.
+However, most complex fault trees do not contain big modules in their original Boolean formula.</p>
+</div>
+<div class="section" id="multiple-definition-detection">
+<h2>Multiple Definition Detection<a class="headerlink" href="#multiple-definition-detection" title="Permalink to this headline">¶</a></h2>
+<p>Gates with the same logic and arguments
+can be considered to be multiply defined.
+Any gate from this group of multiply defined gates
+can represent all of them in the graph,
+reducing the size of the graph <a class="reference internal" href="references.html#nie94" id="id11">[Nie94]</a> <a class="reference internal" href="references.html#nr99" id="id12">[NR99]</a>.
+The result of this preprocessing technique
+can help other preprocessing algorithms
+that work with common nodes or
+detect independent sub-graphs.</p>
+</div>
+<div class="section" id="the-shannon-decomposition-for-common-nodes">
+<h2>The Shannon Decomposition for Common Nodes<a class="headerlink" href="#the-shannon-decomposition-for-common-nodes" title="Permalink to this headline">¶</a></h2>
+<p>Application of the Shannon decomposition for particular setups
+with an AND/OR gate with common descendant nodes in the gate’s sub-graph.</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}x \&amp; f(x, y) = x \&amp; f(1, y)\\x \| f(x, y) = x \| f(0, y)\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>This technique is also called Constant Propagation <a class="reference internal" href="references.html#nr99" id="id13">[NR99]</a> <a class="reference internal" href="references.html#rau03" id="id14">[Rau03]</a>,
+but the actual constant propagation is only the last part of the procedure;
+though, it is the main benefit of this preprocessing technique.
+Some ancestors of the common node in the sub-graph
+may need to be cloned,
+which increases the size of the graph,
+if the ancestors are common nodes themselves
+and linked to other parts of the whole graph.
+The application of this technique may be limited
+due to performance and memory considerations
+for complex graphs with many common nodes.</p>
+</div>
+<div class="section" id="distributivity-detection">
+<h2>Distributivity Detection<a class="headerlink" href="#distributivity-detection" title="Permalink to this headline">¶</a></h2>
+<p>This is a formula rewriting technique
+that detects common arguments in particular setups
+corresponding to the distributivity of <em>AND</em> and <em>OR</em> operators <a class="reference internal" href="references.html#nie94" id="id15">[Nie94]</a>.</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}(x \| y) \&amp; (x \| z) = x \| (y \&amp; z)\\(x \&amp; y) \| (x \&amp; z) = x \&amp; (y \| z)\end{aligned}\end{align} \]</div>
+</div></blockquote>
+<p>This technique helps reduce the number of common nodes;
+however, it gets trickier to find the most optimal rewriting
+with more complex setups
+where more than one rewriting is possible.</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[(x \| y) \&amp; (x \| z) \&amp; (y \| z)\]</div>
+</div></blockquote>
+</div>
+<div class="section" id="merging-common-arguments">
+<h2>Merging Common Arguments<a class="headerlink" href="#merging-common-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Common arguments of gates with the same logic
+can be merged into a new gate with the same logic as the group <a class="reference internal" href="references.html#nr99" id="id16">[NR99]</a>.
+This new gate can replace the common arguments
+in the set of arguments of gates in the group.
+Successful application of this technique
+helps reduce the complexity
+of the BDD construction from the graph.
+Moreover,
+by reducing the number of common nodes,
+this technique may help isolate the common nodes into modules.</p>
+</div>
+<div class="section" id="boolean-optimization">
+<h2>Boolean Optimization<a class="headerlink" href="#boolean-optimization" title="Permalink to this headline">¶</a></h2>
+<p>This optimization technique
+detects redundancies in the graph
+by propagating failures of common nodes
+and noting the failure destinations <a class="reference internal" href="references.html#nie94" id="id17">[Nie94]</a>.
+The redundant occurrences of common nodes are minimized
+by directly transferring the common node
+and its failure logic to the failure destinations.</p>
+<p>The generalization of this technique
+comes from the observations
+of special cases for the Shannon decomposition.
+Given a Boolean formula <span class="math notranslate nohighlight">\(f(x, y)\)</span>,
+the following cases are the special cases of its Shannon decomposition:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">f(x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">1/True/Failure</span></code> assuming <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">1/True/Failure</span></code>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(x, y) = x \| f(0, y)\]</div>
+</div></blockquote>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">f(x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">0/False/Success</span></code> assuming <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">1/True/Failure</span></code>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(x, y) = \overline{x} \&amp; f(0, y)\]</div>
+</div></blockquote>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">f(x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">1/True/Failure</span></code> assuming <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">0/False/Success</span></code>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(x, y) = \overline{x} \| f(1, y)\]</div>
+</div></blockquote>
+</li>
+<li><p class="first">If <code class="docutils literal notranslate"><span class="pre">f(x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">0/False/Success</span></code> assuming <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">0/False/Success</span></code>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(x, y) = x \&amp; f(1, y)\]</div>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p>There may be many setups
+that satisfy these special cases in a PDAG,
+but only few transformations are beneficial.
+Transformations with disjunctions of the formula (cases 1 and 3)
+are the most desirable for analysis
+because the final result of the analysis is the disjunction of products.</p>
+<p>The main optimization criterion for transformations
+is to decrease the complexity or multiplicity of the graph.
+That is, the transformation must yield
+fewer destinations than its original multiplicity.
+This kind of successful transformations
+may help other preprocessing techniques
+achieve better results with the simpler graph as well.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fta_algorithms.html" class="btn btn-neutral float-right" title="FTA: Algorithms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fault_tree_analysis.html" class="btn btn-neutral" title="Fault Tree Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

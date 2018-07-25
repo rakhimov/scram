@@ -1,0 +1,5 @@
+<map id="scram::mef::Model" name="scram::mef::Model">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="146,145,302,384"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="5,5,224,83"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Composite.xhtml" title="The composition of multiple mef::Containers. " alt="" coords="327,131,615,399"/>
+</map>

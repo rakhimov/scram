@@ -1,0 +1,8 @@
+<map id="scram::mef::Component::Add" name="scram::mef::Component::Add">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Component.xhtml#a29871b1caf2fb961509b42872e6b5213" title="Adds MEF constructs into this component container. " alt="" coords="264,5,475,32"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Component.xhtml#a35a4bac8e19804608ed9ce8ae6d37db6" title="scram::mef::Component\l::gates" alt="" coords="523,45,701,86"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Component.xhtml#a63441da08667fe6826f3ae0c0a5a94fe" title="Recursively traverses components to gather gates relevant to the whole component. ..." alt="" coords="280,110,459,151"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Element.xhtml#adb401e2ca84aa98cb60797bec2500a81" title="scram::mef::Element\l::name" alt="" coords="534,110,690,151"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Component.xhtml#a04e1c221d74d7a4415520a27b55eea0d" title="scram::mef::Component\l::basic_events" alt="" coords="523,175,701,217"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Component.xhtml#aef26693155672c7bbca3eba983367d58" title="scram::mef::Component\l::house_events" alt="" coords="523,241,701,282"/>
+</map>

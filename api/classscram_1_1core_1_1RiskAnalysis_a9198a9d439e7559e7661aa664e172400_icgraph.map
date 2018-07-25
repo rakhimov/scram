@@ -1,0 +1,5 @@
+<map id="scram::core::RiskAnalysis::results" name="scram::core::RiskAnalysis::results">
+<area shape="rect" id="node2" href="$classscram_1_1Reporter.xhtml#a87eeccfed9678b035c745b6ed1610dbf" title="Reports the results of risk analysis on a model. " alt="" coords="265,5,439,32"/>
+<area shape="rect" id="node4" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="236,57,468,98"/>
+<area shape="rect" id="node3" href="$classscram_1_1Reporter.xhtml#a7f4903f4c19a9630f828395eded780bf" title="A convenience function to generate the report into a file. " alt="" coords="516,5,689,32"/>
+</map>

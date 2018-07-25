@@ -1,0 +1,7 @@
+fuzz\_tester module
+===================
+
+.. automodule:: fuzz_tester
+    :members:
+    :undoc-members:
+    :show-inheritance:

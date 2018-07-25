@@ -1,0 +1,12 @@
+<map id="scram::gui::model::ElementContainerModel::connectElement" name="scram::gui::model::ElementContainerModel::connectElement">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a44a7b2e19f453595a7b6650d5273b2db" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="454,5,683,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml#aa112416a8c25d3cf8f3c4e0fdcbdc069" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="451,71,687,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#af97ae0b24134a7c2fd8da6e2fdd3b042" title="scram::gui::model::\lElementContainerModel\l::elements" alt="" coords="228,335,403,391"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml#a9cdee9017df030e4b41b29d5d8b895c9" title="Constructs from the table of proxy Gates in the Model. " alt="" coords="488,295,649,351"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#a057325384c34e69a890a8a409dea2d09" title="scram::gui::model::\lElementContainerModel\l::getElementIndex" alt="" coords="228,135,403,191"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a64a95b2368b017f25fc06fd78d0a7f33" title="Constructs from the table of proxy Basic Events in the Model. " alt="" coords="469,455,669,511"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml#a1687ef3e47c335b5b3a52e21ba0e7dd2" title="Constructs from the table of proxy House Events in the Model. " alt="" coords="465,375,672,431"/>
+<area shape="rect" id="node9" href="$classscram_1_1gui_1_1model_1_1ElementContainerModel.xhtml#ab0b11ddc9cea4fe7494dcb8df120396b" title="Assumes the table&#45;layout and returns null index. " alt="" coords="481,215,656,271"/>
+<area shape="rect" id="node10" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml#af26e5332d8f7a5df266b95aa965c147f" title="The index for children embeds the parent information into the data. " alt="" coords="488,135,649,191"/>
+<area shape="rect" id="node11" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml#a191036bcdd39eae7889c99ac42208fd6" title="The index for children embeds the parent information into the data. " alt="" coords="735,143,925,184"/>
+</map>

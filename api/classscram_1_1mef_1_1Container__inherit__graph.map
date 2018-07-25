@@ -1,0 +1,4 @@
+<map id="scram::mef::Container&lt; Self, T, Ownership, ById &gt;" name="scram::mef::Container&lt; Self, T, Ownership, ById &gt;">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Container.xhtml" title="{scram::mef::Container\l\&lt; Alignment, Phase \&gt;\n||+ Add()\l+ Remove()\l+ table()\l+ table()\l+ Get()\l+ Get()\l# data()\l* table()\l* table()\l* Get()\l* Get()\l}" alt="" coords="7,321,172,560"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Alignment.xhtml" title="Alignment configuration for the whole model per analysis. " alt="" coords="5,609,173,701"/>
+</map>

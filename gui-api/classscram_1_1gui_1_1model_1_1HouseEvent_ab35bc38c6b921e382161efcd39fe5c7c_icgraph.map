@@ -1,0 +1,4 @@
+<map id="scram::gui::model::HouseEvent::stateChanged" name="scram::gui::model::HouseEvent::stateChanged">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml#aa112416a8c25d3cf8f3c4e0fdcbdc069" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="251,5,487,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1HouseEvent_1_1SetState.xhtml#a932800361c8b3ae4342647f5be26759f" title="Applies the new state to the house event. " alt="" coords="268,71,469,112"/>
+</map>

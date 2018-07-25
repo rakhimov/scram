@@ -1,0 +1,8 @@
+<map id="scram::gui::EventDialog::EventDialog" name="scram::gui::EventDialog::EventDialog">
+<area shape="rect" id="node2" href="$translate_8h.xhtml#adfe5f7367036126ec5ca81430fbf4c71" title="Forwards to translate function with a default global context. " alt="" coords="448,151,552,178"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1Validator.xhtml#ade5c7bef2410bb4bc6bb05d88ee99793" title="scram::gui::Validator\l::name" alt="" coords="237,42,390,84"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1EventDialog.xhtml#a0c144e53e44d5b9524d60698cb356653" title="scram::gui::EventDialog\l::name" alt="" coords="227,108,400,149"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1Validator.xhtml#a5faf89430d1d02672239887e5fe3d0f7" title="scram::gui::Validator\l::nonNegative" alt="" coords="237,173,390,214"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1Validator.xhtml#a212add9e7bae0f86c226e7183d8fa04e" title="scram::gui::Validator\l::probability" alt="" coords="237,238,390,280"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1EventDialog.xhtml#a38bf6ffaa2fb4575a8ddeb52a1a953a4" title="Triggers validation of the current data. " alt="" coords="227,304,400,345"/>
+</map>

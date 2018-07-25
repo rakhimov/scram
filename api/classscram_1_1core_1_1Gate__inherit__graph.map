@@ -1,0 +1,4 @@
+<map id="scram::core::Gate" name="scram::core::Gate">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Node.xhtml" title="An abstract base class that represents a node in a PDAG. " alt="" coords="54,271,194,495"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1NodeParentManager.xhtml" title="A manager of information about parents. " alt="" coords="5,131,243,223"/>
+</map>

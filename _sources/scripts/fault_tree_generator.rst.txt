@@ -1,0 +1,7 @@
+fault\_tree\_generator module
+=============================
+
+.. automodule:: fault_tree_generator
+    :members:
+    :undoc-members:
+    :show-inheritance:

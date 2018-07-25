@@ -1,0 +1,13 @@
+<map id="importance_analysis.h" name="importance_analysis.h">
+<area shape="rect" id="node3" href="$bdd_8h.xhtml" title="Fault tree analysis with the Binary Decision Diagram algorithms. " alt="" coords="1737,326,1796,353"/>
+<area shape="rect" id="node27" href="$settings_8h.xhtml" title="Builder for settings. " alt="" coords="201,415,286,442"/>
+<area shape="rect" id="node29" href="$probability__analysis_8h.xhtml" title="Contains functionality to do numerical analysis of probabilities. " alt="" coords="806,80,964,107"/>
+<area shape="rect" id="node13" href="$pdag_8h.xhtml" title="Classes and facilities to represent fault trees as PDAGs with event and gate indices instead of ID na..." alt="" coords="1090,415,1157,442"/>
+<area shape="rect" id="node21" href="$find__iterator_8h.xhtml" title="Convenience iterator adaptor to wrap find calls and results. " alt="" coords="658,505,792,531"/>
+<area shape="rect" id="node22" href="$index__map_8h.xhtml" title="Non&#45;zero based Index&#45;&gt;Value map adapter on sequential containers. " alt="" coords="1764,505,1892,531"/>
+<area shape="rect" id="node23" href="$linear__map_8h.xhtml" title="Implementation of a vector&#45;based map for a small number of entries. " alt="" coords="1559,505,1688,531"/>
+<area shape="rect" id="node30" href="$analysis_8h.xhtml" title="Common facilities for all analysis classes. " alt="" coords="121,326,206,353"/>
+<area shape="rect" id="node32" href="$fault__tree__analysis_8h.xhtml" title="Fault Tree Analysis. " alt="" coords="808,155,962,181"/>
+<area shape="rect" id="node36" href="$preprocessor_8h.xhtml" title="A collection of PDAG transformation/preprocessing algorithms that simplify fault trees for analysis..." alt="" coords="613,326,730,353"/>
+<area shape="rect" id="node39" href="$zbdd_8h.xhtml" title="Zero&#45;Suppressed Binary Decision Diagram facilities. " alt="" coords="1071,237,1136,263"/>
+</map>

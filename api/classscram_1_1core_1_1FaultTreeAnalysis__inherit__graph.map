@@ -1,0 +1,4 @@
+<map id="scram::core::FaultTreeAnalysis" name="scram::core::FaultTreeAnalysis">
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1FaultTreeAnalyzer.xhtml" title="Fault tree analysis facility with specific algorithms. " alt="" coords="5,557,223,693"/>
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Analysis.xhtml" title="Base abstract class for all analysis with settings. " alt="" coords="35,131,193,311"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="main.cpp" name="main.cpp">
+<area shape="rect" id="node16" href="$language_8h.xhtml" title="Localization and translation facilities. " alt="" coords="318,169,411,196"/>
+<area shape="rect" id="node17" href="$mainwindow_8h.xhtml" title="The main application window. " alt="" coords="1492,87,1603,114"/>
+<area shape="rect" id="node33" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="1031,169,1106,196"/>
+<area shape="rect" id="node46" href="$zoomableview_8h.xhtml" title="Provides a GraphicsView with zoom in/out and other convenience features. " alt="" coords="885,169,1007,196"/>
+<area shape="rect" id="node44" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="813,251,911,278"/>
+<area shape="rect" id="node45" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="1647,251,1738,278"/>
+</map>

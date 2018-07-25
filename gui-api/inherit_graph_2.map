@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1EventDialog.xhtml" title="The Dialog to create, present, and manipulate event data. " alt="" coords="175,5,348,32"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1NameDialog.xhtml" title="The dialog to set the model name. " alt="" coords="173,56,349,83"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1PreferencesDialog.xhtml" title="The dialog to present and manage GUI application preferences. " alt="" coords="155,107,368,133"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1SettingsDialog.xhtml" title="The dialog to present and set analysis settings. " alt="" coords="166,157,357,184"/>
+</map>

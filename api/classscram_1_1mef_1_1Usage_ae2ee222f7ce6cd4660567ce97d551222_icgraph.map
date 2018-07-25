@@ -1,0 +1,9 @@
+<map id="scram::mef::Usage::usage" name="scram::mef::Usage::usage">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Formula_1_1ArgSet.xhtml#adef52f323d9a5b26ceaa951d5b304bb7" title="Adds an event into the arguments set. " alt="" coords="235,71,390,112"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Initializer.xhtml#ac5a9fe2fb3d4cc5a37ead0726ca74462" title="Specializations for elements defined after registration. " alt="" coords="233,136,392,177"/>
+<area shape="rect" id="node7" href="$structscram_1_1mef_1_1Initializer_1_1Extractor_3_01T_00-1_01_4.xhtml#aed4438ca816e65ced748e4bc1f67a631" title="Constructs an expression with a variable number of arguments. " alt="" coords="205,201,420,243"/>
+<area shape="rect" id="node8" href="$classscram_1_1mef_1_1Formula.xhtml#a6a6ea9595613f23e0f19af5f96754683" title="Swaps an argument event with another one. " alt="" coords="235,267,390,308"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a070c68c0d67edb30c9bf57e226aaf88e" title="Analyzes an event tree given the initiating event. " alt="" coords="468,5,688,47"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Initializer.xhtml#a969f088f20697a8a317cb7c998f034ad" title="Specializations for elements defined after registration. " alt="" coords="499,71,657,112"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a3e3404417cbdcf92474e5653ec24f936" title="scram::core::EventTreeAnalysis\l::EventTreeAnalysis" alt="" coords="468,136,688,177"/>
+</map>

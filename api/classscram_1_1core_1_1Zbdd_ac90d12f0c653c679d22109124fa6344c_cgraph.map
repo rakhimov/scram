@@ -1,0 +1,20 @@
+<map id="scram::core::Zbdd::FindOrAddVertex" name="scram::core::Zbdd::FindOrAddVertex">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1Zbdd.xhtml#a711aca319bb4d1586bf1ed92eccfaa97" title="Applies Boolean operation to two vertices representing sets. " alt="" coords="246,5,394,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1Gate.xhtml#aa793eeaa12244c5b39a0d80e5b1518ae" title="scram::core::Gate::args" alt="" coords="233,71,407,98"/>
+<area shape="rect" id="node4" href="$classscram_1_1core_1_1Zbdd.xhtml#a7c1129acd9810b5b9ff4952f587ce490" title="Clears all memoization tables. " alt="" coords="246,123,394,164"/>
+<area shape="rect" id="node5" href="$classscram_1_1core_1_1Gate.xhtml#a0d070ec20569129162398c73165f65bc" title="scram::core::Gate::\lcoherent" alt="" coords="247,188,393,229"/>
+<area shape="rect" id="node6" href="$classscram_1_1core_1_1Gate.xhtml#ab2a4e8ac78b36541a32cc719863910a5" title="scram::core::Gate::\lconstant" alt="" coords="247,253,393,295"/>
+<area shape="rect" id="node7" href="$classscram_1_1core_1_1Zbdd.xhtml#a42af18229ba2e80201bc0fdac07b7091" title="Finds or adds a unique SetNode in the ZBDD. " alt="" coords="246,371,394,412"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1SetNode.xhtml#a2d7f99792b82961df2e5ecfcd735bb5f" title="scram::core::SetNode\l::max_set_order" alt="" coords="495,341,657,383"/>
+<area shape="rect" id="node9" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml#af153c12dc6133b7d9f9b7a57bba29f1d" title="scram::core::IntrusivePtr\lCast\&lt; SetNode \&gt;::Ref" alt="" coords="487,441,665,483"/>
+<area shape="rect" id="node10" href="$classscram_1_1core_1_1Node.xhtml#a62121e217b0da73112af7e07275f2c15" title="scram::core::Node::\lindex" alt="" coords="246,512,394,553"/>
+<area shape="rect" id="node11" href="$classscram_1_1core_1_1Settings.xhtml#a0e43ec0f017d23a4fa4e376c4060d380" title="scram::core::Settings\l::limit_order" alt="" coords="241,577,399,619"/>
+<area shape="rect" id="node12" href="$classscram_1_1core_1_1Gate.xhtml#a93fa477d60140843c4abae7de52fffa1" title="scram::core::Gate::\lmodule" alt="" coords="247,643,393,684"/>
+<area shape="rect" id="node13" href="$classscram_1_1core_1_1Node.xhtml#a8b76f2081293edc1cf85ddf8cb2ac2ed" title="scram::core::Node::\lorder" alt="" coords="246,708,394,749"/>
+<area shape="rect" id="node14" href="$classscram_1_1core_1_1NonTerminal.xhtml#af5853746ad388f479a7aa45c5d843466" title="scram::core::NonTerminal\l::order" alt="" coords="227,773,413,815"/>
+<area shape="rect" id="node15" href="$classscram_1_1core_1_1NodeParentManager.xhtml#a6fca1af860a85acc2907699d1d1be716" title="scram::core::NodeParentManager\l::parents" alt="" coords="201,839,439,880"/>
+<area shape="rect" id="node16" href="$classscram_1_1core_1_1Settings.xhtml#ae64f362fceb44402e101140dfc1725ba" title="scram::core::Settings\l::prime_implicants" alt="" coords="241,904,399,945"/>
+<area shape="rect" id="node17" href="$structscram_1_1core_1_1IntrusivePtrCast.xhtml#adc53e5b89cace18e05bac95316da7d91" title="scram::core::IntrusivePtr\lCast\&lt; Ite \&gt;::Ptr" alt="" coords="231,969,409,1011"/>
+<area shape="rect" id="node18" href="$classext_1_1linear__map.xhtml#a670bc30d04c01d2fb124d5ebbc8ade71" title="ext::linear_map::size" alt="" coords="243,1035,397,1062"/>
+<area shape="rect" id="node19" href="$classscram_1_1core_1_1Gate.xhtml#ad88384625a5cdf44af140edefd250869" title="scram::core::Gate::type" alt="" coords="233,1086,407,1113"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="modeltree.h" name="modeltree.h">
+<area shape="rect" id="node6" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="1098,87,1173,114"/>
+<area shape="rect" id="node22" href="$command_8h.xhtml" title="Undo&#45;redo helper facilities based on the Qt Undo framework. " alt="" coords="1086,177,1185,203"/>
+<area shape="rect" id="node23" href="$translate_8h.xhtml" title="Translation helper facilities to workaround Qt Linguist shortcomings. " alt="" coords="1875,177,1966,203"/>
+</map>

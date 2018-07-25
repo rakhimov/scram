@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Probability Analysis &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Uncertainty Analysis" href="uncertainty_analysis.html" />
+    <link rel="prev" title="FTA: Algorithms" href="fta_algorithms.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Probability Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#probability-types">Probability Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#probability-calculations">Probability Calculations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-exact-probability-calculation">The Exact Probability Calculation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-approximate-probability-calculation">The Approximate Probability Calculation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-rare-event-approximation">The Rare-Event Approximation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-min-cut-upper-bound-mcub-approximation">The Min-Cut-Upper-Bound (MCUB) Approximation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#importance-analysis">Importance Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#safety-integrity-levels">Safety Integrity Levels</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Probability Analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="probability-analysis">
+<span id="id1"></span><h1>Probability Analysis<a class="headerlink" href="#probability-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="probability-types">
+<h2>Probability Types<a class="headerlink" href="#probability-types" title="Permalink to this headline">¶</a></h2>
+<p>Various probability types and distributions are accepted
+as described in the Open-PSA Model Exchange Format <a class="reference internal" href="references.html#mef" id="id2">[MEF]</a>,
+for example, constant values, exponential with two or four parameters,
+and uniform, normal, log-normal distributions.</p>
+<p>Bellow is a brief description.
+For more information, please take a look at the <a class="reference internal" href="references.html#mef" id="id3">[MEF]</a> format documentation.</p>
+</div>
+<div class="section" id="probability-calculations">
+<h2>Probability Calculations<a class="headerlink" href="#probability-calculations" title="Permalink to this headline">¶</a></h2>
+<p>Probability calculation algorithms assume
+independence of basic events in the fault tree.
+The dependence can be communicated with common cause groups.</p>
+<div class="section" id="the-exact-probability-calculation">
+<h3>The Exact Probability Calculation<a class="headerlink" href="#the-exact-probability-calculation" title="Permalink to this headline">¶</a></h3>
+<p>Since the resultant sets may neither be mutually exclusive nor independent,
+direct use of the sets’ total probabilities may be inaccurate <a class="reference internal" href="references.html#wakxx" id="id4">[WakXX]</a>.
+The exact probability calculation is achieved
+with Binary Decision Diagram (<a class="reference internal" href="references.html#bdd" id="id5">[BDD]</a>) based algorithms <a class="reference internal" href="references.html#dr01" id="id6">[DR01]</a>.
+This approach does not require calculation of products.
+As long as a fault tree (<a class="reference internal" href="references.html#pdag" id="id7">[PDAG]</a>) can be converted into BDD,
+the calculation of its probability is linear in the size of BDD.</p>
+</div>
+<div class="section" id="the-approximate-probability-calculation">
+<h3>The Approximate Probability Calculation<a class="headerlink" href="#the-approximate-probability-calculation" title="Permalink to this headline">¶</a></h3>
+<p>Approximate calculations are implemented to reduce the calculation time.
+However, the users must be aware of the limitations and inaccuracies of approximations <a class="reference internal" href="references.html#wakxx" id="id8">[WakXX]</a>.
+If approximate calculations yield probability values above one,
+the result is adjusted to one.
+In this special case,
+appropriate warnings are given in the final report.</p>
+<div class="section" id="the-rare-event-approximation">
+<h4>The Rare-Event Approximation<a class="headerlink" href="#the-rare-event-approximation" title="Permalink to this headline">¶</a></h4>
+<p>Given that the probabilities of events are very small value (less than 0.1),
+only the first series in the Sylvester-Poincaré formula may be used
+as a conservative (upper-bound) approximation;
+that is, the total probability is the sum of all probabilities of minimal cut sets.
+Ideally, this approximation gives good results
+for independent minimal cut sets with very low probabilities.
+However, if the cut set probabilities are high,
+the total probability may exceed 1.</p>
+<p>This is the default quantitative approximation
+for analysis algorithms that inherently run with approximations (MOCUS and ZBDD).</p>
+</div>
+<div class="section" id="the-min-cut-upper-bound-mcub-approximation">
+<h4>The Min-Cut-Upper-Bound (MCUB) Approximation<a class="headerlink" href="#the-min-cut-upper-bound-mcub-approximation" title="Permalink to this headline">¶</a></h4>
+<p>This method calculates the total probability
+by subtracting the probability of all minimal cut sets’ being successful from 1;
+thus, the total probability never exceeds 1.
+Non-independence of the minimal cut sets introduce the major discrepancy for this technique.
+Moreover, the MCUB approximation provides non-conservative estimation
+for non-coherent trees containing NOT logic <a class="reference internal" href="references.html#wakxx" id="id9">[WakXX]</a>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="importance-analysis">
+<h2>Importance Analysis<a class="headerlink" href="#importance-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Importance analysis is performed for basic events in a fault tree <a class="reference internal" href="references.html#dr01" id="id10">[DR01]</a>.
+The same configurations are used as for probability analysis.
+The analysis is performed by request with probability data.
+The following importance factors are calculated:</p>
+<ul class="simple">
+<li>Fussel-Vesely Diagnosis Importance Factor (DIF)</li>
+<li>Birnbaum Marginal Importance Factor (MIF)</li>
+<li>Critical Importance Factor (CIF)</li>
+<li>Risk Reduction Worth (RRW)</li>
+<li>Risk Achievement Worth (RAW)</li>
+</ul>
+<p>The short description and interpretation of the factors
+can be found in <a class="reference internal" href="theory.html#theory"><span class="std std-ref">Theory</span></a>.</p>
+<p>Alongside the importance factors,
+the analysis provides the probabilities of events and their number of occurrences in products.</p>
+</div>
+<div class="section" id="safety-integrity-levels">
+<h2>Safety Integrity Levels<a class="headerlink" href="#safety-integrity-levels" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="references.html#iec-61508" id="id11">[IEC_61508]</a> standard metrics and Safety Integrity Levels <a class="reference internal" href="references.html#sil" id="id12">[SIL]</a>
+are approximated with quantitative analysis on fault trees <a class="reference internal" href="references.html#dr05" id="id13">[DR05]</a>.
+Time fractions spent in every SIL bucket for PFD and PFH
+are reported with a histogram,
+as suggested by <a class="reference internal" href="references.html#drs08" id="id14">[DRS08]</a>.
+Note that these computations require probability analysis over a period of time.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The current implementation for the PFH calculation is simplistic,
+resulting in potentially less accurate values
+than the more rigorous approaches suggested in the above papers.
+The PFH results may become more inaccurate
+with testable, repairable, and/or non-continuously-operated components.
+At best, the approximate value is expected to be of the same magnitude as the real value,
+which puts the approximation into the same Safety Integrity Level.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="uncertainty_analysis.html" class="btn btn-neutral float-right" title="Uncertainty Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fta_algorithms.html" class="btn btn-neutral" title="FTA: Algorithms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

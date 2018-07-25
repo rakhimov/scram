@@ -1,0 +1,5 @@
+<map id="scram::gui::MainWindow::addInputFiles" name="scram::gui::MainWindow::addInputFiles">
+<area shape="rect" id="node2" href="$translate_8h.xhtml#adfe5f7367036126ec5ca81430fbf4c71" title="Forwards to translate function with a default global context. " alt="" coords="272,5,376,32"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1ZoomableView.xhtml#a859d676e6600e263ae4487bc1845385d" title="Automatically adjusts the zoom to fit the view into the current scene. " alt="" coords="228,57,420,98"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1ZoomableView.xhtml#ace3d3caf7b6043cceaf2dfb176df9c8a" title="Accepts requests to change the zoom to the given level. " alt="" coords="468,57,660,98"/>
+</map>

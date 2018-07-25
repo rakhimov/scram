@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FTA: Algorithms &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Probability Analysis" href="probability_analysis.html" />
+    <link rel="prev" title="FTA: Preprocessing Techniques" href="fta_preprocessing.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="../_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FTA: Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mocus">MOCUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#binary-decision-diagram">Binary Decision Diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#prime-implicants-vs-minimal-cut-sets">Prime Implicants vs. Minimal Cut Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scram-fta-algorithms">SCRAM FTA Algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id14">MOCUS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">Binary Decision Diagram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zero-suppressed-binary-decision-diagram">Zero-Suppressed Binary Decision Diagram</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#product-container">Product Container</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#unity-and-null-cases">UNITY and NULL Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>FTA: Algorithms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fta-algorithms">
+<span id="id1"></span><h1>FTA: Algorithms<a class="headerlink" href="#fta-algorithms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>There are many algorithms developed for fault tree analysis since the 1960s,
+but MOCUS-based and BDD-based algorithms are most used in current PRA software
+<a class="reference internal" href="references.html#rau93" id="id2">[Rau93]</a> <a class="reference internal" href="references.html#rau03" id="id3">[Rau03]</a>.
+More information can be found in <a class="reference internal" href="references.html#references"><span class="std std-ref">References</span></a>.</p>
+<div class="section" id="mocus">
+<h3>MOCUS<a class="headerlink" href="#mocus" title="Permalink to this headline">¶</a></h3>
+<p>MOCUS is a top-down algorithm first proposed by J.Fussel and W.Vesely in 1972.
+There are many suggested improvement techniques for this algorithm,
+but the basics are simpler than for other FTA algorithms <a class="reference internal" href="references.html#rau03" id="id4">[Rau03]</a>.
+In addition, MOCUS-like algorithms may incorporate approximations
+to speed up their calculations;
+however, this may lead to inaccuracies in overall analysis.
+There seem not to be overall consensus on these approximations
+over all the tools that use this algorithm.
+The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum and SAPHIRE.</p>
+</div>
+<div class="section" id="binary-decision-diagram">
+<h3>Binary Decision Diagram<a class="headerlink" href="#binary-decision-diagram" title="Permalink to this headline">¶</a></h3>
+<p>The BDD-based algorithm can use
+various types of the Binary Decision Diagram (<a class="reference internal" href="references.html#bdd" id="id5">[BDD]</a>, <a class="reference internal" href="references.html#zbdd" id="id6">[ZBDD]</a>)
+for Boolean operations <a class="reference internal" href="references.html#bry86" id="id7">[Bry86]</a> <a class="reference internal" href="references.html#min93" id="id8">[Min93]</a> <a class="reference internal" href="references.html#rau93" id="id9">[Rau93]</a>.
+This is a bottom-up approach that is mature and well tuned for PRA
+and other logic applications.
+This method consists of many complex algorithms of the BDD to find MCS <a class="reference internal" href="references.html#rau01" id="id10">[Rau01]</a>.
+The BDD algorithms tend to be faster than MOCUS and other algorithms;
+however, this algorithm is subject to combinatorial explosion
+for very large models with thousands of basic events and gates
+with many replicated events.
+One more important advantage of the BDD-based analysis is
+that the BDD allows fast and exact calculation of probabilities,
+which makes Probability, Importance, Uncertainty analyses fast as well <a class="reference internal" href="references.html#dr01" id="id11">[DR01]</a>.
+This algorithm is used in CAFTA, RiskA, and RiskMan.</p>
+</div>
+</div>
+<div class="section" id="prime-implicants-vs-minimal-cut-sets">
+<h2>Prime Implicants vs. Minimal Cut Sets<a class="headerlink" href="#prime-implicants-vs-minimal-cut-sets" title="Permalink to this headline">¶</a></h2>
+<p>Minimal cut sets are necessary and sufficient sets of basic events (variables)
+that induce the failure of the top event <a class="reference internal" href="references.html#rau01" id="id12">[Rau01]</a>.
+The set represents a conjunction of Boolean variables (product).
+Another way to represent the minimal sets of basic events
+is to consider the shortest paths for top event failure.
+If one path includes another,
+it is not the shortest
+so is not minimal.</p>
+<p>The notion of minimal cut sets with occurrence or failure of basic events
+is appropriate for coherent fault trees.
+For non-coherent fault trees with complements of basic events,
+success or non-occurrence of basic events
+may lead to the failure of the top event.
+In order to capture these scenarios,
+prime implicants are computed as products
+that include complements of variables.</p>
+<p>However, the notion of prime implicants may not be
+as intuitive as the notion of minimal cut sets for analysts
+since consideration of success of an undesired event
+complicates failure scenarios
+or may be irrelevant at all
+if the probability of success is close to 1.</p>
+<p>Minimal cut sets can be used as a conservative, approximate result
+for analysis of non-coherent fault trees.
+In order to eliminate complements of variables,
+it is assumed that a complement of an event always occurs, i.e., constant True or 1,
+unless the complement is in the same path or set as the corresponding event.
+In the latter case, the path or set is Null or an impossible scenario
+because an event and its complement are mutually exclusive.</p>
+<p>This approximation is conservative
+because the worst case scenario is considered for complements.
+Moreover, the computation of minimal cut sets
+is simpler than the computation of prime implicants.
+Calculation of prime implicants involves
+extra computations in accordance to the Consensus theorem
+and generates a lot more products than calculation of minimal cut sets <a class="reference internal" href="references.html#pa09" id="id13">[PA09]</a>.</p>
+<p>The benefit of calculation of prime implicants is
+that it is the exact representation of the system without approximations.
+Computation of prime implicants is necessary
+if complements or success of events cannot or should not be ignored.
+Relevancy notion is given to events
+depending on the membership in products.
+If an event is in a product as a positive literal,
+the event is failure relevant.
+If an event is in a product as a negative literal (complement of the event),
+the event is repair (success) relevant.
+If an event is not in a product,
+it is irrelevant.</p>
+<p>Given Boolean formula <span class="math notranslate nohighlight">\(f(a,b,c)\)</span>:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(a,b,c) = a \&amp; b \| \overline{a} \&amp; c\]</div>
+</div></blockquote>
+<p>Considering the complement is always True, the formula is simplified:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(a,b,c) = a \&amp; b \| c\]</div>
+</div></blockquote>
+<p>Computation of prime implicants requires computation of the consensus
+when variable <span class="math notranslate nohighlight">\(a\)</span> is irrelevant:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[f(a,b,c) = a \&amp; b \| \overline{a} \&amp; c \| b \&amp; c\]</div>
+</div></blockquote>
+<p>Minimal cut sets of the formula are <span class="math notranslate nohighlight">\({ab, c}\)</span>.
+Prime implicants are <span class="math notranslate nohighlight">\({ab, \overline{a}c, bc}\)</span>.</p>
+</div>
+<div class="section" id="scram-fta-algorithms">
+<h2>SCRAM FTA Algorithms<a class="headerlink" href="#scram-fta-algorithms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id14">
+<h3>MOCUS<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>This algorithm is similar to the MOCUS algorithm as described in <a class="reference internal" href="references.html#rau03" id="id15">[Rau03]</a>.
+Steps in the algorithm for minimal cut set generation from a fault tree.</p>
+<p><strong>Rule 1.</strong> Each OR gate generates new rows (sets) in the table (set) of cut sets</p>
+<p><strong>Rule 2.</strong> Each AND gate generates new columns (elements) in the table (set) of cut sets</p>
+<p>After finishing or each of the above steps:</p>
+<p><strong>Rule 3.</strong> Eliminate redundant elements that appear multiple times in a cut set</p>
+<p><strong>Rule 4.</strong> Eliminate non-minimal cut sets</p>
+<p>The implementation uses a ZBDD data structure (a set of sets)
+to store minimal cut sets in a compact form,
+so Rules 3 and 4 are satisfied automatically.
+Elements in a set have AND relationship with each other;
+whereas sets in the ZBDD have OR relationship with each other.</p>
+<p>Gates of top and intermediate events affect cut sets.
+Each OR gate adds new sets into the set of sets,
+while each AND gate adds additional elements
+into one specific set or group of sets inside the set of sets.</p>
+<p>To generate all cut sets,
+a fault tree is traversed from the top to basic events,
+In this step, the analysis may cancel cut sets
+if the fault tree is non-coherent and contains complements.
+In addition,
+if a cut set order is larger than the limit put by a user,
+it is discarded.</p>
+<p>After required cut sets are generated,
+the minimization of the generated cut sets
+and extraction of minimal cut sets into a final (result) form
+is delegated to ZBDD facilities.</p>
+</div>
+<div class="section" id="id16">
+<h3>Binary Decision Diagram<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>Binary decision diagrams are constructed from PDAGs for analysis.
+In order to calculate minimal cut sets or prime implicants,
+BDD is converted into Zero-suppressed binary decision diagrams (ZBDD).
+ZBDD is a data structure that encodes sets in a compact way <a class="reference internal" href="references.html#min93" id="id17">[Min93]</a>.
+Minimization of sets is performed with subsume operations described in <a class="reference internal" href="references.html#rau93" id="id18">[Rau93]</a>.
+After these operations,
+any path leading to 1 (True) terminal
+is extracted as a product.</p>
+</div>
+<div class="section" id="zero-suppressed-binary-decision-diagram">
+<h3>Zero-Suppressed Binary Decision Diagram<a class="headerlink" href="#zero-suppressed-binary-decision-diagram" title="Permalink to this headline">¶</a></h3>
+<p>In addition to being a helpful facility for set minimization,
+ZBDDs can work directly with PDAGs <a class="reference internal" href="references.html#jun09" id="id19">[Jun09]</a>.
+The major benefit of this approach
+is that products can be kept minimal and truncated upon generation.
+However, the application of Boolean operators on the ZBDD decomposition
+requires extra computations compared to the BDD approach.</p>
+<div class="section" id="product-container">
+<h4>Product Container<a class="headerlink" href="#product-container" title="Permalink to this headline">¶</a></h4>
+<p>All the FTA algorithms in SCRAM produce ZBDD as a result of analysis
+to encode the sum of products.
+An alternative representation, for example,
+would be an array (of sets, bitsets, arrays, etc.),
+which is a very general data structure
+providing a flexible interface and standard algorithms
+(sort, partition, query, iteration, etc.);
+however, this kind of alternatives is not as space and time efficient as ZBDD.
+Moreover, there’s great overhead in converting the resultant ZBDD into some other data structures.
+For these performance reasons,
+other analysis and post-processing facilities utilize or are expected to work with
+the ZBDD representation directly.</p>
+</div>
+</div>
+</div>
+<div class="section" id="unity-and-null-cases">
+<h2>UNITY and NULL Cases<a class="headerlink" href="#unity-and-null-cases" title="Permalink to this headline">¶</a></h2>
+<p>The analyzed products may result in NULL (empty) or UNITY (base) sets,
+which may indicate guaranteed success or failure.
+These cases are handled as special
+and given appropriate messages and probabilities.
+UNITY (base) set shows only one empty product of order 1 and probability 1.
+NULL (empty) set has probability 0 and shows no products.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="probability_analysis.html" class="btn btn-neutral float-right" title="Probability Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fta_preprocessing.html" class="btn btn-neutral" title="FTA: Preprocessing Techniques" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+<map id="scram::mef::PhiFactorModel" name="scram::mef::PhiFactorModel">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1CcfGroup.xhtml" title="Abstract base class for all common cause failure models. " alt="" coords="208,675,371,928"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Id.xhtml" title="Mixin class for assigning unique identifiers to elements. " alt="" coords="222,417,357,627"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Element.xhtml" title="The MEF Element with attributes and a label. " alt="" coords="129,131,285,369"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1ContainerElement.xhtml" title="Elements in MEF containers. " alt="" coords="5,5,224,83"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Role.xhtml" title="Mixin class that manages private or public roles for elements as needed. " alt="" coords="309,189,438,311"/>
+</map>

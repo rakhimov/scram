@@ -1,0 +1,4 @@
+<map id="scram::core::Analysis::AddWarning" name="scram::core::Analysis::AddWarning">
+<area shape="rect" id="node2" href="$classscram_1_1core_1_1ProbabilityAnalysis.xhtml#ab68a356b0bdeb793d30d3b6e84847d12" title="Performs quantitative analysis on the supplied fault tree. " alt="" coords="233,5,405,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1core_1_1FaultTreeAnalysis.xhtml#a327afc0524cff5289c3887357487266b" title="Analyzes the fault tree and performs computations. " alt="" coords="212,71,427,112"/>
+</map>

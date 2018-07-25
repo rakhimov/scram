@@ -1,0 +1,15 @@
+<map id="command.h" name="command.h">
+<area shape="rect" id="node2" href="$model_8h.xhtml" title="Wrapper Model classes for the MEF data. " alt="" coords="518,80,593,107"/>
+<area shape="rect" id="node3" href="$diagram_8h.xhtml" title="Graphics classes to draw diagrams. " alt="" coords="112,155,199,181"/>
+<area shape="rect" id="node6" href="$elementcontainermodel_8h.xhtml" title="The table model for elements. " alt="" coords="223,155,410,181"/>
+<area shape="rect" id="node8" href="$eventdialog_8h.xhtml" title="Dialog to edit and validate events. " alt="" coords="435,155,543,181"/>
+<area shape="rect" id="node10" href="$mainwindow_8h.xhtml" title="The main application window. " alt="" coords="567,155,677,181"/>
+<area shape="rect" id="node12" href="$modeltree_8h.xhtml" title="The main tree representation of the Model. " alt="" coords="701,155,801,181"/>
+<area shape="rect" id="node14" href="$model_8cpp.xhtml" title="model.cpp" alt="" coords="825,155,915,181"/>
+<area shape="rect" id="node4" href="$diagram_8cpp.xhtml" title="Implementation of diagram graphics. " alt="" coords="5,229,108,256"/>
+<area shape="rect" id="node5" href="$mainwindow_8cpp.xhtml" title="mainwindow.cpp" alt="" coords="359,229,485,256"/>
+<area shape="rect" id="node7" href="$elementcontainermodel_8cpp.xhtml" title="elementcontainermodel.cpp" alt="" coords="133,229,335,256"/>
+<area shape="rect" id="node9" href="$eventdialog_8cpp.xhtml" title="eventdialog.cpp" alt="" coords="509,229,631,256"/>
+<area shape="rect" id="node11" href="$main_8cpp.xhtml" title="The main entrance to the SCRAM GUI. " alt="" coords="656,229,737,256"/>
+<area shape="rect" id="node13" href="$modeltree_8cpp.xhtml" title="modeltree.cpp" alt="" coords="762,229,877,256"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="scram::gui::model::HouseEvent::state" name="scram::gui::model::HouseEvent::state">
+<area shape="rect" id="node2" href="$model_8h.xhtml#a7fb055e96982ca4cfbf9890bcec60b30" title="Converts Boolean value to a UI string. " alt="" coords="199,29,344,71"/>
+<area shape="rect" id="node3" href="$translate_8h.xhtml#adfe5f7367036126ec5ca81430fbf4c71" title="Forwards to translate function with a default global context. " alt="" coords="392,37,496,63"/>
+</map>

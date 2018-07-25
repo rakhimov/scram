@@ -1,0 +1,10 @@
+<map id="scram::gui::model::Element::id" name="scram::gui::model::Element::id">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a44a7b2e19f453595a7b6650d5273b2db" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="202,5,431,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1HouseEventContainerModel.xhtml#aa112416a8c25d3cf8f3c4e0fdcbdc069" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="199,71,435,112"/>
+<area shape="rect" id="node4" href="$classscram_1_1gui_1_1model_1_1GateContainerModel.xhtml#a191036bcdd39eae7889c99ac42208fd6" title="The index for children embeds the parent information into the data. " alt="" coords="221,136,412,177"/>
+<area shape="rect" id="node5" href="$classscram_1_1gui_1_1MainWindow.xhtml#a8b334126b832c74b1034891efb5a416f" title="Specialization to construct gate out of event editor data. " alt="" coords="229,201,404,243"/>
+<area shape="rect" id="node6" href="$classscram_1_1gui_1_1EventDialog.xhtml#aa7277e2f2b20420880a2a875680eaffa" title="Finds fault tree container of the gate. " alt="" coords="230,267,403,308"/>
+<area shape="rect" id="node7" href="$classscram_1_1gui_1_1diagram_1_1Event.xhtml#ab9341662591da72ff584e8a741cdee75" title="Required standard member functions of QGraphicsItem interface. " alt="" coords="241,332,392,373"/>
+<area shape="rect" id="node8" href="$classscram_1_1gui_1_1model_1_1Model_1_1SetName.xhtml#aca2c5cdce29ffc23e004098401b1a23f" title="Applies the new name to the model. " alt="" coords="233,397,400,439"/>
+<area shape="rect" id="node9" href="$classscram_1_1gui_1_1MainWindow.xhtml#a643cb1334167f1b8ee322ff7b8950335" title="Specialization to deal with complexities of gate/fault&#45;tree removal. " alt="" coords="229,463,404,504"/>
+</map>

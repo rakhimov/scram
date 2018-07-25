@@ -1,0 +1,7 @@
+<map id="scram::mef::Component::gates" name="scram::mef::Component::gates">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Component.xhtml#af901b99ff262cdea54d489f54c1fb7ed" title="Adds MEF constructs into this component container. " alt="" coords="459,14,669,41"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1FaultTree.xhtml#a9535bd49edb4598ead887faf8dadd9f2" title="Collects top event gates in this fault tree with components. " alt="" coords="485,80,643,122"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Component.xhtml#a63441da08667fe6826f3ae0c0a5a94fe" title="Recursively traverses components to gather gates relevant to the whole component. ..." alt="" coords="232,36,411,78"/>
+<area shape="rect" id="node5" href="$serialization_8cc.xhtml#a83f7058a5caad9ec3ffb5fd6c7d7b8f6" title="Convenience function for serialization into a file. " alt="" coords="243,177,400,204"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1FaultTree.xhtml#a502dde7fc11b6023dc59675f924539da" title="scram::mef::FaultTree\l::top_events" alt="" coords="242,228,401,270"/>
+</map>

@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>SCRAM 0.16.2 &mdash; SCRAM 0.16.2 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/scram.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation Instructions" href="doc/installation.html" />
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61330377-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> SCRAM
+          
+
+          
+            
+            <img src="_static/scram_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/installation.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/bugs.html">Bugs and Issues</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/substitutions.html">Substitutions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/gui.html">GUI Front-End</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">SCRAM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>SCRAM 0.16.2</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scram-release">
+<h1>SCRAM 0.16.2<a class="headerlink" href="#scram-release" title="Permalink to this headline">¶</a></h1>
+<p><strong>SCRAM</strong> is a <strong>C</strong>ommand-line <strong>R</strong>isk <strong>A</strong>nalysis <strong>M</strong>ulti-tool.</p>
+<p>SCRAM is a free and open source probabilistic risk analysis tool
+that supports the <a class="reference external" href="https://open-psa.github.io">Open-PSA</a> <a class="reference external" href="https://open-psa.github.io/mef">Model Exchange Format</a>.</p>
+<p>SCRAM is licensed under the <a class="reference external" href="https://github.com/rakhimov/scram/blob/master/LICENSE">GPLv3</a>.
+The <a class="reference external" href="https://github.com/rakhimov/scram/releases">release notes</a>, <a class="reference external" href="https://github.com/rakhimov/scram/tree/master">source code</a>, and <a class="reference external" href="https://github.com/rakhimov/scram/issues">issue/bug</a> tracker
+are located at <a class="reference external" href="https://github.com/rakhimov/scram/tree/develop">GitHub</a>.</p>
+<p>SCRAM logo is designed by <a class="reference external" href="http://nikashsingh.org">Nikash SINGH</a>.</p>
+<p class="rubric">Code documentation:</p>
+<ul class="simple">
+<li><a class="reference external" href="api/index.xhtml">C++ core code</a></li>
+<li><a class="reference external" href="gui-api/index.xhtml">C++ GUI code</a></li>
+<li><a class="reference external" href="scripts/modules.html">Python scripts</a></li>
+</ul>
+<div class="section" id="implemented-features">
+<h2>Implemented Features<a class="headerlink" href="#implemented-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Event tree analysis (Fault tree linking, Event tree linking)</li>
+<li>Static fault tree analysis (MOCUS, BDD, ZBDD)</li>
+<li>Analysis of non-coherent fault trees (Minimal Cut Sets, Prime Implicants)</li>
+<li>Analysis with common-cause failure models</li>
+<li>Probability analysis (Importance factors, IEC 61508 Safety Integrity Levels)</li>
+<li>Uncertainty analysis with Monte Carlo simulations</li>
+<li>Alignment (Mission, Phases)</li>
+<li>Substitutions (Delete Terms, Recovery Rules, Exchange Events)</li>
+<li>Fault tree generator</li>
+<li>GUI front-end</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/installation.html">Installation Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#arch">Arch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#debian">Debian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#ubuntu">Ubuntu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#fedora">Fedora</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#linux-bundle">Linux Bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#macos">macOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#docker-containers">Docker Containers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc/installation.html#other-platforms">Other Platforms</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/design_description.html">Design Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/coding_standards.html">Coding Style and Quality Assurance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/todo.html">TODO List for the SCRAM Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/bugs.html">Bugs and Issues</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Analysis</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/description.html">Description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/event_tree_analysis.html">Event Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fault_tree_analysis.html">Fault Tree Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fta_preprocessing.html">FTA: Preprocessing Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/fta_algorithms.html">FTA: Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/probability_analysis.html">Probability Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/uncertainty_analysis.html">Uncertainty Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/common_cause_analysis.html">Common Cause Failure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/substitutions.html">Substitutions</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Format</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/input_file.html">Input Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/project_file.html">Project Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/report_file.html">Report Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/opsa_support.html">The Open-PSA Model Exchange Format</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/fault_tree_generator.html">Fault Tree Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/gui.html">GUI Front-End</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Miscellanea</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doc/theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc/xml_comments.html">XML File Helper Tools</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="contact-us">
+<h2>Contact Us<a class="headerlink" href="#contact-us" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://groups.google.com/forum/#!forum/scram-users">User Support and Discussions</a></li>
+<li><a class="reference external" href="https://groups.google.com/forum/#!forum/scram-announce">Announcement List</a></li>
+<li><a class="reference external" href="https://groups.google.com/forum/#!forum/scram-dev">Developer Mailing List</a></li>
+</ul>
+<a href="https://github.com/rakhimov/scram"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a></div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="doc/installation.html" class="btn btn-neutral float-right" title="Installation Instructions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2018, Olzhas Rakhimov, CC BY-SA 4.0.
+      Last updated on Jul 25, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.16.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

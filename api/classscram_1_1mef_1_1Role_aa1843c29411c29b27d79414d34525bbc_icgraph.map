@@ -1,0 +1,16 @@
+<map id="scram::mef::Role::role" name="scram::mef::Role::role">
+<area shape="rect" id="node2" href="$classscram_1_1mef_1_1Initializer.xhtml#a969f088f20697a8a317cb7c998f034ad" title="Specializations for elements defined after registration. " alt="" coords="1253,65,1412,106"/>
+<area shape="rect" id="node3" href="$classscram_1_1mef_1_1Id.xhtml#a7e258c5f6332715d5ed6a3fdbf681a8b" title="scram::mef::Id::id" alt="" coords="255,277,389,304"/>
+<area shape="rect" id="node14" href="$structscram_1_1mef_1_1Initializer_1_1Extractor_3_01T_00-1_01_4.xhtml#aed4438ca816e65ced748e4bc1f67a631" title="Constructs an expression with a variable number of arguments. " alt="" coords="215,329,429,370"/>
+<area shape="rect" id="node15" href="$serialization_8cc.xhtml#a83f7058a5caad9ec3ffb5fd6c7d7b8f6" title="Convenience function for serialization into a file. " alt="" coords="243,419,401,445"/>
+<area shape="rect" id="node4" href="$classscram_1_1mef_1_1Substitution.xhtml#a0a6da28d1514d7543d80e554e144df6f" title="Adds a source event to the substitution container. " alt="" coords="487,101,700,128"/>
+<area shape="rect" id="node7" href="$classscram_1_1mef_1_1Formula_1_1ArgSet.xhtml#adef52f323d9a5b26ceaa951d5b304bb7" title="Adds an event into the arguments set. " alt="" coords="516,182,671,223"/>
+<area shape="rect" id="node9" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a3e3404417cbdcf92474e5653ec24f936" title="scram::core::EventTreeAnalysis\l::EventTreeAnalysis" alt="" coords="757,277,977,318"/>
+<area shape="rect" id="node10" href="$classscram_1_1mef_1_1Initializer.xhtml#aa6329e9c18a0ef61415f8c7cb6076265" title="Specializations for elements defined after registration. " alt="" coords="514,299,673,341"/>
+<area shape="rect" id="node11" href="$reporter_8cc.xhtml#a73f9569f4c2e2b6a3eac8d2c01b81943" title="Describes all performed analyses deduced from settings. " alt="" coords="477,365,709,406"/>
+<area shape="rect" id="node12" href="$classscram_1_1mef_1_1Formula.xhtml#a6a6ea9595613f23e0f19af5f96754683" title="Swaps an argument event with another one. " alt="" coords="516,430,671,471"/>
+<area shape="rect" id="node13" href="$classscram_1_1mef_1_1Id.xhtml#a846997cebdf27bbff872fa87e7f1a9e2" title="Produces unique name for the model element within the same type. " alt="" coords="489,496,698,523"/>
+<area shape="rect" id="node5" href="$classscram_1_1mef_1_1Substitution.xhtml#ad29f35247718d44ff8d6f9bd9bd41d9f" title="scram::mef::Substitution\l::declarative" alt="" coords="777,94,957,135"/>
+<area shape="rect" id="node6" href="$classscram_1_1mef_1_1Substitution.xhtml#ab1859efddac529e0827537fae2f16cbb" title="Checks if the substitution is setup correctly. " alt="" coords="1025,94,1205,135"/>
+<area shape="rect" id="node8" href="$classscram_1_1core_1_1EventTreeAnalysis.xhtml#a070c68c0d67edb30c9bf57e226aaf88e" title="Analyzes an event tree given the initiating event. " alt="" coords="757,211,977,253"/>
+</map>

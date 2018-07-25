@@ -1,0 +1,4 @@
+<map id="scram::gui::model::BasicEvent::expressionChanged" name="scram::gui::model::BasicEvent::expressionChanged">
+<area shape="rect" id="node2" href="$classscram_1_1gui_1_1model_1_1BasicEventContainerModel.xhtml#a44a7b2e19f453595a7b6650d5273b2db" title="Required standard member functions of QAbstractItemModel interface. " alt="" coords="280,5,509,47"/>
+<area shape="rect" id="node3" href="$classscram_1_1gui_1_1model_1_1BasicEvent_1_1SetExpression.xhtml#ae6a0cda81a87f9e74eaf258a0a266963" title="Applies the expression changes. " alt="" coords="281,71,509,112"/>
+</map>
