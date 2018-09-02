@@ -21,8 +21,8 @@
 #pragma once
 
 #include <QGraphicsView>
-#include <QWheelEvent>
 #include <QMouseEvent>
+#include <QWheelEvent>
 
 namespace scram::gui {
 
