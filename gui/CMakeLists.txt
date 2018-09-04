@@ -87,6 +87,7 @@ set(SCRAM_GUI_SRC
   eventdialog.cpp
   printable.cpp
   zoomableview.cpp
+  diagramview.cpp
   diagram.cpp
   mainwindow.cpp
   )

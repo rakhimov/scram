@@ -32,7 +32,6 @@
 #include <QMessageBox>
 #include <QPrinter>
 #include <QProgressDialog>
-#include <QSvgGenerator>
 #include <QtConcurrent>
 #include <QtOpenGL>
 
@@ -53,13 +52,13 @@
 #include "src/xml.h"
 
 #include "diagram.h"
+#include "diagramview.h"
 #include "elementcontainermodel.h"
 #include "eventdialog.h"
 #include "guiassert.h"
 #include "importancetablemodel.h"
 #include "modeltree.h"
 #include "preferencesdialog.h"
-#include "printable.h"
 #include "producttablemodel.h"
 #include "reporttree.h"
 #include "settingsdialog.h"
@@ -113,41 +112,6 @@ private:
         if (event->key() == Qt::Key_Escape)
             return event->accept();
         QProgressDialog::keyPressEvent(event);
-    }
-};
-
-/// The default view for graphics views (e.g., fault tree diagram).
-class DiagramView : public ZoomableView, public Printable
-{
-public:
-    using ZoomableView::ZoomableView;
-
-    /// Exports the image of the diagram.
-    void exportAs()
-    {
-        QString filename = QFileDialog::getSaveFileName(
-            this, _("Export As"), QDir::homePath(),
-            _("SVG files (*.svg);;All files (*.*)"));
-        QSize sceneSize = scene()->sceneRect().size().toSize();
-
-        QSvgGenerator generator;
-        generator.setFileName(filename);
-        generator.setSize(sceneSize);
-        generator.setViewBox(
-            QRect(0, 0, sceneSize.width(), sceneSize.height()));
-        generator.setTitle(filename);
-        QPainter painter;
-        painter.begin(&generator);
-        scene()->render(&painter);
-        painter.end();
-    }
-
-private:
-    void doPrint(QPrinter *printer) override
-    {
-        QPainter painter(printer);
-        painter.setRenderHint(QPainter::Antialiasing);
-        scene()->render(&painter);
     }
 };
 
