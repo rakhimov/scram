@@ -63,4 +63,18 @@ void ZoomableView::wheelEvent(QWheelEvent *event)
     }
 }
 
+void ZoomableView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        this->setDragMode(QGraphicsView::ScrollHandDrag);
+    }
+    QGraphicsView::mousePressEvent(event);
+}
+
+void ZoomableView::mouseReleaseEvent(QMouseEvent *event)
+{
+    this->setDragMode(QGraphicsView::NoDrag);
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
 } // namespace scram::gui
