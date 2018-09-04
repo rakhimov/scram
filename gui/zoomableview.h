@@ -21,7 +21,6 @@
 #pragma once
 
 #include <QGraphicsView>
-#include <QMouseEvent>
 #include <QWheelEvent>
 
 namespace scram::gui {
@@ -58,13 +57,6 @@ public slots:
 protected:
     /// Provides support for zoom-in/out with a mouse while holding Control key.
     void wheelEvent(QWheelEvent *event) override;
-
-    /// Provides support for starting the panning of the window using the left
-    /// mouse button
-    void mousePressEvent(QMouseEvent *event) override;
-    /// Provides support for stopping the panning of the window using the left
-    /// mouse button
-    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     static const int m_minZoomLevel = 10; ///< The minimum allowed zoom level.

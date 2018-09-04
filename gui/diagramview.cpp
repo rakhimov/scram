@@ -44,6 +44,20 @@ void DiagramView::exportAs()
     painter.end();
 }
 
+void DiagramView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        this->setDragMode(QGraphicsView::ScrollHandDrag);
+
+    QGraphicsView::mousePressEvent(event);
+}
+
+void DiagramView::mouseReleaseEvent(QMouseEvent *event)
+{
+    this->setDragMode(QGraphicsView::NoDrag);
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
 void DiagramView::doPrint(QPrinter *printer)
 {
     QPainter painter(printer);

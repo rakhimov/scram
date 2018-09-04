@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <QMouseEvent>
+
 #include "printable.h"
 #include "zoomableview.h"
 
@@ -33,6 +35,19 @@ public:
 
     /// Exports the image of the diagram.
     void exportAs();
+
+protected:
+    /// Provides support for starting the panning of the window
+    /// using the left mouse button.
+    ///
+    /// @param[in] event  The input mouse press event.
+    void mousePressEvent(QMouseEvent *event) override;
+
+    /// Provides support for stopping the panning of the window
+    /// using the left mouse button.
+    ///
+    /// @param[in] event  The input mouse release event.
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     void doPrint(QPrinter *printer) override;
