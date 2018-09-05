@@ -250,7 +250,8 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
   BasicEvent arg_two("b");
   BasicEvent arg_three("c");
 
-  for (Connective nary : {kAnd, kOr, kNand, kNor}) {
+  SECTION("Nary") {
+    Connective nary = GENERATE(kAnd, kOr, kNand, kNor);
     CAPTURE(nary);
     INFO(kConnectiveToString[nary]);
     CHECK_THROWS_AS(Formula(nary, {}), ValidityError);
@@ -259,7 +260,8 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
     CHECK_NOTHROW(Formula(nary, {&arg_one, &arg_two, &arg_three}));
   }
 
-  for (Connective unary : {kNot, kNull}) {
+  SECTION("Unary") {
+    Connective unary = GENERATE(kNot, kNull);
     CAPTURE(unary);
     INFO(kConnectiveToString[unary]);
     CHECK_THROWS_AS(Formula(unary, {}), ValidityError);
@@ -267,7 +269,8 @@ TEST_CASE("FormulaTest.Validate", "[mef::event]") {
     CHECK_THROWS_AS(Formula(unary, {&arg_one, &arg_two}), ValidityError);
   }
 
-  for (Connective binary : {kXor, kImply, kIff}) {
+  SECTION("Binary") {
+    Connective binary = GENERATE(kXor, kImply, kIff);
     CAPTURE(binary);
     INFO(kConnectiveToString[binary]);
     CHECK_THROWS_AS(Formula(binary, {}), ValidityError);
