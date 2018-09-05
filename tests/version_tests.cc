@@ -22,52 +22,48 @@
 namespace scram::test {
 
 TEST_CASE("invalid version extraction", "[version]") {
-  const char* versions[] = {
-      "",           "string",      "1string",      "1.string",
-      "0.1.string", "0.1.2string", "0.1.2.string", " 0.2.3",
-      "1_61",       "1,61",        "1'61",         "1-61",
-      "0.2.2.",     ".1",          "0..1",         "0.1..",
-      "0.1.2a",     "-1"};
+  auto version = GENERATE(
+      as<const char*>(), "", "string", "1string", "1.string", "0.1.string",
+      "0.1.2string", "0.1.2.string", " 0.2.3", "1_61", "1,61", "1'61", "1-61",
+      "0.2.2.", ".1", "0..1", "0.1..", "0.1.2a", "-1");
 
-  for (auto& version : versions) {
-    CAPTURE(version);
-    CHECK(!ext::extract_version(version));
-  }
+  CAPTURE(version);
+  CHECK(!ext::extract_version(version));
 }
 
 TEST_CASE("valid default version extraction", "[version]") {
-  std::pair<const char*, std::array<int, 3>> versions[] = {
+  auto [version, expected] = GENERATE(table<const char*, std::array<int, 3>>({
       {"0", {}},
       {"0.1", {0, 1}},
       {"0.1.0", {0, 1}},
       {"0.1.9", {0, 1, 9}},
       {"5.1.9", {5, 1, 9}},
       {"999.9999.99999", {999, 9999, 99999}},
-  };
+  }));
 
-  for (const auto& [version, expected] : versions) {
-    CAPTURE(version);
-    auto numbers = ext::extract_version(version);
-    CHECK(numbers);
-    if (numbers)
-      CHECK(*numbers == expected);
-  }
+  CAPTURE(version);
+  auto numbers = ext::extract_version(version);
+  REQUIRE(numbers);
+  CHECK(*numbers == expected);
 }
 
 TEST_CASE("valid version extraction w/ custom separator", "[version]") {
   std::array<int, 3> expected = {0, 1, 2};
-  std::pair<const char*, char> versions[] = {
-      {"0.1.2", '.'}, {"0_1_2", '_'}, {"0-1-2", '-'}, {"0'1'2", '\''},
-      {"0 1 2", ' '}, {"05152", '5'}, {"0s1s2", 's'}, {"0\n1\n2", '\n'},
-  };
+  auto [version, separator] = GENERATE(table<const char*, char>({
+      {"0.1.2", '.'},
+      {"0_1_2", '_'},
+      {"0-1-2", '-'},
+      {"0'1'2", '\''},
+      {"0 1 2", ' '},
+      {"05152", '5'},
+      {"0s1s2", 's'},
+      {"0\n1\n2", '\n'},
+  }));
 
-  for (const auto& [version, separator] : versions) {
-    CAPTURE(version);
-    auto numbers = ext::extract_version(version, separator);
-    CHECK(numbers);
-    if (numbers)
-      CHECK(*numbers == expected);
-  }
+  CAPTURE(version, separator);
+  auto numbers = ext::extract_version(version, separator);
+  REQUIRE(numbers);
+  CHECK(*numbers == expected);
 }
 
 TEST_CASE("valid version from substring", "[version]") {
@@ -75,8 +71,8 @@ TEST_CASE("valid version from substring", "[version]") {
   std::string_view version = "0.1.2-alpha";
   CAPTURE(version);
   auto numbers = ext::extract_version(version.substr(0, 5));
-  if (numbers)
-    CHECK(*numbers == expected);
+  REQUIRE(numbers);
+  CHECK(*numbers == expected);
 }
 
 }  // namespace scram::test
