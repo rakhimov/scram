@@ -17,7 +17,7 @@
 
 #include "pdag.h"
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "fault_tree.h"
 #include "initializer.h"

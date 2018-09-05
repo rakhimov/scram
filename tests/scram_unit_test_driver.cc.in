@@ -18,7 +18,7 @@
 #define CATCH_CONFIG_RUNNER
 
 #include <boost/filesystem.hpp>
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "risk_analysis_tests.h"
 

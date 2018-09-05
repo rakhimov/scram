@@ -22,7 +22,7 @@
 
 #include <boost/container/vector.hpp>
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 // Explicit instantiations with some common types.
 template class ext::linear_set<int>;

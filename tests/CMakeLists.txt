@@ -1,6 +1,6 @@
 # vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
 ######################## Begin find Catch2 ###################### {{{
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/catch2/single_include/catch.hpp")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/catch2/single_include/")
   message(FATAL_ERROR "Catch2 submodule is not present.")
 endif()
 

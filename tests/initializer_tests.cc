@@ -17,7 +17,7 @@
 
 #include "initializer.h"
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "error.h"
 #include "settings.h"

@@ -19,7 +19,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "env.h"
 #include "initializer.h"

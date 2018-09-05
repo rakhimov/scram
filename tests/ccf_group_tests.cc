@@ -17,7 +17,7 @@
 
 #include "ccf_group.h"
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "error.h"
 #include "expression/constant.h"

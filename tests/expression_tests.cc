@@ -24,7 +24,7 @@
 #include "expression/random_deviate.h"
 #include "parameter.h"
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "error.h"
 

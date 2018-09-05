@@ -17,7 +17,7 @@
 
 #include "ext/version.h"
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 namespace scram::test {
 
