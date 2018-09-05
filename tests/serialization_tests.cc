@@ -33,30 +33,28 @@ namespace scram::mef::test {
 TEST_CASE("SerializationTest.InputOutput", "[mef::serialization]") {
   xml::Validator validator(env::install_dir() + "/share/scram/gui.rng");
 
-  std::vector<std::vector<std::string>> inputs = {
-      {"tests/input/xml_special_chars.xml"},
-      {"tests/input/fta/correct_tree_input.xml"},
-      {"tests/input/fta/correct_tree_input_with_probs.xml"},
-      {"tests/input/fta/missing_bool_constant.xml"},
-      {"tests/input/fta/null_gate_with_label.xml"},
-      {"tests/input/fta/flavored_types.xml"},
-      {"input/TwoTrain/two_train.xml"},
-      {"tests/input/fta/correct_formulas.xml"},
-      {"input/Theatre/theatre.xml"},
-      {"input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"}};
+  auto input = GENERATE(values<std::vector<std::string>>(
+      {{"tests/input/xml_special_chars.xml"},
+       {"tests/input/fta/correct_tree_input.xml"},
+       {"tests/input/fta/correct_tree_input_with_probs.xml"},
+       {"tests/input/fta/missing_bool_constant.xml"},
+       {"tests/input/fta/null_gate_with_label.xml"},
+       {"tests/input/fta/flavored_types.xml"},
+       {"input/TwoTrain/two_train.xml"},
+       {"tests/input/fta/correct_formulas.xml"},
+       {"input/Theatre/theatre.xml"},
+       {"input/Baobab/baobab2.xml", "input/Baobab/baobab2-basic-events.xml"}}));
 
   std::unique_ptr<Model> model;
-  for (const auto& input : inputs) {
-    INFO("inputs: " +
-         Catch::StringMaker<std::vector<std::string>>::convert(input))
-    REQUIRE_NOTHROW(model = mef::Initializer(input, core::Settings{}).model());
-    fs::path unique_name = "scram_test-" + fs::unique_path().string();
-    fs::path temp_file = fs::temp_directory_path() / unique_name;
-    INFO("temp file: " + temp_file.string());
-    REQUIRE_NOTHROW(Serialize(*model, temp_file.string()));
-    REQUIRE_NOTHROW(xml::Document(temp_file.string(), &validator));
-    fs::remove(temp_file);
-  }
+  INFO("inputs: " +
+       Catch::StringMaker<std::vector<std::string>>::convert(input))
+  REQUIRE_NOTHROW(model = mef::Initializer(input, core::Settings{}).model());
+  fs::path unique_name = "scram_test-" + fs::unique_path().string();
+  fs::path temp_file = fs::temp_directory_path() / unique_name;
+  INFO("temp file: " + temp_file.string());
+  REQUIRE_NOTHROW(Serialize(*model, temp_file.string()));
+  REQUIRE_NOTHROW(xml::Document(temp_file.string(), &validator));
+  fs::remove(temp_file);
 }
 
 }  // namespace scram::mef::test
