@@ -41,9 +41,9 @@ def test_min_max_prob_valid(factors):
     assert factors.max_prob == 0.5
 
 
-@pytest.mark.parametrize("min_value,max_value",
-                         [(-0.1, 0.5), (1.1, 0.5), (0.1, -0.5), (0.1, 1.5),
-                          (0.5, 0.1)])
+@pytest.mark.parametrize("min_value,max_value", [(-0.1, 0.5), (1.1, 0.5),
+                                                 (0.1, -0.5), (0.1, 1.5),
+                                                 (0.5, 0.1)])
 def test_min_max_prob_fail(factors, min_value, max_value):
     """Tests setting of invalid probability min-max factors."""
     with pytest.raises(FactorError):
@@ -59,10 +59,11 @@ def test_set_common_event_valid(factors):
     assert factors.parents_g == 4
 
 
-@pytest.mark.parametrize(
-    "args", [(-0.1, 0.5, 2, 2), (1.0, 0.5, 2, 2), (0.1, -0.5, 2, 2),
-             (0.1, 1.0, 2, 2), (0, 0, 2, 2), (0.1, 0.1, 1, 2),
-             (0.1, 0.1, 101, 2), (0.1, 0.1, 2, 1), (0.1, 0.1, 2, 101)])
+@pytest.mark.parametrize("args", [(-0.1, 0.5, 2, 2), (1.0, 0.5, 2, 2),
+                                  (0.1, -0.5, 2, 2), (0.1, 1.0, 2, 2),
+                                  (0, 0, 2, 2), (0.1, 0.1, 1, 2),
+                                  (0.1, 0.1, 101, 2), (0.1, 0.1, 2, 1),
+                                  (0.1, 0.1, 2, 101)])
 def test_set_common_event_fail(factors, args):
     """Tests setting of invalid common event factors."""
     factors.set_common_event_factors(0.1, 0.1, 2, 2)  # no fail

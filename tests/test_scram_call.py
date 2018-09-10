@@ -114,10 +114,11 @@ def test_config_file_clash():
     assert call(cmd) != 0
 
 
-@pytest.mark.parametrize('level,status',
-                         [(-1, False), (0, True), (1, True), (2, True),
-                          (3, True), (4, True), (5, True), (6, True), (7, True),
-                          (8, False), (10, False), (100, False), (1e6, False)])
+@pytest.mark.parametrize('level,status', [(-1, False), (0, True), (1, True),
+                                          (2, True), (3, True), (4, True),
+                                          (5, True), (6, True), (7, True),
+                                          (8, False), (10, False), (100, False),
+                                          (1e6, False)])
 def test_logging(level, status):
     """Tests invokation with logging."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
