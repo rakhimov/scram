@@ -122,7 +122,7 @@ void Formula::Swap(ArgEvent current, ArgEvent other) {
   if (!base->usage())
     base->usage(true);
 
-  it->event.swap(other);
+  ext::swap(it->event, other);
 }
 
 void Formula::ValidateMinMaxNumber(std::optional<int> min_number,

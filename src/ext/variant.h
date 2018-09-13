@@ -37,4 +37,21 @@ T as(const std::variant<Ts...>& var) {
   return std::visit([](auto& arg) { return static_cast<T>(arg); }, var);
 }
 
+/// Workaround gcc 8 bug with std::variant swap.
+///
+/// @param[in,out] lhs
+/// @param[in,out] rhs
+///
+/// @todo Require patched GCC 8 instead of this workaround.
+template <typename... Ts>
+void swap(std::variant<Ts...>& lhs, std::variant<Ts...>& rhs) noexcept {
+#if __GNUC__ == 8 && __GNUC_MINOR__ < 3
+  auto tmp = std::move(rhs);
+  rhs = std::move(lhs);
+  lhs = std::move(tmp);
+#else
+  lhs.swap(rhs);
+#endif
+}
+
 }  // namespace ext
