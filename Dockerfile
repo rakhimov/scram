@@ -1,11 +1,11 @@
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 ENV BUILD_PACKAGES \
     make cmake g++ libxml2-dev \
     libgoogle-perftools-dev libboost-program-options-dev \
     libboost-math-dev libboost-random-dev libboost-filesystem-dev \
     libboost-date-time-dev
 ENV RUNTIME_PACKAGES \
-    libxml2 libboost-filesystem1.62.0 libboost-program-options1.62.0 \
+    libxml2 libboost-filesystem1.65.1 libboost-program-options1.65.1 \
     libtcmalloc-minimal4
 ADD . scram/
 RUN apt-get update && \
