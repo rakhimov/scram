@@ -182,8 +182,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         self.factors.calculate()
         fault_tree = generate_fault_tree("TestingTree", "root", self.factors)
         assert fault_tree is not None
-        fault_tree.to_aralia(
-            lambda *args: print(*args, sep='', file=self.output))
+        fault_tree.to_aralia(lambda *args: print(
+            *args, sep='', file=self.output))
         self.output.file.flush()
         tmp = NamedTemporaryFile(mode="w+")
         cmd = ["./translators/aralia.py", self.output.name, "-o", tmp.name]

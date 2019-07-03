@@ -112,8 +112,10 @@ def generate_input(normal, coherent, output_dir=None):
     Returns:
         The path to the input file.
     """
-    input_file = NamedTemporaryFile(
-        dir=output_dir, prefix="fault_tree_", suffix=".xml", delete=False)
+    input_file = NamedTemporaryFile(dir=output_dir,
+                                    prefix="fault_tree_",
+                                    suffix=".xml",
+                                    delete=False)
     cmd = [
         "--num-basic", "100", "--common-b", "0.4", "--parents-b", "5",
         "--common-g", "0.2", "--parents-g", "3", "--num-args", "2.5", "--seed",
@@ -260,50 +262,45 @@ def main():
     """
     # #lizard forgives the function length
     parser = ap.ArgumentParser(description="SCRAM Fuzz Tester")
-    parser.add_argument(
-        "-n",
-        "--num-runs",
-        type=int,
-        help="# of SCRAM runs",
-        default=10,
-        metavar="int")
-    parser.add_argument(
-        "--preprocessor", action="store_true", help="focus on Preprocessor")
+    parser.add_argument("-n",
+                        "--num-runs",
+                        type=int,
+                        help="# of SCRAM runs",
+                        default=10,
+                        metavar="int")
+    parser.add_argument("--preprocessor",
+                        action="store_true",
+                        help="focus on Preprocessor")
     parser.add_argument("--mocus", action="store_true", help="focus on MOCUS")
     parser.add_argument("--bdd", action="store_true", help="focus on BDD")
     parser.add_argument("--zbdd", action="store_true", help="focus on ZBDD")
-    parser.add_argument(
-        "--cross-validate",
-        action="store_true",
-        help="compare results of BDD, ZBDD, and MOCUS")
-    parser.add_argument(
-        "--coherent", action="store_true", help="focus on coherent models")
-    parser.add_argument(
-        "--normal",
-        action="store_true",
-        help="focus on models with AND/OR gates only")
-    parser.add_argument(
-        "--prime-implicants",
-        action="store_true",
-        help="focus on Prime Implicants")
-    parser.add_argument(
-        "--time-limit",
-        type=int,
-        metavar="seconds",
-        help="CPU time limit for each run")
-    parser.add_argument(
-        "-j",
-        "--jobs",
-        type=int,
-        default=1,
-        metavar="N",
-        help="allow N runs (jobs) at once")
-    parser.add_argument(
-        "-o",
-        "--output-dir",
-        type=str,
-        metavar="path",
-        help="directory to put results")
+    parser.add_argument("--cross-validate",
+                        action="store_true",
+                        help="compare results of BDD, ZBDD, and MOCUS")
+    parser.add_argument("--coherent",
+                        action="store_true",
+                        help="focus on coherent models")
+    parser.add_argument("--normal",
+                        action="store_true",
+                        help="focus on models with AND/OR gates only")
+    parser.add_argument("--prime-implicants",
+                        action="store_true",
+                        help="focus on Prime Implicants")
+    parser.add_argument("--time-limit",
+                        type=int,
+                        metavar="seconds",
+                        help="CPU time limit for each run")
+    parser.add_argument("-j",
+                        "--jobs",
+                        type=int,
+                        default=1,
+                        metavar="N",
+                        help="allow N runs (jobs) at once")
+    parser.add_argument("-o",
+                        "--output-dir",
+                        type=str,
+                        metavar="path",
+                        help="directory to put results")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO)

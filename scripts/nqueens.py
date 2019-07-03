@@ -104,8 +104,11 @@ def main():
     """Prints the the N Queens fault tree representation to standard output."""
     description = "Fault tree representation of the N Queens problem"
     parser = ap.ArgumentParser(description=description)
-    parser.add_argument(
-        "n", type=int, nargs="?", help="the number of queens", default=8)
+    parser.add_argument("n",
+                        type=int,
+                        nargs="?",
+                        help="the number of queens",
+                        default=8)
     args = parser.parse_args()
     if args.n < 1:
         raise ap.ArgumentTypeError("Illegal number of queens.")
