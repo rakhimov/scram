@@ -53,8 +53,6 @@ from fault_tree import BasicEvent, HouseEvent, Gate, CcfGroup, FaultTree
 class FactorError(Exception):
     """Errors in configuring factors for the fault tree generation."""
 
-    pass
-
 
 class Factors:  # pylint: disable=too-many-instance-attributes
     """Collection of factors that determine the complexity of the fault tree.
