@@ -31,9 +31,9 @@ void ZoomableView::setZoom(int level)
         level = m_minZoomLevel;
 
     double scaleValue = 0.01 * level;
-    QMatrix matrix;
+    QTransform matrix;
     matrix.scale(scaleValue, scaleValue);
-    this->setMatrix(matrix);
+    this->setTransform(matrix);
     m_zoom = level;
 
     emit zoomChanged(level);
@@ -53,7 +53,7 @@ void ZoomableView::zoomBestFit()
 void ZoomableView::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
-        if (event->delta() > 0)
+        if (event->angleDelta().x() > 0)
             zoomIn(5);
         else
             zoomOut(5);

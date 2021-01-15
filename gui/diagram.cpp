@@ -284,7 +284,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
         text->setFont(font);
         text->setPos(-text->boundingRect().width() / 2,
                      (h - text->boundingRect().height()) / 2);
-        return std::move(polygon);
+        return polygon;
     }
     case mef::kNot: {
         double h = m_maxSize.height() * units().height();
@@ -317,7 +317,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
         orItem->setScale((orHeight - units().height()) / orHeight);
         orItem->setPos(0, units().height());
         orItem.release()->setParentItem(circle.get());
-        return std::move(circle);
+        return circle;
     }
     case mef::kNand: {
         auto andItem = getGateGraphicsType(mef::kAnd);
@@ -327,7 +327,7 @@ std::unique_ptr<QGraphicsItem> Gate::getGateGraphicsType(mef::Connective type)
         andItem->setScale((andHeight - units().height()) / andHeight);
         andItem->setPos(0, units().height());
         andItem.release()->setParentItem(circle.get());
-        return std::move(circle);
+        return circle;
     }
     default:
         GUI_ASSERT(false && "Unexpected gate type", nullptr);
