@@ -42,7 +42,7 @@
 ///
 /// @param[in] err  The error type deriving from boost::exception.
 #define SCRAM_THROW(err)                                                       \
-  throw err << ::boost::throw_function(BOOST_THROW_EXCEPTION_CURRENT_FUNCTION) \
+  throw err << ::boost::throw_function(BOOST_CURRENT_FUNCTION) \
             << ::boost::throw_file(FILE_REL_PATH)                              \
             << ::boost::throw_line(__LINE__)
 
