@@ -20,12 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          # - name: linux
-          #   os: ubuntu-latest
-          #   ninja_platform: linux
-          #   qt_platform: linux
-          #   openssl_arch: linux-x86_64
-          #   cmake_env: {}
+          - name: linux
+            os: ubuntu-latest
+            ninja_platform: linux
+            qt_platform: linux
+            openssl_arch: linux-x86_64
+            cmake_env: {}
+            boost_toolset: gcc
 
           #- name: mac
             #os: macos-latest
@@ -34,6 +35,7 @@ jobs:
             #openssl_arch: darwin64-x86_64-cc
             #cmake_env: {}
             #pack: 1
+            #boost_toolset: clang
 
           - name: win64
             os: windows-latest
@@ -46,6 +48,7 @@ jobs:
               CC: cl
               CXX: cl
             pack: 1
+            boost_toolset: vs2019
 
     steps:
       - name: Configure development build
@@ -97,7 +100,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: vs2019
+          toolset: ${{ matrix.env.boost_toolset}}
 
       - name: Show paths
         run: |
@@ -106,7 +109,6 @@ jobs:
         shell: bash
 
       - name: Install libxml2
-        if: matrix.env.ninja_platform == 'win'
         run: |
           git clone https://github.com/GNOME/libxml2.git
           cd libxml2
@@ -126,31 +128,6 @@ jobs:
           install-deps: true
           #modules: qtwebengine
 
-      # - name: Install NASM
-      #   if: matrix.env.ninja_platform == 'win'
-      #   uses: ilammy/setup-nasm@v1.2.0
-
-      # - name: Build OpenSSL (linux)
-      #   if: matrix.env.ninja_platform == 'linux'
-      #   run: |
-      #     cd dep/openssl/openssl
-      #     ./config -fPIC
-      #     make
-
-      # - name: Build OpenSSL (mac)
-      #   if: matrix.env.ninja_platform == 'mac'
-      #   run: |
-      #     cd dep/openssl/openssl
-      #     ./Configure ${{ matrix.env.openssl_arch }} no-shared
-      #     make
-
-      # - name: Build OpenSSL (win)
-      #   if: matrix.env.ninja_platform == 'win'
-      #   run: |
-      #     cd dep/openssl/openssl
-      #     perl Configure ${{ matrix.env.openssl_arch }}
-      #     nmake
-
       # - name: Build Jemalloc
       #   if: matrix.env.ninja_platform == 'win'
       #   run: |
@@ -161,6 +138,7 @@ jobs:
       #     make install
 
       - name: Configure Release
+        if: matrix.env.ninja_platform == 'win'
         env: ${{ matrix.env.cmake_env }}
         # only windows!!!
         run: |
@@ -168,6 +146,16 @@ jobs:
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=D:/a/scram/boost" -D "BOOST_LIBRARYDIR=D:/a/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+
+      - name: Configure Release
+        if: matrix.env.ninja_platform == 'linux'
+        env: ${{ matrix.env.cmake_env }}
+        # only windows!!!
+        run: |
+          mkdir -p build/release
+          cd build/release
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF ${{ env.CMAKE_FLAGS }} ../..
+
 
       - name: Build Information
         run: |
