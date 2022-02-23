@@ -57,6 +57,8 @@ jobs:
       - name: DEBUG Environment variables
         run: |
           $env:PKG_CONFIG_PATH
+          $Env:PKG_CONFIG_PATH += ";C:/Program Files (x86)/libxml2/lib/pkgconfig"
+          $env:PKG_CONFIG_PATH
 
       - name: Checkout repository
         uses: actions/checkout@v1
