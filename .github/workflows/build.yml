@@ -126,7 +126,7 @@ jobs:
         run: |
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Build Information
         run: |
