@@ -72,6 +72,15 @@ jobs:
       #   with:
       #     perl-version: '5.30'
 
+      - name: Install libxml2
+        if: matrix.env.ninja_platform == 'win'
+        run: |
+          git clone https://github.com/GNOME/libxml2.git
+          cd libxml2
+          mkdir -p build
+          cd build
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..
+          ninja install
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.13.0
         timeout-minutes: 10
@@ -95,13 +104,6 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@v3
         with:
           arch: ${{ matrix.env.msvc_arch }}
-
-      - name: Install libxml2
-        if: matrix.env.ninja_platform == 'win'
-        run: |
-          ./autogen.sh
-          ./configure
-          make
 
       # - name: Install NASM
       #   if: matrix.env.ninja_platform == 'win'
