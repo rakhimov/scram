@@ -72,6 +72,13 @@ jobs:
       #   with:
       #     perl-version: '5.30'
 
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          version: 1.9.0
+          platform: ${{ matrix.env.ninja_platform }}
+          destination: ninja
+
       - name: Install libxml2
         if: matrix.env.ninja_platform == 'win'
         run: |
@@ -91,13 +98,6 @@ jobs:
           arch: ${{ matrix.env.qt_arch }}
           install-deps: true
           #modules: qtwebengine
-
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v3
-        with:
-          version: 1.9.0
-          platform: ${{ matrix.env.ninja_platform }}
-          destination: ninja
 
       - name: Setup MSVC environment
         if: matrix.env.ninja_platform == 'win'
