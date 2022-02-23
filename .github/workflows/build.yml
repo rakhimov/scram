@@ -46,9 +46,9 @@ jobs:
             qt_arch: win64_mingw81
             openssl_arch: VC-WIN64A
             msvc_arch: x64
-            cmake_env:
-              CC: cl
-              CXX: cl
+            cmake_env: {}
+            #  CC: cl
+            #  CXX: cl
             pack: 1
             boost_toolset: mingw
 
