@@ -8,8 +8,8 @@ on:
 
 env:
   BOOST_VERSION: 1.73
+  BOOST_PATH: ${{env.GITHUB_WORKSPACE}}/boost/boost
   WIN_PLATFORM_VERSION: 2019
-
 
 jobs:
   build:
@@ -83,15 +83,14 @@ jobs:
           platform: ${{ matrix.env.ninja_platform }}
           destination: ninja
 
-      - name: Install libxml2
-        if: matrix.env.ninja_platform == 'win'
-        run: |
-          git clone https://github.com/GNOME/libxml2.git
-          cd libxml2
-          mkdir -p build
-          cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF ..
-          ninja install
+      - name: Cache boost
+        uses: actions/cache@v2
+        id: cache-boost
+        with:
+          # Set the path to cache
+          path: ${{env.BOOST_PATH}}
+          # Use the version as the key to only cache the correct version
+          key: boost-${{env.BOOST_VERSION}}
 
       - name: Install boost Windows
         if: matrix.env.ninja_platform == 'win'
@@ -100,11 +99,11 @@ jobs:
           # REQUIRED: Specify the required boost version
           # A list of supported versions can be found here: 
           # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: $BOOST_VERSION
+          boost_version: ${{env.BOOST_VERSION}}
           # OPTIONAL: Specify a custon install location
-          boost_install_dir: C:\boost
+          boost_install_dir: ${{env.BOOST_PATH}}
           # OPTIONAL: Specify a platform version
-          platform_version: $WIN_PLATFORM_VERSION
+          platform_version: ${{env.WIN_PLATFORM_VERSION}}
           # OPTIONAL: Specify a toolset
           toolset: msvc
       
@@ -140,6 +139,16 @@ jobs:
           
           # NOTE: If a boost version matching all requirements cannot be found,
           # this build step will fail
+
+      - name: Install libxml2
+        if: matrix.env.ninja_platform == 'win'
+        run: |
+          git clone https://github.com/GNOME/libxml2.git
+          cd libxml2
+          mkdir -p build
+          cd build
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF ..
+          ninja install
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.13.0
