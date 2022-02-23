@@ -167,7 +167,7 @@ jobs:
           $Env:PKG_CONFIG_PATH += ";C:/Program Files (x86)/libxml2/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=${{ steps.boost.outputs.root }}" -D "BOOST_LIBRARYDIR=${{ steps.boost.outputs.librarydir }}" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=D:/a/scram/boost" -D "BOOST_LIBRARYDIR=D:/a/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Build Information
         run: |
