@@ -162,7 +162,7 @@ jobs:
         env: ${{ matrix.env.cmake_env }}
         # only windows!!!
         run: |
-          setx PKG_CONFIG_PATH "%PKG_CONFIG_PATH%";"C:/Program Files (x86)/libxml2/lib/pkgconfig"
+          $Env:PKG_CONFIG_PATH += ";C:/Program Files (x86)/libxml2/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF ${{ env.CMAKE_FLAGS }} ../..
