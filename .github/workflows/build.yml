@@ -146,6 +146,8 @@ jobs:
         env: ${{ matrix.env.cmake_env }}
         # only windows!!!
         run: |
+          ls /home/runner/scrum_install
+          export PKG_CONFIG_PATH=/home/runner/scrum_install/libxml2/lib/pkgconfig
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
