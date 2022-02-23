@@ -94,6 +94,7 @@ jobs:
         uses: egor-tensin/build-boost@v1
         with:
           version: ${{env.BOOST_VERSION}}
+          libraries: program_options filesystem system random
 
       - name: Install libxml2
         if: matrix.env.ninja_platform == 'win'
