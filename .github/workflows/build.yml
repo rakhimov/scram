@@ -39,7 +39,7 @@ jobs:
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win64_msvc${{env.WIN_PLATFORM_VERSION}}_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
             openssl_arch: VC-WIN64A
             msvc_arch: x64
             cmake_env:
@@ -85,7 +85,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: vs${{env.WIN_PLATFORM_VERSION}}
+          toolset: vs2017
 
       - name: Show paths
         run: |
