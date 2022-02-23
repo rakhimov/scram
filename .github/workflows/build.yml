@@ -28,7 +28,7 @@ jobs:
             cmake_env: {}
             boost_toolset: gcc
             pack: 1
-            cmake_flags: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
+            CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
 
           #- name: mac
             #os: macos-latest
