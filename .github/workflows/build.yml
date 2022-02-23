@@ -28,6 +28,7 @@ jobs:
             cmake_env: {}
             boost_toolset: gcc
             pack: 1
+            cmake_flags: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
 
           #- name: mac
             #os: macos-latest
@@ -109,7 +110,7 @@ jobs:
           cd libxml2
           mkdir -p build
           cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install ..
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF ${{env.CMAKE_FLAGS}} ..
           ninja install
 
       - name: Install Qt
