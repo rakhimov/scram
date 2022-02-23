@@ -54,6 +54,10 @@ jobs:
         with:
           CMAKE_FLAGS: "-DDEV_BUILD=${{ github.ref_name }}"
 
+      - name: DEBUG Environment variables
+        run: |
+          echo "%PKG_CONFIG_PATH%"
+
       - name: Checkout repository
         uses: actions/checkout@v1
 
