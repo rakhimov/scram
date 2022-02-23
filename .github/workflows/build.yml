@@ -33,29 +33,29 @@ jobs:
             #cmake_env: {}
             #pack: 1
 
-          - name: win64
-            os: windows-latest
-            ninja_platform: win
-            qt_platform: windows
-            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
-            openssl_arch: VC-WIN64A
-            msvc_arch: x64
-            cmake_env:
-              CC: cl
-              CXX: cl
-            pack: 1
-
-          # - name: win32
+          # - name: win64
           #   os: windows-latest
           #   ninja_platform: win
           #   qt_platform: windows
-          #   qt_arch: win32_msvc2017
-          #   openssl_arch: VC-WIN32
-          #   msvc_arch: x86
+          #   qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+          #   openssl_arch: VC-WIN64A
+          #   msvc_arch: x64
           #   cmake_env:
           #     CC: cl
           #     CXX: cl
           #   pack: 1
+
+          - name: win32
+            os: windows-latest
+            ninja_platform: win
+            qt_platform: windows
+            qt_arch: win32_msvc2017
+            openssl_arch: VC-WIN32
+            msvc_arch: x86
+            cmake_env:
+              CC: cl
+              CXX: cl
+            pack: 1
 
     steps:
       - name: Configure development build
