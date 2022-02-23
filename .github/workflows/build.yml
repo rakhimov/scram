@@ -56,7 +56,7 @@ jobs:
 
       - name: DEBUG Environment variables
         run: |
-          echo "%PKG_CONFIG_PATH%"
+          $env:PKG_CONFIG_PATH
 
       - name: Checkout repository
         uses: actions/checkout@v1
