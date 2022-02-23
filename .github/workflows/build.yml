@@ -112,7 +112,7 @@ jobs:
           cd libxml2
           mkdir -p build
           cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF ..
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -D "BOOST_ROOT=${{ steps.boost.outputs.root }}" -D "BOOST_LIBRARYDIR=${{ steps.boost.outputs.librarydir }}" ..
           ninja install
 
       - name: Install Qt
