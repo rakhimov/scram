@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  BOOST_VERSION: 1.61.0 # minimum version of the boost action
+  BOOST_VERSION: 1.78.0 # minimum version of the boost action
   BOOST_PATH: ${{github.workspace}}/boost/boost
   WIN_PLATFORM_VERSION: 2019
 
@@ -44,18 +44,6 @@ jobs:
               CC: cl
               CXX: cl
             pack: 1
-
-          # - name: win32
-          #   os: windows-latest
-          #   ninja_platform: win
-          #   qt_platform: windows
-          #   qt_arch: win32_msvc2017
-          #   openssl_arch: VC-WIN32
-          #   msvc_arch: x86
-          #   cmake_env:
-          #     CC: cl
-          #     CXX: cl
-          #   pack: 1
 
     steps:
       - name: Configure development build
