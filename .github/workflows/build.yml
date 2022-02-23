@@ -135,7 +135,7 @@ jobs:
         run: |
           git clone https://github.com/jemalloc/jemalloc.git
           cd jemalloc
-          ./configure
+          ./autogen.sh
           make
           make install
 
