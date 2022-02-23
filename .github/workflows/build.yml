@@ -7,9 +7,11 @@ on:
   workflow_dispatch:
 
 env:
-  BOOST_VERSION: 1.78.0 # minimum version of the boost action
+# choose boost version carefully, because it might be that the version is not supported
+# by the windows version (https://stackoverflow.com/questions/12484894/what-do-i-do-about-batch-recursion-exceeds-stack-limits-when-running-boost-bui)
+  BOOST_VERSION: 1.78.0
   BOOST_PATH: ${{github.workspace}}/boost/boost
-  WIN_PLATFORM_VERSION: 2019
+  WIN_PLATFORM_VERSION: 2017
 
 jobs:
   build:
@@ -37,7 +39,7 @@ jobs:
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+            qt_arch: win64_msvc${{env.WIN_PLATFORM_VERSION}}_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
             openssl_arch: VC-WIN64A
             msvc_arch: x64
             cmake_env:
@@ -83,7 +85,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: vs2017
+          toolset: vs${{env.WIN_PLATFORM_VERSION}}
 
       - name: Show paths
         run: |
