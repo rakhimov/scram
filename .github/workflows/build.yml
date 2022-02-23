@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  BOOST_VERSION: 1.73.0 # minimum version of the boost action
+  BOOST_VERSION: 1.61.0 # minimum version of the boost action
   BOOST_PATH: ${{github.workspace}}/boost/boost
   WIN_PLATFORM_VERSION: 2019
 
@@ -33,29 +33,29 @@ jobs:
             #cmake_env: {}
             #pack: 1
 
-          # - name: win64
-          #   os: windows-latest
-          #   ninja_platform: win
-          #   qt_platform: windows
-          #   qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
-          #   openssl_arch: VC-WIN64A
-          #   msvc_arch: x64
-          #   cmake_env:
-          #     CC: cl
-          #     CXX: cl
-          #   pack: 1
-
-          - name: win32
+          - name: win64
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win32_msvc2017
-            openssl_arch: VC-WIN32
-            msvc_arch: x86
+            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+            openssl_arch: VC-WIN64A
+            msvc_arch: x64
             cmake_env:
               CC: cl
               CXX: cl
             pack: 1
+
+          # - name: win32
+          #   os: windows-latest
+          #   ninja_platform: win
+          #   qt_platform: windows
+          #   qt_arch: win32_msvc2017
+          #   openssl_arch: VC-WIN32
+          #   msvc_arch: x86
+          #   cmake_env:
+          #     CC: cl
+          #     CXX: cl
+          #   pack: 1
 
     steps:
       - name: Configure development build
@@ -83,62 +83,17 @@ jobs:
           platform: ${{ matrix.env.ninja_platform }}
           destination: ninja
 
-      - name: Cache boost
+      - name: Cache Boost
         uses: actions/cache@v2
-        id: cache-boost
         with:
-          # Set the path to cache
-          path: ${{env.BOOST_PATH}}
-          # Use the version as the key to only cache the correct version
-          key: boost-${{env.BOOST_VERSION}}
+          path: '${{ runner.workspace }}/boost_*.tar.gz'
+          key: 'boost-${{env.BOOST_VERSION}}'
 
-      - name: Install boost Windows
-        if: matrix.env.ninja_platform == 'win'
-        uses: MarkusJx/install-boost@v2.1.0
+      - name: Build Boost
+        # This won't re-download the archive unnecessarily:
+        uses: egor-tensin/build-boost@v1
         with:
-          # REQUIRED: Specify the required boost version
-          # A list of supported versions can be found here: 
-          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: ${{env.BOOST_VERSION}}
-          # OPTIONAL: Specify a custon install location
-          boost_install_dir: ${{env.BOOST_PATH}}
-          # OPTIONAL: Specify a platform version
-          platform_version: ${{env.WIN_PLATFORM_VERSION}}
-          # OPTIONAL: Specify a toolset
-          toolset: msvc
-      
-      - name: Install boost Linux
-        if: matrix.env.ninja_platform == 'linux'
-        uses: MarkusJx/install-boost@v2.1.0
-        with:
-          # REQUIRED: Specify the required boost version
-          # A list of supported versions can be found here: 
-          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: $BOOST_VERSION
-          # OPTIONAL: Specify a platform version
-          platform_version: 18.04
-          # OPTIONAL: Specify a custom install location
-          boost_install_dir: /home/runner/boost
-          # OPTIONAL: Specify a toolset
-          toolset: gcc
-
-      - name: Install boost MacOS
-        if: matrix.env.ninja_platform == 'mac'
-        uses: MarkusJx/install-boost@v2.1.0
-        with:
-          # REQUIRED: Specify the required boost version
-          # A list of supported versions can be found here: 
-          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: $BOOST_VERSION
-          # OPTIONAL: Specify a platform version
-          platform_version: 10.15
-          # OPTIONAL: Specify a custom install location
-          boost_install_dir: /home/runner/boost
-          # OPTIONAL: Specify a toolset
-          toolset: clang
-          
-          # NOTE: If a boost version matching all requirements cannot be found,
-          # this build step will fail
+          version: ${{env.BOOST_VERSION}}
 
       - name: Install libxml2
         if: matrix.env.ninja_platform == 'win'
