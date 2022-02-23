@@ -186,6 +186,15 @@ jobs:
       #     perl Configure ${{ matrix.env.openssl_arch }}
       #     nmake
 
+      # - name: Build Jemalloc
+      #   if: matrix.env.ninja_platform == 'win'
+      #   run: |
+      #     git clone https://github.com/jemalloc/jemalloc.git
+      #     cd jemalloc
+      #     ./configure
+      #     make
+      #     make install
+
       - name: Configure Release
         env: ${{ matrix.env.cmake_env }}
         run: |
