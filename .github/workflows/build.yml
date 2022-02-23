@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  BOOST_VERSION: 1.73
+  BOOST_VERSION: 1.61.0
   BOOST_PATH: ${{github.workspace}}/boost/boost
   WIN_PLATFORM_VERSION: 2019
 
