@@ -73,6 +73,12 @@ jobs:
           platform: ${{ matrix.env.ninja_platform }}
           destination: ninja
 
+      - name: Setup MSVC environment
+        if: matrix.env.ninja_platform == 'win'
+        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        with:
+          arch: ${{ matrix.env.msvc_arch }}
+
       - name: Cache Boost
         uses: actions/cache@v2
         with:
@@ -113,12 +119,6 @@ jobs:
           arch: ${{ matrix.env.qt_arch }}
           install-deps: true
           #modules: qtwebengine
-
-      - name: Setup MSVC environment
-        if: matrix.env.ninja_platform == 'win'
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
-        with:
-          arch: ${{ matrix.env.msvc_arch }}
 
       # - name: Install NASM
       #   if: matrix.env.ninja_platform == 'win'
