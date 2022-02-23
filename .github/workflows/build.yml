@@ -88,9 +88,9 @@ jobs:
         id: cache-boost
         with:
           # Set the path to cache
-          path: ${{BOOST_PATH}}
+          path: $BOOST_PATH
           # Use the version as the key to only cache the correct version
-          key: boost-${{BOOST_VERSION}}
+          key: boost-$BOOST_VERSION
 
       - name: Install boost Windows
         if: matrix.env.ninja_platform == 'win'
@@ -99,11 +99,11 @@ jobs:
           # REQUIRED: Specify the required boost version
           # A list of supported versions can be found here: 
           # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: ${{BOOST_VERSION}}
+          boost_version: $BOOST_VERSION
           # OPTIONAL: Specify a custon install location
-          boost_install_dir: ${{BOOST_PATH}}
+          boost_install_dir: $BOOST_PATH
           # OPTIONAL: Specify a platform version
-          platform_version: ${{WIN_PLATFORM_VERSION}}
+          platform_version: $WIN_PLATFORM_VERSION
           # OPTIONAL: Specify a toolset
           toolset: msvc
       
