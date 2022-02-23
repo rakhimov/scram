@@ -8,7 +8,7 @@ on:
 
 env:
   BOOST_VERSION: 1.73
-  BOOST_PATH: ${{GITHUB_WORKSPACE}}/boost/boost
+  BOOST_PATH: $GITHUB_WORKSPACE/boost/boost
   WIN_PLATFORM_VERSION: 2019
 
 jobs:
