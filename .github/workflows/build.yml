@@ -6,6 +6,10 @@ on:
   page_build:
   workflow_dispatch:
 
+env:
+  BOOST_VERSION: 1.73
+  WIN_PLATFORM_VERSION: 2019
+
 
 jobs:
   build:
@@ -88,6 +92,58 @@ jobs:
           cd build
           cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..
           ninja install
+
+      - name: Install boost Windows
+        if: matrix.env.ninja_platform == 'win'
+        uses: MarkusJx/install-boost@v2.1.0
+        id: install-boost
+        with:
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here: 
+          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
+          boost_version: $BOOST_VERSION
+          # OPTIONAL: Specify a custon install location
+          boost_install_dir: C:\boost
+          # OPTIONAL: Specify a platform version
+          platform_version: $WIN_PLATFORM_VERSION
+          # OPTIONAL: Specify a toolset
+          toolset: msvc
+      
+      - name: Install boost Linux
+        if: matrix.env.ninja_platform == 'linux'
+        uses: MarkusJx/install-boost@v2.1.0
+        id: install-boost
+        with:
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here: 
+          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
+          boost_version: $BOOST_VERSION
+          # OPTIONAL: Specify a platform version
+          platform_version: 18.04
+          # OPTIONAL: Specify a custom install location
+          boost_install_dir: /home/runner/boost
+          # OPTIONAL: Specify a toolset
+          toolset: gcc
+
+      - name: Install boost MacOS
+        if: matrix.env.ninja_platform == 'mac'
+        uses: MarkusJx/install-boost@v2.1.0
+        id: install-boost
+        with:
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here: 
+          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
+          boost_version: $BOOST_VERSION
+          # OPTIONAL: Specify a platform version
+          platform_version: 10.15
+          # OPTIONAL: Specify a custom install location
+          boost_install_dir: /home/runner/boost
+          # OPTIONAL: Specify a toolset
+          toolset: clang
+          
+          # NOTE: If a boost version matching all requirements cannot be found,
+          # this build step will fail
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.13.0
         timeout-minutes: 10
