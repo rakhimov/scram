@@ -108,7 +108,7 @@ jobs:
           cd libxml2
           mkdir -p build
           cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF ..
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install ..
           ninja install
 
       - name: Install Qt
@@ -149,7 +149,6 @@ jobs:
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
-
 
       - name: Build Information
         run: |
