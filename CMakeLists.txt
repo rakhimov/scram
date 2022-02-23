@@ -40,7 +40,7 @@ endfunction()
 add_definitions(-DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")  # Needed to print file paths.
 
 # Proactively disable warnings in case Wall/Wextra are enabled outside.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-missing-field-initializers")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # Strict debug flags for SCRAM targets (opt-in, must subscribe to quality checks explicitly).
 # NOTE: This is a list unlike CMAKE_CXX_FLAGS.
