@@ -39,7 +39,7 @@ jobs:
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+            qt_arch: win64_mingw81 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
             openssl_arch: VC-WIN64A
             msvc_arch: x64
             cmake_env:
@@ -79,11 +79,17 @@ jobs:
           platform: ${{ matrix.env.ninja_platform }}
           destination: ninja
 
-      - name: Setup MSVC environment
+      # - name: Setup MSVC environment
+      #   if: matrix.env.ninja_platform == 'win'
+      #   uses: seanmiddleditch/gha-setup-vsdevenv@v3
+      #   with:
+      #     arch: ${{ matrix.env.msvc_arch }}
+
+      - name: Set up MinGW
         if: matrix.env.ninja_platform == 'win'
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        uses: egor-tensin/setup-mingw@v2
         with:
-          arch: ${{ matrix.env.msvc_arch }}
+          platform: x64
 
       - name: Cache Boost
         uses: actions/cache@v2
@@ -97,7 +103,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: vs2017
+          toolset: mingw
 
       - name: Show paths
         run: |
