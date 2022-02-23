@@ -122,14 +122,14 @@ jobs:
           install-deps: true
           #modules: qtwebengine
 
-      # - name: Build Jemalloc
-      #   if: matrix.env.ninja_platform == 'win'
-      #   run: |
-      #     git clone https://github.com/jemalloc/jemalloc.git
-      #     cd jemalloc
-      #     ./configure
-      #     make
-      #     make install
+      - name: Build Jemalloc
+        if: matrix.env.ninja_platform == 'linux'
+        run: |
+          git clone https://github.com/jemalloc/jemalloc.git
+          cd jemalloc
+          ./configure
+          make
+          make install
 
       - name: Configure Release
         if: matrix.env.ninja_platform == 'win'
@@ -150,7 +150,7 @@ jobs:
           export PKG_CONFIG_PATH=/home/runner/scrum_install/libxml2/lib/pkgconfig
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Build Information
         run: |
