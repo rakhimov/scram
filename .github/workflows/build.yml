@@ -95,7 +95,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: msvc2017
+          toolset: vs2017
 
       - name: Show paths
         run: |
