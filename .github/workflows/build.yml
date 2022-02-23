@@ -43,14 +43,14 @@ jobs:
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win64_msvc2019_64
+            qt_arch: win64_mingw81
             openssl_arch: VC-WIN64A
             msvc_arch: x64
             cmake_env:
               CC: cl
               CXX: cl
             pack: 1
-            boost_toolset: vs2019
+            boost_toolset: mingw
 
     steps:
       - name: Configure development build
@@ -78,11 +78,17 @@ jobs:
           platform: ${{ matrix.env.ninja_platform }}
           destination: ninja
 
-      - name: Setup MSVC environment
+      - name: Set up MinGW
         if: matrix.env.ninja_platform == 'win'
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        uses: egor-tensin/setup-mingw@v2
         with:
-          arch: ${{ matrix.env.msvc_arch }}
+          platform: ${{ matrix.env.msvc_arch }}
+
+      # - name: Setup MSVC environment
+      #   if: matrix.env.ninja_platform == 'win'
+      #   uses: seanmiddleditch/gha-setup-vsdevenv@v3
+      #   with:
+      #     arch: ${{ matrix.env.msvc_arch }}
 
       - name: Cache Boost
         uses: actions/cache@v2
