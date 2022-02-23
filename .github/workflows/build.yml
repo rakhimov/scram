@@ -11,7 +11,7 @@ env:
 # by the windows version (https://stackoverflow.com/questions/12484894/what-do-i-do-about-batch-recursion-exceeds-stack-limits-when-running-boost-bui)
   BOOST_VERSION: 1.78.0
   BOOST_PATH: ${{github.workspace}}/boost/boost
-  WIN_PLATFORM_VERSION: 2017
+  WIN_PLATFORM_VERSION: 2019
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
             os: windows-latest
             ninja_platform: win
             qt_platform: windows
-            qt_arch: win64_msvc2017_64 # Windows w/ Qt >= 5.9 && Qt < 5.15: win64_msvc2017_64
+            qt_arch: win64_msvc2019_64
             openssl_arch: VC-WIN64A
             msvc_arch: x64
             cmake_env:
@@ -97,7 +97,7 @@ jobs:
         with:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
-          toolset: vs2017
+          toolset: vs2019
 
       - name: Show paths
         run: |
@@ -119,7 +119,7 @@ jobs:
         uses: jurplel/install-qt-action@v2.13.0
         timeout-minutes: 10
         with:
-          version: 5.9.5
+          version: 5.15.2
           target: desktop
           host: ${{ matrix.env.qt_platform }}
           arch: ${{ matrix.env.qt_arch }}
