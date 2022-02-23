@@ -157,7 +157,7 @@ jobs:
 
   prerelease:
     # https://github.com/marvinpinto/actions/issues/177
-    needs: [flatpak, build]
+    needs: [build] # flatpak
     runs-on: ubuntu-latest # does not matter which
     if: ${{ github.ref == 'refs/heads/master' }}
 
