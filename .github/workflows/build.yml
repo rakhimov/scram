@@ -27,6 +27,7 @@ jobs:
             openssl_arch: linux-x86_64
             cmake_env: {}
             boost_toolset: gcc
+            pack: 1
 
           #- name: mac
             #os: macos-latest
@@ -166,7 +167,7 @@ jobs:
         if: matrix.env.pack
         uses: actions/upload-artifact@v2
         with:
-          path: build/release/pack/Scram*
+          path: ${{github.workspace}}/work/scram/scram/build/release/*
           name: Scram ${{ matrix.env.name }}
 
       # - name: Test
