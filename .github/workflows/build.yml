@@ -185,7 +185,7 @@ jobs:
         if: matrix.env.pack
         uses: actions/upload-artifact@v2
         with:
-          path: ${{github.workspace}}/work/scram/scram/build/release/*
+          path: ${{github.workspace}}/build/release/*
           name: Scram ${{ matrix.env.name }}
 
       # - name: Test
