@@ -29,6 +29,7 @@ jobs:
             boost_toolset: gcc
             pack: 1
             CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
+            libxml2_install_path: /home/runner/scrum_install
 
           #- name: mac
             #os: macos-latest
@@ -51,6 +52,7 @@ jobs:
             #  CXX: cl
             pack: 1
             boost_toolset: mingw
+            libxml2_install_path: D:/a/scram/libxml2
 
     steps:
       - name: Configure development build
@@ -111,23 +113,12 @@ jobs:
         shell: bash
 
       - name: Install libxml2
-        if: matrix.env.ninja_platform == 'win'
         run: |
           git clone https://github.com/GNOME/libxml2.git
           cd libxml2
           mkdir -p build
           cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=D:/a/scram/libxml2 ${{env.CMAKE_FLAGS}} ..
-          ninja install
-
-      - name: Install libxml2
-        if: matrix.env.ninja_platform == 'linux'
-        run: |
-          git clone https://github.com/GNOME/libxml2.git
-          cd libxml2
-          mkdir -p build
-          cd build
-          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install ..
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=${{ matrix.env.libxml2_install_path }} ..
           ninja install
 
       - name: Install Qt
