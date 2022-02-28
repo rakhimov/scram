@@ -170,6 +170,10 @@ if(PACKAGE)
       FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       DESTINATION bin
       COMPONENT gui)
+	  
+	install(
+		FILES ${Boost_LIBRARIES}
+		DESTINATION bin)
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}

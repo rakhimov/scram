@@ -154,7 +154,7 @@ jobs:
       - name: Configure Release
         if: matrix.env.ninja_platform == 'linux'
         env: ${{ matrix.env.cmake_env }}
-        # only windows!!!
+        # only linux!!!
         run: |
           mkdir -p build/release
           cd build/release
