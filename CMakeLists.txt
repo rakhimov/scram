@@ -231,6 +231,11 @@ if(PACKAGE)
       ${SCRAM_GUI_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
+	
+	install (FILES
+		${LIBXML2_LIBRARIES}
+		DESTINATION bin
+		COMPONENT libraries
   endif()
 endif()
 
