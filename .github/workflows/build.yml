@@ -158,7 +158,7 @@ jobs:
           $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=D:/a/scram/boost" -D "BOOST_LIBRARYDIR=D:/a/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=D:/a/scram/boost" -D "BOOST_LIBRARYDIR=D:/a/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Configure Release
         if: matrix.env.ninja_platform == 'linux'
@@ -167,7 +167,7 @@ jobs:
         run: |
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Build Information
         run: |
