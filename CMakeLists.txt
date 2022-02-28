@@ -235,7 +235,7 @@ if(PACKAGE)
 	install (FILES
 		${LIBXML2_LIBRARIES}
 		DESTINATION lib
-		COMPONENT libraries
+		COMPONENT libraries)
   endif()
 endif()
 
