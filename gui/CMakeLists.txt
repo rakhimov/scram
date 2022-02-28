@@ -173,12 +173,12 @@ if(PACKAGE)
 	  
 	install(
 		FILES ${Boost_LIBRARIES}
-		DESTINATION bin
+		DESTINATION lib
 		COMPONENT gui)
 	
 	install(
 		FILES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent
-		DESTINATION bin
+		DESTINATION lib
 		COMPONENT gui)
   endif()
 endif()
