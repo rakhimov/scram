@@ -176,10 +176,10 @@ if(PACKAGE)
 		DESTINATION lib
 		COMPONENT gui)
 	
-	install(
-		FILES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent
-		DESTINATION lib
-		COMPONENT gui)
+	#install(
+	#	FILES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent
+	#	DESTINATION lib
+	#	COMPONENT gui)
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
