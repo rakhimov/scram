@@ -173,7 +173,8 @@ if(PACKAGE)
 	  
 	install(
 		FILES ${Boost_LIBRARIES}
-		DESTINATION bin)
+		DESTINATION bin
+		COMPONENT gui)
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
