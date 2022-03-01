@@ -177,14 +177,14 @@ if(PACKAGE)
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
 	install(
 		FILES ${Boost_LIBRARIES}
-		DESTINATION .
+		DESTINATION bin
 		COMPONENT gui)
 		
 	foreach(QT_MODULE ${QT_MODULES})
 		get_target_property(QT_LIBRARY ${QT_MODULE} LOCATION_${CMAKE_BUILD_TYPE})
 		
 		install(FILES ${QT_LIBRARY}
-        DESTINATION .
+        DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         COMPONENT gui

@@ -236,7 +236,7 @@ if(PACKAGE)
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
 	install (FILES
 		${LIBXML2_LIBRARIES}
-		DESTINATION .
+		DESTINATION bin
 		COMPONENT libraries)
   endif()
 endif()
