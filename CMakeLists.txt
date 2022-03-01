@@ -232,11 +232,11 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
-	set_target_properties(scram PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-	
+	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
 	install (FILES
 		${LIBXML2_LIBRARIES}
-		DESTINATION lib
+		DESTINATION .
 		COMPONENT libraries)
   endif()
 endif()

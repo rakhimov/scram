@@ -172,28 +172,25 @@ if(PACKAGE)
       DESTINATION bin
       COMPONENT gui)
 	 
-	set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	
+	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
 	install(
 		FILES ${Boost_LIBRARIES}
-		DESTINATION lib
+		DESTINATION .
 		COMPONENT gui)
 		
 	foreach(QT_MODULE ${QT_MODULES})
 		get_target_property(QT_LIBRARY ${QT_MODULE} LOCATION_${CMAKE_BUILD_TYPE})
 		
 		install(FILES ${QT_LIBRARY}
-        DESTINATION lib
+        DESTINATION .
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         COMPONENT gui
         #RENAME ${TARGET_NAME}
       )
 	endforeach()
-	
-	#install(
-	#	FILES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent
-	#	DESTINATION lib
-	#	COMPONENT gui)
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
