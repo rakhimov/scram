@@ -175,6 +175,7 @@ if(PACKAGE)
 	
 	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
+	message(STATUS "XX BOOST LIBRARIES ${Boost_LIBRARIES}")
 	install(
 		FILES ${Boost_LIBRARIES}
 		DESTINATION bin
