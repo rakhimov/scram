@@ -232,6 +232,8 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
+	set_target_properties(scram PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+	
 	install (FILES
 		${LIBXML2_LIBRARIES}
 		DESTINATION lib

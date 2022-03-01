@@ -170,7 +170,8 @@ if(PACKAGE)
       FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       DESTINATION bin
       COMPONENT gui)
-	  
+	 
+	set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	install(
 		FILES ${Boost_LIBRARIES}
 		DESTINATION lib
