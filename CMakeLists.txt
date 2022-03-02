@@ -158,7 +158,7 @@ if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
 endif()
 
-set(BOOST_COMPONENTS program_options filesystem system random
+set(BOOST_COMPONENTS program_options filesystem system random)
 find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
   ${BOOST_COMPONENTS}
   )
