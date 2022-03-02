@@ -192,6 +192,10 @@ if(PACKAGE)
         #RENAME ${TARGET_NAME}
       )
 	endforeach()
+	
+	foreach(boost_component ${BOOST_COMPONENTS})
+		install(IMPORTED_RUNTIME_ARTIFACTS Boost::${boost_component})
+	endforeach()
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
