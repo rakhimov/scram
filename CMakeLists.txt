@@ -233,7 +233,8 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
-	install(IMPORTED_RUNTIME_ARTIFACTS LibXml2::LibXml2)
+	install(TARGETS LibXml2::LibXml2 RUNTIME_DEPENDENCIES)
+	#install(IMPORTED_RUNTIME_ARTIFACTS LibXml2::LibXml2)
   endif()
 endif()
 
