@@ -234,9 +234,6 @@ if(PACKAGE)
 	
 	# CMake >= 3.21 needed
 	install(IMPORTED_RUNTIME_ARTIFACTS LibXml2::LibXml2)
-
-	# Install the collected values
-	install(FILES ${lib_xml2_libs_to_install} DESTINATION libs)
   endif()
 endif()
 
