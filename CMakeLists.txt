@@ -1,5 +1,5 @@
 # vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.21)
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -232,10 +232,8 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
-	# Collect IMPORTED_LOCATION_RELEASE
-	# https://stackoverflow.com/questions/57310963/install-tbb-imported-targets-with-cmake
-	get_target_property(lib_xml2_libs_to_install LibXml2::LibXml2 IMPORTED_LOCATION_RELEASE)
-	message(STATUS "XX lib_xml2_libs_to_install: ${lib_xml2_libs_to_install}")
+	# CMake >= 3.21 needed
+	install(IMPORTED_RUNTIME_ARTIFACTS LibXml2::LibXml2)
 
 	# Install the collected values
 	install(FILES ${lib_xml2_libs_to_install} DESTINATION libs)
