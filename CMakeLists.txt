@@ -243,10 +243,10 @@ if(PACKAGE)
 	)	
 	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
-	install (FILES
-		"${LIB_XML2_RUNTIME_OUTPUT_DIRECTORY}/${LIB_XML2_RUNTIME_OUTPUT_NAME}"
-		DESTINATION bin
-		COMPONENT libraries)
+	#install (FILES
+	#	"${LIB_XML2_RUNTIME_OUTPUT_DIRECTORY}/${LIB_XML2_RUNTIME_OUTPUT_NAME}"
+	#	DESTINATION bin
+	#	COMPONENT libraries)
   endif()
 endif()
 
