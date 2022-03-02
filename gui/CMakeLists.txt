@@ -175,11 +175,26 @@ if(PACKAGE)
 	
 	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
-	message(STATUS "XX BOOST LIBRARIES ${Boost_LIBRARIES}")
-	install(
-		FILES ${Boost_LIBRARIES}
-		DESTINATION bin
-		COMPONENT gui)
+	#message(STATUS "XX BOOST LIBRARIES ${Boost_LIBRARIES}")
+	#install(
+	#	FILES ${Boost_LIBRARIES}
+	#	DESTINATION bin
+	#	COMPONENT gui)
+	#foreach(boost_component ${BOOST_COMPONENTS})
+	#	install(IMPORTED_RUNTIME_ARTIFACTS Boost::${boost_component})
+	#endforeach()
+	
+	foreach(BOOST_COMPONENT ${BOOST_COMPONENTS})
+		get_target_property(BOOST_LIB Boost::${BOOST_COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
+		
+		install(FILES ${BOOST_LIB}
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        COMPONENT gui
+        #RENAME ${TARGET_NAME}
+      )
+	endforeach()
 		
 	foreach(QT_MODULE ${QT_MODULES})
 		get_target_property(QT_LIBRARY ${QT_MODULE} LOCATION_${CMAKE_BUILD_TYPE})
@@ -193,9 +208,7 @@ if(PACKAGE)
       )
 	endforeach()
 	
-	foreach(boost_component ${BOOST_COMPONENTS})
-		install(IMPORTED_RUNTIME_ARTIFACTS Boost::${boost_component})
-	endforeach()
+	
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
