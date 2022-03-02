@@ -140,6 +140,12 @@ jobs:
       #     ./autogen.sh
       #     make
       #     make install
+      - name: Build Information
+        run: |
+          echo "ninja version: $(ninja --version)"
+          git --version
+          qmake --version
+          cmake --version
 
       - name: Configure Release
         if: matrix.env.ninja_platform == 'win'
@@ -159,13 +165,6 @@ jobs:
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
-
-      - name: Build Information
-        run: |
-          echo "ninja version: $(ninja --version)"
-          git --version
-          qmake --version
-          cmake --version
 
       - name: Build
         run: |

@@ -232,21 +232,13 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
-	get_target_property(LIB_XML2_RUNTIME_OUTPUT_DIRECTORY LibXml2::LibXml2 RUNTIME_OUTPUT_DIRECTORY)
-	get_target_property(LIB_XML2_RUNTIME_OUTPUT_NAME LibXml2::LibXml2 RUNTIME_OUTPUT_NAME)
-	message(STATUS "XX LIB_XML2_RUNTIME_OUTPUT_DIRECTORY: ${LIB_XML2_RUNTIME_OUTPUT_DIRECTORY}")
-	message(STATUS "XX LIB_XML2_RUNTIME_OUTPUT_NAME: ${LIB_XML2_RUNTIME_OUTPUT_NAME}")
-	
-	install(
-	TARGETS	LibXml2::LibXml2
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
-	)	
-	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
-	#install (FILES
-	#	"${LIB_XML2_RUNTIME_OUTPUT_DIRECTORY}/${LIB_XML2_RUNTIME_OUTPUT_NAME}"
-	#	DESTINATION bin
-	#	COMPONENT libraries)
+	# Collect IMPORTED_LOCATION_RELEASE
+	# https://stackoverflow.com/questions/57310963/install-tbb-imported-targets-with-cmake
+	get_target_property(lib_xml2_libs_to_install LibXml2::LibXml2 IMPORTED_LOCATION_RELEASE)
+	message(STATUS "XX lib_xml2_libs_to_install: ${lib_xml2_libs_to_install}")
+
+	# Install the collected values
+	install(FILES ${lib_xml2_libs_to_install} DESTINATION libs)
   endif()
 endif()
 
