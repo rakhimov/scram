@@ -239,11 +239,11 @@ if(PACKAGE)
 	message(STATUS "XX LIB_XML2_RUNTIME_OUTPUT_NAME: ${LIB_XML2_RUNTIME_OUTPUT_NAME}")
 	#set_target_properties(scram-gui PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 	# Rpath exists only on Unix systems. The libraries must be in the same location than the binary
-	install (FILES
-		${LIBXML2_LIBRARIES}
-		"${LIB_XML2_RUNTIME_OUTPUT_DIRECTORY}/${LIB_XML2_RUNTIME_OUTPUT_NAME}"
-		DESTINATION bin
-		COMPONENT libraries)
+	install(CODE [[
+	file(GET_RUNTIME_DEPENDENCIES
+    # ...
+    )
+	]])
 	
   endif()
 endif()
