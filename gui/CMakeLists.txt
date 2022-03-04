@@ -189,8 +189,8 @@ if(PACKAGE)
 		
 		get_target_property(boost_imported_location Boost::${BOOST_COMPONENT} IMPORTED_LOCATION)
 		message(STATUS "XX boost_imported_location ${boost_imported_location}")
-		string(REPLACE "/lib/" "/bin/" boost_imported_location ${boost_imported_location})
-		message(STATUS "XX boost_imported_location2 ${boost_imported_location}")
+		#string(REPLACE "/lib/" "/bin/" boost_imported_location ${boost_imported_location})
+		#message(STATUS "XX boost_imported_location2 ${boost_imported_location}")
 		string(REPLACE ".dll.a" ".dll" boost_imported_location ${boost_imported_location})
 		message(STATUS "XX boost_imported_location3 ${boost_imported_location}")
 		
