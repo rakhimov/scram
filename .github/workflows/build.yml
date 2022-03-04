@@ -112,6 +112,13 @@ jobs:
           printf 'Libraries can be found here: %s\n' '${{ steps.boost.outputs.librarydir }}'
         shell: bash
 
+      - name: Boost Paths
+        if: matrix.env.ninja_platform == 'win'
+        run: |
+          dir D:/a/scram/boost/stage/x64/Release/lib
+          dir D:/a/scram/boost/stage/x64/Release
+          dir D:/a/scram/boost/stage/x64/Release/bin
+
       - name: Install libxml2
         run: |
           git clone https://github.com/GNOME/libxml2.git
