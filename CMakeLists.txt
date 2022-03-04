@@ -233,8 +233,11 @@ if(PACKAGE)
       DESTINATION bin COMPONENT libraries
     )
 	
+	get_target_property(libxml2_imported_location LibXml2::LibXml2 IMPORTED_LOCATION)
+	message(STATUS "XX libxml2_imported_location ${libxml2_imported_location}")
+	
 	message(STATUS "XX Libxml2 runtime dlls:  $<TARGET_RUNTIME_DLLS:LibXml2::LibXml2>")
-	install(FILES $<TARGET_RUNTIME_DLLS:LibXml2::LibXml2> DESTINATION bin COMPONENT libraries)		
+	#install(FILES $<TARGET_RUNTIME_DLLS:LibXml2::LibXml2> DESTINATION bin COMPONENT libraries)		
 	
   endif()
 endif()
