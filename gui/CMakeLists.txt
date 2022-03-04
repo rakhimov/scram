@@ -192,10 +192,10 @@ if(PACKAGE)
 		#string(REPLACE "/lib/" "/bin/" boost_imported_location ${boost_imported_location})
 		#message(STATUS "XX boost_imported_location2 ${boost_imported_location}")
 		string(REPLACE ".dll.a" ".dll" boost_imported_location ${boost_imported_location})
-		message(STATUS "XX boost_imported_location3 ${boost_imported_location}")
+		message(STATUS "XX boost_imported_location ${boost_imported_location}")
 		
 		message(STATUS "XX Boost::${BOOST_COMPONENT} LIB: ${BOOST_LIB}")
-		install(FILES ${BOOST_LIB}
+		install(FILES ${boost_imported_location}
         DESTINATION bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
