@@ -186,6 +186,14 @@ if(PACKAGE)
 	
 	foreach(BOOST_COMPONENT ${BOOST_COMPONENTS})
 		get_target_property(BOOST_LIB Boost::${BOOST_COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
+		
+		get_target_property(boost_imported_location Boost::${BOOST_COMPONENT} IMPORTED_LOCATION)
+		message(STATUS "XX boost_imported_location ${boost_imported_location}")
+		string(REPLACE "/lib/" "/bin/" boost_imported_location ${boost_imported_location})
+		message(STATUS "XX boost_imported_location2 ${boost_imported_location}")
+		string(REPLACE ".dll.a" ".dll" boost_imported_location ${boost_imported_location})
+		message(STATUS "XX boost_imported_location3 ${boost_imported_location}")
+		
 		message(STATUS "XX Boost::${BOOST_COMPONENT} LIB: ${BOOST_LIB}")
 		install(FILES ${BOOST_LIB}
         DESTINATION bin
