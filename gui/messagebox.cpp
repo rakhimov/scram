@@ -29,7 +29,7 @@ MessageBox::MessageBox(QMessageBox::Icon icon, const QString& title, const QStri
 		tmpIcon = s->standardIcon(QStyle::SP_MessageBoxQuestion, 0, this);
 		break;
 	default:
-		// No Icon
+		GUI_ASSERT(false && "No stadard icon!", );
 		break;
 	}
 	if (!tmpIcon.isNull())
