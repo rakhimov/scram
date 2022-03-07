@@ -442,7 +442,7 @@ void EventDialog::validate()
             GUI_ASSERT(it->top_events().empty() == false, );
             m_errorBar->showMessage(
                 //: Fault tree redefinition.
-                _("Fault tree '%1' is already defined with a top gate.")
+				_("Fault tree '%1' is already defined with a top gate. Please add new gates to the fault tree by adding a new element as new argument of a gate.")
                     .arg(faultTreeName));
             containerFaultTreeName->setStyleSheet(yellowBackground);
             return;
