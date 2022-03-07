@@ -239,9 +239,6 @@
    <addaction name="actionRun"/>
   </widget>
   <widget class="QDockWidget" name="modelDockWidget">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Data</string>
    </property>
@@ -285,9 +282,6 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="reportDockWidget">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Reports</string>
    </property>
