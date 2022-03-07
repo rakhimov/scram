@@ -212,6 +212,9 @@
    <property name="windowTitle">
     <string>Zoom Tool Bar</string>
    </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
