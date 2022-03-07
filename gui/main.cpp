@@ -27,7 +27,6 @@
 #include <QCoreApplication>
 #include <QIcon>
 #include <QLibraryInfo>
-#include <QMessageBox>
 #include <QSettings>
 #include <QString>
 #include <QTranslator>
@@ -37,6 +36,7 @@
 
 #include "language.h"
 #include "mainwindow.h"
+#include "messagebox.h"
 
 #include "src/error.h"
 #include "src/version.h"
@@ -96,8 +96,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm) noexcept
 void notifyError(const QString &title, const QString &text,
                  const QString &detail = {}) noexcept
 {
-    QMessageBox message(QMessageBox::Critical, title, text, QMessageBox::Ok);
-    message.setDetailedText(detail);
+	MessageBox message(QMessageBox::Critical, title, text, detail);
     message.exec();
 }
 
