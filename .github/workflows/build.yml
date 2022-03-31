@@ -28,9 +28,9 @@ jobs:
             cmake_env: {}
             boost_toolset: gcc
             pack: 1
-            CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
-            libxml2_install_path: /home/runner/scrum_install
-            boost_install_path: /home/runner/work/scram
+            CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scram_install
+            libxml2_install_path: /home/runner/scram_install
+            boost_install_path: /home/runner/scram
 
           #- name: mac
             #os: macos-latest
@@ -107,7 +107,7 @@ jobs:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
           toolset: ${{ matrix.env.boost_toolset}}
-          directory: ${{ matrix.env.boost_install_path }}
+          #directory: ${{ matrix.env.boost_install_path }}
 
       - name: Show paths
         run: |
