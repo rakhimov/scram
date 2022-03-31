@@ -219,7 +219,7 @@ if(PACKAGE)
     # The following configuration assumes MinGW64 is setup specifically for this project.
     get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
     message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
-	message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: $(CMAKE_RUNTIME_OUTPUT_DIRECTORY)")
+	message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     include(ScramBundle)
     get_scram_prerequisites(SCRAM_PREREQUISITES
       "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram.exe" "${MINGW_DLL_DIR}")
