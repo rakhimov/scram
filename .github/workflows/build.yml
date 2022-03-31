@@ -88,12 +88,6 @@ jobs:
         with:
           platform: ${{ matrix.env.msvc_arch }}
 
-      # - name: Setup MSVC environment
-      #   if: matrix.env.ninja_platform == 'win'
-      #   uses: seanmiddleditch/gha-setup-vsdevenv@v3
-      #   with:
-      #     arch: ${{ matrix.env.msvc_arch }}
-
       - name: Cache Boost
         uses: actions/cache@v2
         with:
@@ -108,18 +102,6 @@ jobs:
           libraries: program_options filesystem system random
           toolset: ${{ matrix.env.boost_toolset}}
           #directory: ${{ matrix.env.boost_install_path }}
-
-      - name: Show paths
-        run: |
-          printf 'Boost has been unpacked to: %s\n' '${{ steps.boost.outputs.root }}'
-          printf 'Libraries can be found here: %s\n' '${{ steps.boost.outputs.librarydir }}'
-        shell: bash
-
-      - name: Boost Paths
-        if: matrix.env.ninja_platform == 'win'
-        run: |
-          dir D:/a/scram/boost/stage/x64/Release/lib
-          dir D:/a/scram/boost/stage/x64/Release
 
       - name: Install libxml2
         run: |
