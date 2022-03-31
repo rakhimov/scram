@@ -30,7 +30,7 @@ jobs:
             pack: 1
             CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scram_install
             libxml2_install_path: /home/runner/scram_install
-            boost_install_path: /home/runner/scram
+            boost_install_path: /home/runner/work/scram
 
           #- name: mac
             #os: macos-latest
