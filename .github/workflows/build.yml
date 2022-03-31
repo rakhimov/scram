@@ -30,6 +30,7 @@ jobs:
             pack: 1
             CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scrum_install
             libxml2_install_path: /home/runner/scrum_install
+            boost_install_path: /home/runner/work/scram
 
           #- name: mac
             #os: macos-latest
@@ -53,6 +54,7 @@ jobs:
             pack: 1
             boost_toolset: mingw
             libxml2_install_path: D:/a/scram/libxml2
+            boost_install_path: D:/a/scram
 
     steps:
       - name: Configure development build
@@ -105,6 +107,7 @@ jobs:
           version: ${{env.BOOST_VERSION}}
           libraries: program_options filesystem system random
           toolset: ${{ matrix.env.boost_toolset}}
+          directory: ${{ matrix.env.boost_install_path }}
 
       - name: Show paths
         run: |
@@ -161,7 +164,7 @@ jobs:
           $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=D:/a/scram/boost" -D "BOOST_LIBRARYDIR=D:/a/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Configure Release
         if: matrix.env.ninja_platform == 'linux'
@@ -170,11 +173,13 @@ jobs:
         run: |
           mkdir -p build/release
           cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=/home/runner/work/scram/boost" -D "BOOST_LIBRARYDIR=/home/runner/work/scram/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
 
       - name: Build
         run: |
           cd build/release
+          ninja
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
           ninja package
 
       - name: Publish build artifacts
