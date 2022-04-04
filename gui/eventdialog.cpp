@@ -54,7 +54,8 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
     nameLine->setValidator(Validator::name());
     constantValue->setValidator(Validator::probability());
     exponentialRate->setValidator(Validator::nonNegative());
-    addArgLine->setValidator(Validator::name());
+	cbArgsAdd->setValidator(Validator::name());
+	cbArgsAdd->setEditable(true);
     containerFaultTreeName->setValidator(Validator::name());
 
     connect(typeBox, qOverload<int>(&QComboBox::currentIndexChanged),
@@ -106,11 +107,11 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
         minNumberBox->setMaximum(newMax);
         validate();
     });
-    connect(addArgLine, &QLineEdit::returnPressed, this, [this] {
-        QString name = addArgLine->text();
+	connect(addArgButton, &QPushButton::clicked, this, [this] {
+		QString name = cbArgsAdd->currentText();
         if (name.isEmpty())
             return;
-        addArgLine->setStyleSheet(yellowBackground);
+		cbArgsAdd->setStyleSheet(yellowBackground);
         if (hasFormulaArg(name)) {
             m_errorBar->showMessage(
                 //: Duplicate arguments are not allowed in a formula.
@@ -132,16 +133,14 @@ EventDialog::EventDialog(mef::Model *model, QWidget *parent)
                 return;
             }
         }
-        addArgLine->setStyleSheet({});
+		cbArgsAdd->setStyleSheet({});
         argsList->addItem(name);
         emit formulaArgsChanged();
     });
-    connect(addArgLine, &QLineEdit::textChanged,
-            [this] { addArgLine->setStyleSheet({}); });
-    stealTopFocus(addArgLine);
+	connect(cbArgsAdd, &QComboBox::currentTextChanged,
+			[this] { cbArgsAdd->setStyleSheet({}); });
+	stealTopFocus(cbArgsAdd);
     setupArgCompleter();
-    connect(addArgButton, &QPushButton::clicked, addArgLine,
-            &QLineEdit::returnPressed);
     connect(removeArgButton, &QPushButton::clicked, argsList, [this] {
         int rows = argsList->count();
         if (rows == 0)
@@ -431,8 +430,10 @@ void EventDialog::validate()
     }
 
     if (containerFaultTreeName->isEnabled()) {
-        if (containerFaultTreeName->hasAcceptableInput() == false)
+		if (containerFaultTreeName->hasAcceptableInput() == false) {
+			m_errorBar->showMessage(_("Please set fault tree name"));
             return;
+		}
         GUI_ASSERT(typeBox->currentIndex() == ext::one_bit_index(Gate), );
         QString faultTreeName = containerFaultTreeName->text();
         if (auto it = ext::find(m_model->fault_trees(),
@@ -440,7 +441,7 @@ void EventDialog::validate()
             GUI_ASSERT(it->top_events().empty() == false, );
             m_errorBar->showMessage(
                 //: Fault tree redefinition.
-                _("Fault tree '%1' is already defined with a top gate.")
+				_("Fault tree '%1' is already defined with a top gate. Please add new gates to the fault tree by adding a new element as new argument of a gate.")
                     .arg(faultTreeName));
             containerFaultTreeName->setStyleSheet(yellowBackground);
             return;
@@ -463,7 +464,7 @@ void EventDialog::connectLineEdits(std::initializer_list<QLineEdit *> lineEdits)
     }
 }
 
-void EventDialog::stealTopFocus(QLineEdit *lineEdit)
+void EventDialog::stealTopFocus(QWidget *w)
 {
     struct FocusGrabber : public QObject
     {
@@ -484,8 +485,8 @@ void EventDialog::stealTopFocus(QLineEdit *lineEdit)
         }
         QPushButton *m_ok;
     };
-    lineEdit->installEventFilter(
-        new FocusGrabber(lineEdit, buttonBox->button(QDialogButtonBox::Ok)));
+	w->installEventFilter(
+		new FocusGrabber(w, buttonBox->button(QDialogButtonBox::Ok)));
 }
 
 void EventDialog::setupArgCompleter()
@@ -503,7 +504,8 @@ void EventDialog::setupArgCompleter()
     addEvents(m_model->house_events());
     auto *completer = new QCompleter(std::move(allEvents), this);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
-    addArgLine->setCompleter(completer);
+	cbArgsAdd->setCompleter(completer);
+	cbArgsAdd->addItems(allEvents);
 }
 
 } // namespace scram::gui

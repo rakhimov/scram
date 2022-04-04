@@ -248,6 +248,11 @@ private:
     /// Activates the model tree elements.
     void activateModelTree(const QModelIndex &index);
 
+	/// Activates the corresponding tab if it exists
+	/// return value: true if the tab with the title title is found
+	/// and set as current
+	bool activateTab(const QString& title);
+
     /// Activates the fault tree view.
     ///
     /// @param[in,out] faultTree  The valid fault tree to be shown in graphics.

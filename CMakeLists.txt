@@ -1,5 +1,5 @@
 # vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.21) # IMPORTED_RUNTIME_ARTIFACTS used to install
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -40,7 +40,7 @@ endfunction()
 add_definitions(-DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")  # Needed to print file paths.
 
 # Proactively disable warnings in case Wall/Wextra are enabled outside.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-missing-field-initializers")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # Strict debug flags for SCRAM targets (opt-in, must subscribe to quality checks explicitly).
 # NOTE: This is a list unlike CMAKE_CXX_FLAGS.
@@ -158,8 +158,9 @@ if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
 endif()
 
+set(BOOST_COMPONENTS program_options filesystem system random)
 find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
-  program_options filesystem system random
+  ${BOOST_COMPONENTS}
   )
 message(STATUS "Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost Library directories: ${Boost_LIBRARY_DIRS}")
@@ -218,6 +219,7 @@ if(PACKAGE)
     # The following configuration assumes MinGW64 is setup specifically for this project.
     get_filename_component(MINGW_DLL_DIR "${CMAKE_CXX_COMPILER}" PATH)
     message(STATUS "MinGW bin location: ${MINGW_DLL_DIR}")
+	message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     include(ScramBundle)
     get_scram_prerequisites(SCRAM_PREREQUISITES
       "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scram.exe" "${MINGW_DLL_DIR}")
@@ -231,6 +233,16 @@ if(PACKAGE)
       ${SCRAM_GUI_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
+	
+	get_target_property(libxml2_imported_location LibXml2::LibXml2 IMPORTED_LOCATION)
+	message(STATUS "XX libxml2_imported_location ${libxml2_imported_location}")
+	string(REPLACE "/lib/" "/bin/" libxml2_imported_location ${libxml2_imported_location})
+	message(STATUS "XX libxml2_imported_location2 ${libxml2_imported_location}")
+	string(REPLACE ".dll.a" ".dll" libxml2_imported_location ${libxml2_imported_location})
+	message(STATUS "XX libxml2_imported_location3 ${libxml2_imported_location}")
+	
+	install(FILES ${libxml2_imported_location} DESTINATION bin COMPONENT libraries)		
+	
   endif()
 endif()
 

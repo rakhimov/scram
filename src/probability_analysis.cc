@@ -263,7 +263,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(
 
   Analysis::AddAnalysisTime(DUR(total_time));
 }
-
+// Recursive way to calculate the probability
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const Bdd::VertexPtr& vertex, bool mark,
     const Pdag::IndexMap<double>& p_vars) noexcept {

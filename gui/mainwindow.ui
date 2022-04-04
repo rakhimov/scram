@@ -212,6 +212,9 @@
    <property name="windowTitle">
     <string>Zoom Tool Bar</string>
    </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -236,9 +239,6 @@
    <addaction name="actionRun"/>
   </widget>
   <widget class="QDockWidget" name="modelDockWidget">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Data</string>
    </property>
@@ -282,9 +282,6 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="reportDockWidget">
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Reports</string>
    </property>
