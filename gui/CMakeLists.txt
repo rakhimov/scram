@@ -93,6 +93,18 @@ set(SCRAM_GUI_SRC
   mainwindow.cpp
   messagebox.cpp
   )
+
+# To show the ui files in qtcreator
+qt_wrap_ui(SCRAM_GUI_UI
+	eventdialog.ui
+	mainwindow.ui
+	messagebox.ui
+	namedialog.ui
+	preferencesdialog.ui
+	settingsdialog.ui
+	startpage.ui
+	)
+
 ### End SCRAM GUI source list ### }}}
 add_library(scram-gui STATIC ${SCRAM_GUI_SRC} ${SCRAM_GUI_UI})
 set(QT_MODULES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
