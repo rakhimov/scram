@@ -131,7 +131,16 @@ jobs:
           qmake --version
           cmake --version
 
-      - name: Configure Release
+      - name: Configure Release Linux
+        if: matrix.env.ninja_platform == 'linux'
+        env: ${{ matrix.env.cmake_env }}
+        run: |
+          mkdir -p build/release
+          cd build/release
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          
+      - name: Configure Release Windows
+        if: matrix.env.ninja_platform == 'win'
         env: ${{ matrix.env.cmake_env }}
         # don't know why it is not possible to use an environment variable as path
         run: |
