@@ -431,8 +431,10 @@ void EventDialog::validate()
     }
 
     if (containerFaultTreeName->isEnabled()) {
-        if (containerFaultTreeName->hasAcceptableInput() == false)
+		if (containerFaultTreeName->hasAcceptableInput() == false) {
+			m_errorBar->showMessage(_("Please set fault tree name"));
             return;
+		}
         GUI_ASSERT(typeBox->currentIndex() == ext::one_bit_index(Gate), );
         QString faultTreeName = containerFaultTreeName->text();
         if (auto it = ext::find(m_model->fault_trees(),
