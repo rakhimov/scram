@@ -24,7 +24,8 @@ set(CMAKE_AUTORCC ON)
 ##################### Begin resource configuration ################### {{{
 set(SCRAM_GUI_RES res.qrc)
 
-if(WIN32 OR APPLE)
+# Use the tango theme as backup
+if(WIN32 OR APPLE OR UNIX)
   set(TANGO_QRC qtango/icons/tango/tango.qrc)
   execute_process(
     COMMAND python generate_rcc.py icons/tango/index.theme
