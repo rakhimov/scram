@@ -147,7 +147,7 @@ endif()
 message(STATUS "The memory allocator: ${MALLOC}")
 
 # Find LibXML2 and dependencies.
-find_package(LibXml2 REQUIRED)
+find_package(LibXml2 CONFIG REQUIRED)
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 
 # Include the boost header files and the program_options library.

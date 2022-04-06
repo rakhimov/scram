@@ -54,7 +54,7 @@ jobs:
             boost_toolset: mingw
             libxml2_install_path: D:/a/scram/libxml2
             boost_install_path: D:/a/scram
-            PKG_CONFIG_PATH: D:/a/scram/libxml2/lib/pkgconfig
+            CMAKE_FLAGS: -Dlibxml2_DIR=D:/a/scram/libxml2/lib/cmake/libxml2-2.9.13
 
     steps:
       - name: Configure development build
