@@ -54,7 +54,6 @@ jobs:
             boost_toolset: mingw
             libxml2_install_path: D:/a/scram/libxml2
             boost_install_path: D:/a/scram
-            CMAKE_FLAGS: -Dlibxml2_DIR=D:/a/scram/libxml2/lib/cmake/libxml2-2.9.13
 
     steps:
       - name: Configure development build
@@ -81,11 +80,6 @@ jobs:
         uses: egor-tensin/setup-mingw@v2
         with:
           platform: ${{ matrix.env.msvc_arch }}
-
-      - name: Debug
-        if: matrix.env.ninja_platform == 'win'
-        run: |
-          echo $Env:PKG_CONFIG_PATH
 
       - name: Cache Boost
         uses: actions/cache@v2
@@ -150,6 +144,7 @@ jobs:
         env: ${{ matrix.env.cmake_env }}
         # don't know why it is not possible to use an environment variable as path
         run: |
+          $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
