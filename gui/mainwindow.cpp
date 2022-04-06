@@ -1486,34 +1486,53 @@ void MainWindow::resetModelTree()
     });
 }
 
+bool MainWindow::activateTab(const QString& title) {
+	for (int i=0; i < ui->tabWidget->count(); i++) {
+		if (ui->tabWidget->tabText(i) == title) {
+			ui->tabWidget->setCurrentIndex(i);
+			return true;
+		}
+	}
+	return false;
+}
+
 void MainWindow::activateModelTree(const QModelIndex &index)
 {
     GUI_ASSERT(index.isValid(), );
     if (index.parent().isValid() == false) {
         switch (static_cast<ModelTree::Row>(index.row())) {
         case ModelTree::Row::Gates: {
+			const auto title = _("Gates");
+			if (activateTab(title))
+				return;
             auto *table = constructElementTable<model::GateContainerModel>(
                 m_guiModel.get(), this);
             //: The tab for the table of gates.
-            ui->tabWidget->addTab(table, _("Gates"));
+			ui->tabWidget->addTab(table, title);
             ui->tabWidget->setCurrentWidget(table);
             return;
         }
         case ModelTree::Row::BasicEvents: {
+			const auto title = _("Basic Events");
+			if (activateTab(title))
+				return;
             auto *table =
                 constructElementTable<model::BasicEventContainerModel>(
                     m_guiModel.get(), this);
             //: The tab for the table of basic events.
-            ui->tabWidget->addTab(table, _("Basic Events"));
+			ui->tabWidget->addTab(table, title);
             ui->tabWidget->setCurrentWidget(table);
             return;
         }
         case ModelTree::Row::HouseEvents: {
+			const auto title = _("House Events");
+			if (activateTab(title))
+				return;
             auto *table =
                 constructElementTable<model::HouseEventContainerModel>(
                     m_guiModel.get(), this);
             //: The tab for the table of house events.
-            ui->tabWidget->addTab(table, _("House Events"));
+			ui->tabWidget->addTab(table, title);
             ui->tabWidget->setCurrentWidget(table);
             return;
         }
@@ -1547,10 +1566,13 @@ void MainWindow::activateReportTree(const QModelIndex &index)
     QWidget *widget = nullptr;
     switch (static_cast<ReportTree::Row>(index.row())) {
     case ReportTree::Row::Products: {
+		const auto title = _("Products: %1").arg(name);
+		if (activateTab(title))
+			return;
         bool withProbability = result.probability_analysis != nullptr;
         auto *table = constructTableView<model::ProductTableModel>(
             this, result.fault_tree_analysis->products(), withProbability);
-        ui->tabWidget->addTab(table, _("Products: %1").arg(name));
+		ui->tabWidget->addTab(table, title);
         table->sortByColumn(withProbability ? 2 : 1, withProbability
                                                          ? Qt::DescendingOrder
                                                          : Qt::AscendingOrder);
@@ -1561,9 +1583,12 @@ void MainWindow::activateReportTree(const QModelIndex &index)
     case ReportTree::Row::Probability:
         break;
     case ReportTree::Row::Importance: {
+		const auto title = _("Importance: %1").arg(name);
+		if (activateTab(title))
+			return;
         widget = constructTableView<model::ImportanceTableModel>(
             this, &result.importance_analysis->importance());
-        ui->tabWidget->addTab(widget, _("Importance: %1").arg(name));
+		ui->tabWidget->addTab(widget, title);
         break;
     }
     default:
@@ -1581,6 +1606,11 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
 {
     GUI_ASSERT(faultTree, );
     GUI_ASSERT(faultTree->top_events().size() == 1, );
+
+	const auto title = _("Fault Tree: %1").arg(QString::fromStdString(faultTree->name()));
+	if (activateTab(title))
+		return;
+
     auto *topGate = faultTree->top_events().front();
     auto *view = new DiagramView(this);
     auto *scene = new diagram::DiagramScene(
@@ -1597,7 +1627,7 @@ void MainWindow::activateFaultTreeDiagram(mef::FaultTree *faultTree)
     ui->tabWidget->addTab(
         view,
         //: The tab for a fault tree diagram.
-        _("Fault Tree: %1").arg(QString::fromStdString(faultTree->name())));
+		title);
     ui->tabWidget->setCurrentWidget(view);
 
     connect(scene, &diagram::DiagramScene::activated, this,
