@@ -1,7 +1,6 @@
 ---
 name: Scram
 on:
-  push:
   pull_request:
   page_build:
   workflow_dispatch:
