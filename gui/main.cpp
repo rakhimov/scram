@@ -196,10 +196,13 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(QStringLiteral("scram"));
     QCoreApplication::setApplicationVersion(QString::fromLatin1(SCRAM_VERSION));
 
-    if (QIcon::themeName().isEmpty())
+	// On linux for some reason it might happen, that a theme is set, but for some reason
+	// The icons are not found. Therefore check with a reference image if the icons are found
+	// If not use also the tango images
+	if (QIcon::themeName().isEmpty() || QIcon::hasThemeIcon(QString::fromUtf8("document-save-as")))
         QIcon::setThemeName(QStringLiteral("tango"));
-    else
-        QIcon::setThemeName(QStringLiteral("Humanity"));
+	else
+		QIcon::setThemeName(QStringLiteral("Humanity"));
 
     installTranslators(&app);
 
