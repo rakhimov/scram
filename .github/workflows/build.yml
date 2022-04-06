@@ -1,0 +1,196 @@
+---
+name: Scram
+on:
+  pull_request:
+  page_build:
+  workflow_dispatch:
+
+env:
+# choose boost version carefully, because it might be that the version is not supported
+# by the windows version (https://stackoverflow.com/questions/12484894/what-do-i-do-about-batch-recursion-exceeds-stack-limits-when-running-boost-bui)
+  BOOST_VERSION: 1.78.0
+  BOOST_PATH: ${{github.workspace}}/boost/boost
+  WIN_PLATFORM_VERSION: 2019
+
+jobs:
+  build:
+    runs-on: ${{ matrix.env.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - name: linux
+            os: ubuntu-latest
+            ninja_platform: linux
+            qt_platform: linux
+            openssl_arch: linux-x86_64
+            cmake_env: {}
+            boost_toolset: gcc
+            pack: 1
+            CMAKE_FLAGS: -DCMAKE_INSTALL_PREFIX=/home/runner/scram_install
+            libxml2_install_path: /home/runner/scram_install
+            boost_install_path: /home/runner/work/scram
+
+          #- name: mac
+            #os: macos-latest
+            #ninja_platform: mac
+            #qt_platform: mac
+            #openssl_arch: darwin64-x86_64-cc
+            #cmake_env: {}
+            #pack: 1
+            #boost_toolset: clang
+
+          - name: win64
+            os: windows-latest
+            ninja_platform: win
+            qt_platform: windows
+            qt_arch: win64_mingw81
+            openssl_arch: VC-WIN64A
+            msvc_arch: x64
+            cmake_env: {}
+            #  CC: cl
+            #  CXX: cl
+            pack: 1
+            boost_toolset: mingw
+            libxml2_install_path: D:/a/scram/libxml2
+            boost_install_path: D:/a/scram
+
+    steps:
+      - name: Configure development build
+        if: github.ref_type != 'tag'
+        uses: allenevans/set-env@c4f231179ef63887be707202a295d9cb1c687eb9
+        with:
+          CMAKE_FLAGS: "-DDEV_BUILD=${{ github.ref_name }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Initialize Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          version: 1.9.0
+          platform: ${{ matrix.env.ninja_platform }}
+          destination: ninja
+
+      - name: Set up MinGW
+        if: matrix.env.ninja_platform == 'win'
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: ${{ matrix.env.msvc_arch }}
+
+      - name: Cache Boost
+        uses: actions/cache@v2
+        with:
+          path: '${{ runner.workspace }}/boost_*.tar.gz'
+          key: 'boost-${{env.BOOST_VERSION}}'
+
+      - name: Build Boost
+        # This won't re-download the archive unnecessarily:
+        uses: egor-tensin/build-boost@v1
+        with:
+          version: ${{env.BOOST_VERSION}}
+          libraries: program_options filesystem system random
+          toolset: ${{ matrix.env.boost_toolset}}
+          #directory: ${{ matrix.env.boost_install_path }}
+
+      - name: Install libxml2
+        run: |
+          git clone https://github.com/GNOME/libxml2.git
+          cd libxml2
+          mkdir -p build
+          cd build
+          cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -D LIBXML2_WITH_PYTHON=OFF -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_ZLIB=OFF -DCMAKE_INSTALL_PREFIX=${{ matrix.env.libxml2_install_path }} ..
+          ninja install
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2.13.0
+        timeout-minutes: 10
+        with:
+          version: 5.15.2
+          target: desktop
+          host: ${{ matrix.env.qt_platform }}
+          arch: ${{ matrix.env.qt_arch }}
+          install-deps: true
+
+      # - name: Build Jemalloc
+      #   if: matrix.env.ninja_platform == 'linux'
+      #   run: |
+      #     git clone https://github.com/jemalloc/jemalloc.git
+      #     cd jemalloc
+      #     ./autogen.sh
+      #     make
+      #     make install
+
+      - name: Build Information
+        run: |
+          echo "ninja version: $(ninja --version)"
+          git --version
+          qmake --version
+          cmake --version
+
+      - name: Configure Release Linux
+        if: matrix.env.ninja_platform == 'linux'
+        env: ${{ matrix.env.cmake_env }}
+        run: |
+          mkdir -p build/release
+          cd build/release
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          
+      - name: Configure Release Windows
+        if: matrix.env.ninja_platform == 'win'
+        env: ${{ matrix.env.cmake_env }}
+        # don't know why it is not possible to use an environment variable as path
+        run: |
+          $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
+          mkdir -p build/release
+          cd build/release
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+
+      - name: Build
+        run: |
+          cd build/release
+          ninja
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          ninja package
+
+      - name: Publish build artifacts
+        if: matrix.env.pack
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{github.workspace}}/build/release/SCRAM*
+          name: Scram ${{ matrix.env.name }}
+
+      # - name: Test
+      #   # TODO: Re-Enable this when https://github.com/actions/runner/issues/1206 gets resolved
+      #   if: matrix.env.ninja_platform != 'win'
+      #   continue-on-error: true
+      #   run: |
+      #     cd build/release
+      #     ninja check
+
+  prerelease:
+    # https://github.com/marvinpinto/actions/issues/177
+    needs: [build] # flatpak
+    runs-on: ubuntu-latest # does not matter which
+    if: ${{ github.ref == 'refs/heads/master' }}
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Update GitHub prerelease
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          prerelease: true
+          title: "Latest Build"
+          files: |
+            **/artifacts/Scram win64/Scram*.exe
+...

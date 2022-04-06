@@ -1,5 +1,5 @@
 # vim: set foldmarker={{{,}}} foldlevel=0 foldmethod=marker:
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.21) # IMPORTED_RUNTIME_ARTIFACTS used to install
 
 # In-source build prevention.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -158,8 +158,9 @@ if(NOT WIN32)
   set(Boost_USE_MULTITHREADED OFF)
 endif()
 
+set(BOOST_COMPONENTS program_options filesystem system random)
 find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS
-  program_options filesystem system random
+  ${BOOST_COMPONENTS}
   )
 message(STATUS "Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost Library directories: ${Boost_LIBRARY_DIRS}")
@@ -231,6 +232,12 @@ if(PACKAGE)
       ${SCRAM_GUI_PREREQUISITES}
       DESTINATION bin COMPONENT libraries
     )
+
+	get_target_property(libxml2_imported_location LibXml2::LibXml2 IMPORTED_LOCATION)
+	string(REPLACE "/lib/" "/bin/" libxml2_imported_location ${libxml2_imported_location})
+	string(REPLACE ".dll.a" ".dll" libxml2_imported_location ${libxml2_imported_location})
+	install(FILES ${libxml2_imported_location} DESTINATION bin COMPONENT libraries)
+
   endif()
 endif()
 

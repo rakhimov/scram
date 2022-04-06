@@ -93,10 +93,11 @@ set(SCRAM_GUI_SRC
   mainwindow.cpp
   )
 ### End SCRAM GUI source list ### }}}
-add_library(scram-gui STATIC ${SCRAM_GUI_SRC})
+add_library(scram-gui STATIC ${SCRAM_GUI_SRC} ${SCRAM_GUI_UI})
+set(QT_MODULES Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
 target_link_libraries(scram-gui
   ${LIBS} scram
-  Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg Qt5::OpenGL Qt5::PrintSupport Qt5::Concurrent)
+  ${QT_MODULES})
 target_compile_options(scram-gui PUBLIC $<$<CONFIG:DEBUG>:${SCRAM_CXX_FLAGS_DEBUG} -Wno-useless-cast>) # TODO: MOC failure.
 # Prevent implicit QString(const char*), string concat with "+", and other anti-patterns.
 target_compile_definitions(scram-gui PRIVATE
@@ -158,6 +159,32 @@ if(PACKAGE)
       FILES "${CMAKE_CURRENT_BINARY_DIR}/qt.conf"
       DESTINATION bin
       COMPONENT gui)
+
+	foreach(BOOST_COMPONENT ${BOOST_COMPONENTS})
+		get_target_property(BOOST_LIB Boost::${BOOST_COMPONENT} LOCATION_${CMAKE_BUILD_TYPE})
+		get_target_property(boost_imported_location Boost::${BOOST_COMPONENT} IMPORTED_LOCATION)
+		string(REPLACE ".dll.a" ".dll" boost_imported_location ${boost_imported_location})
+
+		install(FILES ${boost_imported_location}
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        COMPONENT gui
+        #RENAME ${TARGET_NAME}
+      )
+	endforeach()
+
+	foreach(QT_MODULE ${QT_MODULES})
+		get_target_property(QT_LIBRARY ${QT_MODULE} LOCATION_${CMAKE_BUILD_TYPE})
+
+		install(FILES ${QT_LIBRARY}
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        COMPONENT gui
+        #RENAME ${TARGET_NAME}
+      )
+	endforeach()
   endif()
 endif()
 ###################### End CPACK configurations ############################# }}}
