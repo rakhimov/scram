@@ -137,7 +137,7 @@ jobs:
         env: ${{ matrix.env.cmake_env }}
         # only windows!!!
         run: |
-          $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
+          $Env:PKG_CONFIG_PATH += ";{{ matrix.env.libxml2_install_path }}/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
