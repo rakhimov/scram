@@ -138,6 +138,8 @@ jobs:
         # only windows!!!
         run: |
           echo {{ matrix.env.libxml2_install_path }}
+          echo ";{{ matrix.env.libxml2_install_path }}/lib/pkgconfig"
+          dir {{ matrix.env.libxml2_install_path }}/lib/pkgconfig
           $Env:PKG_CONFIG_PATH += ";{{ matrix.env.libxml2_install_path }}/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
