@@ -180,7 +180,7 @@ private:
     /// Connects the editing widgets with the dialog validation logic.
     void connectLineEdits(std::initializer_list<QLineEdit *> lineEdits);
 
-    void stealTopFocus(QLineEdit *lineEdit); ///< Intercepts the auto-default.
+	void stealTopFocus(QWidget* w); ///< Intercepts the auto-default.
 
     /// Sets up the formula argument completer.
     void setupArgCompleter();

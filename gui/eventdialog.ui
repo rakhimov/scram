@@ -364,13 +364,6 @@
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="0">
-          <widget class="QLineEdit" name="addArgLine">
-           <property name="placeholderText">
-            <string>Add argument with its ID</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QListWidget" name="argsList">
            <property name="sizePolicy">
@@ -395,6 +388,13 @@
            <property name="icon">
             <iconset theme="list-add">
              <normaloff>.</normaloff>.</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QComboBox" name="cbArgsAdd">
+           <property name="placeholderText">
+            <string>Add argument with its ID</string>
            </property>
           </widget>
          </item>
@@ -478,8 +478,6 @@
   <tabstop>exponentialRate</tabstop>
   <tabstop>connectiveBox</tabstop>
   <tabstop>minNumberBox</tabstop>
-  <tabstop>addArgLine</tabstop>
-  <tabstop>addArgButton</tabstop>
   <tabstop>argsList</tabstop>
   <tabstop>removeArgButton</tabstop>
   <tabstop>containerModel</tabstop>
