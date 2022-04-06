@@ -91,6 +91,7 @@ set(SCRAM_GUI_SRC
   diagramview.cpp
   diagram.cpp
   mainwindow.cpp
+  messagebox.cpp
   )
 ### End SCRAM GUI source list ### }}}
 add_library(scram-gui STATIC ${SCRAM_GUI_SRC} ${SCRAM_GUI_UI})
