@@ -137,6 +137,7 @@ jobs:
         env: ${{ matrix.env.cmake_env }}
         # only windows!!!
         run: |
+          echo {{ matrix.env.libxml2_install_path }}
           $Env:PKG_CONFIG_PATH += ";{{ matrix.env.libxml2_install_path }}/lib/pkgconfig"
           mkdir -p build/release
           cd build/release
