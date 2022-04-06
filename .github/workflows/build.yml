@@ -184,5 +184,4 @@ jobs:
           title: "Latest Build"
           files: |
             **/artifacts/Scram win64/Scram*.exe
-            **/artifacts/Scram win32/Scram*.exe
 ...
