@@ -10,7 +10,6 @@ env:
 # choose boost version carefully, because it might be that the version is not supported
 # by the windows version (https://stackoverflow.com/questions/12484894/what-do-i-do-about-batch-recursion-exceeds-stack-limits-when-running-boost-bui)
   BOOST_VERSION: 1.78.0
-  BOOST_PATH: ${{github.workspace}}/boost/boost
   WIN_PLATFORM_VERSION: 2019
 
 jobs:
@@ -136,9 +135,9 @@ jobs:
         if: matrix.env.ninja_platform == 'linux'
         env: ${{ matrix.env.cmake_env }}
         run: |
-          mkdir -p build/release
-          cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} -DCMAKE_INSTALL_PREFIX=../install ..
           
       - name: Configure Release Windows
         if: matrix.env.ninja_platform == 'win'
@@ -146,31 +145,52 @@ jobs:
         # don't know why it is not possible to use an environment variable as path
         run: |
           $Env:PKG_CONFIG_PATH += ";D:/a/scram/libxml2/lib/pkgconfig"
-          mkdir -p build/release
-          cd build/release
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DBUILD_TESTING=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} -DCMAKE_INSTALL_PREFIX=../install ..
 
       - name: Build
         run: |
-          cd build/release
+          cd build
           ninja
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DPACKAGE=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} ../..
-          ninja package
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=ON -DWITH_TCMALLOC=OFF -DWITH_JEMALLOC=OFF -DWITH_COVERAGE=OFF -DWITH_PROFILE=OFF -DBUILD_TESTING=ON -D "BOOST_ROOT=${{ matrix.env.boost_install_path }}/boost" -D "BOOST_LIBRARYDIR=${{ matrix.env.boost_install_path }}/boost/stage/x64/Release/lib" ${{ env.CMAKE_FLAGS }} -DCMAKE_INSTALL_PREFIX=../install ..
+
+      # used for testing
+      - name: Install
+        run: |
+          cd build
+          ninja install
+
+      - name: Test
+        # TODO: Re-Enable this for Windows when https://github.com/actions/runner/issues/1206 gets resolved
+        if: matrix.env.ninja_platform != 'win'
+        continue-on-error: false
+        run: |
+          export PATH=${{github.workspace}}/install/bin:$PATH
+          catchsegv scram_tests
+          catchsegv scram --version
+          catchsegv scram input/TwoTrain/two_train.xml
+          cd build
+          ctest
+          cd ..
+
+      - name: Show Testresults
+        if: matrix.env.ninja_platform != 'win'
+        run: cat ${{github.workspace}}/build/Testing/Temporary/LastTest.log
+        
+      - name: Packaging
+        run: |
+          cd build
+          cmake .. -DPACKAGE=ON
+          cpack
+          
 
       - name: Publish build artifacts
         if: matrix.env.pack
         uses: actions/upload-artifact@v2
         with:
-          path: ${{github.workspace}}/build/release/SCRAM*
+          path: ${{github.workspace}}/build/SCRAM*
           name: Scram ${{ matrix.env.name }}
-
-      # - name: Test
-      #   # TODO: Re-Enable this when https://github.com/actions/runner/issues/1206 gets resolved
-      #   if: matrix.env.ninja_platform != 'win'
-      #   continue-on-error: true
-      #   run: |
-      #     cd build/release
-      #     ninja check
 
   prerelease:
     # https://github.com/marvinpinto/actions/issues/177

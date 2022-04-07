@@ -36,7 +36,9 @@ namespace scram::gui {
 const std::string &translationsPath()
 {
     static const std::string tsPath(scram::env::install_dir()
-                                    + "/share/scram/translations");
+									// hack adding ../install, because install_dir is also used by scram_tests which are located
+									// in the install/bin folder and there it is correct, but this test is located in the build/gui/tests folder
+									+ "/../install/share/scram/translations");
     return tsPath;
 }
 
