@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
+  <name>Scram</name>
   <id>com.github.Murmele.scram</id>
   <metadata_license>FSFAP</metadata_license>
   <project_license>GPL-3.0+</project_license>
+
+  <summary>Command line and graphical tool for probailistic risk analysis</summary>
 
   <description>
     <p>
@@ -36,12 +39,21 @@
     </screenshot>
   </screenshots>
 
-  <url type="homepage">https://scram-pra.org</url>
+  <releases>
+    <release version="0.16.2" date="2018-01-12">
+      <description>
+      </description>
+    </release>
+  </releases>
+
+  <url type="homepage">https://github.com/Murmele/scram</url>
 
   <provides>
     <binary>scram-gui</binary>
     <binary>scram</binary>
   </provides>
+
+  <content_rating type="oars-1.1" />
 
   <categories>
     <category>Science</category>
